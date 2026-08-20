@@ -1,6 +1,6 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Platform-Android-3DDC84?style=for-the-badge&logo=android&logoColor=white" />
-  <img src="https://img.shields.io/badge/Target-Brave_Browser_v1.93.137-FF4500?style=for-the-badge&logo=brave&logoColor=white" />
+  <img src="https://img.shields.io/badge/Target-Brave_Browser_ARM64-FF4500?style=for-the-badge&logo=brave&logoColor=white" />
   <img src="https://img.shields.io/badge/License-GPLv3-blue?style=for-the-badge" />
 </p>
 
@@ -52,9 +52,9 @@ Implements a **4-layer defense in depth** architecture against tracking and diag
 * **Layer 1 (Resource Defaults)**:
   * Scans layout XMLs to force `defaultValue="false"` on `privacy_preserving_analytics_switch`, `statistics_reporting_switch`, and `web_discovery_project_switch`.
 * **Layer 2 (Native ARM64 `libchrome.so` Binary Patching)**:
-  * **P3A Scheduler**: Overwrites conditional branch at `0x0ab8abe0` with an unconditional branch (`b 0x0ab8aaac`), immediately triggering the scheduler abort routine in `P3AService::InitScheduler`.
-  * **Brave Stats**: Replaces the upload trigger branch at `0x0c3aa0e8` with an ARM64 `nop` (`0x1f 0x20 0x03 0xd5`), silencing `BraveStatsUpdater::Start`.
-  * **Web Discovery Project (WDP)**: Patches branch at `0x0c3e9388` (`b 0x0c3e9394`) to bypass search host/query extraction in `BraveSearchDefaultHostExtractor`.
+  * **P3A Scheduler**: Overwrites the conditional branch in `P3AService::InitScheduler` with an unconditional branch to the abort exit routine, neutralizing metric dispatch at the engine level.
+  * **Brave Stats**: Replaces the upload trigger branch in `BraveStatsUpdater::Start` with an ARM64 `nop` (`0x1f 0x20 0x03 0xd5`), silencing daily ping uploads.
+  * **Web Discovery Project (WDP)**: Patches the extraction branch in `BraveSearchDefaultHostExtractor` to immediately bypass search host and query logging.
 * **Layer 3 (DNS / Host Redirection to `0.0.0.0`)**:
   * Replaces 10 ASCII telemetry endpoint strings directly in `libchrome.so` with null-padded `0.0.0.0`:
     * `star-randsrv.bsg.brave.com`, `collector.bsg.brave.com`, `usage-ping.brave.com`
