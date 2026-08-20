@@ -76,24 +76,24 @@ private val braveNativeTelemetryPatch = rawResourcePatch(
         )
 
         val gates = listOf(
-            // Gate 1: P3A (P3AService::InitScheduler) -> force branch to abort path 0x0abac374
+            // Gate 1: P3A (P3AService::InitScheduler) -> force branch to abort path 0x0ab8aaac
             NativeGate(
                 name = "P3A Native Gate",
-                offset = 0x0abac4dcL,
-                expectedOriginal = byteArrayOf(0xc0.toByte(), 0xf4.toByte(), 0x07.toByte(), 0x36.toByte()),
-                replacement = byteArrayOf(0xa6.toByte(), 0xff.toByte(), 0xff.toByte(), 0x17.toByte()),
+                offset = 0x0ab8abe0L,
+                expectedOriginal = byteArrayOf(0x60.toByte(), 0xf6.toByte(), 0x07.toByte(), 0x36.toByte()),
+                replacement = byteArrayOf(0xb3.toByte(), 0xff.toByte(), 0xff.toByte(), 0x17.toByte()),
             ),
             // Gate 2: Brave Stats (BraveStatsUpdater::Start) -> nop the start upload branch
             NativeGate(
                 name = "Brave Stats Native Gate",
-                offset = 0x0c3c9240L,
+                offset = 0x0c3aa0e8L,
                 expectedOriginal = byteArrayOf(0xc0.toByte(), 0x0b.toByte(), 0x00.toByte(), 0x37.toByte()),
                 replacement = byteArrayOf(0x1f.toByte(), 0x20.toByte(), 0x03.toByte(), 0xd5.toByte()),
             ),
-            // Gate 3: WDP (BraveSearchDefaultHostExtractor) -> force branch to skip path 0x0c408aac
+            // Gate 3: WDP (BraveSearchDefaultHostExtractor) -> force branch to skip path 0x0c3e9394
             NativeGate(
                 name = "WDP Native Gate",
-                offset = 0x0c408aa0L,
+                offset = 0x0c3e9388L,
                 expectedOriginal = byteArrayOf(0x60.toByte(), 0x00.toByte(), 0x00.toByte(), 0x36.toByte()),
                 replacement = byteArrayOf(0x03.toByte(), 0x00.toByte(), 0x00.toByte(), 0x14.toByte()),
             ),
@@ -141,18 +141,18 @@ private val braveHostsBlockerPatch = rawResourcePatch(
         )
 
         val hostEntries = listOf(
-            HostEntry(0x001e1f37L, "star-randsrv.bsg.brave.com"),
-            HostEntry(0x001e1f68L, "collector.bsg.brave.com"),
-            HostEntry(0x001e1f9fL, "usage-ping.brave.com"),
-            HostEntry(0x001e1dc2L, "patterns.wdp.brave.com"),
-            HostEntry(0x001e1dd9L, "collector.wdp.brave.com"),
-            HostEntry(0x001e1df1L, "star.wdp.brave.com"),
-            HostEntry(0x001e1e04L, "quorum.wdp.brave.com"),
-            HostEntry(0x001e1db5L, "cr.brave.com"),
-            HostEntry(0x00086442L, "crashpad.chromium.org"),
-            HostEntry(0x00481550L, "crashpad.chromium.org"),
-            HostEntry(0x001e1c49L, "variations.brave.com"),
-            HostEntry(0x0030e3f1L, "variations.brave.com"),
+            HostEntry(0x001e209bL, "star-randsrv.bsg.brave.com"),
+            HostEntry(0x001e20ccL, "collector.bsg.brave.com"),
+            HostEntry(0x001e2103L, "usage-ping.brave.com"),
+            HostEntry(0x001e1f26L, "patterns.wdp.brave.com"),
+            HostEntry(0x001e1f3dL, "collector.wdp.brave.com"),
+            HostEntry(0x001e1f55L, "star.wdp.brave.com"),
+            HostEntry(0x001e1f68L, "quorum.wdp.brave.com"),
+            HostEntry(0x001e1f19L, "cr.brave.com"),
+            HostEntry(0x00086432L, "crashpad.chromium.org"),
+            HostEntry(0x004816d1L, "crashpad.chromium.org"),
+            HostEntry(0x001e1dadL, "variations.brave.com"),
+            HostEntry(0x0030e4dfL, "variations.brave.com"),
         )
 
         val redirectionIp = "0.0.0.0".toByteArray(Charsets.US_ASCII)

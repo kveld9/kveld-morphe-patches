@@ -21,7 +21,7 @@
           "signatures": null,
           "targets": [
             {
-              "version": "1.93.136",
+              "version": "1.93.137",
               "versionCodes": null,
               "isExperimental": false,
               "minSdk": null,
@@ -47,7 +47,7 @@
           "signatures": null,
           "targets": [
             {
-              "version": "1.93.136",
+              "version": "1.93.137",
               "versionCodes": null,
               "isExperimental": false,
               "minSdk": null,
@@ -75,7 +75,7 @@
           "signatures": null,
           "targets": [
             {
-              "version": "1.93.136",
+              "version": "1.93.137",
               "versionCodes": null,
               "isExperimental": false,
               "minSdk": null,
@@ -101,7 +101,7 @@
           "signatures": null,
           "targets": [
             {
-              "version": "1.93.136",
+              "version": "1.93.137",
               "versionCodes": null,
               "isExperimental": false,
               "minSdk": null,
