@@ -122,7 +122,7 @@ object Constants {
         targets = listOf(
             AppTarget(
                 version = BRAVE_TARGET_VERSION,
-                description = "Descargar v1.93.137 desde github.com/brave/brave-browser/releases"
+                description = "Download v1.93.137 from github.com/brave/brave-browser/releases"
             )
         )
     )
