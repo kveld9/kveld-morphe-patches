@@ -6,12 +6,23 @@ body:
   - type: markdown
     attributes:
       value: |
-        # Brave Origin Patches bug report
+        # Morphe Patches bug report
 
         Before creating a new bug report, please keep the following in mind:
 
-        - **Do not submit a duplicate bug report**: Search for existing bug reports [here](https://github.com/kveld9/brave-patches/issues?q=label%3A%22Bug+report%22).
+        - **Do not submit a duplicate bug report**: Search for existing bug reports [here](https://github.com/kveld9/morphe-patches/issues?q=label%3A%22Bug+report%22).
         - **Review existing issues**: Make sure your bug report includes all requested information.
+  - type: dropdown
+    id: app
+    attributes:
+      label: Target App
+      description: Which app are you reporting an issue for?
+      options:
+        - Brave Browser
+        - Gboard Lite
+        - Universal / Other
+    validations:
+      required: true
   - type: textarea
     attributes:
       label: Bug description

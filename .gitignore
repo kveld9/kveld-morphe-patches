@@ -118,6 +118,11 @@ gradle-app.setting
 *.apkm
 *.xapk
 *.mpp
+*.mpe
+
+# Morphe patcher execution & decompilation cache
+morphe-temporary-files/
+**/morphe-temporary-files/
 
 # Ignore vscode & kotlin daemon config
 .vscode/
@@ -125,6 +130,11 @@ gradle-app.setting
 
 # Dependency directories
 node_modules/
+
+# Python caches
+__pycache__/
+*.py[cod]
+*$py.class
 
 # Local sensitive configuration and credentials
 local.properties

@@ -20,4 +20,20 @@ object Constants {
             )
         )
     )
+
+    const val GBOARD_PACKAGE_NAME = "com.google.android.inputmethod.latin"
+    const val GBOARD_TARGET_VERSION = "18.0.3.954559732-lite_beta-arm64-v8a"
+
+    val COMPATIBILITY_GBOARD = Compatibility(
+        name = "Gboard Lite",
+        packageName = GBOARD_PACKAGE_NAME,
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0x4285F4,
+        targets = listOf(
+            AppTarget(
+                version = GBOARD_TARGET_VERSION,
+                description = "Gboard Lite beta 18.0.3"
+            )
+        )
+    )
 }

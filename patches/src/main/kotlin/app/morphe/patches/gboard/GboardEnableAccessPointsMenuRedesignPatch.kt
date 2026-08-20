@@ -1,0 +1,30 @@
+package app.morphe.patches.gboard
+
+import app.morphe.patcher.Fingerprint
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patcher.string
+import app.morphe.patches.shared.Constants
+
+val gboardEnableAccessPointsMenuRedesignPatch = bytecodePatch(
+    name = "Enable Access Points Menu Redesign",
+    description = "Enables the redesigned access points menu bar and customization panel (Panel V2).",
+    default = true,
+) {
+    compatibleWith(Constants.COMPATIBILITY_GBOARD)
+
+    execute {
+        val fingerprint = Fingerprint(
+            definingClass = "Lpxs;",
+            name = "<clinit>",
+            returnType = "V",
+            filters = listOf(string("enable_access_points_menu_redesign")),
+        )
+
+        val matchIndex = fingerprint.instructionMatches.first().index
+        fingerprint.method.addInstructions(
+            matchIndex + 2,
+            "const/4 v3, 0x1",
+        )
+    }
+}

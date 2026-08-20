@@ -155,9 +155,7 @@ def spoiler(label, count, targets, tbl, expanded=False):
 
 def build_content(expanded=False):
     """Build the full generated patches section."""
-    lines = [
-        f"> **v{ver}**&nbsp;&nbsp;•&nbsp;&nbsp;`{branch}`&nbsp;&nbsp;•&nbsp;&nbsp;{total} patches total"
-    ]
+    lines = []
 
     # One spoiler per app, in the order they appear in the JSON
     for pkg, entry in by_pkg.items():
