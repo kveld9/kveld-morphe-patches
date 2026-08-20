@@ -1,21 +1,65 @@
-# 🦁 Brave Origin Patches
+<p align="center">
+  <img src="https://img.shields.io/badge/Platform-Android-3DDC84?style=for-the-badge&logo=android&logoColor=white" />
+  <img src="https://img.shields.io/badge/Target-Brave_Browser_v1.93.136-FF4500?style=for-the-badge&logo=brave&logoColor=white" />
+  <img src="https://img.shields.io/badge/License-GPLv3-blue?style=for-the-badge" />
+</p>
 
-Custom Morphe patch suite for Brave Browser on Android.
+<h1 align="center">🦁 Brave Patches</h1>
 
-## ❓ About
+<p align="center">
+  Custom Morphe patch suite for <b>Brave Browser</b> on Android — Brave Origin feature unlock, multi-layer telemetry blocking, and background/startup performance optimizations.
+</p>
 
-This repository provides patches for **Brave Browser** focused on unlocking features, privacy hardening, and performance improvements:
+<p align="center">
+  <a href="https://morphe.software/add-source?github=kveld9/brave-patches"><img src="https://img.shields.io/badge/Morphe_Manager-Add_Patch_Source-8A2BE2?style=for-the-badge&logo=android" /></a>
+  <a href="https://github.com/kveld9/brave-patches/releases"><img src="https://img.shields.io/badge/Releases-Latest-green?style=for-the-badge&logo=github" /></a>
+</p>
 
-* **Brave Origin**: Unlocks Brave Origin features and enables local feature policy toggle controls.
-* **Block Brave Telemetry**: Disables P3A product analytics, Brave Stats usage pings, crash dump uploads (Crashpad), WDP, and Variations seed network fetching.
-* **Brave Startup Performance Optimization**: Eliminates background CPU and disk overhead during startup by bypassing unused OEM carrier partner customizations.
-* **Brave In-Product Notification Scheduler Optimization**: Prevents periodic background wakeups and native library loading triggered by in-product tips/promo tasks (Job ID 105).
+---
 
-### 📲 How to use these patches in Morphe
+## 📖 About
 
-Click the link below to add this repository directly to Morphe Manager:
+This repository provides custom, community-developed bytecode, native, and resource patches for **Brave Browser** using the **[Morphe](https://morphe.software)** patcher framework.
 
-👉 [Add Brave Origin Patches to Morphe](https://morphe.software/add-source?github=kveld9/brave-origin-patches)
+### 📲 Add to Morphe Manager
+
+Click the button below or add `kveld9/brave-patches` in Morphe Manager patch sources:
+
+👉 **[Add Brave Patches to Morphe](https://morphe.software/add-source?github=kveld9/brave-patches)**
+
+---
+
+## ✨ Features & Patches
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+### 🔓 Brave Origin Unlock
+* **Feature Policy Gatekeepers** — Unlocks Brave Origin and enables local feature controls for Rewards, News, Wallet, VPN, and Leo AI.
+* **Persistent Preferences** — Saves toggle states locally in SharedPreferences.
+* **Clean UI Defaults** — Enables Origin switches by default in layout XMLs.
+
+### 🛡️ Block Brave Telemetry (Multi-Layer)
+* **Resource Defaults** — Defaults P3A, Stats, and WDP switches to `false` in preferences XML.
+* **Native Hardening (`libchrome.so` ARM64)** — Neutralizes P3A scheduler init, Brave Stats upload branches, and WDP search host extractor.
+* **DNS / Hosts Redirection** — Redirects 10 diagnostic/telemetry domains to `0.0.0.0` (BSG, WDP, Crashpad, Variations, CR).
+* **Bytecode Blocking** — Aborts Crashpad minidump uploads, Variations seed network connections, and forces PrefService telemetry checks to `false`.
+
+</td>
+<td width="50%" valign="top">
+
+### ⚡ Startup Performance Optimization
+* **Bypass Carrier / Partner Customizations** — Neutralizes `PartnerBrowserCustomizations.initializeAsync`.
+* **Zero Overhead** — Eliminates main-thread SharedPreferences reads, background ThreadPool tasks, ContentResolver queries, and 10s timeout handlers during cold start.
+
+### 🔕 In-Product Notification Scheduler Optimization
+* **Neutralize Job ID 105** — Prevents Chromium C++ tips/promo scheduler from scheduling background jobs in Android `JobScheduler`.
+* **Prevent Unnecessary Wakeups** — Immediately cancels existing persisted tasks to avoid background native library loading (`libmonochrome_64.so`).
+
+</td>
+</tr>
+</table>
 
 ---
 
@@ -58,10 +102,10 @@ The compiled patch bundle (`.mpp`) will be generated at:
 patches/build/libs/patches-*.mpp
 ```
 
-You can then apply the `.mpp` file using [Morphe Desktop](https://github.com/MorpheApp/morphe-desktop) or Morphe Manager.
+Apply the `.mpp` file using [Morphe Desktop](https://github.com/MorpheApp/morphe-desktop) or Morphe Manager.
 
 ---
 
 ## 📜 License
 
-Brave Origin Patches are licensed under the [GNU General Public License v3.0](LICENSE).
+Brave Patches are licensed under the [GNU General Public License v3.0](LICENSE).
