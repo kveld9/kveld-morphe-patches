@@ -9,13 +9,14 @@ object Constants {
     const val BRAVE_PACKAGE_NAME = "com.brave.browser"
 
     val COMPATIBILITY_BRAVE = Compatibility(
-        name = "Brave Browser",
+        name = "Brave Private Web Browser, VPN",
         packageName = BRAVE_PACKAGE_NAME,
         apkFileType = ApkFileType.APKM,
         appIconColor = 0xFF4500,
         targets = listOf(
             AppTarget(
-                version = BRAVE_TARGET_VERSION
+                version = BRAVE_TARGET_VERSION,
+                description = "Descargar v1.93.137 desde github.com/brave/brave-browser/releases"
             )
         )
     )
