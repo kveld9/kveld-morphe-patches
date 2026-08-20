@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "patches": [
     {
       "name": "Block Brave Telemetry",
@@ -14,7 +14,7 @@
       "compatiblePackages": [
         {
           "packageName": "com.brave.browser",
-          "name": "Brave Browser",
+          "name": "Brave Private Web Browser, VPN",
           "description": null,
           "apkFileType": "APKM",
           "appIconColor": "#FF4500",
@@ -40,7 +40,7 @@
       "compatiblePackages": [
         {
           "packageName": "com.brave.browser",
-          "name": "Brave Browser",
+          "name": "Brave Private Web Browser, VPN",
           "description": null,
           "apkFileType": "APKM",
           "appIconColor": "#FF4500",
@@ -68,7 +68,7 @@
       "compatiblePackages": [
         {
           "packageName": "com.brave.browser",
-          "name": "Brave Browser",
+          "name": "Brave Private Web Browser, VPN",
           "description": null,
           "apkFileType": "APKM",
           "appIconColor": "#FF4500",
@@ -94,7 +94,7 @@
       "compatiblePackages": [
         {
           "packageName": "com.brave.browser",
-          "name": "Brave Browser",
+          "name": "Brave Private Web Browser, VPN",
           "description": null,
           "apkFileType": "APKM",
           "appIconColor": "#FF4500",
