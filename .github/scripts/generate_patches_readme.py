@@ -224,4 +224,9 @@ new_readme = re.sub(
     flags=re.DOTALL,
 )
 readme_path.write_text(new_readme, encoding="utf-8")
-print(f"✅ Injected patches section into {readme_path} (v{ver}, branch={branch}, {total} patches, expanded={expanded})")
+if sys.stdout.encoding and sys.stdout.encoding.lower() not in ("utf-8", "utf8"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+print(f"Injected patches section into {readme_path} (v{ver}, branch={branch}, {total} patches, expanded={expanded})")

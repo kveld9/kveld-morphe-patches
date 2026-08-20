@@ -1,14 +1,13 @@
-group = "app.template"
+group = "com.kveld9.morphe"
 
 patches {
-    // TODO: Update this section with your project details.
     about {
-        name = "UserXYZ Patches"
-        description = "Patches for apps I like"
-        source = "git@github.com:UserXYZ/morphe-patches.git"
-        author = "Awesome dev"
-        contact = "na"
-        website = "na"
+        name = "Brave Patches"
+        description = "Patches for Brave Browser: Brave Origin unlock, telemetry blocking, and performance optimizations."
+        source = "https://github.com/kveld9/brave-patches"
+        author = "kveld9"
+        contact = "https://github.com/kveld9/brave-patches/issues"
+        website = "https://github.com/kveld9/brave-patches"
         license = "GPLv3"
     }
 }
