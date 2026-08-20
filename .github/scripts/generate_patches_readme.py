@@ -75,22 +75,33 @@ def anchor(name):
 
 
 def patches_table(patches):
-    """Render a sorted markdown table of patches with name, description, and options."""
-    rows = [
-        "| 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |",
-        "|----------|----------------|-----------|",
-    ]
-    for p in sorted(patches, key=lambda x: x["name"]):
-        a = anchor(p["name"])
-        options = p.get("options") or []
-        if options:
-            # Show only option titles as a bullet list
-            parts = [opt.get("title") or opt.get("key") or "" for opt in options]
-            opts_cell = "<br>".join(f"• {t}" for t in parts)
-        else:
-            opts_cell = ""
-        desc = (p.get("description") or "").replace("\n", "<br>")
-        rows.append(f"| [{p['name']}](#{a}) | {desc} | {opts_cell} |")
+    """Render a sorted markdown table of patches with name, description, and options (if any)."""
+    has_options = any(p.get("options") for p in patches)
+    if has_options:
+        rows = [
+            "| 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |",
+            "|----------|----------------|-----------|",
+        ]
+        for p in sorted(patches, key=lambda x: x["name"]):
+            a = anchor(p["name"])
+            options = p.get("options") or []
+            if options:
+                # Show only option titles as a bullet list
+                parts = [opt.get("title") or opt.get("key") or "" for opt in options]
+                opts_cell = "<br>".join(f"• {t}" for t in parts)
+            else:
+                opts_cell = ""
+            desc = (p.get("description") or "").replace("\n", "<br>")
+            rows.append(f"| [{p['name']}](#{a}) | {desc} | {opts_cell} |")
+    else:
+        rows = [
+            "| 💊&nbsp;Patch | 📜&nbsp;Description |",
+            "|----------|----------------|",
+        ]
+        for p in sorted(patches, key=lambda x: x["name"]):
+            a = anchor(p["name"])
+            desc = (p.get("description") or "").replace("\n", "<br>")
+            rows.append(f"| [{p['name']}](#{a}) | {desc} |")
     return "\n".join(rows)
 
 
@@ -145,9 +156,7 @@ def spoiler(label, count, targets, tbl, expanded=False):
 def build_content(expanded=False):
     """Build the full generated patches section."""
     lines = [
-        f"> **[v{ver}](https://github.com/{owner}/{repo}/releases/tag/v{ver})**"
-        f"&nbsp;&nbsp;•&nbsp;&nbsp;`{branch}`&nbsp;&nbsp;•&nbsp;&nbsp;"
-        f"{total} patches total"
+        f"> **v{ver}**&nbsp;&nbsp;•&nbsp;&nbsp;`{branch}`&nbsp;&nbsp;•&nbsp;&nbsp;{total} patches total"
     ]
 
     # One spoiler per app, in the order they appear in the JSON
