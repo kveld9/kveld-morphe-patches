@@ -131,4 +131,5 @@ python .github/scripts/generate_patches_readme.py kveld9/morphe-patches main pat
 ```
 
 ### Code Formatter
-- `NO DISPONIBLE` (No automatic formatting plugin configured in Gradle; enforce standard Kotlin coding conventions manually).
+- `None` (No automatic formatting plugin configured in Gradle; enforce standard Kotlin coding conventions manually).
+
