@@ -113,18 +113,25 @@ gradle-app.setting
 # # Work around https://youtrack.jetbrains.com/issue/IDEA-116898
 # gradle/wrapper/gradle-wrapper.properties
 
-# Potentially copyrighted test APK
+# Potentially copyrighted test APKs & packages
 *.apk
+*.apkm
+*.xapk
+*.mpp
 
-# Ignore vscode config
+# Ignore vscode & kotlin daemon config
 .vscode/
+.kotlin/
 
 # Dependency directories
 node_modules/
 
-# gradle properties, due to Github token
-./gradle.properties
+# Local sensitive configuration and credentials
+local.properties
 
 # Ignore IDEA files
 .idea/
-local.properties
+
+# OS metadata
+.DS_Store
+Thumbs.db
