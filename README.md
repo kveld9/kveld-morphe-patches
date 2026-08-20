@@ -87,7 +87,7 @@ Implements a **4-layer defense in depth** architecture against tracking and diag
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **v1.0.0**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;4 patches total
+> **v1.1.0**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;4 patches total
 <details open>
 <summary>📦 Brave Private Web Browser, VPN&nbsp;&nbsp;•&nbsp;&nbsp;4 patches</summary>
 <br>

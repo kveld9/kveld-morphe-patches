@@ -1,3 +1,9 @@
+## [1.1.0](https://github.com/kveld9/brave-patches/compare/v1.0.1...v1.1.0) (2026-08-20)
+
+### ✨ New Features
+
+* target Brave v1.93.137 and add GitHub releases source note ([c4fa325](https://github.com/kveld9/brave-patches/commit/c4fa3257f674ecf6eb3a8ee47a9f7edb96ebc21b))
+
 ## [1.0.1](https://github.com/kveld9/brave-patches/compare/v1.0.0...v1.0.1) (2026-08-20)
 
 ### 🚀 Updated App Support
