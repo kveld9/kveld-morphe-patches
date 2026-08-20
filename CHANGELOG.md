@@ -1,3 +1,9 @@
+## [1.0.1](https://github.com/kveld9/brave-patches/compare/v1.0.0...v1.0.1) (2026-08-20)
+
+### 🚀 Updated App Support
+
+* update Brave support to v1.93.137 ([4445496](https://github.com/kveld9/brave-patches/commit/4445496720efe316358f1c566450ddaa335dcc00))
+
 ## 1.0.0 (2026-08-20)
 
 ### ✨ New Features
