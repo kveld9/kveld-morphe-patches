@@ -103,15 +103,15 @@ Click the badge above or add `kveld9/morphe-patches` directly into your Morphe M
 
 ## ⚠️ Known Issues & Important Notes
 
-### ⌨️ Predictive Text / Suggestions in Gboard Lite (Fresh Installations)
+### ⌨️ Predictive Text & Glide Typing in Gboard Lite (Fresh Installations)
 
 > [!IMPORTANT]
-> **Gboard Lite does not bundle language dictionaries or prediction models inside the APK.**
+> **Gboard Lite does not bundle language dictionaries, predictive text models, or gesture/glide typing decoding models inside the APK.**
 > Unlike the full Gboard APK, Gboard Lite downloads language models on-demand upon first launch via Google's **MDD (Mobile Data Download)** and **Superpacks** subsystems.
 
-If you perform a clean install of Gboard Lite with background sync debloat patches enabled, Gboard will be prevented from downloading the initial dictionary pack for your language, resulting in an empty suggestion bar and no predictive text.
+If you perform a clean install of Gboard Lite with background sync debloat patches enabled, Gboard will be prevented from downloading the initial dictionary and gesture model pack for your language. This results in an empty suggestion bar, no predictive text, and **Glide Typing (swipe to type) not working**.
 
-#### 🔧 How to set up Gboard Lite with working predictive text:
+#### 🔧 How to set up Gboard Lite with working predictive text & glide typing:
 
 1. **When patching for a clean install (or when adding new languages):**
    - **Temporarily uncheck:**
@@ -120,7 +120,7 @@ If you perform a clean install of Gboard Lite with background sync debloat patch
      - ❌ `Disable WorkManager`
    - *(Also ensure `Force Incognito Mode` is unchecked if you want personalized learning and history).*
 2. **Open Gboard once with an active Internet connection:**
-   - Type a few words or navigate to *Gboard Settings > Languages* so it downloads your language dictionary pack into local storage (`/data/data/...`).
+   - Type a few words, test a swipe gesture, or navigate to *Gboard Settings > Languages* so it downloads your language dictionary and gesture pack into local storage (`/data/data/...`).
 3. **Re-apply debloat patches (Optional):**
    - Once your language packs are cached locally on device, you can re-patch with `Disable MDD Background Sync`, `Disable Superpacks Eager Sync`, and `Disable WorkManager` to freeze background network traffic and disk polling.
 
