@@ -133,3 +133,24 @@ python .github/scripts/generate_patches_readme.py kveld9/morphe-patches main pat
 ### Code Formatter
 - `None` (No automatic formatting plugin configured in Gradle; enforce standard Kotlin coding conventions manually).
 
+---
+
+## 6. Automated Patches Update Harness (Brave & Gboard)
+
+When updating Morphe patches for a newly released APK:
+
+```bash
+# 1. Non-destructive audit and reverse engineering analysis
+python harness/update.py <path-to-apk> --audit
+
+# 2. Minimal source update, build, and catalog sync
+python harness/update.py <path-to-apk> --update
+
+# 3. Run harness unit & integration tests
+python -m unittest discover harness/tests
+```
+
+The harness automatically identifies the package (`com.brave.browser` vs `com.google.android.inputmethod.latin`), applies the corresponding contracts, enforces AMOLED theme duplication invariants, validates AST fingerprints, updates `Constants.kt`, and runs full Gradle and metadata verification.
+
+
+
