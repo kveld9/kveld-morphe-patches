@@ -124,6 +124,10 @@ gradle-app.setting
 morphe-temporary-files/
 **/morphe-temporary-files/
 
+# Harness generated reports and differentials
+*_HARNESS_REPORT.md
+APK_DIFF.md
+
 # Ignore vscode & kotlin daemon config
 .vscode/
 .kotlin/
