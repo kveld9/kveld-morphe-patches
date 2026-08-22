@@ -1,3 +1,9 @@
+## [1.4.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.3.0...v1.4.0) (2026-08-22)
+
+### ✨ New Features
+
+* **gboard:** add Clone Gboard patch, tune recommended defaults, and fix Lottie crash ([9e5a4b3](https://github.com/kveld9/kveld-morphe-patches/commit/9e5a4b36dd7d5f807054a027643d70736de2dcd6))
+
 ## [1.3.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.2.0...v1.3.0) (2026-08-22)
 
 ### ✨ New Features
