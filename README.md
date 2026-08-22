@@ -132,14 +132,14 @@ If you perform a clean install of Gboard Lite with background sync debloat patch
 ### ⌨️ Gboard Lite: Required Target APK Variant (APKMirror)
 
 > [!IMPORTANT]
-> **Always download the standalone `lite_beta-arm64-v8a` APK (nodpi) from [APKMirror](https://www.apkmirror.com/apk/google-inc/gboard/):**
-> * **Variant Name**: `18.0.3.954559732-lite_beta-arm64-v8a`
+> **Always download the standalone `lite` / `lite_beta` 64-bit APK (nodpi) from [APKMirror](https://www.apkmirror.com/apk/google-inc/gboard/):**
+> * **Current Target**: `18.0.3.954559732-lite_beta-arm64-v8a`
 > * **Format**: `APK` *(Do **NOT** download `BUNDLE` / split packages)*
 > * **Architecture**: `arm64-v8a`
 > * **Screen DPI**: `nodpi`
 
-#### ❓ Why `lite_beta-arm64-v8a`?
-* **Lite Subsystem**: Gboard Lite has a distinct, streamlined codebase without bulky pre-bundled dictionaries. Standard/full Gboard APKs use different internal class layouts that fail AST fingerprint assertions (AMOLED theme, Free Cursor 2D, and debloat hooks).
+#### ❓ Why Gboard Lite?
+* **Lite Architecture**: Gboard Lite has a distinct, streamlined codebase designed for a lightweight footprint without bulky pre-bundled dictionaries. Standard/full Gboard APKs use different internal class layouts that fail AST fingerprint assertions (AMOLED theme, Free Cursor 2D, and debloat hooks).
 * **Standalone APK**: Morphe Manager requires a standalone `.apk` package; split `BUNDLE` downloads cannot be patched directly.
 
 ---
