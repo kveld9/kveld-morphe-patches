@@ -22,7 +22,7 @@ from harness.migration.validator import PatchAuditResult, PatchStatus
 
 
 class GboardAdversarialValidator:
-    """Rigorous validator ensuring all 16 Gboard patch contracts are verified."""
+    """Rigorous validator ensuring all 18 Gboard patch contracts are verified."""
 
     def __init__(self, repo_root: str | Path, metadata: ApkMetadata, dex_index: DexIndex, apk_path: str | Path):
         self.repo_root = Path(repo_root).resolve()

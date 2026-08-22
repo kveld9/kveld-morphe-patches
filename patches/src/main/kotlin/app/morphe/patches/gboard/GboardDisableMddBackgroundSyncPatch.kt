@@ -8,7 +8,7 @@ import app.morphe.patches.shared.Constants
 val gboardDisableMddBackgroundSyncPatch = bytecodePatch(
     name = "Disable MDD Background Sync",
     description = "Neutralizes Mobile Data Download (MDD) periodic background synchronization, automated polling, and prefetch worker tasks while preserving on-demand and user-requested downloads.",
-    default = true,
+    default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
 

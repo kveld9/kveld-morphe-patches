@@ -52,7 +52,7 @@ Click the badge above or add `kveld9/kveld-morphe-patches` directly into your Mo
 
 <!-- PATCHES_START EXPANDED -->
 <details open>
-<summary>📦 Gboard Lite&nbsp;&nbsp;•&nbsp;&nbsp;17 patches</summary>
+<summary>📦 Gboard Lite&nbsp;&nbsp;•&nbsp;&nbsp;18 patches</summary>
 <br>
 
 **🎯 Supported versions:**
@@ -65,6 +65,7 @@ Click the badge above or add `kveld9/kveld-morphe-patches` directly into your Mo
 | [Add AMOLED Theme](#add-amoled-theme) | Adds a selectable Pure Black AMOLED theme using Gboard's native color_black theme package, without replacing Dark, Light, System Auto, or Dynamic Color. |  |
 | [Allow Modified APK](#allow-modified-apk) | Bypasses internal signature check to allow custom APK execution. |  |
 | [Block Telemetry](#block-telemetry) | Disables background metrics dispatch, event logging, daily pings, and crash reporting. |  |
+| [Clone Gboard](#clone-gboard) | Changes the package name by appending a dot and custom suffix (defaults to 'kveld') to allow installing Gboard alongside the original application. | • Package name suffix |
 | [Disable Diagnostics](#disable-diagnostics) | Disables Google's diagnostic and recovery telemetry. |  |
 | [Disable Google Primes](#disable-google-primes) | Neutralizes Google Primes performance profiling, jank monitoring, native crash sidecars, and background telemetry threads. |  |
 | [Disable In-App Training](#disable-in-app-training) | Neutralizes periodic in-app training cache generation and federated-learning background work while preserving normal keyboard functionality and explicit user-requested operations. |  |

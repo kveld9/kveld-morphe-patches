@@ -8,7 +8,7 @@ import app.morphe.patches.shared.Constants
 val gboardForceIncognitoPatch = bytecodePatch(
     name = "Force Incognito Mode",
     description = "Forces Gboard to always operate in incognito mode, disabling personalized learning and persistent input logging across all sessions.",
-    default = true,
+    default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
 

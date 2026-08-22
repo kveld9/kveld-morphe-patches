@@ -19,7 +19,7 @@ Target APK (Brave or Gboard)
      ↓
 [harness/core/symbols.py]      ➜ Obfuscated Symbol Resolution (Structural callers, types, opcodes)
      ↓
-[harness/gboard/contracts.py]  ➜ 16 Gboard Declarative Patch Contracts & Invariants
+[harness/gboard/contracts.py]  ➜ 18 Gboard Declarative Patch Contracts & Invariants
      ↓
 [harness/gboard/themes.py]     ➜ AMOLED & Theme Duplication Safety Auditor
      ↓

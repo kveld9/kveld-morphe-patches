@@ -8,7 +8,7 @@ import app.morphe.patches.shared.Constants
 val gboardDisableWorkManagerPatch = bytecodePatch(
     name = "Disable WorkManager",
     description = "Neutralizes background WorkManager initialization, database creation, and periodic maintenance workers.",
-    default = true,
+    default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
 

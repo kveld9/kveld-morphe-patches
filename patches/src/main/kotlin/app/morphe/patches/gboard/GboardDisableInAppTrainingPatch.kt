@@ -8,7 +8,7 @@ import app.morphe.patches.shared.Constants
 val gboardDisableInAppTrainingPatch = bytecodePatch(
     name = "Disable In-App Training",
     description = "Neutralizes periodic in-app training cache generation and federated-learning background work while preserving normal keyboard functionality and explicit user-requested operations.",
-    default = true,
+    default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
 
