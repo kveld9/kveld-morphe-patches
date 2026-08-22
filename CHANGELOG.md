@@ -1,3 +1,9 @@
+## [1.3.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.2.0...v1.3.0) (2026-08-22)
+
+### ✨ New Features
+
+* **patches:** add new slimming patches and update Brave support to v1.93.138 ([690339f](https://github.com/kveld9/kveld-morphe-patches/commit/690339f78009eed2d7afb9ff0f7d1ae24c016fab))
+
 ## [1.2.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.1.0...v1.2.0) (2026-08-20)
 
 ### ✨ New Features
