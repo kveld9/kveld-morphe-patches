@@ -323,7 +323,7 @@ val braveOriginPatch = bytecodePatch(
                     move-result-object v2
                     :write_done
                     invoke-interface {v2}, Landroid/content/SharedPreferences${'$'}Editor;->apply()V
-                    invoke-virtual {p0}, Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;->e5()V
+                    invoke-virtual {p0}, Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;->a5()V
                     :no_key
                     const/4 v0, 0x1
                     return v0

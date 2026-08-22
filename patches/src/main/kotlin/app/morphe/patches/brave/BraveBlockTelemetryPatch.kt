@@ -54,73 +54,6 @@ private val braveTelemetryResourcePatch = resourcePatch(
     }
 }
 
-// ── Native Patch: Neutralizes P3A, Stats, and WDP branches in libchrome.so (ARM64) ─────
-private val braveNativeTelemetryPatch = rawResourcePatch(
-    name = "Brave Native Telemetry Patch",
-    description = "Patches ARM64 branches in libchrome.so to abort P3A, Stats, and WDP network dispatch.",
-    default = false,
-) {
-    compatibleWith(Constants.COMPATIBILITY_BRAVE)
-
-    execute {
-        val soFile = get("lib/arm64-v8a/libchrome.so")
-        if (!soFile.exists()) {
-            return@execute
-        }
-
-        data class NativeGate(
-            val name: String,
-            val offset: Long,
-            val expectedOriginal: ByteArray,
-            val replacement: ByteArray,
-        )
-
-        val gates = listOf(
-            // Gate 1: P3A (P3AService::InitScheduler) -> force branch to abort path 0x0ab8aaac
-            NativeGate(
-                name = "P3A Native Gate",
-                offset = 0x0ab8abe0L,
-                expectedOriginal = byteArrayOf(0x60.toByte(), 0xf6.toByte(), 0x07.toByte(), 0x36.toByte()),
-                replacement = byteArrayOf(0xb3.toByte(), 0xff.toByte(), 0xff.toByte(), 0x17.toByte()),
-            ),
-            // Gate 2: Brave Stats (BraveStatsUpdater::Start) -> nop the start upload branch
-            NativeGate(
-                name = "Brave Stats Native Gate",
-                offset = 0x0c3aa0e8L,
-                expectedOriginal = byteArrayOf(0xc0.toByte(), 0x0b.toByte(), 0x00.toByte(), 0x37.toByte()),
-                replacement = byteArrayOf(0x1f.toByte(), 0x20.toByte(), 0x03.toByte(), 0xd5.toByte()),
-            ),
-            // Gate 3: WDP (BraveSearchDefaultHostExtractor) -> force branch to skip path 0x0c3e9394
-            NativeGate(
-                name = "WDP Native Gate",
-                offset = 0x0c3e9388L,
-                expectedOriginal = byteArrayOf(0x60.toByte(), 0x00.toByte(), 0x00.toByte(), 0x36.toByte()),
-                replacement = byteArrayOf(0x03.toByte(), 0x00.toByte(), 0x00.toByte(), 0x14.toByte()),
-            ),
-        )
-
-        RandomAccessFile(soFile, "rw").use { raf ->
-            val buf = ByteArray(4)
-            for (gate in gates) {
-                if (gate.offset + 4 > raf.length()) {
-                    throw PatchException("Offset 0x${gate.offset.toString(16)} for ${gate.name} out of bounds in libchrome.so")
-                }
-                raf.seek(gate.offset)
-                raf.readFully(buf)
-                if (!buf.contentEquals(gate.expectedOriginal)) {
-                    throw PatchException(
-                        "Fingerprint mismatch for ${gate.name} at 0x${gate.offset.toString(16)}. " +
-                            "Expected: ${gate.expectedOriginal.joinToString(" ") { "%02x".format(it) }}, " +
-                            "Found: ${buf.joinToString(" ") { "%02x".format(it) }}",
-                    )
-                }
-                raf.seek(gate.offset)
-                raf.write(gate.replacement)
-            }
-        }
-    }
-}
-
 // ── Hosts Blocker Patch: Redirects all 10 telemetry domain strings to 0.0.0.0 in libchrome.so ─────
 private val braveHostsBlockerPatch = rawResourcePatch(
     name = "Brave Hosts Blocker Layer",
@@ -141,18 +74,18 @@ private val braveHostsBlockerPatch = rawResourcePatch(
         )
 
         val hostEntries = listOf(
-            HostEntry(0x001e209bL, "star-randsrv.bsg.brave.com"),
-            HostEntry(0x001e20ccL, "collector.bsg.brave.com"),
-            HostEntry(0x001e2103L, "usage-ping.brave.com"),
-            HostEntry(0x001e1f26L, "patterns.wdp.brave.com"),
-            HostEntry(0x001e1f3dL, "collector.wdp.brave.com"),
-            HostEntry(0x001e1f55L, "star.wdp.brave.com"),
-            HostEntry(0x001e1f68L, "quorum.wdp.brave.com"),
-            HostEntry(0x001e1f19L, "cr.brave.com"),
-            HostEntry(0x00086432L, "crashpad.chromium.org"),
-            HostEntry(0x004816d1L, "crashpad.chromium.org"),
-            HostEntry(0x001e1dadL, "variations.brave.com"),
-            HostEntry(0x0030e4dfL, "variations.brave.com"),
+            HostEntry(0x001e205cL, "star-randsrv.bsg.brave.com"),
+            HostEntry(0x001e208dL, "collector.bsg.brave.com"),
+            HostEntry(0x001e20c4L, "usage-ping.brave.com"),
+            HostEntry(0x001e1ee7L, "patterns.wdp.brave.com"),
+            HostEntry(0x001e1efeL, "collector.wdp.brave.com"),
+            HostEntry(0x001e1f16L, "star.wdp.brave.com"),
+            HostEntry(0x001e1f29L, "quorum.wdp.brave.com"),
+            HostEntry(0x001e1edaL, "cr.brave.com"),
+            HostEntry(0x00086422L, "crashpad.chromium.org"),
+            HostEntry(0x0048173dL, "crashpad.chromium.org"),
+            HostEntry(0x001e1d6eL, "variations.brave.com"),
+            HostEntry(0x0030e512L, "variations.brave.com"),
         )
 
         val redirectionIp = "0.0.0.0".toByteArray(Charsets.US_ASCII)
@@ -195,7 +128,7 @@ val braveBlockTelemetryPatch = bytecodePatch(
 ) {
     compatibleWith(Constants.COMPATIBILITY_BRAVE)
 
-    dependsOn(braveTelemetryResourcePatch, braveNativeTelemetryPatch, braveHostsBlockerPatch)
+    dependsOn(braveTelemetryResourcePatch, braveHostsBlockerPatch)
 
     execute {
         // 1. Crash Upload: Primary point

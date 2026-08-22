@@ -50,6 +50,17 @@ def run_brave_pipeline(apk_ctx: ApkContext, mode: str, output_report: str | None
     meta = apk_ctx.get_metadata()
     print(f"🦁 Running Brave Patches Pipeline for {meta.package_name} v{meta.version_name}...")
 
+    apk_filename = apk_ctx.apk_path.name.lower()
+    is_mono_arm64 = "monoarm64" in apk_filename or ("monochrome" in apk_filename and "arm64" in apk_filename)
+    if not is_mono_arm64:
+        print(f"⚠️  WARNING: APK filename '{apk_ctx.apk_path.name}' does not indicate a Monochrome ARM64 build.")
+        print("⚠️  Morphe Patches targets 'Bravemonoarm64.apk'.")
+        print("⚠️  Other variants (Universal, Modern/Trichrome, x86/x64, 32-bit) have divergent R8 bytecode/offsets and will fail fingerprint checks.\n")
+
+    if not meta.has_arm64_libchrome:
+        print("⚠️  WARNING: 'lib/arm64-v8a/libchrome.so' not found in APK.")
+        print("⚠️  32-bit or non-ARM64 APKs are incompatible with native Brave patches.\n")
+
     repo_path = REPO_ROOT
     migrator = PatchMigrator(repo_path)
 
@@ -165,6 +176,16 @@ def run_brave_pipeline(apk_ctx: ApkContext, mode: str, output_report: str | None
 def run_gboard_pipeline(apk_ctx: ApkContext, mode: str, output_report: str | None, t0: float) -> int:
     meta = apk_ctx.get_metadata()
     print(f"⌨️ Running Gboard Lite Patches Pipeline for {meta.package_name} v{meta.version_name}...")
+
+    apk_filename = apk_ctx.apk_path.name.lower()
+    ver_lower = meta.version_name.lower()
+    is_lite = "lite" in apk_filename or "lite" in ver_lower
+    is_arm64 = "arm64" in apk_filename or "arm64" in ver_lower
+    if not is_lite:
+        print("⚠️  WARNING: APK does not appear to be a Gboard Lite variant.")
+        print("⚠️  Morphe Patches targets 'lite_beta-arm64-v8a' (standard Gboard has different DEX layouts).\n")
+    if not is_arm64:
+        print("⚠️  WARNING: APK does not appear to be ARM64-v8a architecture.\n")
 
     repo_path = REPO_ROOT
     migrator = PatchMigrator(repo_path)

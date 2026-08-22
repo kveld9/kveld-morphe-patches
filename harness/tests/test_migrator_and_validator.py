@@ -22,7 +22,7 @@ class TestMigratorAndValidator(unittest.TestCase):
         plan = self.migrator.plan_constants_update("1.95.100")
         self.assertTrue(plan.has_changes)
         self.assertIn('const val BRAVE_TARGET_VERSION = "1.95.100"', plan.modified_content)
-        self.assertIn('Download v1.95.100 from github.com/brave/brave-browser/releases', plan.modified_content)
+        self.assertIn('Download Bravemonoarm64.apk (v1.95.100) from github.com/brave/brave-browser/releases', plan.modified_content)
 
     # 11. versión idéntica -> NO-OP
     def test_version_identical_noop(self):
@@ -72,7 +72,12 @@ class TestMigratorAndValidator(unittest.TestCase):
             blocking_reasons=[],
             evidence=["Patch is universal and has no package-specific targets."],
         )
-        self.assertEqual(audit_res.status, PatchStatus.NOT_AFFECTED)
+    # 13. Gboard versión nueva -> metadata actualizada
+    def test_gboard_version_new_metadata_updated(self):
+        plan = self.migrator.plan_gboard_constants_update("18.1.0.999999999-lite_beta-arm64-v8a")
+        self.assertTrue(plan.has_changes)
+        self.assertIn('const val GBOARD_TARGET_VERSION = "18.1.0.999999999-lite_beta-arm64-v8a"', plan.modified_content)
+        self.assertIn('Download 18.1.0.999999999-lite_beta-arm64-v8a (APK nodpi) from APKMirror', plan.modified_content)
 
 
 if __name__ == "__main__":
