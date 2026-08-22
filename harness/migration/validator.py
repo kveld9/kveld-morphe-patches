@@ -5,7 +5,9 @@ Executes structural uniqueness assertions, native byte verification, and Gradle 
 
 from __future__ import annotations
 
+import os
 import subprocess
+import sys
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
@@ -73,7 +75,7 @@ class AdversarialValidator:
             FingerprintQuery(
                 name_id="origin_sync_package_product",
                 return_type="V",
-                parameters=["Ljava/lang/String;", "Lorg/chromium/chrome/browser/profiles/Profile;"],
+                parameters=["Lorg/chromium/chrome/browser/profiles/Profile;", "Ljava/lang/String;"],
                 strings=["brave.origin.package_name_android", "brave.origin.product_id_android"],
             ),
             FingerprintQuery(
@@ -295,8 +297,9 @@ class AdversarialValidator:
 
     def run_gradle_build_verification(self) -> Tuple[bool, str]:
         """Runs gradle check, buildAndroid, generatePatchesList and readme generator."""
-        cmd = ["./gradlew.bat", "check", "buildAndroid", "generatePatchesList"]
-        res = subprocess.run(cmd, cwd=str(self.repo_root), capture_output=True, text=True)
+        gradle_cmd = str(self.repo_root / ("gradlew.bat" if sys.platform.startswith("win") else "gradlew"))
+        cmd = [gradle_cmd, "check", "buildAndroid", "generatePatchesList"]
+        res = subprocess.run(cmd, cwd=str(self.repo_root), capture_output=True, text=True, shell=sys.platform.startswith("win"))
         if res.returncode != 0:
             return False, f"Gradle build failed:\n{res.stdout}\n{res.stderr}"
 

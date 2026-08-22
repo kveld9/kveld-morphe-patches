@@ -5,7 +5,9 @@ Executes contract assertions, theme duplication checks, and regression tests.
 
 from __future__ import annotations
 
+import os
 import subprocess
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
@@ -73,8 +75,9 @@ class GboardAdversarialValidator:
 
     def run_gradle_build_verification(self) -> Tuple[bool, str]:
         """Runs gradle check, buildAndroid, generatePatchesList and readme generator."""
-        cmd = ["./gradlew.bat", "check", "buildAndroid", "generatePatchesList"]
-        res = subprocess.run(cmd, cwd=str(self.repo_root), capture_output=True, text=True)
+        gradle_cmd = str(self.repo_root / ("gradlew.bat" if sys.platform.startswith("win") else "gradlew"))
+        cmd = [gradle_cmd, "check", "buildAndroid", "generatePatchesList"]
+        res = subprocess.run(cmd, cwd=str(self.repo_root), capture_output=True, text=True, shell=sys.platform.startswith("win"))
         if res.returncode != 0:
             return False, f"Gradle build failed:\n{res.stdout}\n{res.stderr}"
 

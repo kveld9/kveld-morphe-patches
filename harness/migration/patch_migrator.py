@@ -50,14 +50,14 @@ class PatchMigrator:
         if new_content != content:
             changes.append(f"Updated BRAVE_TARGET_VERSION to '{new_version}'")
 
-        # 2. description = "Download v... from github.com/brave/brave-browser/releases"
+        # 2. description = "Download Bravemonoarm64.apk (v...) from github.com/brave/brave-browser/releases"
         new_content2 = re.sub(
-            r'description = "Download v[^"]+ from github\.com/brave/brave-browser/releases"',
-            f'description = "Download v{new_version} from github.com/brave/brave-browser/releases"',
+            r'description = "Download (?:Bravemonoarm64\.apk \(v[^"]+\)|v[^"]+) from github\.com/brave/brave-browser/releases"',
+            f'description = "Download Bravemonoarm64.apk (v{new_version}) from github.com/brave/brave-browser/releases"',
             new_content
         )
         if new_content2 != new_content:
-            changes.append(f"Updated AppTarget description to 'v{new_version}'")
+            changes.append(f"Updated AppTarget description to 'Bravemonoarm64.apk (v{new_version})'")
 
         return MigrationPlan(self.constants_file, content, new_content2, changes)
 
@@ -74,16 +74,14 @@ class PatchMigrator:
         if new_content != content:
             changes.append(f"Updated GBOARD_TARGET_VERSION to '{new_version}'")
 
-        # 2. description = "Gboard Lite beta ..."
-        # Extract short version prefix e.g. 18.0.3
-        short_ver = new_version.split("-")[0] if "-" in new_version else new_version
+        # 2. description = "Download ... (APK nodpi) from APKMirror"
         new_content2 = re.sub(
-            r'description = "Gboard Lite beta [^"]+"',
-            f'description = "Gboard Lite beta {short_ver}"',
+            r'description = "(?:Download [^"]+ from APKMirror|Gboard Lite beta [^"]+)"',
+            f'description = "Download {new_version} (APK nodpi) from APKMirror"',
             new_content
         )
         if new_content2 != new_content:
-            changes.append(f"Updated Gboard AppTarget description to 'Gboard Lite beta {short_ver}'")
+            changes.append(f"Updated Gboard AppTarget description to 'Download {new_version} (APK nodpi) from APKMirror'")
 
         return MigrationPlan(self.constants_file, content, new_content2, changes)
 
@@ -99,7 +97,7 @@ class PatchMigrator:
 
         replacement_block = "        val hostEntries = listOf(\n" + "\n".join(entries_lines) + "\n        )"
 
-        pattern = r"        val hostEntries = listOf\([^)]*\)"
+        pattern = r"        val hostEntries = listOf\(.*?\n        \)"
         new_content = re.sub(pattern, replacement_block, content, flags=re.DOTALL)
         if new_content != content:
             changes.append(f"Updated {len(entries_lines)} HostEntry native offsets in libchrome.so")

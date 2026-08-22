@@ -2,12 +2,12 @@ group = "com.kveld9.morphe"
 
 patches {
     about {
-        name = "Brave Patches"
-        description = "Patches for Brave Browser: Brave Origin unlock, telemetry blocking, and performance optimizations."
-        source = "https://github.com/kveld9/brave-patches"
+        name = "kveld9 Patches"
+        description = "Morphe patches for Brave Browser and Gboard Lite: telemetry blocking, UI de-bloating, resource slimming, and performance optimizations."
+        source = "https://github.com/kveld9/kveld-morphe-patches"
         author = "kveld9"
-        contact = "https://github.com/kveld9/brave-patches/issues"
-        website = "https://github.com/kveld9/brave-patches"
+        contact = "https://github.com/kveld9/kveld-morphe-patches/issues"
+        website = "https://github.com/kveld9/kveld-morphe-patches"
         license = "GPLv3"
     }
 }

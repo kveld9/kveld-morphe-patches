@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <a href="https://morphe.software/add-source?github=kveld9/morphe-patches"><img src="https://img.shields.io/badge/Morphe_Manager-Add_Patch_Source-8A2BE2?style=for-the-badge&logo=android" /></a>
+  <a href="https://morphe.software/add-source?github=kveld9/kveld-morphe-patches"><img src="https://img.shields.io/badge/Morphe_Manager-Add_Patch_Source-8A2BE2?style=for-the-badge&logo=android" /></a>
 </p>
 
 ---
@@ -40,9 +40,9 @@ This repository provides modular, high-performance bytecode, resource, and nativ
 
 ### 📲 Add to Morphe Manager
 
-Click the badge above or add `kveld9/morphe-patches` directly into your Morphe Manager sources:
+Click the badge above or add `kveld9/kveld-morphe-patches` directly into your Morphe Manager sources:
 
-👉 **[Add Morphe Patches to Morphe Manager](https://morphe.software/add-source?github=kveld9/morphe-patches)**
+👉 **[Add Morphe Patches to Morphe Manager](https://morphe.software/add-source?github=kveld9/kveld-morphe-patches)**
 
 ---
 
@@ -50,7 +50,7 @@ Click the badge above or add `kveld9/morphe-patches` directly into your Morphe M
 
 <!-- PATCHES_START EXPANDED -->
 <details open>
-<summary>📦 Gboard Lite&nbsp;&nbsp;•&nbsp;&nbsp;16 patches</summary>
+<summary>📦 Gboard Lite&nbsp;&nbsp;•&nbsp;&nbsp;17 patches</summary>
 <br>
 
 **🎯 Supported versions:**
@@ -76,24 +76,27 @@ Click the badge above or add `kveld9/morphe-patches` directly into your Morphe M
 | [Enable Key Shape Selection](#enable-key-shape-selection) | Enables the key border shape selection UI (Default, Semi-rounded, Round) in theme customization. |
 | [Force Incognito Mode](#force-incognito-mode) | Forces Gboard to always operate in incognito mode, disabling personalized learning and persistent input logging across all sessions. |
 | [Hardened Intent Security](#hardened-intent-security) | Enables Gboard internal external intent protection against unauthorized intent hijacking. |
+| [Resource Slimmer](#resource-slimmer) | Strips embedded third-party license text, onboarding tutorial Lottie animations, and promotional GIFs using dynamic content heuristics. |
 
 </details>
 
 <details open>
-<summary>📦 Brave Private Web Browser, VPN&nbsp;&nbsp;•&nbsp;&nbsp;4 patches</summary>
+<summary>📦 Brave Private Web Browser, VPN&nbsp;&nbsp;•&nbsp;&nbsp;6 patches</summary>
 <br>
 
 **🎯 Supported versions:**
 
-| 1.93.137 |
+| 1.93.138 |
 | :---: |
 
-| 💊&nbsp;Patch | 📜&nbsp;Description |
-|----------|----------------|
-| [Block Brave Telemetry](#block-brave-telemetry) | Blocks P3A product analytics, Brave Stats usage pings, crash dump uploads, WDP, and Variations seed fetching. |
-| [Brave In-Product Notification Scheduler Optimization](#brave-in-product-notification-scheduler-optimization) | Eliminates periodic background wakeups and native library loading caused by Chromium in-product tips/promo scheduler (Job ID 105). |
-| [Brave Origin](#brave-origin) | Unlocks Brave Origin and enables local feature toggle controls. |
-| [Brave Startup Performance Optimization](#brave-startup-performance-optimization) | Optimizes startup time and eliminates background CPU/disk overhead by disabling unused OEM carrier partner customizations. |
+| 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
+|----------|----------------|-----------|
+| [Block Brave Telemetry](#block-brave-telemetry) | Blocks P3A product analytics, Brave Stats usage pings, crash dump uploads, WDP, and Variations seed fetching. |  |
+| [Brave In-Product Notification Scheduler Optimization](#brave-in-product-notification-scheduler-optimization) | Eliminates periodic background wakeups and native library loading caused by Chromium in-product tips/promo scheduler (Job ID 105). |  |
+| [Brave Origin](#brave-origin) | Unlocks Brave Origin and enables local feature toggle controls. |  |
+| [Brave Startup Performance Optimization](#brave-startup-performance-optimization) | Optimizes startup time and eliminates background CPU/disk overhead by disabling unused OEM carrier partner customizations. |  |
+| [Locale PAK Slimmer](#locale-pak-slimmer) | Strips unselected language resource PAKs from assets/locales/. | • Locales to keep |
+| [Skip First Run](#skip-first-run) | Skips the welcome screen, search engine selection, and onboarding First Run Experience (FRE) on clean installs. |  |
 
 </details>
 
@@ -126,6 +129,69 @@ If you perform a clean install of Gboard Lite with background sync debloat patch
 
 ---
 
+### ⌨️ Gboard Lite: Required Target APK Variant (APKMirror)
+
+> [!IMPORTANT]
+> **Always download the standalone `lite_beta-arm64-v8a` APK (nodpi) from [APKMirror](https://www.apkmirror.com/apk/google-inc/gboard/):**
+> * **Variant Name**: `18.0.3.954559732-lite_beta-arm64-v8a`
+> * **Format**: `APK` *(Do **NOT** download `BUNDLE` / split packages)*
+> * **Architecture**: `arm64-v8a`
+> * **Screen DPI**: `nodpi`
+
+#### ❓ Why `lite_beta-arm64-v8a`?
+* **Lite Subsystem**: Gboard Lite has a distinct, streamlined codebase without bulky pre-bundled dictionaries. Standard/full Gboard APKs use different internal class layouts that fail AST fingerprint assertions (AMOLED theme, Free Cursor 2D, and debloat hooks).
+* **Standalone APK**: Morphe Manager requires a standalone `.apk` package; split `BUNDLE` downloads cannot be patched directly.
+
+---
+
+### 🦁 Brave Browser: Required Target APK (`Bravemonoarm64.apk`)
+
+> [!IMPORTANT]
+> **Always use `Bravemonoarm64.apk` from [Brave GitHub Releases](https://github.com/brave/brave-browser/releases).**
+> Do **NOT** use `Bravearm64Universal.apk`, `Bravearm64.apk`, or 32-bit / x86 builds (`Bravearm.apk`, `Bravemonox64.apk`, etc.).
+
+#### ❓ Why `Bravemonoarm64.apk`?
+* **Bytecode Consistency**: `Bravemonoarm64.apk` is the official 64-bit ARM Monochrome build. Other variants (especially *Universal*) use different R8/ProGuard obfuscation passes and aggressive method inlining, which causes Dalvik fingerprint mismatches (e.g. in Variations seed fetching and Brave Origin helpers).
+* **Native ARM64 Hooks**: Byte-level offsets in `lib/arm64-v8a/libchrome.so` (such as domain redirection and native scheduler gates) are calculated strictly against ARM64 Monochrome binaries.
+
+---
+
+### 🦁 Brave Locale PAK Slimmer: Valid Language Codes
+
+The **`Locale PAK Slimmer`** patch allows you to strip unneeded language resource PAKs from `assets/locales/` to reduce APK size.
+
+When configuring the **`Locales to keep`** option in Morphe Manager, specify a comma-separated list of locale codes (e.g. `es-419, es, en-US, pt-BR`). English (`en-US`) is always preserved automatically as an essential Chromium fallback.
+
+#### 📋 Popular Language Codes:
+
+| Language | Locale Code(s) |
+| :--- | :--- |
+| **Spanish** | `es` (Spain / Global), `es-419` (Latin America) |
+| **English** | `en-US` (US - *Always kept*), `en-GB` (UK) |
+| **Portuguese** | `pt-BR` (Brazil), `pt-PT` (Portugal) |
+| **French** | `fr` (France), `fr-CA` (Canada) |
+| **German / Italian / Dutch** | `de` (German), `it` (Italian), `nl` (Dutch) |
+| **Russian / Ukrainian / Polish** | `ru`, `uk`, `pl` |
+| **Japanese / Korean / Chinese** | `ja`, `ko`, `zh-CN` (Simplified), `zh-TW` (Traditional), `zh-HK` (Hong Kong) |
+| **Nordic Languages** | `sv` (Swedish), `da` (Danish), `fi` (Finnish), `nb` (Norwegian), `is` (Icelandic) |
+| **Regional Languages of Spain** | `ca` (Catalan), `gl` (Galician), `eu` (Basque) |
+| **Arabic / Turkish / Hebrew** | `ar`, `tr`, `he` |
+
+<details>
+<summary><b>🔍 View all 81 available locale codes in Brave</b></summary>
+<br>
+
+```text
+af, am, ar, as, az, be, bg, bn, bs, ca, cs, da, de, el, en-GB, en-US, es, es-419,
+et, eu, fa, fi, fil, fr, fr-CA, gl, gu, he, hi, hr, hu, hy, id, is, it, ja, ka,
+kk, km, kn, ko, ky, lo, lt, lv, mk, ml, mn, mr, ms, my, nb, ne, nl, or, pa, pl,
+pt-BR, pt-PT, ro, ru, si, sk, sl, sq, sr, sr-Latn, sv, sw, ta, te, th, tr, uk,
+ur, uz, vi, zh-CN, zh-HK, zh-TW, zu
+```
+</details>
+
+---
+
 ## 🛠️ Building & Development
 
 ### Prerequisites
@@ -146,7 +212,7 @@ If you perform a clean install of Gboard Lite with background sync debloat patch
 ./gradlew generatePatchesList
 
 # Sync README markdown tables with patch metadata
-python .github/scripts/generate_patches_readme.py kveld9/morphe-patches main patches-list.json README.md
+python .github/scripts/generate_patches_readme.py kveld9/kveld-morphe-patches main patches-list.json README.md
 ```
 
 The compiled patch package will be available at:
