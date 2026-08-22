@@ -8,7 +8,7 @@ import app.morphe.patches.shared.Constants
 val gboardDisableSuperpacksEagerSyncPatch = bytecodePatch(
     name = "Disable Superpacks Eager Sync",
     description = "Neutralizes eager background Superpacks synchronization during application startup, eliminating unnecessary disk sweeps and network polling while preserving on-demand pack downloads.",
-    default = true,
+    default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
 

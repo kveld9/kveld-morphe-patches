@@ -24,7 +24,7 @@ class GboardPatchContract:
 
 
 def get_all_gboard_contracts() -> List[GboardPatchContract]:
-    """Returns the formal contract list for all 16 Gboard patches."""
+    """Returns the formal contract list for all 18 Gboard patches."""
     return [
         GboardPatchContract(
             patch_id="gboard_amoled",
@@ -450,6 +450,36 @@ def get_all_gboard_contracts() -> List[GboardPatchContract]:
             ],
             forbidden_regressions=[
                 "Blocking legitimate OS IME switcher intents",
+            ],
+        ),
+        GboardPatchContract(
+            patch_id="gboard_clone",
+            name="Clone Gboard",
+            description="Changes the package name to allow installing Gboard alongside the original application.",
+            source_file="patches/src/main/kotlin/app/morphe/patches/gboard/GboardClonePatch.kt",
+            queries=[],
+            semantic_invariants=[
+                "Rewrites manifest package name to isolated custom package identity",
+                "Rewrites provider authorities and permissions to prevent OS collision",
+                "Fully qualifies relative component declarations against base package",
+            ],
+            forbidden_regressions=[
+                "Colliding with stock Gboard package authority namespaces",
+                "Unqualified relative component references causing ClassNotFoundException",
+            ],
+        ),
+        GboardPatchContract(
+            patch_id="gboard_resource_slimmer",
+            name="Resource Slimmer",
+            description="Strips embedded third-party license text, onboarding tutorial Lottie animations, and promotional GIFs.",
+            source_file="patches/src/main/kotlin/app/morphe/patches/gboard/GboardResourceSlimmerPatch.kt",
+            queries=[],
+            semantic_invariants=[
+                "Replaces GIF and Lottie tutorial assets with empty valid stubs",
+                "Replaces third-party license text blocks with minimal headers",
+            ],
+            forbidden_regressions=[
+                "Corrupting essential layout XMLs or binary drawables",
             ],
         ),
     ]

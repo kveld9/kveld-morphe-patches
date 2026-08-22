@@ -14,7 +14,7 @@ private val EMPTY_TRANSPARENT_GIF by lazy {
 }
 
 private val EMPTY_LOTTIE_JSON by lazy {
-    """{"v":"5.5.0","fr":60,"ip":0,"op":0,"w":1,"h":1,"layers":[]}""".toByteArray(Charsets.UTF_8)
+    """{"v":"5.5.0","fr":60,"ip":0,"op":60,"w":100,"h":100,"layers":[]}""".toByteArray(Charsets.UTF_8)
 }
 
 private val DUMMY_LICENSE_METADATA by lazy {
@@ -51,8 +51,17 @@ val gboardResourceSlimmerPatch = resourcePatch(
                     return@forEach
                 }
 
-                // 2. Memory-efficient Lottie JSON detection (reads initial buffer instead of full text)
+                // 2. Memory-efficient Lottie JSON detection for tutorials/onboarding
                 if (name.endsWith(".json")) {
+                    val lowerPath = file.path.replace('\\', '/').lowercase()
+                    // Never stub interactive UI, access point panel, or motion handler animations
+                    if (lowerPath.contains("access_point") || lowerPath.contains("motion") ||
+                        lowerPath.contains("panel") || lowerPath.contains("drag") ||
+                        lowerPath.contains("trackpad") || lowerPath.contains("cursor") ||
+                        lowerPath.contains("res/raw")) {
+                        return@forEach
+                    }
+
                     try {
                         val buf = ByteArray(minOf(1024, size.toInt()))
                         val readBytes = file.inputStream().use { it.read(buf) }
