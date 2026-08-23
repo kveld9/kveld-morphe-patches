@@ -14,7 +14,7 @@ def compare_runs(results_dir: Path) -> str:
     patched_dir = results_dir / "patched"
 
     report_lines = []
-    report_lines.append("# INFORME DE VALIDACIÓN FÍSICA ARM64 — COMPARATIVA VANILLA VS PATCHED\n")
+    report_lines.append("# ARM64 PHYSICAL VALIDATION REPORT — VANILLA VS PATCHED COMPARISON\n")
     report_lines.append("| PATCH | TEST | VANILLA EVIDENCE | PATCHED EVIDENCE | DIRECT MEASUREMENT | REGRESSION | RESULT |")
     report_lines.append("| :--- | :--- | :--- | :--- | :--- | :--- | :--- |")
 
@@ -35,17 +35,17 @@ def compare_runs(results_dir: Path) -> str:
             meas = "Direct logcat trace absent in patched"
         elif v_count == 0 and p_count == 0:
             res = "INCONCLUSIVE"
-            meas = "Sin trazas de logcat directas en build release (Requiere instrumentación DEX)"
+            meas = "No direct logcat traces in release build (requires DEX instrumentation)"
         elif v_count > p_count:
             res = "PASS"
-            meas = f"Reducción de eventos ({v_count} vs {p_count})"
+            meas = f"Event reduction ({v_count} vs {p_count})"
         else:
             res = "INCONCLUSIVE"
-            meas = "Eventos no diferenciables"
+            meas = "Non-differentiable events"
             
-        report_lines.append(f"| **BraveBatteryOptimizationPatch** | BroadcastReceiver `BATTERY_CHANGED` | Log events={v_count} (Trace={v_active}) | Log events={p_count} (Trace={p_active}) | {meas} | Ninguna | **{res}** |")
+        report_lines.append(f"| **BraveBatteryOptimizationPatch** | BroadcastReceiver `BATTERY_CHANGED` | Log events={v_count} (Trace={v_active}) | Log events={p_count} (Trace={p_active}) | {meas} | None | **{res}** |")
     else:
-        report_lines.append("| **BraveBatteryOptimizationPatch** | BroadcastReceiver `BATTERY_CHANGED` | Pendiente de ejecución física | Pendiente de ejecución física | -- | -- | **INCONCLUSIVE (Pending)** |")
+        report_lines.append("| **BraveBatteryOptimizationPatch** | BroadcastReceiver `BATTERY_CHANGED` | Pending physical execution | Pending physical execution | -- | -- | **INCONCLUSIVE (Pending)** |")
 
     # 2. Background Sync Comparison
     v_sync_file = vanilla_dir / "sync_vanilla_result.json"
@@ -64,17 +64,17 @@ def compare_runs(results_dir: Path) -> str:
 
         if v_sched == "JOB_SCHEDULED" and p_sched == "JOB_NOT_SCHEDULED":
             res = "PASS"
-            meas = "Trabajos ausentes en JobScheduler tras background"
+            meas = "Jobs absent from JobScheduler after background transition"
         elif p_sched == "JOB_NOT_SCHEDULED" and p_exec == "JOB_NOT_EXECUTED":
             res = "PASS"
-            meas = "Zero jobs programados en JobScheduler"
+            meas = "Zero jobs scheduled in JobScheduler"
         else:
             res = "INCONCLUSIVE"
-            meas = "Estado de JobScheduler no concluyente"
+            meas = "Inconclusive JobScheduler state"
 
-        report_lines.append(f"| **BraveBackgroundSyncPatch** | ServiceWorker Sync Scheduling | {v_ev} | {p_ev} | {meas} | Ninguna | **{res}** |")
+        report_lines.append(f"| **BraveBackgroundSyncPatch** | ServiceWorker Sync Scheduling | {v_ev} | {p_ev} | {meas} | None | **{res}** |")
     else:
-        report_lines.append("| **BraveBackgroundSyncPatch** | ServiceWorker Sync Scheduling | Pendiente de ejecución física | Pendiente de ejecución física | -- | -- | **INCONCLUSIVE (Pending)** |")
+        report_lines.append("| **BraveBackgroundSyncPatch** | ServiceWorker Sync Scheduling | Pending physical execution | Pending physical execution | -- | -- | **INCONCLUSIVE (Pending)** |")
 
     # 3. Pull To Refresh Comparison
     v_ptr_file = vanilla_dir / "ptr_vanilla_result.json"
@@ -86,22 +86,22 @@ def compare_runs(results_dir: Path) -> str:
         v_logs = v_ptr.get("ptr_logs_count", 0)
         p_logs = p_ptr.get("ptr_logs_count", 0)
 
-        v_ev = f"{v_logs} trigger logs (Reload activo)"
-        p_ev = f"{p_logs} trigger logs (Reload bloqueado)"
+        v_ev = f"{v_logs} trigger logs (Reload active)"
+        p_ev = f"{p_logs} trigger logs (Reload blocked)"
 
         if v_logs > 0 and p_logs == 0:
             res = "PASS"
-            meas = "Cero recargas en 20 swipes descendentes + persistencia de formulario"
+            meas = "Zero reloads across 20 downward swipes + form persistence preserved"
         elif p_logs == 0:
             res = "PASS"
-            meas = "Gesto absorbido sin disparar OverscrollRefreshHandler"
+            meas = "Gesture absorbed without triggering OverscrollRefreshHandler"
         else:
             res = "INCONCLUSIVE"
-            meas = "Eventos de swipe ambiguos"
+            meas = "Ambiguous swipe events"
 
-        report_lines.append(f"| **BraveDisablePullToRefreshPatch** | Swipe 20x Downward Gestures | {v_ev} | {p_ev} | {meas} | Ninguna | **{res}** |")
+        report_lines.append(f"| **BraveDisablePullToRefreshPatch** | Swipe 20x Downward Gestures | {v_ev} | {p_ev} | {meas} | None | **{res}** |")
     else:
-        report_lines.append("| **BraveDisablePullToRefreshPatch** | Swipe 20x Downward Gestures | Pendiente de ejecución física | Pendiente de ejecución física | -- | -- | **INCONCLUSIVE (Pending)** |")
+        report_lines.append("| **BraveDisablePullToRefreshPatch** | Swipe 20x Downward Gestures | Pending physical execution | Pending physical execution | -- | -- | **INCONCLUSIVE (Pending)** |")
 
     final_report = "\n".join(report_lines)
     with open(results_dir / "physical_validation_report.md", "w", encoding="utf-8") as f:

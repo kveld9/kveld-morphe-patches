@@ -64,7 +64,7 @@ class TestFingerprints(unittest.TestCase):
         self.index.methods = [self.m1, self.m2, self.m3]
         self.resolver = FingerprintResolver(self.index)
 
-    # 1. fingerprint único -> PASS
+    # 1. unique fingerprint -> PASS
     def test_fingerprint_unique_pass(self):
         query = FingerprintQuery(
             name_id="test_unique",
@@ -78,7 +78,7 @@ class TestFingerprints(unittest.TestCase):
         self.assertEqual(res.status, FingerprintStatus.VERIFIED)
         self.assertEqual(res.matched_method, self.m1)
 
-    # 2. fingerprint inexistente -> BLOCK
+    # 2. non-existent fingerprint -> BLOCK
     def test_fingerprint_nonexistent_block(self):
         query = FingerprintQuery(
             name_id="test_nonexistent",
@@ -89,7 +89,7 @@ class TestFingerprints(unittest.TestCase):
         res = self.resolver.resolve(query)
         self.assertEqual(res.status, FingerprintStatus.BLOCKED_NOT_FOUND)
 
-    # 3. fingerprint ambiguo -> BLOCK
+    # 3. ambiguous fingerprint -> BLOCK
     def test_fingerprint_ambiguous_block(self):
         query = FingerprintQuery(
             name_id="test_ambiguous",
@@ -104,7 +104,7 @@ class TestFingerprints(unittest.TestCase):
 
 class TestNativeElf(unittest.TestCase):
 
-    # 6. native host encontrado -> PASS
+    # 6. native host found -> PASS
     def test_native_host_found_pass(self):
         analyzer = MagicMock(spec=Elf64Analyzer)
         host = "usage-ping.brave.com"
@@ -128,7 +128,7 @@ class TestNativeElf(unittest.TestCase):
         self.assertEqual(usage_res.status, "OFFSET_CHANGED")
         self.assertEqual(len(usage_res.matches), 1)
 
-    # 7. native host cambiado / desaparecido -> BLOCK
+    # 7. native host changed / disappeared -> BLOCK
     def test_native_host_changed_block(self):
         analyzer = MagicMock(spec=Elf64Analyzer)
         analyzer.analyze_host.return_value = ("NOT_FOUND", [])
@@ -140,7 +140,7 @@ class TestNativeElf(unittest.TestCase):
         self.assertFalse(report.all_known_verified)
         self.assertTrue(len(report.vanished_hosts) > 0)
 
-    # 8. longitud incorrecta -> BLOCK assertion
+    # 8. invalid length -> BLOCK assertion
     def test_invalid_length_block(self):
         host = "usage-ping.brave.com"
         orig_bytes = host.encode("ascii")
@@ -148,7 +148,7 @@ class TestNativeElf(unittest.TestCase):
         invalid_rep = b"0.0.0.0"  # shorter
         self.assertNotEqual(len(orig_bytes), len(invalid_rep))
 
-    # 9. bytes originales incorrectos -> BLOCK assertion
+    # 9. invalid original bytes -> BLOCK assertion
     def test_invalid_original_bytes_block(self):
         expected_host = "usage-ping.brave.com"
         actual_bytes = b"usage-ping.brave.net"
