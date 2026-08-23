@@ -37,6 +37,10 @@ tasks {
         mainClass.set("util.PatchListGeneratorKt")
     }
 
+    jar {
+        exclude("util/**")
+    }
+
     // Used by gradle-semantic-release-plugin.
     publish {
         dependsOn("generatePatchesList")

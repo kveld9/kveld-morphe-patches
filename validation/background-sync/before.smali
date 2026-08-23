@@ -1,0 +1,60 @@
+=== 1. Lorg/chromium/chrome/browser/background_sync/GooglePlayServicesChecker;->shouldDisableBackgroundSync()Z ===
+// Class: Lorg/chromium/chrome/browser/background_sync/GooglePlayServicesChecker;
+// Method: shouldDisableBackgroundSync()Z
+// Dex: classes.dex
+  new-instance     new-instance v0, Lawk;
+  invoke-direct    invoke-direct v0, Ljava/lang/Object;-><init>()V
+  invoke-static    invoke-static v0, Ljx6;->a(Lbwk;)Z
+  move-result      move-result v0
+  const/4          const/4 v1, 1
+  if-nez           if-nez v0, +00bh
+  const-string     const-string v0, "Disabling Background Sync because Play Services is not up to date."
+  const-string     const-string v2, "cr_PlayServicesChecker"
+  invoke-static    invoke-static v2, v0, Landroid/util/Log;->i(Ljava/lang/String; Ljava/lang/String;)I
+  const/4          const/4 v0, 0
+  goto             goto +2h
+  move             move v0, v1
+  const-string     const-string v2, "BackgroundSync.LaunchTask.PlayServicesAvailable"
+  invoke-static    invoke-static v2, v0, Ljff;->c(Ljava/lang/String; Z)V
+  xor-int/2addr    xor-int/2addr v0, v1
+  return           return v0
+
+=== 2. Lh1e;->d(Landroid/content/Context;,Lfjj;,Lu5c;)V ===
+// Class: Lh1e;
+// Method: d(Landroid/content/Context;,Lfjj;,Lu5c;)V
+// Dex: classes.dex
+  invoke-static    invoke-static Ljava/lang/System;->currentTimeMillis()J
+  move-result-wide move-result-wide v2
+  iget-object      iget-object v4, v4, Lfjj;->b Landroid/os/PersistableBundle;
+  const-string     const-string v0, "SoonestWakeupTime"
+  invoke-virtual   invoke-virtual v4, v0, Landroid/os/BaseBundle;->getLong(Ljava/lang/String;)J
+  move-result-wide move-result-wide v0
+  sub-long/2addr   sub-long/2addr v2, v0
+  const-string     const-string v4, "BackgroundSync.Periodic.Wakeup.DelayTime"
+  invoke-static    invoke-static v2, v3, v4, Ljff;->l(J Ljava/lang/String;)V
+  new-instance     new-instance v2, Lg1e;
+  invoke-direct    invoke-direct v2, Ljava/lang/Object;-><init>()V
+  iput-object      iput-object v5, v2, Lg1e;->u Lu5c;
+  const/16         const/16 v3, 14
+  invoke-static    invoke-static v3, v2, LJ/N;->VO(I Ljava/lang/Object;)V
+  return-void      return-void 
+
+=== 3. Ly81;->d(Landroid/content/Context;,Lfjj;,Lu5c;)V ===
+// Class: Ly81;
+// Method: d(Landroid/content/Context;,Lfjj;,Lu5c;)V
+// Dex: classes.dex
+  invoke-static    invoke-static Ljava/lang/System;->currentTimeMillis()J
+  move-result-wide move-result-wide v2
+  iget-object      iget-object v4, v4, Lfjj;->b Landroid/os/PersistableBundle;
+  const-string     const-string v0, "SoonestWakeupTime"
+  invoke-virtual   invoke-virtual v4, v0, Landroid/os/BaseBundle;->getLong(Ljava/lang/String;)J
+  move-result-wide move-result-wide v0
+  sub-long/2addr   sub-long/2addr v2, v0
+  const-string     const-string v4, "BackgroundSync.Wakeup.DelayTime"
+  invoke-static    invoke-static v2, v3, v4, Ljff;->l(J Ljava/lang/String;)V
+  new-instance     new-instance v2, Lx81;
+  invoke-direct    invoke-direct v2, Ljava/lang/Object;-><init>()V
+  iput-object      iput-object v5, v2, Lx81;->u Lu5c;
+  const/16         const/16 v3, 13
+  invoke-static    invoke-static v3, v2, LJ/N;->VO(I Ljava/lang/Object;)V
+  return-void      return-void 

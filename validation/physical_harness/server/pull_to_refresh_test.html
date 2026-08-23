@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pull To Refresh Diagnostic</title>
+    <style>
+        body { font-family: sans-serif; margin: 0; padding: 20px; background: #f0f2f5; color: #333; }
+        .sticky-header { position: sticky; top: 0; background: #1a73e8; color: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); z-index: 100; margin-bottom: 20px; }
+        .counter-badge { font-size: 24px; font-weight: bold; background: #fff; color: #1a73e8; padding: 4px 12px; border-radius: 20px; display: inline-block; }
+        .card { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        input, textarea, select { width: 100%; padding: 10px; margin-top: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .tall-content { height: 1800px; background: repeating-linear-gradient(45deg, #f9f9f9, #f9f9f9 20px, #ececec 20px, #ececec 40px); border-radius: 8px; padding: 20px; }
+    </style>
+</head>
+<body>
+    <div class="sticky-header">
+        <h2 style="margin: 0 0 10px 0;">[TEST 4] Pull-To-Refresh Test Page</h2>
+        <div>Page Load / Reload Count: <span id="loadCount" class="counter-badge">1</span></div>
+        <div style="font-size: 13px; margin-top: 5px;">Last loaded at: <span id="loadTime">--</span></div>
+    </div>
+
+    <div class="card">
+        <h3>Interactive Form (Preserve State Test)</h3>
+        <label>Text Input Test:</label>
+        <input type="text" id="sampleInput" placeholder="Type text here to test if swipe erases it..." value="Persistent input data test">
+        
+        <label style="margin-top: 15px; display: block;">Textarea Test:</label>
+        <textarea rows="3" placeholder="Additional form input...">Form data that should not be wiped by accidental overscroll.</textarea>
+    </div>
+
+    <div class="card">
+        <h3>Dynamic Elements</h3>
+        <button onclick="addDynamicItem()" style="padding: 10px 15px; background: #34a853; color: #fff; border: none; border-radius: 4px; font-weight: bold;">+ Add Dynamic DOM Element</button>
+        <div id="dynamicList" style="margin-top: 10px;"></div>
+    </div>
+
+    <div class="tall-content">
+        <h3>Scroll Test Area (Height: 1800px)</h3>
+        <p>Scroll down and up freely. When at the very top, pull-down gestures in PATCHED should NOT show any circular reload spinner nor trigger page reload.</p>
+        <p style="margin-top: 400px;">--- Middle Marker (400px) ---</p>
+        <p style="margin-top: 400px;">--- Middle Marker (800px) ---</p>
+        <p style="margin-top: 400px;">--- Bottom Marker (1200px) ---</p>
+        <p style="margin-top: 400px;">--- Deep Bottom Marker (1600px) ---</p>
+    </div>
+
+    <script>
+        // Use sessionStorage / localStorage counter to track page reload count
+        let count = parseInt(sessionStorage.getItem('ptr_test_reload_count') || '0', 10) + 1;
+        sessionStorage.setItem('ptr_test_reload_count', count.toString());
+        document.getElementById('loadCount').textContent = count.toString();
+        document.getElementById('loadTime').textContent = new Date().toLocaleTimeString();
+
+        // Expose to window for ADB Javascript injection inspection if available
+        window._ptr_reload_count = count;
+
+        let dynamicCount = 0;
+        function addDynamicItem() {
+            dynamicCount++;
+            const div = document.createElement('div');
+            div.textContent = `Dynamic item #${dynamicCount} added at ${new Date().toLocaleTimeString()}`;
+            div.style.padding = '8px';
+            div.style.background = '#e8f0fe';
+            div.style.margin = '4px 0';
+            div.style.borderRadius = '4px';
+            document.getElementById('dynamicList').appendChild(div);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+VANILLA APK METADATA
+==================================================
+Path: c:\Users\kveld\Documents\brave-origin-patches\apks-ultima-version\BraveMonoarm64 (1).apk
+Package: com.brave.browser
+Version Name: 1.93.138
+Version Code: 429313804
+SHA256: 4a707061495649c8eeec870a3f28329e800bd4b0fcd7455ff8ad7843dc4bec25

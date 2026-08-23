@@ -1,0 +1,13 @@
+{
+  "mode": "vanilla",
+  "test": "background_sync",
+  "timestamp": 1787417611.1127205,
+  "device_abi": "arm64-v8a",
+  "registration_state": "REGISTRATION_ACCEPTED",
+  "job_scheduling_state": "JOB_NOT_SCHEDULED",
+  "execution_state": "JOB_NOT_EXECUTED",
+  "sync_logs_count": 0,
+  "sync_logs": [],
+  "jobscheduler_dump_snippet": "Settings:\n  min_ready_non_active_jobs_count=5 \n  max_non_active_job_batch_delay_ms=1860000 \n  heavy_use_factor=0.9 \n  moderate_use_factor=0.5 \n  max_job_total_on_normal=8\n  max_job_max_bg_on_normal=6\n  max_job_min_bg_on_normal=2\n  max_job_total_on_moderate=8\n  max_job_max_bg_on_moderate=4\n  max_job_min_bg_on_moderate=2\n  max_job_total_on_low=5\n  max_job_max_bg_on_low=1\n  max_job_min_bg_on_low=1\n  max_job_total_on_critical=5\n  max_job_max_bg_on_critical=1\n  max_job_min_bg_on_critical=1\n  max_job_total_off_normal=10\n  max_job_max_bg_off_normal=6\n  max_job_min_bg_off_normal=2\n  max_job_total_off_moderate=10\n  max_job_max_bg_off_moderate=4\n  max_job_min_bg_off_moderate=2\n  max_job_total_off_low=5\n  max_job_max_bg_off_low=1\n  max_job_min_bg_off_low=1\n  max_job_total_off_critical=5\n  max_job_max_bg_off_critical=1\n  max_job_min_bg_off_critical=1\n  screen_off_job_concurrency_increase_delay_ms=30000\n  min_linear_backoff_time=10000 \n  min_exp_backoff_time=10000 \n  conn_congestion_delay_frac=0.5 ",
+  "alarms_dump_snippet": ""
+}

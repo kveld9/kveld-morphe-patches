@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battery Status API Diagnostic</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #121212; color: #00ff66; }
+        .log-box { background: #000; border: 1px solid #333; padding: 15px; border-radius: 5px; height: 300px; overflow-y: auto; }
+        .card { background: #1e1e1e; border: 1px solid #444; padding: 15px; margin-bottom: 15px; border-radius: 5px; }
+        .value { color: #fff; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h2>[TEST 1] Battery Status API Diagnostic</h2>
+    <div class="card">
+        <div>API Supported: <span id="supported" class="value">Checking...</span></div>
+        <div>Battery Level: <span id="level" class="value">--</span></div>
+        <div>Charging: <span id="charging" class="value">--</span></div>
+        <div>Charging Time: <span id="chargingTime" class="value">--</span></div>
+        <div>Discharging Time: <span id="dischargingTime" class="value">--</span></div>
+        <div>Total Events Received: <span id="eventCount" class="value">0</span></div>
+    </div>
+
+    <h3>Event Log:</h3>
+    <div id="logs" class="log-box"></div>
+
+    <script>
+        let events = 0;
+        function log(msg) {
+            const el = document.getElementById('logs');
+            const entry = document.createElement('div');
+            entry.textContent = `[${new Date().toISOString().substring(11, 23)}] ${msg}`;
+            el.appendChild(entry);
+            el.scrollTop = el.scrollHeight;
+        }
+
+        if ('getBattery' in navigator) {
+            document.getElementById('supported').textContent = 'YES (navigator.getBattery exists)';
+            navigator.getBattery().then(battery => {
+                function update() {
+                    document.getElementById('level').textContent = `${(battery.level * 100).toFixed(0)}% (${battery.level})`;
+                    document.getElementById('charging').textContent = battery.charging ? 'TRUE' : 'FALSE';
+                    document.getElementById('chargingTime').textContent = battery.chargingTime + 's';
+                    document.getElementById('dischargingTime').textContent = battery.dischargingTime + 's';
+                    events++;
+                    document.getElementById('eventCount').textContent = events;
+                    window._lastBatteryState = {
+                        level: battery.level,
+                        charging: battery.charging,
+                        chargingTime: battery.chargingTime,
+                        dischargingTime: battery.dischargingTime,
+                        events: events
+                    };
+                }
+
+                update();
+                log(`Initial State: Level=${battery.level}, Charging=${battery.charging}`);
+
+                battery.addEventListener('levelchange', () => {
+                    log(`EVENT levelchange -> ${battery.level}`);
+                    update();
+                });
+
+                battery.addEventListener('chargingchange', () => {
+                    log(`EVENT chargingchange -> ${battery.charging}`);
+                    update();
+                });
+            }).catch(e => {
+                log(`ERROR: ${e.message}`);
+            });
+        } else {
+            document.getElementById('supported').textContent = 'NO (navigator.getBattery undefined)';
+            log('Battery API not supported on this browser.');
+        }
+    </script>
+</body>
+</html>
