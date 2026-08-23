@@ -115,10 +115,17 @@ gradle-app.setting
 
 # Potentially copyrighted test APKs & packages
 *.apk
+*.apk/
 *.apkm
 *.xapk
 *.mpp
 *.mpe
+*.idsig
+apks-ultima-version/
+
+# Local signing credentials and keystores
+*.keystore
+*.jks
 
 # Morphe patcher execution & decompilation cache
 morphe-temporary-files/
@@ -135,7 +142,11 @@ APK_DIFF.md
 # Dependency directories
 node_modules/
 
-# Python caches
+# Python environments & caches
+.venv/
+venv/
+env/
+.pytest_cache/
 __pycache__/
 *.py[cod]
 *$py.class
