@@ -36,7 +36,8 @@ This repository provides modular, high-performance bytecode, resource, and nativ
 
 - **🔓 Brave Origin Unlock**: Unlocks Brave Origin features and developer toggles.
 - **🚫 Complete Telemetry Block**: Strips P3A product analytics, stats pings, crash dump uploads, and variations seed fetching at both native (`libchrome.so`) and bytecode levels.
-- **⚡ Performance & Battery Optimization**: Eliminates background scheduler wakeups (Job ID 105) and OEM partner carrier customizations.
+- **⚡ Performance & Battery Optimization**: Eliminates background scheduler wakeups (Job ID 105), OEM partner carrier customizations, BatteryStatusManager broadcast listeners, and Background / Periodic Sync tasks.
+- **🔄 UI & Gesture Control**: Disables accidental pull-to-refresh overscroll reloads and streamlines the First Run Experience.
 
 ---
 
