@@ -1,3 +1,9 @@
+## [1.5.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.4.0...v1.5.0) (2026-08-23)
+
+### ✨ New Features
+
+* **brave:** add Background Sync, Battery Optimization, and Disable Pull-to-Refresh patches ([fe89f48](https://github.com/kveld9/kveld-morphe-patches/commit/fe89f4892a14b0cb8a92af0c712824806ff3060f))
+
 ## [1.4.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.3.0...v1.4.0) (2026-08-22)
 
 ### ✨ New Features
