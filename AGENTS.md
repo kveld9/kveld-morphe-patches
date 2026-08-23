@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Autonomous AI agent execution harness and engineering guide for **Morphe Patches** (`com.kveld9.morphe`).
+Autonomous AI agent execution harness and engineering governance guide for **Morphe Patches** (`com.kveld9.morphe`).
 
 ---
 
@@ -32,6 +32,8 @@ morphe-patches/
 │       └── util/            # Patch list metadata generator (PatchListGenerator.kt)
 ├── extensions/              # MPE (Morphe Patch Extension) DEX Payloads
 │   └── extension/src/main/  # Optional companion Java/Kotlin runtime hooks
+├── harness/                 # Python Automated RE & Update Harness
+├── validation/              # Physical & Runtime ADB Test Harness
 ├── gradle/                  # Version catalogs and wrapper config
 └── .github/                 # Actions CI/CD workflows and README generators
 ```
@@ -55,26 +57,63 @@ morphe-patches/
 
 ---
 
-## 3. Operational Workflow
+## 3. Session Governance & Modes of Operation
 
-All autonomous tasks must strictly follow this 4-step execution lifecycle:
+Every agent session must start by explicitly determining the session mode:
 
-1. **`INSPECT`**:
-   - Check working tree with `git status -u` to verify no accidental loss of uncommitted local files.
-   - Inspect AST fingerprints, target Dex files, or XML resource schemas before modifying code.
-2. **`PLAN`**:
-   - Detail changes in modular isolation (DEX hooks vs XML defaults vs native offsets).
-   - Verify compatibility against `Constants.COMPATIBILITY_BRAVE` or `Constants.COMPATIBILITY_GBOARD`.
-3. **`MODIFY`**:
-   - Execute exact, minimal code adjustments adhering to Kotlin DSL and Smali conventions.
-   - Ensure native binary writes include boundary and original-byte assertions.
-4. **`VERIFY`**:
-   - Execute build and validation checks (`./gradlew check`, `./gradlew buildAndroid`, `./gradlew generatePatchesList`).
-   - Ensure zero unhandled exceptions and strict conventional commit compliance.
+```text
+MODE = INSTALL/VALIDATE  |  MODE = OPERATE
+```
+
+### Mode Definitions:
+1. **`INSTALL/VALIDATE`**: Active when setting up, repairing, or auditing the harness framework itself.
+   - **Strict Invariant**: No business logic modifications, no feature implementations, and no patch updates during this session.
+2. **`OPERATE`**: Active when the harness is intact and a business requirement (new patch, bugfix, version bump) is being executed.
+   - Operates under strict **Scope Lock**, baseline checks, and quality-left verification.
 
 ---
 
-## 4. Guardrails & Strict Constraints (What NOT to Do)
+## 4. Operational Workflow & Scope Control
+
+Tasks in `MODE = OPERATE` must strictly follow this lifecycle:
+
+```text
+INSPECT & BASELINE ➜ SCOPE LOCK ➜ MODIFY (Engineer) ➜ RISK GATE (Auditor) ➜ E2E VERIFY
+```
+
+### Step 1: `INSPECT & BASELINE`
+- Inspect working tree (`git status -u`). Identify pre-existing modifications.
+- Run baseline verification proportional to the scope (e.g., `unittest`, `check`).
+- Classify any pre-existing failures (`PREEXISTING`, `ENVIRONMENT`).
+
+### Step 2: `SCOPE LOCK`
+ROOT defines the initial boundary before any modification:
+- Target files and symbols.
+- Expected behavioral delta vs. preserved invariants.
+- **Scope Expansion Rule**: If Engineer hits an out-of-scope dependency:
+  `STOP ➜ REPORT ➜ ROOT DECISION (APPROVE / REJECT / HUMAN)`.
+
+### Step 3: `MODIFY` (Minimalist Engineer)
+- Search/replace discipline with contextual lines.
+- No whole-file regenerations.
+- Classify changes: `SEMANTIC`, `FORMATTER`, `TOOLING-INDUCED`, `PREEXISTING`.
+
+### Step 4: `RISK GATE & AUDIT`
+Evaluate blast radius. Trigger mandatory **Auditor** review (`.agents/agents/auditor.md`) for:
+- Bytecode / Smali instructions or Dalvik register changes.
+- Native ELF binary patching (`libchrome.so`).
+- Changes in shared contracts (`Constants.kt`).
+- AMOLED theme injections or preference listener bridges.
+
+### Step 5: `E2E VERIFICATION & SMOKE LAUNCH GATES`
+When adding or updating any patch, the following gates are **MANDATORY**:
+1. **Full-Suite Patching (`E2E Patch Execution`)**: Build and apply the **entire set of available patches** against the target APK.
+2. **Code Injection Verification**: Assert that the modified bytecode/resources/ELF offsets were correctly injected into the final APK.
+3. **Smoke Launch Verification (Zero-Crash Baseline)**: Verify that the patched APK launches cleanly without runtime crashes or uncaught startup exceptions.
+
+---
+
+## 5. Guardrails & Strict Constraints (What NOT to Do)
 
 ### ⛔ Critical Anti-Patterns & Prohibitions
 
@@ -90,67 +129,51 @@ All autonomous tasks must strictly follow this 4-step execution lifecycle:
 4. **DO NOT Destroy Uncommitted Working Changes**:
    - Never run destructive git commands (`git reset --hard`, `git clean -fd`, `git checkout .`) on local modifications.
 5. **DO NOT Add Unjustified Dependencies**:
-   - Do not introduce external libraries or Gradle plugins without explicit architectural need.
-6. **DO NOT Break Semantic Commit Conventions**:
-   - Commits must strictly use Angular/Conventional Commits format (`feat:`, `fix:`, `perf:`, `chore:`, `bump:`, `docs:`) to avoid breaking automated semver calculation.
+   - Do not introduce external libraries, frameworks, or agent infrastructure without explicit architectural necessity.
+6. **DO NOT Modify Protected Harness Governance Files**:
+   - `AGENTS.md`, `.agents/agents/engineer.md`, and `.agents/agents/auditor.md` cannot be modified as a side effect of a product task.
+7. **Anti-Loop Prohibition**:
+   - If a proposed fix fails two consecutive times, halt immediately, re-evaluate the root cause, or request human decision.
 
 ---
 
-## 5. Verification Commands
+## 6. Deterministic & Inferential Verification Commands
 
-Always run these commands locally before submitting code or completing tasks:
+### A. Fast Local / Unit Checks (Quality-Left)
+```bash
+# Run Python harness unit tests (RE engine, AST contracts)
+python -m unittest discover harness/tests
 
-### Compile Extension & Patch Engine
+# Run AGP lint and Kotlin compile checks
+./gradlew.bat check
+
+# Run Kotlin unit and integration tests
+./gradlew.bat test
+```
+
+### B. Patch Build & Artifact Generation
 ```bash
 # Build Android extension DEX + Morphe Patch Package (.mpp)
 ./gradlew.bat build
 
 # Compile standalone .mpp bundle to patches/build/libs/
 ./gradlew.bat buildAndroid
-```
 
-### Validate Patch Metadata & Sync Catalogs
-```bash
 # Generate updated patches-list.json from compiled .mpp
 ./gradlew.bat generatePatchesList
-
-# Re-inject markdown tables and sync README.md
-python .github/scripts/generate_patches_readme.py kveld9/morphe-patches main patches-list.json README.md
 ```
 
-### Unit & Integration Tests
+### C. Reverse Engineering & Automated APK Audit
 ```bash
-# Run unit and integration tests
-./gradlew.bat test
-```
-
-### Linting & Code Health
-```bash
-# Run AGP lint and Kotlin compile checks
-./gradlew.bat check
-```
-
-### Code Formatter
-- `None` (No automatic formatting plugin configured in Gradle; enforce standard Kotlin coding conventions manually).
-
----
-
-## 6. Automated Patches Update Harness (Brave & Gboard)
-
-When updating Morphe patches for a newly released APK:
-
-```bash
-# 1. Non-destructive audit and reverse engineering analysis
+# Audit an APK non-destructively
 python harness/update.py <path-to-apk> --audit
 
-# 2. Minimal source update, build, and catalog sync
+# Execute minimal source update, build, and catalog sync
 python harness/update.py <path-to-apk> --update
-
-# 3. Run harness unit & integration tests
-python -m unittest discover harness/tests
 ```
 
-The harness automatically identifies the package (`com.brave.browser` vs `com.google.android.inputmethod.latin`), applies the corresponding contracts, enforces AMOLED theme duplication invariants, validates AST fingerprints, updates `Constants.kt`, and runs full Gradle and metadata verification.
-
-
-
+### D. Physical Device Runtime Harness (ADB)
+```bash
+# Run automated on-device test suite (battery, sync, PTR, smoke launch)
+python validation/physical_harness/run_harness.py
+```

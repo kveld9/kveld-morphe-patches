@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Background Sync Diagnostic</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #121212; color: #00e5ff; }
+        .log-box { background: #000; border: 1px solid #333; padding: 15px; border-radius: 5px; height: 260px; overflow-y: auto; }
+        .card { background: #1e1e1e; border: 1px solid #444; padding: 15px; margin-bottom: 15px; border-radius: 5px; }
+        .status { font-weight: bold; color: #fff; }
+        button { background: #007acc; color: #fff; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; margin-right: 10px; font-weight: bold; }
+        button:hover { background: #005999; }
+    </style>
+</head>
+<body>
+    <h2>[TEST 2] ServiceWorker Background Sync Diagnostic</h2>
+    <div class="card">
+        <div>ServiceWorker Registered: <span id="swState" class="status">NO</span></div>
+        <div>One-Shot Sync Registration: <span id="syncState" class="status">--</span></div>
+        <div>Periodic Sync Registration: <span id="periodicState" class="status">--</span></div>
+        <div>Events Received: <span id="eventCount" class="status">0</span></div>
+    </div>
+
+    <div style="margin-bottom: 15px;">
+        <button onclick="registerOneShotSync()">Register One-Shot Sync</button>
+        <button onclick="registerPeriodicSync()">Register Periodic Sync</button>
+    </div>
+
+    <h3>Execution Log:</h3>
+    <div id="logs" class="log-box"></div>
+
+    <script>
+        let reg = null;
+        let eventCount = 0;
+        window._syncDiagnostics = { registered: false, oneShotStatus: 'NONE', periodicStatus: 'NONE', events: [] };
+
+        function log(msg) {
+            const el = document.getElementById('logs');
+            const entry = document.createElement('div');
+            entry.textContent = `[${new Date().toISOString().substring(11, 23)}] ${msg}`;
+            el.appendChild(entry);
+            el.scrollTop = el.scrollHeight;
+        }
+
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').then(r => {
+                reg = r;
+                document.getElementById('swState').textContent = 'ACTIVE';
+                log('ServiceWorker registered successfully.');
+                window._syncDiagnostics.registered = true;
+
+                if ('sync' in reg) {
+                    log('One-Shot Sync API supported in ServiceWorkerRegistration.');
+                } else {
+                    log('One-Shot Sync API NOT available in registration.');
+                }
+
+                if ('periodicSync' in reg) {
+                    log('Periodic Sync API supported in ServiceWorkerRegistration.');
+                } else {
+                    log('Periodic Sync API NOT available in registration.');
+                }
+            }).catch(e => {
+                log(`ServiceWorker registration failed: ${e.message}`);
+            });
+        }
+
+        if (window.BroadcastChannel) {
+            const bc = new BroadcastChannel('sync_events');
+            bc.onmessage = ev => {
+                eventCount++;
+                document.getElementById('eventCount').textContent = eventCount;
+                log(`RECEIVED EVENT: ${ev.data.type} (tag=${ev.data.tag})`);
+                window._syncDiagnostics.events.push(ev.data);
+            };
+        }
+
+        async function registerOneShotSync() {
+            if (!reg || !('sync' in reg)) {
+                log('Cannot register Sync: API unsupported.');
+                document.getElementById('syncState').textContent = 'UNSUPPORTED';
+                window._syncDiagnostics.oneShotStatus = 'UNSUPPORTED';
+                return;
+            }
+            try {
+                await reg.sync.register('test-oneshot-sync');
+                document.getElementById('syncState').textContent = 'REGISTRATION ACCEPTED';
+                window._syncDiagnostics.oneShotStatus = 'ACCEPTED';
+                log('One-Shot Sync registered successfully (tag=test-oneshot-sync).');
+            } catch (e) {
+                document.getElementById('syncState').textContent = 'REGISTRATION REJECTED';
+                window._syncDiagnostics.oneShotStatus = 'REJECTED: ' + e.message;
+                log(`One-Shot Sync registration REJECTED: ${e.message}`);
+            }
+        }
+
+        async function registerPeriodicSync() {
+            if (!reg || !('periodicSync' in reg)) {
+                log('Cannot register Periodic Sync: API unsupported.');
+                document.getElementById('periodicState').textContent = 'UNSUPPORTED';
+                window._syncDiagnostics.periodicStatus = 'UNSUPPORTED';
+                return;
+            }
+            try {
+                await reg.periodicSync.register('test-periodic-sync', { minInterval: 24 * 60 * 60 * 1000 });
+                document.getElementById('periodicState').textContent = 'REGISTRATION ACCEPTED';
+                window._syncDiagnostics.periodicStatus = 'ACCEPTED';
+                log('Periodic Sync registered successfully (tag=test-periodic-sync).');
+            } catch (e) {
+                document.getElementById('periodicState').textContent = 'REGISTRATION REJECTED';
+                window._syncDiagnostics.periodicStatus = 'REJECTED: ' + e.message;
+                log(`Periodic Sync registration REJECTED: ${e.message}`);
+            }
+        }
+
+        // Auto-register on page load after short delay
+        setTimeout(() => {
+            if (reg) {
+                registerOneShotSync();
+                registerPeriodicSync();
+            }
+        }, 1500);
+    </script>
+</body>
+</html>
