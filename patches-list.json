@@ -542,32 +542,6 @@
       "options": []
     },
     {
-      "name": "Enable Free Cursor 2D Trackpad",
-      "description": "Unlocks Gboard's 2D Free Cursor navigation through the spacebar, including vertical cursor movement and the magnifier HUD.",
-      "default": true,
-      "dependencies": [],
-      "compatiblePackages": [
-        {
-          "packageName": "com.google.android.inputmethod.latin",
-          "name": "Gboard Lite",
-          "description": null,
-          "apkFileType": "APK",
-          "appIconColor": "#4285F4",
-          "signatures": null,
-          "targets": [
-            {
-              "version": "18.0.3.954559732-lite_beta-arm64-v8a",
-              "versionCodes": null,
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            }
-          ]
-        }
-      ],
-      "options": []
-    },
-    {
       "name": "Enable Key Shape Selection",
       "description": "Enables the key border shape selection UI (Default, Semi-rounded, Round) in theme customization.",
       "default": true,

@@ -14,15 +14,14 @@ from harness.core.dex import DexIndex, IndexedClass
 
 class TestGboardContracts(unittest.TestCase):
 
-    def test_all_18_contracts_present(self):
+    def test_all_17_contracts_present(self):
         contracts = get_all_gboard_contracts()
-        self.assertEqual(len(contracts), 18)
+        self.assertEqual(len(contracts), 17)
         patch_ids = {c.patch_id for c in contracts}
         self.assertIn("gboard_amoled", patch_ids)
         self.assertIn("gboard_signature_bypass", patch_ids)
         self.assertIn("gboard_block_telemetry", patch_ids)
         self.assertIn("gboard_disable_workmanager", patch_ids)
-        self.assertIn("gboard_free_cursor_2d", patch_ids)
         self.assertIn("gboard_force_incognito", patch_ids)
         self.assertIn("gboard_clone", patch_ids)
         self.assertIn("gboard_resource_slimmer", patch_ids)

@@ -27,7 +27,6 @@ This repository provides modular, high-performance bytecode, resource, and nativ
 #### 📱 Gboard Lite
 
 - **🖤 Pure Black AMOLED Theme**: Injects native Pure Black palette (`style_sheet_color_black.binarypb`) alongside standard light/dark/dynamic themes.
-- **🎯 2D Free Cursor Trackpad**: Unlocks two-dimensional cursor navigation with spacebar drag, including vertical movement and magnifier HUD.
 - **🎨 UI Enhancements**: Activates Key Shape Selection (Default, Semi-rounded, Round) and the redesigned Access Points Menu (Panel V2).
 - **🔒 Hardened Privacy & Debloat**: Neutralizes Google Primes profiling, WorkManager background wakeups, Phenotype sync, MDD background sync, Tenor tracking, in-app training, diagnostics telemetry, and forces Incognito mode.
 - **🛡️ Signature Bypass**: Neutralizes internal APK signature validation to allow custom execution.
@@ -53,7 +52,7 @@ Click the badge above or add `kveld9/kveld-morphe-patches` directly into your Mo
 
 <!-- PATCHES_START EXPANDED -->
 <details open>
-<summary>📦 Gboard Lite&nbsp;&nbsp;•&nbsp;&nbsp;18 patches</summary>
+<summary>📦 Gboard Lite&nbsp;&nbsp;•&nbsp;&nbsp;17 patches</summary>
 <br>
 
 **🎯 Supported versions:**
@@ -76,7 +75,6 @@ Click the badge above or add `kveld9/kveld-morphe-patches` directly into your Mo
 | [Disable Tenor Share Tracking](#disable-tenor-share-tracking) | Disables Tenor GIF selection and share tracking telemetry. |  |
 | [Disable WorkManager](#disable-workmanager) | Neutralizes background WorkManager initialization, database creation, and periodic maintenance workers. |  |
 | [Enable Access Points Menu Redesign](#enable-access-points-menu-redesign) | Enables the redesigned access points menu bar and customization panel (Panel V2). |  |
-| [Enable Free Cursor 2D Trackpad](#enable-free-cursor-2d-trackpad) | Unlocks Gboard's 2D Free Cursor navigation through the spacebar, including vertical cursor movement and the magnifier HUD. |  |
 | [Enable Key Shape Selection](#enable-key-shape-selection) | Enables the key border shape selection UI (Default, Semi-rounded, Round) in theme customization. |  |
 | [Force Incognito Mode](#force-incognito-mode) | Forces Gboard to always operate in incognito mode (disabling personalized learning and persistent input logging) while keeping clipboard functionality enabled. |  |
 | [Hardened Intent Security](#hardened-intent-security) | Enables Gboard internal external intent protection against unauthorized intent hijacking. |  |
@@ -148,7 +146,7 @@ If you perform a clean install of Gboard Lite with background sync debloat patch
 
 #### ❓ Why Gboard Lite?
 
-- **Lite Architecture**: Gboard Lite has a distinct, streamlined codebase designed for a lightweight footprint without bulky pre-bundled dictionaries. Standard/full Gboard APKs use different internal class layouts that fail AST fingerprint assertions (AMOLED theme, Free Cursor 2D, and debloat hooks).
+- **Lite Architecture**: Gboard Lite has a distinct, streamlined codebase designed for a lightweight footprint without bulky pre-bundled dictionaries. Standard/full Gboard APKs use different internal class layouts that fail AST fingerprint assertions (AMOLED theme and debloat hooks).
 
 ---
 
