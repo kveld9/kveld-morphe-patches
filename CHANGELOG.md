@@ -1,3 +1,9 @@
+## [1.6.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.5.0...v1.6.0) (2026-08-24)
+
+### ✨ New Features
+
+* **gboard:** remove incomplete Free Cursor 2D Trackpad patch ([2a9e760](https://github.com/kveld9/kveld-morphe-patches/commit/2a9e7602266229f1cb36ae6110f57e11dbd0b0b0))
+
 ## [1.5.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.4.0...v1.5.0) (2026-08-23)
 
 ### ✨ New Features
