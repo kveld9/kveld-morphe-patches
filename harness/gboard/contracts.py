@@ -397,41 +397,6 @@ def get_all_gboard_contracts() -> List[GboardPatchContract]:
             ],
         ),
         GboardPatchContract(
-            patch_id="gboard_free_cursor_2d",
-            name="Enable Free Cursor 2D Trackpad",
-            description="Unlocks 2D Free Cursor navigation through spacebar drag.",
-            source_file="patches/src/main/kotlin/app/morphe/patches/gboard/GboardFreeCursorTrackpadPatch.kt",
-            queries=[
-                FingerprintQuery(
-                    name_id="free_cursor_editor_check",
-                    defining_class="Ltaw;",
-                    method_name="f",
-                    return_type="Z",
-                    parameters=["Landroid/view/inputmethod/EditorInfo;"],
-                ),
-                FingerprintQuery(
-                    name_id="free_cursor_module_1",
-                    defining_class="Lszm;",
-                    method_name="getModuleDef",
-                    return_type="Lvsp;",
-                    parameters=["Landroid/content/Context;"],
-                ),
-                FingerprintQuery(
-                    name_id="free_cursor_module_2",
-                    defining_class="Lszw;",
-                    method_name="getModuleDef",
-                    return_type="Lvsp;",
-                    parameters=["Landroid/content/Context;"],
-                ),
-            ],
-            semantic_invariants=[
-                "Unlocks spacebar 2D cursor drag and magnifier HUD",
-            ],
-            forbidden_regressions=[
-                "Breaking horizontal-only cursor glide",
-            ],
-        ),
-        GboardPatchContract(
             patch_id="gboard_hardened_intent_security",
             name="Hardened Intent Security",
             description="Enables internal external intent protection against unauthorized hijacking.",
