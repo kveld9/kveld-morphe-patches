@@ -1,3 +1,9 @@
+## [1.7.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.6.0...v1.7.0) (2026-08-27)
+
+### ✨ New Features
+
+* add Vivaldi Browser support, asset slimmers, and dynamic diagnostic telemetry ([9f83f8c](https://github.com/kveld9/kveld-morphe-patches/commit/9f83f8c846e8c39c3209cc4953567637866d4b84))
+
 ## [1.6.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.5.0...v1.6.0) (2026-08-24)
 
 ### ✨ New Features
