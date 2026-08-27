@@ -20,32 +20,46 @@ body:
       options:
         - Brave Browser
         - Gboard Lite
+        - Vivaldi Browser Snapshot
         - Universal / Other
     validations:
       required: true
   - type: textarea
+    id: bug-description
     attributes:
       label: Bug description
       description: |
-        - Describe your bug in detail
-        - Exact APK filename used (e.g. `Bravemonoarm64.apk`, `Gboard_v18.0.3_arm64-v8a.apk`)
-        - Add steps to reproduce the bug if possible (Step 1. ... Step 2. ...)
-        - Add images and videos if possible
+        - Describe your bug or unexpected behavior in detail.
+        - Exact APK filename and architecture (e.g. `Bravemonoarm64.apk`, `Gboard_v18.0.3_arm64-v8a.apk`, `Vivaldi.8.2.4143.3.apk`).
+        - Steps to reproduce the issue (Step 1. ... Step 2. ...).
     validations:
       required: true
   - type: textarea
+    id: patcher-log
     attributes:
-      label: Error logs
-      description: Exceptions can be captured by running `logcat | grep AndroidRuntime` in a shell.
+      label: Morphe Manager Patching Log
+      description: |
+        Paste the FULL patching log copied from Morphe Manager (tap the copy/share icon after patching).
+        This must include the header (`[INFO] Build: ...`, `[INFO] Device: ...`), version, selected patches, and all `[WARN] [STDIO]: [...]` lines.
+      placeholder: |
+        [INFO] Build: manager=1.29.0 patcher=1.11.0 nativeLibs=true
+        [INFO] Device: android=16 api=36 ...
+        [INFO] Patching started at ...
+        ...
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: runtime-logcat
+    attributes:
+      label: Runtime Crash Logcat (Optional)
+      description: If the patched app crashes on launch or runtime, capture and paste the crash exception log (`logcat | grep AndroidRuntime` or system crash dump).
       render: shell
   - type: textarea
-    attributes:
-      label: Solution
-      description: If applicable, add a possible solution to the bug.
-  - type: textarea
+    id: additional-context
     attributes:
       label: Additional context
-      description: Add additional context here.
+      description: Add any other context, screenshots, or screen recordings here.
   - type: checkboxes
     id: acknowledgements
     attributes:
@@ -56,5 +70,5 @@ body:
           required: true
         - label: I have chosen an appropriate title.
           required: true
-        - label: All requested information has been provided properly.
+        - label: All requested information and full Morphe Manager patching logs have been provided.
           required: true

@@ -13,28 +13,37 @@ val gboardDisableAppDoctorPatch = bytecodePatch(
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
 
     execute {
-        Fingerprint(
+        val hookedMethods = mutableListOf<String>()
+
+        val fp1 = Fingerprint(
             definingClass = "Lcom/google/android/libraries/inputmethod/appdoctor/initializer/AppDoctorInitializer;",
             name = "a",
             parameters = listOf("Landroid/content/Context;"),
             returnType = "Ljava/lang/Object;",
-        ).method.addInstructions(
+        )
+        fp1.method.addInstructions(
             0,
             """
                 return-object p0
             """.trimIndent(),
         )
+        hookedMethods.add("AppDoctorInitializer.a")
 
-        Fingerprint(
+        val fp2 = Fingerprint(
             definingClass = "Lcom/google/android/libraries/appdoctor/AppDoctorReceiver;",
             name = "onReceive",
             parameters = listOf("Landroid/content/Context;", "Landroid/content/Intent;"),
             returnType = "V",
-        ).method.addInstructions(
+        )
+        fp2.method.addInstructions(
             0,
             """
                 return-void
             """.trimIndent(),
         )
+        hookedMethods.add("AppDoctorReceiver.onReceive")
+
+        val targetClasses = hookedMethods.map { it.substringBefore('.') }.distinct()
+        println("[Disable Diagnostics] Hooked ${hookedMethods.size} diagnostic methods in ${targetClasses.joinToString(", ")}")
     }
 }

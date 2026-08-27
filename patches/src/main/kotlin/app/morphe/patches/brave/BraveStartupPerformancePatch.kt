@@ -18,7 +18,7 @@ val bravePerformanceOptimizationPatch = bytecodePatch(
         // Immediately marks the component as initialized (Boolean.TRUE) and returns,
         // avoiding main-thread SharedPreferences reads, background ThreadPool tasks,
         // ContentResolver queries, and 10-second timeout task scheduling.
-        Fingerprint(
+        val fp = Fingerprint(
             definingClass = "Lorg/chromium/chrome/browser/partnercustomizations/PartnerBrowserCustomizations;",
             returnType = "V",
             parameters = listOf("Landroid/content/Context;"),
@@ -26,7 +26,8 @@ val bravePerformanceOptimizationPatch = bytecodePatch(
                 "Chrome.Homepage.PartnerCustomizedDefaultGurl",
                 "Chrome.Homepage.PartnerCustomizedDefaultUri",
             ),
-        ).method.addInstructions(
+        )
+        fp.method.addInstructions(
             0,
             """
                 sget-object v0, Ljava/lang/Boolean;->TRUE:Ljava/lang/Boolean;
@@ -34,5 +35,8 @@ val bravePerformanceOptimizationPatch = bytecodePatch(
                 return-void
             """,
         )
+
+        val targetClass = fp.originalClassDef.type.substringAfterLast('/').removeSuffix(";")
+        println("[Startup Performance] Neutralized async OEM initialization in $targetClass")
     }
 }

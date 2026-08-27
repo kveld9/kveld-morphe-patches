@@ -13,23 +13,23 @@ val gboardBlockTelemetryPatch = bytecodePatch(
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
 
     execute {
-        Fingerprint(
+        val hookedMethods = mutableListOf<String>()
+
+        val fp1 = Fingerprint(
             definingClass = "Lcom/google/android/libraries/performance/primes/transmitter/LifeboatReceiver;",
             name = "onReceive",
             parameters = listOf("Landroid/content/Context;", "Landroid/content/Intent;"),
             returnType = "V",
-        ).method.addInstructions(
-            0,
-            """
-                return-void
-            """.trimIndent(),
         )
+        fp1.method.addInstructions(0, "return-void")
+        hookedMethods.add("LifeboatReceiver.onReceive")
 
-        Fingerprint(
+        val fp2 = Fingerprint(
             definingClass = "Lcom/google/android/libraries/inputmethod/dailyping/DailyPingWorker;",
             name = "c",
             parameters = emptyList(),
-        ).method.addInstructions(
+        )
+        fp2.method.addInstructions(
             0,
             """
                 invoke-static {}, Landroidx/work/ListenableWorker${'$'}Result;->success()Landroidx/work/ListenableWorker${'$'}Result;
@@ -39,65 +39,57 @@ val gboardBlockTelemetryPatch = bytecodePatch(
                 return-object v0
             """.trimIndent(),
         )
+        hookedMethods.add("DailyPingWorker.c")
 
-        Fingerprint(
+        val fp3 = Fingerprint(
             definingClass = "Lvpy;",
             name = "n",
             parameters = listOf("Lvpt;"),
             returnType = "V",
-        ).method.addInstructions(
-            0,
-            """
-                return-void
-            """.trimIndent(),
         )
+        fp3.method.addInstructions(0, "return-void")
+        val c3 = app.morphe.patches.shared.LocaleUtils.cleanClassName(fp3.originalClassDef.type)
+        hookedMethods.add("$c3.n")
 
-        Fingerprint(
+        val fp4 = Fingerprint(
             definingClass = "Lvpy;",
             name = "p",
             parameters = emptyList(),
             returnType = "V",
-        ).method.addInstructions(
-            0,
-            """
-                return-void
-            """.trimIndent(),
         )
+        fp4.method.addInstructions(0, "return-void")
+        hookedMethods.add("$c3.p")
 
-        Fingerprint(
+        val fp5 = Fingerprint(
             definingClass = "Lvpy;",
             name = "s",
             parameters = emptyList(),
             returnType = "V",
-        ).method.addInstructions(
-            0,
-            """
-                return-void
-            """.trimIndent(),
         )
+        fp5.method.addInstructions(0, "return-void")
+        hookedMethods.add("$c3.s")
 
-        Fingerprint(
+        val fp6 = Fingerprint(
             definingClass = "Loge;",
             name = "b",
             parameters = listOf("Loii;"),
             returnType = "V",
-        ).method.addInstructions(
-            0,
-            """
-                return-void
-            """.trimIndent(),
         )
+        fp6.method.addInstructions(0, "return-void")
+        val c6 = app.morphe.patches.shared.LocaleUtils.cleanClassName(fp6.originalClassDef.type)
+        hookedMethods.add("$c6.b")
 
-        Fingerprint(
+        val fp7 = Fingerprint(
             definingClass = "Lrzl;",
             name = "dB",
             parameters = listOf("Landroid/content/Context;", "Lvsp;"),
             returnType = "V",
-        ).method.addInstructions(
-            0,
-            """
-                return-void
-            """.trimIndent(),
         )
+        fp7.method.addInstructions(0, "return-void")
+        val c7 = app.morphe.patches.shared.LocaleUtils.cleanClassName(fp7.originalClassDef.type)
+        hookedMethods.add("$c7.dB")
+
+        val targetClasses = hookedMethods.map { it.substringBefore('.') }.distinct()
+        println("[Block Telemetry] Injected Smali hooks into ${hookedMethods.size} telemetry methods across ${targetClasses.size} classes (${targetClasses.joinToString(", ")})")
     }
 }

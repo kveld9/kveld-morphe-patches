@@ -3,7 +3,7 @@ group = "com.kveld9.morphe"
 patches {
     about {
         name = "kveld9 Patches"
-        description = "Morphe patches for Brave Browser and Gboard Lite: telemetry blocking, UI de-bloating, resource slimming, and performance optimizations."
+        description = "Morphe patches for Brave Browser, Vivaldi Browser, and Gboard Lite: telemetry blocking, UI de-bloating, resource slimming, and performance optimizations."
         source = "https://github.com/kveld9/kveld-morphe-patches"
         author = "kveld9"
         contact = "https://github.com/kveld9/kveld-morphe-patches/issues"
@@ -39,6 +39,7 @@ tasks {
 
     jar {
         exclude("util/**")
+        finalizedBy("buildAndroid")
     }
 
     // Used by gradle-semantic-release-plugin.

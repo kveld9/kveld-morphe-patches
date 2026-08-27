@@ -13,17 +13,21 @@ val gboardEnableKeyShapeSelectionPatch = bytecodePatch(
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
 
     execute {
-        Fingerprint(
+        val fp = Fingerprint(
             definingClass = "Lxgy;",
             name = "i",
             parameters = listOf("Landroid/content/Context;"),
             returnType = "Z",
-        ).method.addInstructions(
+        )
+        fp.method.addInstructions(
             0,
             """
                 const/4 v0, 0x1
                 return v0
             """.trimIndent(),
         )
+
+        val targetClass = app.morphe.patches.shared.LocaleUtils.cleanClassName(fp.originalClassDef.type)
+        println("[Key Shape Selection] Forced return true in $targetClass.i() to unlock border shape selector UI")
     }
 }

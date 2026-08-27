@@ -26,5 +26,8 @@ val gboardEnableAccessPointsMenuRedesignPatch = bytecodePatch(
             matchIndex + 2,
             "const/4 v3, 0x1",
         )
+
+        val targetClass = app.morphe.patches.shared.LocaleUtils.cleanClassName(fingerprint.originalClassDef.type)
+        println("[Access Points Redesign] Injected flag override into $targetClass.<clinit>() at opcode index ${matchIndex + 2}")
     }
 }

@@ -13,28 +13,29 @@ val gboardDisableSuperpacksEagerSyncPatch = bytecodePatch(
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
 
     execute {
-        Fingerprint(
+        val hookedMethods = mutableListOf<String>()
+
+        val fp1 = Fingerprint(
             definingClass = "Lgvk;",
             name = "n",
             parameters = emptyList(),
             returnType = "V",
-        ).method.addInstructions(
-            0,
-            """
-                return-void
-            """.trimIndent(),
         )
+        fp1.method.addInstructions(0, "return-void")
+        val c1 = app.morphe.patches.shared.LocaleUtils.cleanClassName(fp1.originalClassDef.type)
+        hookedMethods.add("$c1.n")
 
-        Fingerprint(
+        val fp2 = Fingerprint(
             definingClass = "Lgrp;",
             name = "n",
             parameters = emptyList(),
             returnType = "V",
-        ).method.addInstructions(
-            0,
-            """
-                return-void
-            """.trimIndent(),
         )
+        fp2.method.addInstructions(0, "return-void")
+        val c2 = app.morphe.patches.shared.LocaleUtils.cleanClassName(fp2.originalClassDef.type)
+        hookedMethods.add("$c2.n")
+
+        val targetClasses = hookedMethods.map { it.substringBefore('.') }.distinct()
+        println("[Disable Superpacks Eager Sync] Neutralized ${hookedMethods.size} Superpacks sync methods in ${targetClasses.joinToString(", ")}")
     }
 }

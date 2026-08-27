@@ -209,9 +209,35 @@ expanded = (
 
 generated  = build_content(expanded=expanded)
 
-# Replace template links if present
-readme = readme.replace("https://morphe.software/add-source?github=xyz-user/xyz-patches", f"https://morphe.software/add-source?github={repo_full}")
-readme = readme.replace("https://github.com/xyz-user/xyz-patches", f"https://github.com/{repo_full}")
+# Update text callouts in README for Gboard, Brave, and Vivaldi
+for pkg, entry in by_pkg.items():
+    targets = entry.get("targets") or []
+    if targets and targets[0].get("version"):
+        target_ver = targets[0]["version"]
+        if "latin" in pkg:
+            # Gboard current target
+            readme = re.sub(
+                r"(\- \*\*Current Target\*\*: `)[^`]+(`)",
+                rf"\g<1>{target_ver}\g<2>",
+                readme,
+                count=1,
+            )
+        elif "vivaldi" in pkg:
+            # Vivaldi current target
+            readme = re.sub(
+                r"(\- \*\*Current Target\*\*: `Vivaldi\.)[^`]+(_arm64-v8a\.apk`)",
+                rf"\g<1>{target_ver}\g<2>",
+                readme,
+                count=1,
+            )
+        elif "brave" in pkg:
+            # Brave mono target description
+            readme = re.sub(
+                r"(\(v)[0-9\.]+(\) from \[Brave GitHub Releases\])",
+                rf"\g<1>{target_ver}\g<2>",
+                readme,
+                count=1,
+            )
 
 new_readme = re.sub(
     rf"{START_PATTERN}.*?{re.escape(END_MARKER)}",
@@ -225,4 +251,4 @@ if sys.stdout.encoding and sys.stdout.encoding.lower() not in ("utf-8", "utf8"):
         sys.stdout.reconfigure(encoding="utf-8")
     except Exception:
         pass
-print(f"Injected patches section into {readme_path} (v{ver}, branch={branch}, {total} patches, expanded={expanded})")
+print(f"Injected patches section and synchronized target callouts into {readme_path} (v{ver}, branch={branch}, {total} patches, expanded={expanded})")

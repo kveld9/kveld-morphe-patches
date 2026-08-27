@@ -28,14 +28,20 @@ private val gboardAmoledResourcePatch = rawResourcePatch(
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
 
     execute {
+        var replacedFiles = 0
         val blackSheet = get("assets/theme/style_sheet_color_black.binarypb")
         if (blackSheet.exists()) {
             blackSheet.writeBytes(COLOR_BLACK_BYTES)
+            replacedFiles++
         }
         val commonSheet = get("assets/theme/style_sheet_color_common.binarypb")
         if (commonSheet.exists()) {
             commonSheet.writeBytes(COLOR_COMMON_BYTES)
+            replacedFiles++
         }
+
+        val totalBytes = COLOR_BLACK_BYTES.size + COLOR_COMMON_BYTES.size
+        println("[AMOLED Theme] Replaced $replacedFiles AMOLED stylesheet assets ($totalBytes bytes binarypb)")
     }
 }
 
@@ -78,5 +84,8 @@ val gboardAmoledPatch = bytecodePatch(
                 invoke-interface {v5, v7}, Ljava/util/List;->add(Ljava/lang/Object;)Z
             """.trimIndent(),
         )
+
+        val targetClass = themeListingFragmentFingerprint.originalClassDef.type.substringAfterLast('/').removeSuffix(";")
+        println("[AMOLED Theme] Injected AMOLED theme entry into $targetClass.f() at opcode index $matchIndex")
     }
 }

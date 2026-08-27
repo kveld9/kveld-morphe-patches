@@ -74,12 +74,17 @@ class GboardAdversarialValidator:
         return patch_results, theme_report, invariants_report
 
     def run_gradle_build_verification(self) -> Tuple[bool, str]:
-        """Runs gradle check, buildAndroid, generatePatchesList and readme generator."""
+        """Runs gradle check, buildAndroid, generatePatchesList and validates .mpp bundle integrity."""
         gradle_cmd = str(self.repo_root / ("gradlew.bat" if sys.platform.startswith("win") else "gradlew"))
         cmd = [gradle_cmd, "check", "buildAndroid", "generatePatchesList"]
         res = subprocess.run(cmd, cwd=str(self.repo_root), capture_output=True, text=True, shell=sys.platform.startswith("win"))
         if res.returncode != 0:
             return False, f"Gradle build failed:\n{res.stdout}\n{res.stderr}"
+
+        # Strict MPP Bundle Integrity Assertion
+        bundle_ok, bundle_err = self.assert_mpp_bundle_integrity()
+        if not bundle_ok:
+            return False, bundle_err
 
         # Run README sync
         readme_cmd = [
@@ -90,4 +95,39 @@ class GboardAdversarialValidator:
         if res_readme.returncode != 0:
             return False, f"README sync script failed:\n{res_readme.stdout}\n{res_readme.stderr}"
 
-        return True, "All Gradle build and metadata verification checks passed successfully."
+        return True, "All Gradle build, MPP bundle integrity, and metadata verification checks passed successfully."
+
+    def assert_mpp_bundle_integrity(self) -> Tuple[bool, str]:
+        """Asserts that the compiled .mpp bundle contains classes.dex (Dalvik bytecode) and required extensions.
+        Prevents shipping bundles without Android DEX that cause 'Parches: 0' in Morphe Manager.
+        """
+        import zipfile
+        libs_dir = self.repo_root / "patches" / "build" / "libs"
+        if not libs_dir.exists():
+            return False, f"Build output directory does not exist: {libs_dir}"
+
+        mpp_files = [f for f in libs_dir.glob("*.mpp") if not f.name.endswith("-sources.mpp") and not f.name.endswith("-javadoc.mpp")]
+        if not mpp_files:
+            return False, f"No .mpp bundle found in {libs_dir}. Ensure 'buildAndroid' was executed."
+
+        for mpp in mpp_files:
+            try:
+                with zipfile.ZipFile(mpp, "r") as zf:
+                    namelist = zf.namelist()
+                    if "classes.dex" not in namelist:
+                        return False, (
+                            f"CRITICAL ERROR in {mpp.name}: 'classes.dex' is MISSING! "
+                            f"Morphe Manager on Android requires Dalvik bytecode to load patches. "
+                            f"Running standard 'gradle build' only creates Java .class files. "
+                            f"You MUST always execute 'gradle buildAndroid' to invoke D8 and package classes.dex."
+                        )
+                    dex_size = zf.getinfo("classes.dex").file_size
+                    if dex_size < 1024:
+                        return False, f"CRITICAL ERROR in {mpp.name}: 'classes.dex' is abnormally small ({dex_size} bytes)."
+
+                    if "extensions/extension.mpe" not in namelist:
+                        return False, f"CRITICAL ERROR in {mpp.name}: 'extensions/extension.mpe' is MISSING."
+            except Exception as e:
+                return False, f"Failed to inspect {mpp.name}: {e}"
+
+        return True, "MPP bundle integrity verified (classes.dex and extensions/extension.mpe present)."
