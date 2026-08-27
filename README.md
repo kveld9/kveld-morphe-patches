@@ -31,6 +31,7 @@ This repository provides modular, high-performance bytecode, resource, and nativ
 - **🎨 UI Enhancements**: Activates Key Shape Selection (Default, Semi-rounded, Round) and the redesigned Access Points Menu (Panel V2).
 - **🔒 Hardened Privacy & Debloat**: Neutralizes Google Primes profiling, WorkManager background wakeups, Phenotype sync, MDD background sync, Tenor tracking, in-app training, diagnostics telemetry, and forces Incognito mode.
 - **🛡️ Signature Bypass**: Neutralizes internal APK signature validation to allow custom execution.
+- **📦 APK Slimming & Asset Optimization**: Strips unselected language translation directories (`Locale Resource Slimmer`), purges redundant onboarding animations, GIFs, and junk files (`Resource Slimmer`), and recompresses PNG assets losslessly (`PNG Asset Optimizer`).
 
 #### 🦁 Brave Browser
 
@@ -38,6 +39,7 @@ This repository provides modular, high-performance bytecode, resource, and nativ
 - **🚫 Complete Telemetry Block**: Strips P3A product analytics, stats pings, crash dump uploads, and variations seed fetching at both native (`libchrome.so`) and bytecode levels.
 - **⚡ Performance & Battery Optimization**: Eliminates background scheduler wakeups (Job ID 105), commercial onboarding promos, retention marketing campaigns, OEM partner carrier customizations, BatteryStatusManager broadcast listeners, and Background / Periodic Sync tasks.
 - **🔄 UI & Gesture Control**: Disables accidental pull-to-refresh overscroll reloads and streamlines the First Run Experience.
+- **📦 APK Slimming & Asset Optimization**: Strips unselected language PAKs (`Locale PAK Slimmer`), removes unused companion binaries for Vision AI, WireGuard, and XR (`Native Bloat Slimmer`), and recompresses PNG assets losslessly (`PNG Asset Optimizer`).
 
 #### 🔴 Vivaldi Browser Snapshot
 
@@ -45,6 +47,7 @@ This repository provides modular, high-performance bytecode, resource, and nativ
 - **🧹 Clean Speed Dial Bookmarks**: Strips all 47 regional default commercial affiliate bookmarks (`vivaldi.com/bk/*`) and clears partner tracking IDs.
 - **⚡ Cold Startup & Notification Optimization**: Neutralizes OEM carrier customizations (safely mapped to field `d`), disables Chromium tips scheduler, and eliminates periodic privacy report alarms.
 - **🔒 Air-Gapped Sync Toggle**: Optional opt-in patch to cleanly isolate account sync (`bifrost.vivaldi.com`).
+- **📦 APK Slimming & Asset Optimization**: Strips unselected language PAKs (`Locale PAK Slimmer`), removes preloaded wallpapers and Speed Dial thumbnails (`Resource Slimmer`), and recompresses PNG assets losslessly (`PNG Asset Optimizer`).
 
 ---
 
