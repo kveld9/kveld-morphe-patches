@@ -13,16 +13,20 @@ val gboardDisableTenorRegisterSharePatch = bytecodePatch(
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
 
     execute {
-        Fingerprint(
+        val fp = Fingerprint(
             definingClass = "Limg;",
             name = "K",
             parameters = listOf("Lafsc;", "Lidb;"),
             returnType = "V",
-        ).method.addInstructions(
+        )
+        fp.method.addInstructions(
             0,
             """
                 return-void
             """.trimIndent(),
         )
+
+        val targetClass = app.morphe.patches.shared.LocaleUtils.cleanClassName(fp.originalClassDef.type)
+        println("[Disable Tenor Share Tracking] Neutralized $targetClass.K() GIF share telemetry")
     }
 }

@@ -30,6 +30,11 @@ val gboardClonePatch = resourcePatch(
         val manifestFile = get("AndroidManifest.xml")
         if (!manifestFile.exists()) return@execute
 
+        var modifiedProviders = 0
+        var modifiedPermissions = 0
+        var modifiedComponents = 0
+        var modifiedXmlFiles = 0
+
         document(manifestFile.absolutePath).use { doc ->
             // 1. Rewrite root package attribute
             val manifestElement = doc.documentElement
@@ -43,6 +48,7 @@ val gboardClonePatch = resourcePatch(
                 if (authorities.isNotEmpty()) {
                     val updatedAuthorities = authorities.split(";").joinToString(";") { auth ->
                         if (auth.startsWith(originalPackage)) {
+                            modifiedProviders++
                             auth.replaceFirst(originalPackage, newPackage)
                         } else {
                             auth
@@ -61,6 +67,7 @@ val gboardClonePatch = resourcePatch(
                     val name = elem.getAttribute("android:name")
                     if (name.startsWith(originalPackage)) {
                         elem.setAttribute("android:name", name.replaceFirst(originalPackage, newPackage))
+                        modifiedPermissions++
                     }
                 }
             }
@@ -74,29 +81,32 @@ val gboardClonePatch = resourcePatch(
                     val name = elem.getAttribute("android:name")
                     if (name.startsWith(".")) {
                         elem.setAttribute("android:name", originalPackage + name)
+                        modifiedComponents++
                     }
                     if (elem.hasAttribute("android:targetActivity")) {
                         val target = elem.getAttribute("android:targetActivity")
                         if (target.startsWith(".")) {
                             elem.setAttribute("android:targetActivity", originalPackage + target)
+                            modifiedComponents++
                         }
                     }
                     val process = elem.getAttribute("android:process")
                     if (process.startsWith(originalPackage)) {
                         elem.setAttribute("android:process", process.replaceFirst(originalPackage, newPackage))
+                        modifiedComponents++
                     }
                 }
             }
         }
 
         // 5. Update authority references strictly in res/xml configuration files (e.g. sync adapters, searchables)
-        // Avoid modifying class names, handlers, or keys used for UI inflation (such as access points panel)
         val resXmlDir = get("res/xml")
         if (resXmlDir.exists() && resXmlDir.isDirectory) {
             val authorityAttributes = setOf("android:authorities", "authorities", "android:contentAuthority", "contentAuthority")
             resXmlDir.walkTopDown().filter { it.isFile && it.extension == "xml" }.forEach { file ->
                 val content = file.readText()
                 if (content.contains(originalPackage)) {
+                    var fileTouched = false
                     document(file.absolutePath).use { doc ->
                         val elements = doc.getElementsByTagName("*")
                         for (i in 0 until elements.length) {
@@ -106,13 +116,17 @@ val gboardClonePatch = resourcePatch(
                                     val value = node.getAttribute(attrName)
                                     if (value.contains(originalPackage)) {
                                         node.setAttribute(attrName, value.replace(originalPackage, newPackage))
+                                        fileTouched = true
                                     }
                                 }
                             }
                         }
                     }
+                    if (fileTouched) modifiedXmlFiles++
                 }
             }
         }
+
+        println("[Clone Gboard] Renamed package to '$newPackage' ($modifiedProviders providers, $modifiedPermissions permissions, $modifiedComponents components, $modifiedXmlFiles XML files)")
     }
 }

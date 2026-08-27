@@ -62,48 +62,47 @@ class IndexedMethod:
         if not code:
             return self._instructions
 
-        bc = code.get_bc()
-        for ins in bc.get_instructions():
-            op_name = ins.get_name()
-            str_val = None
-            m_ref = None
-            f_ref = None
-
-            if "const-string" in op_name:
-                try:
-                    str_val = ins.get_string()
-                    if str_val is not None:
-                        self._referenced_strings.add(str_val)
-                except Exception:
-                    pass
-
-            elif "invoke-" in op_name:
-                try:
-                    # method format: Lclass/name;->methodName(params)returnType
-                    target_cls = ins.cm.get_type(ins.get_ref_kind() if hasattr(ins, 'get_ref_kind') else 0)
-                except Exception:
-                    target_cls = None
-                try:
-                    raw_str = str(ins)
-                    # parse invoke target e.g. invoke-virtual {v0, v1}, Lcls;->method(args)Ret
-                    if "->" in raw_str:
-                        target_part = raw_str.split("->", 1)[1]
-                        m_name = target_part.split("(", 1)[0].strip()
-                        # target class
-                        c_part = raw_str.split("->", 1)[0].split()[-1]
-                        self._called_methods.add((c_part, m_name, ""))
-                except Exception:
-                    pass
+        for ins in code.get_bc().get_instructions():
+            str_val = self._extract_string_ref(ins)
+            call_ref = self._extract_method_call(ins)
+            if str_val is not None:
+                self._referenced_strings.add(str_val)
+            if call_ref is not None:
+                self._called_methods.add(call_ref)
 
             self._instructions.append(DexInstructionWrapper(
                 offset=ins.get_op_value(),
-                opcode_name=op_name,
+                opcode_name=ins.get_name(),
                 raw_insn=ins,
                 string_value=str_val,
-                method_ref=m_ref,
-                field_ref=f_ref,
+                method_ref=None,
+                field_ref=None,
             ))
         return self._instructions
+
+    @staticmethod
+    def _extract_string_ref(ins: Any) -> Optional[str]:
+        if "const-string" in ins.get_name():
+            try:
+                return ins.get_string()
+            except Exception:
+                pass
+        return None
+
+    @staticmethod
+    def _extract_method_call(ins: Any) -> Optional[Tuple[str, str, str]]:
+        if "invoke-" not in ins.get_name():
+            return None
+        try:
+            raw_str = str(ins)
+            if "->" in raw_str:
+                target_part = raw_str.split("->", 1)[1]
+                m_name = target_part.split("(", 1)[0].strip()
+                c_part = raw_str.split("->", 1)[0].split()[-1]
+                return (c_part, m_name, "")
+        except Exception:
+            pass
+        return None
 
     @property
     def referenced_strings(self) -> Set[str]:
@@ -201,42 +200,37 @@ class DexIndex:
     def find_class(self, name: str) -> Optional[IndexedClass]:
         return self.classes_by_name.get(name)
 
-    @staticmethod
-    def _parse_descriptor(desc: str) -> Tuple[List[str], str]:
+    @classmethod
+    def _parse_descriptor(cls, desc: str) -> Tuple[List[str], str]:
         if not desc.startswith("(") or ")" not in desc:
             return [], desc
         param_part, ret_type = desc[1:].split(")", 1)
         params = []
         i = 0
         while i < len(param_part):
-            c = param_part[i]
-            if c in "ZBSCIJFD":
-                params.append(c)
-                i += 1
-            elif c == "L":
-                semi = param_part.find(";", i)
-                if semi != -1:
-                    params.append(param_part[i:semi + 1])
-                    i = semi + 1
-                else:
-                    break
-            elif c == "[":
-                # Array type
-                dim = 0
-                while i < len(param_part) and param_part[i] == "[":
-                    dim += 1
-                    i += 1
-                if i < len(param_part):
-                    if param_part[i] in "ZBSCIJFD":
-                        params.append("[" * dim + param_part[i])
-                        i += 1
-                    elif param_part[i] == "L":
-                        semi = param_part.find(";", i)
-                        if semi != -1:
-                            params.append("[" * dim + param_part[i:semi + 1])
-                            i = semi + 1
-                        else:
-                            break
+            type_str, i = cls._parse_next_type(param_part, i)
+            if type_str:
+                params.append(type_str)
             else:
-                i += 1
+                break
         return params, ret_type
+
+    @staticmethod
+    def _parse_next_type(param_part: str, i: int) -> Tuple[Optional[str], int]:
+        dim = 0
+        while i < len(param_part) and param_part[i] == "[":
+            dim += 1
+            i += 1
+
+        if i >= len(param_part):
+            return None, i
+
+        prefix = "[" * dim
+        c = param_part[i]
+        if c in "ZBSCIJFD":
+            return prefix + c, i + 1
+        elif c == "L":
+            semi = param_part.find(";", i)
+            if semi != -1:
+                return prefix + param_part[i:semi + 1], semi + 1
+        return None, i + 1

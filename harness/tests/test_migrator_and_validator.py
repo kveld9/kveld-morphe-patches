@@ -79,6 +79,13 @@ class TestMigratorAndValidator(unittest.TestCase):
         self.assertIn('const val GBOARD_TARGET_VERSION = "18.1.0.999999999-lite_beta-arm64-v8a"', plan.modified_content)
         self.assertIn('Download 18.1.0.999999999-lite_beta-arm64-v8a (APK nodpi) from APKMirror', plan.modified_content)
 
+    # 14. Vivaldi new version -> metadata updated
+    def test_vivaldi_version_new_metadata_updated(self):
+        plan = self.migrator.plan_vivaldi_constants_update("8.3.9999.9")
+        self.assertTrue(plan.has_changes)
+        self.assertIn('const val VIVALDI_TARGET_VERSION = "8.3.9999.9"', plan.modified_content)
+        self.assertIn('Download Vivaldi.8.3.9999.9_arm64-v8a.apk from vivaldi.com/blog/android/', plan.modified_content)
+
 
 if __name__ == "__main__":
     unittest.main()

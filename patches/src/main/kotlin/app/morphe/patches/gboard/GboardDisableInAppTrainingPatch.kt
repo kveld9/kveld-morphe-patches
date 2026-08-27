@@ -13,37 +13,46 @@ val gboardDisableInAppTrainingPatch = bytecodePatch(
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
 
     execute {
-        Fingerprint(
+        val hookedMethods = mutableListOf<String>()
+
+        val fp1 = Fingerprint(
             definingClass = "Lwdl;",
             name = "b",
             parameters = listOf("Lvnx;", "[Ljava/lang/Object;"),
             returnType = "Z",
-        ).method.addInstructions(
+        )
+        fp1.method.addInstructions(
             0,
             """
                 const/4 v0, 0x1
                 return v0
             """.trimIndent(),
         )
+        val c1 = app.morphe.patches.shared.LocaleUtils.cleanClassName(fp1.originalClassDef.type)
+        hookedMethods.add("$c1.b")
 
-        Fingerprint(
+        val fp2 = Fingerprint(
             definingClass = "Lmxs;",
             name = "a",
             parameters = emptyList(),
             returnType = "V",
-        ).method.addInstructions(
+        )
+        fp2.method.addInstructions(
             0,
             """
                 return-void
             """.trimIndent(),
         )
+        val c2 = app.morphe.patches.shared.LocaleUtils.cleanClassName(fp2.originalClassDef.type)
+        hookedMethods.add("$c2.a")
 
-        Fingerprint(
+        val fp3 = Fingerprint(
             definingClass = "Lcom/google/android/apps/inputmethod/libs/latin5/PeriodicTaskWorker;",
             name = "c",
             parameters = emptyList(),
             returnType = "Lagjs;",
-        ).method.addInstructions(
+        )
+        fp3.method.addInstructions(
             0,
             """
                 invoke-static {}, Lciu;->a()Lciu;
@@ -53,17 +62,23 @@ val gboardDisableInAppTrainingPatch = bytecodePatch(
                 return-object v0
             """.trimIndent(),
         )
+        hookedMethods.add("PeriodicTaskWorker.c")
 
-        Fingerprint(
+        val fp4 = Fingerprint(
             definingClass = "Lcom/google/android/apps/inputmethod/libs/latin5/PeriodicTaskWorker;",
             name = "k",
             parameters = listOf("Landroid/content/Context;"),
             returnType = "V",
-        ).method.addInstructions(
+        )
+        fp4.method.addInstructions(
             0,
             """
                 return-void
             """.trimIndent(),
         )
+        hookedMethods.add("PeriodicTaskWorker.k")
+
+        val targetClasses = hookedMethods.map { it.substringBefore('.') }.distinct()
+        println("[Disable In-App Training] Neutralized ${hookedMethods.size} training methods across ${targetClasses.size} classes (${targetClasses.joinToString(", ")})")
     }
 }

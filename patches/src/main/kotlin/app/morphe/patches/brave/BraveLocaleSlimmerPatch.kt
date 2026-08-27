@@ -3,6 +3,7 @@ package app.morphe.patches.brave
 import app.morphe.patcher.patch.rawResourcePatch
 import app.morphe.patcher.patch.stringOption
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.LocaleUtils
 
 // DataPack v5 minimal valid empty header:
 // version=5 (4B), tables=1 (1B), encoding=1 (1B), num_aliases=0 (2B), num_resources=0 (2B), alias_count=0 (2B)
@@ -24,7 +25,7 @@ val braveLocaleSlimmerPatch = rawResourcePatch(
     description = "Strips unselected language resource PAKs from assets/locales/.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_BRAVE)
+    compatibleWith(Constants.COMPATIBILITY_BRAVE, Constants.COMPATIBILITY_VIVALDI)
 
     val targetLocales by stringOption(
         key = "locales",
@@ -35,34 +36,27 @@ val braveLocaleSlimmerPatch = rawResourcePatch(
     )
 
     execute {
-        val userLocales = (targetLocales ?: "en-US")
-            .split(",")
-            .map { it.trim().removeSuffix(".pak").lowercase() }
-            .filter { it.isNotEmpty() }
-            .map { "$it.pak" }
-            .toMutableSet()
+        val baseLocales = LocaleUtils.parseTargetLocales(targetLocales, defaultLocales = setOf("en-us", "en"))
+        var totalSavedBytes = 0L
 
-        // Always ensure base English fallback is kept in normalized lowercase
-        userLocales.add("en-us.pak")
-
+        // Strip Chromium PAK locale files in assets/locales/
         val localesDir = get("assets/locales")
-        if (localesDir.exists() && localesDir.isDirectory) {
-            val removedLocales = mutableListOf<String>()
-            var savedBytes = 0L
+        val removedLocales = mutableListOf<String>()
 
+        if (localesDir.exists() && localesDir.isDirectory) {
             localesDir.walkTopDown().filter { it.isFile && it.name.endsWith(".pak", ignoreCase = true) }.forEach { pakFile ->
-                if (pakFile.name.lowercase() !in userLocales) {
+                val nameWithoutExt = pakFile.nameWithoutExtension.lowercase()
+                val baseName = nameWithoutExt.substringBefore("_").substringBefore("-")
+                if (nameWithoutExt !in baseLocales && baseName !in baseLocales) {
                     val originalSize = pakFile.length()
                     pakFile.writeBytes(EMPTY_DATAPACK_V5)
-                    savedBytes += (originalSize - pakFile.length())
+                    totalSavedBytes += (originalSize - pakFile.length())
                     removedLocales.add(pakFile.nameWithoutExtension)
                 }
             }
-
-            if (removedLocales.isNotEmpty()) {
-                val savedMb = String.format(java.util.Locale.US, "%.2f", savedBytes.toDouble() / (1024 * 1024))
-                println("Locale PAK Slimmer: Stripped ${removedLocales.size} locales (${removedLocales.sorted().joinToString(", ")}) -> Saved $savedMb MB")
-            }
         }
+
+        val totalSavedMb = String.format(java.util.Locale.US, "%.2f", totalSavedBytes.toDouble() / (1024 * 1024))
+        println("[Locale PAK Slimmer] Stripped ${removedLocales.size} PAKs (kept: ${baseLocales.sorted().joinToString(", ")}) -> Saved $totalSavedMb MB")
     }
 }

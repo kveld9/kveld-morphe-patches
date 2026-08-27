@@ -16,12 +16,13 @@ val gboardForceIncognitoPatch = bytecodePatch(
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
 
     execute {
-        Fingerprint(
+        val fp1 = Fingerprint(
             definingClass = "Lsew;",
             name = "H",
             parameters = listOf("Landroid/view/inputmethod/EditorInfo;"),
             returnType = "Z",
-        ).method.addInstructions(
+        )
+        fp1.method.addInstructions(
             0,
             """
                 const/4 v0, 0x1
@@ -29,12 +30,13 @@ val gboardForceIncognitoPatch = bytecodePatch(
             """.trimIndent(),
         )
 
-        Fingerprint(
+        val fp2 = Fingerprint(
             definingClass = "Lfoh;",
             name = "F",
             parameters = emptyList(),
             returnType = "Z",
-        ).method.addInstructions(
+        )
+        fp2.method.addInstructions(
             0,
             """
                 const/4 v0, 0x1
@@ -55,16 +57,22 @@ val gboardForceIncognitoPatch = bytecodePatch(
             strings = listOf("clipboard_primary_uri", ""),
         )
 
+        var removedOpcodes = 0
         onPrimaryClipChangedFingerprint.method.apply {
             val patternMatch = onPrimaryClipChangedFingerprint.instructionMatches
             val isIncognitoModeIndex = patternMatch.first().index
             val returnVoidIndex = patternMatch.last().index
             val count = (returnVoidIndex - isIncognitoModeIndex) + 1
+            removedOpcodes = count
 
             removeInstructions(
                 index = isIncognitoModeIndex,
                 count = count,
             )
         }
+
+        val c1 = app.morphe.patches.shared.LocaleUtils.cleanClassName(fp1.originalClassDef.type)
+        val c2 = app.morphe.patches.shared.LocaleUtils.cleanClassName(fp2.originalClassDef.type)
+        println("[Force Incognito Mode] Hooked incognito predicates in $c1, $c2 & unblocked clipboard ($removedOpcodes opcodes stripped)")
     }
 }

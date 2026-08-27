@@ -13,14 +13,18 @@ val gboardSignatureBypassPatch = bytecodePatch(
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
 
     execute {
-        Fingerprint(
+        val fp = Fingerprint(
             returnType = "V",
             strings = listOf("APK is signed by unrecognized certificates: "),
-        ).method.addInstructions(
+        )
+        fp.method.addInstructions(
             0,
             """
                 return-void
             """.trimIndent(),
         )
+
+        val targetClass = app.morphe.patches.shared.LocaleUtils.cleanClassName(fp.originalClassDef.type)
+        println("[Allow Modified APK] Neutralized signature validation check in $targetClass.${fp.method.name}()")
     }
 }

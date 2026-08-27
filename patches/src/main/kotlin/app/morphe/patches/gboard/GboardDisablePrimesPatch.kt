@@ -13,48 +13,44 @@ val gboardDisablePrimesPatch = bytecodePatch(
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
 
     execute {
-        Fingerprint(
+        val hookedMethods = mutableListOf<String>()
+
+        val fp1 = Fingerprint(
             definingClass = "Lwpr;",
             name = "dB",
             parameters = listOf("Landroid/content/Context;", "Lvsp;"),
             returnType = "V",
-        ).method.addInstructions(
-            0,
-            """
-                return-void
-            """.trimIndent(),
         )
+        fp1.method.addInstructions(0, "return-void")
+        val c1 = app.morphe.patches.shared.LocaleUtils.cleanClassName(fp1.originalClassDef.type)
+        hookedMethods.add("$c1.dB")
 
-        Fingerprint(
+        val fp2 = Fingerprint(
             definingClass = "Lacbi;",
             name = "b",
             parameters = listOf("Lacbi;"),
             returnType = "V",
-        ).method.addInstructions(
-            0,
-            """
-                return-void
-            """.trimIndent(),
         )
+        fp2.method.addInstructions(0, "return-void")
+        val c2 = app.morphe.patches.shared.LocaleUtils.cleanClassName(fp2.originalClassDef.type)
+        hookedMethods.add("$c2.b")
 
-        Fingerprint(
+        val fp3 = Fingerprint(
             definingClass = "Lcom/google/android/libraries/performance/primes/metrics/crash/NativeCrashHandlerImpl;",
             name = "a",
             parameters = listOf("Lacma;"),
             returnType = "V",
-        ).method.addInstructions(
-            0,
-            """
-                return-void
-            """.trimIndent(),
         )
+        fp3.method.addInstructions(0, "return-void")
+        hookedMethods.add("NativeCrashHandlerImpl.a")
 
-        Fingerprint(
+        val fp4 = Fingerprint(
             definingClass = "Lacor;",
             name = "gh",
             parameters = emptyList(),
             returnType = "Ljava/lang/Object;",
-        ).method.addInstructions(
+        )
+        fp4.method.addInstructions(
             0,
             """
                 invoke-static {}, Landroid/os/Looper;->getMainLooper()Landroid/os/Looper;
@@ -64,17 +60,19 @@ val gboardDisablePrimesPatch = bytecodePatch(
                 return-object v1
             """.trimIndent(),
         )
+        val c4 = app.morphe.patches.shared.LocaleUtils.cleanClassName(fp4.originalClassDef.type)
+        hookedMethods.add("$c4.gh")
 
-        Fingerprint(
+        val fp5 = Fingerprint(
             definingClass = "Lcom/google/android/libraries/performance/primes/transmitter/LifeboatReceiver;",
             name = "onReceive",
             parameters = listOf("Landroid/content/Context;", "Landroid/content/Intent;"),
             returnType = "V",
-        ).method.addInstructions(
-            0,
-            """
-                return-void
-            """.trimIndent(),
         )
+        fp5.method.addInstructions(0, "return-void")
+        hookedMethods.add("LifeboatReceiver.onReceive")
+
+        val targetClasses = hookedMethods.map { it.substringBefore('.') }.distinct()
+        println("[Disable Google Primes] Neutralized ${hookedMethods.size} Primes methods across ${targetClasses.size} classes (${targetClasses.joinToString(", ")})")
     }
 }

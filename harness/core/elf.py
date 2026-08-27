@@ -69,16 +69,10 @@ class Elf64Analyzer:
         with open(self.path, "rb") as f:
             self.data = f.read()
 
-        if len(self.data) < 64 or not self.data.startswith(b"\x7fELF"):
-            return
-
-        ei_class = self.data[4]  # 2 = 64-bit
-        ei_data = self.data[5]   # 1 = 2's complement, little endian
-        if ei_class != 2 or ei_data != 1:
+        if not self._is_valid_elf64():
             return
 
         self.is_valid = True
-
         (
             e_type, e_machine, e_version, e_entry,
             e_phoff, e_shoff, e_flags, e_ehsize,
@@ -87,8 +81,17 @@ class Elf64Analyzer:
         ) = struct.unpack_from("<HHIQQQIHHHHHH", self.data, 16)
 
         self.is_aarch64 = (e_machine == self.EM_AARCH64)
+        self._parse_segments(e_phoff, e_phnum, e_phentsize)
+        self._parse_sections(e_shoff, e_shnum, e_shentsize, e_shstrndx)
 
-        # Parse Program Headers (Segments)
+    def _is_valid_elf64(self) -> bool:
+        if len(self.data) < 64 or not self.data.startswith(b"\x7fELF"):
+            return False
+        ei_class = self.data[4]  # 2 = 64-bit
+        ei_data = self.data[5]   # 1 = little endian
+        return ei_class == 2 and ei_data == 1
+
+    def _parse_segments(self, e_phoff: int, e_phnum: int, e_phentsize: int):
         for i in range(e_phnum):
             ph_offset = e_phoff + i * e_phentsize
             if ph_offset + 56 <= len(self.data):
@@ -107,51 +110,50 @@ class Elf64Analyzer:
                     p_align=p_align,
                 ))
 
-        # Parse Section Headers if present
-        if e_shoff != 0 and e_shnum > 0:
-            raw_sections = []
-            for i in range(e_shnum):
-                sh_offset = e_shoff + i * e_shentsize
-                if sh_offset + 64 <= len(self.data):
-                    (
-                        sh_name_idx, sh_type, sh_flags, sh_addr,
-                        sh_offset_val, sh_size, sh_link, sh_info,
-                        sh_addralign, sh_entsize,
-                    ) = struct.unpack_from("<IIQQQQIIQQ", self.data, sh_offset)
-                    raw_sections.append((
-                        sh_name_idx, sh_type, sh_flags, sh_addr,
-                        sh_offset_val, sh_size, sh_link, sh_info,
-                        sh_addralign, sh_entsize,
-                    ))
+    def _parse_sections(self, e_shoff: int, e_shnum: int, e_shentsize: int, e_shstrndx: int):
+        if e_shoff == 0 or e_shnum <= 0:
+            return
 
-            # String table for section names
-            shstrtab = b""
-            if e_shstrndx < len(raw_sections):
-                _, _, _, _, strtab_off, strtab_sz, _, _, _, _ = raw_sections[e_shstrndx]
-                if strtab_off + strtab_sz <= len(self.data):
-                    shstrtab = self.data[strtab_off:strtab_off + strtab_sz]
+        raw_sections = []
+        for i in range(e_shnum):
+            sh_offset = e_shoff + i * e_shentsize
+            if sh_offset + 64 <= len(self.data):
+                raw_sections.append(struct.unpack_from("<IIQQQQIIQQ", self.data, sh_offset))
 
-            for raw in raw_sections:
-                name_idx = raw[0]
-                sec_name = ""
-                if name_idx < len(shstrtab):
-                    end = shstrtab.find(b"\x00", name_idx)
-                    sec_name = shstrtab[name_idx:end].decode("ascii", errors="replace") if end != -1 else ""
-                sec = ElfSection(
-                    name=sec_name,
-                    sh_type=raw[1],
-                    sh_flags=raw[2],
-                    sh_addr=raw[3],
-                    sh_offset=raw[4],
-                    sh_size=raw[5],
-                    sh_link=raw[6],
-                    sh_info=raw[7],
-                    sh_addralign=raw[8],
-                    sh_entsize=raw[9],
-                )
-                self.sections.append(sec)
-                if sec_name:
-                    self.sections_by_name[sec_name] = sec
+        shstrtab = self._extract_shstrtab(raw_sections, e_shstrndx)
+        for raw in raw_sections:
+            name_idx = raw[0]
+            sec_name = self._resolve_section_name(shstrtab, name_idx)
+            sec = ElfSection(
+                name=sec_name,
+                sh_type=raw[1],
+                sh_flags=raw[2],
+                sh_addr=raw[3],
+                sh_offset=raw[4],
+                sh_size=raw[5],
+                sh_link=raw[6],
+                sh_info=raw[7],
+                sh_addralign=raw[8],
+                sh_entsize=raw[9],
+            )
+            self.sections.append(sec)
+            if sec_name:
+                self.sections_by_name[sec_name] = sec
+
+    def _extract_shstrtab(self, raw_sections: List[Any], e_shstrndx: int) -> bytes:
+        if e_shstrndx < len(raw_sections):
+            _, _, _, _, strtab_off, strtab_sz, _, _, _, _ = raw_sections[e_shstrndx]
+            if strtab_off + strtab_sz <= len(self.data):
+                return self.data[strtab_off:strtab_off + strtab_sz]
+        return b""
+
+    @staticmethod
+    def _resolve_section_name(shstrtab: bytes, name_idx: int) -> str:
+        if name_idx < len(shstrtab):
+            end = shstrtab.find(b"\x00", name_idx)
+            if end != -1:
+                return shstrtab[name_idx:end].decode("ascii", errors="replace")
+        return ""
 
     def find_string_occurrences(self, target_str: str) -> List[int]:
         """Find all file offsets where the exact target ASCII string occurs."""

@@ -85,6 +85,30 @@ class PatchMigrator:
 
         return MigrationPlan(self.constants_file, content, new_content2, changes)
 
+    def plan_vivaldi_constants_update(self, new_version: str) -> MigrationPlan:
+        content = self.constants_file.read_text(encoding="utf-8")
+        changes = []
+
+        # 1. VIVALDI_TARGET_VERSION = "..."
+        new_content = re.sub(
+            r'const val VIVALDI_TARGET_VERSION = "[^"]+"',
+            f'const val VIVALDI_TARGET_VERSION = "{new_version}"',
+            content
+        )
+        if new_content != content:
+            changes.append(f"Updated VIVALDI_TARGET_VERSION to '{new_version}'")
+
+        # 2. description = "Download Vivaldi..._arm64-v8a.apk from vivaldi.com/blog/android/"
+        new_content2 = re.sub(
+            r'description = "Download Vivaldi\.[^"]+_arm64-v8a\.apk from vivaldi\.com/blog/android/"',
+            f'description = "Download Vivaldi.{new_version}_arm64-v8a.apk from vivaldi.com/blog/android/"',
+            new_content
+        )
+        if new_content2 != new_content:
+            changes.append(f"Updated Vivaldi AppTarget description to 'Vivaldi.{new_version}_arm64-v8a.apk'")
+
+        return MigrationPlan(self.constants_file, content, new_content2, changes)
+
     def plan_telemetry_hosts_update(self, host_results: List[HostAuditResult]) -> MigrationPlan:
         content = self.telemetry_patch_file.read_text(encoding="utf-8")
         changes = []

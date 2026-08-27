@@ -24,7 +24,7 @@ from test_background_sync import run_background_sync_test
 from test_pull_to_refresh import run_pull_to_refresh_test
 from compare_results import compare_runs
 
-def main():
+def _parse_and_validate_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Morphe Patches Physical ARM64 Validation Suite (Audited)")
     parser.add_argument("--mode", choices=["vanilla", "patched"], help="Target testing mode (vanilla or patched)")
     parser.add_argument("--device", "--serial", dest="serial", default="df286add", help="Specific ADB device serial (default: df286add)")
@@ -34,8 +34,7 @@ def main():
     args = parser.parse_args()
 
     if args.compare:
-        compare_runs(RESULTS_DIR)
-        return
+        return args
 
     if not args.mode:
         print("ERROR: Please specify --mode vanilla, --mode patched, or --compare")
@@ -47,11 +46,33 @@ def main():
         parser.print_help()
         sys.exit(1)
 
-    print(f"==================================================")
-    print(f" MORPHE PATCHES — PHYSICAL TEST SUITE ({args.mode.upper()})")
-    print(f"==================================================")
+    return args
 
-    # 1. Detect Device
+
+def _execute_tests(device: AdbDevice, args: argparse.Namespace, mode_out_dir: Path):
+    if args.all or args.patch == "battery":
+        run_battery_test(device, args.mode, mode_out_dir)
+        time.sleep(2)
+
+    if args.all or args.patch == "background-sync":
+        run_background_sync_test(device, args.mode, mode_out_dir)
+        time.sleep(2)
+
+    if args.all or args.patch == "pull-to-refresh":
+        run_pull_to_refresh_test(device, args.mode, mode_out_dir)
+        time.sleep(2)
+
+
+def main():
+    args = _parse_and_validate_args()
+    if args.compare:
+        compare_runs(RESULTS_DIR)
+        return
+
+    print("==================================================")
+    print(f" MORPHE PATCHES — PHYSICAL TEST SUITE ({args.mode.upper()})")
+    print("==================================================")
+
     device = AdbDevice(serial=args.serial)
     abi = device.get_abi()
     print(f"Connected Device: {device.serial} ({device.get_model()})")
@@ -63,35 +84,21 @@ def main():
     mode_out_dir = RESULTS_DIR / args.mode
     mode_out_dir.mkdir(parents=True, exist_ok=True)
 
-    # 2. Start Local HTTP Server for test pages
     server = LocalTestServer(directory=SERVER_DIR)
-    print(f"\nStarting local diagnostic server on http://localhost:8080...")
+    print("\nStarting local diagnostic server on http://localhost:8080...")
     server.start()
 
     try:
-        run_all = args.all
-
-        if run_all or args.patch == "battery":
-            run_battery_test(device, args.mode, mode_out_dir)
-            time.sleep(2)
-
-        if run_all or args.patch == "background-sync":
-            run_background_sync_test(device, args.mode, mode_out_dir)
-            time.sleep(2)
-
-        if run_all or args.patch == "pull-to-refresh":
-            run_pull_to_refresh_test(device, args.mode, mode_out_dir)
-            time.sleep(2)
-
+        _execute_tests(device, args, mode_out_dir)
     finally:
         print("\nStopping local diagnostic server...")
         server.stop()
 
-    print(f"\n==================================================")
+    print("\n==================================================")
     print(f" {args.mode.upper()} RUN COMPLETED!")
     print(f" Artifacts saved in: {mode_out_dir}")
-    print(f" To compare after running both modes: python run_harness.py --compare")
-    print(f"==================================================")
+    print(" To compare after running both modes: python run_harness.py --compare")
+    print("==================================================")
 
 if __name__ == "__main__":
     main()

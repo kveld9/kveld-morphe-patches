@@ -26,5 +26,8 @@ val gboardHardenedIntentSecurityPatch = bytecodePatch(
             matchIndex + 2,
             "const/4 v1, 0x1",
         )
+
+        val targetClass = app.morphe.patches.shared.LocaleUtils.cleanClassName(fingerprint.originalClassDef.type)
+        println("[Hardened Intent Security] Injected flag override into $targetClass.<clinit>() at opcode index ${matchIndex + 2}")
     }
 }

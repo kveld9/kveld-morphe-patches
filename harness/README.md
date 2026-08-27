@@ -1,6 +1,6 @@
 # 🔮 Morphe Patches Automated Update & Reverse Engineering Harness
 
-Automated reverse-engineering and patch update harness for **Brave Browser** (`com.brave.browser`) and **Gboard Lite** (`com.google.android.inputmethod.latin`).
+Automated reverse-engineering and patch update harness for **Brave Browser** (`com.brave.browser`), **Vivaldi Browser Snapshot** (`com.vivaldi.browser.snapshot`), and **Gboard Lite** (`com.google.android.inputmethod.latin`).
 
 ---
 
@@ -9,7 +9,7 @@ Automated reverse-engineering and patch update harness for **Brave Browser** (`c
 The harness automates the reverse-engineering lifecycle when upstream releases new APKs:
 
 ```
-Target APK (Brave or Gboard)
+Target APK (Brave, Vivaldi, or Gboard)
      ↓
 [harness/update.py]            ➜ Package Identification & Pipeline Dispatcher
      ↓
@@ -21,6 +21,8 @@ Target APK (Brave or Gboard)
      ↓
 [harness/gboard/contracts.py]  ➜ 18 Gboard Declarative Patch Contracts & Invariants
      ↓
+[harness/migration/validator]  ➜ Adversarial Validation Engine (Brave & Vivaldi Contracts)
+     ↓
 [harness/gboard/themes.py]     ➜ AMOLED & Theme Duplication Safety Auditor
      ↓
 [harness/gboard/invariants.py] ➜ Regression Contracts (IME service, multidex, asset integrity)
@@ -29,7 +31,7 @@ Target APK (Brave or Gboard)
      ↓
 [Gradle / Toolchain]           ➜ check, buildAndroid, generatePatchesList, README sync
      ↓
-[harness/reporting/]           ➜ Structured Markdown Reports (BRAVE_HARNESS_REPORT.md / GBOARD_HARNESS_REPORT.md)
+[harness/reporting/]           ➜ Structured Markdown Reports (BRAVE / VIVALDI / GBOARD)
 ```
 
 ---
@@ -45,6 +47,9 @@ python harness/update.py <path-to-gboard.apk> --audit
 
 # For Brave
 python harness/update.py <path-to-brave.apk> --audit
+
+# For Vivaldi
+python harness/update.py <path-to-vivaldi.apk> --audit
 ```
 
 ### 2. Update and build for a new version
@@ -56,6 +61,9 @@ python harness/update.py <path-to-gboard.apk> --update
 
 # For Brave
 python harness/update.py <path-to-brave.apk> --update
+
+# For Vivaldi
+python harness/update.py <path-to-vivaldi.apk> --update
 ```
 
 This will:
@@ -88,3 +96,25 @@ To prevent regressions in Gboard theme customization:
 1. **Asset Verification**: Asserts `assets/theme/style_sheet_color_black.binarypb` and `style_sheet_color_common.binarypb` exist and have valid palette bytes.
 2. **Duplication Guard**: Asserts `ThemeListingFragment` receives exactly **one** registration call for `assets:theme_package_metadata_color_black.binarypb`. If duplicate registrations or entries are detected, the patch is immediately marked **`BLOCKED`**.
 3. **No Blind Fallback**: Never replaces system Light/Dark/Dynamic theme assets.
+
+---
+
+## 🔄 Mandatory Full-Repository Sync Workflow
+
+Whenever a patch is **created, modified, renamed, or updated**, the following repository-wide synchronization workflow is strictly mandatory:
+
+1. **Kotlin Patch Definition (`patches/.../*.kt`)**:
+   - Maintain declarative metadata, centralized constants from `Constants.kt`, and register-stable Smali instructions.
+   - **Dynamic Diagnostic Logging Contract (MANDATORY)**: Every patch MUST emit concise, single-line dynamic telemetry at runtime during execution (e.g. `println("[Patch Name] ...")`). Static hardcoded strings are prohibited; the log must include runtime counters and resolved symbols (e.g. hooked method count, resolved class names, modified XML attributes, redirected binary endpoints, or saved MB/KB).
+2. **Harness Adversarial Contracts (`harness/migration/validator.py` or `harness/gboard/contracts.py`)**:
+   - Update or register fingerprint queries matching the exact method signatures and class targets so the harness validates them against the target APK.
+3. **Catalog Generation (`patches-list.json`)**:
+   - Execute `./gradlew.bat generatePatchesList` (or `./gradlew generatePatchesList`) to re-export the standalone Morphe Patch Package metadata.
+4. **Documentation & Table Synchronization (`README.md`)**:
+   - Run `python .github/scripts/generate_patches_readme.py kveld9/kveld-morphe-patches main patches-list.json README.md` to refresh the Markdown tables and patch counts.
+   - Update high-level summary highlights (e.g. *Key Highlights*) if the scope of features changed.
+5. **Harness Verification & Report Generation**:
+   - Re-run `python harness/update.py <apk> --audit` to assert zero regressions and update `BRAVE_HARNESS_REPORT.md` or `GBOARD_HARNESS_REPORT.md`.
+6. **Harness Integrity & Logging Test Suite**:
+   - Execute `python -m unittest discover harness/tests` to verify that `AdversarialValidator.assert_patches_dynamic_logging()` passes across all patch source files.
+
