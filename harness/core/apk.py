@@ -56,47 +56,9 @@ class ApkContext:
         if self._metadata:
             return self._metadata
 
-        # 1. Compute SHA-256
-        hasher = hashlib.sha256()
-        with open(self.apk_path, "rb") as f:
-            while chunk := f.read(65536):
-                hasher.update(chunk)
-        sha256_digest = hasher.hexdigest()
-
-        # 2. Inspect ZIP entries
-        dex_files: List[str] = []
-        has_libchrome = False
-        with zipfile.ZipFile(self.apk_path, "r") as zf:
-            for name in zf.namelist():
-                if name.endswith(".dex") and ("classes" in name or "assets" in name):
-                    dex_files.append(name)
-                if name == "lib/arm64-v8a/libchrome.so":
-                    has_libchrome = True
-
-        # 3. Parse manifest
-        pkg_name = ""
-        ver_name = ""
-        ver_code = 0
-
-        if PyAXML_APK is not None:
-            try:
-                apk_obj = PyAXML_APK(str(self.apk_path))
-                pkg_name = apk_obj.package or ""
-                ver_name = apk_obj.version_name or ""
-                ver_code = int(apk_obj.version_code) if apk_obj.version_code else 0
-            except Exception:
-                pass
-
-        if not pkg_name or not ver_name:
-            # Fallback to direct zip extraction of manifest
-            try:
-                from androguard.core.apk import APK as Androguard_APK
-                apk_obj = Androguard_APK(str(self.apk_path))
-                pkg_name = apk_obj.get_package() or ""
-                ver_name = apk_obj.get_androidversion_name() or ""
-                ver_code = int(apk_obj.get_androidversion_code() or 0)
-            except Exception:
-                pass
+        sha256_digest = self._compute_sha256()
+        dex_files, has_libchrome = self._inspect_zip_entries()
+        pkg_name, ver_name, ver_code = self._parse_manifest_info()
 
         self._metadata = ApkMetadata(
             package_name=pkg_name,
@@ -108,6 +70,53 @@ class ApkContext:
             has_arm64_libchrome=has_libchrome,
         )
         return self._metadata
+
+    def _compute_sha256(self) -> str:
+        hasher = hashlib.sha256()
+        with open(self.apk_path, "rb") as f:
+            while chunk := f.read(65536):
+                hasher.update(chunk)
+        return hasher.hexdigest()
+
+    def _inspect_zip_entries(self) -> tuple[List[str], bool]:
+        dex_files: List[str] = []
+        has_libchrome = False
+        with zipfile.ZipFile(self.apk_path, "r") as zf:
+            for name in zf.namelist():
+                if name.endswith(".dex") and ("classes" in name or "assets" in name):
+                    dex_files.append(name)
+                if name == "lib/arm64-v8a/libchrome.so":
+                    has_libchrome = True
+        return dex_files, has_libchrome
+
+    def _parse_manifest_info(self) -> tuple[str, str, int]:
+        pkg_name, ver_name, ver_code = self._try_pyaxml_manifest()
+        if not pkg_name or not ver_name:
+            pkg_name, ver_name, ver_code = self._try_androguard_manifest()
+        return pkg_name, ver_name, ver_code
+
+    def _try_pyaxml_manifest(self) -> tuple[str, str, int]:
+        if PyAXML_APK is None:
+            return "", "", 0
+        try:
+            apk_obj = PyAXML_APK(str(self.apk_path))
+            pkg_name = apk_obj.package or ""
+            ver_name = apk_obj.version_name or ""
+            ver_code = int(apk_obj.version_code) if apk_obj.version_code else 0
+            return pkg_name, ver_name, ver_code
+        except Exception:
+            return "", "", 0
+
+    def _try_androguard_manifest(self) -> tuple[str, str, int]:
+        try:
+            from androguard.core.apk import APK as Androguard_APK
+            apk_obj = Androguard_APK(str(self.apk_path))
+            pkg_name = apk_obj.get_package() or ""
+            ver_name = apk_obj.get_androidversion_name() or ""
+            ver_code = int(apk_obj.get_androidversion_code() or 0)
+            return pkg_name, ver_name, ver_code
+        except Exception:
+            return "", "", 0
 
     def extract_dex_bytes(self) -> List[tuple[str, bytes]]:
         """Extract all DEX files as (name, bytes) in memory."""

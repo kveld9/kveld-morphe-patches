@@ -133,6 +133,7 @@ private val braveOriginResourcePatch = resourcePatch(
                 file.readText().contains("rewards_switch")
             } ?: return@execute
 
+        var modifiedAttrs = 0
         document(targetFile.absolutePath).use { doc ->
             val elements = doc.getElementsByTagName("*")
             for (i in 0 until elements.length) {
@@ -141,14 +142,20 @@ private val braveOriginResourcePatch = resourcePatch(
                     ?: node.getAttribute("key")
                 if (key in ORIGIN_SWITCH_KEYS) {
                     when {
-                        node.hasAttribute("android:defaultValue") ->
+                        node.hasAttribute("android:defaultValue") -> {
                             node.setAttribute("android:defaultValue", "true")
-                        node.hasAttribute("defaultValue") ->
+                            modifiedAttrs++
+                        }
+                        node.hasAttribute("defaultValue") -> {
                             node.setAttribute("defaultValue", "true")
+                            modifiedAttrs++
+                        }
                     }
                 }
             }
         }
+
+        println("[Brave Origin] Injected $modifiedAttrs Origin preference switches in ${targetFile.name}")
     }
 }
 
@@ -379,5 +386,8 @@ val braveOriginPatch = bytecodePatch(
             removeInstructions(0, implementation!!.instructions.count())
             addInstructions(0, buildLeoFeatureFlagHook())
         }
+
+        val totalGatekeepers = GATEKEEPER_POLICIES.size + 1
+        println("[Brave Origin] Hooked 10 core methods & configured $totalGatekeepers policy gatekeepers in Brave Origin UI")
     }
 }

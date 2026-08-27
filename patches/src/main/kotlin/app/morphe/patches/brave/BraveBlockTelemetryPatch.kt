@@ -33,7 +33,11 @@ private val braveTelemetryResourcePatch = resourcePatch(
             }
             .toList()
 
+        var modifiedAttrs = 0
+        var modifiedFiles = 0
+
         for (file in targetFiles) {
+            var fileTouched = false
             document(file.absolutePath).use { doc ->
                 val elements = doc.getElementsByTagName("*")
                 for (i in 0 until elements.length) {
@@ -42,15 +46,24 @@ private val braveTelemetryResourcePatch = resourcePatch(
                         ?: node.getAttribute("key")
                     if (key in telemetrySwitches) {
                         when {
-                            node.hasAttribute("android:defaultValue") ->
+                            node.hasAttribute("android:defaultValue") -> {
                                 node.setAttribute("android:defaultValue", "false")
-                            node.hasAttribute("defaultValue") ->
+                                modifiedAttrs++
+                                fileTouched = true
+                            }
+                            node.hasAttribute("defaultValue") -> {
                                 node.setAttribute("defaultValue", "false")
+                                modifiedAttrs++
+                                fileTouched = true
+                            }
                         }
                     }
                 }
             }
+            if (fileTouched) modifiedFiles++
         }
+
+        println("[Block Telemetry] Set $modifiedAttrs preference defaults to false across $modifiedFiles XML layout files")
     }
 }
 
@@ -89,6 +102,7 @@ private val braveHostsBlockerPatch = rawResourcePatch(
         )
 
         val redirectionIp = "0.0.0.0".toByteArray(Charsets.US_ASCII)
+        var writtenHosts = 0
 
         RandomAccessFile(soFile, "rw").use { raf ->
             for (entry in hostEntries) {
@@ -114,8 +128,11 @@ private val braveHostsBlockerPatch = rawResourcePatch(
 
                 raf.seek(entry.offset)
                 raf.write(replacement)
+                writtenHosts++
             }
         }
+
+        println("[Block Telemetry] Redirected $writtenHosts / ${hostEntries.size} endpoints to 0.0.0.0 in libchrome.so")
     }
 }
 
@@ -131,18 +148,18 @@ val braveBlockTelemetryPatch = bytecodePatch(
     dependsOn(braveTelemetryResourcePatch, braveHostsBlockerPatch)
 
     execute {
+        val hookedMethods = mutableListOf<String>()
+
         // 1. Crash Upload: Primary point
         Fingerprint(
             definingClass = "Lorg/chromium/chrome/browser/crash/MinidumpUploadServiceImpl;",
             name = "tryUploadCrashDumpWithLocalId",
             returnType = "V",
             parameters = listOf("Ljava/lang/String;"),
-        ).method.addInstructions(
-            0,
-            """
-                return-void
-            """,
-        )
+        ).method.apply {
+            addInstructions(0, "return-void")
+            hookedMethods.add("MinidumpUploadServiceImpl.tryUploadCrashDumpWithLocalId")
+        }
 
         // 2. Crash Upload: Defense in depth
         Fingerprint(
@@ -150,27 +167,29 @@ val braveBlockTelemetryPatch = bytecodePatch(
             name = "onStartJob",
             returnType = "Z",
             parameters = listOf("Landroid/app/job/JobParameters;"),
-        ).method.addInstructions(
-            0,
-            """
-                const/4 v0, 0x0
-                return v0
-            """,
-        )
+        ).method.apply {
+            addInstructions(0, "const/4 v0, 0x0\nreturn v0")
+            hookedMethods.add("ChromeMinidumpUploadJobService.onStartJob")
+        }
 
         // 3. Variations: Abort HTTP connection before socket opens
-        Fingerprint(
+        val variationsFp = Fingerprint(
             returnType = "Ljava/net/HttpURLConnection;",
             strings = listOf("https://variations.brave.com/seed"),
-        ).method.addInstructions(
-            0,
-            """
-                new-instance v0, Ljava/io/IOException;
-                const-string v1, "Blocked by Morphe"
-                invoke-direct {v0, v1}, Ljava/io/IOException;-><init>(Ljava/lang/String;)V
-                throw v0
-            """,
         )
+        variationsFp.method.apply {
+            addInstructions(
+                0,
+                """
+                    new-instance v0, Ljava/io/IOException;
+                    const-string v1, "Blocked by Morphe"
+                    invoke-direct {v0, v1}, Ljava/io/IOException;-><init>(Ljava/lang/String;)V
+                    throw v0
+                """,
+            )
+            val className = variationsFp.originalClassDef.type.substringAfterLast('/').removeSuffix(";")
+            hookedMethods.add("$className.$name")
+        }
 
         // 4. PrefService.e(String): Strict conditional check for P3A, Stats, and WDP
         Fingerprint(
@@ -178,33 +197,39 @@ val braveBlockTelemetryPatch = bytecodePatch(
             name = "e",
             returnType = "Z",
             parameters = listOf("Ljava/lang/String;"),
-        ).method.addInstructions(
-            0,
-            """
-                const-string v0, "brave.p3a.enabled"
-                invoke-virtual {v0, p1}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
-                move-result v0
-                if-eqz v0, :not_p3a
-                const/4 v0, 0x0
-                return v0
-                :not_p3a
+        ).method.apply {
+            addInstructions(
+                0,
+                """
+                    const-string v0, "brave.p3a.enabled"
+                    invoke-virtual {v0, p1}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+                    move-result v0
+                    if-eqz v0, :not_p3a
+                    const/4 v0, 0x0
+                    return v0
+                    :not_p3a
 
-                const-string v0, "brave.stats.reporting_enabled"
-                invoke-virtual {v0, p1}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
-                move-result v0
-                if-eqz v0, :not_stats
-                const/4 v0, 0x0
-                return v0
-                :not_stats
+                    const-string v0, "brave.stats.reporting_enabled"
+                    invoke-virtual {v0, p1}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+                    move-result v0
+                    if-eqz v0, :not_stats
+                    const/4 v0, 0x0
+                    return v0
+                    :not_stats
 
-                const-string v0, "brave.web_discovery_enabled"
-                invoke-virtual {v0, p1}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
-                move-result v0
-                if-eqz v0, :not_wdp
-                const/4 v0, 0x0
-                return v0
-                :not_wdp
-            """,
-        )
+                    const-string v0, "brave.web_discovery_enabled"
+                    invoke-virtual {v0, p1}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+                    move-result v0
+                    if-eqz v0, :not_wdp
+                    const/4 v0, 0x0
+                    return v0
+                    :not_wdp
+                """,
+            )
+            hookedMethods.add("PrefService.e")
+        }
+
+        val targetClasses = hookedMethods.map { it.substringBefore('.') }.distinct()
+        println("[Block Telemetry] Hooked ${hookedMethods.size} bytecode telemetry methods across ${targetClasses.size} classes")
     }
 }

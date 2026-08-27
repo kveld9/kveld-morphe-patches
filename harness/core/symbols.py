@@ -77,23 +77,34 @@ class SymbolResolver:
         if not cls:
             return None
 
-        # 1. onPreferenceChange method
-        # Signature: (Landroidx/preference/Preference;Ljava/lang/Object;)Z
-        on_pref_methods = [
-            m for m in cls.methods
-            if m.return_type == "Z" and len(m.parameters) == 2 and
+        # Validate onPreferenceChange method signature
+        if not self._has_on_preference_change(cls):
+            return None
+
+        hierarchy_methods = cls.get_all_hierarchy_methods(self.index)
+        return BraveOriginSymbols(
+            locked_field=self._resolve_origin_locked_field(cls, cls_name),
+            key_mapping_method=self._resolve_origin_key_mapping(cls, cls_name),
+            context_getter_method=self._resolve_origin_context_getter(hierarchy_methods, cls_name),
+            update_prefs_method=self._resolve_origin_update_prefs(cls, cls_name),
+            find_pref_method=self._resolve_origin_find_pref(hierarchy_methods, cls_name),
+            pref_listener_field=self._resolve_origin_pref_listener(),
+        )
+
+    @staticmethod
+    def _has_on_preference_change(cls: IndexedClass) -> bool:
+        return any(
+            m.return_type == "Z" and len(m.parameters) == 2 and
             m.parameters[0] == "Landroidx/preference/Preference;" and
             m.parameters[1] == "Ljava/lang/Object;"
-        ]
-        if not on_pref_methods:
-            return None
-        on_pref_method = on_pref_methods[0]
+            for m in cls.methods
+        )
 
-        # 1a. Locked boolean field: Look at instance boolean fields of BraveOriginPreferences
-        # In Dex, it's an instance field of type Z
+    @staticmethod
+    def _resolve_origin_locked_field(cls: IndexedClass, cls_name: str) -> ResolvedSymbol:
         boolean_fields = [f for f in cls.fields if f[1] == "Z" and (f[2] & 0x8) == 0]
         locked_field_name = boolean_fields[0][0] if boolean_fields else "O0"
-        locked_sym = ResolvedSymbol(
+        return ResolvedSymbol(
             symbol_id="origin_locked_field",
             target_class=cls_name,
             old_symbol="N0:Z",
@@ -103,13 +114,14 @@ class SymbolResolver:
             evidence=[f"Instance boolean field on {cls_name}: {locked_field_name}"]
         )
 
-        # 2. Key mapping method: static (String) -> String
+    @staticmethod
+    def _resolve_origin_key_mapping(cls: IndexedClass, cls_name: str) -> ResolvedSymbol:
         static_str_str = [
             m for m in cls.methods
             if (m.access_flags & 0x8) != 0 and m.parameters == ["Ljava/lang/String;"] and m.return_type == "Ljava/lang/String;"
         ]
         key_map_name = static_str_str[0].name if static_str_str else "e5"
-        key_map_sym = ResolvedSymbol(
+        return ResolvedSymbol(
             symbol_id="origin_key_mapping_method",
             target_class=cls_name,
             old_symbol="b5(Ljava/lang/String;)Ljava/lang/String;",
@@ -119,15 +131,14 @@ class SymbolResolver:
             evidence=[f"Static (String) -> String method on {cls_name}: {key_map_name}"]
         )
 
-        hierarchy_methods = cls.get_all_hierarchy_methods(self.index)
-
-        # 3. Context getter method: () -> Landroid/content/Context;
+    @staticmethod
+    def _resolve_origin_context_getter(hierarchy_methods: List[IndexedMethod], cls_name: str) -> ResolvedSymbol:
         context_getters = [
             m for m in hierarchy_methods
             if (m.access_flags & 0x8) == 0 and len(m.parameters) == 0 and m.return_type == "Landroid/content/Context;"
         ]
         ctx_name = context_getters[0].name if context_getters else "N3"
-        ctx_sym = ResolvedSymbol(
+        return ResolvedSymbol(
             symbol_id="origin_context_getter_method",
             target_class=cls_name,
             old_symbol="B4()Landroid/content/Context;",
@@ -137,13 +148,14 @@ class SymbolResolver:
             evidence=[f"Instance () -> Context method on {cls_name} (or superclass): {ctx_name}"]
         )
 
-        # 4. Update preferences method: zero-param void method on class
+    @staticmethod
+    def _resolve_origin_update_prefs(cls: IndexedClass, cls_name: str) -> ResolvedSymbol:
         void_zero_param = [
             m for m in cls.methods
             if (m.access_flags & 0x8) == 0 and len(m.parameters) == 0 and m.return_type == "V" and m.name not in ("<init>", "onStart", "onResume")
         ]
         update_name = void_zero_param[0].name if void_zero_param else "d5"
-        update_sym = ResolvedSymbol(
+        return ResolvedSymbol(
             symbol_id="origin_update_prefs_method",
             target_class=cls_name,
             old_symbol="e5()V",
@@ -153,13 +165,14 @@ class SymbolResolver:
             evidence=[f"Instance () -> V refresh method on {cls_name}: {update_name}"]
         )
 
-        # 5. findPreference method: (CharSequence) -> Preference on class or superclass
+    @staticmethod
+    def _resolve_origin_find_pref(hierarchy_methods: List[IndexedMethod], cls_name: str) -> ResolvedSymbol:
         find_pref_candidates = [
             m for m in hierarchy_methods
             if len(m.parameters) == 1 and m.parameters[0] == "Ljava/lang/CharSequence;" and m.return_type == "Landroidx/preference/Preference;"
         ]
         find_pref_name = find_pref_candidates[0].name if find_pref_candidates else "S4"
-        find_pref_sym = ResolvedSymbol(
+        return ResolvedSymbol(
             symbol_id="origin_find_pref_method",
             target_class=cls_name,
             old_symbol="P4(Ljava/lang/CharSequence;)Landroidx/preference/Preference;",
@@ -169,15 +182,18 @@ class SymbolResolver:
             evidence=[f"Method (CharSequence) -> Preference on {cls_name} (or superclass): {find_pref_name}"]
         )
 
-        # 6. Preference listener field: "y" on Preference
+    def _resolve_origin_pref_listener(self) -> ResolvedSymbol:
         pref_cls = self.index.find_class("Landroidx/preference/Preference;")
         pref_listener_field = "y"
         if pref_cls:
-            listener_fields = [f[0] for f in pref_cls.fields if f[1] == "Landroidx/preference/Preference$OnPreferenceChangeListener;" or f[1] == "Landroidx/preference/Preference$c;"]
+            listener_fields = [
+                f[0] for f in pref_cls.fields
+                if f[1] in ("Landroidx/preference/Preference$OnPreferenceChangeListener;", "Landroidx/preference/Preference$c;")
+            ]
             if listener_fields:
                 pref_listener_field = listener_fields[0]
 
-        pref_listener_sym = ResolvedSymbol(
+        return ResolvedSymbol(
             symbol_id="origin_pref_listener_field",
             target_class="Landroidx/preference/Preference;",
             old_symbol="y",
@@ -185,15 +201,6 @@ class SymbolResolver:
             symbol_type="field",
             confidence=SymbolConfidence.VERIFIED,
             evidence=[f"Reflection listener field on Preference: '{pref_listener_field}'"]
-        )
-
-        return BraveOriginSymbols(
-            locked_field=locked_sym,
-            key_mapping_method=key_map_sym,
-            context_getter_method=ctx_sym,
-            update_prefs_method=update_sym,
-            find_pref_method=find_pref_sym,
-            pref_listener_field=pref_listener_sym,
         )
 
     def resolve_notification_scheduler_symbols(self) -> Optional[BraveNotificationSchedulerSymbols]:

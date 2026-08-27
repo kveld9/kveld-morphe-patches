@@ -10,15 +10,16 @@ val braveSkipFirstRunPatch = bytecodePatch(
     description = "Skips the welcome screen, search engine selection, and onboarding First Run Experience (FRE) on clean installs.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_BRAVE)
+    compatibleWith(Constants.COMPATIBILITY_BRAVE, Constants.COMPATIBILITY_VIVALDI)
 
     execute {
         // 1. Force FirstRunStatus.getFirstRunFlowComplete to return true so all app components (sync, promo, telemetry) know FRE is done
-        Fingerprint(
+        val fp1 = Fingerprint(
             returnType = "Z",
             parameters = listOf(),
             strings = listOf("first_run_flow"),
-        ).method.addInstructions(
+        )
+        fp1.method.addInstructions(
             0,
             """
                 const/4 v0, 0x1
@@ -27,16 +28,21 @@ val braveSkipFirstRunPatch = bytecodePatch(
         )
 
         // 2. Force FirstRunFlowSequencer.checkIfFirstRunIsNecessary to return false to prevent launching FirstRunActivity
-        Fingerprint(
+        val fp2 = Fingerprint(
             returnType = "Z",
             parameters = listOf("Z", "Z"),
             strings = listOf("disable-fre", "Chrome.FirstRun.SkippedByPolicy"),
-        ).method.addInstructions(
+        )
+        fp2.method.addInstructions(
             0,
             """
                 const/4 v0, 0x0
                 return v0
             """.trimIndent(),
         )
+
+        val class1 = fp1.originalClassDef.type.substringAfterLast('/').removeSuffix(";")
+        val class2 = fp2.originalClassDef.type.substringAfterLast('/').removeSuffix(";")
+        println("[Skip First Run] Forced complete in $class1 & bypassed sequencer in $class2")
     }
 }

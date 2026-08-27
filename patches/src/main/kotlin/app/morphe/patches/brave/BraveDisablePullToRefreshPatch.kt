@@ -15,11 +15,12 @@ val braveDisablePullToRefreshPatch = bytecodePatch(
 
     execute {
         // 1. Force start(II)Z -> false (0) in SwipeRefreshHandler
-        Fingerprint(
+        val fp1 = Fingerprint(
             returnType = "Z",
             parameters = listOf("I", "I"),
             strings = listOf("brave_pull_to_refresh", "Android.OverscrollFromBottom.CanStart"),
-        ).method.addInstructions(
+        )
+        fp1.method.addInstructions(
             0,
             """
                 const/4 v0, 0x0
@@ -28,15 +29,19 @@ val braveDisablePullToRefreshPatch = bytecodePatch(
         )
 
         // 2. Neutralize pull(FF)V to prevent any visual overscroll animation or glow
-        Fingerprint(
+        val fp2 = Fingerprint(
             returnType = "V",
             parameters = listOf("F", "F"),
             strings = listOf("SwipeRefreshHandler.pull"),
-        ).method.addInstructions(
+        )
+        fp2.method.addInstructions(
             0,
             """
                 return-void
             """.trimIndent(),
         )
+
+        val targetClass = fp1.originalClassDef.type.substringAfterLast('/').removeSuffix(";")
+        println("[Disable Pull To Refresh] Hooked start() & pull() in $targetClass to eliminate overscroll gesture")
     }
 }

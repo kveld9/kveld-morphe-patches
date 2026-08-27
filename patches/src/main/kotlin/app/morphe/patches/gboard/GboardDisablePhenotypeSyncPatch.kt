@@ -13,64 +13,55 @@ val gboardDisablePhenotypeSyncPatch = bytecodePatch(
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
 
     execute {
-        Fingerprint(
+        val hookedMethods = mutableListOf<String>()
+
+        val fp1 = Fingerprint(
             definingClass = "Lcom/google/android/libraries/phenotype/client/stable/PhenotypeUpdateBackgroundBroadcastReceiver;",
             name = "onReceive",
             parameters = listOf("Landroid/content/Context;", "Landroid/content/Intent;"),
             returnType = "V",
-        ).method.addInstructions(
-            0,
-            """
-                return-void
-            """.trimIndent(),
         )
+        fp1.method.addInstructions(0, "return-void")
+        hookedMethods.add("PhenotypeUpdateBackgroundBroadcastReceiver.onReceive")
 
-        Fingerprint(
+        val fp2 = Fingerprint(
             definingClass = "Lcom/google/android/libraries/phenotype/client/stable/AccountRemovedBroadcastReceiver;",
             name = "onReceive",
             parameters = listOf("Landroid/content/Context;", "Landroid/content/Intent;"),
             returnType = "V",
-        ).method.addInstructions(
-            0,
-            """
-                return-void
-            """.trimIndent(),
         )
+        fp2.method.addInstructions(0, "return-void")
+        hookedMethods.add("AccountRemovedBroadcastReceiver.onReceive")
 
-        Fingerprint(
+        val fp3 = Fingerprint(
             definingClass = "Lwhh;",
             name = "dB",
             parameters = listOf("Landroid/content/Context;", "Lvsp;"),
             returnType = "V",
-        ).method.addInstructions(
-            0,
-            """
-                return-void
-            """.trimIndent(),
         )
+        fp3.method.addInstructions(0, "return-void")
+        val c3 = app.morphe.patches.shared.LocaleUtils.cleanClassName(fp3.originalClassDef.type)
+        hookedMethods.add("$c3.dB")
 
-        Fingerprint(
+        val fp4 = Fingerprint(
             definingClass = "Lwhh;",
             name = "e",
             parameters = emptyList(),
             returnType = "V",
-        ).method.addInstructions(
-            0,
-            """
-                return-void
-            """.trimIndent(),
         )
+        fp4.method.addInstructions(0, "return-void")
+        hookedMethods.add("$c3.e")
 
-        Fingerprint(
+        val fp5 = Fingerprint(
             definingClass = "Lwhh;",
             name = "g",
             parameters = emptyList(),
             returnType = "V",
-        ).method.addInstructions(
-            0,
-            """
-                return-void
-            """.trimIndent(),
         )
+        fp5.method.addInstructions(0, "return-void")
+        hookedMethods.add("$c3.g")
+
+        val targetClasses = hookedMethods.map { it.substringBefore('.') }.distinct()
+        println("[Disable Remote Config] Neutralized ${hookedMethods.size} Phenotype sync methods across ${targetClasses.size} classes (${targetClasses.joinToString(", ")})")
     }
 }

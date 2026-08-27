@@ -36,4 +36,20 @@ object Constants {
             )
         )
     )
+
+    const val VIVALDI_PACKAGE_NAME = "com.vivaldi.browser.snapshot"
+    const val VIVALDI_TARGET_VERSION = "8.2.4143.3"
+
+    val COMPATIBILITY_VIVALDI = Compatibility(
+        name = "Vivaldi Browser Snapshot",
+        packageName = VIVALDI_PACKAGE_NAME,
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0xEF3939,
+        targets = listOf(
+            AppTarget(
+                version = VIVALDI_TARGET_VERSION,
+                description = "Download Vivaldi.8.2.4143.3_arm64-v8a.apk from vivaldi.com/blog/android/"
+            )
+        )
+    )
 }

@@ -13,48 +13,44 @@ val gboardDisableMddBackgroundSyncPatch = bytecodePatch(
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
 
     execute {
-        Fingerprint(
+        val hookedMethods = mutableListOf<String>()
+
+        val fp1 = Fingerprint(
             definingClass = "Laane;",
             name = "a",
             parameters = listOf("Lvfi;", "Laani;"),
             returnType = "V",
-        ).method.addInstructions(
-            0,
-            """
-                return-void
-            """.trimIndent(),
         )
+        fp1.method.addInstructions(0, "return-void")
+        val c1 = app.morphe.patches.shared.LocaleUtils.cleanClassName(fp1.originalClassDef.type)
+        hookedMethods.add("$c1.a")
 
-        Fingerprint(
+        val fp2 = Fingerprint(
             definingClass = "Lvem;",
             name = "t",
             parameters = listOf("Lvel;"),
             returnType = "V",
-        ).method.addInstructions(
-            0,
-            """
-                return-void
-            """.trimIndent(),
         )
+        fp2.method.addInstructions(0, "return-void")
+        val c2 = app.morphe.patches.shared.LocaleUtils.cleanClassName(fp2.originalClassDef.type)
+        hookedMethods.add("$c2.t")
 
-        Fingerprint(
+        val fp3 = Fingerprint(
             definingClass = "Lvem;",
             name = "l",
             parameters = emptyList(),
             returnType = "V",
-        ).method.addInstructions(
-            0,
-            """
-                return-void
-            """.trimIndent(),
         )
+        fp3.method.addInstructions(0, "return-void")
+        hookedMethods.add("$c2.l")
 
-        Fingerprint(
+        val fp4 = Fingerprint(
             definingClass = "Lvem;",
             name = "g",
             parameters = listOf("Lveo;"),
             returnType = "Lagjs;",
-        ).method.addInstructions(
+        )
+        fp4.method.addInstructions(
             0,
             """
                 const/4 v0, 0x1
@@ -65,13 +61,15 @@ val gboardDisableMddBackgroundSyncPatch = bytecodePatch(
                 return-object v0
             """.trimIndent(),
         )
+        hookedMethods.add("$c2.g")
 
-        Fingerprint(
+        val fp5 = Fingerprint(
             definingClass = "Lcom/google/android/libraries/inputmethod/mdd/MDDTaskScheduler${'$'}Worker;",
             name = "c",
             parameters = emptyList(),
             returnType = "Lagjs;",
-        ).method.addInstructions(
+        )
+        fp5.method.addInstructions(
             0,
             """
                 invoke-static {}, Lciu;->a()Lciu;
@@ -81,13 +79,15 @@ val gboardDisableMddBackgroundSyncPatch = bytecodePatch(
                 return-object v0
             """.trimIndent(),
         )
+        hookedMethods.add("MDDTaskSchedulerWorker.c")
 
-        Fingerprint(
+        val fp6 = Fingerprint(
             definingClass = "Lcom/google/android/libraries/inputmethod/mdd/cleanup/MddMetadataCleanupWorker;",
             name = "k",
             parameters = emptyList(),
             returnType = "Lciu;",
-        ).method.addInstructions(
+        )
+        fp6.method.addInstructions(
             0,
             """
                 invoke-static {}, Lciu;->a()Lciu;
@@ -95,13 +95,15 @@ val gboardDisableMddBackgroundSyncPatch = bytecodePatch(
                 return-object v0
             """.trimIndent(),
         )
+        hookedMethods.add("MddMetadataCleanupWorker.k")
 
-        Fingerprint(
+        val fp7 = Fingerprint(
             definingClass = "Lcom/google/android/libraries/inputmethod/mdd/ForegroundDownloadTaskWorker;",
             name = "c",
             parameters = emptyList(),
             returnType = "Lagjs;",
-        ).method.addInstructions(
+        )
+        fp7.method.addInstructions(
             0,
             """
                 invoke-static {}, Lciu;->a()Lciu;
@@ -111,5 +113,9 @@ val gboardDisableMddBackgroundSyncPatch = bytecodePatch(
                 return-object v0
             """.trimIndent(),
         )
+        hookedMethods.add("ForegroundDownloadTaskWorker.c")
+
+        val targetClasses = hookedMethods.map { it.substringBefore('.') }.distinct()
+        println("[Disable MDD Sync] Neutralized ${hookedMethods.size} MDD sync methods across ${targetClasses.size} classes (${targetClasses.joinToString(", ")})")
     }
 }

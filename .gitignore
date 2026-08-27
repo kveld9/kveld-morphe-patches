@@ -150,6 +150,12 @@ env/
 __pycache__/
 *.py[cod]
 *$py.class
+.coverage
+htmlcov/
+
+# Patch backups and rejections
+*.orig
+*.rej
 
 # Local sensitive configuration and credentials
 local.properties
