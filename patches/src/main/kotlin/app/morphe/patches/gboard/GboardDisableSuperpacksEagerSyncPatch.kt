@@ -16,7 +16,7 @@ val gboardDisableSuperpacksEagerSyncPatch = bytecodePatch(
         val hookedMethods = mutableListOf<String>()
 
         val fp1 = Fingerprint(
-            definingClass = "Lgvk;",
+            definingClass = "Lguu;",
             name = "n",
             parameters = emptyList(),
             returnType = "V",
@@ -26,7 +26,7 @@ val gboardDisableSuperpacksEagerSyncPatch = bytecodePatch(
         hookedMethods.add("$c1.n")
 
         val fp2 = Fingerprint(
-            definingClass = "Lgrp;",
+            definingClass = "Lgsa;",
             name = "n",
             parameters = emptyList(),
             returnType = "V",

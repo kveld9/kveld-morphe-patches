@@ -50,6 +50,12 @@ class AdversarialValidator:
         results["braveBlockTelemetryPatch"] = self._audit_telemetry_patch()
         results["braveNotificationSchedulerOptimizationPatch"] = self._audit_scheduler_patch()
         results["bravePerformanceOptimizationPatch"] = self._audit_performance_patch()
+        results["braveBackgroundSyncPatch"] = self._audit_background_sync_patch()
+        results["braveBatteryOptimizationPatch"] = self._audit_battery_optimization_patch()
+        results["braveDisablePullToRefreshPatch"] = self._audit_disable_pull_to_refresh_patch()
+        results["braveSkipFirstRunPatch"] = self._audit_skip_first_run_patch()
+        results["braveLocaleSlimmerPatch"] = self._audit_locale_slimmer_patch()
+        results["braveNativeBloatSlimmerPatch"] = self._audit_native_bloat_slimmer_patch()
         return results
 
     def audit_vivaldi_patches(self) -> Dict[str, PatchAuditResult]:
@@ -85,7 +91,7 @@ class AdversarialValidator:
             FingerprintQuery(
                 name_id="origin_sync_package_product",
                 return_type="V",
-                parameters=["Lorg/chromium/chrome/browser/profiles/Profile;", "Ljava/lang/String;"],
+                parameters=["Ljava/lang/String;", "Lorg/chromium/chrome/browser/profiles/Profile;"],
                 strings=["brave.origin.package_name_android", "brave.origin.product_id_android"],
             ),
             FingerprintQuery(
@@ -110,6 +116,7 @@ class AdversarialValidator:
             FingerprintQuery(
                 name_id="origin_setup_pref",
                 defining_class="Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;",
+                method_name="g5",
                 return_type="V",
                 parameters=["Ljava/lang/String;"],
             ),
@@ -292,7 +299,7 @@ class AdversarialValidator:
         if cls:
             task_methods = [
                 m for m in cls.methods
-                if m.return_type == "I" and len(m.parameters) == 3 and m.parameters[0] == "Landroid/content/Context;"
+                if m.return_type == "I" and len(m.parameters) in (1, 3) and m.parameters[0] == "Landroid/content/Context;"
             ]
             if len(task_methods) == 1:
                 m = task_methods[0]
@@ -345,6 +352,156 @@ class AdversarialValidator:
             fingerprint_results=fp_res,
             blocking_reasons=blocking,
             evidence=evidence,
+        )
+
+    def _audit_background_sync_patch(self) -> PatchAuditResult:
+        queries = [
+            FingerprintQuery(
+                name_id="bg_sync_checker",
+                return_type="Z",
+                parameters=[],
+                strings=["BackgroundSync.LaunchTask.PlayServicesAvailable"],
+            ),
+            FingerprintQuery(
+                name_id="bg_sync_periodic",
+                return_type="V",
+                parameters=["Landroid/content/Context;", "Lwtj;", "Lpcc;"],
+                strings=["BackgroundSync.Periodic.Wakeup.DelayTime"],
+            ),
+            FingerprintQuery(
+                name_id="bg_sync_oneshot",
+                return_type="V",
+                parameters=["Landroid/content/Context;", "Lwtj;", "Lpcc;"],
+                strings=["BackgroundSync.Wakeup.DelayTime"],
+            ),
+        ]
+        fp_res = []
+        blocking = []
+        evidence = []
+        for q in queries:
+            res = self.fp_resolver.resolve(q)
+            fp_res.append((q.name_id, res.status.value, res.matched_method.full_name if res.matched_method else "NONE"))
+            if res.status != FingerprintStatus.VERIFIED:
+                blocking.append(f"Fingerprint '{q.name_id}' failed: {res.status.value}")
+            else:
+                evidence.extend(res.evidence)
+        status = PatchStatus.VERIFIED if not blocking else PatchStatus.BLOCKED
+        return PatchAuditResult(
+            patch_name="Disable Background Sync & Periodic Sync",
+            status=status,
+            fingerprint_results=fp_res,
+            blocking_reasons=blocking,
+            evidence=evidence,
+        )
+
+    def _audit_battery_optimization_patch(self) -> PatchAuditResult:
+        queries = [
+            FingerprintQuery(
+                name_id="battery_changed_receiver",
+                return_type="V",
+                parameters=["Landroid/content/Context;", "Landroid/content/Intent;"],
+                strings=["android.intent.action.BATTERY_CHANGED", "cr_BatteryStatusManager"],
+            ),
+        ]
+        fp_res = []
+        blocking = []
+        evidence = []
+        for q in queries:
+            res = self.fp_resolver.resolve(q)
+            fp_res.append((q.name_id, res.status.value, res.matched_method.full_name if res.matched_method else "NONE"))
+            if res.status != FingerprintStatus.VERIFIED:
+                blocking.append(f"Fingerprint '{q.name_id}' failed: {res.status.value}")
+            else:
+                evidence.extend(res.evidence)
+        status = PatchStatus.VERIFIED if not blocking else PatchStatus.BLOCKED
+        return PatchAuditResult(
+            patch_name="Disable Battery Status API & OS Listener",
+            status=status,
+            fingerprint_results=fp_res,
+            blocking_reasons=blocking,
+            evidence=evidence,
+        )
+
+    def _audit_disable_pull_to_refresh_patch(self) -> PatchAuditResult:
+        queries = [
+            FingerprintQuery(
+                name_id="ptr_start",
+                return_type="Z",
+                parameters=["I", "I"],
+                strings=["brave_pull_to_refresh", "Android.OverscrollFromBottom.CanStart"],
+            ),
+            FingerprintQuery(
+                name_id="ptr_pull",
+                return_type="V",
+                parameters=["F", "F"],
+                strings=["SwipeRefreshHandler.pull"],
+            ),
+        ]
+        fp_res = []
+        blocking = []
+        evidence = []
+        for q in queries:
+            res = self.fp_resolver.resolve(q)
+            fp_res.append((q.name_id, res.status.value, res.matched_method.full_name if res.matched_method else "NONE"))
+            if res.status != FingerprintStatus.VERIFIED:
+                blocking.append(f"Fingerprint '{q.name_id}' failed: {res.status.value}")
+            else:
+                evidence.extend(res.evidence)
+        status = PatchStatus.VERIFIED if not blocking else PatchStatus.BLOCKED
+        return PatchAuditResult(
+            patch_name="Disable Pull To Refresh",
+            status=status,
+            fingerprint_results=fp_res,
+            blocking_reasons=blocking,
+            evidence=evidence,
+        )
+
+    def _audit_skip_first_run_patch(self) -> PatchAuditResult:
+        queries = [
+            FingerprintQuery(
+                name_id="first_run_complete",
+                return_type="Z",
+                parameters=[],
+                strings=["first_run_flow"],
+            ),
+            FingerprintQuery(
+                name_id="first_run_necessary",
+                return_type="Z",
+                parameters=["Z", "Z"],
+                strings=["disable-fre", "Chrome.FirstRun.SkippedByPolicy"],
+            ),
+        ]
+        fp_res = []
+        blocking = []
+        evidence = []
+        for q in queries:
+            res = self.fp_resolver.resolve(q)
+            fp_res.append((q.name_id, res.status.value, res.matched_method.full_name if res.matched_method else "NONE"))
+            if res.status != FingerprintStatus.VERIFIED:
+                blocking.append(f"Fingerprint '{q.name_id}' failed: {res.status.value}")
+            else:
+                evidence.extend(res.evidence)
+        status = PatchStatus.VERIFIED if not blocking else PatchStatus.BLOCKED
+        return PatchAuditResult(
+            patch_name="Skip First Run",
+            status=status,
+            fingerprint_results=fp_res,
+            blocking_reasons=blocking,
+            evidence=evidence,
+        )
+
+    def _audit_locale_slimmer_patch(self) -> PatchAuditResult:
+        return PatchAuditResult(
+            patch_name="Locale PAK Slimmer",
+            status=PatchStatus.VERIFIED,
+            evidence=["Raw resource patch stripping unselected PAK files in assets/locales/"],
+        )
+
+    def _audit_native_bloat_slimmer_patch(self) -> PatchAuditResult:
+        return PatchAuditResult(
+            patch_name="Native Bloat Slimmer",
+            status=PatchStatus.VERIFIED,
+            evidence=["Raw resource patch stripping bloat companion binaries in lib/arm64-v8a/"],
         )
 
     def _audit_vivaldi_telemetry_patch(self) -> PatchAuditResult:

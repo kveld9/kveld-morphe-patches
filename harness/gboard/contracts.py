@@ -89,7 +89,7 @@ def get_all_gboard_contracts() -> List[GboardPatchContract]:
                     name_id="daily_ping_worker",
                     defining_class="Lcom/google/android/libraries/inputmethod/dailyping/DailyPingWorker;",
                     method_name="c",
-                    return_type="Lagjs;",
+                    return_type="Lagrd;",
                     parameters=[],
                 ),
             ],
@@ -158,27 +158,6 @@ def get_all_gboard_contracts() -> List[GboardPatchContract]:
             ],
         ),
         GboardPatchContract(
-            patch_id="gboard_disable_in_app_training",
-            name="Disable In-App Training",
-            description="Neutralizes federated learning and training cache generation.",
-            source_file="patches/src/main/kotlin/app/morphe/patches/gboard/GboardDisableInAppTrainingPatch.kt",
-            queries=[
-                FingerprintQuery(
-                    name_id="latin5_periodic_worker",
-                    defining_class="Lcom/google/android/apps/inputmethod/libs/latin5/PeriodicTaskWorker;",
-                    method_name="k",
-                    return_type="V",
-                    parameters=["Landroid/content/Context;"],
-                ),
-            ],
-            semantic_invariants=[
-                "PeriodicTaskWorker.k returns immediately without scheduling federated learning",
-            ],
-            forbidden_regressions=[
-                "Disabling active on-screen keyboard predictions",
-            ],
-        ),
-        GboardPatchContract(
             patch_id="gboard_disable_mdd_sync",
             name="Disable MDD Background Sync",
             description="Neutralizes Mobile Data Download automated background polling.",
@@ -188,21 +167,21 @@ def get_all_gboard_contracts() -> List[GboardPatchContract]:
                     name_id="mdd_task_scheduler_worker",
                     defining_class="Lcom/google/android/libraries/inputmethod/mdd/MDDTaskScheduler$Worker;",
                     method_name="c",
-                    return_type="Lagjs;",
+                    return_type="Lagrd;",
                     parameters=[],
                 ),
                 FingerprintQuery(
                     name_id="mdd_metadata_cleanup_worker",
                     defining_class="Lcom/google/android/libraries/inputmethod/mdd/cleanup/MddMetadataCleanupWorker;",
                     method_name="k",
-                    return_type="Lciu;",
+                    return_type="Lcix;",
                     parameters=[],
                 ),
                 FingerprintQuery(
                     name_id="mdd_foreground_download_worker",
                     defining_class="Lcom/google/android/libraries/inputmethod/mdd/ForegroundDownloadTaskWorker;",
                     method_name="c",
-                    return_type="Lagjs;",
+                    return_type="Lagrd;",
                     parameters=[],
                 ),
             ],
@@ -249,14 +228,14 @@ def get_all_gboard_contracts() -> List[GboardPatchContract]:
             queries=[
                 FingerprintQuery(
                     name_id="superpacks_sync_task_1",
-                    defining_class="Lgvk;",
+                    defining_class="Lguu;",
                     method_name="n",
                     return_type="V",
                     parameters=[],
                 ),
                 FingerprintQuery(
                     name_id="superpacks_sync_task_2",
-                    defining_class="Lgrp;",
+                    defining_class="Lgsa;",
                     method_name="n",
                     return_type="V",
                     parameters=[],
@@ -277,9 +256,9 @@ def get_all_gboard_contracts() -> List[GboardPatchContract]:
             queries=[
                 FingerprintQuery(
                     name_id="tenor_share_tracker",
-                    defining_class="Limg;",
+                    defining_class="Limz;",
                     method_name="K",
-                    parameters=["Lafsc;", "Lidb;"],
+                    parameters=["Lafzm;", "Lidv;"],
                     return_type="V",
                 ),
             ],
@@ -334,7 +313,7 @@ def get_all_gboard_contracts() -> List[GboardPatchContract]:
             queries=[
                 FingerprintQuery(
                     name_id="access_points_flag_clinit",
-                    defining_class="Lpxs;",
+                    defining_class="Lpzb;",
                     method_name="<clinit>",
                     return_type="V",
                     strings=["enable_access_points_menu_redesign"],
@@ -355,7 +334,7 @@ def get_all_gboard_contracts() -> List[GboardPatchContract]:
             queries=[
                 FingerprintQuery(
                     name_id="key_shape_predicate",
-                    defining_class="Lxgy;",
+                    defining_class="Lxjm;",
                     method_name="i",
                     return_type="Z",
                     parameters=["Landroid/content/Context;"],
@@ -376,14 +355,14 @@ def get_all_gboard_contracts() -> List[GboardPatchContract]:
             queries=[
                 FingerprintQuery(
                     name_id="incognito_editor_check",
-                    defining_class="Lsew;",
+                    defining_class="Lsgl;",
                     method_name="H",
                     return_type="Z",
                     parameters=["Landroid/view/inputmethod/EditorInfo;"],
                 ),
                 FingerprintQuery(
                     name_id="incognito_flag_check",
-                    defining_class="Lfoh;",
+                    defining_class="Lfon;",
                     method_name="F",
                     return_type="Z",
                     parameters=[],
@@ -404,7 +383,7 @@ def get_all_gboard_contracts() -> List[GboardPatchContract]:
             queries=[
                 FingerprintQuery(
                     name_id="intent_security_flag_clinit",
-                    defining_class="Luev;",
+                    defining_class="Lugr;",
                     method_name="<clinit>",
                     return_type="V",
                     strings=["prevent_external_intents"],
@@ -445,6 +424,20 @@ def get_all_gboard_contracts() -> List[GboardPatchContract]:
             ],
             forbidden_regressions=[
                 "Corrupting essential layout XMLs or binary drawables",
+            ],
+        ),
+        GboardPatchContract(
+            patch_id="gboard_locale_slimmer",
+            name="Locale Resource Slimmer",
+            description="Strips unselected language translation directories from res/.",
+            source_file="patches/src/main/kotlin/app/morphe/patches/gboard/GboardLocaleSlimmerPatch.kt",
+            queries=[],
+            semantic_invariants=[
+                "Preserves base fallback resources with no language qualifiers",
+                "Strips non-target language qualification folders under res/",
+            ],
+            forbidden_regressions=[
+                "Deleting default values/ or drawable/ directories",
             ],
         ),
     ]

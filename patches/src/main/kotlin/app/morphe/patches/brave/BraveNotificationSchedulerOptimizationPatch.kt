@@ -34,8 +34,8 @@ val braveNotificationSchedulerOptimizationPatch = bytecodePatch(
             returnType = "I",
             parameters = listOf(
                 "Landroid/content/Context;",
-                "Lfjj;",
-                "Lu5c;",
+                "Lwtj;",
+                "Lpcc;",
             ),
         ).method.apply {
             addInstructions(

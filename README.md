@@ -63,7 +63,7 @@ Click the badge above or add `kveld9/kveld-morphe-patches` directly into your Mo
 
 <!-- PATCHES_START EXPANDED -->
 <details open>
-<summary>📦 Gboard Lite&nbsp;&nbsp;•&nbsp;&nbsp;19 patches</summary>
+<summary>📦 Gboard Lite&nbsp;&nbsp;•&nbsp;&nbsp;18 patches</summary>
 <br>
 
 **🎯 Supported versions:**
@@ -79,7 +79,6 @@ Click the badge above or add `kveld9/kveld-morphe-patches` directly into your Mo
 | [Clone Gboard](#clone-gboard) | Changes the package name by appending a dot and custom suffix (defaults to 'kveld') to allow installing Gboard alongside the original application. | • Package name suffix |
 | [Disable Diagnostics](#disable-diagnostics) | Disables Google's diagnostic and recovery telemetry. |  |
 | [Disable Google Primes](#disable-google-primes) | Neutralizes Google Primes performance profiling, jank monitoring, native crash sidecars, and background telemetry threads. |  |
-| [Disable In-App Training](#disable-in-app-training) | Neutralizes periodic in-app training cache generation and federated-learning background work while preserving normal keyboard functionality and explicit user-requested operations. |  |
 | [Disable MDD Background Sync](#disable-mdd-background-sync) | Neutralizes Mobile Data Download (MDD) periodic background synchronization, automated polling, and prefetch worker tasks while preserving on-demand and user-requested downloads. |  |
 | [Disable Remote Configuration](#disable-remote-configuration) | Disables periodic remote experiment flag synchronization and background updates. |  |
 | [Disable Superpacks Eager Sync](#disable-superpacks-eager-sync) | Neutralizes eager background Superpacks synchronization during application startup, eliminating unnecessary disk sweeps and network polling while preserving on-demand pack downloads. |  |
