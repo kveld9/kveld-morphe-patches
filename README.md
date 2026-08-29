@@ -68,7 +68,7 @@ Click the badge above or add `kveld9/kveld-morphe-patches` directly into your Mo
 
 **🎯 Supported versions:**
 
-| 18.0.3.954559732-lite_beta-arm64-v8a |
+| 18.1.3.962075747-lite_beta-arm64-v8a |
 | :---: |
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
@@ -100,7 +100,7 @@ Click the badge above or add `kveld9/kveld-morphe-patches` directly into your Mo
 
 **🎯 Supported versions:**
 
-| 1.93.138 |
+| 1.94.117 |
 | :---: |
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
@@ -179,7 +179,7 @@ If you perform a clean install of Gboard Lite with background sync debloat patch
 > [!IMPORTANT]
 > **Always download the standalone `lite` / `lite_beta` 64-bit APK (nodpi) from [APKMirror](https://www.apkmirror.com/apk/google-inc/gboard/):**
 >
-> - **Current Target**: `18.0.3.954559732-lite_beta-arm64-v8a`
+> - **Current Target**: `18.1.3.962075747-lite_beta-arm64-v8a`
 > - **Format**: `APK` _(Do **NOT** download `BUNDLE` / split packages)_
 > - **Architecture**: `arm64-v8a`
 > - **Screen DPI**: `nodpi`
