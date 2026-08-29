@@ -16,19 +16,19 @@ val gboardDisablePrimesPatch = bytecodePatch(
         val hookedMethods = mutableListOf<String>()
 
         val fp1 = Fingerprint(
-            definingClass = "Lwpr;",
-            name = "dB",
-            parameters = listOf("Landroid/content/Context;", "Lvsp;"),
+            definingClass = "Lwsd;",
+            name = "dC",
+            parameters = listOf("Landroid/content/Context;", "Lvul;"),
             returnType = "V",
         )
         fp1.method.addInstructions(0, "return-void")
         val c1 = app.morphe.patches.shared.LocaleUtils.cleanClassName(fp1.originalClassDef.type)
-        hookedMethods.add("$c1.dB")
+        hookedMethods.add("$c1.dC")
 
         val fp2 = Fingerprint(
-            definingClass = "Lacbi;",
+            definingClass = "Laciz;",
             name = "b",
-            parameters = listOf("Lacbi;"),
+            parameters = listOf("Laciz;"),
             returnType = "V",
         )
         fp2.method.addInstructions(0, "return-void")
@@ -38,15 +38,15 @@ val gboardDisablePrimesPatch = bytecodePatch(
         val fp3 = Fingerprint(
             definingClass = "Lcom/google/android/libraries/performance/primes/metrics/crash/NativeCrashHandlerImpl;",
             name = "a",
-            parameters = listOf("Lacma;"),
+            parameters = listOf("Lacto;"),
             returnType = "V",
         )
         fp3.method.addInstructions(0, "return-void")
         hookedMethods.add("NativeCrashHandlerImpl.a")
 
         val fp4 = Fingerprint(
-            definingClass = "Lacor;",
-            name = "gh",
+            definingClass = "Lacwf;",
+            name = "gk",
             parameters = emptyList(),
             returnType = "Ljava/lang/Object;",
         )
@@ -61,7 +61,7 @@ val gboardDisablePrimesPatch = bytecodePatch(
             """.trimIndent(),
         )
         val c4 = app.morphe.patches.shared.LocaleUtils.cleanClassName(fp4.originalClassDef.type)
-        hookedMethods.add("$c4.gh")
+        hookedMethods.add("$c4.gk")
 
         val fp5 = Fingerprint(
             definingClass = "Lcom/google/android/libraries/performance/primes/transmitter/LifeboatReceiver;",

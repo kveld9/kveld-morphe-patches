@@ -205,12 +205,12 @@ val braveOriginPatch = bytecodePatch(
             strings = listOf("brave_origin_credential_summary_cached"),
         ).method.addInstructions(0, "const/4 v0, 0x1\nreturn v0")
 
-        // 4. syncOriginPackageProduct(Profile, String) -> no-op
+        // 4. syncOriginPackageProduct(String, Profile) -> no-op
         Fingerprint(
             returnType = "V",
             parameters = listOf(
-                "Lorg/chromium/chrome/browser/profiles/Profile;",
                 "Ljava/lang/String;",
+                "Lorg/chromium/chrome/browser/profiles/Profile;",
             ),
             strings = listOf(
                 "brave.origin.package_name_android",
@@ -297,20 +297,20 @@ val braveOriginPatch = bytecodePatch(
             addInstructionsWithLabels(
                 0,
                 """
-                    iget-boolean v0, p0, Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;->N0:Z
+                    iget-boolean v0, p0, Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;->O0:Z
                     if-eqz v0, :not_locked
                     const/4 v0, 0x0
                     return v0
                     :not_locked
                     iget-object v0, p1, Landroidx/preference/Preference;->G:Ljava/lang/String;
-                    invoke-static {v0}, Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;->b5(Ljava/lang/String;)Ljava/lang/String;
+                    invoke-static {v0}, Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;->e5(Ljava/lang/String;)Ljava/lang/String;
                     move-result-object v0
                     if-eqz v0, :no_key
                     check-cast p2, Ljava/lang/Boolean;
                     invoke-virtual {p2}, Ljava/lang/Boolean;->booleanValue()Z
                     move-result v1
                     xor-int/lit8 v1, v1, 0x1
-                    invoke-virtual {p0}, Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;->B4()Landroid/content/Context;
+                    invoke-virtual {p0}, Lys7;->E4()Landroid/content/Context;
                     move-result-object v2
                     invoke-virtual {v2}, Landroid/content/Context;->getApplicationContext()Landroid/content/Context;
                     move-result-object v2
@@ -330,7 +330,7 @@ val braveOriginPatch = bytecodePatch(
                     move-result-object v2
                     :write_done
                     invoke-interface {v2}, Landroid/content/SharedPreferences${'$'}Editor;->apply()V
-                    invoke-virtual {p0}, Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;->a5()V
+                    invoke-virtual {p0}, Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;->d5()V
                     :no_key
                     const/4 v0, 0x1
                     return v0
@@ -347,7 +347,7 @@ val braveOriginPatch = bytecodePatch(
         setupPrefFingerprint.method.addInstructions(
             0,
             """
-                invoke-virtual {p0, p1}, Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;->P4(Ljava/lang/CharSequence;)Landroidx/preference/Preference;
+                invoke-virtual {p0, p1}, Lbwe;->S4(Ljava/lang/CharSequence;)Landroidx/preference/Preference;
                 move-result-object v0
                 if-eqz v0, :setup_done
                 move-object v3, p0

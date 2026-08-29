@@ -16,9 +16,9 @@ val gboardDisableMddBackgroundSyncPatch = bytecodePatch(
         val hookedMethods = mutableListOf<String>()
 
         val fp1 = Fingerprint(
-            definingClass = "Laane;",
+            definingClass = "Laauv;",
             name = "a",
-            parameters = listOf("Lvfi;", "Laani;"),
+            parameters = listOf("Lvhe;", "Laauz;"),
             returnType = "V",
         )
         fp1.method.addInstructions(0, "return-void")
@@ -26,9 +26,9 @@ val gboardDisableMddBackgroundSyncPatch = bytecodePatch(
         hookedMethods.add("$c1.a")
 
         val fp2 = Fingerprint(
-            definingClass = "Lvem;",
+            definingClass = "Lvgi;",
             name = "t",
-            parameters = listOf("Lvel;"),
+            parameters = listOf("Lvgh;"),
             returnType = "V",
         )
         fp2.method.addInstructions(0, "return-void")
@@ -36,7 +36,7 @@ val gboardDisableMddBackgroundSyncPatch = bytecodePatch(
         hookedMethods.add("$c2.t")
 
         val fp3 = Fingerprint(
-            definingClass = "Lvem;",
+            definingClass = "Lvgi;",
             name = "l",
             parameters = emptyList(),
             returnType = "V",
@@ -45,10 +45,10 @@ val gboardDisableMddBackgroundSyncPatch = bytecodePatch(
         hookedMethods.add("$c2.l")
 
         val fp4 = Fingerprint(
-            definingClass = "Lvem;",
+            definingClass = "Lvgi;",
             name = "g",
-            parameters = listOf("Lveo;"),
-            returnType = "Lagjs;",
+            parameters = listOf("Lvgk;"),
+            returnType = "Lagrd;",
         )
         fp4.method.addInstructions(
             0,
@@ -56,7 +56,7 @@ val gboardDisableMddBackgroundSyncPatch = bytecodePatch(
                 const/4 v0, 0x1
                 invoke-static {v0}, Ljava/lang/Boolean;->valueOf(Z)Ljava/lang/Boolean;
                 move-result-object v0
-                invoke-static {v0}, Lagjb;->i(Ljava/lang/Object;)Lagjs;
+                invoke-static {v0}, Lagqm;->i(Ljava/lang/Object;)Lagrd;
                 move-result-object v0
                 return-object v0
             """.trimIndent(),
@@ -67,14 +67,14 @@ val gboardDisableMddBackgroundSyncPatch = bytecodePatch(
             definingClass = "Lcom/google/android/libraries/inputmethod/mdd/MDDTaskScheduler${'$'}Worker;",
             name = "c",
             parameters = emptyList(),
-            returnType = "Lagjs;",
+            returnType = "Lagrd;",
         )
         fp5.method.addInstructions(
             0,
             """
-                invoke-static {}, Lciu;->a()Lciu;
+                invoke-static {}, Lcix;->a()Lcix;
                 move-result-object v0
-                invoke-static {v0}, Lagjb;->i(Ljava/lang/Object;)Lagjs;
+                invoke-static {v0}, Lagqm;->i(Ljava/lang/Object;)Lagrd;
                 move-result-object v0
                 return-object v0
             """.trimIndent(),
@@ -85,12 +85,12 @@ val gboardDisableMddBackgroundSyncPatch = bytecodePatch(
             definingClass = "Lcom/google/android/libraries/inputmethod/mdd/cleanup/MddMetadataCleanupWorker;",
             name = "k",
             parameters = emptyList(),
-            returnType = "Lciu;",
+            returnType = "Lcix;",
         )
         fp6.method.addInstructions(
             0,
             """
-                invoke-static {}, Lciu;->a()Lciu;
+                invoke-static {}, Lcix;->a()Lcix;
                 move-result-object v0
                 return-object v0
             """.trimIndent(),
@@ -101,14 +101,14 @@ val gboardDisableMddBackgroundSyncPatch = bytecodePatch(
             definingClass = "Lcom/google/android/libraries/inputmethod/mdd/ForegroundDownloadTaskWorker;",
             name = "c",
             parameters = emptyList(),
-            returnType = "Lagjs;",
+            returnType = "Lagrd;",
         )
         fp7.method.addInstructions(
             0,
             """
-                invoke-static {}, Lciu;->a()Lciu;
+                invoke-static {}, Lcix;->a()Lcix;
                 move-result-object v0
-                invoke-static {v0}, Lagjb;->i(Ljava/lang/Object;)Lagjs;
+                invoke-static {v0}, Lagqm;->i(Ljava/lang/Object;)Lagrd;
                 move-result-object v0
                 return-object v0
             """.trimIndent(),
