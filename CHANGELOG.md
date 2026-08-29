@@ -1,3 +1,9 @@
+## [1.9.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.8.0...v1.9.0) (2026-08-29)
+
+### ✨ New Features
+
+* update Vivaldi Browser Snapshot target to v8.2.4145.4 ([9fe9ce4](https://github.com/kveld9/kveld-morphe-patches/commit/9fe9ce4c68b7488a2be6a95e99881ce9b51601cc))
+
 ## [1.8.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.7.0...v1.8.0) (2026-08-29)
 
 ### ✨ New Features
