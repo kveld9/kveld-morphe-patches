@@ -14,9 +14,9 @@ val gboardDisableTenorRegisterSharePatch = bytecodePatch(
 
     execute {
         val fp = Fingerprint(
-            definingClass = "Limg;",
+            definingClass = "Limz;",
             name = "K",
-            parameters = listOf("Lafsc;", "Lidb;"),
+            parameters = listOf("Lafzm;", "Lidv;"),
             returnType = "V",
         )
         fp.method.addInstructions(

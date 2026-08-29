@@ -94,9 +94,8 @@ class SymbolResolver:
     @staticmethod
     def _has_on_preference_change(cls: IndexedClass) -> bool:
         return any(
-            m.return_type == "Z" and len(m.parameters) == 2 and
-            m.parameters[0] == "Landroidx/preference/Preference;" and
-            m.parameters[1] == "Ljava/lang/Object;"
+            m.return_type == "Z" and len(m.parameters) in (1, 2) and
+            m.parameters[0] == "Landroidx/preference/Preference;"
             for m in cls.methods
         )
 
@@ -209,10 +208,10 @@ class SymbolResolver:
         if not cls:
             return None
 
-        # Look for onStartTask method: returns I, has 3 parameters: [Landroid/content/Context;, param2, param3]
+        # Look for onStartTask method: returns I, parameters start with Context
         task_methods = [
             m for m in cls.methods
-            if m.return_type == "I" and len(m.parameters) == 3 and m.parameters[0] == "Landroid/content/Context;"
+            if m.return_type == "I" and len(m.parameters) in (1, 3) and m.parameters[0] == "Landroid/content/Context;"
         ]
         if not task_methods:
             return None

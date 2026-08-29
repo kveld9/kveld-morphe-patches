@@ -205,6 +205,8 @@ class DexIndex:
         if not desc.startswith("(") or ")" not in desc:
             return [], desc
         param_part, ret_type = desc[1:].split(")", 1)
+        param_part = param_part.replace(" ", "")
+        ret_type = ret_type.strip()
         params = []
         i = 0
         while i < len(param_part):
