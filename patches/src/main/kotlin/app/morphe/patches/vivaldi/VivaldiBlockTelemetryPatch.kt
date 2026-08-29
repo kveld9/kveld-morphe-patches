@@ -28,11 +28,11 @@ private val vivaldiHostsBlockerPatch = rawResourcePatch(
         )
 
         val hostEntries = listOf(
-            HostEntry(0x00a19753L, "https://update.vivaldi.com/rep/rep"),
-            HostEntry(0x000c677eL, "https://crash.vivaldi.com/submit"),
-            HostEntry(0x0007f78eL, "crashpad.chromium.org"),
-            HostEntry(0x00434ef4L, "crashpad.chromium.org"),
-            HostEntry(0x001a242aL, "https://downloads.vivaldi.com/directmatch/"),
+            HostEntry(0x00a1a893L, "https://update.vivaldi.com/rep/rep"),
+            HostEntry(0x000c6760L, "https://crash.vivaldi.com/submit"),
+            HostEntry(0x0007f788L, "crashpad.chromium.org"),
+            HostEntry(0x00434f13L, "crashpad.chromium.org"),
+            HostEntry(0x001a244eL, "https://downloads.vivaldi.com/directmatch/"),
         )
 
         val redirectionIp = "0.0.0.0".toByteArray(Charsets.US_ASCII)
@@ -84,7 +84,7 @@ val vivaldiBlockSyncPatch = rawResourcePatch(
             return@execute
         }
 
-        val syncOffset = 0x0031aff2L
+        val syncOffset = 0x0031b0bdL
         val syncUrl = "https://bifrost.vivaldi.com/vivid-sync"
         val expectedBytes = syncUrl.toByteArray(Charsets.US_ASCII)
         val len = expectedBytes.size
