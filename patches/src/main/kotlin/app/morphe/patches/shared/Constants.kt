@@ -38,7 +38,7 @@ object Constants {
     )
 
     const val VIVALDI_PACKAGE_NAME = "com.vivaldi.browser.snapshot"
-    const val VIVALDI_TARGET_VERSION = "8.2.4143.3"
+    const val VIVALDI_TARGET_VERSION = "8.2.4145.4"
 
     val COMPATIBILITY_VIVALDI = Compatibility(
         name = "Vivaldi Browser Snapshot",
@@ -48,7 +48,7 @@ object Constants {
         targets = listOf(
             AppTarget(
                 version = VIVALDI_TARGET_VERSION,
-                description = "Download Vivaldi.8.2.4143.3_arm64-v8a.apk from vivaldi.com/blog/android/"
+                description = "Download Vivaldi.8.2.4145.4_arm64-v8a.apk from vivaldi.com/blog/android/"
             )
         )
     )
