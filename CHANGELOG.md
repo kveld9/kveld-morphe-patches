@@ -1,3 +1,9 @@
+## [1.8.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.7.0...v1.8.0) (2026-08-29)
+
+### ✨ New Features
+
+* support Brave v1.94.117 and Gboard Lite v18.1.3 ([fb6a47e](https://github.com/kveld9/kveld-morphe-patches/commit/fb6a47e93510d8ca61043a8279898d9db457f6fe))
+
 ## [1.7.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.6.0...v1.7.0) (2026-08-27)
 
 ### ✨ New Features
