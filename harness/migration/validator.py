@@ -66,6 +66,7 @@ class AdversarialValidator:
         results["vivaldiBackgroundSyncPatch"] = self._audit_vivaldi_sync_patch()
         results["vivaldiDisablePromptsPatch"] = self._audit_vivaldi_prompts_patch()
         results["vivaldiCleanSpeedDialPatch"] = self._audit_vivaldi_clean_speed_dial_patch()
+        results["vivaldiCloseTabsOnExitPatch"] = self._audit_vivaldi_close_tabs_patch()
         return results
 
     def _audit_origin_patch(self) -> PatchAuditResult:
@@ -748,6 +749,59 @@ class AdversarialValidator:
         status = PatchStatus.VERIFIED if not blocking else PatchStatus.BLOCKED
         return PatchAuditResult(
             patch_name="Clean Speed Dial Bookmarks",
+            status=status,
+            fingerprint_results=fp_res,
+            blocking_reasons=blocking,
+            evidence=evidence,
+        )
+
+    def _audit_vivaldi_close_tabs_patch(self) -> PatchAuditResult:
+        fp_res = []
+        blocking = []
+        evidence = []
+
+        # 1. Locate TabStateFileManager helper method via unique strings
+        q_helper = FingerprintQuery(
+            name_id="vivaldi_tab_state_helper",
+            return_type="Z",
+            parameters=["Ljava/lang/String;"],
+            strings=["tab_state", ".bak", ".new"],
+        )
+        res_helper = self.fp_resolver.resolve(q_helper)
+        fp_res.append((q_helper.name_id, res_helper.status.value, res_helper.matched_method.full_name if res_helper.matched_method else "NONE"))
+        if res_helper.status != FingerprintStatus.VERIFIED:
+            blocking.append(f"Fingerprint '{q_helper.name_id}' failed: {res_helper.status.value}")
+        else:
+            evidence.extend(res_helper.evidence)
+            tab_state_manager_class = res_helper.matched_method.class_name
+
+            # 2. Locate parse / readTabState method on TabStateFileManager
+            cls = self.dex_index.find_class(tab_state_manager_class)
+            if cls:
+                candidates = [
+                    m for m in cls.methods
+                    if m.return_type == "I"
+                    and len(m.parameters) == 3
+                    and m.parameters[0] == "Ljava/io/DataInputStream;"
+                    and m.parameters[2] == "Landroid/util/SparseBooleanArray;"
+                ]
+                if len(candidates) == 1:
+                    target_m = candidates[0]
+                    # Verify structural characteristics of TabState deserializer
+                    stream_calls = {c[1] for c in target_m.called_methods if c[0] == "Ljava/io/DataInputStream;"}
+                    if "readInt" in stream_calls and "readUTF" in stream_calls:
+                        fp_res.append(("vivaldi_tab_state_read_method", "VERIFIED", target_m.full_name))
+                        evidence.append(f"Unique TabState read method verified with DataInputStream deserialization AST: {target_m.full_name}")
+                    else:
+                        blocking.append(f"Method {target_m.full_name} lacks expected DataInputStream readInt/readUTF calls: {stream_calls}")
+                else:
+                    blocking.append(f"Expected exactly 1 TabState deserializer method in {tab_state_manager_class}, found {len(candidates)}")
+            else:
+                blocking.append(f"Class {tab_state_manager_class} not found in DexIndex.")
+
+        status = PatchStatus.VERIFIED if not blocking else PatchStatus.BLOCKED
+        return PatchAuditResult(
+            patch_name="Close Tabs on Exit",
             status=status,
             fingerprint_results=fp_res,
             blocking_reasons=blocking,
