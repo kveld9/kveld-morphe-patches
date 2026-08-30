@@ -19,7 +19,7 @@ private val BLOAT_NATIVE_LIBS = listOf(
 val braveNativeBloatSlimmerPatch = rawResourcePatch(
     name = "Native Bloat Slimmer",
     description = "Strips unused native companion binaries (Impress Vision AI, WireGuard VPN, and Android XR) to significantly reduce APK size.",
-    default = true,
+    default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_BRAVE)
 
