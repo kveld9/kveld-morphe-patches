@@ -120,7 +120,7 @@ Click the badge above or add `kveld9/kveld-morphe-patches` directly into your Mo
 </details>
 
 <details open>
-<summary>📦 Vivaldi Browser Snapshot&nbsp;&nbsp;•&nbsp;&nbsp;12 patches</summary>
+<summary>📦 Vivaldi Browser Snapshot&nbsp;&nbsp;•&nbsp;&nbsp;13 patches</summary>
 <br>
 
 **🎯 Supported versions:**
@@ -133,6 +133,7 @@ Click the badge above or add `kveld9/kveld-morphe-patches` directly into your Mo
 | [Block Vivaldi Sync](#block-vivaldi-sync) | Redirects bifrost.vivaldi.com to 0.0.0.0 in libchrome.so to completely disable Vivaldi account synchronization for an air-gapped experience. |  |
 | [Block Vivaldi Telemetry](#block-vivaldi-telemetry) | Blocks Vivaldi usage statistics, crash reporting, Crashpad endpoints, and DirectMatch suggestions. |  |
 | [Clean Speed Dial Bookmarks](#clean-speed-dial-bookmarks) | Removes sponsored commercial affiliate bookmarks, hides the 3-dot customize button, and disables phantom touch actions on the blank Start Page. |  |
+| [Close Tabs on Exit](#close-tabs-on-exit) | Prevents tab restoration on startup, ensuring Vivaldi always opens with a clean Start Page session regardless of how the app was terminated. |  |
 | [Disable Background Sync & Periodic Sync](#disable-background-sync-periodic-sync) | Eliminates background wakeups, radio modem activity, and battery drain by neutralizing periodic and one-shot background sync tasks. |  |
 | [Disable Battery Status API & OS Listener](#disable-battery-status-api-os-listener) | Neutralizes the Android BatteryStatusManager broadcast listener to prevent continuous OS battery wakeups. |  |
 | [Disable Chromium Tips & Notification Scheduler](#disable-chromium-tips-notification-scheduler) | Eliminates periodic background wakeups, native library loading, and in-product promotional tips from Chromium tips scheduler. |  |
