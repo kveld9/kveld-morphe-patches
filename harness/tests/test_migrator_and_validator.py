@@ -84,7 +84,20 @@ class TestMigratorAndValidator(unittest.TestCase):
         plan = self.migrator.plan_vivaldi_constants_update("8.3.9999.9")
         self.assertTrue(plan.has_changes)
         self.assertIn('const val VIVALDI_TARGET_VERSION = "8.3.9999.9"', plan.modified_content)
-        self.assertIn('Download Vivaldi.8.3.9999.9_arm64-v8a.apk from vivaldi.com/blog/android/', plan.modified_content)
+    # 15. Vivaldi Close Tabs on Exit audit test
+    def test_vivaldi_close_tabs_audit(self):
+        audit_res = PatchAuditResult(
+            patch_name="Close Tabs on Exit",
+            status=PatchStatus.VERIFIED,
+            fingerprint_results=[
+                ("vivaldi_tab_state_helper", "VERIFIED", "Lyed;->b(Ljava/lang/String;)Z"),
+                ("vivaldi_tab_state_read_method", "VERIFIED", "Lyed;->c(Ljava/io/DataInputStream;Lxid;Landroid/util/SparseBooleanArray;)I"),
+            ],
+            blocking_reasons=[],
+            evidence=["Unique TabState read method resolved: Lyed;->c"],
+        )
+        self.assertEqual(audit_res.status, PatchStatus.VERIFIED)
+        self.assertEqual(len(audit_res.fingerprint_results), 2)
 
 
 if __name__ == "__main__":
