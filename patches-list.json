@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.10.0",
+  "version": "1.10.1",
   "patches": [
     {
       "name": "Add AMOLED Theme",
@@ -799,7 +799,7 @@
     {
       "name": "Locale PAK Slimmer",
       "description": "Strips unselected language resource PAKs from assets/locales/.",
-      "default": true,
+      "default": false,
       "dependencies": [],
       "compatiblePackages": [
         {
@@ -888,7 +888,7 @@
     {
       "name": "Native Bloat Slimmer",
       "description": "Strips unused native companion binaries (Impress Vision AI, WireGuard VPN, and Android XR) to significantly reduce APK size.",
-      "default": true,
+      "default": false,
       "dependencies": [],
       "compatiblePackages": [
         {
