@@ -23,7 +23,7 @@ private val EMPTY_DATAPACK_V5 by lazy {
 val braveLocaleSlimmerPatch = rawResourcePatch(
     name = "Locale PAK Slimmer",
     description = "Strips unselected language resource PAKs from assets/locales/.",
-    default = true,
+    default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_BRAVE, Constants.COMPATIBILITY_VIVALDI)
 
