@@ -126,10 +126,17 @@ apks-ultima-version/
 # Local signing credentials and keystores
 *.keystore
 *.jks
+*.rsa
+*.dsa
+*.cert
 
 # Morphe patcher execution & decompilation cache
 morphe-temporary-files/
 **/morphe-temporary-files/
+tools/
+morphe-data/
+**/morphe-data/
+scratch/
 
 # Harness generated reports and differentials
 *_HARNESS_REPORT.md
