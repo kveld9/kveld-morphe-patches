@@ -1,9 +1,0 @@
-APK Target: com.brave.browser
-Version Name: 1.93.138
-Version Code: 429313804
-SHA256: 4a707061495649c8eeec870a3f28329e800bd4b0fcd7455ff8ad7843dc4bec25
-
-Patch 1 (Battery): Lzh1;->onReceive(Landroid/content/Context;,Landroid/content/Intent;)V
-Patch 2 (Background Sync): Lorg/chromium/chrome/browser/background_sync/GooglePlayServicesChecker;->shouldDisableBackgroundSync()Z, Lh1e;->d(Landroid/content/Context;,Lfjj;,Lu5c;)V, Ly81;->d(Landroid/content/Context;,Lfjj;,Lu5c;)V
-Patch 3 (Media Session): Lorg/chromium/content/browser/MediaSessionImpl;->mediaSessionStateChanged(Z,Z)V
-Patch 4 (Pull To Refresh): Lil2;->start(I,I)Z, Lil2;->pull(F,F)V
