@@ -5,7 +5,7 @@ import app.morphe.patcher.patch.AppTarget
 import app.morphe.patcher.patch.Compatibility
 
 object Constants {
-    const val BRAVE_TARGET_VERSION = "1.94.117"
+    const val BRAVE_TARGET_VERSION = "1.94.119"
     const val BRAVE_PACKAGE_NAME = "com.brave.browser"
 
     val COMPATIBILITY_BRAVE = Compatibility(
@@ -16,7 +16,7 @@ object Constants {
         targets = listOf(
             AppTarget(
                 version = BRAVE_TARGET_VERSION,
-                description = "Download Bravemonoarm64.apk (v1.94.117) from github.com/brave/brave-browser/releases"
+                description = "Download Bravemonoarm64.apk (v1.94.119) from github.com/brave/brave-browser/releases"
             )
         )
     )
