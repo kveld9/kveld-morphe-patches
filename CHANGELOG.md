@@ -1,3 +1,9 @@
+## [1.11.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.10.1...v1.11.0) (2026-09-02)
+
+### ✨ New Features
+
+* **brave:** update patches for v1.94.119 and validate on physical arm64 device ([3e1fc19](https://github.com/kveld9/kveld-morphe-patches/commit/3e1fc19f62e796e02852f52b234e972ecf89a23a))
+
 ## [1.10.1](https://github.com/kveld9/kveld-morphe-patches/compare/v1.10.0...v1.10.1) (2026-08-30)
 
 ### 🐛 Bug Fixes

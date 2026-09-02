@@ -100,7 +100,7 @@ Click the badge above or add `kveld9/kveld-morphe-patches` directly into your Mo
 
 **🎯 Supported versions:**
 
-| 1.94.117 |
+| 1.94.119 |
 | :---: |
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
