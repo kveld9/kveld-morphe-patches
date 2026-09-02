@@ -1,10 +1,15 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/Platform-Android-3DDC84?style=for-the-badge&logo=android&logoColor=white" />
-  <img src="https://img.shields.io/badge/Target-Brave_Browser-FF4500?style=for-the-badge&logo=brave&logoColor=white" />
-  <img src="https://img.shields.io/badge/Target-Vivaldi_Snapshot-EF3939?style=for-the-badge&logo=vivaldi&logoColor=white" />
-  <img src="https://img.shields.io/badge/Target-Gboard_Lite-4285F4?style=for-the-badge&logo=google&logoColor=white" />
-  <img src="https://img.shields.io/badge/Runtime-Morphe_Patcher_1.8.0-8A2BE2?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/License-GPLv3-blue?style=for-the-badge" />
+  <a href="https://github.com/kveld9/kveld-morphe-patches/releases/latest"><img src="https://img.shields.io/github/v/release/kveld9/kveld-morphe-patches?color=7928CA&label=Release&logo=github&style=for-the-badge" alt="Latest Release" /></a>
+  <a href="https://github.com/kveld9/kveld-morphe-patches/actions/workflows/release.yml"><img src="https://img.shields.io/github/actions/workflow/status/kveld9/kveld-morphe-patches/release.yml?branch=main&label=CI&logo=githubactions&logoColor=white&style=for-the-badge" alt="Build Status" /></a>
+  <img src="https://img.shields.io/badge/Runtime-Morphe_Patcher_1.8.0-8A2BE2?style=for-the-badge" alt="Runtime" />
+  <img src="https://img.shields.io/badge/License-GPLv3-blue?style=for-the-badge" alt="License" />
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Platform-Android-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Platform Android" />
+  <img src="https://img.shields.io/badge/Target-Brave_Browser-FF4500?style=for-the-badge&logo=brave&logoColor=white" alt="Target Brave" />
+  <img src="https://img.shields.io/badge/Target-Vivaldi_Snapshot-EF3939?style=for-the-badge&logo=vivaldi&logoColor=white" alt="Target Vivaldi" />
+  <img src="https://img.shields.io/badge/Target-Gboard_Lite-4285F4?style=for-the-badge&logo=google&logoColor=white" alt="Target Gboard" />
 </p>
 
 <h1 align="center">🔮 Morphe Patches</h1>
@@ -14,7 +19,9 @@
 </p>
 
 <p align="center">
-  <a href="https://morphe.software/add-source?github=kveld9/kveld-morphe-patches"><img src="https://img.shields.io/badge/Morphe_Manager-Add_Patch_Source-8A2BE2?style=for-the-badge&logo=android" /></a>
+  <a href="https://morphe.software/add-source?github=kveld9/kveld-morphe-patches"><img src="https://img.shields.io/badge/Morphe_Manager-Add_Patch_Source-8A2BE2?style=for-the-badge&logo=android&logoColor=white" alt="Add Source to Morphe Manager" /></a>
+  &nbsp;&nbsp;
+  <a href="https://github.com/kveld9/kveld-morphe-patches/releases/latest"><img src="https://img.shields.io/badge/Direct_Download-Get_.MPP_Bundle-0070F3?style=for-the-badge&logo=github&logoColor=white" alt="Download Latest Release" /></a>
 </p>
 
 ---
