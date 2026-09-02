@@ -1,0 +1,11 @@
+{
+  "mode": "patched",
+  "test": "battery_optimization",
+  "timestamp": 1788389113.1021411,
+  "device_abi": "arm64-v8a",
+  "battery_log_count": 0,
+  "battery_manager_logs": [],
+  "has_direct_log_trace": false,
+  "observability_status": "NO_DIRECT_RELEASE_LOG",
+  "raw_logcat_path": "/home/kveld/Documentos/repos/brave-origin-patches/validation/physical_harness/results/patched/battery_patched_logcat.txt"
+}

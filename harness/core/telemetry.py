@@ -27,6 +27,11 @@ KNOWN_TELEMETRY_HOSTS: List[str] = [
     "variations.brave.com",
 ]
 
+# False-positive or non-telemetry hostnames ignored during candidate discovery
+IGNORED_TELEMETRY_CANDIDATES: Set[str] = {
+    "ai-chat.bsg.brave.com",
+}
+
 
 @dataclass
 class HostAuditResult:
@@ -135,7 +140,7 @@ class TelemetryScanner:
 
         for match in pattern.finditer(self.elf.data):
             raw_host = match.group(1).decode("ascii", errors="replace")
-            if raw_host in KNOWN_TELEMETRY_HOSTS or raw_host in seen_hosts:
+            if raw_host in KNOWN_TELEMETRY_HOSTS or raw_host in seen_hosts or raw_host in IGNORED_TELEMETRY_CANDIDATES:
                 continue
             seen_hosts.add(raw_host)
 
