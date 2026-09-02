@@ -173,3 +173,9 @@ local.properties
 # OS metadata
 .DS_Store
 Thumbs.db
+
+# Validation results & runtime crashes
+validation/physical_harness/results/
+validation/runtime/crashes/
+validation/combined/
+
