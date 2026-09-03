@@ -13,9 +13,10 @@ echo "🧹 Cleaning up workspace in $REPO_ROOT..."
 echo "==> Removing generated reports..."
 rm -f ./*_HARNESS_REPORT.md ./APK_DIFF.md
 
-# 2. Remove loose APKs & patch bundles in root
+# 2. Remove loose APKs & patch bundles in root (including decompiled dirs)
 echo "==> Removing loose APKs and signatures..."
-rm -f ./*.apk ./*.apkm ./*.xapk ./*.mpp ./*.mpe ./*.idsig
+rm -rf ./*.apk ./*.apkm ./*.xapk ./*.mpp ./*.mpe ./*.idsig
+
 
 # 3. Clean temporary directories if they exist
 echo "==> Removing temporary cache directories..."

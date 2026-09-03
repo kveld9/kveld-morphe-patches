@@ -177,5 +177,6 @@ Thumbs.db
 # Validation results & runtime crashes
 validation/physical_harness/results/
 validation/runtime/crashes/
+validation/runtime/*.txt
 validation/combined/
 
