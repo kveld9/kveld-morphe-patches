@@ -1,3 +1,9 @@
+## [1.12.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.11.0...v1.12.0) (2026-09-03)
+
+### ✨ New Features
+
+* **vivaldi:** update patches for v8.2.4147.28 and align libchrome offsets ([b37b01d](https://github.com/kveld9/kveld-morphe-patches/commit/b37b01d935425e3df752a07d0b1f83cdb5c55945))
+
 ## [1.11.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.10.1...v1.11.0) (2026-09-02)
 
 ### ✨ New Features
