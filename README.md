@@ -132,7 +132,7 @@ Click the badge above or add `kveld9/kveld-morphe-patches` directly into your Mo
 
 **🎯 Supported versions:**
 
-| 8.2.4145.4 |
+| 8.2.4147.28 |
 | :---: |
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
@@ -217,13 +217,13 @@ If you perform a clean install of Gboard Lite with background sync debloat patch
 > **Always download the official `arm64-v8a` APK directly from the [Vivaldi Android Blog](https://vivaldi.com/blog/android/).**
 > In every release announcement blog post, Vivaldi provides direct official APK download links at the bottom.
 >
-> - **Current Target**: `Vivaldi.8.2.4145.4_arm64-v8a.apk`
+> - **Current Target**: `Vivaldi.8.2.4147.28_arm64-v8a.apk`
 > - **Architecture**: `arm64-v8a` (Do **NOT** use `armeabi-v7a`, `x86`, or `x86_64`)
 > - **Package Name**: `com.vivaldi.browser.snapshot`
 
 #### ❓ Why Vivaldi Snapshot & Future Transition to Stable
 
-- **Extension Support & Experimental Features**: Morphe Patches currently targets **Vivaldi Snapshot** to leverage native Desktop Extension support and bleeding-edge Chromium components.
+- **Extension Support & Experimental Features**: Morphe Patches currently targets **Vivaldi Snapshot** to provide native Desktop Extension support and recent Chromium components.
 - **Stable Transition Roadmap**: Vivaldi Snapshot is maintained as the primary target **only until Web Extensions support is enabled by default in the stable release** of Vivaldi Browser (`com.vivaldi.browser`), at which point patch compatibility will expand/transition to the stable channel.
 - **Native 64-bit Binary Offsets**: Byte-level offsets in `lib/arm64-v8a/libchrome.so` (telemetry endpoints, Crashpad, and DirectMatch suggestions) are strictly calculated against 64-bit ARM builds.
 
