@@ -52,7 +52,7 @@ It enhances target applications with native Pure Black AMOLED themes, comprehens
    kveld9/kveld-morphe-patches
    ```
    *(Or click: **[Add Source to Morphe Manager](https://morphe.software/add-source?github=kveld9/kveld-morphe-patches)**)*
-3. **Download Supported APK:** Obtain the exact target APK variant from the links in [Supported Targets](#-supported-targets).
+3. **Download Supported APK:** Obtain the exact target APK variant from the links in [Supported Targets](#supported-targets).
 4. **Select Patches:** Pick the patches you want to apply (privacy hardening, AMOLED theme, slimming, etc.).
 5. **Patch & Install:** Tap **Patch**, wait for compilation to complete, and install your enhanced APK.
 
@@ -72,24 +72,24 @@ It enhances target applications with native Pure Black AMOLED themes, comprehens
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
-| [Add AMOLED Theme](#add-amoled-theme) | Adds a selectable Pure Black AMOLED theme using Gboard's native color_black theme package, without replacing Dark, Light, System Auto, or Dynamic Color. |  |
-| [Allow Modified APK](#allow-modified-apk) | Bypasses internal signature check to allow custom APK execution. |  |
-| [Block Telemetry](#block-telemetry) | Disables background metrics dispatch, event logging, daily pings, and crash reporting. |  |
-| [Clone Gboard](#clone-gboard) | Changes the package name by appending a dot and custom suffix (defaults to 'kveld') to allow installing Gboard alongside the original application. | • Package name suffix |
-| [Disable Diagnostics](#disable-diagnostics) | Disables Google's diagnostic and recovery telemetry. |  |
-| [Disable Google Primes](#disable-google-primes) | Neutralizes Google Primes performance profiling, jank monitoring, native crash sidecars, and background telemetry threads. |  |
-| [Disable MDD Background Sync](#disable-mdd-background-sync) | Neutralizes Mobile Data Download (MDD) periodic background synchronization, automated polling, and prefetch worker tasks while preserving on-demand and user-requested downloads. |  |
-| [Disable Remote Configuration](#disable-remote-configuration) | Disables periodic remote experiment flag synchronization and background updates. |  |
-| [Disable Superpacks Eager Sync](#disable-superpacks-eager-sync) | Neutralizes eager background Superpacks synchronization during application startup, eliminating unnecessary disk sweeps and network polling while preserving on-demand pack downloads. |  |
-| [Disable Tenor Share Tracking](#disable-tenor-share-tracking) | Disables Tenor GIF selection and share tracking telemetry. |  |
-| [Disable WorkManager](#disable-workmanager) | Neutralizes background WorkManager initialization, database creation, and periodic maintenance workers. |  |
-| [Enable Access Points Menu Redesign](#enable-access-points-menu-redesign) | Enables the redesigned access points menu bar and customization panel (Panel V2). |  |
-| [Enable Key Shape Selection](#enable-key-shape-selection) | Enables the key border shape selection UI (Default, Semi-rounded, Round) in theme customization. |  |
-| [Force Incognito Mode](#force-incognito-mode) | Forces Gboard to always operate in incognito mode (disabling personalized learning and persistent input logging) while keeping clipboard functionality enabled. |  |
-| [Hardened Intent Security](#hardened-intent-security) | Enables Gboard internal external intent protection against unauthorized intent hijacking. |  |
-| [Locale Resource Slimmer](#locale-resource-slimmer) | Strips unselected language translation directories from res/ (e.g. values-*, raw-*, xml-*). Base fallback resources with no language qualifiers are always preserved. | • Locales to keep |
-| [PNG Asset Optimizer](#png-asset-optimizer) | Losslessly recompresses PNG assets with maximum zlib compression and strips non-rendering metadata chunks (pHYs, tEXt, tIME) while preserving 9-patch structures and pixel accuracy. |  |
-| [Resource Slimmer](#resource-slimmer) | Strips embedded third-party license text, onboarding tutorial Lottie animations, promotional GIFs, and APK root metadata/junk files. |  |
+| **Add AMOLED Theme** | Adds a selectable Pure Black AMOLED theme using Gboard's native color_black theme package, without replacing Dark, Light, System Auto, or Dynamic Color. |  |
+| **Allow Modified APK** | Bypasses internal signature check to allow custom APK execution. |  |
+| **Block Telemetry** | Disables background metrics dispatch, event logging, daily pings, and crash reporting. |  |
+| **Clone Gboard** | Changes the package name by appending a dot and custom suffix (defaults to 'kveld') to allow installing Gboard alongside the original application. | • Package name suffix |
+| **Disable Diagnostics** | Disables Google's diagnostic and recovery telemetry. |  |
+| **Disable Google Primes** | Neutralizes Google Primes performance profiling, jank monitoring, native crash sidecars, and background telemetry threads. |  |
+| **Disable MDD Background Sync** | Neutralizes Mobile Data Download (MDD) periodic background synchronization, automated polling, and prefetch worker tasks while preserving on-demand and user-requested downloads. |  |
+| **Disable Remote Configuration** | Disables periodic remote experiment flag synchronization and background updates. |  |
+| **Disable Superpacks Eager Sync** | Neutralizes eager background Superpacks synchronization during application startup, eliminating unnecessary disk sweeps and network polling while preserving on-demand pack downloads. |  |
+| **Disable Tenor Share Tracking** | Disables Tenor GIF selection and share tracking telemetry. |  |
+| **Disable WorkManager** | Neutralizes background WorkManager initialization, database creation, and periodic maintenance workers. |  |
+| **Enable Access Points Menu Redesign** | Enables the redesigned access points menu bar and customization panel (Panel V2). |  |
+| **Enable Key Shape Selection** | Enables the key border shape selection UI (Default, Semi-rounded, Round) in theme customization. |  |
+| **Force Incognito Mode** | Forces Gboard to always operate in incognito mode (disabling personalized learning and persistent input logging) while keeping clipboard functionality enabled. |  |
+| **Hardened Intent Security** | Enables Gboard internal external intent protection against unauthorized intent hijacking. |  |
+| **Locale Resource Slimmer** | Strips unselected language translation directories from res/ (e.g. values-*, raw-*, xml-*). Base fallback resources with no language qualifiers are always preserved. | • Locales to keep |
+| **PNG Asset Optimizer** | Losslessly recompresses PNG assets with maximum zlib compression and strips non-rendering metadata chunks (pHYs, tEXt, tIME) while preserving 9-patch structures and pixel accuracy. |  |
+| **Resource Slimmer** | Strips embedded third-party license text, onboarding tutorial Lottie animations, promotional GIFs, and APK root metadata/junk files. |  |
 
 </details>
 
@@ -104,17 +104,17 @@ It enhances target applications with native Pure Black AMOLED themes, comprehens
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
-| [Block Brave Telemetry](#block-brave-telemetry) | Blocks P3A product analytics, Brave Stats usage pings, crash dump uploads, WDP, and Variations seed fetching. |  |
-| [Brave In-Product & Commercial Notification Optimizer](#brave-in-product-commercial-notification-optimizer) | Eliminates background wakeups and notifications from Chromium tips scheduler (Job ID 105), Brave Rewards onboarding promo, and retention marketing campaigns. |  |
-| [Brave Origin](#brave-origin) | Unlocks Brave Origin and enables local feature toggle controls. |  |
-| [Brave Startup Performance Optimization](#brave-startup-performance-optimization) | Optimizes startup time and eliminates background CPU/disk overhead by disabling unused OEM carrier partner customizations. |  |
-| [Disable Background Sync & Periodic Sync](#disable-background-sync-periodic-sync) | Eliminates background wakeups, radio modem activity, and battery drain by forcing GooglePlayServicesChecker.shouldDisableBackgroundSync() -> true and neutralizing wakeup tasks. |  |
-| [Disable Battery Status API & OS Listener](#disable-battery-status-api-os-listener) | Neutralizes the Android BatteryStatusManager broadcast listener to prevent continuous OS battery wakeups. |  |
-| [Disable Pull To Refresh](#disable-pull-to-refresh) | Completely disables the pull-to-refresh overscroll gesture and animation to prevent accidental page reloads. |  |
-| [Locale PAK Slimmer](#locale-pak-slimmer) | Strips unselected language resource PAKs from assets/locales/. | • Locales to keep |
-| [Native Bloat Slimmer](#native-bloat-slimmer) | Strips unused native companion binaries (Impress Vision AI, WireGuard VPN, and Android XR) to significantly reduce APK size. |  |
-| [PNG Asset Optimizer](#png-asset-optimizer) | Losslessly recompresses PNG assets with maximum zlib compression and strips non-rendering metadata chunks (pHYs, tEXt, tIME) while preserving 9-patch structures and pixel accuracy. |  |
-| [Skip First Run](#skip-first-run) | Skips the welcome screen, search engine selection, and onboarding First Run Experience (FRE) on clean installs. |  |
+| **Block Brave Telemetry** | Blocks P3A product analytics, Brave Stats usage pings, crash dump uploads, WDP, and Variations seed fetching. |  |
+| **Brave In-Product & Commercial Notification Optimizer** | Eliminates background wakeups and notifications from Chromium tips scheduler (Job ID 105), Brave Rewards onboarding promo, and retention marketing campaigns. |  |
+| **Brave Origin** | Unlocks Brave Origin and enables local feature toggle controls. |  |
+| **Brave Startup Performance Optimization** | Optimizes startup time and eliminates background CPU/disk overhead by disabling unused OEM carrier partner customizations. |  |
+| **Disable Background Sync & Periodic Sync** | Eliminates background wakeups, radio modem activity, and battery drain by forcing GooglePlayServicesChecker.shouldDisableBackgroundSync() -> true and neutralizing wakeup tasks. |  |
+| **Disable Battery Status API & OS Listener** | Neutralizes the Android BatteryStatusManager broadcast listener to prevent continuous OS battery wakeups. |  |
+| **Disable Pull To Refresh** | Completely disables the pull-to-refresh overscroll gesture and animation to prevent accidental page reloads. |  |
+| **Locale PAK Slimmer** | Strips unselected language resource PAKs from assets/locales/. | • Locales to keep |
+| **Native Bloat Slimmer** | Strips unused native companion binaries (Impress Vision AI, WireGuard VPN, and Android XR) to significantly reduce APK size. |  |
+| **PNG Asset Optimizer** | Losslessly recompresses PNG assets with maximum zlib compression and strips non-rendering metadata chunks (pHYs, tEXt, tIME) while preserving 9-patch structures and pixel accuracy. |  |
+| **Skip First Run** | Skips the welcome screen, search engine selection, and onboarding First Run Experience (FRE) on clean installs. |  |
 
 </details>
 
@@ -129,19 +129,19 @@ It enhances target applications with native Pure Black AMOLED themes, comprehens
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
-| [Block Vivaldi Sync](#block-vivaldi-sync) | Redirects bifrost.vivaldi.com to 0.0.0.0 in libchrome.so to completely disable Vivaldi account synchronization for an air-gapped experience. |  |
-| [Block Vivaldi Telemetry](#block-vivaldi-telemetry) | Blocks Vivaldi usage statistics, crash reporting, Crashpad endpoints, and DirectMatch suggestions. |  |
-| [Clean Speed Dial Bookmarks](#clean-speed-dial-bookmarks) | Removes sponsored commercial affiliate bookmarks, hides the 3-dot customize button, and disables phantom touch actions on the blank Start Page. |  |
-| [Close Tabs on Exit](#close-tabs-on-exit) | Prevents tab restoration on startup, ensuring Vivaldi always opens with a clean Start Page session regardless of how the app was terminated. |  |
-| [Disable Background Sync & Periodic Sync](#disable-background-sync-periodic-sync) | Eliminates background wakeups, radio modem activity, and battery drain by neutralizing periodic and one-shot background sync tasks. |  |
-| [Disable Battery Status API & OS Listener](#disable-battery-status-api-os-listener) | Neutralizes the Android BatteryStatusManager broadcast listener to prevent continuous OS battery wakeups. |  |
-| [Disable Chromium Tips & Notification Scheduler](#disable-chromium-tips-notification-scheduler) | Eliminates periodic background wakeups, native library loading, and in-product promotional tips from Chromium tips scheduler. |  |
-| [Disable Vivaldi Prompts & In-App Popups](#disable-vivaldi-prompts-in-app-popups) | Disables in-app donation prompts, search engine switch promos, rate-app popups, background privacy report alarms, and default browser promotional handlers. |  |
-| [Locale PAK Slimmer](#locale-pak-slimmer) | Strips unselected language resource PAKs from assets/locales/. | • Locales to keep |
-| [PNG Asset Optimizer](#png-asset-optimizer) | Losslessly recompresses PNG assets with maximum zlib compression and strips non-rendering metadata chunks (pHYs, tEXt, tIME) while preserving 9-patch structures and pixel accuracy. |  |
-| [Resource Slimmer](#resource-slimmer) | Strips bundled stock wallpapers and sponsored Speed Dial thumbnails to reduce APK size. |  |
-| [Skip First Run](#skip-first-run) | Skips the welcome screen, search engine selection, and onboarding First Run Experience (FRE) on clean installs. |  |
-| [Vivaldi Startup Performance Optimization](#vivaldi-startup-performance-optimization) | Optimizes cold startup time, eliminates background CPU/disk overhead, and guards against early CompositorView LayoutStateObserver crashes. |  |
+| **Block Vivaldi Sync** | Redirects bifrost.vivaldi.com to 0.0.0.0 in libchrome.so to completely disable Vivaldi account synchronization for an air-gapped experience. |  |
+| **Block Vivaldi Telemetry** | Blocks Vivaldi usage statistics, crash reporting, Crashpad endpoints, and DirectMatch suggestions. |  |
+| **Clean Speed Dial Bookmarks** | Removes sponsored commercial affiliate bookmarks, hides the 3-dot customize button, and disables phantom touch actions on the blank Start Page. |  |
+| **Close Tabs on Exit** | Prevents tab restoration on startup, ensuring Vivaldi always opens with a clean Start Page session regardless of how the app was terminated. |  |
+| **Disable Background Sync & Periodic Sync** | Eliminates background wakeups, radio modem activity, and battery drain by neutralizing periodic and one-shot background sync tasks. |  |
+| **Disable Battery Status API & OS Listener** | Neutralizes the Android BatteryStatusManager broadcast listener to prevent continuous OS battery wakeups. |  |
+| **Disable Chromium Tips & Notification Scheduler** | Eliminates periodic background wakeups, native library loading, and in-product promotional tips from Chromium tips scheduler. |  |
+| **Disable Vivaldi Prompts & In-App Popups** | Disables in-app donation prompts, search engine switch promos, rate-app popups, background privacy report alarms, and default browser promotional handlers. |  |
+| **Locale PAK Slimmer** | Strips unselected language resource PAKs from assets/locales/. | • Locales to keep |
+| **PNG Asset Optimizer** | Losslessly recompresses PNG assets with maximum zlib compression and strips non-rendering metadata chunks (pHYs, tEXt, tIME) while preserving 9-patch structures and pixel accuracy. |  |
+| **Resource Slimmer** | Strips bundled stock wallpapers and sponsored Speed Dial thumbnails to reduce APK size. |  |
+| **Skip First Run** | Skips the welcome screen, search engine selection, and onboarding First Run Experience (FRE) on clean installs. |  |
+| **Vivaldi Startup Performance Optimization** | Optimizes cold startup time, eliminates background CPU/disk overhead, and guards against early CompositorView LayoutStateObserver crashes. |  |
 
 </details>
 
@@ -239,7 +239,7 @@ When inspecting Brave with package analysis tools, the following components may 
 
 #### 🔒 Genuine Telemetry Neutralization
 
-Genuine Brave telemetry is fully neutralized by the **[Block Brave Telemetry](#block-brave-telemetry)** patch:
+Genuine Brave telemetry is fully neutralized by the **[Block Brave Telemetry](#patch-catalog)** patch:
 - **P3A (Privacy-Preserving Product Analytics)**: Preference getters forced to return `false` in Dalvik bytecode (`PrefService.e`).
 - **Brave Stats & Web Discovery Project (WDP)**: Reporting loops disabled and all 7 telemetry endpoints redirected to `0.0.0.0` in `libchrome.so`.
 - **Crashpad & Minidump Uploads**: Upload hooks aborted before dispatch (`MinidumpUploadServiceImpl`, `ChromeMinidumpUploadJobService`) and endpoints zeroed in native binary.
