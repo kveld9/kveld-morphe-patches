@@ -230,11 +230,25 @@ for pkg, entry in by_pkg.items():
                 readme,
                 count=1,
             )
-        elif "brave" in pkg:
-            # Brave mono target description
+            # Vivaldi direct download badge button
             readme = re.sub(
-                r"(\(v)[0-9\.]+(\) from \[Brave GitHub Releases\])",
+                r'<a href="https://downloads\.vivaldi\.com/snapshot/Vivaldi\.[^/]+_arm64-v8a\.apk"><img src="https://img\.shields\.io/badge/Download-Vivaldi\.[^"]+" alt="Download Vivaldi APK" /></a>',
+                f'<a href="https://downloads.vivaldi.com/snapshot/Vivaldi.{target_ver}_arm64-v8a.apk"><img src="https://img.shields.io/badge/Download-Vivaldi.{target_ver}_arm64--v8a.apk-EF3939?style=for-the-badge&logo=vivaldi&logoColor=white" alt="Download Vivaldi APK" /></a>',
+                readme,
+                count=1,
+            )
+        elif "brave" in pkg:
+            # Brave current target
+            readme = re.sub(
+                r"(\- \*\*Current Target\*\*: `)[^`]+(` \(`Bravemonoarm64\.apk`\))",
                 rf"\g<1>{target_ver}\g<2>",
+                readme,
+                count=1,
+            )
+            # Brave direct download badge button
+            readme = re.sub(
+                r'<a href="https://github\.com/brave/brave-browser/releases/download/v[^/]+/Bravemonoarm64\.apk"><img src="https://img\.shields\.io/badge/Download-Bravemonoarm64\.apk_[^"]+" alt="Download Brave APK" /></a>',
+                f'<a href="https://github.com/brave/brave-browser/releases/download/v{target_ver}/Bravemonoarm64.apk"><img src="https://img.shields.io/badge/Download-Bravemonoarm64.apk_(v{target_ver})-FF4500?style=for-the-badge&logo=brave&logoColor=white" alt="Download Brave APK" /></a>',
                 readme,
                 count=1,
             )
