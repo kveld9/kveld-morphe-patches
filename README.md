@@ -28,45 +28,37 @@
 
 ## 📖 Overview
 
-This repository provides modular, high-performance bytecode, resource, and native patches for Android applications built for the **[Morphe](https://morphe.software)** patcher runtime.
+**Morphe Patches** is an open-source, modular patch repository for Android applications running on the **[Morphe](https://morphe.software)** patcher runtime.
 
-### 🌟 Key Highlights
-
-#### 📱 Gboard Lite
-
-- **🖤 Pure Black AMOLED Theme**: Injects native Pure Black palette (`style_sheet_color_black.binarypb`) alongside standard light/dark/dynamic themes.
-- **🎨 UI Enhancements**: Activates Key Shape Selection (Default, Semi-rounded, Round) and the redesigned Access Points Menu (Panel V2).
-- **🔒 Hardened Privacy & Debloat**: Neutralizes Google Primes profiling, WorkManager background wakeups, Phenotype sync, MDD background sync, Tenor tracking, in-app training, diagnostics telemetry, and forces Incognito mode.
-- **🛡️ Signature Bypass**: Neutralizes internal APK signature validation to allow custom execution.
-- **📦 APK Slimming & Asset Optimization**: Strips unselected language translation directories (`Locale Resource Slimmer`), purges redundant onboarding animations, GIFs, and junk files (`Resource Slimmer`), and recompresses PNG assets losslessly (`PNG Asset Optimizer`).
-
-#### 🦁 Brave Browser
-
-- **🔓 Brave Origin Unlock**: Unlocks Brave Origin features and developer toggles.
-- **🚫 Complete Telemetry Block**: Strips P3A product analytics, stats pings, crash dump uploads, and variations seed fetching at both native (`libchrome.so`) and bytecode levels.
-- **⚡ Performance & Battery Optimization**: Eliminates background scheduler wakeups (Job ID 105), commercial onboarding promos, retention marketing campaigns, OEM partner carrier customizations, BatteryStatusManager broadcast listeners, and Background / Periodic Sync tasks.
-- **🔄 UI & Gesture Control**: Disables accidental pull-to-refresh overscroll reloads and streamlines the First Run Experience.
-- **📦 APK Slimming & Asset Optimization**: Strips unselected language PAKs (`Locale PAK Slimmer`), removes unused companion binaries for Vision AI, WireGuard, and XR (`Native Bloat Slimmer`), and recompresses PNG assets losslessly (`PNG Asset Optimizer`).
-
-#### 🔴 Vivaldi Browser Snapshot
-
-- **🛡️ Telemetry & Endpoint Blocker**: Redirects statistics (`update.vivaldi.com`), crash reporting (`crash.vivaldi.com`), Crashpad endpoints, and DirectMatch suggestions to `0.0.0.0` in `libchrome.so` and bytecode.
-- **🧹 Clean Speed Dial Bookmarks**: Strips all 47 regional default commercial affiliate bookmarks (`vivaldi.com/bk/*`) and clears partner tracking IDs.
-- **⚡ Cold Startup & Notification Optimization**: Neutralizes OEM carrier customizations (safely mapped to field `d`), disables Chromium tips scheduler, and eliminates periodic privacy report alarms.
-- **🔒 Air-Gapped Sync Toggle**: Optional opt-in patch to cleanly isolate account sync (`bifrost.vivaldi.com`).
-- **📦 APK Slimming & Asset Optimization**: Strips unselected language PAKs (`Locale PAK Slimmer`), removes preloaded wallpapers and Speed Dial thumbnails (`Resource Slimmer`), and recompresses PNG assets losslessly (`PNG Asset Optimizer`).
+It enhances target applications with native Pure Black AMOLED themes, comprehensive telemetry and diagnostic blocking, background task debloating, cold-start performance optimizations, and APK footprint reduction across **Gboard Lite**, **Brave Browser**, and **Vivaldi Browser Snapshot**.
 
 ---
 
-### 📲 Add to Morphe Manager
+## 🎯 Supported Targets
 
-Click the badge above or add `kveld9/kveld-morphe-patches` directly into your Morphe Manager sources:
-
-👉 **[Add Morphe Patches to Morphe Manager](https://morphe.software/add-source?github=kveld9/kveld-morphe-patches)**
+| Target App | Target Version | Channel | Architecture | Package Name | Required Variant / Source |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Gboard Lite** | `18.1.3.962075747` | Lite Beta | `arm64-v8a` (`nodpi`) | `com.google.android.inputmethod.latin` | Standalone APK ([APKMirror](https://www.apkmirror.com/apk/google-inc/gboard/)) |
+| **Brave Browser** | `1.94.119` | Release | `arm64-v8a` (Monochrome) | `com.brave.browser` | `Bravemonoarm64.apk` ([GitHub Releases](https://github.com/brave/brave-browser/releases)) |
+| **Vivaldi Browser** | `8.2.4147.28` | Snapshot | `arm64-v8a` | `com.vivaldi.browser.snapshot` | Official APK ([Vivaldi Blog](https://vivaldi.com/blog/android/)) |
 
 ---
 
-## 🩹 Patches list
+## 🚀 Quick Start
+
+1. **Install Morphe Manager:** Download and install the latest **[Morphe Manager](https://morphe.software)** on your Android device.
+2. **Add Patch Source:** Tap the badge above or navigate to *Settings > Sources* in Morphe Manager and add:
+   ```text
+   kveld9/kveld-morphe-patches
+   ```
+   *(Or click: **[Add Source to Morphe Manager](https://morphe.software/add-source?github=kveld9/kveld-morphe-patches)**)*
+3. **Download Supported APK:** Obtain the exact target APK variant from the links in [Supported Targets](#-supported-targets).
+4. **Select Patches:** Pick the patches you want to apply (privacy hardening, AMOLED theme, slimming, etc.).
+5. **Patch & Install:** Tap **Patch**, wait for compilation to complete, and install your enhanced APK.
+
+---
+
+## 💊 Patch Catalog
 
 <!-- PATCHES_START EXPANDED -->
 <details open>
@@ -157,9 +149,19 @@ Click the badge above or add `kveld9/kveld-morphe-patches` directly into your Mo
 
 ---
 
-## ⚠️ Known Issues & Important Notes
+## ⚠️ Compatibility & Operational Notes
 
-### ⌨️ Predictive Text & Glide Typing in Gboard Lite (Fresh Installations)
+### ⌨️ Gboard Lite: Target Variant & Offline Dictionary Setup
+
+> [!IMPORTANT]
+> **Always download the standalone `lite` / `lite_beta` 64-bit APK (nodpi) from [APKMirror](https://www.apkmirror.com/apk/google-inc/gboard/):**
+>
+> - **Current Target**: `18.1.3.962075747-lite_beta-arm64-v8a`
+> - **Format**: `APK` _(Do **NOT** download `BUNDLE` / split packages)_
+> - **Architecture**: `arm64-v8a`
+> - **Screen DPI**: `nodpi`
+
+#### 🔧 Predictive Text & Glide Typing on Fresh Installations
 
 > [!IMPORTANT]
 > **Gboard Lite does not bundle language dictionaries, predictive text models, or gesture/glide typing decoding models inside the APK.**
@@ -167,7 +169,7 @@ Click the badge above or add `kveld9/kveld-morphe-patches` directly into your Mo
 
 If you perform a clean install of Gboard Lite with background sync debloat patches enabled, Gboard will be prevented from downloading the initial dictionary and gesture model pack for your language. This results in an empty suggestion bar, no predictive text, and **Glide Typing (swipe to type) not working**.
 
-#### 🔧 How to set up Gboard Lite with working predictive text & glide typing:
+##### How to set up Gboard Lite with working predictive text & glide typing:
 
 1. **When patching for a clean install (or when adding new languages):**
     - **Temporarily uncheck:**
@@ -182,23 +184,7 @@ If you perform a clean install of Gboard Lite with background sync debloat patch
 
 ---
 
-### ⌨️ Gboard Lite: Required Target APK Variant (APKMirror)
-
-> [!IMPORTANT]
-> **Always download the standalone `lite` / `lite_beta` 64-bit APK (nodpi) from [APKMirror](https://www.apkmirror.com/apk/google-inc/gboard/):**
->
-> - **Current Target**: `18.1.3.962075747-lite_beta-arm64-v8a`
-> - **Format**: `APK` _(Do **NOT** download `BUNDLE` / split packages)_
-> - **Architecture**: `arm64-v8a`
-> - **Screen DPI**: `nodpi`
-
-#### ❓ Why Gboard Lite?
-
-- **Lite Architecture**: Gboard Lite has a distinct, streamlined codebase designed for a lightweight footprint without bulky pre-bundled dictionaries. Standard/full Gboard APKs use different internal class layouts that fail AST fingerprint assertions (AMOLED theme and debloat hooks).
-
----
-
-### 🦁 Brave Browser: Required Target APK (`Bravemonoarm64.apk`)
+### 🦁 Brave Browser: Required Variant & Native Offsets
 
 > [!IMPORTANT]
 > **Always use `Bravemonoarm64.apk` from [Brave GitHub Releases](https://github.com/brave/brave-browser/releases).**
@@ -217,7 +203,7 @@ If you perform a clean install of Gboard Lite with background sync debloat patch
 
 ---
 
-### 🔴 Vivaldi Browser Snapshot: Required Target APK & Download Source
+### 🔴 Vivaldi Browser Snapshot: Target APK & Architecture
 
 > [!IMPORTANT]
 > **Always download the official `arm64-v8a` APK directly from the [Vivaldi Android Blog](https://vivaldi.com/blog/android/).**
@@ -237,7 +223,31 @@ If you perform a clean install of Gboard Lite with background sync debloat patch
 
 ---
 
-### 🌐 Brave & Vivaldi Locale PAK Slimmer: Valid Language Codes
+## 🔬 Technical Notes & Architecture
+
+### 🛡️ Brave Browser: Privacy Scanner False Positives (App Manager / Exodus)
+
+> [!NOTE]
+> **Component scanners such as App Manager or Exodus Privacy may flag Google Play Billing and Google ML Kit components as "trackers" inside Brave. These are false positives caused by generic package name signatures.**
+
+When inspecting Brave with package analysis tools, the following components may be highlighted:
+
+| Component | Origin / Library | Actual Function | Privacy & Telemetry Impact |
+| :--- | :--- | :--- | :--- |
+| `com.android.billingclient.api.ProxyBillingActivity`<br>`com.android.billingclient.api.ProxyBillingActivityV2` | **Google Play Billing** (`billingclient`) | Handles user-initiated in-app subscriptions (Brave Leo AI Premium, Brave VPN). | **None (Transactional only).** These are trampoline UI activities for Google Play checkout sheets. They collect zero browsing analytics or telemetry. Stripping them breaks subscription handling and triggers `ActivityNotFoundException`. |
+| `com.google.mlkit.common.internal.MlKitInitProvider`<br>`com.google.mlkit.common.internal.MlKitComponentDiscoveryService` | **Google ML Kit** (`mlkit.common`) | Powers local, on-device OCR and vision features (e.g. camera-based credit card scanning in Autofill and QR code scanning). | **None (On-device execution).** Flagged by Exodus because ML Kit uses the Firebase component dependency injector (`CommonComponentRegistrar`). All model operations run strictly local to the device. |
+
+#### 🔒 Genuine Telemetry Neutralization
+
+Genuine Brave telemetry is fully neutralized by the **[Block Brave Telemetry](#block-brave-telemetry)** patch:
+- **P3A (Privacy-Preserving Product Analytics)**: Preference getters forced to return `false` in Dalvik bytecode (`PrefService.e`).
+- **Brave Stats & Web Discovery Project (WDP)**: Reporting loops disabled and all 7 telemetry endpoints redirected to `0.0.0.0` in `libchrome.so`.
+- **Crashpad & Minidump Uploads**: Upload hooks aborted before dispatch (`MinidumpUploadServiceImpl`, `ChromeMinidumpUploadJobService`) and endpoints zeroed in native binary.
+- **Variations Seed Fetching**: Blocked before HTTP socket creation (`IOException("Blocked by Morphe")`).
+
+---
+
+### 🌐 Patch Documentation: Locale PAK Slimmer (Brave & Vivaldi)
 
 The **`Locale PAK Slimmer`** patch allows you to strip unneeded language resource PAKs from `assets/locales/` to reduce APK size (saving **~28 MB in Brave** and **~52 MB in Vivaldi**).
 
@@ -246,7 +256,7 @@ When configuring the **`Locales to keep`** option in Morphe Manager, specify a c
 #### 📋 Popular Language Codes:
 
 | Language                         | Locale Code(s)                                                                    |
-| :------------------------------- | :-------------------------------------------------------------------------------- |
+| :--- | :--- |
 | **Spanish**                      | `es` (Spain / Global), `es-419` (Latin America)                                   |
 | **English**                      | `en-US` (US - _Always kept_), `en-GB` (UK)                                        |
 | **Portuguese**                   | `pt-BR` (Brazil), `pt-PT` (Portugal)                                              |
@@ -319,4 +329,3 @@ A huge thanks to the contributors and testers who help improve, validate, and ma
 ## 📜 License
 
 Morphe Patches is open-source software licensed under the [GNU General Public License v3.0](LICENSE).
-
