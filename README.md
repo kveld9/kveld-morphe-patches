@@ -99,7 +99,7 @@ It enhances target applications with native Pure Black AMOLED themes, comprehens
 
 **🎯 Supported versions:**
 
-| 1.94.119 |
+| 1.94.121 |
 | :---: |
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
@@ -190,11 +190,11 @@ If you perform a clean install of Gboard Lite with background sync debloat patch
 > **Always use `Bravemonoarm64.apk` from [Brave GitHub Releases](https://github.com/brave/brave-browser/releases).**
 > Do **NOT** use `Bravearm64Universal.apk`, `Bravearm64.apk`, or 32-bit / x86 builds (`Bravearm.apk`, `Bravemonox64.apk`, etc.).
 >
-> - **Current Target**: `1.94.119` (`Bravemonoarm64.apk`)
+> - **Current Target**: `1.94.121` (`Bravemonoarm64.apk`)
 > - **Architecture**: `arm64-v8a` (Monochrome)
 > - **Package Name**: `com.brave.browser`
 >
-> <a href="https://github.com/brave/brave-browser/releases/download/v1.94.119/Bravemonoarm64.apk"><img src="https://img.shields.io/badge/Download-Bravemonoarm64.apk_(v1.94.119)-FF4500?style=for-the-badge&logo=brave&logoColor=white" alt="Download Brave APK" /></a>
+> <a href="https://github.com/brave/brave-browser/releases/download/v1.94.121/Bravemonoarm64.apk"><img src="https://img.shields.io/badge/Download-Bravemonoarm64.apk_(v1.94.121)-FF4500?style=for-the-badge&logo=brave&logoColor=white" alt="Download Brave APK" /></a>
 
 #### ❓ Why `Bravemonoarm64.apk`?
 
