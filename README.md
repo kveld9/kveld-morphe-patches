@@ -34,16 +34,6 @@ It enhances target applications with native Pure Black AMOLED themes, comprehens
 
 ---
 
-## 🎯 Supported Targets
-
-| Target App | Target Version | Channel | Architecture | Package Name | Required Variant / Source |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Gboard Lite** | `18.1.3.962075747` | Lite Beta | `arm64-v8a` (`nodpi`) | `com.google.android.inputmethod.latin` | Standalone APK ([APKMirror](https://www.apkmirror.com/apk/google-inc/gboard/)) |
-| **Brave Browser** | `1.94.119` | Release | `arm64-v8a` (Monochrome) | `com.brave.browser` | `Bravemonoarm64.apk` ([GitHub Releases](https://github.com/brave/brave-browser/releases)) |
-| **Vivaldi Browser** | `8.2.4147.28` | Snapshot | `arm64-v8a` | `com.vivaldi.browser.snapshot` | Official APK ([Vivaldi Blog](https://vivaldi.com/blog/android/)) |
-
----
-
 ## 🚀 Quick Start
 
 1. **Install Morphe Manager:** Download and install the latest **[Morphe Manager](https://morphe.software)** on your Android device.
@@ -52,7 +42,7 @@ It enhances target applications with native Pure Black AMOLED themes, comprehens
    kveld9/kveld-morphe-patches
    ```
    *(Or click: **[Add Source to Morphe Manager](https://morphe.software/add-source?github=kveld9/kveld-morphe-patches)**)*
-3. **Download Supported APK:** Obtain the exact target APK variant from the links in [Supported Targets](#supported-targets).
+3. **Download Supported APK:** Obtain the exact target APK variant from the [Patch Catalog](#patch-catalog).
 4. **Select Patches:** Pick the patches you want to apply (privacy hardening, AMOLED theme, slimming, etc.).
 5. **Patch & Install:** Tap **Patch**, wait for compilation to complete, and install your enhanced APK.
 
