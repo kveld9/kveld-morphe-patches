@@ -49,6 +49,17 @@ jobs:
           subject-name: 'Morphe Patches ${{ steps.release.outputs.new_release_git_tag }}'
           subject-path: patches/build/libs/patches-*.mpp
 
+      - name: Notify Telegram Channel
+        if: steps.release.outputs.new_release_published == 'true'
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          RELEASE_TAG: ${{ steps.release.outputs.new_release_git_tag }}
+          RELEASE_VERSION: ${{ steps.release.outputs.new_release_version }}
+          RELEASE_NOTES: ${{ steps.release.outputs.new_release_notes }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: python3 .github/scripts/notify_telegram.py
+
       # Always verify compilation when semantic-release did not publish a release.
       # This covers non-main/dev branches, chore commits, docs commits, etc.
       - name: Verify project compiles
