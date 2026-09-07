@@ -44,12 +44,22 @@ val braveLocaleSlimmerPatch = rawResourcePatch(
         val removedLocales = mutableListOf<String>()
 
         if (localesDir.exists() && localesDir.isDirectory) {
+            val fallbackPak = localesDir.walkTopDown().firstOrNull { it.isFile && it.name.equals("en-US.pak", ignoreCase = true) }
+            val fallbackBytes = fallbackPak?.readBytes() ?: EMPTY_DATAPACK_V5
+
             localesDir.walkTopDown().filter { it.isFile && it.name.endsWith(".pak", ignoreCase = true) }.forEach { pakFile ->
                 val nameWithoutExt = pakFile.nameWithoutExtension.lowercase()
                 val baseName = nameWithoutExt.substringBefore("_").substringBefore("-")
                 if (nameWithoutExt !in baseLocales && baseName !in baseLocales) {
                     val originalSize = pakFile.length()
-                    pakFile.writeBytes(EMPTY_DATAPACK_V5)
+                    if (originalSize <= EMPTY_DATAPACK_V5.size) {
+                        return@forEach // Already a minimal empty stub (e.g. Vivaldi gender variants)
+                    }
+                    val isGenderVariant = nameWithoutExt.endsWith("_feminine") ||
+                        nameWithoutExt.endsWith("_masculine") ||
+                        nameWithoutExt.endsWith("_neuter")
+                    val replacementBytes = if (isGenderVariant) EMPTY_DATAPACK_V5 else fallbackBytes
+                    pakFile.writeBytes(replacementBytes)
                     totalSavedBytes += (originalSize - pakFile.length())
                     removedLocales.add(pakFile.nameWithoutExtension)
                 }

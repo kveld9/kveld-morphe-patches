@@ -239,9 +239,9 @@ Genuine Brave telemetry is fully neutralized by the **[Block Brave Telemetry](#p
 
 ### 🌐 Patch Documentation: Locale PAK Slimmer (Brave & Vivaldi)
 
-The **`Locale PAK Slimmer`** patch allows you to strip unneeded language resource PAKs from `assets/locales/` to reduce APK size (saving **~28 MB in Brave** and **~52 MB in Vivaldi**).
+The **`Locale PAK Slimmer`** patch allows you to strip unneeded language resource PAKs from `assets/locales/` to reduce APK size (saving **~10.5 MB in Brave** and **~21.2 MB in Vivaldi**).
 
-When configuring the **`Locales to keep`** option in Morphe Manager, specify a comma-separated list of locale codes (e.g. `es-419, es, en-US, pt-BR`). English (`en-US`) is always preserved automatically as an essential Chromium fallback. In Vivaldi, any corresponding grammatical gender variants (e.g. `es-419_FEMININE`) for your chosen languages are preserved automatically.
+When configuring the **`Locales to keep`** option in Morphe Manager, specify a comma-separated list of locale codes (e.g. `es-419, es, en-US, pt-BR`). English (`en-US`) is always preserved automatically as an essential Chromium fallback. To prevent Chromium startup crashes on devices configured with unselected system languages, stripped language PAKs are safely populated with the base `en-US` resource table fallback rather than empty stubs. In Vivaldi, any corresponding grammatical gender variants (e.g. `es-419_FEMININE`) for your chosen languages are preserved automatically.
 
 #### 📋 Popular Language Codes:
 
