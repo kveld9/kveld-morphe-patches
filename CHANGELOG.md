@@ -1,3 +1,9 @@
+## [1.13.1](https://github.com/kveld9/kveld-morphe-patches/compare/v1.13.0...v1.13.1) (2026-09-07)
+
+### 🐛 Bug Fixes
+
+* **patches:** ensure safe en-US fallback in locale slimmer to prevent startup crashes ([af6e495](https://github.com/kveld9/kveld-morphe-patches/commit/af6e4951b02a65af1f9b123cf81a2995287294b1))
+
 ## [1.13.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.12.0...v1.13.0) (2026-09-05)
 
 ### ✨ New Features
