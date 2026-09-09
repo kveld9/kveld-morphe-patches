@@ -114,7 +114,7 @@ It enhances target applications with native Pure Black AMOLED themes, comprehens
 
 **🎯 Supported versions:**
 
-| 8.2.4147.28 |
+| 8.2.4147.50 |
 | :---: |
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
@@ -199,11 +199,11 @@ If you perform a clean install of Gboard Lite with background sync debloat patch
 > **Always download the official `arm64-v8a` APK directly from the [Vivaldi Android Blog](https://vivaldi.com/blog/android/).**
 > In every release announcement blog post, Vivaldi provides direct official APK download links at the bottom.
 >
-> - **Current Target**: `Vivaldi.8.2.4147.28_arm64-v8a.apk`
+> - **Current Target**: `Vivaldi.8.2.4147.50_arm64-v8a.apk`
 > - **Architecture**: `arm64-v8a` (Do **NOT** use `armeabi-v7a`, `x86`, or `x86_64`)
 > - **Package Name**: `com.vivaldi.browser.snapshot`
 >
-> <a href="https://downloads.vivaldi.com/snapshot/Vivaldi.8.2.4147.28_arm64-v8a.apk"><img src="https://img.shields.io/badge/Download-Vivaldi.8.2.4147.28_arm64--v8a.apk-EF3939?style=for-the-badge&logo=vivaldi&logoColor=white" alt="Download Vivaldi APK" /></a>
+> <a href="https://downloads.vivaldi.com/snapshot/Vivaldi.8.2.4147.50_arm64-v8a.apk"><img src="https://img.shields.io/badge/Download-Vivaldi.8.2.4147.50_arm64--v8a.apk-EF3939?style=for-the-badge&logo=vivaldi&logoColor=white" alt="Download Vivaldi APK" /></a>
 
 #### ❓ Why Vivaldi Snapshot & Future Transition to Stable
 
