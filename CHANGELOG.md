@@ -1,3 +1,9 @@
+## [1.14.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.13.1...v1.14.0) (2026-09-09)
+
+### ✨ New Features
+
+* **vivaldi:** update target to v8.2.4147.50 and update native offsets ([927a551](https://github.com/kveld9/kveld-morphe-patches/commit/927a5511d977cf14331b25b223729fc009ccaec9))
+
 ## [1.13.1](https://github.com/kveld9/kveld-morphe-patches/compare/v1.13.0...v1.13.1) (2026-09-07)
 
 ### 🐛 Bug Fixes
