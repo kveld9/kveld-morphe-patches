@@ -30,8 +30,12 @@ class GboardPipeline(BaseTargetPipeline):
         ver_lower = self.meta.version_name.lower()
         if "lite" not in apk_filename and "lite" not in ver_lower:
             print("⚠️  WARNING: APK does not appear to be a Gboard Lite variant.\n")
-        if "arm64" not in apk_filename and "arm64" not in ver_lower:
-            print("⚠️  WARNING: APK does not appear to be ARM64-v8a architecture.\n")
+        is_arm = any(
+            arch in apk_filename or arch in ver_lower
+            for arch in ("arm64", "v7a", "armeabi")
+        )
+        if not is_arm:
+            print("⚠️  WARNING: APK does not appear to be ARM (arm64-v8a or armeabi-v7a) architecture.\n")
 
     def execute_audit_and_validation(self) -> Tuple[Dict[str, Any], Any]:
         print("🛡️ Running adversarial validation across all 18 Gboard patch contracts...")

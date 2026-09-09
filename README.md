@@ -57,8 +57,9 @@ It enhances target applications with native Pure Black AMOLED themes, comprehens
 
 **🎯 Supported versions:**
 
-| 18.1.3.962075747-lite_beta-arm64-v8a |
-| :---: |
+| 18.1.3.962075747-lite_beta-arm64-v8a | 18.1.3.962075747-lite_beta-armeabi-v7a |
+| 18.1.3.962075747-lite_release-arm64-v8a | 18.1.3.962075747-lite_release-armeabi-v7a |
+| :---: | :---: |
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
@@ -144,14 +145,25 @@ It enhances target applications with native Pure Black AMOLED themes, comprehens
 
 ## ⚠️ Compatibility & Operational Notes
 
+### 📱 CPU Architecture Support Policy (ARM64 vs ARMv7a)
+
+> [!NOTE]
+> **Architecture Matrix & 32-bit (ARMv7a) Policy:**
+> - **Gboard Lite**: Both **`arm64-v8a` (64-bit)** and **`armeabi-v7a` (32-bit)** are officially supported. All 18 Gboard Lite patches in this suite operate strictly on Dalvik/ART DEX bytecode and Android XML resources, containing **zero native `.so` binary dependencies**. They run identically on both 64-bit and 32-bit Android runtimes.
+> - **Brave Browser & Vivaldi Snapshot**: **`arm64-v8a` (64-bit only)**. **Please do not open issues requesting `armeabi-v7a` support for Brave or Vivaldi.** Both Chromium-based browsers depend on surgical byte-level patching of the native ELF binary `lib/arm64-v8a/libchrome.so` (redirecting background telemetry, Crashpad crash uploaders, and DirectMatch endpoints to `0.0.0.0` at hardcoded 64-bit virtual memory and file offsets). Supporting 32-bit ARM for these browsers would require reverse-engineering and maintaining an entirely separate set of 32-bit ELF binary offsets for a legacy target.
+
 ### ⌨️ Gboard Lite: Target Variant & Offline Dictionary Setup
 
 > [!IMPORTANT]
-> **Always download the standalone `lite` / `lite_beta` 64-bit APK (nodpi) from [APKMirror](https://www.apkmirror.com/apk/google-inc/gboard/):**
+> **Always download the standalone `lite` / `lite_beta` APK (nodpi) from [APKMirror](https://www.apkmirror.com/apk/google-inc/gboard/):**
 >
-> - **Current Target**: `18.1.3.962075747-lite_beta-arm64-v8a`
+> - **Current Targets**:
+>   - `18.1.3.962075747-lite_beta-arm64-v8a` (64-bit)
+>   - `18.1.3.962075747-lite_beta-armeabi-v7a` (32-bit)
+>   - `18.1.3.962075747-lite_release-arm64-v8a` (64-bit)
+>   - `18.1.3.962075747-lite_release-armeabi-v7a` (32-bit)
 > - **Format**: `APK` _(Do **NOT** download `BUNDLE` / split packages)_
-> - **Architecture**: `arm64-v8a`
+> - **Architecture**: `arm64-v8a` or `armeabi-v7a` (all Gboard Lite patches in this suite are 100% ABI-agnostic Dalvik bytecode and XML transforms)
 > - **Screen DPI**: `nodpi`
 
 #### 🔧 Predictive Text & Glide Typing on Fresh Installations
