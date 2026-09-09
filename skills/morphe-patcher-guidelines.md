@@ -128,3 +128,15 @@ object Constants {
     )
 }
 ```
+
+---
+
+## 4. Surgical Diagnostic Telemetry
+
+All patches must emit concise, actionable telemetry via `println()` so that Morphe Manager logs reveal the exact operational sequence during bug audits without console bloat:
+
+- **Standard Prefix**: `println("[Patch Name] ...")`.
+- **Actionable Scope**: Log identified targets, modified entities, and concrete metrics (saved KB/MB, opcodes injected, directories pruned).
+- **Bounded Samples**: For collections or file lists, bound output with samples (e.g. `.take(6)`) rather than spamming hundreds of lines.
+- **Explicit Early Returns**: When skipping or returning early due to safety guards or missing optional inputs, log the reason clearly.
+

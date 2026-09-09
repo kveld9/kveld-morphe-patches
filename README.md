@@ -274,6 +274,37 @@ ur, uz, vi, zh-CN, zh-HK, zh-TW, zu
 
 ---
 
+### 📱 Patch Documentation: DPI Resource Slimmer (Vivaldi, Brave & Gboard)
+
+The **`DPI Resource Slimmer`** patch strips unselected screen density asset directories (such as `drawable-mdpi`, `drawable-hdpi`, `drawable-xhdpi`, `mipmap-mdpi`, etc.) from `res/` to significantly reduce final APK size.
+
+#### ⚙️ Configuration in Morphe Manager
+
+When configuring the **`DPI densities to keep`** option (`dpis`), specify a comma-separated list of densities to retain:
+
+- **Default value**: `xxhdpi` (corresponds to standard 1080p displays, ~480 dpi, the most common smartphone resolution).
+- **Single density (maximum space savings)**: e.g. `xxhdpi` for 1080p devices, or `xxxhdpi` for 1440p / 2K devices.
+- **Multiple densities (broad device compatibility)**: e.g. `xhdpi, xxhdpi`.
+- **Friendly aliases**: You can also type resolution aliases such as `1080p` (maps to `xxhdpi`), `720p` (maps to `xhdpi`), or `1440p` / `2k` (maps to `xxxhdpi`).
+
+#### 📐 Screen Density Reference Guide:
+
+| Density Qualifier | Screen DPI Range | Typical Screen Resolution | Example Devices |
+| :--- | :--- | :--- | :--- |
+| **`mdpi`** | ~160 dpi (1.0x baseline) | 320x480 / 480x800 | Legacy / ultra low-end devices |
+| **`hdpi`** | ~240 dpi (1.5x) | 480x854 / 540x960 | Budget entry-level phones |
+| **`xhdpi`** | ~320 dpi (2.0x) | 720x1280 (720p HD) | Entry-level / older 720p phones |
+| **`xxhdpi`** _(Default)_ | ~480 dpi (3.0x) | 1080x1920 / 1080x2400 (1080p FHD+) | **Most modern smartphones** |
+| **`xxxhdpi`** | ~640 dpi (4.0x) | 1440x2560 / 1440x3120 (1440p QHD+) | Premium flagships (Galaxy Ultra, Pixel Pro) |
+
+#### 🛡️ Zero-Crash Safety Invariants:
+
+1. **Protected Density Qualifiers**: Density-independent directories (`drawable-nodpi`, `drawable-anydpi`, `mipmap-anydpi-v26` for vector drawables and adaptive icons) and unquantified base directories (`drawable`, `mipmap`, `values`, `layout`, etc.) are **strictly preserved and never removed**.
+2. **Orphan Asset Preservation**: If a graphical asset exists *exclusively* in a directory marked for deletion (with no corresponding file in preserved or base directories), it is automatically copied forward to the target preserved directory before deletion. This guarantees Android never encounters a `Resources$NotFoundException` at runtime.
+3. **Empty Folder Pruning**: All empty directories left behind by the removal process are cleaned up bottom-up.
+
+---
+
 ## 🛠️ Building & Development
 
 ### Prerequisites
@@ -313,6 +344,7 @@ A huge thanks to the contributors and testers who help improve, validate, and ma
 | Contributor | Role & Contributions |
 | :--- | :--- |
 | <a href="https://github.com/Lxchoooo"><img src="https://github.com/Lxchoooo.png" width="48" height="48" style="border-radius: 50%;" /><br><b>@Lxchoooo</b></a> | 🧪 Daily patch testing, runtime APK validation, and bug diagnostics. |
+| <a href="https://github.com/ll0r3nt3"><img src="https://github.com/ll0r3nt3.png" width="48" height="48" style="border-radius: 50%;" /><br><b>@ll0r3nt3</b></a> | 💡 Proposed DPI Resource Slimmer feature request ([#16](https://github.com/kveld9/kveld-morphe-patches/issues/16)). |
 
 ---
 

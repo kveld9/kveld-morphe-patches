@@ -55,6 +55,13 @@ morphe-patches/
    - Obfuscated class fields must be verified against current target Dex files before modification.
    - Reflection bridges (e.g., `setAccessible(true)`) are used when accessing internal cross-DEX preference listeners to avoid `IllegalAccessError`.
 
+4. **Surgical & Concise Diagnostic Telemetry**:
+   - Every patch execution must emit concise, high-signal diagnostic telemetry to standard output (captured by Morphe Manager / CLI logs `[WARN] [STDIO]: [...]`).
+   - **Quantifiable & Traceable**: Report exact modifications, targets, and deltas (e.g. hooked classes/methods, redirected endpoints, pruned directories, rescued orphan assets, saved bytes/MB).
+   - **Anti-Spam / Bounded Output**: Never dump unbounded file trees or thousands of lines into the patcher console. Repetitive items must be summarized or bounded to short representative samples (e.g. `take(6)`).
+   - **Standardized Prefix**: Every log line must start with the bracketed patch name prefix: `[Patch Name] ...`.
+   - **Failure & Guard Transparency**: If an operation is skipped or safely aborted (e.g. missing targets or preconditions), log an explicit descriptive reason so issues can be immediately diagnosed from user-submitted logs.
+
 ---
 
 ## 3. Session Governance & Modes of Operation
