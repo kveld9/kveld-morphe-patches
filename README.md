@@ -52,7 +52,7 @@
 > For architecture compatibility details (ARM64 vs 32-bit ARMv7a) and variant selection guidelines, see the [Compatibility Guide](docs/compatibility.md).
 
 ### ⌨️ Gboard Lite
-- **Current Target**: `18.2.4.969776716-lite_beta-arm64-v8a`
+- **Current Target**: `18.2.4.969776716-lite_beta-arm64-v8a` (or `armeabi-v7a`)
 - **Architecture**: `arm64-v8a` or `armeabi-v7a` (nodpi APK)
 - **Source**: [APKMirror (Gboard Lite)](https://www.apkmirror.com/apk/google-inc/gboard/)
 - ⚠️ *Fresh install?* Read the [Gboard Offline Dictionary & Glide Typing Setup](docs/gboard-setup.md) before applying background debloat patches.
@@ -178,13 +178,6 @@ Comprehensive technical references and setup manuals have been modularized for f
 | ⚙️ **[Patch Configuration & Options](docs/patch-configuration.md)** | Detailed guides, density matrices, and complete locale code tables for `Locale Slimmer` and `DPI Resource Slimmer`. |
 | 🛡️ **[Architecture & Security Notes](docs/architecture-security.md)** | Explanation of privacy scanner false positives (ML Kit / Play Billing) and native ELF/Dalvik telemetry neutralization. |
 | 🛠️ **[Building & Development](docs/building.md)** | Toolchain prerequisites, Gradle build tasks, test execution, and catalog synchronization. |
-
----
-
-## 🛠️ Building & Development
-
-For toolchain prerequisites, standalone `.mpp` compilation, testing, and catalog generation commands, refer to the **[Building & Development Guide](docs/building.md)**.
-
 
 ---
 
