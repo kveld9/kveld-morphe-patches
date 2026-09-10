@@ -28,9 +28,7 @@
 
 ## 📖 Overview
 
-**Morphe Patches** is an open-source, modular patch repository for Android applications running on the **[Morphe](https://morphe.software)** patcher runtime.
-
-It enhances target applications with native Pure Black AMOLED themes, comprehensive telemetry and diagnostic blocking, background task debloating, cold-start performance optimizations, and APK footprint reduction across **Gboard Lite**, **Brave Browser**, and **Vivaldi Browser Snapshot**.
+**Morphe Patches** enhances target applications with native Pure Black AMOLED themes, comprehensive telemetry and diagnostic blocking, background task debloating, cold-start performance optimizations, and APK footprint reduction across **Gboard Lite**, **Brave Browser**, and **Vivaldi Browser Snapshot**.
 
 ---
 
@@ -42,9 +40,36 @@ It enhances target applications with native Pure Black AMOLED themes, comprehens
    kveld9/kveld-morphe-patches
    ```
    *(Or click: **[Add Source to Morphe Manager](https://morphe.software/add-source?github=kveld9/kveld-morphe-patches)**)*
-3. **Download Supported APK:** Obtain the exact target APK variant from the [Patch Catalog](#patch-catalog).
+3. **Download Supported APK:** Obtain the exact target APK variant from [Supported Targets & Downloads](#-supported-targets--downloads).
 4. **Select Patches:** Pick the patches you want to apply (privacy hardening, AMOLED theme, slimming, etc.).
 5. **Patch & Install:** Tap **Patch**, wait for compilation to complete, and install your enhanced APK.
+
+---
+
+## 🎯 Supported Targets & Downloads
+
+> [!TIP]
+> For architecture compatibility details (ARM64 vs 32-bit ARMv7a) and variant selection guidelines, see the [Compatibility Guide](docs/compatibility.md).
+
+### ⌨️ Gboard Lite
+- **Current Target**: `18.1.3.962075747-lite_beta-arm64-v8a`
+- **Architecture**: `arm64-v8a` or `armeabi-v7a` (nodpi APK)
+- **Source**: [APKMirror (Gboard Lite)](https://www.apkmirror.com/apk/google-inc/gboard/)
+- ⚠️ *Fresh install?* Read the [Gboard Offline Dictionary & Glide Typing Setup](docs/gboard-setup.md) before applying background debloat patches.
+
+### 🦁 Brave Browser
+- **Current Target**: `1.94.121` (`Bravemonoarm64.apk`)
+- **Architecture**: `arm64-v8a` (Monochrome only)
+- **Package**: `com.brave.browser`
+
+<a href="https://github.com/brave/brave-browser/releases/download/v1.94.121/Bravemonoarm64.apk"><img src="https://img.shields.io/badge/Download-Bravemonoarm64.apk_(v1.94.121)-FF4500?style=for-the-badge&logo=brave&logoColor=white" alt="Download Brave APK" /></a>
+
+### 🔴 Vivaldi Browser Snapshot
+- **Current Target**: `Vivaldi.8.2.4147.50_arm64-v8a.apk`
+- **Architecture**: `arm64-v8a`
+- **Package**: `com.vivaldi.browser.snapshot`
+
+<a href="https://downloads.vivaldi.com/snapshot/Vivaldi.8.2.4147.50_arm64-v8a.apk"><img src="https://img.shields.io/badge/Download-Vivaldi.8.2.4147.50_arm64--v8a.apk-EF3939?style=for-the-badge&logo=vivaldi&logoColor=white" alt="Download Vivaldi APK" /></a>
 
 ---
 
@@ -57,8 +82,8 @@ It enhances target applications with native Pure Black AMOLED themes, comprehens
 
 **🎯 Supported versions:**
 
-| 18.2.4.969776716-lite_beta-arm64-v8a | 18.2.4.969776716-lite_beta-armeabi-v7a |
-| :---: | :---: |
+| 18.1.3.962075747-lite_beta-arm64-v8a | 18.1.3.962075747-lite_beta-armeabi-v7a | 18.1.3.962075747-lite_release-arm64-v8a | 18.1.3.962075747-lite_release-armeabi-v7a |
+| :---: | :---: | :---: | :---: |
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
@@ -142,260 +167,28 @@ It enhances target applications with native Pure Black AMOLED themes, comprehens
 
 ---
 
-## ⚠️ Compatibility & Operational Notes
+## 📚 Documentation & Guides
 
-### 📱 CPU Architecture Support Policy (ARM64 vs ARMv7a)
+Comprehensive technical references and setup manuals have been modularized for fast navigation:
 
-> [!NOTE]
-> **Architecture Matrix & 32-bit (ARMv7a) Policy:**
-> - **Gboard Lite**: Both **`arm64-v8a` (64-bit)** and **`armeabi-v7a` (32-bit)** are officially supported. All 18 Gboard Lite patches in this suite operate strictly on Dalvik/ART DEX bytecode and Android XML resources, containing **zero native `.so` binary dependencies**. They run identically on both 64-bit and 32-bit Android runtimes.
-> - **Brave Browser & Vivaldi Snapshot**: **`arm64-v8a` (64-bit only)**. **Please do not open issues requesting `armeabi-v7a` support for Brave or Vivaldi.** Both Chromium-based browsers depend on surgical byte-level patching of the native ELF binary `lib/arm64-v8a/libchrome.so` (redirecting background telemetry, Crashpad crash uploaders, and DirectMatch endpoints to `0.0.0.0` at hardcoded 64-bit virtual memory and file offsets). Supporting 32-bit ARM for these browsers would require reverse-engineering and maintaining an entirely separate set of 32-bit ELF binary offsets for a legacy target.
-
-### ⌨️ Gboard Lite: Target Variant & Offline Dictionary Setup
-
-> [!IMPORTANT]
-> **Always download the standalone `lite` / `lite_beta` APK (nodpi) from [APKMirror](https://www.apkmirror.com/apk/google-inc/gboard/):**
->
-> - **Current Targets**:
->   - `18.2.4.969776716-lite_beta-arm64-v8a` (64-bit)
->   - `18.2.4.969776716-lite_beta-armeabi-v7a` (32-bit)
-> - **Format**: `APK` _(Do **NOT** download `BUNDLE` / split packages)_
-> - **Architecture**: `arm64-v8a` or `armeabi-v7a` (all Gboard Lite patches in this suite are 100% ABI-agnostic Dalvik bytecode and XML transforms)
-> - **Screen DPI**: `nodpi`
-
-#### 🔧 Predictive Text & Glide Typing on Fresh Installations
-
-> [!IMPORTANT]
-> **Gboard Lite does not bundle language dictionaries, predictive text models, or gesture/glide typing decoding models inside the APK.**
-> Unlike the full Gboard APK, Gboard Lite downloads language models on-demand upon first launch via Google's **MDD (Mobile Data Download)** and **Superpacks** subsystems.
-
-If you perform a clean install of Gboard Lite with background sync debloat patches enabled, Gboard will be prevented from downloading the initial dictionary and gesture model pack for your language. This results in an empty suggestion bar, no predictive text, and **Glide Typing (swipe to type) not working**.
-
-##### How to set up Gboard Lite with working predictive text & glide typing:
-
-1. **When patching for a clean install (or when adding new languages):**
-    - **Temporarily uncheck:**
-        - ❌ `Disable MDD Background Sync`
-        - ❌ `Disable Superpacks Eager Sync`
-        - ❌ `Disable WorkManager`
-    - _(Also ensure `Force Incognito Mode` is unchecked if you want personalized learning and history)._
-2. **Open Gboard once with an active Internet connection:**
-    - Type a few words, test a swipe gesture, or navigate to _Gboard Settings > Languages_ so it downloads your language dictionary and gesture pack into local storage (`/data/data/...`).
-3. **Re-apply debloat patches (Optional):**
-    - Once your language packs are cached locally on device, you can re-patch with `Disable MDD Background Sync`, `Disable Superpacks Eager Sync`, and `Disable WorkManager` to freeze background network traffic and disk polling.
-
----
-
-### 🦁 Brave Browser: Required Variant & Native Offsets
-
-> [!IMPORTANT]
-> **Always use `Bravemonoarm64.apk` from [Brave GitHub Releases](https://github.com/brave/brave-browser/releases).**
-> Do **NOT** use `Bravearm64Universal.apk`, `Bravearm64.apk`, or 32-bit / x86 builds (`Bravearm.apk`, `Bravemonox64.apk`, etc.).
->
-> - **Current Target**: `1.94.121` (`Bravemonoarm64.apk`)
-> - **Architecture**: `arm64-v8a` (Monochrome)
-> - **Package Name**: `com.brave.browser`
->
-> <a href="https://github.com/brave/brave-browser/releases/download/v1.94.121/Bravemonoarm64.apk"><img src="https://img.shields.io/badge/Download-Bravemonoarm64.apk_(v1.94.121)-FF4500?style=for-the-badge&logo=brave&logoColor=white" alt="Download Brave APK" /></a>
-
-#### ❓ Why `Bravemonoarm64.apk`?
-
-- **Bytecode Consistency**: `Bravemonoarm64.apk` is the official 64-bit ARM Monochrome build. Other variants (especially _Universal_) use different R8/ProGuard obfuscation passes and aggressive method inlining, which causes Dalvik fingerprint mismatches (e.g. in Variations seed fetching and Brave Origin helpers).
-- **Native ARM64 Hooks**: Byte-level offsets in `lib/arm64-v8a/libchrome.so` (such as domain redirection and native scheduler gates) are calculated strictly against ARM64 Monochrome binaries.
-
----
-
-### 🔴 Vivaldi Browser Snapshot: Target APK & Architecture
-
-> [!IMPORTANT]
-> **Always download the official `arm64-v8a` APK directly from the [Vivaldi Android Blog](https://vivaldi.com/blog/android/).**
-> In every release announcement blog post, Vivaldi provides direct official APK download links at the bottom.
->
-> - **Current Target**: `Vivaldi.8.2.4147.50_arm64-v8a.apk`
-> - **Architecture**: `arm64-v8a` (Do **NOT** use `armeabi-v7a`, `x86`, or `x86_64`)
-> - **Package Name**: `com.vivaldi.browser.snapshot`
->
-> <a href="https://downloads.vivaldi.com/snapshot/Vivaldi.8.2.4147.50_arm64-v8a.apk"><img src="https://img.shields.io/badge/Download-Vivaldi.8.2.4147.50_arm64--v8a.apk-EF3939?style=for-the-badge&logo=vivaldi&logoColor=white" alt="Download Vivaldi APK" /></a>
-
-#### ❓ Why Vivaldi Snapshot & Future Transition to Stable
-
-- **Extension Support & Experimental Features**: Morphe Patches currently targets **Vivaldi Snapshot** to provide native Desktop Extension support and recent Chromium components.
-- **Stable Transition Roadmap**: Vivaldi Snapshot is maintained as the primary target **only until Web Extensions support is enabled by default in the stable release** of Vivaldi Browser (`com.vivaldi.browser`), at which point patch compatibility will expand/transition to the stable channel.
-- **Native 64-bit Binary Offsets**: Byte-level offsets in `lib/arm64-v8a/libchrome.so` (telemetry endpoints, Crashpad, and DirectMatch suggestions) are strictly calculated against 64-bit ARM builds.
-
----
-
-## 🔬 Technical Notes & Architecture
-
-### 🛡️ Brave Browser: Privacy Scanner False Positives (App Manager / Exodus)
-
-> [!NOTE]
-> **Component scanners such as App Manager or Exodus Privacy may flag Google Play Billing and Google ML Kit components as "trackers" inside Brave. These are false positives caused by generic package name signatures.**
-
-When inspecting Brave with package analysis tools, the following components may be highlighted:
-
-| Component | Origin / Library | Actual Function | Privacy & Telemetry Impact |
-| :--- | :--- | :--- | :--- |
-| `com.android.billingclient.api.ProxyBillingActivity`<br>`com.android.billingclient.api.ProxyBillingActivityV2` | **Google Play Billing** (`billingclient`) | Handles user-initiated in-app subscriptions (Brave Leo AI Premium, Brave VPN). | **None (Transactional only).** These are trampoline UI activities for Google Play checkout sheets. They collect zero browsing analytics or telemetry. Stripping them breaks subscription handling and triggers `ActivityNotFoundException`. |
-| `com.google.mlkit.common.internal.MlKitInitProvider`<br>`com.google.mlkit.common.internal.MlKitComponentDiscoveryService` | **Google ML Kit** (`mlkit.common`) | Powers local, on-device OCR and vision features (e.g. camera-based credit card scanning in Autofill and QR code scanning). | **None (On-device execution).** Flagged by Exodus because ML Kit uses the Firebase component dependency injector (`CommonComponentRegistrar`). All model operations run strictly local to the device. |
-
-#### 🔒 Genuine Telemetry Neutralization
-
-Genuine Brave telemetry is fully neutralized by the **[Block Brave Telemetry](#patch-catalog)** patch:
-- **P3A (Privacy-Preserving Product Analytics)**: Preference getters forced to return `false` in Dalvik bytecode (`PrefService.e`).
-- **Brave Stats & Web Discovery Project (WDP)**: Reporting loops disabled and all 7 telemetry endpoints redirected to `0.0.0.0` in `libchrome.so`.
-- **Crashpad & Minidump Uploads**: Upload hooks aborted before dispatch (`MinidumpUploadServiceImpl`, `ChromeMinidumpUploadJobService`) and endpoints zeroed in native binary.
-- **Variations Seed Fetching**: Blocked before HTTP socket creation (`IOException("Blocked by Morphe")`).
-
----
-
-### 🌐 Patch Documentation: Locale PAK Slimmer (Brave & Vivaldi)
-
-The **`Locale PAK Slimmer`** patch allows you to strip unneeded language resource PAKs from `assets/locales/` to reduce APK size (saving **~10.5 MB in Brave** and **~21.2 MB in Vivaldi**).
-
-When configuring the **`Locales to keep`** option in Morphe Manager, specify a comma-separated list of locale codes (e.g. `es-419, es, en-US, pt-BR`). English (`en-US`) is always preserved automatically as an essential Chromium fallback. To prevent Chromium startup crashes on devices configured with unselected system languages, stripped language PAKs are safely populated with the base `en-US` resource table fallback rather than empty stubs. In Vivaldi, any corresponding grammatical gender variants (e.g. `es-419_FEMININE`) for your chosen languages are preserved automatically.
-
-#### 📋 Popular Language Codes:
-
-| Language                         | Locale Code(s)                                                                    |
+| Guide | Description |
 | :--- | :--- |
-| **Spanish**                      | `es` (Spain / Global), `es-419` (Latin America)                                   |
-| **English**                      | `en-US` (US - _Always kept_), `en-GB` (UK)                                        |
-| **Portuguese**                   | `pt-BR` (Brazil), `pt-PT` (Portugal)                                              |
-| **French**                       | `fr` (France), `fr-CA` (Canada)                                                   |
-| **German / Italian / Dutch**     | `de` (German), `it` (Italian), `nl` (Dutch)                                       |
-| **Russian / Ukrainian / Polish** | `ru`, `uk`, `pl`                                                                  |
-| **Japanese / Korean / Chinese**  | `ja`, `ko`, `zh-CN` (Simplified), `zh-TW` (Traditional), `zh-HK` (Hong Kong)      |
-| **Nordic Languages**             | `sv` (Swedish), `da` (Danish), `fi` (Finnish), `nb` (Norwegian), `is` (Icelandic) |
-| **Regional Languages of Spain**  | `ca` (Catalan), `gl` (Galician), `eu` (Basque)                                    |
-| **Arabic / Turkish / Hebrew**    | `ar`, `tr`, `he`                                                                  |
-
-<details>
-<summary><b>🔍 View all 81 available base locale codes in Brave & Vivaldi</b></summary>
-<br>
-
-```text
-af, am, ar, as, az, be, bg, bn, bs, ca, cs, da, de, el, en-GB, en-US, es, es-419,
-et, eu, fa, fi, fil, fr, fr-CA, gl, gu, he, hi, hr, hu, hy, id, is, it, ja, ka,
-kk, km, kn, ko, ky, lo, lt, lv, mk, ml, mn, mr, ms, my, nb, ne, nl, or, pa, pl,
-pt-BR, pt-PT, ro, ru, si, sk, sl, sq, sr, sr-Latn, sv, sw, ta, te, th, tr, uk,
-ur, uz, vi, zh-CN, zh-HK, zh-TW, zu
-```
-
-</details>
-
----
-
-### 🌐 Patch Documentation: Locale Resource Slimmer (Gboard)
-
-The **`Locale Resource Slimmer`** patch strips unselected language translation directories from Gboard's `res/` (such as `values-*`, `raw-*`, `xml-*`) to reduce APK size (saving **~23.15 MB**).
-
-#### ⚙️ Configuration in Morphe Manager
-
-When configuring the **`Locales to keep`** option (`locales`), specify a comma-separated list of language codes to preserve (e.g. `es, es-419, pt-BR, fr, de`).
-
-- **Default value**: `en` (English `en` and `en-US` are always retained as an essential base fallback).
-- **Base Fallback Safety**: Resource directories without language qualifiers (e.g. `res/values/`, `res/xml/`, `res/raw/`, `res/drawable-*/`) are **strictly preserved and never removed**, guaranteeing UI layout and asset integrity.
-- **Prefix Matching**: Specifying a base language code like `es` automatically preserves both global Spanish and regional variants (`es-rUS`, `es-rES`, `es-r419`).
-
-#### 📋 Popular Language Codes:
-
-| Language | Locale Code(s) |
-| :--- | :--- |
-| **English** | `en` (_Always kept by default_), `en-GB`, `en-CA`, `en-AU`, `en-IN` |
-| **Spanish** | `es` (Spain / Global), `es-419` / `es-US` (Latin America / US) |
-| **Portuguese** | `pt` (Global), `pt-BR` (Brazil), `pt-PT` (Portugal) |
-| **French** | `fr` (France / Global), `fr-CA` (Canada) |
-| **German / Italian / Dutch** | `de` (German), `it` (Italian), `nl` (Dutch) |
-| **Russian / Ukrainian / Polish** | `ru`, `uk`, `pl` |
-| **Japanese / Korean / Chinese** | `ja`, `ko`, `zh` (Global), `zh-CN` (Simplified), `zh-TW` (Traditional), `zh-HK` (Hong Kong) |
-| **Nordic Languages** | `sv` (Swedish), `da` (Danish), `fi` (Finnish), `nb` (Norwegian), `is` (Icelandic) |
-| **Regional Languages of Spain** | `ca` (Catalan), `gl` (Galician), `eu` (Basque) |
-| **Arabic / Turkish / Hebrew** | `ar`, `tr`, `iw` (Hebrew) |
-
-<details>
-<summary><b>🔍 View all 100 available locale codes in Gboard Lite</b></summary>
-<br>
-
-```text
-af, ak, am, ar, as, az, be, bg, bn, bo, bs, ca, cs, da, de, el, en, en-rAU,
-en-rCA, en-rGB, en-rIN, en-rXC, es, es-r419, es-rES, es-rUS, et, eu, fa, ff,
-fi, fr, fr-rCA, gl, gu, ha, hi, hr, hu, hy, id, ig, in, is, it, iw, ja, ka,
-kk, km, kn, ko, ky, lo, lt, lv, mk, ml, mn, mr, ms, my, my-rZG, nb, ne, nl,
-nod, or, pa, pl, pt, pt-rBR, pt-rPT, ro, ru, se, si, sk, sl, sou, sq, sr, sv,
-sw, ta, te, th, tl, tr, uk, ur, uz, vi, yo, zh, zh-rCN, zh-rHK, zh-rTW, zu
-```
-
-</details>
-
----
-
-### 📱 Patch Documentation: DPI Resource Slimmer (Vivaldi, Brave & Gboard)
-
-The **`DPI Resource Slimmer`** patch strips unselected screen density asset directories (such as `drawable-mdpi`, `drawable-hdpi`, `drawable-xhdpi`, `mipmap-mdpi`, etc.) from `res/` to significantly reduce final APK size.
-
-#### ⚙️ Configuration in Morphe Manager
-
-When configuring the **`DPI densities to keep`** option (`dpis`), specify a comma-separated list of densities to retain:
-
-- **Default value**: `xxhdpi` (corresponds to standard 1080p displays, ~480 dpi, the most common smartphone resolution).
-- **Single density (maximum space savings)**: e.g. `xxhdpi` for 1080p devices, or `xxxhdpi` for 1440p / 2K devices.
-- **Multiple densities (broad device compatibility)**: e.g. `xhdpi, xxhdpi`.
-- **Friendly aliases**: You can also type resolution aliases such as `1080p` (maps to `xxhdpi`), `720p` (maps to `xhdpi`), or `1440p` / `2k` (maps to `xxxhdpi`).
-
-#### 📐 Screen Density Reference Guide:
-
-| Density Qualifier | Screen DPI Range | Typical Screen Resolution | Example Devices |
-| :--- | :--- | :--- | :--- |
-| **`mdpi`** | ~160 dpi (1.0x baseline) | 320x480 / 480x800 | Legacy / ultra low-end devices |
-| **`hdpi`** | ~240 dpi (1.5x) | 480x854 / 540x960 | Budget entry-level phones |
-| **`xhdpi`** | ~320 dpi (2.0x) | 720x1280 (720p HD) | Entry-level / older 720p phones |
-| **`xxhdpi`** _(Default)_ | ~480 dpi (3.0x) | 1080x1920 / 1080x2400 (1080p FHD+) | **Most modern smartphones** |
-| **`xxxhdpi`** | ~640 dpi (4.0x) | 1440x2560 / 1440x3120 (1440p QHD+) | Premium flagships (Galaxy Ultra, Pixel Pro) |
-
-#### 🛡️ Zero-Crash Safety Invariants:
-
-1. **Protected Density Qualifiers**: Density-independent directories (`drawable-nodpi`, `drawable-anydpi`, `mipmap-anydpi-v26` for vector drawables and adaptive icons) and unquantified base directories (`drawable`, `mipmap`, `values`, `layout`, etc.) are **strictly preserved and never removed**.
-2. **Orphan Asset Preservation**: If a graphical asset exists *exclusively* in a directory marked for deletion (with no corresponding file in preserved or base directories), it is automatically copied forward to the target preserved directory before deletion. This guarantees Android never encounters a `Resources$NotFoundException` at runtime.
-3. **Empty Folder Pruning**: All empty directories left behind by the removal process are cleaned up bottom-up.
+| 📱 **[Compatibility Guide](docs/compatibility.md)** | CPU architecture policy (ARM64 vs 32-bit ARMv7a) and APK variant rationales (`Bravemonoarm64`, Vivaldi Snapshot). |
+| ⌨️ **[Gboard Setup & Dictionaries](docs/gboard-setup.md)** | Step-by-step setup for predictive text, offline dictionaries, and Glide Typing on fresh installs. |
+| ⚙️ **[Patch Configuration & Options](docs/patch-configuration.md)** | Detailed guides, density matrices, and complete locale code tables for `Locale Slimmer` and `DPI Resource Slimmer`. |
+| 🛡️ **[Architecture & Security Notes](docs/architecture-security.md)** | Explanation of privacy scanner false positives (ML Kit / Play Billing) and native ELF/Dalvik telemetry neutralization. |
+| 🛠️ **[Building & Development](docs/building.md)** | Toolchain prerequisites, Gradle build tasks, test execution, and catalog synchronization. |
 
 ---
 
 ## 🛠️ Building & Development
 
-### Prerequisites
+For toolchain prerequisites, standalone `.mpp` compilation, testing, and catalog generation commands, refer to the **[Building & Development Guide](docs/building.md)**.
 
-- **JDK 17+** (JDK 21 recommended)
-- **Gradle 9.6.1** (via included `./gradlew`)
-- **Python 3.x** (for catalog synchronization)
-
-### Build Commands
-
-```bash
-# Build Android extension DEX + standalone Morphe Patch Package (.mpp)
-./gradlew buildAndroid
-
-# Run checks and tests
-./gradlew check
-
-# Generate updated patches-list.json catalog
-./gradlew generatePatchesList
-
-# Sync README markdown tables with patch metadata
-python .github/scripts/generate_patches_readme.py kveld9/kveld-morphe-patches main patches-list.json README.md
-```
-
-The compiled patch package will be available at:
-
-```
-patches/build/libs/patches-*.mpp
-```
 
 ---
 
 ## 🤝 Credits & Contributors
-
-A huge thanks to the contributors and testers who help improve, validate, and maintain Morphe Patches:
 
 | Contributor | Role & Contributions |
 | :--- | :--- |
