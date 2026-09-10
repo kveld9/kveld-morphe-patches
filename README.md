@@ -52,7 +52,7 @@
 > For architecture compatibility details (ARM64 vs 32-bit ARMv7a) and variant selection guidelines, see the [Compatibility Guide](docs/compatibility.md).
 
 ### ⌨️ Gboard Lite
-- **Current Target**: `18.1.3.962075747-lite_beta-arm64-v8a`
+- **Current Target**: `18.2.4.969776716-lite_beta-arm64-v8a`
 - **Architecture**: `arm64-v8a` or `armeabi-v7a` (nodpi APK)
 - **Source**: [APKMirror (Gboard Lite)](https://www.apkmirror.com/apk/google-inc/gboard/)
 - ⚠️ *Fresh install?* Read the [Gboard Offline Dictionary & Glide Typing Setup](docs/gboard-setup.md) before applying background debloat patches.
@@ -82,8 +82,8 @@
 
 **🎯 Supported versions:**
 
-| 18.1.3.962075747-lite_beta-arm64-v8a | 18.1.3.962075747-lite_beta-armeabi-v7a | 18.1.3.962075747-lite_release-arm64-v8a | 18.1.3.962075747-lite_release-armeabi-v7a |
-| :---: | :---: | :---: | :---: |
+| 18.2.4.969776716-lite_beta-arm64-v8a | 18.2.4.969776716-lite_beta-armeabi-v7a |
+| :---: | :---: |
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
