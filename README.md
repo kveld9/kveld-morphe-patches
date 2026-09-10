@@ -136,7 +136,7 @@
 </details>
 
 <details open>
-<summary>📦 Vivaldi Browser&nbsp;&nbsp;•&nbsp;&nbsp;14 patches</summary>
+<summary>📦 Vivaldi Browser - Fast & Safe&nbsp;&nbsp;•&nbsp;&nbsp;14 patches</summary>
 <br>
 
 **🎯 Supported versions:**
