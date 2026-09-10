@@ -17,7 +17,6 @@ val gboardEnableAccessPointsMenuRedesignPatch = bytecodePatch(
 
     execute {
         val fingerprint = Fingerprint(
-            definingClass = "Lpzb;",
             name = "<clinit>",
             returnType = "V",
             filters = listOf(string("enable_access_points_menu_redesign")),

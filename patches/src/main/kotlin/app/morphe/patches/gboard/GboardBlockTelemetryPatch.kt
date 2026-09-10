@@ -34,7 +34,7 @@ val gboardBlockTelemetryPatch = bytecodePatch(
             """
                 invoke-static {}, Landroidx/work/ListenableWorker${'$'}Result;->success()Landroidx/work/ListenableWorker${'$'}Result;
                 move-result-object v0
-                invoke-static {v0}, Lagqm;->i(Ljava/lang/Object;)Lagrd;
+                invoke-static {v0}, Lagsw;->i(Ljava/lang/Object;)Lagtn;
                 move-result-object v0
                 return-object v0
             """.trimIndent(),
@@ -42,9 +42,9 @@ val gboardBlockTelemetryPatch = bytecodePatch(
         hookedMethods.add("DailyPingWorker.c")
 
         val fp3 = Fingerprint(
-            definingClass = "Lvru;",
+            definingClass = "Lvtq;",
             name = "n",
-            parameters = listOf("Lvrp;"),
+            parameters = listOf("Lvtl;"),
             returnType = "V",
         )
         fp3.method.addInstructions(0, "return-void")
@@ -52,7 +52,7 @@ val gboardBlockTelemetryPatch = bytecodePatch(
         hookedMethods.add("$c3.n")
 
         val fp4 = Fingerprint(
-            definingClass = "Lvru;",
+            definingClass = "Lvtq;",
             name = "p",
             parameters = emptyList(),
             returnType = "V",
@@ -61,7 +61,7 @@ val gboardBlockTelemetryPatch = bytecodePatch(
         hookedMethods.add("$c3.p")
 
         val fp5 = Fingerprint(
-            definingClass = "Lvru;",
+            definingClass = "Lvtq;",
             name = "s",
             parameters = emptyList(),
             returnType = "V",
@@ -70,9 +70,9 @@ val gboardBlockTelemetryPatch = bytecodePatch(
         hookedMethods.add("$c3.s")
 
         val fp6 = Fingerprint(
-            definingClass = "Lohb;",
+            definingClass = "Loib;",
             name = "b",
-            parameters = listOf("Lojq;"),
+            parameters = listOf("Lokr;"),
             returnType = "V",
         )
         fp6.method.addInstructions(0, "return-void")
@@ -80,9 +80,9 @@ val gboardBlockTelemetryPatch = bytecodePatch(
         hookedMethods.add("$c6.b")
 
         val fp7 = Fingerprint(
-            definingClass = "Lsba;",
+            definingClass = "Lsco;",
             name = "dC",
-            parameters = listOf("Landroid/content/Context;", "Lvul;"),
+            parameters = listOf("Landroid/content/Context;", "Lvwh;"),
             returnType = "V",
         )
         fp7.method.addInstructions(0, "return-void")

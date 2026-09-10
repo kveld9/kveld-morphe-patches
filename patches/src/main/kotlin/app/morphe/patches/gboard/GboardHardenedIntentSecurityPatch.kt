@@ -17,7 +17,6 @@ val gboardHardenedIntentSecurityPatch = bytecodePatch(
 
     execute {
         val fingerprint = Fingerprint(
-            definingClass = "Lugr;",
             name = "<clinit>",
             returnType = "V",
             filters = listOf(string("prevent_external_intents")),

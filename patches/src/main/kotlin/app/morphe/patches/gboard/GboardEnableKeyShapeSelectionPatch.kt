@@ -14,7 +14,7 @@ val gboardEnableKeyShapeSelectionPatch = bytecodePatch(
 
     execute {
         val fp = Fingerprint(
-            definingClass = "Lxjm;",
+            definingClass = "Lxlh;",
             name = "i",
             parameters = listOf("Landroid/content/Context;"),
             returnType = "Z",

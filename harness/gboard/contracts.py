@@ -89,7 +89,7 @@ def get_all_gboard_contracts() -> List[GboardPatchContract]:
                     name_id="daily_ping_worker",
                     defining_class="Lcom/google/android/libraries/inputmethod/dailyping/DailyPingWorker;",
                     method_name="c",
-                    return_type="Lagrd;",
+                    return_type="Lagtn;",
                     parameters=[],
                 ),
             ],
@@ -167,21 +167,21 @@ def get_all_gboard_contracts() -> List[GboardPatchContract]:
                     name_id="mdd_task_scheduler_worker",
                     defining_class="Lcom/google/android/libraries/inputmethod/mdd/MDDTaskScheduler$Worker;",
                     method_name="c",
-                    return_type="Lagrd;",
+                    return_type="Lagtn;",
                     parameters=[],
                 ),
                 FingerprintQuery(
                     name_id="mdd_metadata_cleanup_worker",
                     defining_class="Lcom/google/android/libraries/inputmethod/mdd/cleanup/MddMetadataCleanupWorker;",
                     method_name="k",
-                    return_type="Lcix;",
+                    return_type="Lcjb;",
                     parameters=[],
                 ),
                 FingerprintQuery(
                     name_id="mdd_foreground_download_worker",
                     defining_class="Lcom/google/android/libraries/inputmethod/mdd/ForegroundDownloadTaskWorker;",
                     method_name="c",
-                    return_type="Lagrd;",
+                    return_type="Lagtn;",
                     parameters=[],
                 ),
             ],
@@ -228,14 +228,14 @@ def get_all_gboard_contracts() -> List[GboardPatchContract]:
             queries=[
                 FingerprintQuery(
                     name_id="superpacks_sync_task_1",
-                    defining_class="Lguu;",
+                    defining_class="Lgwi;",
                     method_name="n",
                     return_type="V",
                     parameters=[],
                 ),
                 FingerprintQuery(
                     name_id="superpacks_sync_task_2",
-                    defining_class="Lgsa;",
+                    defining_class="Lgsn;",
                     method_name="n",
                     return_type="V",
                     parameters=[],
@@ -256,9 +256,9 @@ def get_all_gboard_contracts() -> List[GboardPatchContract]:
             queries=[
                 FingerprintQuery(
                     name_id="tenor_share_tracker",
-                    defining_class="Limz;",
+                    defining_class="Linr;",
                     method_name="K",
-                    parameters=["Lafzm;", "Lidv;"],
+                    parameters=["Lagca;", "Lien;"],
                     return_type="V",
                 ),
             ],
@@ -313,7 +313,6 @@ def get_all_gboard_contracts() -> List[GboardPatchContract]:
             queries=[
                 FingerprintQuery(
                     name_id="access_points_flag_clinit",
-                    defining_class="Lpzb;",
                     method_name="<clinit>",
                     return_type="V",
                     strings=["enable_access_points_menu_redesign"],
@@ -334,7 +333,7 @@ def get_all_gboard_contracts() -> List[GboardPatchContract]:
             queries=[
                 FingerprintQuery(
                     name_id="key_shape_predicate",
-                    defining_class="Lxjm;",
+                    defining_class="Lxlh;",
                     method_name="i",
                     return_type="Z",
                     parameters=["Landroid/content/Context;"],
@@ -355,14 +354,14 @@ def get_all_gboard_contracts() -> List[GboardPatchContract]:
             queries=[
                 FingerprintQuery(
                     name_id="incognito_editor_check",
-                    defining_class="Lsgl;",
-                    method_name="H",
+                    defining_class="Lshz;",
+                    method_name="z",
                     return_type="Z",
                     parameters=["Landroid/view/inputmethod/EditorInfo;"],
                 ),
                 FingerprintQuery(
                     name_id="incognito_flag_check",
-                    defining_class="Lfon;",
+                    defining_class="Lfoz;",
                     method_name="F",
                     return_type="Z",
                     parameters=[],
@@ -383,7 +382,6 @@ def get_all_gboard_contracts() -> List[GboardPatchContract]:
             queries=[
                 FingerprintQuery(
                     name_id="intent_security_flag_clinit",
-                    defining_class="Lugr;",
                     method_name="<clinit>",
                     return_type="V",
                     strings=["prevent_external_intents"],

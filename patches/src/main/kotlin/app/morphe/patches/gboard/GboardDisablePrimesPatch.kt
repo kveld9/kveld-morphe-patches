@@ -16,9 +16,9 @@ val gboardDisablePrimesPatch = bytecodePatch(
         val hookedMethods = mutableListOf<String>()
 
         val fp1 = Fingerprint(
-            definingClass = "Lwsd;",
+            definingClass = "Lwty;",
             name = "dC",
-            parameters = listOf("Landroid/content/Context;", "Lvul;"),
+            parameters = listOf("Landroid/content/Context;", "Lvwh;"),
             returnType = "V",
         )
         fp1.method.addInstructions(0, "return-void")
@@ -26,9 +26,9 @@ val gboardDisablePrimesPatch = bytecodePatch(
         hookedMethods.add("$c1.dC")
 
         val fp2 = Fingerprint(
-            definingClass = "Laciz;",
+            definingClass = "Laclm;",
             name = "b",
-            parameters = listOf("Laciz;"),
+            parameters = listOf("Laclm;"),
             returnType = "V",
         )
         fp2.method.addInstructions(0, "return-void")
@@ -38,15 +38,15 @@ val gboardDisablePrimesPatch = bytecodePatch(
         val fp3 = Fingerprint(
             definingClass = "Lcom/google/android/libraries/performance/primes/metrics/crash/NativeCrashHandlerImpl;",
             name = "a",
-            parameters = listOf("Lacto;"),
+            parameters = listOf("Lacwb;"),
             returnType = "V",
         )
         fp3.method.addInstructions(0, "return-void")
         hookedMethods.add("NativeCrashHandlerImpl.a")
 
         val fp4 = Fingerprint(
-            definingClass = "Lacwf;",
-            name = "gk",
+            definingClass = "Lacys;",
+            name = "gm",
             parameters = emptyList(),
             returnType = "Ljava/lang/Object;",
         )
@@ -61,7 +61,7 @@ val gboardDisablePrimesPatch = bytecodePatch(
             """.trimIndent(),
         )
         val c4 = app.morphe.patches.shared.LocaleUtils.cleanClassName(fp4.originalClassDef.type)
-        hookedMethods.add("$c4.gk")
+        hookedMethods.add("$c4.gm")
 
         val fp5 = Fingerprint(
             definingClass = "Lcom/google/android/libraries/performance/primes/transmitter/LifeboatReceiver;",

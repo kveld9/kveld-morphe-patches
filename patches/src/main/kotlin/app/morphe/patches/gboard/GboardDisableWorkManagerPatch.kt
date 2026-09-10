@@ -26,95 +26,95 @@ val gboardDisableWorkManagerPatch = bytecodePatch(
         }
 
         Fingerprint(
-            definingClass = "Laajg;",
+            definingClass = "Laalt;",
             name = "a",
             parameters = listOf("Ljava/lang/String;"),
-            returnType = "Lagrd;",
+            returnType = "Lagtn;",
         ).method.apply {
             addInstructions(
                 0,
                 """
                     const/4 v0, 0x0
-                    invoke-static {v0}, Lagqm;->i(Ljava/lang/Object;)Lagrd;
+                    invoke-static {v0}, Lagsw;->i(Ljava/lang/Object;)Lagtn;
                     move-result-object v0
                     return-object v0
                 """.trimIndent(),
             )
-            hookedMethods.add("Laajg.a")
+            hookedMethods.add("Laalt.a")
         }
 
         Fingerprint(
-            definingClass = "Laajg;",
-            name = "b",
-            parameters = listOf("Ljava/lang/String;", "I", "Lcjd;"),
-            returnType = "Lagrd;",
-        ).method.apply {
-            addInstructions(
-                0,
-                """
-                    const/4 v0, 0x0
-                    invoke-static {v0}, Lagqm;->i(Ljava/lang/Object;)Lagrd;
-                    move-result-object v0
-                    return-object v0
-                """.trimIndent(),
-            )
-            hookedMethods.add("Laajg.b")
-        }
-
-        Fingerprint(
-            definingClass = "Laajg;",
+            definingClass = "Laalt;",
             name = "c",
-            parameters = listOf("Ljava/lang/String;", "I", "Lcjd;", "Ljava/lang/Runnable;", "Ljava/lang/Runnable;"),
-            returnType = "V",
+            parameters = listOf("Ljava/lang/String;", "I", "Lcjh;"),
+            returnType = "Lagtn;",
         ).method.apply {
-            addInstructions(0, "return-void")
-            hookedMethods.add("Laajg.c")
+            addInstructions(
+                0,
+                """
+                    const/4 v0, 0x0
+                    invoke-static {v0}, Lagsw;->i(Ljava/lang/Object;)Lagtn;
+                    move-result-object v0
+                    return-object v0
+                """.trimIndent(),
+            )
+            hookedMethods.add("Laalt.c")
         }
 
         Fingerprint(
-            definingClass = "Laajg;",
+            definingClass = "Laalt;",
             name = "d",
-            parameters = listOf("Ljava/lang/String;", "Lcjp;"),
-            returnType = "Lagrd;",
-        ).method.apply {
-            addInstructions(
-                0,
-                """
-                    const/4 v0, 0x0
-                    invoke-static {v0}, Lagqm;->i(Ljava/lang/Object;)Lagrd;
-                    move-result-object v0
-                    return-object v0
-                """.trimIndent(),
-            )
-            hookedMethods.add("Laajg.d")
-        }
-
-        Fingerprint(
-            definingClass = "Laajg;",
-            name = "f",
-            parameters = emptyList(),
-            returnType = "Lagrd;",
-        ).method.apply {
-            addInstructions(
-                0,
-                """
-                    const/4 v0, 0x0
-                    invoke-static {v0}, Lagqm;->i(Ljava/lang/Object;)Lagrd;
-                    move-result-object v0
-                    return-object v0
-                """.trimIndent(),
-            )
-            hookedMethods.add("Laajg.f")
-        }
-
-        Fingerprint(
-            definingClass = "Laajg;",
-            name = "g",
-            parameters = listOf("Lagrd;", "Ljava/lang/Runnable;", "Ljava/lang/Runnable;"),
+            parameters = listOf("Ljava/lang/String;", "I", "Lcjh;", "Ljava/lang/Runnable;", "Ljava/lang/Runnable;"),
             returnType = "V",
         ).method.apply {
             addInstructions(0, "return-void")
-            hookedMethods.add("Laajg.g")
+            hookedMethods.add("Laalt.d")
+        }
+
+        Fingerprint(
+            definingClass = "Laalt;",
+            name = "f",
+            parameters = listOf("Ljava/lang/String;", "Lcjt;"),
+            returnType = "Lagtn;",
+        ).method.apply {
+            addInstructions(
+                0,
+                """
+                    const/4 v0, 0x0
+                    invoke-static {v0}, Lagsw;->i(Ljava/lang/Object;)Lagtn;
+                    move-result-object v0
+                    return-object v0
+                """.trimIndent(),
+            )
+            hookedMethods.add("Laalt.f")
+        }
+
+        Fingerprint(
+            definingClass = "Laalt;",
+            name = "h",
+            parameters = emptyList(),
+            returnType = "Lagtn;",
+        ).method.apply {
+            addInstructions(
+                0,
+                """
+                    const/4 v0, 0x0
+                    invoke-static {v0}, Lagsw;->i(Ljava/lang/Object;)Lagtn;
+                    move-result-object v0
+                    return-object v0
+                """.trimIndent(),
+            )
+            hookedMethods.add("Laalt.h")
+        }
+
+        Fingerprint(
+            definingClass = "Laalt;",
+            name = "l",
+            parameters = listOf("Lagtn;", "Ljava/lang/Runnable;", "Ljava/lang/Runnable;"),
+            returnType = "V",
+        ).method.apply {
+            addInstructions(0, "return-void")
+            hookedMethods.add("Laalt.l")
         }
 
         Fingerprint(

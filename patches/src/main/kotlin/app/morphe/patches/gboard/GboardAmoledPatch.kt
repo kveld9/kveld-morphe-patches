@@ -61,7 +61,7 @@ val gboardAmoledPatch = bytecodePatch(
             returnType = "V",
             filters = listOf(
                 methodCall(
-                    definingClass = "Lxjm;",
+                    definingClass = "Lxlh;",
                     name = "e",
                     returnType = "Z",
                 ),
@@ -73,14 +73,13 @@ val gboardAmoledPatch = bytecodePatch(
             matchIndex,
             """
                 const-string v6, "assets:theme_package_metadata_color_black.binarypb"
-                const/4 v7, 0x1
-                new-instance v8, Lxjv;
-                invoke-direct {v8, v6, v7}, Lxjv;-><init>(Ljava/lang/String;Z)V
-                invoke-static {p1, v8}, Lmyb;->e(Landroid/content/Context;Lxjv;)Lmyb;
+                new-instance v7, Lxlq;
+                invoke-direct {v7, v6}, Lxlq;-><init>(Ljava/lang/String;)V
+                invoke-static {p1, v7}, Lmza;->e(Landroid/content/Context;Lxlq;)Lmza;
                 move-result-object v6
-                new-instance v7, Lmxa;
+                new-instance v7, Lmxz;
                 const-string v8, "AMOLED"
-                invoke-direct {v7, v8, v6, v8}, Lmxa;-><init>(Ljava/lang/String;Lmyb;Ljava/lang/String;)V
+                invoke-direct {v7, v8, v6, v8}, Lmxz;-><init>(Ljava/lang/String;Lmza;Ljava/lang/String;)V
                 invoke-interface {v5, v7}, Ljava/util/List;->add(Ljava/lang/Object;)Z
             """.trimIndent(),
         )
