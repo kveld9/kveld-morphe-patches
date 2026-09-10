@@ -13,7 +13,7 @@ from harness.reporting.reporter import HarnessReportData
 
 
 class VivaldiPipeline(BaseTargetPipeline):
-    app_name = "Vivaldi Browser Snapshot"
+    app_name = "Vivaldi Browser"
     default_report_filename = "VIVALDI_HARNESS_REPORT.md"
     target_version_const = "VIVALDI_TARGET_VERSION"
 

@@ -8,7 +8,7 @@ import app.morphe.patches.shared.Constants
 @Suppress("unused")
 val vivaldiBackgroundSyncPatch = bytecodePatch(
     name = "Disable Background Sync & Periodic Sync",
-    description = "Eliminates background wakeups, radio modem activity, and battery drain by neutralizing periodic and one-shot background sync tasks.",
+    description = "Prevents Web Background Sync and Periodic Sync APIs from scheduling wakeups and background tasks in Android JobScheduler.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_VIVALDI)

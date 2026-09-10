@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import hashlib
 import os
+import io
 import shutil
 import tempfile
 import zipfile
@@ -82,24 +83,45 @@ class ApkContext:
         dex_files: List[str] = []
         has_libchrome = False
         with zipfile.ZipFile(self.apk_path, "r") as zf:
-            for name in zf.namelist():
-                if name.endswith(".dex") and ("classes" in name or "assets" in name):
-                    dex_files.append(name)
-                if name == "lib/arm64-v8a/libchrome.so":
-                    has_libchrome = True
+            namelist = zf.namelist()
+            if "base.apk" in namelist:
+                for inner in sorted([n for n in namelist if n.endswith(".apk")]):
+                    with zipfile.ZipFile(io.BytesIO(zf.read(inner)), "r") as izf:
+                        for name in izf.namelist():
+                            if name.endswith(".dex") and ("classes" in name or "assets" in name):
+                                dex_files.append(f"{inner}_{name}")
+                            if name == "lib/arm64-v8a/libchrome.so":
+                                has_libchrome = True
+            else:
+                for name in namelist:
+                    if name.endswith(".dex") and ("classes" in name or "assets" in name):
+                        dex_files.append(name)
+                    if name == "lib/arm64-v8a/libchrome.so":
+                        has_libchrome = True
         return dex_files, has_libchrome
 
     def _parse_manifest_info(self) -> tuple[str, str, int]:
-        pkg_name, ver_name, ver_code = self._try_pyaxml_manifest()
+        with zipfile.ZipFile(self.apk_path, "r") as zf:
+            if "base.apk" in zf.namelist():
+                if not self.temp_dir:
+                    self.temp_dir = Path(tempfile.mkdtemp(prefix="morphe_brave_harness_"))
+                base_path = self.temp_dir / "base.apk"
+                with open(base_path, "wb") as f:
+                    f.write(zf.read("base.apk"))
+                return self._parse_manifest_from_path(base_path)
+        return self._parse_manifest_from_path(self.apk_path)
+
+    def _parse_manifest_from_path(self, path: Path) -> tuple[str, str, int]:
+        pkg_name, ver_name, ver_code = self._try_pyaxml_manifest(path)
         if not pkg_name or not ver_name:
-            pkg_name, ver_name, ver_code = self._try_androguard_manifest()
+            pkg_name, ver_name, ver_code = self._try_androguard_manifest(path)
         return pkg_name, ver_name, ver_code
 
-    def _try_pyaxml_manifest(self) -> tuple[str, str, int]:
+    def _try_pyaxml_manifest(self, path: Path) -> tuple[str, str, int]:
         if PyAXML_APK is None:
             return "", "", 0
         try:
-            apk_obj = PyAXML_APK(str(self.apk_path))
+            apk_obj = PyAXML_APK(str(path))
             pkg_name = apk_obj.package or ""
             ver_name = apk_obj.version_name or ""
             ver_code = int(apk_obj.version_code) if apk_obj.version_code else 0
@@ -107,10 +129,10 @@ class ApkContext:
         except Exception:
             return "", "", 0
 
-    def _try_androguard_manifest(self) -> tuple[str, str, int]:
+    def _try_androguard_manifest(self, path: Path) -> tuple[str, str, int]:
         try:
             from androguard.core.apk import APK as Androguard_APK
-            apk_obj = Androguard_APK(str(self.apk_path))
+            apk_obj = Androguard_APK(str(path))
             pkg_name = apk_obj.get_package() or ""
             ver_name = apk_obj.get_androidversion_name() or ""
             ver_code = int(apk_obj.get_androidversion_code() or 0)
@@ -122,9 +144,17 @@ class ApkContext:
         """Extract all DEX files as (name, bytes) in memory."""
         results = []
         with zipfile.ZipFile(self.apk_path, "r") as zf:
-            for name in sorted(zf.namelist()):
-                if name.endswith(".dex") and not name.startswith("META-INF/"):
-                    results.append((name, zf.read(name)))
+            namelist = zf.namelist()
+            if "base.apk" in namelist:
+                for inner in sorted([n for n in namelist if n.endswith(".apk")]):
+                    with zipfile.ZipFile(io.BytesIO(zf.read(inner)), "r") as izf:
+                        for name in sorted(izf.namelist()):
+                            if name.endswith(".dex") and not name.startswith("META-INF/"):
+                                results.append((f"{inner}_{name}", izf.read(name)))
+            else:
+                for name in sorted(namelist):
+                    if name.endswith(".dex") and not name.startswith("META-INF/"):
+                        results.append((name, zf.read(name)))
         return results
 
     def extract_libchrome_path(self) -> Optional[Path]:
@@ -133,8 +163,18 @@ class ApkContext:
             raise RuntimeError("ApkContext must be entered via 'with' before extracting files.")
         target_path = self.temp_dir / "libchrome.so"
         with zipfile.ZipFile(self.apk_path, "r") as zf:
-            if "lib/arm64-v8a/libchrome.so" not in zf.namelist():
+            namelist = zf.namelist()
+            if "base.apk" in namelist:
+                for inner in [n for n in namelist if n.endswith(".apk")]:
+                    with zipfile.ZipFile(io.BytesIO(zf.read(inner)), "r") as izf:
+                        if "lib/arm64-v8a/libchrome.so" in izf.namelist():
+                            with izf.open("lib/arm64-v8a/libchrome.so") as src, open(target_path, "wb") as dst:
+                                shutil.copyfileobj(src, dst)
+                            return target_path
                 return None
-            with zf.open("lib/arm64-v8a/libchrome.so") as src, open(target_path, "wb") as dst:
-                shutil.copyfileobj(src, dst)
+            else:
+                if "lib/arm64-v8a/libchrome.so" not in namelist:
+                    return None
+                with zf.open("lib/arm64-v8a/libchrome.so") as src, open(target_path, "wb") as dst:
+                    shutil.copyfileobj(src, dst)
         return target_path
