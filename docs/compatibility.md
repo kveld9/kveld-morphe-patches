@@ -5,7 +5,7 @@
 > [!NOTE]
 > **Architecture Matrix Summary:**
 > - **Gboard Lite**: Officially supports both **`arm64-v8a` (64-bit)** and **`armeabi-v7a` (32-bit)**.
-> - **Brave Browser & Vivaldi Snapshot**: **`arm64-v8a` (64-bit only)**.
+> - **Brave Browser & Vivaldi Browser**: **`arm64-v8a` (64-bit only)**.
 
 ### Why Gboard Lite supports 32-bit:
 All Gboard Lite patches in this suite operate strictly on Dalvik/ART DEX bytecode and Android XML resources. They contain **zero native `.so` binary dependencies** and run identically on both 64-bit and 32-bit Android runtimes.
@@ -25,8 +25,8 @@ Always use `Bravemonoarm64.apk` from [Brave GitHub Releases](https://github.com/
 - **Bytecode Consistency**: `Bravemonoarm64.apk` is the official 64-bit ARM Monochrome build. Other variants (especially *Universal*) use different R8/ProGuard obfuscation passes and aggressive method inlining, causing Dalvik fingerprint mismatches.
 - **Native ARM64 Hooks**: Byte-level offsets in `lib/arm64-v8a/libchrome.so` are calculated strictly against ARM64 Monochrome binaries.
 
-### 🔴 Vivaldi Browser: Why Snapshot & Future Transition to Stable
-Always download the official `arm64-v8a` APK directly from the [Vivaldi Android Blog](https://vivaldi.com/blog/android/).
+### 🔴 Vivaldi Browser: Stable Transition (`com.vivaldi.browser`)
+Download the official `arm64-v8a` release from [APKMirror](https://www.apkmirror.com/apk/vivaldi-technologies/vivaldi-browser-beta/).
 
-- **Extension Support**: Morphe Patches currently targets **Vivaldi Snapshot** to provide native Desktop Extension support and modern Chromium components.
-- **Stable Transition Roadmap**: Vivaldi Snapshot is maintained as the primary target **only until Web Extensions support is enabled by default in the stable release** of Vivaldi Browser (`com.vivaldi.browser`), at which point patch compatibility will transition to the stable channel.
+- **Stable Target**: Morphe Patches has transitioned to the stable release of Vivaldi Browser (`com.vivaldi.browser`, v8.2.4147.58).
+- **APKM Bundle Support**: Distributed as an Android App Bundle (APKM / isolated splits) containing `base.apk` and `split_chrome.apk`. Morphe automatically fuses split modules and applies the complete 14-patch suite seamlessly.

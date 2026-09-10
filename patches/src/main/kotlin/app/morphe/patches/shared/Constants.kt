@@ -42,18 +42,18 @@ object Constants {
         )
     )
 
-    const val VIVALDI_PACKAGE_NAME = "com.vivaldi.browser.snapshot"
-    const val VIVALDI_TARGET_VERSION = "8.2.4147.50"
+    const val VIVALDI_PACKAGE_NAME = "com.vivaldi.browser"
+    const val VIVALDI_TARGET_VERSION = "8.2.4147.58"
 
     val COMPATIBILITY_VIVALDI = Compatibility(
-        name = "Vivaldi Browser Snapshot",
+        name = "Vivaldi Browser - Fast & Safe",
         packageName = VIVALDI_PACKAGE_NAME,
-        apkFileType = ApkFileType.APK,
+        apkFileType = ApkFileType.APKM,
         appIconColor = 0xEF3939,
         targets = listOf(
             AppTarget(
                 version = VIVALDI_TARGET_VERSION,
-                description = "Download Vivaldi.8.2.4147.50_arm64-v8a.apk from vivaldi.com/blog/android/"
+                description = "Download 8.2.4147.58 (arm64-v8a) from APKMirror"
             )
         )
     )

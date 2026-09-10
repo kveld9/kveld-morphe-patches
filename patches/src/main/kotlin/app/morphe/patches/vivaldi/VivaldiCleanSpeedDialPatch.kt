@@ -8,7 +8,7 @@ import app.morphe.patches.shared.Constants
 
 private val CLEAN_SPEED_DIAL_JSON = """
     {
-      "version": "1",
+      "version": "99",
       "children": [
         {
           "name": "Home",
@@ -34,8 +34,44 @@ private val CLEAN_SPEED_DIAL_JSON = """
 
 private val EMPTY_PARTNERS_JSON = """
     {
-      "folders": [],
-      "bookmarks": []
+      "folders": [
+        {
+          "name": "Bookmarks",
+          "guid": "12c04539-d01e-4fd3-9fbf-aa09a91e91ba"
+        },
+        {
+          "name": "SpeedDial",
+          "title": "Speed Dial",
+          "speeddial": true,
+          "guid": "44641543-f123-438f-bc5c-8da7bb7c6819"
+        },
+        {
+          "name": "Home",
+          "title": "Home",
+          "speeddial": true,
+          "guid": "e5c019f8-c8a4-403c-99c8-d3502d7d09b3"
+        }
+      ],
+      "bookmarks": [
+        {
+          "name": "vivaldicom",
+          "thumbnail": "/resources/sd_thumbnails/sd_vivaldi.png",
+          "guid": "b095403c-0348-4d47-b03e-c9b408bfc92b",
+          "guid2": "d731d41a-9a6f-4b29-bdc0-124a572b768c",
+          "favicon": "/resources/favicons/vivaldi_com.png",
+          "favicon_url": "https://vivaldi.com/favicon.ico",
+          "display_url": "https://vivaldi.com"
+        },
+        {
+          "name": "vivaldi-community",
+          "thumbnail": "/resources/sd_thumbnails/sd_vivaldi.png",
+          "guid": "848a4ba4-5f69-4a38-8ccc-d0cea9fe0709",
+          "guid2": "1f8b0443-4cc8-468e-a03e-9769f932a8ad",
+          "favicon": "/resources/favicons/vivaldi_social.png",
+          "favicon_url": "https://social.vivaldi.net/favicon.ico",
+          "display_url": "https://vivaldi.com"
+        }
+      ]
     }
 """.trimIndent()
 
