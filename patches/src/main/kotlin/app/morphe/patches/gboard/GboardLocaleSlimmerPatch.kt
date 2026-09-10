@@ -16,7 +16,7 @@ val gboardLocaleSlimmerPatch = resourcePatch(
         key = "locales",
         title = "Locales to keep",
         description = "Comma-separated language codes to preserve (e.g. 'en, es, pt, fr, de'). English fallback is always retained.",
-        default = "en, es",
+        default = "en",
         required = false,
     )
 

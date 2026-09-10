@@ -57,8 +57,8 @@ It enhances target applications with native Pure Black AMOLED themes, comprehens
 
 **🎯 Supported versions:**
 
-| 18.1.3.962075747-lite_beta-arm64-v8a | 18.1.3.962075747-lite_beta-armeabi-v7a | 18.1.3.962075747-lite_release-arm64-v8a | 18.1.3.962075747-lite_release-armeabi-v7a |
-| :---: | :---: | :---: | :---: |
+| 18.2.4.969776716-lite_beta-arm64-v8a | 18.2.4.969776716-lite_beta-armeabi-v7a |
+| :---: | :---: |
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
@@ -157,10 +157,8 @@ It enhances target applications with native Pure Black AMOLED themes, comprehens
 > **Always download the standalone `lite` / `lite_beta` APK (nodpi) from [APKMirror](https://www.apkmirror.com/apk/google-inc/gboard/):**
 >
 > - **Current Targets**:
->   - `18.1.3.962075747-lite_beta-arm64-v8a` (64-bit)
->   - `18.1.3.962075747-lite_beta-armeabi-v7a` (32-bit)
->   - `18.1.3.962075747-lite_release-arm64-v8a` (64-bit)
->   - `18.1.3.962075747-lite_release-armeabi-v7a` (32-bit)
+>   - `18.2.4.969776716-lite_beta-arm64-v8a` (64-bit)
+>   - `18.2.4.969776716-lite_beta-armeabi-v7a` (32-bit)
 > - **Format**: `APK` _(Do **NOT** download `BUNDLE` / split packages)_
 > - **Architecture**: `arm64-v8a` or `armeabi-v7a` (all Gboard Lite patches in this suite are 100% ABI-agnostic Dalvik bytecode and XML transforms)
 > - **Screen DPI**: `nodpi`
@@ -282,6 +280,50 @@ et, eu, fa, fi, fil, fr, fr-CA, gl, gu, he, hi, hr, hu, hy, id, is, it, ja, ka,
 kk, km, kn, ko, ky, lo, lt, lv, mk, ml, mn, mr, ms, my, nb, ne, nl, or, pa, pl,
 pt-BR, pt-PT, ro, ru, si, sk, sl, sq, sr, sr-Latn, sv, sw, ta, te, th, tr, uk,
 ur, uz, vi, zh-CN, zh-HK, zh-TW, zu
+```
+
+</details>
+
+---
+
+### 🌐 Patch Documentation: Locale Resource Slimmer (Gboard)
+
+The **`Locale Resource Slimmer`** patch strips unselected language translation directories from Gboard's `res/` (such as `values-*`, `raw-*`, `xml-*`) to reduce APK size (saving **~23.15 MB**).
+
+#### ⚙️ Configuration in Morphe Manager
+
+When configuring the **`Locales to keep`** option (`locales`), specify a comma-separated list of language codes to preserve (e.g. `es, es-419, pt-BR, fr, de`).
+
+- **Default value**: `en` (English `en` and `en-US` are always retained as an essential base fallback).
+- **Base Fallback Safety**: Resource directories without language qualifiers (e.g. `res/values/`, `res/xml/`, `res/raw/`, `res/drawable-*/`) are **strictly preserved and never removed**, guaranteeing UI layout and asset integrity.
+- **Prefix Matching**: Specifying a base language code like `es` automatically preserves both global Spanish and regional variants (`es-rUS`, `es-rES`, `es-r419`).
+
+#### 📋 Popular Language Codes:
+
+| Language | Locale Code(s) |
+| :--- | :--- |
+| **English** | `en` (_Always kept by default_), `en-GB`, `en-CA`, `en-AU`, `en-IN` |
+| **Spanish** | `es` (Spain / Global), `es-419` / `es-US` (Latin America / US) |
+| **Portuguese** | `pt` (Global), `pt-BR` (Brazil), `pt-PT` (Portugal) |
+| **French** | `fr` (France / Global), `fr-CA` (Canada) |
+| **German / Italian / Dutch** | `de` (German), `it` (Italian), `nl` (Dutch) |
+| **Russian / Ukrainian / Polish** | `ru`, `uk`, `pl` |
+| **Japanese / Korean / Chinese** | `ja`, `ko`, `zh` (Global), `zh-CN` (Simplified), `zh-TW` (Traditional), `zh-HK` (Hong Kong) |
+| **Nordic Languages** | `sv` (Swedish), `da` (Danish), `fi` (Finnish), `nb` (Norwegian), `is` (Icelandic) |
+| **Regional Languages of Spain** | `ca` (Catalan), `gl` (Galician), `eu` (Basque) |
+| **Arabic / Turkish / Hebrew** | `ar`, `tr`, `iw` (Hebrew) |
+
+<details>
+<summary><b>🔍 View all 100 available locale codes in Gboard Lite</b></summary>
+<br>
+
+```text
+af, ak, am, ar, as, az, be, bg, bn, bo, bs, ca, cs, da, de, el, en, en-rAU,
+en-rCA, en-rGB, en-rIN, en-rXC, es, es-r419, es-rES, es-rUS, et, eu, fa, ff,
+fi, fr, fr-rCA, gl, gu, ha, hi, hr, hu, hy, id, ig, in, is, it, iw, ja, ka,
+kk, km, kn, ko, ky, lo, lt, lv, mk, ml, mn, mr, ms, my, my-rZG, nb, ne, nl,
+nod, or, pa, pl, pt, pt-rBR, pt-rPT, ro, ru, se, si, sk, sl, sou, sq, sr, sv,
+sw, ta, te, th, tl, tr, uk, ur, uz, vi, yo, zh, zh-rCN, zh-rHK, zh-rTW, zu
 ```
 
 </details>
