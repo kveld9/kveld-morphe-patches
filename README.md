@@ -1,16 +1,8 @@
 <p align="center">
   <a href="https://github.com/kveld9/kveld-morphe-patches/releases/latest"><img src="https://img.shields.io/github/v/release/kveld9/kveld-morphe-patches?color=7928CA&label=Release&logo=github&style=for-the-badge" alt="Latest Release" /></a>
-  <a href="https://github.com/kveld9/kveld-morphe-patches/actions/workflows/release.yml"><img src="https://img.shields.io/github/actions/workflow/status/kveld9/kveld-morphe-patches/release.yml?branch=main&label=CI&logo=githubactions&logoColor=white&style=for-the-badge" alt="Build Status" /></a>
+  <a href="https://github.com/kveld9/kveld-morphe-patches/releases"><img src="https://img.shields.io/github/downloads/kveld9/kveld-morphe-patches/total?style=for-the-badge&logo=github" alt="Total Downloads" /></a>
   <img src="https://img.shields.io/badge/Runtime-Morphe_Patcher_1.8.0-8A2BE2?style=for-the-badge" alt="Runtime" />
   <img src="https://img.shields.io/badge/License-GPLv3-blue?style=for-the-badge" alt="License" />
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/Platform-Android-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Platform Android" />
-  <img src="https://img.shields.io/badge/Target-Brave_Browser-FF4500?style=for-the-badge&logo=brave&logoColor=white" alt="Target Brave" />
-  <img src="https://img.shields.io/badge/Target-Vivaldi_Browser-EF3939?style=for-the-badge&logo=vivaldi&logoColor=white" alt="Target Vivaldi" />
-  <img src="https://img.shields.io/badge/Target-Gboard_Lite-4285F4?style=for-the-badge&logo=google&logoColor=white" alt="Target Gboard" />
-  <img src="https://img.shields.io/badge/Target-Hevy_Gym_Log-FF4500?style=for-the-badge&logo=target&logoColor=white" alt="Target Hevy" />
 </p>
 
 <h1 align="center">🔮 Morphe Patches</h1>
@@ -24,26 +16,6 @@
   &nbsp;&nbsp;
   <a href="https://github.com/kveld9/kveld-morphe-patches/releases/latest"><img src="https://img.shields.io/badge/Direct_Download-Get_.MPP_Bundle-0070F3?style=for-the-badge&logo=github&logoColor=white" alt="Download Latest Release" /></a>
 </p>
-
----
-
-## 📖 Overview
-
-**Morphe Patches** enhances target applications with native Pure Black AMOLED themes, comprehensive telemetry and diagnostic blocking, background task debloating, cold-start performance optimizations, and APK footprint reduction across **Gboard Lite**, **Brave Browser**, **Vivaldi Browser**, and **Hevy**.
-
----
-
-## 🚀 Quick Start
-
-1. **Install Morphe Manager:** Download and install the latest **[Morphe Manager](https://morphe.software)** on your Android device.
-2. **Add Patch Source:** Tap the badge above or navigate to *Settings > Sources* in Morphe Manager and add:
-   ```text
-   kveld9/kveld-morphe-patches
-   ```
-   *(Or click: **[Add Source to Morphe Manager](https://morphe.software/add-source?github=kveld9/kveld-morphe-patches)**)*
-3. **Download Supported APK:** Obtain the exact target APK variant from [Supported Targets & Downloads](#-supported-targets--downloads).
-4. **Select Patches:** Pick the patches you want to apply (privacy hardening, AMOLED theme, slimming, etc.).
-5. **Patch & Install:** Tap **Patch**, wait for compilation to complete, and install your enhanced APK.
 
 ---
 
@@ -84,8 +56,8 @@
 
 ## 💊 Patch Catalog
 
-<!-- PATCHES_START EXPANDED -->
-<details open>
+<!-- PATCHES_START -->
+<details>
 <summary>📦 Gboard Lite&nbsp;&nbsp;•&nbsp;&nbsp;16 patches</summary>
 <br>
 
@@ -115,7 +87,7 @@
 
 </details>
 
-<details open>
+<details>
 <summary>📦 Brave Private Web Browser, VPN&nbsp;&nbsp;•&nbsp;&nbsp;10 patches</summary>
 <br>
 
@@ -139,7 +111,7 @@
 
 </details>
 
-<details open>
+<details>
 <summary>📦 Hevy - Gym Log Workout Tracker&nbsp;&nbsp;•&nbsp;&nbsp;4 patches</summary>
 <br>
 
@@ -151,13 +123,13 @@
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
 | **Block Hevy Telemetry & Trackers** | Neutralizes Sentry crash reporting, Adjust attribution, Facebook AppEvents, Branch referral tracking, and WearOS background sync. |  |
-| **Hevy Battery Optimization & Background Sync Killer** | Disables background WorkManager alarms, periodic job schedulers, Google Play Billing IPC (~89 MB RAM), and removes largeHeap to force aggressive Garbage Collection. |  |
+| **Hevy Battery Optimization & Background Sync Killer** | Disables background WorkManager alarms, periodic job schedulers, Firebase messaging wakeups, and DataTransport schedulers to eliminate battery drain in sleep. |  |
 | **Hevy Resource Slimmer** | Strips embedded onboarding MP4 tutorial video, heavy IMG.LY photo editor stickers/textures, and compiler junk metadata. |  |
-| **Unlock Pro** | Unlocks local Hevy Pro capabilities (unlimited workout routines, routine folders, advanced graphs, and local analytics) by dynamically enabling Pro getters in Hermes Bytecode (HBC96). |  |
+| **Unlock Pro** | Unlocks local Hevy Pro capabilities (unlimited workout routines, routine folders, advanced graphs, and local analytics) by dynamically enabling the offline-Pro grace period in Hermes Bytecode (HBC96). |  |
 
 </details>
 
-<details open>
+<details>
 <summary>📦 Vivaldi Browser - Fast & Safe&nbsp;&nbsp;•&nbsp;&nbsp;12 patches</summary>
 <br>
 
@@ -183,7 +155,7 @@
 
 </details>
 
-<details open>
+<details>
 <summary>🌐 Universal&nbsp;&nbsp;•&nbsp;&nbsp;4 patches</summary>
 <br>
 
