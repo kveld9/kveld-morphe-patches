@@ -1,17 +1,15 @@
-package app.morphe.patches.gboard
+package app.morphe.patches.shared
 
 import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patcher.patch.stringOption
-import app.morphe.patches.shared.Constants
-import app.morphe.patches.shared.LocaleUtils
 
-val gboardLocaleSlimmerPatch = resourcePatch(
+@Suppress("unused")
+val localeResourceSlimmerPatch = resourcePatch(
     name = "Locale Resource Slimmer",
     description = "Strips unselected language translation directories from res/ (e.g. values-*, raw-*, xml-*). Base fallback resources with no language qualifiers are always preserved.",
-    default = true,
+    default = false,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_GBOARD)
-
+    // Universal patch: applies to any target APK in Morphe Manager / CLI
     val targetLocales by stringOption(
         key = "locales",
         title = "Locales to keep",
@@ -22,7 +20,10 @@ val gboardLocaleSlimmerPatch = resourcePatch(
 
     execute {
         val resDir = get("res")
-        if (!resDir.exists() || !resDir.isDirectory) return@execute
+        if (!resDir.exists() || !resDir.isDirectory) {
+            println("[Locale Resource Slimmer] res/ directory not found - skipping safely.")
+            return@execute
+        }
 
         val keepSet = LocaleUtils.parseTargetLocales(targetLocales, defaultLocales = setOf("en", "en-us"))
         var removedDirs = 0
@@ -51,7 +52,12 @@ val gboardLocaleSlimmerPatch = resourcePatch(
             .filter { it.isDirectory && it != resDir && it.listFiles()?.isEmpty() == true }
             .forEach { it.delete() }
 
-        val savedMb = String.format(java.util.Locale.US, "%.2f", savedBytes.toDouble() / (1024 * 1024))
-        println("[Gboard Locale Resource Slimmer] Stripped $removedDirs localization dirs (kept: ${keepSet.sorted().joinToString(", ")}) -> Saved $savedMb MB")
+        if (removedDirs == 0) {
+            println("[Locale Resource Slimmer] No non-target localization directories found to strip (kept: ${keepSet.sorted().joinToString(", ")}).")
+            return@execute
+        }
+
+        val savedFormatted = LocaleUtils.formatBytes(savedBytes)
+        println("[Locale Resource Slimmer] Stripped $removedDirs localization dirs (kept: ${keepSet.sorted().joinToString(", ")}) -> Saved $savedFormatted")
     }
 }

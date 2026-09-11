@@ -428,7 +428,7 @@ def get_all_gboard_contracts() -> List[GboardPatchContract]:
             patch_id="gboard_locale_slimmer",
             name="Locale Resource Slimmer",
             description="Strips unselected language translation directories from res/.",
-            source_file="patches/src/main/kotlin/app/morphe/patches/gboard/GboardLocaleSlimmerPatch.kt",
+            source_file="patches/src/main/kotlin/app/morphe/patches/shared/LocaleResourceSlimmerPatch.kt",
             queries=[],
             semantic_invariants=[
                 "Preserves base fallback resources with no language qualifiers",

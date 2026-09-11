@@ -153,12 +153,7 @@ val dpiResourceSlimmerPatch = resourcePatch(
     description = "Strips unselected screen density resource directories from res/ (e.g. drawable-mdpi, drawable-hdpi, mipmap-xhdpi). Density-independent resources (nodpi, anydpi) and orphan resources are safely preserved.",
     default = false,
 ) {
-    compatibleWith(
-        Constants.COMPATIBILITY_BRAVE,
-        Constants.COMPATIBILITY_GBOARD,
-        Constants.COMPATIBILITY_VIVALDI,
-    )
-
+    // Universal patch: applies to any target APK in Morphe Manager / CLI
     val targetDpis by stringOption(
         key = "dpis",
         title = "DPI densities to keep",
