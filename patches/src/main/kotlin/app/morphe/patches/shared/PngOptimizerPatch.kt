@@ -147,12 +147,7 @@ val pngOptimizerPatch = rawResourcePatch(
     description = "Losslessly recompresses PNG assets with maximum zlib compression and strips non-rendering metadata chunks (pHYs, tEXt, tIME) while preserving 9-patch structures and pixel accuracy.",
     default = false,
 ) {
-    compatibleWith(
-        Constants.COMPATIBILITY_BRAVE,
-        Constants.COMPATIBILITY_GBOARD,
-        Constants.COMPATIBILITY_VIVALDI,
-    )
-
+    // Universal patch: applies to any target APK in Morphe Manager / CLI
     execute {
         val rootDirs = mutableListOf<File>()
 
@@ -166,13 +161,21 @@ val pngOptimizerPatch = rawResourcePatch(
             if (resDir.exists() && resDir.isDirectory) rootDirs.add(resDir)
         } catch (_: Throwable) {}
 
+        if (rootDirs.isEmpty()) {
+            println("[PNG Asset Optimizer] Neither res/ nor assets/ directory found - skipping safely.")
+            return@execute
+        }
+
         val pngFiles = rootDirs.flatMap { dir ->
             dir.walkTopDown()
                 .filter { it.isFile && it.extension.equals("png", ignoreCase = true) && it.length() in 512..15_000_000 }
                 .toList()
         }
 
-        if (pngFiles.isEmpty()) return@execute
+        if (pngFiles.isEmpty()) {
+            println("[PNG Asset Optimizer] No candidate PNG assets found in res/ or assets/ - skipping.")
+            return@execute
+        }
 
         val optimizedCount = AtomicInteger(0)
         val alreadyOptimalCount = AtomicInteger(0)
