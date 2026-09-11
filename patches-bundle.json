@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-09-10T21:35:42",
-  "description": "## [1.18.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.17.0...v1.18.0) (2026-09-10)\n\n### ✨ New Features\n\n* **vivaldi:** add support for Vivaldi Browser Stable v8.2.4147.58 ([b81c003](https://github.com/kveld9/kveld-morphe-patches/commit/b81c003c07840789313aa6a66399bd025572a0ef))",
-  "download_url": "https://github.com/kveld9/kveld-morphe-patches/releases/download/v1.18.0/patches-1.18.0.mpp",
+  "created_at": "2026-09-11T03:02:46",
+  "description": "## [1.19.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.18.0...v1.19.0) (2026-09-11)\n\n### ✨ New Features\n\n* **hevy:** add pro unlock, telemetry blocking, and resource optimization patches ([2dde79c](https://github.com/kveld9/kveld-morphe-patches/commit/2dde79cc5a1b3c4d3f2f2d2a8f70cad69388312e))\n* **shared:** promote locale slimmer to universal and add apk junk cleaner ([a9127bb](https://github.com/kveld9/kveld-morphe-patches/commit/a9127bbc2123a9a6d5b52aaaf0516ae186d18f97))",
+  "download_url": "https://github.com/kveld9/kveld-morphe-patches/releases/download/v1.19.0/patches-1.19.0.mpp",
   "signature_download_url": "",
-  "version": "1.18.0"
+  "version": "1.19.0"
 }
