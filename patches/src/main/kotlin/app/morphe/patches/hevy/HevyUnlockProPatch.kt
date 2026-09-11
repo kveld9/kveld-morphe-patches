@@ -7,7 +7,14 @@ import java.nio.ByteOrder
 
 private const val HERMES_MAGIC = 0x1f1903c103bc1fc6L
 private const val HERMES_VERSION_HBC96 = 96
-private const val TARGET_FUNCTION_NAME = "isWithinProOfflineGracePeriod"
+
+// Target properties and functions to unlock Pro capabilities
+private val TARGET_PRO_PROPERTIES = listOf(
+    "isPro",
+    "isPaying",
+    "isInGracePeriod",
+    "isWithinProOfflineGracePeriod",
+)
 
 // Hermes bytecode instructions:
 //   78 00  LoadConstTrue r0
@@ -35,6 +42,12 @@ private data class HermesFunction(
     val index: Int,
     val offset: Int,
     val size: Int,
+    val name: String,
+)
+
+private data class StringEntry(
+    val offset: Int,
+    val length: Int,
 )
 
 private fun align4(pos: Int): Int {
@@ -83,19 +96,26 @@ private fun calculateTableOffsets(header: HermesHeader): HermesTableOffsets {
     )
 }
 
-private fun indexOfSubarray(data: ByteArray, target: ByteArray, start: Int, end: Int): Int {
-    if (target.isEmpty() || end - start < target.size) return -1
-    val max = end - target.size
-    outer@ for (i in start..max) {
-        for (j in target.indices) {
-            if (data[i + j] != target[j]) continue@outer
-        }
-        return i
+private fun getStringEntry(
+    buffer: ByteBuffer,
+    index: Int,
+    header: HermesHeader,
+    offsets: HermesTableOffsets,
+): StringEntry {
+    if (index >= header.stringCount) return StringEntry(0, 0)
+    val entry = buffer.getInt(offsets.smallStringTablePos + index * 4)
+    var strOffset = (entry ushr 1) and 0x007FFFFF
+    val strLength = (entry ushr 24) and 0xFF
+    if (strLength == 0xFF) {
+        val overflowPos = offsets.overflowStringTablePos + strOffset * 8
+        strOffset = buffer.getInt(overflowPos)
+        val overflowLength = buffer.getInt(overflowPos + 4)
+        return StringEntry(strOffset, overflowLength)
     }
-    return -1
+    return StringEntry(strOffset, strLength)
 }
 
-private fun findStringId(
+private fun findExactStringId(
     buffer: ByteBuffer,
     bundleBytes: ByteArray,
     targetName: String,
@@ -103,44 +123,56 @@ private fun findStringId(
     offsets: HermesTableOffsets,
 ): Int? {
     val targetBytes = targetName.toByteArray(Charsets.UTF_8)
-    val storageStart = offsets.stringStoragePos
-    val storageEnd = storageStart + header.stringStorageSize
-    val foundPos = indexOfSubarray(bundleBytes, targetBytes, storageStart, storageEnd)
-    if (foundPos == -1) return null
+    val tLen = targetBytes.size
 
-    val targetRelativeOffset = foundPos - storageStart
     for (i in 0 until header.stringCount) {
-        val entry = buffer.getInt(offsets.smallStringTablePos + i * 4)
-        var strOffset = (entry ushr 1) and 0x007FFFFF
-        val strLength = (entry ushr 24) and 0xFF
-        if (strLength == 0xFF) {
-            strOffset = buffer.getInt(offsets.overflowStringTablePos + strOffset * 8)
+        val entry = getStringEntry(buffer, i, header, offsets)
+        if (entry.length != tLen) continue
+
+        val start = offsets.stringStoragePos + entry.offset
+        if (start + tLen > bundleBytes.size) continue
+
+        var matches = true
+        for (j in 0 until tLen) {
+            if (bundleBytes[start + j] != targetBytes[j]) {
+                matches = false
+                break
+            }
         }
-        if (strOffset == targetRelativeOffset) {
-            return i
-        }
+        if (matches) return i
     }
     return null
 }
 
-private fun findFunctionByNameId(
+private fun getFunctionName(
     buffer: ByteBuffer,
-    stringId: Int,
+    bundleBytes: ByteArray,
+    nameId: Int,
     header: HermesHeader,
     offsets: HermesTableOffsets,
-): HermesFunction? {
-    for (i in 0 until header.functionCount) {
-        val headerBase = offsets.functionHeadersPos + i * 16
-        val w0 = buffer.getInt(headerBase)
-        val w1 = buffer.getInt(headerBase + 4)
-        val funcNameId = (w1 ushr 15) and 0x1FFFF
-        if (funcNameId == stringId) {
-            val offset = w0 and 0x01FFFFFF
-            val size = w1 and 0x7FFF
-            return HermesFunction(index = i, offset = offset, size = size)
-        }
-    }
-    return null
+): String {
+    val entry = getStringEntry(buffer, nameId, header, offsets)
+    if (entry.length == 0) return ""
+    val start = offsets.stringStoragePos + entry.offset
+    if (start + entry.length > bundleBytes.size) return ""
+    return String(bundleBytes, start, entry.length, Charsets.UTF_8)
+}
+
+private fun getHermesFunction(
+    buffer: ByteBuffer,
+    bundleBytes: ByteArray,
+    index: Int,
+    header: HermesHeader,
+    offsets: HermesTableOffsets,
+): HermesFunction {
+    val base = offsets.functionHeadersPos + index * 16
+    val w0 = buffer.getInt(base)
+    val w1 = buffer.getInt(base + 4)
+    val offset = w0 and 0x01FFFFFF
+    val size = w1 and 0x7FFF
+    val nameId = (w1 ushr 15) and 0x1FFFF
+    val name = getFunctionName(buffer, bundleBytes, nameId, header, offsets)
+    return HermesFunction(index = index, offset = offset, size = size, name = name)
 }
 
 private fun patchFunctionPrologue(bundleBytes: ByteArray, function: HermesFunction): Boolean {
@@ -162,7 +194,7 @@ private fun patchFunctionPrologue(bundleBytes: ByteArray, function: HermesFuncti
 @Suppress("unused")
 val hevyUnlockProPatch = rawResourcePatch(
     name = "Unlock Pro",
-    description = "Unlocks local Hevy Pro capabilities (unlimited workout routines, routine folders, advanced graphs, and local analytics) by dynamically enabling the offline-Pro grace period in Hermes Bytecode (HBC96).",
+    description = "Unlocks local Hevy Pro capabilities (unlimited workout routines, routine folders, advanced graphs, and local analytics) by dynamically enabling Pro getters in Hermes Bytecode (HBC96).",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_HEVY)
@@ -184,26 +216,71 @@ val hevyUnlockProPatch = rawResourcePatch(
         }
 
         val offsets = calculateTableOffsets(header)
-        val stringId = findStringId(buffer, bundleBytes, TARGET_FUNCTION_NAME, header, offsets)
-        if (stringId == null) {
-            println("[Unlock Pro] Target string '$TARGET_FUNCTION_NAME' not found in Hermes string storage.")
+        val targetsToPatch = mutableMapOf<Int, String>()
+
+        for (prop in TARGET_PRO_PROPERTIES) {
+            val stringId = findExactStringId(buffer, bundleBytes, prop, header, offsets) ?: continue
+
+            // 1. Scan for functions named exactly as the property
+            for (i in 0 until header.functionCount) {
+                val fn = getHermesFunction(buffer, bundleBytes, i, header, offsets)
+                if (fn.name == prop) {
+                    targetsToPatch[i] = "named '$prop'"
+                }
+            }
+
+            // 2. Scan for property getter closures in class definitions
+            if (stringId < 65536) {
+                val low = (stringId and 0xFF).toByte()
+                val high = ((stringId ushr 8) and 0xFF).toByte()
+
+                for (i in 0 until header.functionCount) {
+                    val fn = getHermesFunction(buffer, bundleBytes, i, header, offsets)
+                    val end = fn.offset + fn.size - 13
+                    if (end <= fn.offset || fn.offset + fn.size > bundleBytes.size) continue
+
+                    for (k in fn.offset..end) {
+                        val op = bundleBytes[k]
+                        if ((op == 0x73.toByte() || op == 0x7a.toByte()) &&
+                            bundleBytes[k + 2] == low &&
+                            bundleBytes[k + 3] == high &&
+                            bundleBytes[k + 4] == 0x3f.toByte()
+                        ) {
+                            val funcIdx = (bundleBytes[k + 11].toInt() and 0xFF) or
+                                ((bundleBytes[k + 12].toInt() and 0xFF) shl 8)
+
+                            if (funcIdx < header.functionCount) {
+                                val getterFn = getHermesFunction(buffer, bundleBytes, funcIdx, header, offsets)
+                                if (getterFn.name == "get" || getterFn.name.isEmpty()) {
+                                    targetsToPatch[funcIdx] = "getter for '$prop'"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (targetsToPatch.isEmpty()) {
+            println("[Unlock Pro] No Pro getter or function targets found in Hermes bundle - skipping.")
             return@execute
         }
 
-        val targetFunction = findFunctionByNameId(buffer, stringId, header, offsets)
-        if (targetFunction == null) {
-            println("[Unlock Pro] Function with string ID #$stringId ($TARGET_FUNCTION_NAME) not found in function table.")
-            return@execute
+        var patchedCount = 0
+        for ((funcIdx, reason) in targetsToPatch) {
+            val fn = getHermesFunction(buffer, bundleBytes, funcIdx, header, offsets)
+            if (patchFunctionPrologue(bundleBytes, fn)) {
+                val offsetHex = "0x" + fn.offset.toString(16).uppercase()
+                println("[Unlock Pro] Patched $reason (Func #$funcIdx at $offsetHex, size: ${fn.size}B) with LoadConstTrue.")
+                patchedCount++
+            }
         }
 
-        val applied = patchFunctionPrologue(bundleBytes, targetFunction)
-        if (!applied) {
-            println("[Unlock Pro] Function '$TARGET_FUNCTION_NAME' (Function #${targetFunction.index}) is already patched or invalid size.")
-            return@execute
+        if (patchedCount > 0) {
+            bundleFile.writeBytes(bundleBytes)
+            println("[Unlock Pro] Successfully unlocked Hevy Pro across $patchedCount functions in assets/index.android.bundle.")
+        } else {
+            println("[Unlock Pro] All ${targetsToPatch.size} Pro targets are already patched.")
         }
-
-        bundleFile.writeBytes(bundleBytes)
-        val offsetHex = "0x" + targetFunction.offset.toString(16).uppercase()
-        println("[Unlock Pro] Successfully patched '$TARGET_FUNCTION_NAME' (Function #${targetFunction.index} at $offsetHex, size: ${targetFunction.size}B) with LoadConstTrue prologue.")
     }
 }
