@@ -4,6 +4,15 @@
 
 The **`Locale PAK Slimmer`** patch strips unneeded language resource PAKs from `assets/locales/` to reduce APK size (saving **~10.5 MB in Brave** and **~21.2 MB in Vivaldi**).
 
+> [!NOTE]
+> ### Why Chromium Browsers Require a Dedicated PAK Slimmer
+> Standard Android applications (such as Gboard Lite or Hevy) store localized strings in the standard Android resource hierarchy (`res/values-<lang>/strings.xml`). Android's `AssetManager` automatically falls back to base `res/values/` when a localized folder is deleted, making universal directory removal safe via **`Locale Resource Slimmer`**.
+>
+> In contrast, Chromium-based browsers (Brave, Vivaldi) compile over 95% of their browser UI strings, Omnibox text, Brave Shields, and core Chromium components into **Chromium DataPack v5 binary archives** located in `assets/locales/<locale>.pak`.
+> - **Native C++ Loader Invariant**: Chromium's native C++ resource loader (`ui::ResourceBundle`) expects a valid binary DataPack file for the active device locale. Deleting `<locale>.pak` or replacing it with an empty (0-byte) stub triggers a native segmentation fault or assertion failure on startup (`Check failed: file_is_valid`) whenever the device is set to an unselected language.
+> - **Zero-Crash Fallback Substitution**: Instead of deleting files, `Locale PAK Slimmer` safely replaces stripped `.pak` files with the binary table of `en-US.pak` (or 18-byte minimal valid DataPack headers for Vivaldi grammatical gender variants). This satisfies the native C++ loader while reclaiming 10 to 22 MB of storage.
+> - **Complementary Operation**: For maximum slimming in Brave and Vivaldi, both `Locale PAK Slimmer` (targeting native `assets/locales/*.pak`) and `Locale Resource Slimmer` (targeting Android wrapper `res/values-*`) can be applied together without conflict.
+
 ### Configuration in Morphe Manager
 
 When configuring the **`Locales to keep`** option, specify a comma-separated list of locale codes (e.g. `es-419, es, en-US, pt-BR`).
@@ -40,11 +49,12 @@ ur, uz, vi, zh-CN, zh-HK, zh-TW, zu
 
 </details>
 
----
+## 🌐 Locale Resource Slimmer (Universal)
 
-## 🌐 Locale Resource Slimmer (Gboard)
+The **`Locale Resource Slimmer`** patch strips unselected language translation directories from `res/` (such as `values-*`, `raw-*`, `xml-*`) across any supported target APK (e.g. Gboard Lite, Hevy, Brave, Vivaldi) to reduce APK size.
 
-The **`Locale Resource Slimmer`** patch strips unselected language translation directories from Gboard's `res/` (such as `values-*`, `raw-*`, `xml-*`) to reduce APK size (saving **~23.15 MB**).
+> [!TIP]
+> **Chromium Browsers (Brave & Vivaldi)**: While `Locale Resource Slimmer` trims standard Android wrapper resources in `res/values-*`, Chromium browsers store over 95% of their strings (~10–22 MB) in native binary `.pak` files inside `assets/locales/`. For complete multilingual slimming in Brave and Vivaldi, combine this patch with the specialized **`Locale PAK Slimmer`**.
 
 ### Configuration in Morphe Manager
 
@@ -85,9 +95,9 @@ sw, ta, te, th, tl, tr, uk, ur, uz, vi, yo, zh, zh-rCN, zh-rHK, zh-rTW, zu
 
 ---
 
-## 📱 DPI Resource Slimmer (Vivaldi, Brave & Gboard)
+## 📱 DPI Resource Slimmer (Universal)
 
-The **`DPI Resource Slimmer`** patch strips unselected screen density asset directories (such as `drawable-mdpi`, `drawable-hdpi`, `drawable-xhdpi`, `mipmap-mdpi`, etc.) from `res/` to significantly reduce final APK size.
+The **`DPI Resource Slimmer`** patch is universal and strips unselected screen density asset directories (such as `drawable-mdpi`, `drawable-hdpi`, `drawable-xhdpi`, `mipmap-mdpi`, etc.) from `res/` across all supported target APKs (Vivaldi, Brave, Gboard, Hevy) to significantly reduce final APK size.
 
 ### Configuration in Morphe Manager
 
@@ -112,3 +122,39 @@ Specify a comma-separated list of densities to retain:
 1. **Protected Density Qualifiers**: Density-independent directories (`drawable-nodpi`, `drawable-anydpi`, `mipmap-anydpi-v26` for vector drawables and adaptive icons) and unquantified base directories (`drawable`, `mipmap`, `values`, `layout`, etc.) are **strictly preserved and never removed**.
 2. **Orphan Asset Preservation**: If a graphical asset exists *exclusively* in a directory marked for deletion, it is automatically copied forward to the target preserved directory before deletion. This prevents runtime `Resources$NotFoundException`.
 3. **Empty Folder Pruning**: All empty directories left behind by the removal process are cleaned up bottom-up.
+
+---
+
+## 🖼️ PNG Asset Optimizer (Universal)
+
+The **`PNG Asset Optimizer`** is a universal patch that losslessly recompresses PNG assets inside `res/` and `assets/` with maximum zlib compression (`BEST_COMPRESSION`, level 9) and strips non-rendering metadata chunks (`pHYs`, `tEXt`, `tIME`).
+
+### 🛡️ Pixel Safety & 9-Patch Invariants
+- **9-Patch Protection**: Files named `*.9.png` or files containing the Android compiled 9-patch chunk `npTc` are **strictly preserved** to prevent UI stretching distortion.
+- **Decompression Verification**: Every recompressed PNG stream is inflated and compared in-memory against original raw RGBA pixel buffers prior to writing to disk, guaranteeing zero visual degradation.
+- **Anti-Bloat Guard**: If recompression yields a larger file or saves less than 64 bytes, the original file is preserved untouched.
+
+---
+
+## 🧹 APK Junk Cleaner (Universal)
+
+The **`APK Junk Cleaner`** is a universal patch that strips non-functional build metadata, compiler properties, Kotlin coroutines debug tables, and duplicate license notices from `META-INF` and APK root.
+
+### 🛡️ Protected Core Invariants
+- **Critical Extensions**: `.dex`, `.arsc`, `.xml`, `.so`, `.rsa`, `.sf`, `.dsa` are strictly protected.
+- **Service Loader Integrations**: `META-INF/services/` and `META-INF/MANIFEST.MF` are strictly preserved to maintain dynamic dependency injection.
+- **Root Whitelist**: Core root directories (`assets`, `res`, `lib`, `smali`) are protected from accidental pruning.
+
+---
+
+## 🏋️ Hevy: Unlock Pro & Telemetry Hardening
+
+### Unlock Pro (Hermes Bytecode HBC96)
+- **Mechanism**: Dynamically parses the Hermes Bytecode (HBC96) tables inside `assets/index.android.bundle`, locates the function definition for `isWithinProOfflineGracePeriod`, and injects a 4-byte prologue (`78 00 5C 00` -> `LoadConstTrue r0; Ret r0`).
+- **Features Unlocked**: Activates Hevy's supported offline-Pro state in `HevyProStore.isPro`, unlocking unlimited workout routine templates, routine folders, advanced graphs, and local workout analytics.
+- **Idempotency**: Detects existing patches and safely exits without double-writing.
+
+### Battery Optimization & Background Sync Killer
+- **Mechanism**: Neutralizes 17 background services, alarm proxies, and job schedulers in `AndroidManifest.xml` (including AndroidX WorkManager alarm services, Firebase messaging wakeups, and DataTransport schedulers).
+- **Result**: Eliminates battery drain in sleep with 0 active JobScheduler tasks and 0 AlarmManager wakeups.
+
