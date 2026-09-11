@@ -1,6 +1,6 @@
 # 🔮 Morphe Patches Automated Update & Reverse Engineering Harness
 
-Automated reverse-engineering and patch update harness for **Brave Browser** (`com.brave.browser`), **Vivaldi Browser Snapshot** (`com.vivaldi.browser.snapshot`), and **Gboard Lite** (`com.google.android.inputmethod.latin`).
+Automated reverse-engineering and patch update harness for **Brave Browser** (`com.brave.browser`), **Vivaldi Browser** (`com.vivaldi.browser`), **Gboard Lite** (`com.google.android.inputmethod.latin`), and **Hevy** (`com.hevy`).
 
 ---
 
@@ -9,7 +9,7 @@ Automated reverse-engineering and patch update harness for **Brave Browser** (`c
 The harness automates the reverse-engineering lifecycle when upstream releases new APKs:
 
 ```
-Target APK (Brave, Vivaldi, or Gboard)
+Target APK / APKM (Brave, Vivaldi, Gboard, or Hevy)
      ↓
 [harness/update.py]            ➜ Package Identification & Pipeline Dispatcher
      ↓
@@ -31,14 +31,14 @@ Target APK (Brave, Vivaldi, or Gboard)
      ↓
 [Gradle / Toolchain]           ➜ check, buildAndroid, generatePatchesList, README sync
      ↓
-[harness/reporting/]           ➜ Structured Markdown Reports (BRAVE / VIVALDI / GBOARD)
+[harness/reporting/]           ➜ Structured Markdown Reports (BRAVE / VIVALDI / GBOARD / HEVY)
 ```
 
 ---
 
 ## 🚀 Daily Operational Procedure
 
-### 1. Audit a Target APK (Non-destructive inspection)
+### 1. Audit a Target APK / APKM (Non-destructive inspection)
 Run this command to inspect fingerprints, obfuscated symbol changes, and invariants without modifying code:
 
 ```bash
@@ -48,8 +48,11 @@ python harness/update.py <path-to-gboard.apk> --audit
 # For Brave
 python harness/update.py <path-to-brave.apk> --audit
 
-# For Vivaldi
-python harness/update.py <path-to-vivaldi.apk> --audit
+# For Vivaldi (APKM bundle required)
+python harness/update.py <path-to-vivaldi.apkm> --audit
+
+# For Hevy (APKM bundle required)
+python harness/update.py <path-to-hevy.apkm> --audit
 ```
 
 ### 2. Update and build for a new version
@@ -62,8 +65,11 @@ python harness/update.py <path-to-gboard.apk> --update
 # For Brave
 python harness/update.py <path-to-brave.apk> --update
 
-# For Vivaldi
-python harness/update.py <path-to-vivaldi.apk> --update
+# For Vivaldi (APKM bundle required)
+python harness/update.py <path-to-vivaldi.apkm> --update
+
+# For Hevy (APKM bundle required)
+python harness/update.py <path-to-hevy.apkm> --update
 ```
 
 This will:

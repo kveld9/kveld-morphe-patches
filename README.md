@@ -38,11 +38,12 @@
 <a href="https://github.com/brave/brave-browser/releases/download/v1.94.121/Bravemonoarm64.apk"><img src="https://img.shields.io/badge/Download-Bravemonoarm64.apk_(v1.94.121)-FF4500?style=for-the-badge&logo=brave&logoColor=white" alt="Download Brave APK" /></a>
 
 ### 🔴 Vivaldi Browser
-- **Current Target**: `8.2.4147.58` (APKM bundle or standalone APK)
+- **Current Target**: `8.2.4147.58` (APKM bundle)
 - **Architecture**: `arm64-v8a`
 - **Package**: `com.vivaldi.browser`
+- ⚠️ *APKM Bundle Required*: You **must** download the **BUNDLE (`.apkm`)** variant from APKMirror. The standalone APK option on APKMirror is an unbundled base split lacking browser bytecode and will fail patching.
 
-<a href="https://www.apkmirror.com/apk/vivaldi-technologies/vivaldi-browser-beta/vivaldi-browser-fast-safe-8-2-4147-58-release/"><img src="https://img.shields.io/badge/Download-Vivaldi_8.2.4147.58_(APKM)-EF3939?style=for-the-badge&logo=vivaldi&logoColor=white" alt="Download Vivaldi APK" /></a>
+<a href="https://www.apkmirror.com/apk/vivaldi-technologies/vivaldi-browser-beta/vivaldi-browser-fast-safe-8-2-4147-58-release/"><img src="https://img.shields.io/badge/Download-Vivaldi_8.2.4147.58_(APKM)-EF3939?style=for-the-badge&logo=vivaldi&logoColor=white" alt="Download Vivaldi APKM" /></a>
 
 ### 🏋️ Hevy - Gym Log Workout Tracker
 - **Current Target**: `3.1.13` (APKM bundle)
