@@ -32,11 +32,6 @@ val braveNotificationSchedulerOptimizationPatch = bytecodePatch(
             definingClass = "Lorg/chromium/chrome/browser/notifications/scheduler/NotificationSchedulerTask;",
             name = "c",
             returnType = "I",
-            parameters = listOf(
-                "Landroid/content/Context;",
-                "Lwtj;",
-                "Lpcc;",
-            ),
         ).method.apply {
             addInstructions(
                 0,

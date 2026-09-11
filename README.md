@@ -31,11 +31,11 @@
 - ⚠️ *Fresh install?* Read the [Gboard Offline Dictionary & Glide Typing Setup](docs/gboard-setup.md) before applying background debloat patches.
 
 ### 🦁 Brave Browser
-- **Current Target**: `1.94.121` (`Bravemonoarm64.apk`)
+- **Current Target**: `1.95.101` (`Bravemonoarm64.apk`)
 - **Architecture**: `arm64-v8a` (Monochrome only)
 - **Package**: `com.brave.browser`
 
-<a href="https://github.com/brave/brave-browser/releases/download/v1.94.121/Bravemonoarm64.apk"><img src="https://img.shields.io/badge/Download-Bravemonoarm64.apk_(v1.94.121)-FF4500?style=for-the-badge&logo=brave&logoColor=white" alt="Download Brave APK" /></a>
+<a href="https://github.com/brave/brave-browser/releases/download/v1.95.101/Bravemonoarm64.apk"><img src="https://img.shields.io/badge/Download-Bravemonoarm64.apk_(v1.95.101)-FF4500?style=for-the-badge&logo=brave&logoColor=white" alt="Download Brave APK" /></a>
 
 ### 🔴 Vivaldi Browser
 - **Current Target**: `8.2.4147.58` (APKM bundle)
@@ -94,7 +94,7 @@
 
 **🎯 Supported versions:**
 
-| 1.94.121 |
+| 1.95.101 |
 | :---: |
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
