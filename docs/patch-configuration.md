@@ -150,8 +150,8 @@ The **`APK Junk Cleaner`** is a universal patch that strips non-functional build
 ## 🏋️ Hevy: Unlock Pro & Telemetry Hardening
 
 ### Unlock Pro (Hermes Bytecode HBC96)
-- **Mechanism**: Dynamically parses the Hermes Bytecode (HBC96) tables inside `assets/index.android.bundle`, locates the function definition for `isWithinProOfflineGracePeriod`, and injects a 4-byte prologue (`78 00 5C 00` -> `LoadConstTrue r0; Ret r0`).
-- **Features Unlocked**: Activates Hevy's supported offline-Pro state in `HevyProStore.isPro`, unlocking unlimited workout routine templates, routine folders, advanced graphs, and local workout analytics.
+- **Mechanism**: Dynamically parses Hermes Bytecode (HBC96) tables inside `assets/index.android.bundle`, locates property descriptor getters for `isPro`, `isPaying`, `isInGracePeriod`, and `isWithinProOfflineGracePeriod`, and injects a 4-byte prologue (`78 00 5C 00` -> `LoadConstTrue r0; Ret r0`).
+- **Features Unlocked**: Activates client-side Pro status directly in `HevyProStore.isPro` and secondary store getters, unlocking unlimited workout routine templates, routine folders, advanced graphs, and local workout analytics.
 - **Idempotency**: Detects existing patches and safely exits without double-writing.
 
 ### Battery Optimization & Background Sync Killer

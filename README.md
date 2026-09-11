@@ -76,6 +76,7 @@
 - **Current Target**: `3.1.13` (APKM bundle)
 - **Architecture**: `arm64-v8a`
 - **Package**: `com.hevy`
+- ⚠️ *Google Sign-In Issue?* Read the [Hevy Setup & Authentication Guide](docs/hevy-setup.md) to log in with Email & Password.
 
 <a href="https://www.apkmirror.com/apk/hevy/hevy-gym-log-workout-tracker/hevy-gym-log-workout-tracker-3-1-13-release/"><img src="https://img.shields.io/badge/Download-Hevy_3.1.13_(APKM)-FF4500?style=for-the-badge&logo=target&logoColor=white" alt="Download Hevy APKM" /></a>
 
@@ -150,9 +151,9 @@
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
 | **Block Hevy Telemetry & Trackers** | Neutralizes Sentry crash reporting, Adjust attribution, Facebook AppEvents, Branch referral tracking, and WearOS background sync. |  |
-| **Hevy Battery Optimization & Background Sync Killer** | Disables background WorkManager alarms, periodic job schedulers, Firebase messaging wakeups, and DataTransport schedulers to eliminate battery drain in sleep. |  |
+| **Hevy Battery Optimization & Background Sync Killer** | Disables background WorkManager alarms, periodic job schedulers, Google Play Billing IPC (~89 MB RAM), and removes largeHeap to force aggressive Garbage Collection. |  |
 | **Hevy Resource Slimmer** | Strips embedded onboarding MP4 tutorial video, heavy IMG.LY photo editor stickers/textures, and compiler junk metadata. |  |
-| **Unlock Pro** | Unlocks local Hevy Pro capabilities (unlimited workout routines, routine folders, advanced graphs, and local analytics) by dynamically enabling the offline-Pro grace period in Hermes Bytecode (HBC96). |  |
+| **Unlock Pro** | Unlocks local Hevy Pro capabilities (unlimited workout routines, routine folders, advanced graphs, and local analytics) by dynamically enabling Pro getters in Hermes Bytecode (HBC96). |  |
 
 </details>
 
@@ -207,6 +208,7 @@ Comprehensive technical references and setup manuals have been modularized for f
 | :--- | :--- |
 | 📱 **[Compatibility Guide](docs/compatibility.md)** | CPU architecture policy (ARM64 vs 32-bit ARMv7a) and APK variant rationales (`Bravemonoarm64`, Vivaldi Browser). |
 | ⌨️ **[Gboard Setup & Dictionaries](docs/gboard-setup.md)** | Step-by-step setup for predictive text, offline dictionaries, and Glide Typing on fresh installs. |
+| 🏋️ **[Hevy Setup & Authentication](docs/hevy-setup.md)** | Account authentication notice (Google Sign-In SHA-1 limitation & Email/Password login) and Pro features overview. |
 | ⚙️ **[Patch Configuration & Options](docs/patch-configuration.md)** | Detailed guides, density matrices, and complete locale code tables for `Locale Slimmer` and `DPI Resource Slimmer`. |
 | 🛡️ **[Architecture & Security Notes](docs/architecture-security.md)** | Explanation of privacy scanner false positives (ML Kit / Play Billing) and native ELF/Dalvik telemetry neutralization. |
 | 🛠️ **[Building & Development](docs/building.md)** | Toolchain prerequisites, Gradle build tasks, test execution, and catalog synchronization. |
