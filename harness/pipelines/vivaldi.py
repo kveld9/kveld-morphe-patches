@@ -1,5 +1,5 @@
 """
-Target Pipeline for Vivaldi Browser Snapshot (com.vivaldi.browser.snapshot).
+Target Pipeline for Vivaldi Browser (com.vivaldi.browser).
 """
 
 from __future__ import annotations
@@ -25,6 +25,13 @@ class VivaldiPipeline(BaseTargetPipeline):
         apk_filename = self.apk_ctx.apk_path.name.lower()
         if "vivaldi" not in apk_filename:
             print(f"⚠️  WARNING: APK filename '{self.apk_ctx.apk_path.name}' does not indicate Vivaldi Browser.")
+        meta = self.apk_ctx.get_metadata()
+        if len(meta.dex_files) < 3:
+            print(
+                f"⚠️  WARNING: Target contains only {len(meta.dex_files)} DEX file(s). "
+                f"Vivaldi Browser Stable is distributed as an App Bundle (.apkm) containing 'split_chrome.apk'. "
+                f"Unbundled base APKs lack browser bytecode and will fail patch fingerprinting."
+            )
 
     def execute_audit_and_validation(self) -> Tuple[Dict[str, Any], Any]:
         print("🛡️ Running adversarial validation across Vivaldi patch contracts...")
