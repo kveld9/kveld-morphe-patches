@@ -20,6 +20,8 @@ body:
       options:
         - Brave Browser
         - Gboard Lite
+        - Vivaldi Browser
+        - Hevy
         - Universal / Other
     validations:
       required: true

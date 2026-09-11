@@ -53,7 +53,7 @@ object Constants {
         targets = listOf(
             AppTarget(
                 version = VIVALDI_TARGET_VERSION,
-                description = "Download 8.2.4147.58 (arm64-v8a) from APKMirror"
+                description = "Download 8.2.4147.58 (arm64-v8a APKM bundle) from APKMirror"
             )
         )
     )

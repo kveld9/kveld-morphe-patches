@@ -29,10 +29,10 @@ Always use `Bravemonoarm64.apk` from [Brave GitHub Releases](https://github.com/
 - **Native ARM64 Hooks**: Byte-level offsets in `lib/arm64-v8a/libchrome.so` are calculated strictly against ARM64 Monochrome binaries.
 
 ### 🔴 Vivaldi Browser: Stable Transition (`com.vivaldi.browser`)
-Download the official `arm64-v8a` release from [APKMirror](https://www.apkmirror.com/apk/vivaldi-technologies/vivaldi-browser-beta/).
+Download the official `arm64-v8a` bundle release from [APKMirror](https://www.apkmirror.com/apk/vivaldi-technologies/vivaldi-browser-beta/).
 
 - **Stable Target**: Morphe Patches has transitioned to the stable release of Vivaldi Browser (`com.vivaldi.browser`, v8.2.4147.58).
-- **APKM Bundle Support**: Distributed as an Android App Bundle (APKM / isolated splits) containing `base.apk` and `split_chrome.apk`. Morphe automatically fuses split modules and applies the complete 14-patch suite seamlessly.
+- **APKM Bundle Requirement**: Distributed as an Android App Bundle (`.apkm` / split APKs) containing `base.apk` and `split_chrome.apk`. **Do not download the ~320 MB standalone APK option on APKMirror**, as that is merely an unbundled `base.apk` stripped of browser bytecode. Select the **BUNDLE (`.apkm`)** file so Morphe can fuse split modules and apply the complete patch suite.
 
 ### 🏋️ Hevy: Gym Log Workout Tracker (`com.hevy`)
 Download the official `arm64-v8a` bundle release from [APKMirror](https://www.apkmirror.com/apk/hevy/hevy-gym-log-workout-tracker/).
