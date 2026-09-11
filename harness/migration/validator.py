@@ -117,7 +117,6 @@ class AdversarialValidator:
             FingerprintQuery(
                 name_id="origin_setup_pref",
                 defining_class="Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;",
-                method_name="g5",
                 return_type="V",
                 parameters=["Ljava/lang/String;"],
             ),
@@ -366,13 +365,11 @@ class AdversarialValidator:
             FingerprintQuery(
                 name_id="bg_sync_periodic",
                 return_type="V",
-                parameters=["Landroid/content/Context;", "Lwtj;", "Lpcc;"],
                 strings=["BackgroundSync.Periodic.Wakeup.DelayTime"],
             ),
             FingerprintQuery(
                 name_id="bg_sync_oneshot",
                 return_type="V",
-                parameters=["Landroid/content/Context;", "Lwtj;", "Lpcc;"],
                 strings=["BackgroundSync.Wakeup.DelayTime"],
             ),
         ]

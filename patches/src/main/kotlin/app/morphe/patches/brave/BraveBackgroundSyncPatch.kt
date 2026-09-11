@@ -35,7 +35,6 @@ val braveBackgroundSyncPatch = bytecodePatch(
         // 2. Neutralize PeriodicBackgroundSync wakeup task runner
         val fp2 = Fingerprint(
             returnType = "V",
-            parameters = listOf("Landroid/content/Context;", "Lwtj;", "Lpcc;"),
             strings = listOf("BackgroundSync.Periodic.Wakeup.DelayTime"),
         )
         fp2.method.addInstructions(
@@ -50,7 +49,6 @@ val braveBackgroundSyncPatch = bytecodePatch(
         // 3. Neutralize OneShot BackgroundSync wakeup task runner
         val fp3 = Fingerprint(
             returnType = "V",
-            parameters = listOf("Landroid/content/Context;", "Lwtj;", "Lpcc;"),
             strings = listOf("BackgroundSync.Wakeup.DelayTime"),
         )
         fp3.method.addInstructions(
