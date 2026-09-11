@@ -1,3 +1,9 @@
+## [1.21.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.20.1...v1.21.0) (2026-09-11)
+
+### ✨ New Features
+
+* **brave:** update target to v1.95.101 and align libchrome offsets ([f88b2ef](https://github.com/kveld9/kveld-morphe-patches/commit/f88b2efd15a4a78692087aaa5f1f48ed0643bfea))
+
 ## [1.20.1](https://github.com/kveld9/kveld-morphe-patches/compare/v1.20.0...v1.20.1) (2026-09-11)
 
 ### 🐛 Bug Fixes
