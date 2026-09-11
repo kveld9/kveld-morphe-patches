@@ -57,4 +57,21 @@ object Constants {
             )
         )
     )
+
+    const val HEVY_PACKAGE_NAME = "com.hevy"
+    const val HEVY_TARGET_VERSION = "3.1.13"
+
+    val COMPATIBILITY_HEVY = Compatibility(
+        name = "Hevy - Gym Log Workout Tracker",
+        packageName = HEVY_PACKAGE_NAME,
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0xFF4500,
+        targets = listOf(
+            AppTarget(
+                version = HEVY_TARGET_VERSION,
+                description = "Download com.hevy v3.1.13 (APKM bundle) from APKMirror"
+            )
+        )
+    )
 }
+
