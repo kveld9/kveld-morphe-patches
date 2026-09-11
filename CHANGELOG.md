@@ -1,3 +1,9 @@
+## [1.20.1](https://github.com/kveld9/kveld-morphe-patches/compare/v1.20.0...v1.20.1) (2026-09-11)
+
+### 🐛 Bug Fixes
+
+* **vivaldi:** clarify APKM bundle requirement and update issue templates ([1944b0b](https://github.com/kveld9/kveld-morphe-patches/commit/1944b0b2e47593f0bb5a976deae4fcd109b7361c))
+
 ## [1.20.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.19.0...v1.20.0) (2026-09-11)
 
 ### ✨ New Features
