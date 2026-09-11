@@ -1,3 +1,9 @@
+## [1.20.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.19.0...v1.20.0) (2026-09-11)
+
+### ✨ New Features
+
+* **hevy:** enhance pro unlocking, neutralize play billing, and add auth guide ([bace76c](https://github.com/kveld9/kveld-morphe-patches/commit/bace76cf8204ee0244a8e8fbed820c0e5c1c65f5))
+
 ## [1.19.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.18.0...v1.19.0) (2026-09-11)
 
 ### ✨ New Features
