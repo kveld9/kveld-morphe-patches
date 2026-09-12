@@ -166,11 +166,6 @@
 <summary>📦 TikTok&nbsp;&nbsp;•&nbsp;&nbsp;9 patches</summary>
 <br>
 
-**🎯 Supported versions:**
-
-| Any version |
-| :---: |
-
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
 | **Core Asset De-bloat** | Strips embedded Microblink credit card OCR models, C2PA AI content origin verification libraries, and unused non-Latin fonts to save APK space. |  |
