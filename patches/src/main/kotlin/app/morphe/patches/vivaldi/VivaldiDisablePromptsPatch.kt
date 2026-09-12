@@ -32,21 +32,18 @@ val vivaldiDisablePromptsPatch = bytecodePatch(
         val c1 = app.morphe.patches.shared.LocaleUtils.cleanClassName(fp1.originalClassDef.type)
         hookedMethods.add("$c1.onViewCreated")
 
-        // 2. Search Engine Switch BottomSheet Dialog: dismiss immediately on view creation
-        val fp2 = Fingerprint(
+        // 2. Search Engine Switch & Donation BottomSheet Launcher: neutralize display helper
+        val fpLauncher = Fingerprint(
             returnType = "V",
-            parameters = listOf("Landroid/view/View;", "Landroid/os/Bundle;"),
-            strings = listOf("MULTICHOICE_PROMPT", "DONATE_AND_MULTICHOICE_PROMPT"),
+            strings = listOf("DIALOG_TYPE"),
+            custom = { method, _ ->
+                method.parameterTypes.size == 4 &&
+                    method.parameterTypes.first() == "Lcom/google/android/material/bottomsheet/BottomSheetDialogFragment;"
+            },
         )
-        fp2.method.addInstructions(
-            0,
-            """
-                invoke-virtual {p0}, Lcom/google/android/material/bottomsheet/BottomSheetDialogFragment;->dismissAllowingStateLoss()V
-                return-void
-            """,
-        )
-        val c2 = app.morphe.patches.shared.LocaleUtils.cleanClassName(fp2.originalClassDef.type)
-        hookedMethods.add("$c2.onViewCreated")
+        fpLauncher.method.addInstructions(0, "return-void")
+        val cLauncher = app.morphe.patches.shared.LocaleUtils.cleanClassName(fpLauncher.originalClassDef.type)
+        hookedMethods.add("$cLauncher.showBottomSheetPrompt")
 
         // 3. Donation Promotional Click Handler: neutralize click action
         val fp3 = Fingerprint(
