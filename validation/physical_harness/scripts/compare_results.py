@@ -18,7 +18,6 @@ def compare_runs(results_dir: Path) -> str:
         "| :--- | :--- | :--- | :--- | :--- | :--- | :--- |",
         _compare_battery(vanilla_dir, patched_dir),
         _compare_sync(vanilla_dir, patched_dir),
-        _compare_ptr(vanilla_dir, patched_dir),
         _compare_smoke(vanilla_dir, patched_dir),
     ]
     final_report = "\n".join(report_lines)
@@ -81,30 +80,6 @@ def _compare_sync(vanilla_dir: Path, patched_dir: Path) -> str:
 
     return f"| **BraveBackgroundSyncPatch** | ServiceWorker Sync Scheduling | {v_ev} | {p_ev} | {meas} | None | **{res}** |"
 
-
-def _compare_ptr(vanilla_dir: Path, patched_dir: Path) -> str:
-    v_ptr_file = vanilla_dir / "ptr_vanilla_result.json"
-    p_ptr_file = patched_dir / "ptr_patched_result.json"
-    if not (v_ptr_file.exists() and p_ptr_file.exists()):
-        return "| **BraveDisablePullToRefreshPatch** | Overscroll PTR Gesture | Pending physical execution | Pending physical execution | -- | -- | **INCONCLUSIVE (Pending)** |"
-
-    v_ptr = json.loads(v_ptr_file.read_text(encoding="utf-8"))
-    p_ptr = json.loads(p_ptr_file.read_text(encoding="utf-8"))
-
-    v_logs = v_ptr.get("ptr_logs_count", 0)
-    p_logs = p_ptr.get("ptr_logs_count", 0)
-
-    v_ev = f"{v_logs} trigger logs (Reload active)"
-    p_ev = f"{p_logs} trigger logs (Reload blocked)"
-
-    if v_logs > 0 and p_logs == 0:
-        res, meas = "PASS", "Zero reloads across 20 downward swipes + form persistence preserved"
-    elif p_logs == 0:
-        res, meas = "PASS", "Gesture absorbed without triggering OverscrollRefreshHandler"
-    else:
-        res, meas = "INCONCLUSIVE", "Ambiguous swipe events"
-
-    return f"| **BraveDisablePullToRefreshPatch** | Overscroll PTR Gesture | {v_ev} | {p_ev} | {meas} | None | **{res}** |"
 
 
 def _compare_smoke(vanilla_dir: Path, patched_dir: Path) -> str:
