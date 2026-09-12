@@ -5,6 +5,7 @@
 > [!NOTE]
 > **Architecture Matrix Summary:**
 > - **Gboard Lite**: Officially supports both **`arm64-v8a` (64-bit)** and **`armeabi-v7a` (32-bit)**.
+> - **TikTok**: Officially supports **`arm64-v8a`** (Global and Asia APK nodpi). Legacy `armeabi-v7a` libraries in dual-ABI APKs can be purged via debloat patches.
 > - **Brave Browser, Vivaldi Browser & Hevy**: **`arm64-v8a` (64-bit only)**.
 
 ### Why Gboard Lite supports 32-bit:
@@ -39,3 +40,10 @@ Download the official `arm64-v8a` bundle release from [APKMirror](https://www.ap
 
 - **Current Target**: `3.1.13` (`com.hevy`, APKM bundle).
 - **Bundle Format**: Distributed as an APKM / split APK set (`base.apk`, `split_config.arm64_v8a.apk`, `split_config.xxhdpi.apk`, etc.). Morphe patches both Dalvik bytecode in `classes*.dex`, manifest components in `AndroidManifest.xml`, and the Hermes bytecode bundle in `assets/index.android.bundle`.
+
+### 🎵 TikTok: Global & Asia (`com.zhiliaoapp.musically` / `com.ss.android.ugc.trill`)
+Download the official APK release from [APKMirror (TikTok)](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/) or [APKMirror (TikTok Asia)](https://www.apkmirror.com/apk/tiktok-pte-ltd/tiktok-asia/).
+
+- **Package Names**: `com.zhiliaoapp.musically` (Global) and `com.ss.android.ugc.trill` (Asia).
+- **APK Format**: Standalone nodpi APK (`arm64-v8a` or dual-ABI `arm64-v8a, armeabi-v7a`).
+- **Compatibility**: Patches operate on stable ByteDance SDK boundaries and MultiDEX classes across versions, with slimmers targeting ByteDance assets and heavy native libraries.
