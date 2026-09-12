@@ -1,3 +1,9 @@
+## [1.21.1](https://github.com/kveld9/kveld-morphe-patches/compare/v1.21.0...v1.21.1) (2026-09-12)
+
+### 🐛 Bug Fixes
+
+* **vivaldi:** neutralize donation and search engine bottom sheet prompt ([ca96f0f](https://github.com/kveld9/kveld-morphe-patches/commit/ca96f0ff342795beddb1a25265aaaae1c04a0723)), closes [#22](https://github.com/kveld9/kveld-morphe-patches/issues/22)
+
 ## [1.21.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.20.1...v1.21.0) (2026-09-11)
 
 ### ✨ New Features
