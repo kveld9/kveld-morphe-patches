@@ -21,15 +21,14 @@ sys.path.insert(0, str(SCRIPT_DIR))
 from common import AdbDevice, LocalTestServer
 from test_battery import run_battery_test
 from test_background_sync import run_background_sync_test
-from test_pull_to_refresh import run_pull_to_refresh_test
 from compare_results import compare_runs
 
 def _parse_and_validate_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Morphe Patches Physical ARM64 Validation Suite (Audited)")
     parser.add_argument("--mode", choices=["vanilla", "patched"], help="Target testing mode (vanilla or patched)")
     parser.add_argument("--device", "--serial", dest="serial", default="df286add", help="Specific ADB device serial (default: df286add)")
-    parser.add_argument("--patch", choices=["battery", "background-sync", "pull-to-refresh"], help="Specific individual patch to test")
-    parser.add_argument("--all", action="store_true", help="Run all 3 tests sequentially")
+    parser.add_argument("--patch", choices=["battery", "background-sync"], help="Specific individual patch to test")
+    parser.add_argument("--all", action="store_true", help="Run all tests sequentially")
     parser.add_argument("--compare", action="store_true", help="Generate strict comparison report (PASS / FAIL / INCONCLUSIVE)")
     args = parser.parse_args()
 
@@ -42,7 +41,7 @@ def _parse_and_validate_args() -> argparse.Namespace:
         sys.exit(1)
 
     if not args.patch and not args.all:
-        print("ERROR: Please specify either --patch <battery|background-sync|pull-to-refresh> or --all")
+        print("ERROR: Please specify either --patch <battery|background-sync> or --all")
         parser.print_help()
         sys.exit(1)
 
@@ -56,10 +55,6 @@ def _execute_tests(device: AdbDevice, args: argparse.Namespace, mode_out_dir: Pa
 
     if args.all or args.patch == "background-sync":
         run_background_sync_test(device, args.mode, mode_out_dir)
-        time.sleep(2)
-
-    if args.all or args.patch == "pull-to-refresh":
-        run_pull_to_refresh_test(device, args.mode, mode_out_dir)
         time.sleep(2)
 
 

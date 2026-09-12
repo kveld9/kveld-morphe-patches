@@ -1,6 +1,6 @@
 # Morphe Patches — ARM64 Physical Device Validation Suite
 
-This test suite automates metric collection, battery event tracking, Background Sync job monitoring, MediaSession wake lock assertions, and Pull-To-Refresh gesture validation via ADB on physical ARM64 Android devices.
+This test suite automates metric collection, battery event tracking, Background Sync job monitoring, and MediaSession wake lock assertions via ADB on physical ARM64 Android devices.
 
 ---
 
@@ -13,14 +13,12 @@ validation/physical_harness/
 │   ├── battery_test.html          # Test 1: Battery Status API events
 │   ├── background_sync_test.html  # Test 2: ServiceWorker Sync / PeriodicSync
 │   ├── sw.js                      # Test ServiceWorker
-│   ├── media_test.html            # Test 3: Audio/Video MediaSession WakeLock
-│   └── pull_to_refresh_test.html  # Test 4: Reload counter and DOM scroll
+│   └── media_test.html            # Test 3: Audio/Video MediaSession WakeLock
 ├── scripts/
 │   ├── common.py                  # ADB connection, dumpsys, and port forwarding
 │   ├── test_battery.py            # Test 1 Runner (Battery)
 │   ├── test_background_sync.py    # Test 2 Runner (Background Sync)
 │   ├── test_media_wakelock.py     # Test 3 Runner (Media WakeLock A/B)
-│   ├── test_pull_to_refresh.py    # Test 4 Runner (Pull To Refresh)
 │   └── compare_results.py         # Vanilla vs Patched comparator
 └── results/                       # Logcat, dumpsys, and metrics dumps
 ```
