@@ -1,3 +1,9 @@
+## [1.21.2](https://github.com/kveld9/kveld-morphe-patches/compare/v1.21.1...v1.21.2) (2026-09-12)
+
+### ♻️ Code Refactoring
+
+* **brave:** resolve boolean field dynamically in startup performance patch ([858068e](https://github.com/kveld9/kveld-morphe-patches/commit/858068e7fb1176786ce32be9e5055a685ee782c9))
+
 ## [1.21.1](https://github.com/kveld9/kveld-morphe-patches/compare/v1.21.0...v1.21.1) (2026-09-12)
 
 ### 🐛 Bug Fixes
