@@ -661,6 +661,12 @@ class AdversarialValidator:
                 strings=["DONATE_PROMPT", "searchEnginePrompt", "donationPrompt"],
             ),
             FingerprintQuery(
+                name_id="vivaldi_bottom_sheet_prompt_launcher",
+                return_type="V",
+                strings=["DIALOG_TYPE"],
+                custom_predicate=lambda m: len(m.parameters) == 4 and m.parameters[0] == "Lcom/google/android/material/bottomsheet/BottomSheetDialogFragment;",
+            ),
+            FingerprintQuery(
                 name_id="vivaldi_privacy_receiver",
                 defining_class="Lorg/vivaldi/browser/prompts/PrivacyReportNotificationReceiver;",
                 method_name="onReceive",
