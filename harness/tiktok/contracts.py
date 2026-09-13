@@ -76,6 +76,19 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
         required_strings=[],
         criticality="HIGH",
     ),
+    PatchContract(
+        patch_id="feed_ad_blocker",
+        name="Feed Ad Blocker",
+        target_type="bytecode",
+        description="Removes sponsored advertisements, brand promotions, soft commercial videos, and promotional audio from the For You and Following feeds.",
+        required_classes=[
+            "Lcom/ss/android/ugc/aweme/feed/FeedApiService;",
+            "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;",
+            "Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;",
+        ],
+        required_strings=["fetchFeedList", "getItems"],
+        criticality="HIGH",
+    ),
     # --- Performance, RAM, Battery & Media ---
     PatchContract(
         patch_id="instant_cold_start",
