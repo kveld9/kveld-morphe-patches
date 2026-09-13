@@ -163,12 +163,13 @@
 </details>
 
 <details>
-<summary>📦 TikTok&nbsp;&nbsp;•&nbsp;&nbsp;9 patches</summary>
+<summary>📦 TikTok&nbsp;&nbsp;•&nbsp;&nbsp;10 patches</summary>
 <br>
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
 | **Core Asset De-bloat** | Strips embedded Microblink credit card OCR models, C2PA AI content origin verification libraries, and unused non-Latin fonts to save APK space. |  |
+| **Feed Ad Blocker** | Removes sponsored advertisements, brand promotions, soft commercial videos, and promotional audio from the For You and Following feeds. |  |
 | **Instant Launch & Splash Blocker** | Eliminates cold startup delays, real-time splash advertisements, and background TopView preloading (<0.4s launch). |  |
 | **Language Pack Purger** | Strips unselected language string bundles from assets/strings#lang_* to save APK space. | • Languages to keep |
 | **Live Stream Suite Optimizer** | Strips Live link mic SDK (liblink_mic_sdk.so) and live stream interactive minigames, and disables 3D gift particle animation preloading. |  |

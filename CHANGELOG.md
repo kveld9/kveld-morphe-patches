@@ -1,3 +1,9 @@
+## [1.23.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.22.2...v1.23.0) (2026-09-13)
+
+### ✨ New Features
+
+* **tiktok:** implement universal feed ad blocker patch ([b2b2a45](https://github.com/kveld9/kveld-morphe-patches/commit/b2b2a45353a325128d447cf4384621e6b0faca72)), closes [#23](https://github.com/kveld9/kveld-morphe-patches/issues/23)
+
 ## [1.22.2](https://github.com/kveld9/kveld-morphe-patches/compare/v1.22.1...v1.22.2) (2026-09-13)
 
 ### 🐛 Bug Fixes
