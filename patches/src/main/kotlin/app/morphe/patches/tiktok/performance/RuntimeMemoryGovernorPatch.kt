@@ -44,23 +44,33 @@ val runtimeMemoryGovernorPatch = bytecodePatch(
             println("[RuntimeMemoryGovernor] FrescoFrameCache frame getter note: ${e.message}")
         }
 
-        // 2. FrescoFrameCache.LJ() fallback frame getter -> return null
+        // 2. FrescoFrameCache parameterized frame getter (LJFF in modern / LJ in legacy) -> return null
         try {
-            Fingerprint(
-                definingClass = "Lcom/facebook/fresco/animation/bitmap/cache/FrescoFrameCache;",
-                name = "LJ",
-                custom = { method, _ -> method.returnType.startsWith("L") },
-            ).method.addInstructions(
+            val frameCacheGetter = try {
+                Fingerprint(
+                    definingClass = "Lcom/facebook/fresco/animation/bitmap/cache/FrescoFrameCache;",
+                    name = "LJFF",
+                    custom = { method, _ -> method.returnType.startsWith("L") },
+                ).method
+            } catch (e: Exception) {
+                Fingerprint(
+                    definingClass = "Lcom/facebook/fresco/animation/bitmap/cache/FrescoFrameCache;",
+                    name = "LJ",
+                    custom = { method, _ -> method.returnType.startsWith("L") },
+                ).method
+            }
+
+            frameCacheGetter.addInstructions(
                 0,
                 """
                     const/4 v0, 0x0
                     return-object v0
                 """,
             )
-            println("[RuntimeMemoryGovernor] Capped FrescoFrameCache.LJ() -> Frame cache allocation suppressed.")
+            println("[RuntimeMemoryGovernor] Capped FrescoFrameCache parameterized frame getter -> Frame cache allocation suppressed.")
             patched++
         } catch (e: Exception) {
-            println("[RuntimeMemoryGovernor] FrescoFrameCache.LJ note: ${e.message}")
+            println("[RuntimeMemoryGovernor] FrescoFrameCache parameterized frame getter note: ${e.message}")
         }
 
         println("[RuntimeMemoryGovernor] Applied $patched Fresco memory tuning hooks.")
