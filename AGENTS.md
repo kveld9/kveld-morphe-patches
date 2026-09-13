@@ -146,6 +146,15 @@ When adding or updating any patch, the following gates are **MANDATORY**:
    - If a proposed fix fails two consecutive times, halt immediately, re-evaluate the root cause, or request human decision.
 8. **DO NOT Hardcode Usernames, Device Serials, Local Paths, or Repository Slugs**:
    - Never embed developer usernames, adb device serials, absolute machine paths, or hardcoded repository slugs. Derive paths and repository slugs dynamically from runtime contexts or environment variables (e.g. `GITHUB_REPOSITORY`), autodetect connected ADB devices when possible, and supply sensible generic fallbacks.
+9. **Strict Privacy, PII & Diagnostic Output Sanitization**:
+   - Never commit raw device diagnostic outputs, logcats, dumpsys logs, tombstones, screenshots, or crash traces to version control.
+   - All runtime diagnostic dumps (`dumpsys jobscheduler`, `dumpsys alarm`) must be strictly filtered to the target package name (`PACKAGE_NAME`) to prevent leaking user Google accounts, installed third-party apps, or device hardware serials.
+   - Diagnostic HTTP servers and test runners must strictly bind to loopback (`127.0.0.1`) and never expose ports on `0.0.0.0` or local network interfaces.
+10. **Strict Secret & Environment Containment**:
+    - Never commit `.env`, `local.properties`, private keys (`*.key`, `*.pem`), or signing keystores.
+    - All validation runtime outputs (`validation/runtime/`, `validation/physical_harness/results/`) must remain strictly excluded via `.gitignore` and sanitized by `scripts/clean_workspace.sh`.
+11. **Metadata Synchronization Integrity**:
+    - When patch options, default values, or descriptions are modified in Kotlin source code, verify that patch catalog generator tasks (`./gradlew generatePatchesList`) are synchronized before release packaging.
 
 ---
 

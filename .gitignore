@@ -124,6 +124,21 @@ gradle-app.setting
 apks-ultima-version/
 apks/
 
+# Local sensitive configuration, environment & secrets
+local.properties
+.env
+.env.*
+*.env
+*.key
+*.pem
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+credentials.json
+secrets.json
+auth.json
+
 # Local signing credentials and keystores
 *.keystore
 *.jks
@@ -165,9 +180,6 @@ htmlcov/
 *.orig
 *.rej
 
-# Local sensitive configuration and credentials
-local.properties
-
 # Ignore IDEA files
 .idea/
 
@@ -175,9 +187,10 @@ local.properties
 .DS_Store
 Thumbs.db
 
-# Validation results & runtime crashes
+# Validation results & runtime captures
 validation/physical_harness/results/
-validation/runtime/crashes/
-validation/runtime/*.txt
+validation/runtime/
 validation/combined/
+*.logcat
+*.tombstone
 
