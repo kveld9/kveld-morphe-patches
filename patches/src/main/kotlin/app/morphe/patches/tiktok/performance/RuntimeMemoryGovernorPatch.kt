@@ -15,31 +15,41 @@ val runtimeMemoryGovernorPatch = bytecodePatch(
     execute {
         var patched = 0
 
-        // 1. FrescoFrameCache.LIZLLL() -> return null
+        // 1. FrescoFrameCache frame getter (LIZJ in modern / LIZLLL in legacy) -> return null
         try {
-            Fingerprint(
-                definingClass = "Lcom/facebook/fresco/animation/bitmap/cache/FrescoFrameCache;",
-                name = "LIZLLL",
-                returnType = "Lcom/facebook/common/references/CloseableReference;",
-            ).method.addInstructions(
+            val frameGetter = try {
+                Fingerprint(
+                    definingClass = "Lcom/facebook/fresco/animation/bitmap/cache/FrescoFrameCache;",
+                    name = "LIZJ",
+                    custom = { method, _ -> method.returnType.startsWith("L") },
+                ).method
+            } catch (e: Exception) {
+                Fingerprint(
+                    definingClass = "Lcom/facebook/fresco/animation/bitmap/cache/FrescoFrameCache;",
+                    name = "LIZLLL",
+                    custom = { method, _ -> method.returnType.startsWith("L") },
+                ).method
+            }
+
+            frameGetter.addInstructions(
                 0,
                 """
                     const/4 v0, 0x0
                     return-object v0
                 """,
             )
-            println("[RuntimeMemoryGovernor] Capped FrescoFrameCache.LIZLLL() -> Frame bitmap memory retention bounded.")
+            println("[RuntimeMemoryGovernor] Capped FrescoFrameCache frame getter -> Frame bitmap memory retention bounded.")
             patched++
         } catch (e: Exception) {
-            println("[RuntimeMemoryGovernor] FrescoFrameCache.LIZLLL note: ${e.message}")
+            println("[RuntimeMemoryGovernor] FrescoFrameCache frame getter note: ${e.message}")
         }
 
-        // 2. FrescoFrameCache.LJ() -> return null
+        // 2. FrescoFrameCache.LJ() fallback frame getter -> return null
         try {
             Fingerprint(
                 definingClass = "Lcom/facebook/fresco/animation/bitmap/cache/FrescoFrameCache;",
                 name = "LJ",
-                returnType = "Lcom/facebook/common/references/CloseableReference;",
+                custom = { method, _ -> method.returnType.startsWith("L") },
             ).method.addInstructions(
                 0,
                 """

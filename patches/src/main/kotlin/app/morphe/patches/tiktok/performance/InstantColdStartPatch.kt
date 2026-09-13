@@ -107,23 +107,33 @@ val instantColdStartPatch = bytecodePatch(
             println("[InstantColdStart] RealTimeSplashManagerImpl.LIZLLL() note: ${e.message}")
         }
 
-        // 5. Disable SplashAdServiceImpl methods (LJ, LJIILIIL, LJJIJIL)
+        // 5. Disable SplashAdServiceImpl methods (LJFF/LJ, LJIILIIL, LJJIJIL)
         try {
-            Fingerprint(
-                definingClass = "Lcom/bytedance/ies/ugc/aweme/commercialize/splash/core/SplashAdServiceImpl;",
-                name = "LJ",
-                returnType = "Z",
-            ).method.addInstructions(
+            val splashAdMethod = try {
+                Fingerprint(
+                    definingClass = "Lcom/bytedance/ies/ugc/aweme/commercialize/splash/core/SplashAdServiceImpl;",
+                    name = "LJFF",
+                    returnType = "Z",
+                ).method
+            } catch (e: Exception) {
+                Fingerprint(
+                    definingClass = "Lcom/bytedance/ies/ugc/aweme/commercialize/splash/core/SplashAdServiceImpl;",
+                    name = "LJ",
+                    returnType = "Z",
+                ).method
+            }
+
+            splashAdMethod.addInstructions(
                 0,
                 """
                     const/4 v0, 0x0
                     return v0
                 """,
             )
-            println("[InstantColdStart] Disabled SplashAdServiceImpl.LJ() -> Splash ad service disabled.")
+            println("[InstantColdStart] Disabled SplashAdServiceImpl splash gate -> Splash ad service disabled.")
             patched++
         } catch (e: Exception) {
-            println("[InstantColdStart] SplashAdServiceImpl.LJ() note: ${e.message}")
+            println("[InstantColdStart] SplashAdServiceImpl splash gate note: ${e.message}")
         }
 
         try {
