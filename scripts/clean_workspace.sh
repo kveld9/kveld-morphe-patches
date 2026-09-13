@@ -34,7 +34,8 @@ rm -rf validation/physical_harness/results/patched/* \
        validation/physical_harness/results/vanilla/* \
        validation/physical_harness/results/*.md \
        validation/physical_harness/results/*.txt \
-       validation/runtime/crashes/* \
-       validation/combined/* 2>/dev/null || true
+       validation/runtime/* \
+       validation/combined/* \
+       *.logcat *.tombstone 2>/dev/null || true
 
 echo "✨ Workspace cleanup complete!"

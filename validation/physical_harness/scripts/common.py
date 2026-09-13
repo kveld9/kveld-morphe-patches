@@ -117,7 +117,9 @@ class AdbDevice:
         return self.shell("dumpsys power")
 
     def get_dumpsys_jobscheduler(self) -> str:
-        return self.shell(f"dumpsys jobscheduler {PACKAGE_NAME}")
+        raw = self.shell(f"dumpsys jobscheduler {PACKAGE_NAME}")
+        # Scrub and restrict to target package only to avoid dumping third-party apps or user accounts
+        return "\n".join([line for line in raw.splitlines() if PACKAGE_NAME in line or ("JOB #" in line and PACKAGE_NAME in line)])
 
     def get_dumpsys_battery(self) -> str:
         return self.shell("dumpsys battery")
@@ -155,7 +157,7 @@ class LocalTestServer:
     def start(self):
         os.chdir(self.directory)
         handler = http.server.SimpleHTTPRequestHandler
-        self.server = socketserver.TCPServer(("", self.port), handler)
+        self.server = socketserver.TCPServer(("127.0.0.1", self.port), handler)
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
         self.thread.start()
 
