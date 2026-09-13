@@ -54,12 +54,18 @@ class TikTokValidator:
                     else:
                         details.append(f"No entries matching `{req_entry}` found in APK")
 
+            patch_status = (
+                PatchStatus.VERIFIED
+                if status == "VERIFIED"
+                else PatchStatus.STATICALLY_VERIFIED
+                if status == "WARNING"
+                else PatchStatus.BLOCKED
+            )
             results[contract.name] = PatchAuditResult(
-                status=status,
-                target_type=contract.target_type,
-                criticality=contract.criticality,
-                description=contract.description,
-                details=details,
+                patch_name=contract.name,
+                status=patch_status,
+                blocking_reasons=details if patch_status == PatchStatus.BLOCKED else [],
+                evidence=details if patch_status != PatchStatus.BLOCKED else [],
             )
 
         return results
