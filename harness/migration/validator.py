@@ -790,9 +790,10 @@ class AdversarialValidator:
             return False, bundle_err
 
         # Run README sync
+        repo_slug = os.environ.get("GITHUB_REPOSITORY") or "kveld9/kveld-morphe-patches"
         readme_cmd = [
             "python", ".github/scripts/generate_patches_readme.py",
-            "kveld9/morphe-patches", "main", "patches-list.json", "README.md"
+            repo_slug, "main", "patches-list.json", "README.md"
         ]
         res_readme = subprocess.run(readme_cmd, cwd=str(self.repo_root), capture_output=True, text=True)
         if res_readme.returncode != 0:

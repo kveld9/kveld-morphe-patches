@@ -1,6 +1,6 @@
 # Morphe Patches — ARM64 Physical Device Validation Suite
 
-This test suite automates metric collection, battery event tracking, Background Sync job monitoring, and MediaSession wake lock assertions via ADB on physical ARM64 Android devices.
+This test suite automates metric collection, battery event tracking, and Background Sync job monitoring via ADB on physical ARM64 Android devices.
 
 ---
 
@@ -12,13 +12,11 @@ validation/physical_harness/
 ├── server/                        # Local HTTP diagnostic server
 │   ├── battery_test.html          # Test 1: Battery Status API events
 │   ├── background_sync_test.html  # Test 2: ServiceWorker Sync / PeriodicSync
-│   ├── sw.js                      # Test ServiceWorker
-│   └── media_test.html            # Test 3: Audio/Video MediaSession WakeLock
+│   └── sw.js                      # Test ServiceWorker
 ├── scripts/
 │   ├── common.py                  # ADB connection, dumpsys, and port forwarding
 │   ├── test_battery.py            # Test 1 Runner (Battery)
 │   ├── test_background_sync.py    # Test 2 Runner (Background Sync)
-│   ├── test_media_wakelock.py     # Test 3 Runner (Media WakeLock A/B)
 │   └── compare_results.py         # Vanilla vs Patched comparator
 └── results/                       # Logcat, dumpsys, and metrics dumps
 ```
@@ -38,14 +36,14 @@ validation/physical_harness/
 ---
 
 ### Step 2: Run Tests in VANILLA Mode
-1. Install the Vanilla Brave APK (v1.93.138):
+1. Install the Vanilla Brave APK (e.g. v1.93.x):
    ```bash
-   adb install -r "apks-ultima-version/BraveMonoarm64 (1).apk"
+   adb install -r <path-to-vanilla-apk.apk>
    ```
 2. Execute the test suite for Vanilla:
    ```bash
    cd validation/physical_harness
-   python run_harness.py --mode vanilla
+   python run_harness.py --mode vanilla --all
    ```
    *The script will launch the background diagnostic server, execute all tests sequentially, and save results in `results/vanilla/`.*
 
@@ -59,7 +57,7 @@ validation/physical_harness/
    ```
 3. Execute the test suite for Patched:
    ```bash
-   python run_harness.py --mode patched
+   python run_harness.py --mode patched --all
    ```
    *The script will repeat the exact test sequence and save results in `results/patched/`.*
 

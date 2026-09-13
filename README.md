@@ -79,7 +79,7 @@
 | **Add AMOLED Theme** | Adds a selectable Pure Black AMOLED theme using Gboard's native color_black theme package, without replacing Dark, Light, System Auto, or Dynamic Color. |  |
 | **Allow Modified APK** | Bypasses internal signature check to allow custom APK execution. |  |
 | **Block Telemetry** | Disables background metrics dispatch, event logging, daily pings, and crash reporting. |  |
-| **Clone Gboard** | Changes the package name by appending a dot and custom suffix (defaults to 'kveld') to allow installing Gboard alongside the original application. | • Package name suffix |
+| **Clone Gboard** | Changes the package name by appending a dot and custom suffix (defaults to 'clone') to allow installing Gboard alongside the original application. | • Package name suffix |
 | **Disable Diagnostics** | Disables Google's diagnostic and recovery telemetry. |  |
 | **Disable Google Primes** | Neutralizes Google Primes performance profiling, jank monitoring, native crash sidecars, and background telemetry threads. |  |
 | **Disable MDD Background Sync** | Neutralizes Mobile Data Download (MDD) periodic background synchronization, automated polling, and prefetch worker tasks while preserving on-demand and user-requested downloads. |  |
