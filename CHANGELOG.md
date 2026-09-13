@@ -1,3 +1,9 @@
+## [1.22.1](https://github.com/kveld9/kveld-morphe-patches/compare/v1.22.0...v1.22.1) (2026-09-13)
+
+### ♻️ Code Refactoring
+
+* **harness:** eradicate hardcoded identifiers and harden validation toolchain ([57c23e5](https://github.com/kveld9/kveld-morphe-patches/commit/57c23e5d5d543c1ea6c5884ac743072230b48ee9))
+
 ## [1.22.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.21.2...v1.22.0) (2026-09-12)
 
 ### ✨ New Features
