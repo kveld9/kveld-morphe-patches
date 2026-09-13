@@ -20,7 +20,7 @@ rm -rf ./*.apk ./*.apkm ./*.xapk ./*.mpp ./*.mpe ./*.idsig
 
 # 3. Clean temporary directories if they exist
 echo "==> Removing temporary cache directories..."
-rm -rf morphe-temporary-files/ morphe-data/ scratch/ apks-ultima-version/
+rm -rf morphe-temporary-files/ morphe-data/ scratch/ apks-ultima-version/ apks/
 
 # 4. Clean Python bytecode caches
 echo "==> Cleaning Python caches..."

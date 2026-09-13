@@ -1,0 +1,4 @@
+androguard>=4.1.4
+cryptography
+lxml
+pyyaml

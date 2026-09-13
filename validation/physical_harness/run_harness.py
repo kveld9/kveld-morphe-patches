@@ -1,7 +1,7 @@
 """
 Master Physical Test Suite Orchestrator for ARM64 Android Device (Audited).
 Usage:
-    python run_harness.py --mode vanilla --patch pull-to-refresh
+    python run_harness.py --mode vanilla --patch battery
     python run_harness.py --mode patched --all
     python run_harness.py --compare
 """
@@ -26,7 +26,7 @@ from compare_results import compare_runs
 def _parse_and_validate_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Morphe Patches Physical ARM64 Validation Suite (Audited)")
     parser.add_argument("--mode", choices=["vanilla", "patched"], help="Target testing mode (vanilla or patched)")
-    parser.add_argument("--device", "--serial", dest="serial", default="df286add", help="Specific ADB device serial (default: df286add)")
+    parser.add_argument("--device", "--serial", dest="serial", default=None, help="Specific ADB device serial (default: autodetect first connected device)")
     parser.add_argument("--patch", choices=["battery", "background-sync"], help="Specific individual patch to test")
     parser.add_argument("--all", action="store_true", help="Run all tests sequentially")
     parser.add_argument("--compare", action="store_true", help="Generate strict comparison report (PASS / FAIL / INCONCLUSIVE)")

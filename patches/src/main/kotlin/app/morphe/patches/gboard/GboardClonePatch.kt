@@ -7,7 +7,7 @@ import org.w3c.dom.Element
 
 val gboardClonePatch = resourcePatch(
     name = "Clone Gboard",
-    description = "Changes the package name by appending a dot and custom suffix (defaults to 'kveld') to allow installing Gboard alongside the original application.",
+    description = "Changes the package name by appending a dot and custom suffix (defaults to 'clone') to allow installing Gboard alongside the original application.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
@@ -17,14 +17,14 @@ val gboardClonePatch = resourcePatch(
     val packageSuffix by stringOption(
         key = "packageSuffix",
         title = "Package name suffix",
-        description = "Suffix appended after the original package name and a dot (e.g. 'kveld' -> 'com.google.android.inputmethod.latin.kveld').",
-        default = "kveld",
+        description = "Suffix appended after the original package name and a dot (e.g. 'clone' -> 'com.google.android.inputmethod.latin.clone').",
+        default = "clone",
         required = false,
     )
 
     execute {
         val originalPackage = Constants.GBOARD_PACKAGE_NAME
-        val cleanSuffix = packageSuffix?.trim()?.trimStart('.')?.trimEnd('.')?.takeIf { it.isNotEmpty() } ?: "kveld"
+        val cleanSuffix = packageSuffix?.trim()?.trimStart('.')?.trimEnd('.')?.takeIf { it.isNotEmpty() } ?: "clone"
         val newPackage = "$originalPackage.$cleanSuffix"
 
         val manifestFile = get("AndroidManifest.xml")

@@ -11,6 +11,7 @@ import subprocess
 import sys
 import urllib.parse
 import urllib.request
+from typing import Optional
 
 TELEGRAM_MAX_MESSAGE_LENGTH = 4096
 
@@ -43,12 +44,15 @@ def build_message(
     tag: str,
     notes: str,
     repo: str,
-    morphe_source_url: str = "https://morphe.software/add-source?github=kveld9/brave-patches",
+    morphe_source_url: Optional[str] = None,
 ) -> str:
     display_tag = tag if tag else f"v{version}"
     header = f"🚀 <b>New Release: Morphe Patches {display_tag}</b>\n\n"
 
     body = markdown_to_telegram_html(notes)
+
+    if not morphe_source_url and repo:
+        morphe_source_url = f"https://morphe.software/add-source?github={repo}"
 
     links = []
     if repo:
@@ -150,7 +154,7 @@ def main():
             notes = cl_notes
 
     if not repo:
-        repo = get_repo_from_git()
+        repo = get_repo_from_git() or "kveld9/kveld-morphe-patches"
 
     if not token or not chat_id:
         print(
@@ -159,9 +163,10 @@ def main():
         return
 
     chat_id = sanitize_chat_id(chat_id)
+    default_morphe_url = f"https://morphe.software/add-source?github={repo}"
     morphe_url = os.environ.get(
         "MORPHE_SOURCE_URL",
-        "https://morphe.software/add-source?github=kveld9/brave-patches",
+        default_morphe_url,
     )
     message = build_message(version, tag, notes, repo, morphe_source_url=morphe_url)
 

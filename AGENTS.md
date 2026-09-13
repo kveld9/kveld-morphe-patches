@@ -12,7 +12,7 @@ Autonomous AI agent execution harness and engineering governance guide for **Mor
 | **Gradle Plugin** | `app.morphe.patches` | `1.3.3` |
 | **Build Tool** | Gradle Wrapper | `9.6.1` (Bin distribution) |
 | **Languages** | Kotlin (Compiler flag: `-Xcontext-parameters`), Java (Extension SDK), Smali (dexlib2 `d92701d947`), Python 3.x | JVM 17+ Target (CI: Temurin JDK 21) |
-| **Binary Targets** | ARM64-v8a (`libchrome.so`, Dex APKs), Android APK / APKM | Chromium 130+ / Brave Core v1.93.x, Gboard Lite v18.0.x |
+| **Binary Targets** | ARM64-v8a (`libchrome.so`, Dex APKs), Android APK / APKM | Chromium 130+ / Brave Core v1.93.x, Gboard Lite v18.0.x, Vivaldi, Hevy, TikTok |
 | **CI / Release Toolchain** | `semantic-release` (v25.0.9), `gradle-semantic-release-plugin` (v1.10.3), `@MorpheApp/changelog` | Conventional Commits |
 
 ---
@@ -28,6 +28,9 @@ morphe-patches/
 │       ├── app/morphe/patches/
 │       │   ├── brave/       # Specific Brave Browser patch implementations
 │       │   ├── gboard/      # Specific Gboard Lite patch implementations
+│       │   ├── hevy/        # Specific Hevy patch implementations
+│       │   ├── tiktok/      # Specific TikTok patch implementations
+│       │   ├── vivaldi/     # Specific Vivaldi patch implementations
 │       │   └── shared/      # Centralized Compatibility contracts (Constants.kt)
 │       └── util/            # Patch list metadata generator (PatchListGenerator.kt)
 ├── extensions/              # MPE (Morphe Patch Extension) DEX Payloads
@@ -141,6 +144,8 @@ When adding or updating any patch, the following gates are **MANDATORY**:
    - `AGENTS.md`, `.agents/agents/engineer.md`, and `.agents/agents/auditor.md` cannot be modified as a side effect of a product task.
 7. **Anti-Loop Prohibition**:
    - If a proposed fix fails two consecutive times, halt immediately, re-evaluate the root cause, or request human decision.
+8. **DO NOT Hardcode Usernames, Device Serials, Local Paths, or Repository Slugs**:
+   - Never embed developer usernames, adb device serials, absolute machine paths, or hardcoded repository slugs. Derive paths and repository slugs dynamically from runtime contexts or environment variables (e.g. `GITHUB_REPOSITORY`), autodetect connected ADB devices when possible, and supply sensible generic fallbacks.
 
 ---
 
@@ -181,6 +186,6 @@ python harness/update.py <path-to-apk> --update
 
 ### D. Physical Device Runtime Harness (ADB)
 ```bash
-# Run automated on-device test suite (battery, sync, PTR, smoke launch)
+# Run automated on-device test suite (battery, sync, smoke launch)
 python validation/physical_harness/run_harness.py
 ```

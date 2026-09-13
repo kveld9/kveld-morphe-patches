@@ -18,28 +18,44 @@ MAIN_ACTIVITY = "com.brave.browser/com.google.android.apps.chrome.Main"
 SERVER_PORT = 8080
 
 class AdbDevice:
-    def __init__(self, serial: Optional[str] = "df286add"):
+    def __init__(self, serial: Optional[str] = None):
         self.serial = serial
         self._ensure_device()
 
     def _ensure_device(self):
-        devices = [d[0] for d in self.list_devices()]
-        if not devices:
+        all_devices = self.list_devices()
+        if not all_devices:
             raise RuntimeError("No ADB devices connected. Please connect your ARM64 Android device with USB debugging enabled.")
-        if self.serial and self.serial not in devices:
-            raise RuntimeError(f"Target device '{self.serial}' not found in connected devices: {devices}")
+        if self.serial and self.serial not in [d[0] for d in all_devices]:
+            raise RuntimeError(f"Target device '{self.serial}' not found in connected devices: {[d[0] for d in all_devices]}")
         if not self.serial:
-            self.serial = devices[0]
+            # Prefer active authorized device over offline/unauthorized
+            active = [d[0] for d in all_devices if d[1] == "device"]
+            if not active:
+                raise RuntimeError(
+                    f"No authorized ADB devices found. Connected devices: {all_devices}. "
+                    "Please accept the USB debugging RSA authorization prompt on your device."
+                )
+            if len(active) > 1:
+                print(f"[WARNING] Multiple active devices found ({active}). Defaulting to '{active[0]}'. Use --device to target a specific device.")
+            self.serial = active[0]
 
     @staticmethod
     def list_devices() -> List[Tuple[str, str]]:
         res = subprocess.run(["adb", "devices"], capture_output=True, text=True, check=True)
-        lines = res.stdout.strip().splitlines()[1:]
         devices = []
-        for line in lines:
-            parts = line.split()
-            if len(parts) >= 2:
-                devices.append((parts[0], parts[1]))
+        in_device_list = False
+        for line in res.stdout.splitlines():
+            line = line.strip()
+            if not line or line.startswith("*"):
+                continue
+            if "List of devices attached" in line:
+                in_device_list = True
+                continue
+            if in_device_list:
+                parts = line.split()
+                if len(parts) >= 2:
+                    devices.append((parts[0], parts[1]))
         return devices
 
     def cmd(self, args: List[str], check: bool = True) -> subprocess.CompletedProcess:

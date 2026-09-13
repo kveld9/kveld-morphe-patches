@@ -122,6 +122,7 @@ gradle-app.setting
 *.mpe
 *.idsig
 apks-ultima-version/
+apks/
 
 # Local signing credentials and keystores
 *.keystore
