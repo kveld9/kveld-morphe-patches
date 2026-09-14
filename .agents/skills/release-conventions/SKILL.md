@@ -11,12 +11,12 @@ Automated semantic releases depend on commit messages adhering strictly to the c
 
 | Prefix | Semver Impact | Release Notes Section | Trigger Automated Release? |
 | :--- | :--- | :--- | :--- |
-| `feat:` | **Minor** (`x.Y.0`) | ✨ New Features | **Yes** |
-| `fix:` | **Patch** (`x.x.Z`) | 🐛 Bug Fixes | **Yes** |
-| `perf:` | **Patch** (`x.x.Z`) | 🔧 Improvements | **Yes** |
-| `bump:` | **Patch** (`x.x.Z`) | 🚀 Updated App Support | **Yes** |
+| `feat:` | **Minor** (`x.Y.0`) | New Features | **Yes** |
+| `fix:` | **Patch** (`x.x.Z`) | Bug Fixes | **Yes** |
+| `perf:` | **Patch** (`x.x.Z`) | Improvements | **Yes** |
+| `bump:` | **Patch** (`x.x.Z`) | Updated App Support | **Yes** |
 | `build(Needs bump):` | **Patch** (`x.x.Z`) | Hidden | **Yes** |
-| `refactor:` | None | ♻️ Code Refactoring | **No** (Documented in notes) |
+| `refactor:` | None | Code Refactoring | **No** (Documented in notes) |
 | `chore:` | None | Hidden | **No** (Skipped) |
 | `docs:` | None | Hidden | **No** (Skipped) |
 

@@ -37,14 +37,14 @@ with open(json_path, encoding="utf-8") as f:
     data = json.load(f)
 
 
-def pkg_emoji(pkg):
-    """Return a standard package emoji regardless of the package name."""
-    return "📦"
+def pkg_prefix(pkg):
+    """Return an empty prefix for package grouping."""
+    return ""
 
 # Group patches by app name; patches with no compatiblePackages are universal.
 # JSON structure: compatiblePackages is a list of objects with
 # { packageName, name, targets: [{ version, isExperimental, description }] }
-by_app = {}   # app_name -> { name, emoji, packages, patches, targets }
+by_app = {}   # app_name -> { name, prefix, packages, patches, targets }
 universal = {}
 
 for patch in data["patches"]:
@@ -60,7 +60,7 @@ for patch in data["patches"]:
         if name not in by_app:
             by_app[name] = {
                 "name":     name,
-                "emoji":    pkg_emoji(pkg),
+                "prefix":   pkg_prefix(pkg),
                 "packages": set(),
                 "patches":  {},
                 "targets":  [],
@@ -77,7 +77,7 @@ for patch in data["patches"]:
 def patches_table(patches):
     """Render a sorted markdown table of patches with name, description, and options."""
     rows = [
-        "| 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |",
+        "| Patch | Description | Options |",
         "|----------|----------------|-----------|",
     ]
     for p in sorted(patches, key=lambda x: x["name"]):
@@ -95,7 +95,7 @@ def patches_table(patches):
 
 def versions_table(targets):
     """Render a markdown table of supported versions.
-    Experimental versions get a 🧪 prefix.
+    Experimental versions get an (experimental) suffix.
     Versions with a description get it shown in a second row below.
     """
     if not targets:
@@ -106,7 +106,7 @@ def versions_table(targets):
         ver   = t["version"]
         if ver is None:
             continue
-        label = f"🧪&nbsp;{ver}" if t.get("isExperimental") else ver
+        label = f"{ver} (experimental)" if t.get("isExperimental") else ver
         cells.append(label)
 
     if not cells:
@@ -130,7 +130,7 @@ def spoiler(label, count, targets, tbl, expanded=False):
     """
     noun = "patch" if count == 1 else "patches"
     vtbl = versions_table(targets)
-    versions_section = f"**🎯 Supported versions:**\n\n{vtbl}\n\n" if vtbl else ""
+    versions_section = f"**Supported versions:**\n\n{vtbl}\n\n" if vtbl else ""
     tag = "<details open>" if expanded else "<details>"
     return f"""{tag}
 <summary>{label}&nbsp;&nbsp;•&nbsp;&nbsp;{count} {noun}</summary>
@@ -148,7 +148,8 @@ def build_content(expanded=False):
     # One spoiler per app, in the order they appear in the JSON
     for app_name, entry in by_app.items():
         patches = list(entry["patches"].values())
-        label   = f"{entry['emoji']} {entry['name']}"
+        prefix = f"{entry['prefix']} " if entry["prefix"] else ""
+        label   = f"{prefix}{entry['name']}"
         lines.append(spoiler(label, len(patches), entry["targets"], patches_table(patches), expanded))
         lines.append("")
 
@@ -158,7 +159,7 @@ def build_content(expanded=False):
         noun = "patch" if len(uni_patches) == 1 else "patches"
         tag  = "<details open>" if expanded else "<details>"
         lines.append(f"""{tag}
-<summary>🌐 Universal&nbsp;&nbsp;•&nbsp;&nbsp;{len(uni_patches)} {noun}</summary>
+<summary>Universal&nbsp;&nbsp;•&nbsp;&nbsp;{len(uni_patches)} {noun}</summary>
 <br>
 
 {patches_table(uni_patches)}
@@ -187,7 +188,7 @@ if not marker_match or END_MARKER not in readme:
     # Fallback: print to stdout so CI can catch the issue
     print(build_content(expanded=False))
     sys.stderr.write(
-        f"⚠️  Markers <!-- PATCHES_START [EXPANDED] --> / {END_MARKER} not found in {readme_path}. "
+        f"[WARN] Markers <!-- PATCHES_START [EXPANDED] --> / {END_MARKER} not found in {readme_path}. "
         "Printed to stdout instead.\n"
     )
     sys.exit(1)
@@ -255,7 +256,7 @@ for entry in by_app.values():
         elif any("musically" in p for p in pkgs) or any("trill" in p for p in pkgs):
             # TikTok current target
             readme = re.sub(
-                r"(### 🎵 TikTok[^\n]*\n\- \*\*Current Target\*\*: `)[^`]+(`)",
+                r"(### .*?TikTok[^\n]*\n\- \*\*Current Target\*\*: `)[^`]+(`)",
                 rf"\g<1>{target_ver}\g<2>",
                 readme,
                 count=1,

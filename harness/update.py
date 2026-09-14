@@ -40,11 +40,11 @@ import harness.pipelines  # Registers all target pipelines
 
 
 def run_pipeline(apk_path: str, mode: str = "audit", output_report: str | None = None) -> int:
-    print(f"🚀 Starting Morphe Patches Update Harness in [{mode.upper()}] mode on '{apk_path}'...")
+    print(f"[HARNESS] Starting Morphe Patches Update Harness in [{mode.upper()}] mode on '{apk_path}'...")
     with ApkContext(apk_path) as apk_ctx:
         meta = apk_ctx.get_metadata()
-        print(f"📦 Identified Package: {meta.package_name} v{meta.version_name} (versionCode: {meta.version_code})")
-        print(f"🔑 SHA-256: {meta.sha256}")
+        print(f"[TARGET] Identified Package: {meta.package_name} v{meta.version_name} (versionCode: {meta.version_code})")
+        print(f"[TARGET] SHA-256: {meta.sha256}")
 
         return PipelineRegistry.dispatch(
             apk_ctx=apk_ctx,

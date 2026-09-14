@@ -27,21 +27,21 @@ class BravePipeline(BaseTargetPipeline):
         apk_filename = self.apk_ctx.apk_path.name.lower()
         is_mono_arm64 = "monoarm64" in apk_filename or ("monochrome" in apk_filename and "arm64" in apk_filename)
         if not is_mono_arm64:
-            print(f"⚠️  WARNING: APK filename '{self.apk_ctx.apk_path.name}' does not indicate a Monochrome ARM64 build.")
-            print("⚠️  Morphe Patches targets 'Bravemonoarm64.apk'.\n")
+            print(f"[WARN] APK filename '{self.apk_ctx.apk_path.name}' does not indicate a Monochrome ARM64 build.")
+            print("[WARN] Morphe Patches targets 'Bravemonoarm64.apk'.\n")
         if not self.meta.has_arm64_libchrome:
-            print("⚠️  WARNING: 'lib/arm64-v8a/libchrome.so' not found in APK.\n")
+            print("[WARN] 'lib/arm64-v8a/libchrome.so' not found in APK.\n")
 
     def execute_audit_and_validation(self) -> Tuple[Dict[str, Any], Any]:
-        print("🧠 Resolving obfuscated members and structural contracts...")
+        print("[AUDIT] Resolving obfuscated members and structural contracts...")
         symbols = SymbolResolver(self.dex_index).resolve_all()
 
         telemetry_report = None
         if self.elf_analyzer:
-            print("🌐 Auditing native telemetry domain offsets...")
+            print("[AUDIT] Auditing native telemetry domain offsets...")
             telemetry_report = TelemetryScanner(self.elf_analyzer).audit_known_hosts()
 
-        print("🛡️ Running adversarial validation on all Brave patches...")
+        print("[AUDIT] Running adversarial validation on all Brave patches...")
         validator = AdversarialValidator(self.repo_root, self.dex_index, self.elf_analyzer)
         patch_results = validator.audit_brave_patches()
 

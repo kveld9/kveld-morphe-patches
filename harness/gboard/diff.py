@@ -67,19 +67,19 @@ class ApkDiffer:
     @staticmethod
     def render_markdown(diff_report: ApkDiffReport) -> str:
         lines = []
-        lines.append(f"# 📊 APK Differential Report: v{diff_report.old_version} ➔ v{diff_report.new_version}")
+        lines.append(f"# APK Differential Report: v{diff_report.old_version} -> v{diff_report.new_version}")
         lines.append("")
         lines.append(f"- **File Size Delta**: `{diff_report.file_size_delta:+,} bytes`")
         lines.append(f"- **New Classes**: `{len(diff_report.new_classes)}`")
         lines.append(f"- **Removed Classes**: `{len(diff_report.removed_classes)}`")
         lines.append("")
         if diff_report.new_classes:
-            lines.append("## ➕ Sample New Classes")
+            lines.append("## Sample New Classes")
             for c in diff_report.new_classes[:15]:
                 lines.append(f"- `{c}`")
             lines.append("")
         if diff_report.removed_classes:
-            lines.append("## ➖ Sample Removed Classes")
+            lines.append("## Sample Removed Classes")
             for c in diff_report.removed_classes[:15]:
                 lines.append(f"- `{c}`")
             lines.append("")

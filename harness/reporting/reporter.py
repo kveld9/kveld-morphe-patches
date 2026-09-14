@@ -45,9 +45,9 @@ class HarnessReporter:
     """Universal renderer for structured patch audit and update reports."""
 
     STATUS_ICONS = {
-        PatchStatus.VERIFIED: "✅",
-        PatchStatus.STATICALLY_VERIFIED: "⚠️",
-        PatchStatus.NOT_AFFECTED: "ℹ️",
+        PatchStatus.VERIFIED: "[PASS]",
+        PatchStatus.STATICALLY_VERIFIED: "[WARN]",
+        PatchStatus.NOT_AFFECTED: "[INFO]",
     }
 
     @classmethod
@@ -74,10 +74,9 @@ class HarnessReporter:
 
     @staticmethod
     def _render_header(data: HarnessReportData) -> List[str]:
-        icon = "🦁" if "brave" in data.package_name.lower() else "⌨️"
-        status_badge = "✅ `SUCCESS`" if data.final_status == "SUCCESS" else "❌ `BLOCKED`"
+        status_badge = "[PASS] `SUCCESS`" if data.final_status == "SUCCESS" else "[FAIL] `BLOCKED`"
         return [
-            f"# {icon} {data.app_name} Patches Harness Report",
+            f"# {data.app_name} Patches Harness Report",
             "",
             f"- **Execution Mode**: `[{data.mode.upper()}]`",
             f"- **Overall Pipeline Status**: {status_badge}",
@@ -90,12 +89,12 @@ class HarnessReporter:
     def _render_metadata(data: HarnessReportData) -> List[str]:
         mb_size = data.apk_file_size / (1024 * 1024)
         return [
-            "## 📦 Target APK Metadata",
+            "## Target APK Metadata",
             "",
             f"- **Application**: `{data.app_name}`",
             f"- **Package Name**: `{data.package_name}`",
-            f"- **Version**: `{data.old_version}` ➔ `{data.new_version}`",
-            f"- **VersionCode**: `{data.old_version_code or 'N/A'}` ➔ `{data.new_version_code}`",
+            f"- **Version**: `{data.old_version}` -> `{data.new_version}`",
+            f"- **VersionCode**: `{data.old_version_code or 'N/A'}` -> `{data.new_version_code}`",
             f"- **APK SHA-256**: `{data.apk_sha256}`",
             f"- **APK File Size**: `{data.apk_file_size:,} bytes` ({mb_size:.2f} MB)",
             "",
@@ -107,23 +106,23 @@ class HarnessReporter:
     def _render_patches_matrix(cls, data: HarnessReportData) -> List[str]:
         has_native = any(len(res.native_checks) > 0 for res in data.patch_results.values())
         lines = [
-            f"## 🩹 Patches Status Matrix ({len(data.patch_results)} Patches)",
+            f"## Patches Status Matrix ({len(data.patch_results)} Patches)",
             "",
         ]
 
         if has_native:
             lines.extend([
-                "| 💊 Patch | 📊 Status | 🎯 Fingerprints | 🛡️ Native Gates | 📝 Structural Assertions & Notes |",
+                "| Patch | Status | Fingerprints | Native Gates | Structural Assertions & Notes |",
                 "| :--- | :---: | :---: | :---: | :--- |",
             ])
         else:
             lines.extend([
-                "| 💊 Patch | 📊 Status | 🎯 Fingerprints | 📝 Structural Assertions & Notes |",
+                "| Patch | Status | Fingerprints | Structural Assertions & Notes |",
                 "| :--- | :---: | :---: | :--- |",
             ])
 
         for _, res in sorted(data.patch_results.items(), key=lambda x: x[1].patch_name):
-            status_icon = cls.STATUS_ICONS.get(res.status, "❌")
+            status_icon = cls.STATUS_ICONS.get(res.status, "[FAIL]")
             fp_pass = sum(1 for fp in res.fingerprint_results if fp[1] == "VERIFIED")
             fp_tot = len(res.fingerprint_results)
             fp_str = f"{fp_pass}/{fp_tot} verified" if fp_tot > 0 else "N/A"
@@ -142,10 +141,10 @@ class HarnessReporter:
 
     @staticmethod
     def _render_theme_report(theme_report: ThemeAuditReport) -> List[str]:
-        t_icon = "✅" if theme_report.passed else "❌"
+        t_icon = "[PASS]" if theme_report.passed else "[FAIL]"
         dup_label = "YES (BLOCKED)" if theme_report.duplicate_theme_detected else "NONE (Clean)"
         lines = [
-            "## 🎨 Special Theme & AMOLED Duplication Audit",
+            "## Special Theme & AMOLED Duplication Audit",
             "",
             f"- **Theme Safety Status**: {t_icon} `{'PASSED' if theme_report.passed else 'FAILED'}`",
             f"- **Black Stylesheet Asset Present**: `{'YES' if theme_report.black_sheet_present else 'NO'}`",
@@ -154,20 +153,20 @@ class HarnessReporter:
             f"- **Duplicate Theme Registrations**: `{dup_label}`",
         ]
         for f in theme_report.findings:
-            lines.append(f"  - 🔍 {f}")
+            lines.append(f"  - [FINDING] {f}")
         lines.extend(["", "---", ""])
         return lines
 
     @staticmethod
     def _render_invariants_report(invariants_report: InvariantsReport) -> List[str]:
-        inv_icon = "✅" if invariants_report.passed else "❌"
+        inv_icon = "[PASS]" if invariants_report.passed else "[FAIL]"
         lines = [
-            "## 🛡️ Invariants & Regression Contract Checks",
+            "## Invariants & Regression Contract Checks",
             "",
             f"- **Overall Invariants Status**: {inv_icon} `{'PASSED' if invariants_report.passed else 'FAILED'}`",
         ]
         for inv in invariants_report.results:
-            i_icon = "✅" if inv.passed else "❌"
+            i_icon = "[PASS]" if inv.passed else "[FAIL]"
             lines.append(f"- {i_icon} **{inv.invariant_id}**: {inv.description} (`{inv.details}`)")
         lines.extend(["", "---", ""])
         return lines
@@ -175,7 +174,7 @@ class HarnessReporter:
     @staticmethod
     def _render_symbols_report(symbols: Dict[str, Any]) -> List[str]:
         lines = [
-            "## 🔍 Obfuscated Symbol Resolution",
+            "## Obfuscated Symbol Resolution",
             "",
             "| Symbol ID | Target Class | Old Reference | New Symbol | Confidence |",
             "| :--- | :--- | :--- | :--- | :---: |",
@@ -190,27 +189,27 @@ class HarnessReporter:
                 origin_syms.find_pref_method,
                 origin_syms.pref_listener_field,
             ]:
-                lines.append(f"| `{s.symbol_id}` | `{s.target_class}` | `{s.old_symbol}` | `{s.new_symbol}` | ✅ `{s.confidence.value}` |")
+                lines.append(f"| `{s.symbol_id}` | `{s.target_class}` | `{s.old_symbol}` | `{s.new_symbol}` | [PASS] `{s.confidence.value}` |")
         lines.extend(["", "---", ""])
         return lines
 
     @staticmethod
     def _render_telemetry_report(telemetry_report: TelemetryReport) -> List[str]:
         lines = [
-            "## 🌐 Native Telemetry Audit (`libchrome.so` ARM64)",
+            "## Native Telemetry Audit (`libchrome.so` ARM64)",
             "",
             "| Hostname | Expected | Found | ELF Offset(s) | Status |",
             "| :--- | :---: | :---: | :--- | :---: |",
         ]
         for h in telemetry_report.known_results:
             offs = ", ".join([f"`0x{m.offset:08x}`" for m in h.matches]) if h.matches else "None"
-            st_icon = "✅" if h.status in ("VERIFIED", "OFFSET_CHANGED") else "❌"
+            st_icon = "[PASS]" if h.status in ("VERIFIED", "OFFSET_CHANGED") else "[FAIL]"
             lines.append(f"| `{h.hostname}` | `{h.expected_count}` | `{h.found_count}` | {offs} | {st_icon} `{h.status}` |")
 
         if telemetry_report.discovered_candidates:
             lines.extend([
                 "",
-                "### 🔎 Discovered Telemetry Candidates",
+                "### Discovered Telemetry Candidates",
                 "",
             ])
             for c in telemetry_report.discovered_candidates:
@@ -222,28 +221,28 @@ class HarnessReporter:
     @staticmethod
     def _render_changes_and_summary(data: HarnessReportData) -> List[str]:
         lines = [
-            "## ⚙️ Changes Applied & Validation Summary",
+            "## Changes Applied & Validation Summary",
             "",
         ]
         if data.applied_changes:
             lines.append("### Applied Changes:")
             for ch in data.applied_changes:
-                lines.append(f"- ✅ {ch}")
+                lines.append(f"- [PASS] {ch}")
         else:
             lines.append("- *No code modifications required (all targets match current definitions).*")
 
         if data.rejected_changes:
             lines.extend(["", "### Rejected / Blocked Changes:"])
             for rj in data.rejected_changes:
-                lines.append(f"- ❌ {rj}")
+                lines.append(f"- [FAIL] {rj}")
 
         if data.residual_risks:
-            lines.extend(["", "### ⚠️ Residual Risks / Advisories:"])
+            lines.extend(["", "### Residual Risks / Advisories:"])
             for risk in data.residual_risks:
-                lines.append(f"- ⚠️ {risk}")
+                lines.append(f"- [WARN] {risk}")
 
         lines.append("")
-        build_icon = "✅" if data.build_passed else "❌"
+        build_icon = "[PASS]" if data.build_passed else "[FAIL]"
         lines.extend([
             f"### Gradle & Metadata Toolchain Status: {build_icon} `{'PASSED' if data.build_passed else 'FAILED'}`",
             f"- {data.build_output.strip()}",

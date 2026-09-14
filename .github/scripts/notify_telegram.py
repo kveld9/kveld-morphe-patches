@@ -47,7 +47,7 @@ def build_message(
     morphe_source_url: Optional[str] = None,
 ) -> str:
     display_tag = tag if tag else f"v{version}"
-    header = f"🚀 <b>New Release: Morphe Patches {display_tag}</b>\n\n"
+    header = f"<b>New Release: Morphe Patches {display_tag}</b>\n\n"
 
     body = markdown_to_telegram_html(notes)
 
@@ -57,9 +57,9 @@ def build_message(
     links = []
     if repo:
         release_url = f"https://github.com/{repo}/releases/tag/{display_tag}"
-        links.append(f'🔗 <a href="{release_url}">View on GitHub</a>')
+        links.append(f'<a href="{release_url}">View on GitHub</a>')
     if morphe_source_url:
-        links.append(f'📲 <a href="{morphe_source_url}">Add to Morphe Manager</a>')
+        links.append(f'<a href="{morphe_source_url}">Add to Morphe Manager</a>')
 
     footer = "\n\n" + "\n".join(links) if links else ""
 

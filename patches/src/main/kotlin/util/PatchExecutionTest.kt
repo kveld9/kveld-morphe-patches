@@ -222,7 +222,7 @@ fun main(args: Array<String>) {
     println("Loaded ${targetPatches.size} ${targetApp.appName} patches from ${patchFiles.first().name}:")
     targetPatches.sortedBy { it.name }.forEach { println("  • ${it.name}") }
 
-    val tempDir = File("build/tmp/patcher-test-workspace")
+    val tempDir = File("build/tmp/patcher-test-workspace").absoluteFile
     tempDir.deleteRecursively()
     tempDir.mkdirs()
 
@@ -237,11 +237,11 @@ fun main(args: Array<String>) {
         verifier = NoOpDexVerifier
     )
 
-    println("\n🚀 Initializing Morphe Patcher engine...")
+    println("\n[INIT] Initializing Morphe Patcher engine...")
     val patcher = Patcher(config)
     patcher += targetPatches
 
-    println("⚡ Executing patch pipeline on ${apkFile.name} (target: ${targetApp.appName})...")
+    println("[EXEC] Executing patch pipeline on ${apkFile.name} (target: ${targetApp.appName})...")
     var totalPatches = 0
     var successfulPatches = 0
     var failedPatches = 0
@@ -253,11 +253,11 @@ fun main(args: Array<String>) {
             val patchName = result.patch.name ?: "Unknown"
             if (result.exception == null) {
                 successfulPatches++
-                println("✅ [PASS] $patchName")
+                println("[PASS] $patchName")
             } else {
                 failedPatches++
                 val err = result.exception?.message ?: "Unknown error"
-                println("❌ [FAIL] $patchName -> $err")
+                println("[FAIL] $patchName -> $err")
                 result.exception?.printStackTrace()
                 failures.add("$patchName: $err")
             }
@@ -265,7 +265,7 @@ fun main(args: Array<String>) {
     }
 
     println("\n========================================")
-    println("🎯 FINAL PATCHING RESULT")
+    println("FINAL PATCHING RESULT")
     println("========================================")
     println("Target App:    ${targetApp.appName} (${targetApp.packageName})")
     println("APK File:      ${apkFile.name}")
@@ -274,9 +274,9 @@ fun main(args: Array<String>) {
     println("Failed:        $failedPatches")
 
     if (failedPatches == 0) {
-        println("\n📦 Compiling modified bytecode & assets via patcher.get()...")
+        println("\n[BUILD] Compiling modified bytecode & assets via patcher.get()...")
         val patcherResult = patcher.get()
-        println("📦 Compiled ${patcherResult.dexFiles.size} DEX files successfully.")
+        println("[BUILD] Compiled ${patcherResult.dexFiles.size} DEX files successfully.")
     }
 
     patcher.close()
@@ -287,6 +287,6 @@ fun main(args: Array<String>) {
         failures.forEach { println("  - $it") }
         error("Patcher finished with $failedPatches failure(s)")
     } else {
-        println("\n✨ 100% OF ${targetApp.appName.uppercase()} PATCHES APPLIED WITH ZERO ERRORS!")
+        println("\n100% OF ${targetApp.appName.uppercase()} PATCHES APPLIED WITH ZERO ERRORS!")
     }
 }

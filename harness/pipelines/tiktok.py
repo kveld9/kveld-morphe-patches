@@ -22,18 +22,18 @@ class TikTokPipeline(BaseTargetPipeline):
         return "musically" in pkg or "trill" in pkg or "tiktok" in pkg
 
     def validate_apk_sanity(self):
-        print(f"📦 Validating TikTok APK architecture and packaging...")
+        print("[AUDIT] Validating TikTok APK architecture and packaging...")
         all_entries = self.apk_ctx.get_all_entry_names() if hasattr(self.apk_ctx, "get_all_entry_names") else []
         has_arm64 = any(e.startswith("lib/arm64-v8a/") for e in all_entries)
         has_v7a = any(e.startswith("lib/armeabi-v7a/") for e in all_entries)
         dex_count = sum(1 for e in all_entries if e.endswith(".dex"))
 
-        print(f"  • MultiDEX count: {dex_count} DEX files")
-        print(f"  • ARM64-v8a support: {'Yes' if has_arm64 else 'No'}")
-        print(f"  • Legacy ARMv7a included: {'Yes (Eligible for ABI Slimmer)' if has_v7a else 'No'}\n")
+        print(f"  - MultiDEX count: {dex_count} DEX files")
+        print(f"  - ARM64-v8a support: {'Yes' if has_arm64 else 'No'}")
+        print(f"  - Legacy ARMv7a included: {'Yes (Eligible for ABI Slimmer)' if has_v7a else 'No'}\n")
 
     def execute_audit_and_validation(self) -> Tuple[Dict[str, Any], Any]:
-        print("🛡️ Running adversarial validation on all TikLite patch targets...")
+        print("[AUDIT] Running adversarial validation on all TikLite patch targets...")
         validator = TikTokValidator(self.repo_root, self.dex_index, self.apk_ctx)
         patch_results = validator.audit_all_patches()
 

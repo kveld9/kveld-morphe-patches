@@ -7,7 +7,7 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
 
-echo "🧹 Cleaning up workspace in $REPO_ROOT..."
+echo "Cleaning up workspace in $REPO_ROOT..."
 
 # 1. Remove temporary reports & diffs
 echo "==> Removing generated reports and diffs..."
@@ -43,4 +43,4 @@ rm -rf validation/physical_harness/results/patched/* \
        validation/combined/* \
        *.logcat *.tombstone 2>/dev/null || true
 
-echo "✨ Workspace cleanup complete!"
+echo "Workspace cleanup complete!"

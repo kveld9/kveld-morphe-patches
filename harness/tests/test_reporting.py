@@ -41,11 +41,11 @@ class TestHarnessReporting(unittest.TestCase):
         )
 
         md = HarnessReporter.render_markdown(data)
-        self.assertIn("# 🦁 Brave Browser Patches Harness Report", md)
+        self.assertIn("# Brave Browser Patches Harness Report", md)
         self.assertIn("- **Execution Mode**: `[AUDIT]`", md)
-        self.assertIn("- **Overall Pipeline Status**: ✅ `SUCCESS`", md)
+        self.assertIn("- **Overall Pipeline Status**: [PASS] `SUCCESS`", md)
         self.assertIn("- **Package Name**: `com.brave.browser`", md)
-        self.assertIn("| **Brave Origin** | ✅ `VERIFIED` | `1/1 verified` | `1/1 valid` | All structural assertions satisfied. |", md)
+        self.assertIn("| **Brave Origin** | [PASS] `VERIFIED` | `1/1 verified` | `1/1 valid` | All structural assertions satisfied. |", md)
         self.assertIn("**Final Pipeline Status**: `SUCCESS`", md)
 
     def test_gboard_report_rendering(self):
@@ -101,12 +101,12 @@ class TestHarnessReporting(unittest.TestCase):
         )
 
         md = HarnessReporter.render_markdown(data)
-        self.assertIn("# ⌨️ Gboard Lite Patches Harness Report", md)
+        self.assertIn("# Gboard Lite Patches Harness Report", md)
         self.assertIn("- **Execution Mode**: `[AUDIT]`", md)
         self.assertIn("- **Package Name**: `com.google.android.inputmethod.latin`", md)
-        self.assertIn("## 🎨 Special Theme & AMOLED Duplication Audit", md)
-        self.assertIn("## 🛡️ Invariants & Regression Contract Checks", md)
-        self.assertIn("| **Add AMOLED Theme** | ✅ `VERIFIED` | `1/1 verified` | All structural assertions satisfied. |", md)
+        self.assertIn("## Special Theme & AMOLED Duplication Audit", md)
+        self.assertIn("## Invariants & Regression Contract Checks", md)
+        self.assertIn("| **Add AMOLED Theme** | [PASS] `VERIFIED` | `1/1 verified` | All structural assertions satisfied. |", md)
         self.assertIn("**Final Pipeline Status**: `SUCCESS`", md)
 
 

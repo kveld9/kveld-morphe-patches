@@ -24,17 +24,17 @@ class VivaldiPipeline(BaseTargetPipeline):
     def validate_apk_sanity(self):
         apk_filename = self.apk_ctx.apk_path.name.lower()
         if "vivaldi" not in apk_filename:
-            print(f"⚠️  WARNING: APK filename '{self.apk_ctx.apk_path.name}' does not indicate Vivaldi Browser.")
+            print(f"[WARN] APK filename '{self.apk_ctx.apk_path.name}' does not indicate Vivaldi Browser.")
         meta = self.apk_ctx.get_metadata()
         if len(meta.dex_files) < 3:
             print(
-                f"⚠️  WARNING: Target contains only {len(meta.dex_files)} DEX file(s). "
+                f"[WARN] Target contains only {len(meta.dex_files)} DEX file(s). "
                 f"Vivaldi Browser Stable is distributed as an App Bundle (.apkm) containing 'split_chrome.apk'. "
                 f"Unbundled base APKs lack browser bytecode and will fail patch fingerprinting."
             )
 
     def execute_audit_and_validation(self) -> Tuple[Dict[str, Any], Any]:
-        print("🛡️ Running adversarial validation across Vivaldi patch contracts...")
+        print("[AUDIT] Running adversarial validation across Vivaldi patch contracts...")
         validator = AdversarialValidator(self.repo_root, self.dex_index, self.elf_analyzer)
         patch_results = validator.audit_vivaldi_patches()
         return patch_results, {}

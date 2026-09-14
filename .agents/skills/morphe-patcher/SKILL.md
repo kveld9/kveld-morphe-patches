@@ -191,6 +191,7 @@ Every patch execution must emit concise, high-signal diagnostic telemetry captur
    ```
 5. **Anti-Spam & Bounded Output**: Never dump thousands of lines or unbounded file trees. Repetitive items must be summarized or bounded to short representative samples (e.g. `.take(6)`).
 6. **Failure & Guard Transparency**: If an operation is skipped or safely aborted (e.g. missing targets or preconditions), log an explicit descriptive reason so issues can be immediately diagnosed from user-submitted logs.
+7. **Zero Emojis Policy**: Never use emojis in telemetry logs, exceptions, or console output. All logging must use clean, standard ASCII / plain-text formatting (e.g. `[INFO]`, `[WARN]`, `[PASS]`, `[FAIL]`).
 
 ---
 

@@ -83,7 +83,7 @@ morphe-patches/
 All tasks must follow this systematic execution lifecycle:
 
 ```text
-INSPECT & BASELINE ➜ SCOPE LOCK ➜ MINIMAL IMPLEMENTATION ➜ QUALITY GATES ➜ ADVERSARIAL AUDIT
+INSPECT & BASELINE -> SCOPE LOCK -> MINIMAL IMPLEMENTATION -> QUALITY GATES -> ADVERSARIAL AUDIT
 ```
 
 ### Step 1: `INSPECT & BASELINE`
@@ -122,7 +122,7 @@ For non-trivial logic, Smali hooks, native ARM64 patching (`libchrome.so`), or s
 
 ## 4. Guardrails & Strict Constraints (What NOT to Do)
 
-### ⛔ Critical Anti-Patterns & Prohibitions
+### Critical Anti-Patterns & Prohibitions
 
 1. **DO NOT Edit Generated Release Artifacts Manually**:
    - Never manually modify or commit `patches-list.json`, `patches-bundle.json`, or `CHANGELOG.md`. These are automatically managed by `release.yml` and `semantic-release`.
@@ -154,6 +154,9 @@ For non-trivial logic, Smali hooks, native ARM64 patching (`libchrome.so`), or s
     - When patch options, default values, or descriptions are modified in Kotlin source code, verify that patch catalog generator tasks (`./gradlew generatePatchesList`) are synchronized before release packaging.
 12. **DO NOT Declare Patch Tasks Complete Without In-Situ Morphe Patcher Verification**:
     - Never conclude any patch edit or declare a task complete without executing `./gradlew runPatchTest -Papp=<target>` with all corresponding patches active for that target app and asserting 100% success (0 failed patches, 0 fingerprint mismatches).
+13. **Strict Prohibition of Emojis in Code, Scripts & Tooling**:
+    - Under no circumstances should emojis or unicode pictographs be used anywhere in codebase source files, including Kotlin, Java, Python, Smali, Bash/Shell scripts, Gradle build files, configuration files, test files, diagnostic telemetry, or CLI/runtime logs.
+    - All code, logs, comments, and console outputs MUST strictly use clean, standard ASCII / plain-text formatting (e.g. `[INFO]`, `[WARN]`, `[PASS]`, `[FAIL]`, `[AUDIT]`, `[BUILD]`). Emojis are tolerated exclusively in end-user documentation (such as `README.md`) if already present, but are strictly prohibited in codebase implementation files and tooling.
 
 ---
 
