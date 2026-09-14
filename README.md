@@ -68,15 +68,15 @@
 
 <!-- PATCHES_START -->
 <details>
-<summary>📦 Gboard Lite&nbsp;&nbsp;•&nbsp;&nbsp;16 patches</summary>
+<summary>Gboard Lite&nbsp;&nbsp;•&nbsp;&nbsp;16 patches</summary>
 <br>
 
-**🎯 Supported versions:**
+**Supported versions:**
 
 | 18.2.4.969776716-lite_beta-arm64-v8a | 18.2.4.969776716-lite_beta-armeabi-v7a |
 | :---: | :---: |
 
-| 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
+| Patch | Description | Options |
 |----------|----------------|-----------|
 | **Add AMOLED Theme** | Adds a selectable Pure Black AMOLED theme using Gboard's native color_black theme package, without replacing Dark, Light, System Auto, or Dynamic Color. |  |
 | **Allow Modified APK** | Bypasses internal signature check to allow custom APK execution. |  |
@@ -98,15 +98,15 @@
 </details>
 
 <details>
-<summary>📦 Brave Private Web Browser, VPN&nbsp;&nbsp;•&nbsp;&nbsp;9 patches</summary>
+<summary>Brave Private Web Browser, VPN&nbsp;&nbsp;•&nbsp;&nbsp;9 patches</summary>
 <br>
 
-**🎯 Supported versions:**
+**Supported versions:**
 
 | 1.95.101 |
 | :---: |
 
-| 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
+| Patch | Description | Options |
 |----------|----------------|-----------|
 | **Block Brave Telemetry** | Blocks P3A product analytics, Brave Stats usage pings, crash dump uploads, WDP, and Variations seed fetching. |  |
 | **Brave In-Product & Commercial Notification Optimizer** | Eliminates background wakeups and notifications from Chromium tips scheduler (Job ID 105), Brave Rewards onboarding promo, and retention marketing campaigns. |  |
@@ -121,15 +121,15 @@
 </details>
 
 <details>
-<summary>📦 Hevy - Gym Log Workout Tracker&nbsp;&nbsp;•&nbsp;&nbsp;4 patches</summary>
+<summary>Hevy - Gym Log Workout Tracker&nbsp;&nbsp;•&nbsp;&nbsp;4 patches</summary>
 <br>
 
-**🎯 Supported versions:**
+**Supported versions:**
 
 | 3.1.13 |
 | :---: |
 
-| 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
+| Patch | Description | Options |
 |----------|----------------|-----------|
 | **Block Hevy Telemetry & Trackers** | Neutralizes Sentry crash reporting, Adjust attribution, Facebook AppEvents, Branch referral tracking, and WearOS background sync. |  |
 | **Hevy Battery Optimization & Background Sync Killer** | Disables background WorkManager alarms, periodic job schedulers, Google Play Billing IPC (~89 MB RAM), and removes largeHeap to force aggressive Garbage Collection. |  |
@@ -139,15 +139,15 @@
 </details>
 
 <details>
-<summary>📦 Vivaldi Browser - Fast & Safe&nbsp;&nbsp;•&nbsp;&nbsp;12 patches</summary>
+<summary>Vivaldi Browser - Fast & Safe&nbsp;&nbsp;•&nbsp;&nbsp;12 patches</summary>
 <br>
 
-**🎯 Supported versions:**
+**Supported versions:**
 
 | 8.2.4147.58 |
 | :---: |
 
-| 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
+| Patch | Description | Options |
 |----------|----------------|-----------|
 | **Block Vivaldi Sync** | Redirects bifrost.vivaldi.com to 0.0.0.0 in libchrome.so to completely disable Vivaldi account synchronization for an air-gapped experience. |  |
 | **Block Vivaldi Telemetry** | Blocks Vivaldi usage statistics, crash reporting, Crashpad endpoints, and DirectMatch suggestions. |  |
@@ -165,15 +165,15 @@
 </details>
 
 <details>
-<summary>📦 TikTok&nbsp;&nbsp;•&nbsp;&nbsp;16 patches</summary>
+<summary>TikTok&nbsp;&nbsp;•&nbsp;&nbsp;16 patches</summary>
 <br>
 
-**🎯 Supported versions:**
+**Supported versions:**
 
 | 46.9.3 |
 | :---: |
 
-| 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
+| Patch | Description | Options |
 |----------|----------------|-----------|
 | **Clean Share URL** | Strips tracking parameters, user IDs, device fingerprints, and marketing tokens from shared TikTok links. |  |
 | **Core Asset De-bloat** | Strips embedded Microblink credit card OCR models, C2PA AI content origin verification libraries, and redundant non-Latin fonts to save APK space. |  |
@@ -195,10 +195,10 @@
 </details>
 
 <details>
-<summary>🌐 Universal&nbsp;&nbsp;•&nbsp;&nbsp;4 patches</summary>
+<summary>Universal&nbsp;&nbsp;•&nbsp;&nbsp;4 patches</summary>
 <br>
 
-| 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
+| Patch | Description | Options |
 |----------|----------------|-----------|
 | **APK Junk Cleaner** | Strips non-functional build metadata, compiler properties, Kotlin coroutines debug tables, and duplicate license texts from META-INF and APK root. |  |
 | **DPI Resource Slimmer** | Strips unselected screen density resource directories from res/ (e.g. drawable-mdpi, drawable-hdpi, mipmap-xhdpi). Density-independent resources (nodpi, anydpi) and orphan resources are safely preserved. | • DPI densities to keep |
