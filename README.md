@@ -68,7 +68,7 @@
 
 <!-- PATCHES_START -->
 <details>
-<summary>Gboard Lite&nbsp;&nbsp;•&nbsp;&nbsp;**16 patches**</summary>
+<summary>Gboard Lite&nbsp;&nbsp;•&nbsp;&nbsp;<b>16 patches</b></summary>
 <br>
 
 **Supported versions:**
@@ -98,7 +98,7 @@
 </details>
 
 <details>
-<summary>Brave Private Web Browser, VPN&nbsp;&nbsp;•&nbsp;&nbsp;**9 patches**</summary>
+<summary>Brave Private Web Browser, VPN&nbsp;&nbsp;•&nbsp;&nbsp;<b>9 patches</b></summary>
 <br>
 
 **Supported versions:**
@@ -121,7 +121,7 @@
 </details>
 
 <details>
-<summary>Hevy - Gym Log Workout Tracker&nbsp;&nbsp;•&nbsp;&nbsp;**4 patches**</summary>
+<summary>Hevy - Gym Log Workout Tracker&nbsp;&nbsp;•&nbsp;&nbsp;<b>4 patches</b></summary>
 <br>
 
 **Supported versions:**
@@ -139,7 +139,7 @@
 </details>
 
 <details>
-<summary>Vivaldi Browser - Fast & Safe&nbsp;&nbsp;•&nbsp;&nbsp;**12 patches**</summary>
+<summary>Vivaldi Browser - Fast & Safe&nbsp;&nbsp;•&nbsp;&nbsp;<b>12 patches</b></summary>
 <br>
 
 **Supported versions:**
@@ -165,7 +165,7 @@
 </details>
 
 <details>
-<summary>TikTok&nbsp;&nbsp;•&nbsp;&nbsp;**16 patches**</summary>
+<summary>TikTok&nbsp;&nbsp;•&nbsp;&nbsp;<b>16 patches</b></summary>
 <br>
 
 **Supported versions:**
@@ -195,7 +195,7 @@
 </details>
 
 <details>
-<summary>Universal&nbsp;&nbsp;•&nbsp;&nbsp;**4 patches**</summary>
+<summary>Universal&nbsp;&nbsp;•&nbsp;&nbsp;<b>4 patches</b></summary>
 <br>
 
 | Patch | Description | Options |

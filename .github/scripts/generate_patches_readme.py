@@ -133,7 +133,7 @@ def spoiler(label, count, targets, tbl, expanded=False):
     versions_section = f"**Supported versions:**\n\n{vtbl}\n\n" if vtbl else ""
     tag = "<details open>" if expanded else "<details>"
     return f"""{tag}
-<summary>{label}&nbsp;&nbsp;•&nbsp;&nbsp;**{count} {noun}**</summary>
+<summary>{label}&nbsp;&nbsp;•&nbsp;&nbsp;<b>{count} {noun}</b></summary>
 <br>
 
 {versions_section}{tbl}
@@ -159,7 +159,7 @@ def build_content(expanded=False):
         noun = "patch" if len(uni_patches) == 1 else "patches"
         tag  = "<details open>" if expanded else "<details>"
         lines.append(f"""{tag}
-<summary>Universal&nbsp;&nbsp;•&nbsp;&nbsp;**{len(uni_patches)} {noun}**</summary>
+<summary>Universal&nbsp;&nbsp;•&nbsp;&nbsp;<b>{len(uni_patches)} {noun}</b></summary>
 <br>
 
 {patches_table(uni_patches)}
