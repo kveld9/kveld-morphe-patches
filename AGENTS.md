@@ -1,19 +1,22 @@
 # AGENTS.md
 
-Autonomous AI agent execution harness and engineering governance guide for **Morphe Patches** (`com.kveld9.morphe`).
+Autonomous agent execution harness and engineering governance guide for **Morphe Patches** (`com.kveld9.morphe`).
 
 ---
 
 ## 1. Stack & Environment Detection
 
-| Component | Technology / Tool | Version / Spec |
+The repository uses declarative configurations. Never assume or hardcode version numbers; always inspect the authoritative source of truth:
+
+| Component | Technology | Authoritative Source of Truth |
 | :--- | :--- | :--- |
-| **Patcher Runtime** | Morphe Patcher | `1.8.0` (`app.morphe.patcher`) |
-| **Gradle Plugin** | `app.morphe.patches` | `1.3.3` |
-| **Build Tool** | Gradle Wrapper | `9.6.1` (Bin distribution) |
-| **Languages** | Kotlin (Compiler flag: `-Xcontext-parameters`), Java (Extension SDK), Smali (dexlib2 `d92701d947`), Python 3.x | JVM 17+ Target (CI: Temurin JDK 21) |
-| **Binary Targets** | ARM64-v8a (`libchrome.so`, Dex APKs), Android APK / APKM | Chromium 130+ / Brave Core v1.93.x, Gboard Lite v18.0.x, Vivaldi, Hevy, TikTok |
-| **CI / Release Toolchain** | `semantic-release` (v25.0.9), `gradle-semantic-release-plugin` (v1.10.3), `@MorpheApp/changelog` | Conventional Commits |
+| **Binary Targets & Versions** | Brave, Gboard Lite, Vivaldi, Hevy, TikTok | `app.morphe.patches.shared.Constants` (`Constants.kt`) |
+| **Patcher Runtime** | Morphe Patcher Engine | `gradle/libs.versions.toml` (`versions.morphe-patcher`, `versions.smali`) |
+| **Gradle Plugin** | `app.morphe.patches` | `settings.gradle.kts` (`plugins { id(...) }`) |
+| **Build Tool** | Gradle Wrapper | `gradle/wrapper/gradle-wrapper.properties` (`distributionUrl`) |
+| **Languages & Tooling** | Kotlin (`-Xcontext-parameters`), Java, Smali, Python | JVM 17+ (CI: Temurin JDK 21 in `release.yml`), Python in `./venv/` (`requirements.txt`) |
+| **CI / Release Toolchain** | `semantic-release` ecosystem | `package.json` & `.releaserc` |
+
 
 ---
 
@@ -34,96 +37,82 @@ morphe-patches/
 │       │   └── shared/      # Centralized Compatibility contracts (Constants.kt)
 │       └── util/            # Patch list metadata generator (PatchListGenerator.kt)
 ├── extensions/              # MPE (Morphe Patch Extension) DEX Payloads
-│   └── extension/src/main/  # Optional companion Java/Kotlin runtime hooks
+│   └── extension/src/main/  # Companion Java runtime hooks (compiled to extension.mpe)
 ├── harness/                 # Python Automated RE & Update Harness
 ├── validation/              # Physical & Runtime ADB Test Harness
 ├── gradle/                  # Version catalogs and wrapper config
+├── .agents/skills/          # Canonical agent runtime skills
 └── .github/                 # Actions CI/CD workflows and README generators
 ```
 
 ### Core Architectural Contracts
 
 1. **Declarative Metadata & Single Source of Truth**:
-   - `app.morphe.patches.shared.Constants`: Every patch must strictly consume centralized constants (`Constants.COMPATIBILITY_BRAVE`, `Constants.COMPATIBILITY_GBOARD`) instead of instantiating redundant inline `Compatibility(...)` objects.
-   - Target versions, app colors, package names, and download source hints are maintained exclusively in `Constants.kt`.
+   - `app.morphe.patches.shared.Constants`: Every patch must strictly consume centralized constants (`Constants.COMPATIBILITY_BRAVE`, `Constants.COMPATIBILITY_GBOARD`, `Constants.COMPATIBILITY_VIVALDI`, `Constants.COMPATIBILITY_HEVY`, `Constants.COMPATIBILITY_TIKTOK`, `Constants.COMPATIBILITY_TIKTOK_ASIA`) instead of instantiating redundant inline `Compatibility(...)` objects.
+   - Target versions, app colors, package names, and download source hints for all 5 active targets are maintained exclusively in `Constants.kt`.
+   - **Universal Patches**: Omitting `compatibleWith(...)` produces a universal patch applicable across any target APK in Morphe Manager / CLI (e.g. `LocaleResourceSlimmerPatch`, `DpiResourceSlimmerPatch`).
+   - **Multi-Target Varargs**: Patches targeting multiple package variants (e.g. TikTok Global and Asia) declare them via `compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)`.
 
 2. **Patch Typology & Delegation**:
    - **`bytecodePatch`**: High-level Dalvik AST manipulation using `dexlib2` fingerprints, instruction registers extraction (`OneRegisterInstruction`, `TwoRegisterInstruction`), and inline Smali injection.
    - **`resourcePatch`**: Android XML DOM tree transforms (`res/xml/*.xml`, `AndroidManifest.xml`) executed prior to bytecode patching.
-   - **`rawResourcePatch`**: Deterministic byte-level ELF binary modification of `lib/arm64-v8a/libchrome.so` with strict offset validation, pre-patch fingerprint assertion, and null-padded ASCII redirection.
-   - **Dependency Chaining**: Composite patches must declare execution hierarchies explicitly via `dependsOn(subPatch1, subPatch2)`.
+   - **`rawResourcePatch`**: Deterministic byte-level ELF and asset binary modifications, including:
+     a) `lib/arm64-v8a/libchrome.so`: Strict offset validation, pre-patch fingerprint assertion, multi-candidate offset resolution, and null-padded ASCII host redirection.
+     b) Companion `.so` bloat trimming: In-situ zeroing (`writeBytes(byteArrayOf())`) of unused bundled native binaries.
+     c) React Native Hermes bytecode: Dynamic parsing and prologue patching of `assets/index.android.bundle` (HBC).
+   - **Dependency Chaining**: Composite patches declare execution hierarchies explicitly via `dependsOn(subPatch1, subPatch2)`.
+   - **Runtime Extension Payloads**: When bytecode hooks require companion Java/Kotlin runtime logic, patches declare `extendWith("extensions/extension.mpe")`.
 
 3. **Smali Hook Conventions**:
    - Hooks must maintain register stability (`p0`, `p1`, `v0`, `v1`).
    - Obfuscated class fields must be verified against current target Dex files before modification.
    - Reflection bridges (e.g., `setAccessible(true)`) are used when accessing internal cross-DEX preference listeners to avoid `IllegalAccessError`.
 
-4. **Surgical & Concise Diagnostic Telemetry**:
-   - Every patch execution must emit concise, high-signal diagnostic telemetry to standard output (captured by Morphe Manager / CLI logs `[WARN] [STDIO]: [...]`).
-   - **Quantifiable & Traceable**: Report exact modifications, targets, and deltas (e.g. hooked classes/methods, redirected endpoints, pruned directories, rescued orphan assets, saved bytes/MB).
-   - **Anti-Spam / Bounded Output**: Never dump unbounded file trees or thousands of lines into the patcher console. Repetitive items must be summarized or bounded to short representative samples (e.g. `take(6)`).
+4. **Surgical Diagnostic Telemetry (Debugging Contract)**:
+   Every patch MUST emit concise, high-signal telemetry to stdout (captured by Morphe Manager / CLI logs `[WARN] [STDIO]: [...]`) so issues are immediately identifiable from user logs without decompiling:
    - **Standardized Prefix**: Every log line must start with the bracketed patch name prefix: `[Patch Name] ...`.
-   - **Failure & Guard Transparency**: If an operation is skipped or safely aborted (e.g. missing targets or preconditions), log an explicit descriptive reason so issues can be immediately diagnosed from user-submitted logs.
+   - **Granular Target Tracking**: Track applied hooks dynamically (`var patched = 0`). Individual risky/obfuscated hooks must catch exceptions and log notes (`println("[Patch Name] Target note: ${e.message}")`) so partial target shifts are pinpointed without crashing the entire suite.
+   - **Consolidated Interpolated Summary**: Emit a single concise conclusion line (`println("[Patch Name] Applied $patched hooks -> feature disabled.")`).
+   - **Failure & Guard Transparency**: If an early return occurs (missing feature, unsupported architecture, or optional inputs absent), log an explicit descriptive reason (`println("[Patch Name] Skipped: Reason...")`).
+   - **Zero Loop Spam**: Never place `println` inside `walkTopDown()` or high-volume loops; aggregate deltas and report final saved KB/MB, pruned directories, or count metrics.
 
 ---
 
-## 3. Session Governance & Modes of Operation
+## 3. Operational Workflow & Scope Discipline
 
-Every agent session must start by explicitly determining the session mode:
-
-```text
-MODE = INSTALL/VALIDATE  |  MODE = OPERATE
-```
-
-### Mode Definitions:
-1. **`INSTALL/VALIDATE`**: Active when setting up, repairing, or auditing the harness framework itself.
-   - **Strict Invariant**: No business logic modifications, no feature implementations, and no patch updates during this session.
-2. **`OPERATE`**: Active when the harness is intact and a business requirement (new patch, bugfix, version bump) is being executed.
-   - Operates under strict **Scope Lock**, baseline checks, and quality-left verification.
-
----
-
-## 4. Operational Workflow & Scope Control
-
-Tasks in `MODE = OPERATE` must strictly follow this lifecycle:
+All tasks must follow this systematic execution lifecycle:
 
 ```text
-INSPECT & BASELINE ➜ SCOPE LOCK ➜ MODIFY (Engineer) ➜ RISK GATE (Auditor) ➜ E2E VERIFY
+INSPECT & BASELINE ➜ SCOPE LOCK ➜ MINIMAL IMPLEMENTATION ➜ QUALITY GATES ➜ ADVERSARIAL AUDIT
 ```
 
 ### Step 1: `INSPECT & BASELINE`
-- Inspect working tree (`git status -u`). Identify pre-existing modifications.
-- Run baseline verification proportional to the scope (e.g., `unittest`, `check`).
-- Classify any pre-existing failures (`PREEXISTING`, `ENVIRONMENT`).
+- Inspect working tree (`git status -s`). Distinguish pre-existing modifications from active task work.
+- Run baseline verification proportional to scope (e.g. `./venv/bin/python -m unittest discover harness/tests`, `./gradlew check`).
+- Classify any pre-existing failures (`PREEXISTING`, `ENVIRONMENT`) before modifying files.
 
 ### Step 2: `SCOPE LOCK`
-ROOT defines the initial boundary before any modification:
-- Target files and symbols.
-- Expected behavioral delta vs. preserved invariants.
-- **Scope Expansion Rule**: If Engineer hits an out-of-scope dependency:
-  `STOP ➜ REPORT ➜ ROOT DECISION (APPROVE / REJECT / HUMAN)`.
+- Define target files, classes, and symbols before making changes.
+- Identify the expected behavioral delta and the invariants to preserve.
+- **Scope Expansion Rule**: If an unexpected dependency outside the active scope needs changes, pause and confirm with the user before expanding scope.
 
-### Step 3: `MODIFY` (Minimalist Engineer)
-- Search/replace discipline with contextual lines.
-- No whole-file regenerations.
-- Classify changes: `SEMANTIC`, `FORMATTER`, `TOOLING-INDUCED`, `PREEXISTING`.
+### Step 3: `MINIMAL IMPLEMENTATION`
+- Target minimal surgical diffs using contextual replacements; avoid full-file rewrites.
+- Respect uncommitted working changes; never run destructive git commands (`git reset --hard`, `git clean -fd`).
+- Classify changes clearly: `SEMANTIC`, `FORMATTER`, `TOOLING-INDUCED`, or `PREEXISTING`.
 
-### Step 4: `RISK GATE & AUDIT`
-Evaluate blast radius. Trigger mandatory **Auditor** review (`.agents/agents/auditor.md`) for:
-- Bytecode / Smali instructions or Dalvik register changes.
-- Native ELF binary patching (`libchrome.so`).
-- Changes in shared contracts (`Constants.kt`).
-- AMOLED theme injections or preference listener bridges.
-
-### Step 5: `E2E VERIFICATION & SMOKE LAUNCH GATES`
+### Step 4: `E2E VERIFICATION & SMOKE LAUNCH GATES`
 When adding or updating any patch, the following gates are **MANDATORY**:
 1. **Full-Suite Patching (`E2E Patch Execution`)**: Build and apply the **entire set of available patches** against the target APK.
 2. **Code Injection Verification**: Assert that the modified bytecode/resources/ELF offsets were correctly injected into the final APK.
 3. **Smoke Launch Verification (Zero-Crash Baseline)**: Verify that the patched APK launches cleanly without runtime crashes or uncaught startup exceptions.
 
+### Step 5: `ADVERSARIAL RISK GATE & AUDIT`
+For non-trivial logic, Smali hooks, native ARM64 patching (`libchrome.so`), or shared compatibility changes (`Constants.kt`), invoke the `adversarial-pr-breaker` subagent or perform a rigorous red-team audit before declaring completion.
+
 ---
 
-## 5. Guardrails & Strict Constraints (What NOT to Do)
+## 4. Guardrails & Strict Constraints (What NOT to Do)
 
 ### ⛔ Critical Anti-Patterns & Prohibitions
 
@@ -140,8 +129,8 @@ When adding or updating any patch, the following gates are **MANDATORY**:
    - Never run destructive git commands (`git reset --hard`, `git clean -fd`, `git checkout .`) on local modifications.
 5. **DO NOT Add Unjustified Dependencies**:
    - Do not introduce external libraries, frameworks, or agent infrastructure without explicit architectural necessity.
-6. **DO NOT Modify Protected Harness Governance Files**:
-   - `AGENTS.md`, `.agents/agents/engineer.md`, and `.agents/agents/auditor.md` cannot be modified as a side effect of a product task.
+6. **DO NOT Modify Harness Governance Files Arbitrarily**:
+   - `AGENTS.md` and governance contracts cannot be modified as an unintended side effect of a product task.
 7. **Anti-Loop Prohibition**:
    - If a proposed fix fails two consecutive times, halt immediately, re-evaluate the root cause, or request human decision.
 8. **DO NOT Hardcode Usernames, Device Serials, Local Paths, or Repository Slugs**:
@@ -158,43 +147,43 @@ When adding or updating any patch, the following gates are **MANDATORY**:
 
 ---
 
-## 6. Deterministic & Inferential Verification Commands
+## 5. Deterministic & Inferential Verification Commands
 
 ### A. Fast Local / Unit Checks (Quality-Left)
 ```bash
-# Run Python harness unit tests (RE engine, AST contracts)
-python -m unittest discover harness/tests
+# Run Python harness unit tests (using project virtualenv)
+./venv/bin/python -m unittest discover harness/tests
 
-# Run AGP lint and Kotlin compile checks
-./gradlew.bat check
+# Run AGP lint and Kotlin compile checks (use ./gradlew on Linux/macOS, gradlew.bat on Windows)
+./gradlew check
 
 # Run Kotlin unit and integration tests
-./gradlew.bat test
+./gradlew test
 ```
 
 ### B. Patch Build & Artifact Generation
 ```bash
 # Build Android extension DEX + Morphe Patch Package (.mpp)
-./gradlew.bat build
+./gradlew build
 
 # Compile standalone .mpp bundle to patches/build/libs/
-./gradlew.bat buildAndroid
+./gradlew buildAndroid
 
 # Generate updated patches-list.json from compiled .mpp
-./gradlew.bat generatePatchesList
+./gradlew generatePatchesList
 ```
 
 ### C. Reverse Engineering & Automated APK Audit
 ```bash
 # Audit an APK non-destructively
-python harness/update.py <path-to-apk> --audit
+./venv/bin/python harness/update.py <path-to-apk> --audit
 
 # Execute minimal source update, build, and catalog sync
-python harness/update.py <path-to-apk> --update
+./venv/bin/python harness/update.py <path-to-apk> --update
 ```
 
 ### D. Physical Device Runtime Harness (ADB)
 ```bash
 # Run automated on-device test suite (battery, sync, smoke launch)
-python validation/physical_harness/run_harness.py
+./venv/bin/python validation/physical_harness/run_harness.py
 ```
