@@ -158,3 +158,31 @@ The **`APK Junk Cleaner`** is a universal patch that strips non-functional build
 - **Mechanism**: Neutralizes 17 background services, alarm proxies, and job schedulers in `AndroidManifest.xml` (including AndroidX WorkManager alarm services, Firebase messaging wakeups, and DataTransport schedulers).
 - **Result**: Eliminates battery drain in sleep with 0 active JobScheduler tasks and 0 AlarmManager wakeups.
 
+---
+
+## ⌨️ Gboard: Clipboard Enhancements
+
+The **`Clipboard Enhancements`** patch modernizes Gboard Lite's local clipboard manager by removing artificial limits imposed on history retention, clip capacity, and keyboard layout.
+
+### Configuration in Morphe Manager
+
+| Option | Key | Type | Default | Range / Format | Description |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Unpinned clip limit** | `unpinnedClipLimit` | String | `50` | `5` to `100` | Maximum number of unpinned clipboard items loaded and displayed in the UI. |
+| **Retention time limit (hours)** | `retentionHours` | String | `24` | Integer $\ge 1$ | Duration in hours to retain unpinned clips in SQLite storage and UI before automatic cleanup (e.g. `6`, `12`, `24` for 1 day, `48` for 2 days, `168` for 7 days). |
+| **Clipboard grid columns** | `gridColumns` | String | `2` | `1`, `2`, or `3` | Number of columns in the clipboard keyboard layout. |
+
+### Technical Architecture & Synchronization
+
+1. **Synchronized TTL Override (`Lgju;->a(Landroid/content/Context;)J`)**:
+   - Stock Gboard restricts unpinned clip retention to approximately 1 hour using a hardcoded cutoff calculation.
+   - The patch overrides this method to return the user-configured hours converted to milliseconds ($\text{retentionHours} \times 3600 \times 1000 \text{ ms}$).
+   - Because `Lgju;->a` is the single source of truth consumed by both the **Background SQLite Pruner (`Lgkr;->g()V`)** and the **UI History Loader (`Lght;->call()`)**, clips are neither deleted from disk nor hidden from the suggestion/clipboard view until the configured duration expires.
+
+2. **In-situ Opcode Throttling Removal (`Lght;->call()`)**:
+   - Gboard stock queries clamp unpinned clips using three separate `const/4 ..., 5` opcodes in Dalvik bytecode.
+   - The patch detects each target register and rewrites these instructions to `const/16 v$reg, $parsedLimit`, allowing up to 100 recent unpinned items to be fetched from `clipboards.db`.
+
+3. **Custom Grid Span (`ClipboardKeyboard->b()I`)**:
+   - Overrides the `StaggeredGridLayoutManager` span count to render 1, 2, or 3 columns cleanly across phones, foldables, and tablets.
+

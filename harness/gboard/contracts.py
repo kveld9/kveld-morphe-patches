@@ -24,7 +24,7 @@ class GboardPatchContract:
 
 
 def get_all_gboard_contracts() -> List[GboardPatchContract]:
-    """Returns the formal contract list for all 18 Gboard patches."""
+    """Returns the formal contract list for all 19 Gboard patches."""
     return [
         GboardPatchContract(
             patch_id="gboard_amoled",
@@ -436,6 +436,41 @@ def get_all_gboard_contracts() -> List[GboardPatchContract]:
             ],
             forbidden_regressions=[
                 "Deleting default values/ or drawable/ directories",
+            ],
+        ),
+        GboardPatchContract(
+            patch_id="gboard_clipboard_enhancements",
+            name="Clipboard Enhancements",
+            description="Extends unpinned clipboard history retention duration, raises displayed unpinned clips limit, and customizes grid columns.",
+            source_file="patches/src/main/kotlin/app/morphe/patches/gboard/GboardClipboardEnhancementsPatch.kt",
+            queries=[
+                FingerprintQuery(
+                    name_id="clipboard_ttl_retention",
+                    return_type="J",
+                    parameters=["Landroid/content/Context;"],
+                    strings=["getUnpinnedItemTimeLimitInMilliSeconds"],
+                ),
+                FingerprintQuery(
+                    name_id="clipboard_loader_clips_limit",
+                    return_type="Ljava/lang/Object;",
+                    parameters=[],
+                    strings=["timestamp DESC limit %d", "(%s & %d) = 0 AND (%s & %d) = 0 AND %s >= ?"],
+                ),
+                FingerprintQuery(
+                    name_id="clipboard_keyboard_columns",
+                    defining_class="Lcom/google/android/apps/inputmethod/libs/clipboard/ClipboardKeyboard;",
+                    return_type="I",
+                    parameters=[],
+                ),
+            ],
+            semantic_invariants=[
+                "Overrides getUnpinnedItemTimeLimitInMilliSeconds to extend retention window",
+                "Replaces 5-item unpinned clip throttle opcodes in UI loader",
+                "Customizes ClipboardKeyboard span count method to configure grid columns",
+            ],
+            forbidden_regressions=[
+                "Modifying pinned clips retention invariants",
+                "Throwing IllegalStateException or ArithmeticException on invalid column or limit values",
             ],
         ),
     ]
