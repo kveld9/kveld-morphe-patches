@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-09-14T20:10:21",
-  "description": "## [1.25.2](https://github.com/kveld9/kveld-morphe-patches/compare/v1.25.1...v1.25.2) (2026-09-14)\n\n### Bug Fixes\n\n* **brave:** resolve ArrayIndexOutOfBoundsException in BraveBlockTelemetryPatch ([3888c2b](https://github.com/kveld9/kveld-morphe-patches/commit/3888c2b01ea8e1e353f2e27345ddfea27af84831)), closes [#27](https://github.com/kveld9/kveld-morphe-patches/issues/27)\n\n### Code Refactoring\n\n* strip emojis across codebase and enforce strict prohibition in tooling and governance ([7ccd0b8](https://github.com/kveld9/kveld-morphe-patches/commit/7ccd0b8760532f6bc5c5cf795326fe69681b4b5c))",
-  "download_url": "https://github.com/kveld9/kveld-morphe-patches/releases/download/v1.25.2/patches-1.25.2.mpp",
+  "created_at": "2026-09-14T21:34:06",
+  "description": "## [1.26.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.25.2...v1.26.0) (2026-09-14)\n\n### New Features\n\n* **gboard:** add clipboard enhancements patch ([2a13c2e](https://github.com/kveld9/kveld-morphe-patches/commit/2a13c2e5dd5eacdee4f6c19893f3b5b293318129))",
+  "download_url": "https://github.com/kveld9/kveld-morphe-patches/releases/download/v1.26.0/patches-1.26.0.mpp",
   "signature_download_url": "",
-  "version": "1.25.2"
+  "version": "1.26.0"
 }

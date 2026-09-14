@@ -68,7 +68,7 @@
 
 <!-- PATCHES_START -->
 <details>
-<summary>Gboard Lite&nbsp;&nbsp;•&nbsp;&nbsp;<b>16 patches</b></summary>
+<summary>Gboard Lite&nbsp;&nbsp;•&nbsp;&nbsp;<b>17 patches</b></summary>
 <br>
 
 **Supported versions:**
@@ -81,6 +81,7 @@
 | **Add AMOLED Theme** | Adds a selectable Pure Black AMOLED theme using Gboard's native color_black theme package, without replacing Dark, Light, System Auto, or Dynamic Color. |  |
 | **Allow Modified APK** | Bypasses internal signature check to allow custom APK execution. |  |
 | **Block Telemetry** | Disables background metrics dispatch, event logging, daily pings, and crash reporting. |  |
+| **Clipboard Enhancements** | Extends unpinned clipboard history retention duration, raises the maximum number of displayed unpinned clips, and allows customizing keyboard grid columns. | • Unpinned clip limit<br>• Retention time limit (hours)<br>• Clipboard grid columns |
 | **Clone Gboard** | Changes the package name by appending a dot and custom suffix (defaults to 'clone') to allow installing Gboard alongside the original application. | • Package name suffix |
 | **Disable Diagnostics** | Disables Google's diagnostic and recovery telemetry. |  |
 | **Disable Google Primes** | Neutralizes Google Primes performance profiling, jank monitoring, native crash sidecars, and background telemetry threads. |  |
@@ -180,7 +181,7 @@
 | **Device Privacy Guard** | Neutralizes background clipboard snooping routines and blocks screenshot/recording detection listeners to protect user data from unauthorized tracking and popup modals. |  |
 | **Disable Push Notifications** | Neutralizes background push notification tasks and persistent socket wake locks to eliminate background battery drain. |  |
 | **Feed Ad Blocker** | Removes sponsored advertisements, brand promotions, and promotional audio from the For You and Following feeds. |  |
-| **Feed Live Stream Blocker** | Removes live broadcast cards and live recommendations from the For You and Following feeds. |  |
+| **Feed Live Stream Blocker** | Removes live stream broadcast cards and live recommendations from the For You and Following feeds. |  |
 | **Hide TikTok Shop Anchors** | Removes product showcase badges, shopping cart tags, and TikTok Shop commercial anchors from video posts in the feed. |  |
 | **Instant Launch & Splash Blocker** | Eliminates cold startup delays, real-time splash advertisements, and background TopView preloading (<0.4s launch). |  |
 | **Language Pack Purger** | Strips unselected language string bundles from assets/strings#lang_* to save APK space. | • Languages to keep |
