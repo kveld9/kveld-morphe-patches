@@ -1,6 +1,6 @@
 # 🎵 TikTok: Technical Patch Specifications & Deep Breakdown
 
-Comprehensive breakdown of the **16 patches** included in the Morphe TikTok patch suite pinned to target version **`46.9.3`** (supporting both `com.zhiliaoapp.musically` Global and `com.ss.android.ugc.trill` Asia APKs).
+Comprehensive breakdown of the **17 patches** included in the Morphe TikTok patch suite pinned to target version **`46.9.3`** (supporting both `com.zhiliaoapp.musically` Global and `com.ss.android.ugc.trill` Asia APKs).
 
 ---
 
@@ -9,6 +9,7 @@ Comprehensive breakdown of the **16 patches** included in the Morphe TikTok patc
 | Category | Patch Name | Type | Key Target / Mechanism |
 | :--- | :--- | :--- | :--- |
 | **Usability** | **Media Usability & Watermark-Free Downloader** | `bytecodePatch` | Forced seekbar scrubbing, unblock download button, unwatermarked stream routing |
+| **Usability** | **Playback Speed Persistence** | `bytecodePatch` | Persists user-selected video speed across feed scrolling and restarts |
 | **Privacy** | **Clean Share URL** | `bytecodePatch` | Strips tracking query parameters, user tokens, and campaign IDs |
 | **Privacy** | **Device Privacy Guard** | `bytecodePatch` | Blocks background clipboard inspection and suppresses screenshot/recording triggers |
 | **Privacy** | **Feed Ad Blocker** | `bytecodePatch` | Filters sponsored cards, brand promotions, and commercial audio |
@@ -42,11 +43,24 @@ Comprehensive breakdown of the **16 patches** included in the Morphe TikTok patc
   * **Client-side Watermark Neutralization**:
     * Neutralizes `WaterMarkServiceImpl.waterMark()` with immediate `return-void` to prevent client-rendered overlay compositing.
 
+### 2. Playback Speed Persistence (`playbackSpeedPatch`)
+* **Objective**: Persist user-selected video playback speed across feed scrolling, video transitions, and app cold restarts.
+* **Internal Mechanisms**:
+  * **Feed Video Playback Interception**:
+    * Hooks `Aweme.getParameterizedSpeed()F` at return points, querying `TikTokSpeedHook.getPlaybackSpeed(Aweme)`.
+    * If video speed is default or unadjusted, returns the user's persisted speed preference.
+    * Live streams are identified via `TikTokFeedAdFilter.isLiveStream(Aweme)` and constrained to `1.0f` to prevent audio/video desynchronization.
+  * **Native Speed Dialog & Selection Sync**:
+    * Hooks native speed selection handler (`LX/085j;->LJ(FLcom/ss/android/ugc/aweme/feed/model/Aweme;Ljava/lang/String;Ljava/lang/String;)V`), routing user speed selections to `TikTokSpeedHook.onSpeedSelected(float)`.
+    * Intercepts speed querying methods in playback speed dialog (`LIZIZ(Aweme)F` and `LIZJ`) to keep TuxSheet UI radio buttons and bottom-bar badges synchronized with the persisted speed.
+  * **Persistent Storage**:
+    * Stores current speed in dedicated `SharedPreferences` (`morphe_tiktok_speed_prefs`), restoring preference upon cold launch.
+
 ---
 
 ## 🛡️ Privacy & Tracker Suppression
 
-### 2. Clean Share URL (`cleanShareUrlPatch`)
+### 3. Clean Share URL (`cleanShareUrlPatch`)
 * **Objective**: Protect user privacy when sharing video links with friends or third-party apps.
 * **Internal Mechanisms**:
   * Hooks `Aweme.getShareUrl()Ljava/lang/String;` at all return points.
@@ -55,7 +69,7 @@ Comprehensive breakdown of the **16 patches** included in the Morphe TikTok patc
     * App & session tokens: `share_app_id`, `share_item_id`, `share_link_id`, `ug_source`, `sender_device`.
     * Attribution & marketing telemetry: `utm_source`, `utm_campaign`, `utm_medium`, `_r`, `checksum`, `tt_from`.
 
-### 3. Device Privacy Guard (`devicePrivacyGuardPatch`)
+### 4. Device Privacy Guard (`devicePrivacyGuardPatch`)
 * **Objective**: Prevent background snooping on sensitive device APIs and eliminate annoying screenshot popups.
 * **Internal Mechanisms**:
   * **Clipboard Snooping Protection**:
@@ -65,21 +79,21 @@ Comprehensive breakdown of the **16 patches** included in the Morphe TikTok patc
     * Neutralizes `ScreenShotFeedbackService.onShot()Z` -> returns `false`.
     * Neutralizes `ScreenShotFeedbackService.safelyShowDialog()` -> `return-void` (eliminates modal dialogs prompting for feedback upon taking a screenshot).
 
-### 4. Feed Ad Blocker (`tikTokFeedAdBlockerPatch`)
+### 5. Feed Ad Blocker (`tikTokFeedAdBlockerPatch`)
 * **Objective**: Completely clean the For You Page (FYP) and Following feeds from promotional intrusions.
 * **Internal Mechanisms**:
   * Bytecode hooks in `FeedApiService.fetchFeedList()`, `FeedItemList.getItems()`, and `FollowFeedList.getItems()`.
   * Delegates feed filtering to runtime helper `TikTokFeedAdFilter`:
     * Evaluates `Aweme.isAd()`, `Aweme.isSoftAd()`, `Aweme.isWithPromotionalMusic()`, and link ad metadata to purge commercial items.
 
-### 5. Hide TikTok Shop Anchors (`hideTikTokShopAnchorsPatch`)
+### 6. Hide TikTok Shop Anchors (`hideTikTokShopAnchorsPatch`)
 * **Objective**: Remove product tags, shopping showcase cards, and TikTok Shop commercial anchors from video posts in the feed as an independent, modular toggle.
 * **Internal Mechanisms**:
   * Bytecode hooks in `FeedApiService.fetchFeedList()`, `FeedItemList.getItems()`, and `FollowFeedList.getItems()`.
   * Delegates shopping anchor stripping to runtime helper `TikTokFeedAdFilter`:
     * Invokes `stripCommercialAnchors()` on video items to clear product anchors (`setAnchors(null)`) and showcase links (`setAnchorInfo(null)`).
 
-### 6. Feed Live Stream Blocker (`feedLiveStreamBlockerPatch`)
+### 7. Feed Live Stream Blocker (`feedLiveStreamBlockerPatch`)
 * **Objective**: Eliminate live broadcast recommendations and live stream preview cards from the For You Page (FYP) and Following feeds as an independent, modular toggle.
 * **Internal Mechanisms**:
   * Bytecode hooks in `FeedApiService.fetchFeedList()`, `FeedItemList.getItems()`, and `FollowFeedList.getItems()`.
@@ -87,14 +101,14 @@ Comprehensive breakdown of the **16 patches** included in the Morphe TikTok patc
     * Inspects video items for `Aweme.isLive() == true` or `Aweme.getAwemeType() == 101`.
     * Purges matching live broadcast cards from feed lists before UI adapter binding.
 
-### 7. Unified Telemetry & Tracker Silencer (`unifiedTelemetryTrackerSilencerPatch`)
+### 8. Unified Telemetry & Tracker Silencer (`unifiedTelemetryTrackerSilencerPatch`)
 * **Objective**: Cut off background surveillance, user behavior analytics, and diagnostic reporting to ByteDance servers.
 * **Internal Mechanisms**:
   * **ByteDance AppLog**: Neutralizes `AppLog.onEvent()` and `AppLog.report()` entrypoints with immediate `return-void`.
   * **Crash Handlers & Telemetry Schedulers**: Neutralizes Lego initialization tasks for Npth crash reporting (`NpthCoreInitTask`), APM metrics (`ApmInit`), and Heimallr performance monitors.
   * **Attribution Trackers**: Neutralizes `InitAppsFlyer` and Firebase analytics startup initialization tasks.
 
-### 8. Update Prompt Suppressor (`disableInAppUpdateNagsPatch`)
+### 9. Update Prompt Suppressor (`disableInAppUpdateNagsPatch`)
 * **Objective**: Prevent forced upgrade popups and version enforcement dialogs.
 * **Internal Mechanisms**:
   * Neutralizes Lego update check tasks: `CheckUpdateChangeDeviceIDTaskHolder$Background`, `UpdateTaskHolder$Background`, `CheckUpdateChangeDeviceIDTaskHolder$BootFinish`, and `UpdateTaskHolder$BootFinish`.
@@ -104,7 +118,7 @@ Comprehensive breakdown of the **16 patches** included in the Morphe TikTok patc
 
 ## ⚡ Performance, RAM & Battery
 
-### 9. Instant Launch & Splash Blocker (`instantColdStartPatch`)
+### 10. Instant Launch & Splash Blocker (`instantColdStartPatch`)
 * **Objective**: Accelerate application launch time to sub-second speeds (<0.4s) and bypass startup ads.
 * **Internal Mechanisms**:
   * Neutralizes Lego splash tasks: `SplashAdManagerPreloadTask.run()` and `SplashAdManagerPreloadTaskEntry.run()`.
@@ -112,7 +126,7 @@ Comprehensive breakdown of the **16 patches** included in the Morphe TikTok patc
   * Neutralizes `RealTimeSplashManagerImpl.LIZJ()` -> `return false` (eliminates synchronous waiting for remote TopView splash video assets during cold start).
   * Neutralizes `SplashAdServiceImpl.LJ()`, `LJIILJJIL()`, and `LJJIJIIJIL()` -> `return false` (suppresses splash ad presentation and background fetch).
 
-### 10. Resource & Battery Governor (`resourceGovernorPatch`)
+### 11. Resource & Battery Governor (`resourceGovernorPatch`)
 * **Objective**: Eliminate battery-draining background operations, sensor polling, and memory leaks.
 * **Internal Mechanisms**:
   * **3D Ad Sensors & Gyroscope Polling**:
@@ -123,17 +137,17 @@ Comprehensive breakdown of the **16 patches** included in the Morphe TikTok patc
   * **Memory Retention Governor**:
     * Caps animated bitmap frame caching in Facebook Fresco (`FrescoFrameCache.LIZJ()`, `LJFF()`), preventing OOM crashes during long scrolling sessions.
 
-### 11. Disable Push Notifications (`disablePushNotificationsPatch`)
+### 12. Disable Push Notifications (`disablePushNotificationsPatch`)
 * **Objective**: Neutralize background push notification tasks and persistent socket wake locks to eliminate background battery drain.
 * **Internal Mechanisms**:
   * Neutralizes `InitPushTask.run()` -> disables early startup wake lock acquisition and persistent background push sockets.
 
-### 12. Live Stream 3D Gift Optimizer (`liveGiftEffectOptimizerPatch`)
+### 13. Live Stream 3D Gift Optimizer (`liveGiftEffectOptimizerPatch`)
 * **Objective**: Disable Live 3D gift particle effect engine and widget rendering lifecycle to eliminate frame drops during live streams.
 * **Internal Mechanisms**:
   * Injects `return-void` into `LiveGiftEffectWidget.initView()` and `LiveGiftEffectWidget.onCreate()`.
 
-### 13. Live Stream SDK & Minigame De-bloat (`liveStreamSuiteOptimizerPatch`)
+### 14. Live Stream SDK & Minigame De-bloat (`liveStreamSuiteOptimizerPatch`)
 * **Objective**: Strip unneeded native libraries and assets for users who only watch regular videos or standard live streams.
 * **Internal Mechanisms**:
   * Zeroes out native interactive streaming binaries: `liblink_mic_sdk.so`.
@@ -143,7 +157,7 @@ Comprehensive breakdown of the **16 patches** included in the Morphe TikTok patc
 
 ## 📦 APK Size & Resource Slimming
 
-### 14. Core Asset De-bloat (`coreAssetDebloatPatch`)
+### 15. Core Asset De-bloat (`coreAssetDebloatPatch`)
 * **Objective**: Strip unneeded third-party SDK models and embedded engines.
 * **Internal Mechanisms**:
   * Strips embedded Microblink credit card and document OCR scanning models (`assets/microblink/`).
@@ -151,14 +165,14 @@ Comprehensive breakdown of the **16 patches** included in the Morphe TikTok patc
   * Prunes non-Latin and exotic bundled fonts (`assets/fonts/` such as Khmer, Lao, Myanmar, Burmese).
   * Zeroes out embedded V8 JavaScript runtimes for TikTok mini-apps (`libminiapp`, `libv8`).
 
-### 15. Studio & Creation De-bloat (`creatorBloatSlimmerPatch`)
+### 16. Studio & Creation De-bloat (`creatorBloatSlimmerPatch`)
 * **Objective**: Massive APK reduction for consumption-only users (>22 MB saved).
 * **Internal Mechanisms**:
   * Zeroes out the camera AR effect rendering engine: `libeffect_plugin.so`.
   * Zeroes out the built-in CapCut-derived video editing and encoding suite: `libttvesdk_plugin.so`.
   * Prunes facial mesh and AR tracking models.
 
-### 16. Language Pack Purger (`localeSlimmerPatch`)
+### 17. Language Pack Purger (`localeSlimmerPatch`)
 * **Objective**: Remove unwanted translations from `assets/strings#lang_*`.
 * **Internal Mechanisms**:
   * Parses localized string bundles and deletes unselected language packs.

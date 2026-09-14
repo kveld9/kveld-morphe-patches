@@ -7,6 +7,8 @@ import app.morphe.patcher.dex.NoOpDexVerifier
 import app.morphe.patcher.patch.loadPatchesFromJar
 import app.morphe.patcher.resource.CpuArchitecture
 import app.morphe.patches.shared.Constants
+import app.morphe.patcher.apk.ApkUtils
+import app.morphe.patcher.apk.ApkUtils.applyTo
 import kotlinx.coroutines.runBlocking
 import java.io.File
 
@@ -277,6 +279,30 @@ fun main(args: Array<String>) {
         println("\n[BUILD] Compiling modified bytecode & assets via patcher.get()...")
         val patcherResult = patcher.get()
         println("[BUILD] Compiled ${patcherResult.dexFiles.size} DEX files successfully.")
+
+        val outPath = System.getProperty("outputApk")
+        if (outPath != null) {
+            val outFile = File(outPath).absoluteFile
+            outFile.parentFile?.mkdirs()
+            val unsignedApk = File(tempDir, "unsigned.apk")
+            apkFile.copyTo(unsignedApk, overwrite = true)
+            println("\n[PACK] Applying patcher result to APK...")
+            patcherResult.applyTo(unsignedApk)
+            println("[SIGN] Signing patched APK -> ${outFile.name}...")
+            val keystoreFile = File(tempDir, "morphe-debug.keystore")
+            val ksDetails = ApkUtils.KeyStoreDetails(
+                keyStore = keystoreFile,
+                alias = "morphe",
+                password = "morphepassword",
+            )
+            ApkUtils.signApk(
+                inputApkFile = unsignedApk,
+                outputApkFile = outFile,
+                signer = "Morphe",
+                keyStoreDetails = ksDetails,
+            )
+            println("[DONE] Patched & signed APK saved at: ${outFile.absolutePath}")
+        }
     }
 
     patcher.close()

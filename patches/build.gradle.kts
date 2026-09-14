@@ -54,8 +54,15 @@ tasks {
         if (project.hasProperty("apk")) {
             systemProperty("targetApk", project.property("apk").toString())
         }
+        if (project.hasProperty("out")) {
+            systemProperty("outputApk", project.property("out").toString())
+        }
+        if (project.hasProperty("outputApk")) {
+            systemProperty("outputApk", project.property("outputApk").toString())
+        }
         System.getProperty("targetApp")?.let { systemProperty("targetApp", it) }
         System.getProperty("targetApk")?.let { systemProperty("targetApk", it) }
+        System.getProperty("outputApk")?.let { systemProperty("outputApk", it) }
     }
 
     jar {
