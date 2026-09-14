@@ -7,9 +7,9 @@ import app.morphe.patches.shared.Constants
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
-val tikTokFeedAdBlockerPatch = bytecodePatch(
-    name = "Feed Ad Blocker",
-    description = "Removes sponsored advertisements, brand promotions, and promotional audio from the For You and Following feeds.",
+val feedLiveStreamBlockerPatch = bytecodePatch(
+    name = "Feed Live Stream Blocker",
+    description = "Removes live stream broadcast cards and live recommendations from the For You and Following feeds.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
@@ -36,16 +36,16 @@ val tikTokFeedAdBlockerPatch = bytecodePatch(
                 method.addInstructions(
                     returnIndex,
                     """
-                        invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAdsInFeedItemList(Ljava/lang/Object;)V
+                        invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterLiveStreamsInFeedItemList(Ljava/lang/Object;)V
                     """,
                 )
             }
             if (returnIndices.isNotEmpty()) {
-                println("[Feed Ad Blocker] Hooked FeedApiService.fetchFeedList() (${returnIndices.size} return point(s)) -> FYP stream protected.")
+                println("[Feed Live Stream Blocker] Hooked FeedApiService.fetchFeedList() (${returnIndices.size} return point(s)) -> FYP stream protected from live cards.")
                 patched++
             }
         } catch (e: Exception) {
-            println("[Feed Ad Blocker] FeedApiService note: ${e.message}")
+            println("[Feed Live Stream Blocker] FeedApiService note: ${e.message}")
         }
 
         // 2. Hook FeedItemList.getItems() (covers cached, offline, and UI adapter consumers)
@@ -65,16 +65,16 @@ val tikTokFeedAdBlockerPatch = bytecodePatch(
                 method.addInstructions(
                     returnIndex,
                     """
-                        invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAdsInList(Ljava/lang/Object;)V
+                        invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterLiveStreamsInList(Ljava/lang/Object;)V
                     """,
                 )
             }
             if (returnIndices.isNotEmpty()) {
-                println("[Feed Ad Blocker] Hooked FeedItemList.getItems() (${returnIndices.size} return point(s)) -> All feed model consumers protected.")
+                println("[Feed Live Stream Blocker] Hooked FeedItemList.getItems() (${returnIndices.size} return point(s)) -> Feed live streams filtered.")
                 patched++
             }
         } catch (e: Exception) {
-            println("[Feed Ad Blocker] FeedItemList.getItems note: ${e.message}")
+            println("[Feed Live Stream Blocker] FeedItemList.getItems note: ${e.message}")
         }
 
         // 3. Hook FollowFeedList.getItems() (covers Following feed UI consumers)
@@ -94,18 +94,18 @@ val tikTokFeedAdBlockerPatch = bytecodePatch(
                 method.addInstructions(
                     returnIndex,
                     """
-                        invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAdsInFollowFeedList(Ljava/lang/Object;)V
+                        invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterLiveStreamsInFollowFeedList(Ljava/lang/Object;)V
                     """,
                 )
             }
             if (returnIndices.isNotEmpty()) {
-                println("[Feed Ad Blocker] Hooked FollowFeedList.getItems() (${returnIndices.size} return point(s)) -> Following feed protected.")
+                println("[Feed Live Stream Blocker] Hooked FollowFeedList.getItems() (${returnIndices.size} return point(s)) -> Following live streams filtered.")
                 patched++
             }
         } catch (e: Exception) {
-            println("[Feed Ad Blocker] FollowFeedList.getItems note: ${e.message}")
+            println("[Feed Live Stream Blocker] FollowFeedList.getItems note: ${e.message}")
         }
 
-        println("[Feed Ad Blocker] Applied $patched feed filter hooks -> Universal ad-free feed active.")
+        println("[Feed Live Stream Blocker] Applied $patched feed live stream filter hooks -> Feed live streams neutralized.")
     }
 }

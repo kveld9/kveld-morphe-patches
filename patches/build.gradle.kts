@@ -24,7 +24,9 @@ val patchListGeneratorClasspath = configurations.create("patchListGeneratorClass
 
 dependencies {
     compileOnly(libs.gson)
+    compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
     patchListGeneratorClasspath(libs.gson)
+    patchListGeneratorClasspath("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
 }
 
 tasks {
@@ -35,6 +37,16 @@ tasks {
 
         classpath = sourceSets["main"].runtimeClasspath + patchListGeneratorClasspath
         mainClass.set("util.PatchListGeneratorKt")
+    }
+
+    register<JavaExec>("runPatchTest") {
+        description = "Execute Morphe Patcher against target APK"
+
+        dependsOn("buildAndroid")
+
+        maxHeapSize = "8g"
+        classpath = sourceSets["main"].runtimeClasspath + patchListGeneratorClasspath
+        mainClass.set("util.PatchExecutionTestKt")
     }
 
     jar {

@@ -7,9 +7,9 @@ import app.morphe.patches.shared.Constants
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
-val tikTokFeedAdBlockerPatch = bytecodePatch(
-    name = "Feed Ad Blocker",
-    description = "Removes sponsored advertisements, brand promotions, and promotional audio from the For You and Following feeds.",
+val hideTikTokShopAnchorsPatch = bytecodePatch(
+    name = "Hide TikTok Shop Anchors",
+    description = "Removes product showcase badges, shopping cart tags, and TikTok Shop commercial anchors from video posts in the feed.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
@@ -36,16 +36,16 @@ val tikTokFeedAdBlockerPatch = bytecodePatch(
                 method.addInstructions(
                     returnIndex,
                     """
-                        invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAdsInFeedItemList(Ljava/lang/Object;)V
+                        invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->stripShopAnchorsInFeedItemList(Ljava/lang/Object;)V
                     """,
                 )
             }
             if (returnIndices.isNotEmpty()) {
-                println("[Feed Ad Blocker] Hooked FeedApiService.fetchFeedList() (${returnIndices.size} return point(s)) -> FYP stream protected.")
+                println("[Hide TikTok Shop Anchors] Hooked FeedApiService.fetchFeedList() (${returnIndices.size} return point(s)) -> FYP feed shop anchors stripped.")
                 patched++
             }
         } catch (e: Exception) {
-            println("[Feed Ad Blocker] FeedApiService note: ${e.message}")
+            println("[Hide TikTok Shop Anchors] FeedApiService note: ${e.message}")
         }
 
         // 2. Hook FeedItemList.getItems() (covers cached, offline, and UI adapter consumers)
@@ -65,16 +65,16 @@ val tikTokFeedAdBlockerPatch = bytecodePatch(
                 method.addInstructions(
                     returnIndex,
                     """
-                        invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAdsInList(Ljava/lang/Object;)V
+                        invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->stripShopAnchorsInList(Ljava/lang/Object;)V
                     """,
                 )
             }
             if (returnIndices.isNotEmpty()) {
-                println("[Feed Ad Blocker] Hooked FeedItemList.getItems() (${returnIndices.size} return point(s)) -> All feed model consumers protected.")
+                println("[Hide TikTok Shop Anchors] Hooked FeedItemList.getItems() (${returnIndices.size} return point(s)) -> Feed video shop anchors stripped.")
                 patched++
             }
         } catch (e: Exception) {
-            println("[Feed Ad Blocker] FeedItemList.getItems note: ${e.message}")
+            println("[Hide TikTok Shop Anchors] FeedItemList.getItems note: ${e.message}")
         }
 
         // 3. Hook FollowFeedList.getItems() (covers Following feed UI consumers)
@@ -94,18 +94,18 @@ val tikTokFeedAdBlockerPatch = bytecodePatch(
                 method.addInstructions(
                     returnIndex,
                     """
-                        invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAdsInFollowFeedList(Ljava/lang/Object;)V
+                        invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->stripShopAnchorsInFollowFeedList(Ljava/lang/Object;)V
                     """,
                 )
             }
             if (returnIndices.isNotEmpty()) {
-                println("[Feed Ad Blocker] Hooked FollowFeedList.getItems() (${returnIndices.size} return point(s)) -> Following feed protected.")
+                println("[Hide TikTok Shop Anchors] Hooked FollowFeedList.getItems() (${returnIndices.size} return point(s)) -> Following feed shop anchors stripped.")
                 patched++
             }
         } catch (e: Exception) {
-            println("[Feed Ad Blocker] FollowFeedList.getItems note: ${e.message}")
+            println("[Hide TikTok Shop Anchors] FollowFeedList.getItems note: ${e.message}")
         }
 
-        println("[Feed Ad Blocker] Applied $patched feed filter hooks -> Universal ad-free feed active.")
+        println("[Hide TikTok Shop Anchors] Applied $patched TikTok Shop anchor stripper hook(s).")
     }
 }

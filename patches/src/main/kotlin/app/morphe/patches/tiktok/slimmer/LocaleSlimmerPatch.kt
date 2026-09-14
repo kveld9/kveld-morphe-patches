@@ -11,7 +11,7 @@ val localeSlimmerPatch = rawResourcePatch(
     description = "Strips unselected language string bundles from assets/strings#lang_* to save APK space.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
 
     val targetLocales by stringOption(
         key = "locales",
@@ -35,7 +35,6 @@ val localeSlimmerPatch = rawResourcePatch(
         if (assetsDir.exists() && assetsDir.isDirectory) {
             var savedBytes = 0L
             var strippedFolders = 0
-            val strippedList = mutableListOf<String>()
 
             assetsDir.listFiles()?.filter { it.isDirectory && it.name.startsWith("strings#lang_") }?.forEach { langDir ->
                 val langCode = langDir.name.removePrefix("strings#lang_").lowercase()
@@ -48,7 +47,6 @@ val localeSlimmerPatch = rawResourcePatch(
                         }
                     }
                     strippedFolders++
-                    strippedList.add(langCode)
                 }
             }
 

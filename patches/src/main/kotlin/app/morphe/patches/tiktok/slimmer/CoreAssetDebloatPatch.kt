@@ -7,16 +7,16 @@ private val EMPTY_BYTES = byteArrayOf()
 
 val coreAssetDebloatPatch = rawResourcePatch(
     name = "Core Asset De-bloat",
-    description = "Strips embedded Microblink credit card OCR models, C2PA AI content origin verification libraries, and unused non-Latin fonts to save APK space.",
+    description = "Strips embedded Microblink credit card OCR models, C2PA AI content origin verification libraries, and redundant non-Latin fonts to save APK space.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
 
     execute {
         var savedBytes = 0L
         var count = 0
 
-        // 1. C2PA libraries
+        // 1. C2PA & Content Verification libraries
         val c2paTargets = listOf(
             "lib/arm64-v8a/libtt_c2pa_sdk.so",
             "lib/arm64-v8a/libtt_c2pa_sdk_d.so",
@@ -73,7 +73,7 @@ val coreAssetDebloatPatch = rawResourcePatch(
 
         if (count > 0) {
             val savedMb = String.format(java.util.Locale.US, "%.2f", savedBytes.toDouble() / (1024 * 1024))
-            println("[Core Asset De-bloat] Stripped $count non-essential OCR models, C2PA SDKs, and regional fonts -> Saved $savedMb MB uncompressed (~9.5 MB in APK)")
+            println("[Core Asset De-bloat] Stripped $count non-essential OCR models, C2PA SDKs, and regional fonts -> Saved $savedMb MB uncompressed (~10.0 MB in APK)")
         } else {
             println("[Core Asset De-bloat] Target assets already clean.")
         }

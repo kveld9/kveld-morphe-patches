@@ -76,6 +76,7 @@ object Constants {
 
     const val TIKTOK_GLOBAL_PACKAGE_NAME = "com.zhiliaoapp.musically"
     const val TIKTOK_ASIA_PACKAGE_NAME = "com.ss.android.ugc.trill"
+    const val TIKTOK_TARGET_VERSION = "46.9.3"
 
     val COMPATIBILITY_TIKTOK = Compatibility(
         name = "TikTok",
@@ -84,10 +85,26 @@ object Constants {
         appIconColor = 0xFE2C55,
         targets = listOf(
             AppTarget(
-                version = null,
-                description = "Any TikTok version (Global or Asia nodpi APK)"
+                version = TIKTOK_TARGET_VERSION,
+                description = "Download TikTok Global v$TIKTOK_TARGET_VERSION (nodpi APK) from APKMirror"
             )
         )
     )
+
+    val COMPATIBILITY_TIKTOK_ASIA = Compatibility(
+        name = "TikTok",
+        packageName = TIKTOK_ASIA_PACKAGE_NAME,
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0xFE2C55,
+        targets = listOf(
+            AppTarget(
+                version = TIKTOK_TARGET_VERSION,
+                description = "Download TikTok Asia (trill) v$TIKTOK_TARGET_VERSION (nodpi APK) from APKMirror"
+            )
+        )
+    )
+
+    const val TIKTOK_EXTENSION_FILTER_CLASS = "Lcom/kveld9/morphe/extension/tiktok/TikTokFeedAdFilter;"
+    const val TIKTOK_EXTENSION_MEDIA_HOOK = "Lcom/kveld9/morphe/extension/tiktok/TikTokMediaHook;"
 }
 

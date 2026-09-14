@@ -41,10 +41,10 @@ def pkg_emoji(pkg):
     """Return a standard package emoji regardless of the package name."""
     return "📦"
 
-# Group patches by package; patches with no compatiblePackages are universal.
+# Group patches by app name; patches with no compatiblePackages are universal.
 # JSON structure: compatiblePackages is a list of objects with
 # { packageName, name, targets: [{ version, isExperimental, description }] }
-by_pkg = {}   # packageName -> { name, emoji, patches, targets }
+by_app = {}   # app_name -> { name, emoji, packages, patches, targets }
 universal = {}
 
 for patch in data["patches"]:
@@ -57,16 +57,21 @@ for patch in data["patches"]:
     for pkg_entry in cp:
         pkg  = pkg_entry["packageName"]
         name = pkg_entry.get("name") or pkg  # fall back to package name if no label
-        if pkg not in by_pkg:
-            by_pkg[pkg] = {
-                "name":    name,
-                "emoji":   pkg_emoji(pkg),
-                "patches": {},
-                "targets": pkg_entry.get("targets", []),
+        if name not in by_app:
+            by_app[name] = {
+                "name":     name,
+                "emoji":    pkg_emoji(pkg),
+                "packages": set(),
+                "patches":  {},
+                "targets":  [],
             }
+        by_app[name]["packages"].add(pkg)
+        for t in pkg_entry.get("targets", []):
+            if t not in by_app[name]["targets"]:
+                by_app[name]["targets"].append(t)
         # Deduplicate patches that appear across multiple packages
-        if patch["name"] not in by_pkg[pkg]["patches"]:
-            by_pkg[pkg]["patches"][patch["name"]] = patch
+        if patch["name"] not in by_app[name]["patches"]:
+            by_app[name]["patches"][patch["name"]] = patch
 
 
 def patches_table(patches):
@@ -141,7 +146,7 @@ def build_content(expanded=False):
     lines = []
 
     # One spoiler per app, in the order they appear in the JSON
-    for pkg, entry in by_pkg.items():
+    for app_name, entry in by_app.items():
         patches = list(entry["patches"].values())
         label   = f"{entry['emoji']} {entry['name']}"
         lines.append(spoiler(label, len(patches), entry["targets"], patches_table(patches), expanded))
@@ -168,7 +173,7 @@ def build_content(expanded=False):
 raw_ver = data["version"]
 # Strip leading "v" if present
 ver   = raw_ver.lstrip("v")
-total = sum(len(e["patches"]) for e in by_pkg.values()) + len(universal)
+total = sum(len(e["patches"]) for e in by_app.values()) + len(universal)
 
 readme = readme_path.read_text(encoding="utf-8")
 
@@ -204,11 +209,12 @@ expanded = (
 generated  = build_content(expanded=expanded)
 
 # Update text callouts in README for Gboard, Brave, and Vivaldi
-for pkg, entry in by_pkg.items():
+for entry in by_app.values():
+    pkgs = entry["packages"]
     targets = entry.get("targets") or []
     if targets and targets[0].get("version"):
         target_ver = targets[0]["version"]
-        if "latin" in pkg:
+        if any("latin" in p for p in pkgs):
             # Gboard current target
             readme = re.sub(
                 r"(\- \*\*Current Target\*\*: `)[^`]+(`)",
@@ -216,7 +222,7 @@ for pkg, entry in by_pkg.items():
                 readme,
                 count=1,
             )
-        elif "vivaldi" in pkg:
+        elif any("vivaldi" in p for p in pkgs):
             # Vivaldi current target
             readme = re.sub(
                 r"(\- \*\*Current Target\*\*: `Vivaldi\.)[^`]+(_arm64-v8a\.apk`)",
@@ -231,7 +237,7 @@ for pkg, entry in by_pkg.items():
                 readme,
                 count=1,
             )
-        elif "brave" in pkg:
+        elif any("brave" in p for p in pkgs):
             # Brave current target
             readme = re.sub(
                 r"(\- \*\*Current Target\*\*: `)[^`]+(` \(`Bravemonoarm64\.apk`\))",
@@ -243,6 +249,29 @@ for pkg, entry in by_pkg.items():
             readme = re.sub(
                 r'<a href="https://github\.com/brave/brave-browser/releases/download/v[^/]+/Bravemonoarm64\.apk"><img src="https://img\.shields\.io/badge/Download-Bravemonoarm64\.apk_[^"]+" alt="Download Brave APK" /></a>',
                 f'<a href="https://github.com/brave/brave-browser/releases/download/v{target_ver}/Bravemonoarm64.apk"><img src="https://img.shields.io/badge/Download-Bravemonoarm64.apk_(v{target_ver})-FF4500?style=for-the-badge&logo=brave&logoColor=white" alt="Download Brave APK" /></a>',
+                readme,
+                count=1,
+            )
+        elif any("musically" in p for p in pkgs) or any("trill" in p for p in pkgs):
+            # TikTok current target
+            readme = re.sub(
+                r"(### 🎵 TikTok[^\n]*\n\- \*\*Current Target\*\*: `)[^`]+(`)",
+                rf"\g<1>{target_ver}\g<2>",
+                readme,
+                count=1,
+            )
+            # TikTok Global download badge
+            slug_ver = target_ver.replace(".", "-")
+            readme = re.sub(
+                r'<a href="https://www\.apkmirror\.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tik-tok-including-musical-ly-[^/]+-release/"><img src="https://img\.shields\.io/badge/Download-TikTok_Global_[^"]+" alt="Download TikTok Global APK" /></a>',
+                f'<a href="https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tik-tok-including-musical-ly-{slug_ver}-release/"><img src="https://img.shields.io/badge/Download-TikTok_Global_{target_ver}_(APK_nodpi)-FE2C55?style=for-the-badge&logo=tiktok&logoColor=white" alt="Download TikTok Global APK" /></a>',
+                readme,
+                count=1,
+            )
+            # TikTok Asia download badge
+            readme = re.sub(
+                r'<a href="https://www\.apkmirror\.com/apk/tiktok-pte-ltd/tik-tok-asia/tik-tok-asia-[^/]+-release/"><img src="https://img\.shields\.io/badge/Download-TikTok_Asia_[^"]+" alt="Download TikTok Asia APK" /></a>',
+                f'<a href="https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-asia/tik-tok-asia-{slug_ver}-release/"><img src="https://img.shields.io/badge/Download-TikTok_Asia_{target_ver}_(APK_nodpi)-25F4EE?style=for-the-badge&logo=tiktok&logoColor=white" alt="Download TikTok Asia APK" /></a>',
                 readme,
                 count=1,
             )

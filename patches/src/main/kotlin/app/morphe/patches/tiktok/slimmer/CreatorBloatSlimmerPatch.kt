@@ -11,13 +11,12 @@ val creatorBloatSlimmerPatch = rawResourcePatch(
     description = "Strips heavy video creation, CapCut-like video editor SDK (libttvesdk_plugin.so), and AR camera face models to save over 22MB.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
 
     execute {
         val targets = listOf(
             "lib/arm64-v8a/libeffect_plugin.so",
             "lib/arm64-v8a/libttvesdk_plugin.so",
-            "lib/arm64-v8a/libdex_df_camera_biz.so",
             "lib/arm64-v8a/libEffectCreatorJni.so",
         )
 

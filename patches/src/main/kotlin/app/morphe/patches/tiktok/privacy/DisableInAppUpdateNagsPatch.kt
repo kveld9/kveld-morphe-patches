@@ -10,7 +10,7 @@ val disableInAppUpdateNagsPatch = bytecodePatch(
     description = "Neutralizes background update polling tasks and device ID check routines to prevent forced update popups.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
 
     execute {
         var patched = 0
@@ -30,7 +30,7 @@ val disableInAppUpdateNagsPatch = bytecodePatch(
             println("[DisableInAppUpdateNags] Neutralized CheckUpdateChangeDeviceIDTaskHolder\$Background.run().")
             patched++
         } catch (e: Exception) {
-            println("[DisableInAppUpdateNags] Background task note: ${e.message}")
+            println("[DisableInAppUpdateNags] Background note: ${e.message}")
         }
 
         // 2. CheckUpdateChangeDeviceIDTaskHolder$BootFinish
@@ -48,7 +48,7 @@ val disableInAppUpdateNagsPatch = bytecodePatch(
             println("[DisableInAppUpdateNags] Neutralized CheckUpdateChangeDeviceIDTaskHolder\$BootFinish.run().")
             patched++
         } catch (e: Exception) {
-            println("[DisableInAppUpdateNags] BootFinish task note: ${e.message}")
+            println("[DisableInAppUpdateNags] BootFinish note: ${e.message}")
         }
 
         println("[DisableInAppUpdateNags] Disabled $patched update check tasks -> In-app update nag dialogs blocked.")

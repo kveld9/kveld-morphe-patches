@@ -54,11 +54,13 @@
 <a href="https://www.apkmirror.com/apk/hevy/hevy-gym-log-workout-tracker/hevy-gym-log-workout-tracker-3-1-13-release/"><img src="https://img.shields.io/badge/Download-Hevy_3.1.13_(APKM)-FF4500?style=for-the-badge&logo=target&logoColor=white" alt="Download Hevy APKM" /></a>
 
 ### 🎵 TikTok (Global & Asia)
-- **Current Target**: Any version (`com.zhiliaoapp.musically` / `com.ss.android.ugc.trill`)
+- **Current Target**: `46.9.3`
 - **Architecture**: `arm64-v8a` (nodpi APK)
 - **Package**: `com.zhiliaoapp.musically` (Global) & `com.ss.android.ugc.trill` (Asia)
 
-<a href="https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/"><img src="https://img.shields.io/badge/Download-TikTok_(APK_nodpi)-FE2C55?style=for-the-badge&logo=tiktok&logoColor=white" alt="Download TikTok APK" /></a>
+<a href="https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tik-tok-including-musical-ly-46-9-3-release/"><img src="https://img.shields.io/badge/Download-TikTok_Global_46.9.3_(APK_nodpi)-FE2C55?style=for-the-badge&logo=tiktok&logoColor=white" alt="Download TikTok Global APK" /></a>
+&nbsp;&nbsp;
+<a href="https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-asia/tik-tok-asia-46-9-3-release/"><img src="https://img.shields.io/badge/Download-TikTok_Asia_46.9.3_(APK_nodpi)-25F4EE?style=for-the-badge&logo=tiktok&logoColor=white" alt="Download TikTok Asia APK" /></a>
 
 ---
 
@@ -163,18 +165,29 @@
 </details>
 
 <details>
-<summary>📦 TikTok&nbsp;&nbsp;•&nbsp;&nbsp;10 patches</summary>
+<summary>📦 TikTok&nbsp;&nbsp;•&nbsp;&nbsp;16 patches</summary>
 <br>
+
+**🎯 Supported versions:**
+
+| 46.9.3 |
+| :---: |
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
-| **Core Asset De-bloat** | Strips embedded Microblink credit card OCR models, C2PA AI content origin verification libraries, and unused non-Latin fonts to save APK space. |  |
-| **Feed Ad Blocker** | Removes sponsored advertisements, brand promotions, soft commercial videos, and promotional audio from the For You and Following feeds. |  |
+| **Clean Share URL** | Strips tracking parameters, user IDs, device fingerprints, and marketing tokens from shared TikTok links. |  |
+| **Core Asset De-bloat** | Strips embedded Microblink credit card OCR models, C2PA AI content origin verification libraries, and redundant non-Latin fonts to save APK space. |  |
+| **Device Privacy Guard** | Neutralizes background clipboard snooping routines and blocks screenshot/recording detection listeners to protect user data from unauthorized tracking and popup modals. |  |
+| **Disable Push Notifications** | Neutralizes background push notification tasks and persistent socket wake locks to eliminate background battery drain. |  |
+| **Feed Ad Blocker** | Removes sponsored advertisements, brand promotions, and promotional audio from the For You and Following feeds. |  |
+| **Feed Live Stream Blocker** | Removes live stream broadcast cards and live recommendations from the For You and Following feeds. |  |
+| **Hide TikTok Shop Anchors** | Removes product showcase badges, shopping cart tags, and TikTok Shop commercial anchors from video posts in the feed. |  |
 | **Instant Launch & Splash Blocker** | Eliminates cold startup delays, real-time splash advertisements, and background TopView preloading (<0.4s launch). |  |
 | **Language Pack Purger** | Strips unselected language string bundles from assets/strings#lang_* to save APK space. | • Languages to keep |
-| **Live Stream Suite Optimizer** | Strips Live link mic SDK (liblink_mic_sdk.so) and live stream interactive minigames, and disables 3D gift particle animation preloading. |  |
-| **Network & Background Traffic Governor** | Throttles aggressive video preloading buffer and disables background push polling alarms to save cellular data and battery. |  |
-| **Runtime Memory Governor** | Optimizes Fresco bitmap memory pool retention and suppresses aggressive animated frame allocations to reduce memory pressure. |  |
+| **Live Stream 3D Gift Optimizer** | Disables Live 3D gift particle effect engine and widget rendering lifecycle to eliminate frame drops during live streams. |  |
+| **Live Stream SDK & Minigame De-bloat** | Strips Live link mic SDK (liblink_mic_sdk.so) and live stream interactive minigames to save APK storage. |  |
+| **Media Usability & Watermark-Free Downloader** | Enables progress seekbar scrubbing on all videos, unblocks the download button on creator-restricted videos, and routes downloads to clean unwatermarked media streams. |  |
+| **Resource & Battery Governor** | Throttles background sensor polling (gyroscope/accelerometer 3D ads), prevents aggressive video buffer preloading, and caps Fresco animated image memory retention to conserve battery and RAM. |  |
 | **Studio & Creation De-bloat** | Strips heavy video creation, CapCut-like video editor SDK (libttvesdk_plugin.so), and AR camera face models to save over 22MB. |  |
 | **Unified Telemetry & Tracker Silencer** | Neutralizes ByteDance AppLog user tracking, APM/Npth/Heimdallr crash monitors, AppsFlyer attribution, and Firebase analytics. |  |
 | **Update Prompt Suppressor** | Neutralizes background update polling tasks and device ID check routines to prevent forced update popups. |  |
@@ -207,6 +220,7 @@ Comprehensive technical references and setup manuals have been modularized for f
 | 📱 **[Compatibility Guide](docs/compatibility.md)** | CPU architecture policy (ARM64 vs 32-bit ARMv7a) and APK variant rationales (`Bravemonoarm64`, Vivaldi Browser). |
 | ⌨️ **[Gboard Setup & Dictionaries](docs/gboard-setup.md)** | Step-by-step setup for predictive text, offline dictionaries, and Glide Typing on fresh installs. |
 | 🏋️ **[Hevy Setup & Authentication](docs/hevy-setup.md)** | Account authentication notice (Google Sign-In SHA-1 limitation & Email/Password login) and Pro features overview. |
+| 🎵 **[TikTok Patch Specifications](docs/tiktok-patches.md)** | Deep technical breakdown of all 16 TikTok patches, bytecode hooks, privacy guards, and media downloaders. |
 | ⚙️ **[Patch Configuration & Options](docs/patch-configuration.md)** | Detailed guides, density matrices, and complete locale code tables for `Locale Slimmer` and `DPI Resource Slimmer`. |
 | 🛡️ **[Architecture & Security Notes](docs/architecture-security.md)** | Explanation of privacy scanner false positives (ML Kit / Play Billing) and native ELF/Dalvik telemetry neutralization. |
 | 🛠️ **[Building & Development](docs/building.md)** | Toolchain prerequisites, Gradle build tasks, test execution, and catalog synchronization. |

@@ -63,7 +63,7 @@ class TestTikTokContracts(unittest.TestCase):
         patches_dir = Path(__file__).resolve().parents[2] / "patches" / "src" / "main" / "kotlin" / "app" / "morphe" / "patches" / "tiktok"
         bytecode_files = [
             p for p in patches_dir.rglob("*Patch.kt")
-            if "slimmer" not in str(p)
+            if "bytecodePatch(" in p.read_text(encoding="utf-8")
         ]
         self.assertGreaterEqual(len(bytecode_files), 5, "Expected at least 5 bytecode/UI/privacy/media patches")
 
