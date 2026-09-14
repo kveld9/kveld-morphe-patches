@@ -103,7 +103,15 @@ INSPECT & BASELINE ➜ SCOPE LOCK ➜ MINIMAL IMPLEMENTATION ➜ QUALITY GATES �
 
 ### Step 4: `E2E VERIFICATION & SMOKE LAUNCH GATES`
 When adding or updating any patch, the following gates are **MANDATORY**:
-1. **Full-Suite Patching (`E2E Patch Execution`)**: Build and apply the **entire set of available patches** against the target APK.
+1. **Full-Suite Morphe Patcher Execution (`In-Situ Patching Gate`)**:
+   After completing ANY modification to any patch (bytecode, resource, or raw binary), you MUST execute the official Morphe Patcher pipeline against the target application APK with **ALL corresponding patches for that app activated**:
+   ```bash
+   # Execute Morphe Patcher with all patches active for the target app (e.g. gboard, tiktok, brave, vivaldi, hevy)
+   ./gradlew runPatchTest -Papp=<targetApp>
+   # Or with an explicit APK file path:
+   ./gradlew runPatchTest -Papk=/path/to/app.apk
+   ```
+   The patching run MUST complete with **100% success** (0 failed patches, 0 fingerprint errors, 0 exceptions). Never consider any patch task complete if this gate has not executed or has any failure.
 2. **Code Injection Verification**: Assert that the modified bytecode/resources/ELF offsets were correctly injected into the final APK.
 3. **Smoke Launch Verification (Zero-Crash Baseline)**: Verify that the patched APK launches cleanly without runtime crashes or uncaught startup exceptions.
 
@@ -144,6 +152,8 @@ For non-trivial logic, Smali hooks, native ARM64 patching (`libchrome.so`), or s
     - All validation runtime outputs (`validation/runtime/`, `validation/physical_harness/results/`) must remain strictly excluded via `.gitignore` and sanitized by `scripts/clean_workspace.sh`.
 11. **Metadata Synchronization Integrity**:
     - When patch options, default values, or descriptions are modified in Kotlin source code, verify that patch catalog generator tasks (`./gradlew generatePatchesList`) are synchronized before release packaging.
+12. **DO NOT Declare Patch Tasks Complete Without In-Situ Morphe Patcher Verification**:
+    - Never conclude any patch edit or declare a task complete without executing `./gradlew runPatchTest -Papp=<target>` with all corresponding patches active for that target app and asserting 100% success (0 failed patches, 0 fingerprint mismatches).
 
 ---
 
@@ -161,13 +171,22 @@ For non-trivial logic, Smali hooks, native ARM64 patching (`libchrome.so`), or s
 ./gradlew test
 ```
 
-### B. Patch Build & Artifact Generation
+### B. Patch Build, In-Situ Patcher Verification & Artifact Generation
 ```bash
 # Build Android extension DEX + Morphe Patch Package (.mpp)
 ./gradlew build
 
 # Compile standalone .mpp bundle to patches/build/libs/
 ./gradlew buildAndroid
+
+# Execute Morphe Patcher against target APK with 100% patch activation
+./gradlew runPatchTest -Papp=gboard
+./gradlew runPatchTest -Papp=tiktok
+./gradlew runPatchTest -Papp=brave
+./gradlew runPatchTest -Papp=vivaldi
+./gradlew runPatchTest -Papp=hevy
+# Or auto-detect target app from git diff / candidate downloads:
+./gradlew runPatchTest
 
 # Generate updated patches-list.json from compiled .mpp
 ./gradlew generatePatchesList

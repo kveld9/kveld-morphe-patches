@@ -191,3 +191,21 @@ Every patch execution must emit concise, high-signal diagnostic telemetry captur
    ```
 5. **Anti-Spam & Bounded Output**: Never dump thousands of lines or unbounded file trees. Repetitive items must be summarized or bounded to short representative samples (e.g. `.take(6)`).
 6. **Failure & Guard Transparency**: If an operation is skipped or safely aborted (e.g. missing targets or preconditions), log an explicit descriptive reason so issues can be immediately diagnosed from user-submitted logs.
+
+---
+
+## 7. Mandatory Verification Gate: In-Situ Morphe Patcher Execution
+
+After completing any change in any patch or adding a new patch:
+1. **Zero Fake Completion**: Never declare a task or implementation complete merely based on `./gradlew check` or static checks.
+2. **Execute Full-Suite In-Situ Patching**:
+   ```bash
+   ./gradlew runPatchTest -Papp=<targetApp>
+   ```
+   Targets: `gboard`, `tiktok`, `brave`, `vivaldi`, `hevy`.
+   Or specify an explicit APK:
+   ```bash
+   ./gradlew runPatchTest -Papk=/path/to/app.apk
+   ```
+3. **Assert 100% Pass Rate**: Every single patch corresponding to that target app must execute and pass with **zero exceptions, zero fingerprint mismatches, and zero failed patches**.
+

@@ -144,3 +144,13 @@ return-void
 - Obfuscated identifiers (such as `P4`, `y`, `O0`) are volatile and change between releases.
 - Always prefer anchoring on **stable framework APIs** (e.g. `androidx.preference.Preference`) or string literals.
 - When obfuscated symbols are strictly necessary, isolate them in centralized contracts or verify them via RE audit scripts (`harness/update.py --audit`) against newly updated APKs before building.
+
+---
+
+## 6. Mandatory In-Situ Patcher Verification Gate
+
+Any modified Smali hook, register rewrite, or dexlib2 fingerprint MUST be validated by running the Morphe Patcher against the target APK before declaring completion:
+```bash
+./gradlew runPatchTest -Papp=<targetApp>
+```
+The patching execution must conclude with **100% success** (0 failed patches, 0 fingerprint mismatches).

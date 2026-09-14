@@ -47,6 +47,15 @@ tasks {
         maxHeapSize = "8g"
         classpath = sourceSets["main"].runtimeClasspath + patchListGeneratorClasspath
         mainClass.set("util.PatchExecutionTestKt")
+
+        if (project.hasProperty("app")) {
+            systemProperty("targetApp", project.property("app").toString())
+        }
+        if (project.hasProperty("apk")) {
+            systemProperty("targetApk", project.property("apk").toString())
+        }
+        System.getProperty("targetApp")?.let { systemProperty("targetApp", it) }
+        System.getProperty("targetApk")?.let { systemProperty("targetApk", it) }
     }
 
     jar {
