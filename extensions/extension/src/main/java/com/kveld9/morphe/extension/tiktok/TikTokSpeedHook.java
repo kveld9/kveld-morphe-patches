@@ -49,14 +49,15 @@ public final class TikTokSpeedHook {
         SharedPreferences sp = getPrefs();
         if (sp != null) {
             float saved = sp.getFloat(KEY_SPEED, fallbackDefault);
-            if (saved >= 0.5f && saved <= 3.0f) {
+            if (saved >= 0.25f && saved <= 4.0f) {
                 cachedSpeed = saved;
                 return cachedSpeed;
             }
+            cachedSpeed = (fallbackDefault >= 0.25f && fallbackDefault <= 4.0f) ? fallbackDefault : 1.0f;
+            return cachedSpeed;
         }
 
-        cachedSpeed = (fallbackDefault >= 0.5f && fallbackDefault <= 3.0f) ? fallbackDefault : 1.0f;
-        return cachedSpeed;
+        return (fallbackDefault >= 0.25f && fallbackDefault <= 4.0f) ? fallbackDefault : 1.0f;
     }
 
     /**

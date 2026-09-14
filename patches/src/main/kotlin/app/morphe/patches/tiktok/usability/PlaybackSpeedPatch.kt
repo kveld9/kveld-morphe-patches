@@ -46,7 +46,7 @@ val playbackSpeedPatch = bytecodePatch(
             speedSelectFp.method.addInstructions(
                 0,
                 """
-                    invoke-static {p0}, ${Constants.TIKTOK_EXTENSION_SPEED_HOOK}->onSpeedSelected(F)V
+                    invoke-static {p1}, ${Constants.TIKTOK_EXTENSION_SPEED_HOOK}->onSpeedSelected(F)V
                 """.trimIndent(),
             )
             println("[Playback Speed Persistence] Hooked native speed selection handler (${speedSelectFp.classDef.type}->${speedSelectFp.method.name}) -> Real-time speed persistence active.")
@@ -60,7 +60,7 @@ val playbackSpeedPatch = bytecodePatch(
                 method.addInstructions(
                     0,
                     """
-                        invoke-static {p0}, ${Constants.TIKTOK_EXTENSION_SPEED_HOOK}->getPlaybackSpeed(Ljava/lang/Object;)F
+                        invoke-static {p1}, ${Constants.TIKTOK_EXTENSION_SPEED_HOOK}->getPlaybackSpeed(Ljava/lang/Object;)F
                         move-result v0
                         return v0
                     """.trimIndent(),
