@@ -273,6 +273,12 @@ fun main(args: Array<String>) {
     println("Successful:    $successfulPatches")
     println("Failed:        $failedPatches")
 
+    if (failedPatches == 0) {
+        println("\n📦 Compiling modified bytecode & assets via patcher.get()...")
+        val patcherResult = patcher.get()
+        println("📦 Compiled ${patcherResult.dexFiles.size} DEX files successfully.")
+    }
+
     patcher.close()
     tempDir.deleteRecursively()
 

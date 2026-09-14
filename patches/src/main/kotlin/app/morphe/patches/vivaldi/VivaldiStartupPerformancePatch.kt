@@ -59,9 +59,10 @@ val vivaldiStartupPerformancePatch = bytecodePatch(
         fp2.method.addInstructionsWithLabels(
             4,
             """
-                if-eqz v2, :safe_continue
+                if-nez v2, :safe_continue
                 return-void
                 :safe_continue
+                nop
             """,
         )
         val c2 = app.morphe.patches.shared.LocaleUtils.cleanClassName(fp2.originalClassDef.type)
