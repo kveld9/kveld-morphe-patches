@@ -28,7 +28,10 @@ val gboardClonePatch = resourcePatch(
         val newPackage = "$originalPackage.$cleanSuffix"
 
         val manifestFile = get("AndroidManifest.xml")
-        if (!manifestFile.exists()) return@execute
+        if (!manifestFile.exists()) {
+            println("[GboardClone] Skipped: AndroidManifest.xml not found.")
+            return@execute
+        }
 
         var modifiedProviders = 0
         var modifiedPermissions = 0

@@ -2,6 +2,7 @@ package app.morphe.patches.vivaldi
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.rawResourcePatch
 import app.morphe.patches.shared.Constants
@@ -156,7 +157,7 @@ val vivaldiCleanSpeedDialPatch = bytecodePatch(
             returnType = "V",
             parameters = listOf("I"),
             strings = listOf("show_customize_on_startpage", "show_add_on_startpage"),
-        ).method.addInstructions(
+        ).method.addInstructionsWithLabels(
             0,
             """
                 const/16 v0, 0x8

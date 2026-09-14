@@ -131,7 +131,10 @@ private val braveOriginResourcePatch = resourcePatch(
             .filter { it.isFile && it.extension == "xml" }
             .firstOrNull { file ->
                 file.readText().contains("rewards_switch")
-            } ?: return@execute
+            } ?: run {
+                println("[BraveOrigin] Skipped: rewards_switch XML preference not found.")
+                return@execute
+            }
 
         var modifiedAttrs = 0
         document(targetFile.absolutePath).use { doc ->
@@ -344,7 +347,7 @@ val braveOriginPatch = bytecodePatch(
             returnType = "V",
             parameters = listOf("Ljava/lang/String;"),
         )
-        setupPrefFingerprint.method.addInstructions(
+        setupPrefFingerprint.method.addInstructionsWithLabels(
             0,
             """
                 invoke-virtual {p0, p1}, Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;->W4(Ljava/lang/CharSequence;)Landroidx/preference/Preference;
@@ -384,7 +387,7 @@ val braveOriginPatch = bytecodePatch(
         )
         leoFeatureFlagFingerprint.method.apply {
             removeInstructions(0, implementation!!.instructions.count())
-            addInstructions(0, buildLeoFeatureFlagHook())
+            addInstructionsWithLabels(0, buildLeoFeatureFlagHook())
         }
 
         val totalGatekeepers = GATEKEEPER_POLICIES.size + 1

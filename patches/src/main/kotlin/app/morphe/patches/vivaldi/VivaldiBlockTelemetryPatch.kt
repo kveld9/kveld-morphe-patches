@@ -19,6 +19,7 @@ private val vivaldiHostsBlockerPatch = rawResourcePatch(
     execute {
         val soFile = get("lib/arm64-v8a/libchrome.so")
         if (!soFile.exists()) {
+            println("[VivaldiBlockTelemetry] Skipped: libchrome.so not found.")
             return@execute
         }
 
@@ -78,6 +79,7 @@ val vivaldiBlockSyncPatch = rawResourcePatch(
     execute {
         val soFile = get("lib/arm64-v8a/libchrome.so")
         if (!soFile.exists()) {
+            println("[VivaldiBlockTelemetry] Skipped: libchrome.so not found.")
             return@execute
         }
 

@@ -2,6 +2,7 @@ package app.morphe.patches.brave
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.rawResourcePatch
@@ -78,6 +79,7 @@ private val braveHostsBlockerPatch = rawResourcePatch(
     execute {
         val soFile = get("lib/arm64-v8a/libchrome.so")
         if (!soFile.exists()) {
+            println("[BraveBlockTelemetry] Skipped: lib/arm64-v8a/libchrome.so not found.")
             return@execute
         }
 
@@ -198,7 +200,7 @@ val braveBlockTelemetryPatch = bytecodePatch(
             returnType = "Z",
             parameters = listOf("Ljava/lang/String;"),
         ).method.apply {
-            addInstructions(
+            addInstructionsWithLabels(
                 0,
                 """
                     const-string v0, "brave.p3a.enabled"

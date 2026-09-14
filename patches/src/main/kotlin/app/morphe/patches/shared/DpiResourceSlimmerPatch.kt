@@ -164,10 +164,16 @@ val dpiResourceSlimmerPatch = resourcePatch(
 
     execute {
         val resDir = get("res")
-        if (!resDir.exists() || !resDir.isDirectory) return@execute
+        if (!resDir.exists() || !resDir.isDirectory) {
+            println("[DPI Resource Slimmer] Skipped: res directory not found.")
+            return@execute
+        }
 
         val keepSet = parseTargetDpis(targetDpis)
-        val allDirs = resDir.listFiles { f -> f.isDirectory }?.toList() ?: return@execute
+        val allDirs = resDir.listFiles { f -> f.isDirectory }?.toList() ?: run {
+            println("[DPI Resource Slimmer] Skipped: res directory has no subdirectories.")
+            return@execute
+        }
 
         val keptDirs = allDirs.filter { isGraphicResourceDirectory(it.name) && extractDensityQualifier(it.name) in keepSet }
         if (keptDirs.isEmpty()) {
