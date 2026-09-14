@@ -68,7 +68,7 @@
 
 <!-- PATCHES_START -->
 <details>
-<summary>Gboard Lite&nbsp;&nbsp;•&nbsp;&nbsp;16 patches</summary>
+<summary>Gboard Lite&nbsp;&nbsp;•&nbsp;&nbsp;**16 patches**</summary>
 <br>
 
 **Supported versions:**
@@ -98,7 +98,7 @@
 </details>
 
 <details>
-<summary>Brave Private Web Browser, VPN&nbsp;&nbsp;•&nbsp;&nbsp;9 patches</summary>
+<summary>Brave Private Web Browser, VPN&nbsp;&nbsp;•&nbsp;&nbsp;**9 patches**</summary>
 <br>
 
 **Supported versions:**
@@ -121,7 +121,7 @@
 </details>
 
 <details>
-<summary>Hevy - Gym Log Workout Tracker&nbsp;&nbsp;•&nbsp;&nbsp;4 patches</summary>
+<summary>Hevy - Gym Log Workout Tracker&nbsp;&nbsp;•&nbsp;&nbsp;**4 patches**</summary>
 <br>
 
 **Supported versions:**
@@ -139,7 +139,7 @@
 </details>
 
 <details>
-<summary>Vivaldi Browser - Fast & Safe&nbsp;&nbsp;•&nbsp;&nbsp;12 patches</summary>
+<summary>Vivaldi Browser - Fast & Safe&nbsp;&nbsp;•&nbsp;&nbsp;**12 patches**</summary>
 <br>
 
 **Supported versions:**
@@ -165,7 +165,7 @@
 </details>
 
 <details>
-<summary>TikTok&nbsp;&nbsp;•&nbsp;&nbsp;16 patches</summary>
+<summary>TikTok&nbsp;&nbsp;•&nbsp;&nbsp;**16 patches**</summary>
 <br>
 
 **Supported versions:**
@@ -180,7 +180,7 @@
 | **Device Privacy Guard** | Neutralizes background clipboard snooping routines and blocks screenshot/recording detection listeners to protect user data from unauthorized tracking and popup modals. |  |
 | **Disable Push Notifications** | Neutralizes background push notification tasks and persistent socket wake locks to eliminate background battery drain. |  |
 | **Feed Ad Blocker** | Removes sponsored advertisements, brand promotions, and promotional audio from the For You and Following feeds. |  |
-| **Feed Live Stream Blocker** | Removes live stream broadcast cards and live recommendations from the For You and Following feeds. |  |
+| **Feed Live Stream Blocker** | Removes live broadcast cards and live recommendations from the For You and Following feeds. |  |
 | **Hide TikTok Shop Anchors** | Removes product showcase badges, shopping cart tags, and TikTok Shop commercial anchors from video posts in the feed. |  |
 | **Instant Launch & Splash Blocker** | Eliminates cold startup delays, real-time splash advertisements, and background TopView preloading (<0.4s launch). |  |
 | **Language Pack Purger** | Strips unselected language string bundles from assets/strings#lang_* to save APK space. | • Languages to keep |
@@ -195,7 +195,7 @@
 </details>
 
 <details>
-<summary>Universal&nbsp;&nbsp;•&nbsp;&nbsp;4 patches</summary>
+<summary>Universal&nbsp;&nbsp;•&nbsp;&nbsp;**4 patches**</summary>
 <br>
 
 | Patch | Description | Options |
