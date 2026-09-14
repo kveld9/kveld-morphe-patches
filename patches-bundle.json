@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-09-14T21:34:06",
-  "description": "## [1.26.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.25.2...v1.26.0) (2026-09-14)\n\n### New Features\n\n* **gboard:** add clipboard enhancements patch ([2a13c2e](https://github.com/kveld9/kveld-morphe-patches/commit/2a13c2e5dd5eacdee4f6c19893f3b5b293318129))",
-  "download_url": "https://github.com/kveld9/kveld-morphe-patches/releases/download/v1.26.0/patches-1.26.0.mpp",
+  "created_at": "2026-09-14T21:38:42",
+  "description": "## [1.26.1](https://github.com/kveld9/kveld-morphe-patches/compare/v1.26.0...v1.26.1) (2026-09-14)\n\n### Bug Fixes\n\n* **tiktok:** fix watermark removal and stream redirection ([42fab99](https://github.com/kveld9/kveld-morphe-patches/commit/42fab99d5e6c0ec9000c45c728821e2dc3267b5b))",
+  "download_url": "https://github.com/kveld9/kveld-morphe-patches/releases/download/v1.26.1/patches-1.26.1.mpp",
   "signature_download_url": "",
-  "version": "1.26.0"
+  "version": "1.26.1"
 }
