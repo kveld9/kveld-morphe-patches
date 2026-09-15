@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-09-14T23:20:34",
-  "description": "## [1.27.1](https://github.com/kveld9/kveld-morphe-patches/compare/v1.27.0...v1.27.1) (2026-09-14)\n\n### Bug Fixes\n\n* **tiktok:** correct register indices and speed persistence bounds ([05307bb](https://github.com/kveld9/kveld-morphe-patches/commit/05307bb2de40a4134048553b505c22ff687478a7))",
-  "download_url": "https://github.com/kveld9/kveld-morphe-patches/releases/download/v1.27.1/patches-1.27.1.mpp",
+  "created_at": "2026-09-15T01:16:34",
+  "description": "## [1.27.2](https://github.com/kveld9/kveld-morphe-patches/compare/v1.27.1...v1.27.2) (2026-09-15)\n\n### Bug Fixes\n\n* **tiktok:** resolve ART SIGSEGV on feed loading and video playback ([06f59be](https://github.com/kveld9/kveld-morphe-patches/commit/06f59be19c7fa8469134473512e5660228136e71)), closes [#31](https://github.com/kveld9/kveld-morphe-patches/issues/31)",
+  "download_url": "https://github.com/kveld9/kveld-morphe-patches/releases/download/v1.27.2/patches-1.27.2.mpp",
   "signature_download_url": "",
-  "version": "1.27.1"
+  "version": "1.27.2"
 }
