@@ -1,1 +1,5 @@
 blank_issues_enabled: false
+contact_links:
+  - name: 💬 Telegram Support Group
+    url: https://t.me/kveldmorphe
+    about: Ask questions, get help with patching/setup, or discuss features before opening an issue.
