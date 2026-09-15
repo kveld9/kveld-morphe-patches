@@ -1,6 +1,6 @@
 # 🎵 TikTok: Technical Patch Specifications & Deep Breakdown
 
-Comprehensive breakdown of the **17 patches** included in the Morphe TikTok patch suite pinned to target version **`46.9.3`** (supporting both `com.zhiliaoapp.musically` Global and `com.ss.android.ugc.trill` Asia APKs).
+Comprehensive breakdown of the **18 patches** included in the Morphe TikTok patch suite pinned to target version **`46.9.3`** (supporting both `com.zhiliaoapp.musically` Global and `com.ss.android.ugc.trill` Asia APKs).
 
 ---
 
@@ -15,6 +15,7 @@ Comprehensive breakdown of the **17 patches** included in the Morphe TikTok patc
 | **Privacy** | **Feed Ad Blocker** | `bytecodePatch` | Filters sponsored cards, brand promotions, and commercial audio |
 | **Privacy** | **Hide TikTok Shop Anchors** | `bytecodePatch` | Removes product showcase badges, shopping cart tags, and shop anchors |
 | **Privacy** | **Feed Live Stream Blocker** | `bytecodePatch` | Removes live broadcast cards and live recommendations from FYP and Following |
+| **Privacy** | **Feed Bloat & Distraction Blocker** | `bytecodePatch` | Removes friend suggestions, mini-games, CapCut/creation prompts, memories, surveys, mini-dramas, Lemon8 promo |
 | **Privacy** | **Unified Telemetry & Tracker Silencer** | `bytecodePatch` | Neutralizes ByteDance AppLog, APM/Npth/Heimdallr crash telemetry, and AppsFlyer |
 | **Privacy** | **Update Prompt Suppressor** | `bytecodePatch` | Neutralizes background update polling tasks and device ID check routines |
 | **Performance** | **Instant Launch & Splash Blocker** | `bytecodePatch` | Eliminates cold start delays, splash ad tasks, and TopView preload waits (<0.4s) |
@@ -75,9 +76,10 @@ Comprehensive breakdown of the **17 patches** included in the Morphe TikTok patc
   * **Clipboard Snooping Protection**:
     * Neutralizes `IMMessageListClipboardServiceImpl.LIZ()` -> `return-void`.
   * **Screenshot & Screen Recording Detection Suppression**:
-    * Neutralizes Lego screenshot task initialization: `ScreenShotTaskHolder$BootFinish`, `ScreenShotFeedbackTaskHolder$BootFinish`, `ScreenShotTask`, `ScreenShotFeedbackTask`, and `ScreenRecordingMonitorInitTask` -> `return-void`.
+    * Neutralizes Lego screenshot task initialization: `ScreenShotTaskHolder$BootFinish`, `ScreenShotFeedbackTaskHolder$BootFinish`, `ScreenShotTask`, `ScreenShotFeedbackTask`, `ScreenRecordingMonitorInitTask`, `InternalShareScreenshotTask`, and `InternalShareScreenshotTaskHolder$BootFinish` -> `return-void`.
     * Neutralizes `ScreenShotFeedbackService.onShot()Z` -> returns `false`.
     * Neutralizes `ScreenShotFeedbackService.safelyShowDialog()` -> `return-void` (eliminates modal dialogs prompting for feedback upon taking a screenshot).
+    * Suppresses quick-share popup modals and Tako AI screenshot triggers.
 
 ### 5. Feed Ad Blocker (`tikTokFeedAdBlockerPatch`)
 * **Objective**: Completely clean the For You Page (FYP) and Following feeds from promotional intrusions.
@@ -101,14 +103,31 @@ Comprehensive breakdown of the **17 patches** included in the Morphe TikTok patc
     * Inspects video items for `Aweme.isLive() == true` or `Aweme.getAwemeType() == 101`.
     * Purges matching live broadcast cards from feed lists before UI adapter binding.
 
-### 8. Unified Telemetry & Tracker Silencer (`unifiedTelemetryTrackerSilencerPatch`)
+### 8. Feed Bloat & Distraction Blocker (`feedBloatBlockerPatch`)
+* **Objective**: Eliminate non-video clutter, intrusive recommendation cards, mini-games, creation prompts, surveys, and promotional distraction cards from the For You and Following feeds.
+* **Internal Mechanisms**:
+  * Hooks `FeedApiService.fetchFeedList()`, `FeedItemList.getItems()`, and `FollowFeedList.getItems()`.
+  * Neutralizes Lego cross-promotion task `Lemon8ServiceInitTask.run(Context)`.
+  * Delegates to `TikTokFeedAdFilter.isFeedBloat(Aweme)`:
+    * **Suggested Accounts**: `Aweme.getAwemeType() == 4004` (`TTRecUserBigCardViewHolder`), `CardInsertInfo.getCardType() == 49`, `Aweme.isFriendsTabFakeAweme() == true`, `Aweme.getRecommendCardType() > 0`.
+    * **Mini-Games**: `Aweme.getAwemeType() == 104` or `CardInsertInfo.getCardType() == 120` (`MiniGameInstantPlayCardVH`).
+    * **Creation & CapCut Prompts**: `CardInsertInfo.getCardType() in 188..191` (`CreationFeedCardViewHolder`).
+    * **Memories ("En este día")**: `CardInsertInfo.getCardType() == 127` (`OnThisDayCreationCardViewHolder`).
+    * **EOY Recaps & Inspiration**: `CardInsertInfo.getCardType() == 84`, `CardInsertInfo.getCardType() == 176`.
+    * **AI Remix & Effects**: `CardInsertInfo.getCardType() == 113`, `CardInsertInfo.getCardType() == 2`.
+    * **Surveys & Feedback**: `CardInsertInfo.getCardType() == 4` or `16` (`BottomSurveyAssem`).
+    * **Mini-Dramas & Series Promos**: `Aweme.getAwemeType() == 110` (`MiniDramaCard`).
+    * **Lynx In-Feed Promos**: `Aweme.getAwemeType() == 106`.
+  * Prunes matching cards from list iterators in-situ with zero crashes or UI gaps.
+
+### 9. Unified Telemetry & Tracker Silencer (`unifiedTelemetryTrackerSilencerPatch`)
 * **Objective**: Cut off background surveillance, user behavior analytics, and diagnostic reporting to ByteDance servers.
 * **Internal Mechanisms**:
   * **ByteDance AppLog**: Neutralizes `AppLog.onEvent()` and `AppLog.report()` entrypoints with immediate `return-void`.
   * **Crash Handlers & Telemetry Schedulers**: Neutralizes Lego initialization tasks for Npth crash reporting (`NpthCoreInitTask`), APM metrics (`ApmInit`), and Heimallr performance monitors.
   * **Attribution Trackers**: Neutralizes `InitAppsFlyer` and Firebase analytics startup initialization tasks.
 
-### 9. Update Prompt Suppressor (`disableInAppUpdateNagsPatch`)
+### 10. Update Prompt Suppressor (`disableInAppUpdateNagsPatch`)
 * **Objective**: Prevent forced upgrade popups and version enforcement dialogs.
 * **Internal Mechanisms**:
   * Neutralizes Lego update check tasks: `CheckUpdateChangeDeviceIDTaskHolder$Background`, `UpdateTaskHolder$Background`, `CheckUpdateChangeDeviceIDTaskHolder$BootFinish`, and `UpdateTaskHolder$BootFinish`.
@@ -118,7 +137,7 @@ Comprehensive breakdown of the **17 patches** included in the Morphe TikTok patc
 
 ## ⚡ Performance, RAM & Battery
 
-### 10. Instant Launch & Splash Blocker (`instantColdStartPatch`)
+### 11. Instant Launch & Splash Blocker (`instantColdStartPatch`)
 * **Objective**: Accelerate application launch time to sub-second speeds (<0.4s) and bypass startup ads.
 * **Internal Mechanisms**:
   * Neutralizes Lego splash tasks: `SplashAdManagerPreloadTask.run()` and `SplashAdManagerPreloadTaskEntry.run()`.
@@ -126,7 +145,7 @@ Comprehensive breakdown of the **17 patches** included in the Morphe TikTok patc
   * Neutralizes `RealTimeSplashManagerImpl.LIZJ()` -> `return false` (eliminates synchronous waiting for remote TopView splash video assets during cold start).
   * Neutralizes `SplashAdServiceImpl.LJ()`, `LJIILJJIL()`, and `LJJIJIIJIL()` -> `return false` (suppresses splash ad presentation and background fetch).
 
-### 11. Resource & Battery Governor (`resourceGovernorPatch`)
+### 12. Resource & Battery Governor (`resourceGovernorPatch`)
 * **Objective**: Eliminate battery-draining background operations, sensor polling, and memory leaks.
 * **Internal Mechanisms**:
   * **3D Ad Sensors & Gyroscope Polling**:
@@ -137,17 +156,17 @@ Comprehensive breakdown of the **17 patches** included in the Morphe TikTok patc
   * **Memory Retention Governor**:
     * Caps animated bitmap frame caching in Facebook Fresco (`FrescoFrameCache.LIZJ()`, `LJFF()`), preventing OOM crashes during long scrolling sessions.
 
-### 12. Disable Push Notifications (`disablePushNotificationsPatch`)
+### 13. Disable Push Notifications (`disablePushNotificationsPatch`)
 * **Objective**: Neutralize background push notification tasks and persistent socket wake locks to eliminate background battery drain.
 * **Internal Mechanisms**:
   * Neutralizes `InitPushTask.run()` -> disables early startup wake lock acquisition and persistent background push sockets.
 
-### 13. Live Stream 3D Gift Optimizer (`liveGiftEffectOptimizerPatch`)
+### 14. Live Stream 3D Gift Optimizer (`liveGiftEffectOptimizerPatch`)
 * **Objective**: Disable Live 3D gift particle effect engine and widget rendering lifecycle to eliminate frame drops during live streams.
 * **Internal Mechanisms**:
   * Injects `return-void` into `LiveGiftEffectWidget.initView()` and `LiveGiftEffectWidget.onCreate()`.
 
-### 14. Live Stream SDK & Minigame De-bloat (`liveStreamSuiteOptimizerPatch`)
+### 15. Live Stream SDK & Minigame De-bloat (`liveStreamSuiteOptimizerPatch`)
 * **Objective**: Strip unneeded native libraries and assets for users who only watch regular videos or standard live streams.
 * **Internal Mechanisms**:
   * Zeroes out native interactive streaming binaries: `liblink_mic_sdk.so`.
@@ -157,7 +176,7 @@ Comprehensive breakdown of the **17 patches** included in the Morphe TikTok patc
 
 ## 📦 APK Size & Resource Slimming
 
-### 15. Core Asset De-bloat (`coreAssetDebloatPatch`)
+### 16. Core Asset De-bloat (`coreAssetDebloatPatch`)
 * **Objective**: Strip unneeded third-party SDK models and embedded engines.
 * **Internal Mechanisms**:
   * Strips embedded Microblink credit card and document OCR scanning models (`assets/microblink/`).
@@ -165,15 +184,16 @@ Comprehensive breakdown of the **17 patches** included in the Morphe TikTok patc
   * Prunes non-Latin and exotic bundled fonts (`assets/fonts/` such as Khmer, Lao, Myanmar, Burmese).
   * Zeroes out embedded V8 JavaScript runtimes for TikTok mini-apps (`libminiapp`, `libv8`).
 
-### 16. Studio & Creation De-bloat (`creatorBloatSlimmerPatch`)
-* **Objective**: Massive APK reduction for consumption-only users (>22 MB saved).
+### 17. Studio & Creation De-bloat (`creatorBloatSlimmerPatch`)
+* **Objective**: Strip camera AR face filters, virtual stickers, and advanced video editor engines for feed-only users.
 * **Internal Mechanisms**:
-  * Zeroes out the camera AR effect rendering engine: `libeffect_plugin.so`.
-  * Zeroes out the built-in CapCut-derived video editing and encoding suite: `libttvesdk_plugin.so`.
-  * Prunes facial mesh and AR tracking models.
+  * Zeroes out camera AR effects engine: `libeffect_plugin.so` (~25 MB).
+  * Zeroes out video editor SDK: `libttvesdk_plugin.so` (~22 MB).
+  * Purges bundled face mesh and facial landmark tracking models.
 
-### 17. Language Pack Purger (`localeSlimmerPatch`)
-* **Objective**: Remove unwanted translations from `assets/strings#lang_*`.
+### 18. Language Pack Purger (`localeResourceSlimmerPatch`)
+* **Objective**: Reclaim substantial APK storage by stripping unused localized strings while preserving user-selected languages (default: English).
 * **Internal Mechanisms**:
-  * Parses localized string bundles and deletes unselected language packs.
+  * Scans `assets/strings#lang_*` bundles and removes unselected translation files.
+  * Preserves default app language to ensure zero missing resource exceptions.
   * Configurable via the `languages` option (defaults to preserving English: `"en"`).

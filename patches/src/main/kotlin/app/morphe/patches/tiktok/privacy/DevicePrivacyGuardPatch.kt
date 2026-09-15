@@ -51,6 +51,8 @@ val devicePrivacyGuardPatch = bytecodePatch(
             "Lcom/ss/android/ugc/aweme/legoImpl/task/ScreenShotTask;",
             "Lcom/ss/android/ugc/aweme/legoImpl/task/ScreenShotFeedbackTask;",
             "Lcom/ss/android/ugc/aweme/legoImp/task/ScreenRecordingMonitorInitTask;",
+            "Lcom/ss/android/ugc/aweme/im/sharepanel/impl/screenshotshare/InternalShareScreenshotTask;",
+            "Lcom/ss/android/ugc/aweme/im/sharepanel/impl/screenshotshare/InternalShareScreenshotTaskHolder\$BootFinish;",
         )
         contextTasks.forEach { taskClass ->
             try {
