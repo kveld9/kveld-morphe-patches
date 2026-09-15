@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.28.1",
+  "version": "1.29.0",
   "patches": [
     {
       "name": "APK Junk Cleaner",
@@ -123,6 +123,13 @@
           "appIconColor": "#FF4500",
           "signatures": null,
           "targets": [
+            {
+              "version": "3.1.14",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            },
             {
               "version": "3.1.13",
               "versionCodes": null,
@@ -1265,6 +1272,13 @@
           "signatures": null,
           "targets": [
             {
+              "version": "3.1.14",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            },
+            {
               "version": "3.1.13",
               "versionCodes": null,
               "isExperimental": false,
@@ -1290,6 +1304,13 @@
           "appIconColor": "#FF4500",
           "signatures": null,
           "targets": [
+            {
+              "version": "3.1.14",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            },
             {
               "version": "3.1.13",
               "versionCodes": null,
@@ -1963,6 +1984,13 @@
           "appIconColor": "#FF4500",
           "signatures": null,
           "targets": [
+            {
+              "version": "3.1.14",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            },
             {
               "version": "3.1.13",
               "versionCodes": null,
