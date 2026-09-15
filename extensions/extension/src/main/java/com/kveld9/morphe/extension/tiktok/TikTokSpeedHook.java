@@ -38,8 +38,12 @@ public final class TikTokSpeedHook {
      * Enforces normal 1.0x speed on live streams to protect stream sync.
      */
     public static float getPlaybackSpeed(Object aweme, float fallbackDefault) {
-        if (aweme != null && TikTokFeedAdFilter.isLiveStream(aweme)) {
-            return 1.0f;
+        if (aweme != null) {
+            try {
+                if (TikTokFeedAdFilter.isLiveStream(aweme)) {
+                    return 1.0f;
+                }
+            } catch (Throwable ignored) {}
         }
 
         if (cachedSpeed > 0.0f) {

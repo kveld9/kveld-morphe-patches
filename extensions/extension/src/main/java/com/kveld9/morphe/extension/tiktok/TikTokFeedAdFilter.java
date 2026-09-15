@@ -22,6 +22,7 @@ public final class TikTokFeedAdFilter {
 
     public static volatile boolean stripShopAnchors = true;
 
+    private static Class<?> awemeClass;
     private static Method isAdMethod;
     private static Method isSoftAdMethod;
     private static Method isWithPromotionalMusicMethod;
@@ -59,7 +60,7 @@ public final class TikTokFeedAdFilter {
             }
             if (classLoader == null) return;
 
-            Class<?> awemeClass = null;
+            awemeClass = null;
             try {
                 awemeClass = classLoader.loadClass("com.ss.android.ugc.aweme.feed.model.Aweme");
             } catch (Throwable t) {
@@ -76,19 +77,20 @@ public final class TikTokFeedAdFilter {
                 return;
             }
 
-            try { isAdMethod = awemeClass.getMethod("isAd"); } catch (Throwable ignored) {}
-            try { isSoftAdMethod = awemeClass.getMethod("isSoftAd"); } catch (Throwable ignored) {}
-            try { isWithPromotionalMusicMethod = awemeClass.getMethod("isWithPromotionalMusic"); } catch (Throwable ignored) {}
-            try { getAwemeRawAdMethod = awemeClass.getMethod("getAwemeRawAd"); } catch (Throwable ignored) {}
-            try { getLinkAdDataMethod = awemeClass.getMethod("getLinkAdData"); } catch (Throwable ignored) {}
-            try { getShareUrlMethod = awemeClass.getMethod("getShareUrl"); } catch (Throwable ignored) {}
-            try { isLiveMethod = awemeClass.getMethod("isLive"); } catch (Throwable ignored) {}
-            try { getAwemeTypeMethod = awemeClass.getMethod("getAwemeType"); } catch (Throwable ignored) {}
-            try { setAnchorsMethod = awemeClass.getMethod("setAnchors", List.class); } catch (Throwable ignored) {}
+            try { isAdMethod = awemeClass.getMethod("isAd"); isAdMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { isSoftAdMethod = awemeClass.getMethod("isSoftAd"); isSoftAdMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { isWithPromotionalMusicMethod = awemeClass.getMethod("isWithPromotionalMusic"); isWithPromotionalMusicMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { getAwemeRawAdMethod = awemeClass.getMethod("getAwemeRawAd"); getAwemeRawAdMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { getLinkAdDataMethod = awemeClass.getMethod("getLinkAdData"); getLinkAdDataMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { getShareUrlMethod = awemeClass.getMethod("getShareUrl"); getShareUrlMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { isLiveMethod = awemeClass.getMethod("isLive"); isLiveMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { getAwemeTypeMethod = awemeClass.getMethod("getAwemeType"); getAwemeTypeMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { setAnchorsMethod = awemeClass.getMethod("setAnchors", List.class); setAnchorsMethod.setAccessible(true); } catch (Throwable ignored) {}
             try {
                 for (Method m : awemeClass.getMethods()) {
                     if ("setAnchorInfo".equals(m.getName()) && m.getParameterTypes().length == 1) {
                         setAnchorInfoMethod = m;
+                        setAnchorInfoMethod.setAccessible(true);
                         break;
                     }
                 }
@@ -96,7 +98,7 @@ public final class TikTokFeedAdFilter {
 
             try {
                 Class<?> followClass = awemeClass.getClassLoader().loadClass("com.ss.android.ugc.aweme.follow.presenter.FollowFeed");
-                try { followGetAwemeMethod = followClass.getMethod("getAweme"); } catch (Throwable ignored) {}
+                try { followGetAwemeMethod = followClass.getMethod("getAweme"); followGetAwemeMethod.setAccessible(true); } catch (Throwable ignored) {}
                 try {
                     followAwemeField = followClass.getDeclaredField("aweme");
                     followAwemeField.setAccessible(true);
@@ -112,6 +114,9 @@ public final class TikTokFeedAdFilter {
         if (aweme == null) return false;
         if (!initialized) {
             ensureInitialized(aweme.getClass().getClassLoader());
+        }
+        if (awemeClass != null && !awemeClass.isInstance(aweme)) {
+            return false;
         }
         try {
             if (isAdMethod != null && Boolean.TRUE.equals(isAdMethod.invoke(aweme))) {
@@ -144,6 +149,9 @@ public final class TikTokFeedAdFilter {
         if (!initialized) {
             ensureInitialized(aweme.getClass().getClassLoader());
         }
+        if (awemeClass != null && !awemeClass.isInstance(aweme)) {
+            return false;
+        }
         try {
             if (isLiveMethod != null && Boolean.TRUE.equals(isLiveMethod.invoke(aweme))) {
                 return true;
@@ -166,6 +174,9 @@ public final class TikTokFeedAdFilter {
         if (!stripShopAnchors || aweme == null) return;
         if (!initialized) {
             ensureInitialized(aweme.getClass().getClassLoader());
+        }
+        if (awemeClass != null && !awemeClass.isInstance(aweme)) {
+            return;
         }
         try {
             if (setAnchorsMethod != null) {
