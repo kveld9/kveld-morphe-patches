@@ -27,8 +27,10 @@
 ### ⌨️ Gboard Lite
 - **Current Target**: `18.2.4.969776716-lite_beta-arm64-v8a` (or `armeabi-v7a`)
 - **Architecture**: `arm64-v8a` or `armeabi-v7a` (nodpi APK)
-- **Source**: [APKMirror (Gboard Lite)](https://www.apkmirror.com/apk/google-inc/gboard/)
+- **Package**: `com.google.android.inputmethod.latin`
 - ⚠️ *Fresh install?* Read the [Gboard Offline Dictionary & Glide Typing Setup](docs/gboard-setup.md) before applying background debloat patches.
+
+<a href="https://www.apkmirror.com/apk/google-inc/gboard/gboard-18-2-4-969776716-release/"><img src="https://img.shields.io/badge/Download-Gboard_Lite_18.2.4.969776716_(APK_nodpi)-4285F4?style=for-the-badge&logo=google&logoColor=white" alt="Download Gboard Lite APK" /></a>
 
 ### 🦁 Brave Browser
 - **Current Target**: `1.95.101` (`Bravemonoarm64.apk`)

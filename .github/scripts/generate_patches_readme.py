@@ -223,6 +223,15 @@ for entry in by_app.values():
                 readme,
                 count=1,
             )
+            base_ver = target_ver.split("-")[0]
+            slug_ver = base_ver.replace(".", "-")
+            # Gboard direct download badge button
+            readme = re.sub(
+                r'<a href="https://www\.apkmirror\.com/apk/google-inc/gboard/gboard-[^/]+-release/"><img src="https://img\.shields\.io/badge/Download-Gboard_Lite_[^"]+" alt="Download Gboard Lite APK" /></a>',
+                f'<a href="https://www.apkmirror.com/apk/google-inc/gboard/gboard-{slug_ver}-release/"><img src="https://img.shields.io/badge/Download-Gboard_Lite_{base_ver}_(APK_nodpi)-4285F4?style=for-the-badge&logo=google&logoColor=white" alt="Download Gboard Lite APK" /></a>',
+                readme,
+                count=1,
+            )
         elif any("vivaldi" in p for p in pkgs):
             # Vivaldi current target
             readme = re.sub(
