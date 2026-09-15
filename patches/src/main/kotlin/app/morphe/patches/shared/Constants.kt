@@ -43,7 +43,7 @@ object Constants {
     )
 
     const val VIVALDI_PACKAGE_NAME = "com.vivaldi.browser"
-    const val VIVALDI_TARGET_VERSION = "8.2.4147.58"
+    const val VIVALDI_TARGET_VERSION = "8.2.4147.77"
 
     val COMPATIBILITY_VIVALDI = Compatibility(
         name = "Vivaldi Browser - Fast & Safe",
@@ -53,7 +53,7 @@ object Constants {
         targets = listOf(
             AppTarget(
                 version = VIVALDI_TARGET_VERSION,
-                description = "Download 8.2.4147.58 (arm64-v8a APKM bundle) from APKMirror"
+                description = "Download 8.2.4147.77 (arm64-v8a APKM bundle) from APKMirror"
             )
         )
     )

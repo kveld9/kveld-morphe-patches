@@ -72,9 +72,10 @@ enum class TargetApp(
         packageName = Constants.VIVALDI_PACKAGE_NAME,
         candidateFilenames = listOf(
             "Vivaldi.${Constants.VIVALDI_TARGET_VERSION}_arm64-v8a.apk",
+            "Vivaldi.${Constants.VIVALDI_TARGET_VERSION}_arm64-v8a.apkm",
             "Vivaldi.8.2.4147.58_arm64-v8a.apk",
         ),
-        filePattern = Regex("(?i).*vivaldi.*\\.apk$"),
+        filePattern = Regex("(?i).*vivaldi.*\\.(?:apk|apkm)$"),
         patchDirectoryPart = "vivaldi",
     ),
     HEVY(
