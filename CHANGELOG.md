@@ -1,3 +1,9 @@
+## [1.30.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.29.0...v1.30.0) (2026-09-15)
+
+### New Features
+
+* **tiktok:** add feed bloat blocker and neutralize screenshot share panel ([2487de2](https://github.com/kveld9/kveld-morphe-patches/commit/2487de2ce66c7b332237461c42add316300e7781))
+
 ## [1.29.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.28.1...v1.29.0) (2026-09-15)
 
 ### New Features
