@@ -112,7 +112,7 @@ Comprehensive breakdown of the **18 patches** included in the Morphe TikTok patc
     * **Suggested Accounts**: `Aweme.getAwemeType() == 4004` (`TTRecUserBigCardViewHolder`), `CardInsertInfo.getCardType() == 49`, `Aweme.isFriendsTabFakeAweme() == true`, `Aweme.getRecommendCardType() > 0`.
     * **Mini-Games**: `Aweme.getAwemeType() == 104` or `CardInsertInfo.getCardType() == 120` (`MiniGameInstantPlayCardVH`).
     * **Creation & CapCut Prompts**: `CardInsertInfo.getCardType() in 188..191` (`CreationFeedCardViewHolder`).
-    * **Memories ("En este día")**: `CardInsertInfo.getCardType() == 127` (`OnThisDayCreationCardViewHolder`).
+    * **Memories ("On This Day")**: `CardInsertInfo.getCardType() == 127` (`OnThisDayCreationCardViewHolder`).
     * **EOY Recaps & Inspiration**: `CardInsertInfo.getCardType() == 84`, `CardInsertInfo.getCardType() == 176`.
     * **AI Remix & Effects**: `CardInsertInfo.getCardType() == 113`, `CardInsertInfo.getCardType() == 2`.
     * **Surveys & Feedback**: `CardInsertInfo.getCardType() == 4` or `16` (`BottomSurveyAssem`).

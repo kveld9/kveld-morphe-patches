@@ -9,7 +9,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
 val feedBloatBlockerPatch = bytecodePatch(
     name = "Feed Bloat & Distraction Blocker",
-    description = "Removes non-video clutter from the For You and Following feeds, including suggested friend cards, mini-games, CapCut/template creation prompts, memories ('En este día'), surveys, mini-drama paywalls, and Lemon8 promo tasks.",
+    description = "Removes non-video clutter from the For You and Following feeds, including suggested friend cards, mini-games, CapCut/template creation prompts, memories ('On This Day'), surveys, mini-drama paywalls, and Lemon8 promo tasks.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)

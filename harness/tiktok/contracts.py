@@ -128,7 +128,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
         patch_id="feed_bloat_blocker",
         name="Feed Bloat & Distraction Blocker",
         target_type="bytecode",
-        description="Removes non-video clutter from the For You and Following feeds, including suggested friend cards, mini-games, CapCut/template creation prompts, memories ('En este día'), surveys, mini-drama paywalls, and Lemon8 promo tasks.",
+        description="Removes non-video clutter from the For You and Following feeds, including suggested friend cards, mini-games, CapCut/template creation prompts, memories ('On This Day'), surveys, mini-drama paywalls, and Lemon8 promo tasks.",
         required_classes=[
             "Lcom/ss/android/ugc/aweme/feed/FeedApiService;",
             "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;",
