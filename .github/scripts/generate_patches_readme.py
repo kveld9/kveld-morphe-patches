@@ -227,8 +227,8 @@ for entry in by_app.values():
             slug_ver = base_ver.replace(".", "-")
             # Gboard direct download badge button
             readme = re.sub(
-                r'<a href="https://www\.apkmirror\.com/apk/google-inc/gboard/gboard-[^/]+-release/"><img src="https://img\.shields\.io/badge/Download-Gboard_Lite_[^"]+" alt="Download Gboard Lite APK" /></a>',
-                f'<a href="https://www.apkmirror.com/apk/google-inc/gboard/gboard-{slug_ver}-release/"><img src="https://img.shields.io/badge/Download-Gboard_Lite_{base_ver}_(APK_nodpi)-4285F4?style=for-the-badge&logo=google&logoColor=white" alt="Download Gboard Lite APK" /></a>',
+                r'<a href="https://www\.apkmirror\.com/apk/google-inc/gboard/(?:gboard|gboard-the-google-keyboard)-[^/]+-release/"><img src="https://img\.shields\.io/badge/Download-Gboard_Lite_[^"]+" alt="Download Gboard Lite APK" /></a>',
+                f'<a href="https://www.apkmirror.com/apk/google-inc/gboard/gboard-the-google-keyboard-{slug_ver}-release/"><img src="https://img.shields.io/badge/Download-Gboard_Lite_{base_ver}_(APK_nodpi)-4285F4?style=for-the-badge&logo=google&logoColor=white" alt="Download Gboard Lite APK" /></a>',
                 readme,
                 count=1,
             )
@@ -273,15 +273,15 @@ for entry in by_app.values():
             # TikTok Global download badge
             slug_ver = target_ver.replace(".", "-")
             readme = re.sub(
-                r'<a href="https://www\.apkmirror\.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tik-tok-including-musical-ly-[^/]+-release/"><img src="https://img\.shields\.io/badge/Download-TikTok_Global_[^"]+" alt="Download TikTok Global APK" /></a>',
-                f'<a href="https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tik-tok-including-musical-ly-{slug_ver}-release/"><img src="https://img.shields.io/badge/Download-TikTok_Global_{target_ver}_(APK_nodpi)-FE2C55?style=for-the-badge&logo=tiktok&logoColor=white" alt="Download TikTok Global APK" /></a>',
+                r'<a href="https://www\.apkmirror\.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/(?:tik-tok-including-musical-ly|tiktok)-[^/]+-release/"><img src="https://img\.shields\.io/badge/Download-TikTok_Global_[^"]+" alt="Download TikTok Global APK" /></a>',
+                f'<a href="https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-{slug_ver}-release/"><img src="https://img.shields.io/badge/Download-TikTok_Global_{target_ver}_(APK_nodpi)-FE2C55?style=for-the-badge&logo=tiktok&logoColor=white" alt="Download TikTok Global APK" /></a>',
                 readme,
                 count=1,
             )
             # TikTok Asia download badge
             readme = re.sub(
-                r'<a href="https://www\.apkmirror\.com/apk/tiktok-pte-ltd/tik-tok-asia/tik-tok-asia-[^/]+-release/"><img src="https://img\.shields\.io/badge/Download-TikTok_Asia_[^"]+" alt="Download TikTok Asia APK" /></a>',
-                f'<a href="https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-asia/tik-tok-asia-{slug_ver}-release/"><img src="https://img.shields.io/badge/Download-TikTok_Asia_{target_ver}_(APK_nodpi)-25F4EE?style=for-the-badge&logo=tiktok&logoColor=white" alt="Download TikTok Asia APK" /></a>',
+                r'<a href="https://www\.apkmirror\.com/apk/tiktok-pte-ltd/(?:tik-tok-asia|tik-tok)/(?:tik-tok-asia|tiktok)-[^/]+-release/"><img src="https://img\.shields\.io/badge/Download-TikTok_Asia_[^"]+" alt="Download TikTok Asia APK" /></a>',
+                f'<a href="https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok/tiktok-{slug_ver}-2-release/"><img src="https://img.shields.io/badge/Download-TikTok_Asia_{target_ver}_(APK_nodpi)-25F4EE?style=for-the-badge&logo=tiktok&logoColor=white" alt="Download TikTok Asia APK" /></a>',
                 readme,
                 count=1,
             )
