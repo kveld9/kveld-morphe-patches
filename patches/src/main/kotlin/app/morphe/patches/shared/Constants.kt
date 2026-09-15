@@ -59,7 +59,7 @@ object Constants {
     )
 
     const val HEVY_PACKAGE_NAME = "com.hevy"
-    const val HEVY_TARGET_VERSION = "3.1.13"
+    const val HEVY_TARGET_VERSION = "3.1.14"
 
     val COMPATIBILITY_HEVY = Compatibility(
         name = "Hevy - Gym Log Workout Tracker",
@@ -69,6 +69,10 @@ object Constants {
         targets = listOf(
             AppTarget(
                 version = HEVY_TARGET_VERSION,
+                description = "Download com.hevy v$HEVY_TARGET_VERSION (APKM bundle) from APKMirror"
+            ),
+            AppTarget(
+                version = "3.1.13",
                 description = "Download com.hevy v3.1.13 (APKM bundle) from APKMirror"
             )
         )

@@ -48,12 +48,12 @@
 <a href="https://www.apkmirror.com/apk/vivaldi-technologies/vivaldi-browser-beta/vivaldi-browser-fast-safe-8-2-4147-77-release/"><img src="https://img.shields.io/badge/Download-Vivaldi_8.2.4147.77_(APKM)-EF3939?style=for-the-badge&logo=vivaldi&logoColor=white" alt="Download Vivaldi APKM" /></a>
 
 ### 🏋️ Hevy - Gym Log Workout Tracker
-- **Current Target**: `3.1.13` (APKM bundle)
+- **Current Target**: `3.1.14` (APKM bundle)
 - **Architecture**: `arm64-v8a`
 - **Package**: `com.hevy`
 - ⚠️ *Google Sign-In Issue?* Read the [Hevy Setup & Authentication Guide](docs/hevy-setup.md) to log in with Email & Password.
 
-<a href="https://www.apkmirror.com/apk/hevy/hevy-gym-log-workout-tracker/hevy-gym-log-workout-tracker-3-1-13-release/"><img src="https://img.shields.io/badge/Download-Hevy_3.1.13_(APKM)-FF4500?style=for-the-badge&logo=target&logoColor=white" alt="Download Hevy APKM" /></a>
+<a href="https://www.apkmirror.com/apk/hevy-gym-workout-tracker/hevy-gym-log-workout-tracker/hevy-gym-log-workout-tracker-3-1-14-release/"><img src="https://img.shields.io/badge/Download-Hevy_3.1.14_(APKM)-FF4500?style=for-the-badge&logo=target&logoColor=white" alt="Download Hevy APKM" /></a>
 
 ### 🎵 TikTok (Global & Asia)
 - **Current Target**: `46.9.3`

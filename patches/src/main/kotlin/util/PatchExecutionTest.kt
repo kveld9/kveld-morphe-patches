@@ -229,8 +229,26 @@ fun main(args: Array<String>) {
     tempDir.deleteRecursively()
     tempDir.mkdirs()
 
+    val actualApkFile = if (apkFile.name.endsWith(".apkm", ignoreCase = true)) {
+        val apkmExtractDir = File("build/tmp/patcher-apkm-source").absoluteFile
+        apkmExtractDir.deleteRecursively()
+        apkmExtractDir.mkdirs()
+        val extractedBase = File(apkmExtractDir, "base.apk")
+        java.util.zip.ZipFile(apkFile).use { zip ->
+            val entry = zip.getEntry("base.apk") ?: error("No base.apk found in APKM bundle: ${apkFile.name}")
+            zip.getInputStream(entry).use { input ->
+                extractedBase.outputStream().use { output ->
+                    input.copyTo(output)
+                }
+            }
+        }
+        extractedBase
+    } else {
+        apkFile
+    }
+
     val config = PatcherConfig(
-        apkFile = apkFile,
+        apkFile = actualApkFile,
         temporaryFilesPath = tempDir,
         aaptBinaryPath = null,
         frameworkFileDirectory = null,
@@ -286,7 +304,7 @@ fun main(args: Array<String>) {
             val outFile = File(outPath).absoluteFile
             outFile.parentFile?.mkdirs()
             val unsignedApk = File(tempDir, "unsigned.apk")
-            apkFile.copyTo(unsignedApk, overwrite = true)
+            actualApkFile.copyTo(unsignedApk, overwrite = true)
             println("\n[PACK] Applying patcher result to APK...")
             patcherResult.applyTo(unsignedApk)
             println("[SIGN] Signing patched APK -> ${outFile.name}...")
