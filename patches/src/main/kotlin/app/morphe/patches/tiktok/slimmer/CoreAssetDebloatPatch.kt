@@ -112,8 +112,9 @@ val coreAssetDebloatPatch = rawResourcePatch(
             ),
         )
 
-        // 6. SSDP/DLNA local network scanner binary
-        stripNative(abis, listOf("libdex_df_live_cast.so"))
+        // 6. SSDP/DLNA local network scanner binary & ByteDance TTWebView engine
+        stripNative(abis, listOf("libdex_df_live_cast.so", "libdex_df_ttwebview.so"))
+        stripFile("assets/dynamic_feature_install/df_ttwebview.json")
 
         // 7. Microblink OCR models
         stripDirectory("assets/microblink")
