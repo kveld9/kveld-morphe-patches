@@ -52,7 +52,7 @@ val localeSlimmerPatch = rawResourcePatch(
 
             if (strippedFolders > 0) {
                 val savedMb = String.format(java.util.Locale.US, "%.2f", savedBytes.toDouble() / (1024 * 1024))
-                println("[Language Pack Purger] Stripped $strippedFolders unused language packs (retained: ${selectedLangs.joinToString()}) -> Saved $savedMb MB uncompressed (~15 MB in APK)")
+                println("[Language Pack Purger] Stripped $strippedFolders unused language packs (retained: ${selectedLangs.joinToString()}) -> Saved $savedMb MB uncompressed")
             } else {
                 println("[Language Pack Purger] All language packs match retained selection (${selectedLangs.joinToString()}).")
             }

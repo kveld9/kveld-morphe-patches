@@ -8,7 +8,7 @@ import app.morphe.patches.shared.Constants
 val liveGiftEffectOptimizerPatch = bytecodePatch(
     name = "Live Stream 3D Gift Optimizer",
     description = "Disables Live 3D gift particle effect engine and widget rendering lifecycle to eliminate frame drops during live streams.",
-    default = true,
+    default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
 

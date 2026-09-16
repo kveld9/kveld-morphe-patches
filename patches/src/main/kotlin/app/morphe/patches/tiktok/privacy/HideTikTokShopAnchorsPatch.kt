@@ -8,8 +8,8 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
 val hideTikTokShopAnchorsPatch = bytecodePatch(
-    name = "Hide TikTok Shop Anchors",
-    description = "Removes product showcase badges, shopping cart tags, and TikTok Shop commercial anchors from video posts in the feed.",
+    name = "Hide TikTok Shop & Mall",
+    description = "Removes product showcase badges, shopping cart tags, and the TikTok Shop / Mall tab from navigation bars and video posts.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
@@ -41,11 +41,11 @@ val hideTikTokShopAnchorsPatch = bytecodePatch(
                 )
             }
             if (returnIndices.isNotEmpty()) {
-                println("[Hide TikTok Shop Anchors] Hooked FeedApiService.fetchFeedList() (${returnIndices.size} return point(s)) -> FYP feed shop anchors stripped.")
+                println("[Hide TikTok Shop & Mall] Hooked FeedApiService.fetchFeedList() (${returnIndices.size} return point(s)) -> FYP feed shop anchors stripped.")
                 patched++
             }
         } catch (e: Exception) {
-            println("[Hide TikTok Shop Anchors] FeedApiService note: ${e.message}")
+            println("[Hide TikTok Shop & Mall] FeedApiService note: ${e.message}")
         }
 
         // 2. Hook FeedItemList.getItems() (covers cached, offline, and UI adapter consumers)
@@ -70,11 +70,11 @@ val hideTikTokShopAnchorsPatch = bytecodePatch(
                 )
             }
             if (returnIndices.isNotEmpty()) {
-                println("[Hide TikTok Shop Anchors] Hooked FeedItemList.getItems() (${returnIndices.size} return point(s)) -> Feed video shop anchors stripped.")
+                println("[Hide TikTok Shop & Mall] Hooked FeedItemList.getItems() (${returnIndices.size} return point(s)) -> Feed video shop anchors stripped.")
                 patched++
             }
         } catch (e: Exception) {
-            println("[Hide TikTok Shop Anchors] FeedItemList.getItems note: ${e.message}")
+            println("[Hide TikTok Shop & Mall] FeedItemList.getItems note: ${e.message}")
         }
 
         // 3. Hook FollowFeedList.getItems() (covers Following feed UI consumers)
@@ -99,13 +99,78 @@ val hideTikTokShopAnchorsPatch = bytecodePatch(
                 )
             }
             if (returnIndices.isNotEmpty()) {
-                println("[Hide TikTok Shop Anchors] Hooked FollowFeedList.getItems() (${returnIndices.size} return point(s)) -> Following feed shop anchors stripped.")
+                println("[Hide TikTok Shop & Mall] Hooked FollowFeedList.getItems() (${returnIndices.size} return point(s)) -> Following feed shop anchors stripped.")
                 patched++
             }
         } catch (e: Exception) {
-            println("[Hide TikTok Shop Anchors] FollowFeedList.getItems note: ${e.message}")
+            println("[Hide TikTok Shop & Mall] FollowFeedList.getItems note: ${e.message}")
         }
 
-        println("[Hide TikTok Shop Anchors] Applied $patched TikTok Shop anchor stripper hook(s).")
+        // 4. Disable ShopBottomTabProtocol
+        try {
+            val bottomTabFp = Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/ecommerce/mall/ShopBottomTabProtocol;",
+                name = "enable",
+                returnType = "Z",
+            )
+            bottomTabFp.method.addInstructions(
+                0,
+                """
+                const/4 v0, 0
+                return v0
+                """.trimIndent()
+            )
+            patched++
+        } catch (e: Exception) {
+            println("[Hide TikTok Shop & Mall] ShopBottomTabProtocol note: ${e.message}")
+        }
+
+        // 5. Disable ShopTopTabProtocol
+        try {
+            val topTabFp = Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/ecommerce/mall/ShopTopTabProtocol;",
+                name = "enable",
+                returnType = "Z",
+            )
+            topTabFp.method.addInstructions(
+                0,
+                """
+                const/4 v0, 0
+                return v0
+                """.trimIndent()
+            )
+            patched++
+        } catch (e: Exception) {
+            println("[Hide TikTok Shop & Mall] ShopTopTabProtocol note: ${e.message}")
+        }
+
+        // 6. Disable ShopIconServiceImpl indicator
+        try {
+            val iconServiceFp = try {
+                Fingerprint(
+                    definingClass = "Lcom/ss/android/ugc/aweme/ecommerce/mall/vm/ShopIconServiceImpl;",
+                    name = "rw",
+                    returnType = "Z",
+                )
+            } catch (_: Exception) {
+                Fingerprint(
+                    definingClass = "Lcom/ss/android/ugc/aweme/ecommerce/mall/vm/ShopIconServiceImpl;",
+                    returnType = "Z",
+                    parameters = emptyList(),
+                )
+            }
+            iconServiceFp.method.addInstructions(
+                0,
+                """
+                const/4 v0, 0
+                return v0
+                """.trimIndent()
+            )
+            patched++
+        } catch (e: Exception) {
+            println("[Hide TikTok Shop & Mall] ShopIconServiceImpl note: ${e.message}")
+        }
+
+        println("[Hide TikTok Shop & Mall] Applied $patched TikTok Shop anchor and navigation tab suppression hook(s).")
     }
 }

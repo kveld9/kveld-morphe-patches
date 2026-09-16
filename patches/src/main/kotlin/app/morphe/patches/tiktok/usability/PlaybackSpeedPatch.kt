@@ -11,7 +11,7 @@ import com.android.tools.smali.dexlib2.AccessFlags
 val playbackSpeedPatch = bytecodePatch(
     name = "Playback Speed Persistence",
     description = "Persists selected video playback speed across all feed videos and application restarts.",
-    default = true,
+    default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
     extendWith("extensions/extension.mpe")

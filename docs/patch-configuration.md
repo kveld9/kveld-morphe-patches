@@ -186,3 +186,54 @@ The **`Clipboard Enhancements`** patch modernizes Gboard Lite's local clipboard 
 3. **Custom Grid Span (`ClipboardKeyboard->b()I`)**:
    - Overrides the `StaggeredGridLayoutManager` span count to render 1, 2, or 3 columns cleanly across phones, foldables, and tablets.
 
+---
+
+## 🎵 TikTok: SIM Region Selector
+
+The **`SIM Region Selector`** patch bypasses geographic content restrictions, regional feed filtering, and country-specific catalog locks by spoofing the SIM and network ISO country codes queried by TikTok.
+
+### Configuration in Morphe Manager
+
+| Option | Key | Type | Default | Range / Format | Description |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Region** | `region` | String | `US` | 2-letter ISO 3166-1 alpha-2 code | 2-letter ISO country code to spoof for SIM and network country checks. |
+
+### Supported Region Codes (ISO 3166-1 alpha-2)
+
+The patch accepts any valid **2-letter ISO 3166-1 alpha-2** country code. Inputs are case-insensitive (e.g. `us`, `US`, and `Us` resolve identically).
+
+| Region | ISO Code | Description / Feed Scope |
+| :--- | :--- | :--- |
+| **United States** | `US` *(Default)* | Global catalog, unrestricted English feed, US creator content |
+| **United Kingdom** | `GB` | UK feed & European creator catalog |
+| **Japan** | `JP` | Japanese localized feed, anime/gaming trends, local audio catalogs |
+| **South Korea** | `KR` | Korean feed, K-Pop trends, local live streams |
+| **Germany** | `DE` | German feed & Central European catalog |
+| **France** | `FR` | French feed & Francophone catalog |
+| **Spain** | `ES` | Spanish domestic feed & European audio library |
+| **Brazil** | `BR` | Brazilian Portuguese feed & Latin American trends |
+| **Canada** | `CA` | Canadian feed & North American catalog |
+| **Australia** | `AU` | Australian & Oceania feed |
+| **Mexico** | `MX` | Mexican & North Latin American Spanish feed |
+| **Argentina** | `AR` | Southern Cone Spanish feed |
+| **Italy** | `IT` | Italian domestic feed |
+| **Singapore** | `SG` | Southeast Asian English & regional catalog |
+
+<details>
+<summary><b>🔍 View comprehensive list of 50+ ISO 3166-1 alpha-2 country codes</b></summary>
+<br>
+
+```text
+AR, AT, AU, BE, BR, CA, CH, CL, CO, CZ, DE, DK, ES, FI, FR, GB, GR, HK, HU, ID,
+IE, IL, IN, IS, IT, JP, KR, MX, MY, NL, NO, NZ, PE, PH, PL, PT, RO, SA, SE, SG,
+TH, TR, TW, UA, US, UY, VN, ZA
+```
+
+</details>
+
+### Technical Architecture
+- Hooks BPEA telephony wrapper methods `LX/067c;->LIZJ` (`getSimCountryIso`) and `LX/067c;->LIZ` (`getNetworkCountryIso`).
+- Safely intercepts queries before they reach the OS `TelephonyManager`, returning the configured region without requiring physical SIM ejection or airplane mode.
+
+
+

@@ -1,6 +1,6 @@
 # 🎵 TikTok: Technical Patch Specifications & Deep Breakdown
 
-Comprehensive breakdown of the **18 patches** included in the Morphe TikTok patch suite pinned to target version **`46.9.3`** (supporting both `com.zhiliaoapp.musically` Global and `com.ss.android.ugc.trill` Asia APKs).
+Comprehensive breakdown of the **22 patches** included in the Morphe TikTok patch suite pinned to target version **`46.9.3`** (supporting both `com.zhiliaoapp.musically` Global and `com.ss.android.ugc.trill` Asia APKs).
 
 ---
 
@@ -12,18 +12,22 @@ Comprehensive breakdown of the **18 patches** included in the Morphe TikTok patc
 | **Usability** | **Playback Speed Persistence** | `bytecodePatch` | Persists user-selected video speed across feed scrolling and restarts |
 | **Privacy** | **Clean Share URL** | `bytecodePatch` | Strips tracking query parameters, user tokens, and campaign IDs |
 | **Privacy** | **Device Privacy Guard** | `bytecodePatch` | Blocks background clipboard inspection and suppresses screenshot/recording triggers |
+| **Privacy** | **In-App Browser Privacy Guard** | `bytecodePatch` | Neutralizes WebView JavaScript injection service and AJAX hookers |
+| **Privacy** | **Client AI & ML Model Governor** | `bytecodePatch` | Neutralizes Pitaya on-device ML bootloader and background inference tasks |
+| **Privacy** | **Region & Geo-Restriction Bypass** | `bytecodePatch` | Spoofs SIM and network country ISO codes to bypass regional restrictions |
 | **Privacy** | **Feed Ad Blocker** | `bytecodePatch` | Filters sponsored cards, brand promotions, and commercial audio |
-| **Privacy** | **Hide TikTok Shop Anchors** | `bytecodePatch` | Removes product showcase badges, shopping cart tags, and shop anchors |
+| **Privacy** | **Hide TikTok Shop & Mall** | `bytecodePatch` | Removes product anchors, showcase badges, and bottom/top Shop navigation tabs |
 | **Privacy** | **Feed Live Stream Blocker** | `bytecodePatch` | Removes live broadcast cards and live recommendations from FYP and Following |
 | **Privacy** | **Feed Bloat & Distraction Blocker** | `bytecodePatch` | Removes friend suggestions, mini-games, CapCut/creation prompts, memories, surveys, mini-dramas, Lemon8 promo |
 | **Privacy** | **Unified Telemetry & Tracker Silencer** | `bytecodePatch` | Neutralizes ByteDance AppLog, APM/Npth/Heimdallr crash telemetry, and AppsFlyer |
 | **Privacy** | **Update Prompt Suppressor** | `bytecodePatch` | Neutralizes background update polling tasks and device ID check routines |
 | **Performance** | **Instant Launch & Splash Blocker** | `bytecodePatch` | Eliminates cold start delays, splash ad tasks, and TopView preload waits (<0.4s) |
 | **Performance** | **Resource & Battery Governor** | `bytecodePatch` | Suppresses 3D shake ad sensors, video buffer preloading, and Fresco RAM retention |
+| **Performance** | **P2P Video Relay Blocker** | `rawResourcePatch` | Strips `libavmdlp2pv2.so` and `libp2plivevdp.so` to stop background P2P CDN seeding |
 | **Performance** | **Disable Push Notifications** | `bytecodePatch` | Neutralizes background push socket polling and persistent wake locks |
 | **Performance** | **Live Stream 3D Gift Optimizer** | `bytecodePatch` | Disables 3D gift particle effect engine to eliminate live frame drops |
-| **Performance** | **Live Stream SDK & Minigame De-bloat** | `rawResourcePatch` | Strips `liblink_mic_sdk.so` and live stream interactive battle minigames |
-| **Slimmer** | **Core Asset De-bloat** | `rawResourcePatch` | Strips Microblink OCR card models, C2PA AI verification libs, non-Latin fonts, V8 engines |
+| **Performance** | **Live Stream Suite Optimizer** | `rawResourcePatch` | Strips `liblink_mic_sdk.so`, Lyrax RTC broadcaster libs, and battle minigames |
+| **Slimmer** | **Core Asset De-bloat** | `rawResourcePatch` | Strips Microblink OCR models, C2PA AI libs, profiling/Python engines, non-Latin fonts, V8 |
 | **Slimmer** | **Studio & Creation De-bloat** | `rawResourcePatch` | Strips AR camera engine (`libeffect_plugin.so`) and video editor SDK (`libttvesdk_plugin.so`) |
 | **Slimmer** | **Language Pack Purger** | `rawResourcePatch` | Strips unselected language string bundles from `assets/strings#lang_*` |
 
@@ -71,63 +75,100 @@ Comprehensive breakdown of the **18 patches** included in the Morphe TikTok patc
     * Attribution & marketing telemetry: `utm_source`, `utm_campaign`, `utm_medium`, `_r`, `checksum`, `tt_from`.
 
 ### 4. Device Privacy Guard (`devicePrivacyGuardPatch`)
-* **Objective**: Prevent background snooping on sensitive device APIs and eliminate annoying screenshot popups.
+* **Objective**: Prevent background snooping on sensitive device APIs, eliminate annoying screenshot popups, and block local network scanning.
 * **Internal Mechanisms**:
+  * **Local Network Privacy**:
+    * Strips `android.permission.ACCESS_LOCAL_NETWORK` from `AndroidManifest.xml` via companion resource patch to prevent unauthorized local subnet scanning.
+    * Preserves `android.permission.DETECT_SCREEN_CAPTURE` to maintain crash-free compatibility with Android 14+ platform callback registrations.
   * **Clipboard Snooping Protection**:
     * Neutralizes `IMMessageListClipboardServiceImpl.LIZ()` -> `return-void`.
-  * **Screenshot & Screen Recording Detection Suppression**:
+  * **Screenshot & Screen Recording Detection & Telemetry Suppression**:
     * Neutralizes Lego screenshot task initialization: `ScreenShotTaskHolder$BootFinish`, `ScreenShotFeedbackTaskHolder$BootFinish`, `ScreenShotTask`, `ScreenShotFeedbackTask`, `ScreenRecordingMonitorInitTask`, `InternalShareScreenshotTask`, and `InternalShareScreenshotTaskHolder$BootFinish` -> `return-void`.
     * Neutralizes `ScreenShotFeedbackService.onShot()Z` -> returns `false`.
     * Neutralizes `ScreenShotFeedbackService.safelyShowDialog()` -> `return-void` (eliminates modal dialogs prompting for feedback upon taking a screenshot).
+    * Neutralizes `ScreenShotFeedbackService.sendShareFeedbackEvent()` -> `return-void` (suppresses screenshot telemetry reporting).
+    * Neutralizes `ScreenShotFeedbackService.isFeedbackEnable()` and `tryShowScreenShotFloatingView()` -> returns `false`.
     * Suppresses quick-share popup modals and Tako AI screenshot triggers.
 
-### 5. Feed Ad Blocker (`tikTokFeedAdBlockerPatch`)
+### 5. In-App Browser Privacy Guard (`inAppBrowserPrivacyGuardPatch`)
+* **Objective**: Protect user browsing sessions inside TikTok's embedded web views by neutralizing arbitrary JavaScript tracking injections and AJAX network interception.
+* **Internal Mechanisms**:
+  * Forces the inline JS injection predicate (`webview_inline_inject_js`) -> returns `false` to prevent TikTok from injecting tracking scripts into third-party websites.
+  * Neutralizes `WebViewAjaxHooker.onPageStarted()` with `return-void` to block TikTok from hooking into `XMLHttpRequest` and `fetch()` calls inside the in-app browser.
+
+### 6. Client AI & ML Model Governor (`clientAiGovernorPatch`)
+* **Objective**: Neutralize ByteDance's "Pitaya" on-device machine learning engine and background inference tasks that profile user behavioral telemetry and dynamically re-rank ads locally.
+* **Internal Mechanisms**:
+  * Injects `return-void` into `PitayaBootLoader.setup()` to neutralize on-device ML model initialization.
+  * Injects `return-void` into `BootTask.run()` within the Pitaya initialization pipeline to halt model downloads and execution.
+
+### 7. Region & Geo-Restriction Bypass (`regionBypassPatch`)
+* **Objective**: Bypass regional content restrictions, geo-blocked feeds, and country-specific account barriers without requiring physical SIM ejection.
+* **Internal Mechanisms**:
+  * Hooks BPEA telephony abstraction wrapper `LX/067c;->LIZJ(Landroid/telephony/TelephonyManager;LX/019X;)Ljava/lang/String;` (`getSimCountryIso`) to return the user-configured ISO country code.
+  * Hooks BPEA telephony abstraction wrapper `LX/067c;->LIZ(Landroid/telephony/TelephonyManager;LX/019X;)Ljava/lang/String;` (`getNetworkCountryIso`) to return the user-configured ISO country code.
+  * Configurable via the `region` patch option (defaults to `"US"`; see the [Patch Configuration Guide](patch-configuration.md#sim-region-selector) for popular ISO 3166-1 country codes and feed scope).
+
+### 8. Feed Ad Blocker (`tikTokFeedAdBlockerPatch`)
 * **Objective**: Completely clean the For You Page (FYP) and Following feeds from promotional intrusions.
 * **Internal Mechanisms**:
   * Bytecode hooks in `FeedApiService.fetchFeedList()`, `FeedItemList.getItems()`, and `FollowFeedList.getItems()`.
   * Delegates feed filtering to runtime helper `TikTokFeedAdFilter`:
     * Evaluates `Aweme.isAd()`, `Aweme.isSoftAd()`, `Aweme.isWithPromotionalMusic()`, and link ad metadata to purge commercial items.
 
-### 6. Hide TikTok Shop Anchors (`hideTikTokShopAnchorsPatch`)
-* **Objective**: Remove product tags, shopping showcase cards, and TikTok Shop commercial anchors from video posts in the feed as an independent, modular toggle.
+### 9. Hide TikTok Shop & Mall (`hideTikTokShopAnchorsPatch`)
+* **Objective**: Completely eliminate shopping distractions by removing product tags, commercial anchors, and the dedicated Shop tab from top and bottom navigation bars.
 * **Internal Mechanisms**:
-  * Bytecode hooks in `FeedApiService.fetchFeedList()`, `FeedItemList.getItems()`, and `FollowFeedList.getItems()`.
-  * Delegates shopping anchor stripping to runtime helper `TikTokFeedAdFilter`:
-    * Invokes `stripCommercialAnchors()` on video items to clear product anchors (`setAnchors(null)`) and showcase links (`setAnchorInfo(null)`).
+  * **Video Feed Anchor Stripping**: Hooks `FeedApiService.fetchFeedList()`, `FeedItemList.getItems()`, and `FollowFeedList.getItems()` to invoke `TikTokFeedAdFilter.stripCommercialAnchors()`, clearing product tags (`setAnchors(null)`) and showcase links (`setAnchorInfo(null)`).
+  * **Shop Bottom Tab Neutralization**: Hooks `ShopBottomTabProtocol.enable()Z` -> returns `false`.
+  * **Shop Top Tab Neutralization**: Hooks `ShopTopTabProtocol.enable()Z` -> returns `false`.
+  * **Shop Icon & Entry Service Neutralization**: Hooks `ShopIconServiceImpl.rw()Z` -> returns `false`.
 
-### 7. Feed Live Stream Blocker (`feedLiveStreamBlockerPatch`)
+### 10. Feed Live Stream Blocker (`feedLiveStreamBlockerPatch`)
 * **Objective**: Eliminate live broadcast recommendations and live stream preview cards from the For You Page (FYP) and Following feeds as an independent, modular toggle.
 * **Internal Mechanisms**:
   * Bytecode hooks in `FeedApiService.fetchFeedList()`, `FeedItemList.getItems()`, and `FollowFeedList.getItems()`.
   * Delegates live stream filtering to runtime helper `TikTokFeedAdFilter`:
-    * Inspects video items for `Aweme.isLive() == true` or `Aweme.getAwemeType() == 101`.
+    * Multi-signal detection inspecting `Room`, `RoomFeedCellStruct`, `liveId > 0`, `StreamUrlModel`, `authorLive`, and live aweme types (`101`, `68`, `102`, `69`) as well as Following feed live broadcasts (`feedType == 2`).
     * Purges matching live broadcast cards from feed lists before UI adapter binding.
 
-### 8. Feed Bloat & Distraction Blocker (`feedBloatBlockerPatch`)
-* **Objective**: Eliminate non-video clutter, intrusive recommendation cards, mini-games, creation prompts, surveys, and promotional distraction cards from the For You and Following feeds.
+### 11. Feed Bloat & Distraction Blocker (`feedBloatBlockerPatch`)
+* **Objective**: Eliminate non-video clutter, intrusive recommendation cards, Touchpoint Rewards pendants, floating ad stickers, mini-games, creation prompts, surveys, and promotional distraction cards from the For You and Following feeds.
 * **Internal Mechanisms**:
-  * Hooks `FeedApiService.fetchFeedList()`, `FeedItemList.getItems()`, and `FollowFeedList.getItems()`.
-  * Neutralizes Lego cross-promotion task `Lemon8ServiceInitTask.run(Context)`.
-  * Delegates to `TikTokFeedAdFilter.isFeedBloat(Aweme)`:
-    * **Suggested Accounts**: `Aweme.getAwemeType() == 4004` (`TTRecUserBigCardViewHolder`), `CardInsertInfo.getCardType() == 49`, `Aweme.isFriendsTabFakeAweme() == true`, `Aweme.getRecommendCardType() > 0`.
-    * **Mini-Games**: `Aweme.getAwemeType() == 104` or `CardInsertInfo.getCardType() == 120` (`MiniGameInstantPlayCardVH`).
-    * **Creation & CapCut Prompts**: `CardInsertInfo.getCardType() in 188..191` (`CreationFeedCardViewHolder`).
-    * **Memories ("On This Day")**: `CardInsertInfo.getCardType() == 127` (`OnThisDayCreationCardViewHolder`).
-    * **EOY Recaps & Inspiration**: `CardInsertInfo.getCardType() == 84`, `CardInsertInfo.getCardType() == 176`.
-    * **AI Remix & Effects**: `CardInsertInfo.getCardType() == 113`, `CardInsertInfo.getCardType() == 2`.
-    * **Surveys & Feedback**: `CardInsertInfo.getCardType() == 4` or `16` (`BottomSurveyAssem`).
-    * **Mini-Dramas & Series Promos**: `Aweme.getAwemeType() == 110` (`MiniDramaCard`).
-    * **Lynx In-Feed Promos**: `Aweme.getAwemeType() == 106`.
-  * Prunes matching cards from list iterators in-situ with zero crashes or UI gaps.
+  * **Touchpoint Rewards & Ad Pendant Neutralization (Issue #33)**:
+    * Injects `return-void` into `SpecActWidget.bind(ViewGroup)` to prevent dynamic floating Rewards activity widgets (such as the floating soccer ball, gift box, or coin countdown sticker) from inflating or attaching to the feed view hierarchy.
+    * Injects `return-void` into `SpecActWidget.showOrHidePendant(ZZ)` and `SpecActWidget.showNormalPendant()`.
+    * Neutralizes real-time pendant dispatchers `FeedPendantService.LIZ(String)` and `AdPendantService.LIZ(String)` with `return-void`.
+  * **In-Video Floating Bloat, Commercial Stickers & Activity Pendants**:
+    * Forces `Aweme.getActivityPendant()` -> returns `null`.
+    * Forces `Aweme.getCommerceStickerInfo()` -> returns `null` (removes sponsored interactive stickers over video playback).
+    * Forces `Aweme.getSpecialSticker()` -> returns `null`.
+    * Forces `Aweme.getFloatingCardInfo()` -> returns `null` (blocks floating product/action cards hovering over videos).
+    * Forces `Aweme.getBannerTip()` -> returns `null`.
+    * Forces `Aweme.getStandardComponentInfo()` -> returns `null`.
+  * **Feed Stream & Card Filtering**:
+    * Hooks `FeedApiService.fetchFeedList()`, `FeedItemList.getItems()`, and `FollowFeedList.getItems()`.
+    * Neutralizes Lego cross-promotion task `Lemon8ServiceInitTask.run(Context)`.
+    * Delegates to `TikTokFeedAdFilter.isFeedBloat(Aweme)`:
+      * **Suggested Accounts**: `Aweme.getAwemeType() == 4004` (`TTRecUserBigCardViewHolder`), `CardInsertInfo.getCardType() == 49`, `Aweme.isFriendsTabFakeAweme() == true`, `Aweme.getRecommendCardType() > 0`.
+      * **Mini-Games**: `Aweme.getAwemeType() == 104` or `CardInsertInfo.getCardType() == 120` (`MiniGameInstantPlayCardVH`).
+      * **Creation & CapCut Prompts**: `CardInsertInfo.getCardType() in 188..191` (`CreationFeedCardViewHolder`).
+      * **Memories ("On This Day")**: `CardInsertInfo.getCardType() == 127` (`OnThisDayCreationCardViewHolder`).
+      * **EOY Recaps & Inspiration**: `CardInsertInfo.getCardType() == 84`, `CardInsertInfo.getCardType() == 176`.
+      * **AI Remix & Effects**: `CardInsertInfo.getCardType() == 113`, `CardInsertInfo.getCardType() == 2`.
+      * **Surveys & Feedback**: `CardInsertInfo.getCardType() == 4` or `16` (`BottomSurveyAssem`).
+      * **Mini-Dramas & Series Promos**: `Aweme.getAwemeType() == 110` (`MiniDramaCard`).
+      * **Lynx In-Feed Promos**: `Aweme.getAwemeType() == 106`.
+    * Prunes matching cards from list iterators in-situ with zero crashes or UI gaps.
 
-### 9. Unified Telemetry & Tracker Silencer (`unifiedTelemetryTrackerSilencerPatch`)
+### 12. Unified Telemetry & Tracker Silencer (`unifiedTelemetryTrackerSilencerPatch`)
 * **Objective**: Cut off background surveillance, user behavior analytics, and diagnostic reporting to ByteDance servers.
 * **Internal Mechanisms**:
   * **ByteDance AppLog**: Neutralizes `AppLog.onEvent()` and `AppLog.report()` entrypoints with immediate `return-void`.
   * **Crash Handlers & Telemetry Schedulers**: Neutralizes Lego initialization tasks for Npth crash reporting (`NpthCoreInitTask`), APM metrics (`ApmInit`), and Heimallr performance monitors.
   * **Attribution Trackers**: Neutralizes `InitAppsFlyer` and Firebase analytics startup initialization tasks.
 
-### 10. Update Prompt Suppressor (`disableInAppUpdateNagsPatch`)
+### 13. Update Prompt Suppressor (`disableInAppUpdateNagsPatch`)
 * **Objective**: Prevent forced upgrade popups and version enforcement dialogs.
 * **Internal Mechanisms**:
   * Neutralizes Lego update check tasks: `CheckUpdateChangeDeviceIDTaskHolder$Background`, `UpdateTaskHolder$Background`, `CheckUpdateChangeDeviceIDTaskHolder$BootFinish`, and `UpdateTaskHolder$BootFinish`.
@@ -137,7 +178,7 @@ Comprehensive breakdown of the **18 patches** included in the Morphe TikTok patc
 
 ## ⚡ Performance, RAM & Battery
 
-### 11. Instant Launch & Splash Blocker (`instantColdStartPatch`)
+### 14. Instant Launch & Splash Blocker (`instantColdStartPatch`)
 * **Objective**: Accelerate application launch time to sub-second speeds (<0.4s) and bypass startup ads.
 * **Internal Mechanisms**:
   * Neutralizes Lego splash tasks: `SplashAdManagerPreloadTask.run()` and `SplashAdManagerPreloadTaskEntry.run()`.
@@ -145,7 +186,7 @@ Comprehensive breakdown of the **18 patches** included in the Morphe TikTok patc
   * Neutralizes `RealTimeSplashManagerImpl.LIZJ()` -> `return false` (eliminates synchronous waiting for remote TopView splash video assets during cold start).
   * Neutralizes `SplashAdServiceImpl.LJ()`, `LJIILJJIL()`, and `LJJIJIIJIL()` -> `return false` (suppresses splash ad presentation and background fetch).
 
-### 12. Resource & Battery Governor (`resourceGovernorPatch`)
+### 15. Resource & Battery Governor (`resourceGovernorPatch`)
 * **Objective**: Eliminate battery-draining background operations, sensor polling, and memory leaks.
 * **Internal Mechanisms**:
   * **3D Ad Sensors & Gyroscope Polling**:
@@ -156,44 +197,62 @@ Comprehensive breakdown of the **18 patches** included in the Morphe TikTok patc
   * **Memory Retention Governor**:
     * Caps animated bitmap frame caching in Facebook Fresco (`FrescoFrameCache.LIZJ()`, `LJFF()`), preventing OOM crashes during long scrolling sessions.
 
-### 13. Disable Push Notifications (`disablePushNotificationsPatch`)
+### 16. P2P Video Relay Blocker (`p2pVideoRelayBlockerPatch`)
+* **Objective**: Prevent TikTok from utilizing user device battery, CPU, and cellular data as a distributed P2P edge CDN relay for other users' video streams.
+* **Internal Mechanisms**:
+  * Zeroes out native P2P video delivery engine: `libavmdlp2pv2.so` (~7.9 MB).
+  * Zeroes out native P2P live stream distribution module: `libp2plivevdp.so` (~1.9 MB).
+  * Reclaims ~9.83 MB of storage while completely eliminating unmetered peer-to-peer relay network activity.
+
+### 17. Disable Push Notifications (`disablePushNotificationsPatch`)
 * **Objective**: Neutralize background push notification tasks and persistent socket wake locks to eliminate background battery drain.
 * **Internal Mechanisms**:
   * Neutralizes `InitPushTask.run()` -> disables early startup wake lock acquisition and persistent background push sockets.
 
-### 14. Live Stream 3D Gift Optimizer (`liveGiftEffectOptimizerPatch`)
+### 18. Live Stream 3D Gift Optimizer (`liveGiftEffectOptimizerPatch`)
 * **Objective**: Disable Live 3D gift particle effect engine and widget rendering lifecycle to eliminate frame drops during live streams.
 * **Internal Mechanisms**:
   * Injects `return-void` into `LiveGiftEffectWidget.initView()` and `LiveGiftEffectWidget.onCreate()`.
 
-### 15. Live Stream SDK & Minigame De-bloat (`liveStreamSuiteOptimizerPatch`)
-* **Objective**: Strip unneeded native libraries and assets for users who only watch regular videos or standard live streams.
+### 19. Live Stream Suite Optimizer (`liveStreamSuiteOptimizerPatch`)
+* **Objective**: Strip unneeded interactive streaming libraries, live RTC broadcaster SDKs, and minigame assets for users who only watch regular videos or standard live streams.
 * **Internal Mechanisms**:
   * Zeroes out native interactive streaming binaries: `liblink_mic_sdk.so`.
+  * Zeroes out native Lyrax live streaming and RTC broadcaster engines: `liblyrax.so` (~48 MB) and `liblyrax_plugin.so` (~2.5 MB).
   * Removes interactive live stream battle minigame assets.
+  * Reclaims over 50.45 MB of storage.
 
 ---
 
 ## 📦 APK Size & Resource Slimming
 
-### 16. Core Asset De-bloat (`coreAssetDebloatPatch`)
-* **Objective**: Strip unneeded third-party SDK models and embedded engines.
+### 20. Core Asset De-bloat (`coreAssetDebloatPatch`)
+* **Objective**: Strip unneeded third-party SDK models, embedded engines, FinTech/card scanners, and client AI runtime binaries across both `arm64-v8a` and `armeabi-v7a`.
 * **Internal Mechanisms**:
-  * Strips embedded Microblink credit card and document OCR scanning models (`assets/microblink/`).
-  * Zeroes out C2PA AI content origin verification libraries (`libtt_c2pa_sdk.so`).
-  * Prunes non-Latin and exotic bundled fonts (`assets/fonts/` such as Khmer, Lao, Myanmar, Burmese).
-  * Zeroes out embedded V8 JavaScript runtimes for TikTok mini-apps (`libminiapp`, `libv8`).
+  * Strips embedded Microblink credit card OCR models (`assets/microblink/`).
+  * Zeroes out TikTok Shop FinTech & Card Scanner libraries (`libBlinkCard.so`, `libdex_df_pipo_bnpl.so`, `libdex_df_ccdc_impl_ocr.so`, `libdex_df_pipo_external_payments.so`, `libpipo-security-sdk.so`) and checkout UI models (`assets/pipo_ui_default_checkout.json`, `assets/pipo_ui_default_components.json`).
+  * Zeroes out Pitaya AI native libraries (`libAndroidPitayaCore.so`, `libAndroidPitayaProxy.so`, `libPitayaBdComponent.so`, `libPitayaTTPPolicy.so`, `libdex_df_pitaya.so`).
+  * Zeroes out ByteDance Neural Network & Local LLM libraries (`libbytenn.so`, `libbytennllm.so`, `libbytennllm-jni.so`, `libbytennwrapper.so`, `libdex_df_gemini_nano.so`).
+  * Zeroes out SSDP/DLNA local network scanner binary (`libdex_df_live_cast.so`).
+  * Zeroes out C2PA AI content origin verification libraries (`libtt_c2pa_sdk.so`, `libtt_c2pa_sdk_d.so`).
+  * Zeroes out internal diagnostic, profiling, and Python runtime libraries (`libreschecker.so`, `libpy-cv-numpycv.so`, `libpythonA.so`, `libpy-numpy.so`, `libBDMicroPythonVM.so`, `libBDPythonVM.so`).
+  * Prunes non-Latin and exotic bundled fonts (`assets/fonts/` such as Greek, Hebrew, Armenian, Georgian, Khmer, Lao, Myanmar, Thai).
+  * Reclaims over 77 MB of uncompressed APK storage.
 
-### 17. Studio & Creation De-bloat (`creatorBloatSlimmerPatch`)
-* **Objective**: Strip camera AR face filters, virtual stickers, and advanced video editor engines for feed-only users.
+### 21. Studio & Creation De-bloat (`creatorBloatSlimmerPatch`)
+* **Objective**: Strip camera AR face filters, CapCut NLE video editing SDKs, and creation plugins across both `arm64-v8a` and `armeabi-v7a` for feed-only users.
 * **Internal Mechanisms**:
-  * Zeroes out camera AR effects engine: `libeffect_plugin.so` (~25 MB).
-  * Zeroes out video editor SDK: `libttvesdk_plugin.so` (~22 MB).
-  * Purges bundled face mesh and facial landmark tracking models.
+  * Zeroes out camera AR effects engine: `libeffect_plugin.so`, `libEffectCreatorJni.so`.
+  * Zeroes out CapCut-like video editor SDK: `libttvesdk_plugin.so`.
+  * Zeroes out ILA Material SDK: `libILAMaterialSDK.so`.
+  * Dynamically detects and zeroes out all bundled CapCut NLE native libraries (`libNLEMediaPublicJni.so`, `libNLEEditorJni.so`, `libNLETemplateModelJni.so`, `libNLEMediaJni.so`, etc.).
+  * Purges bundled face mesh and facial landmark tracking models (`assets/model/ttfacemodel`).
+  * Reclaims over 101 MB of uncompressed APK storage.
 
-### 18. Language Pack Purger (`localeResourceSlimmerPatch`)
+### 22. Language Pack Purger (`localeSlimmerPatch`)
 * **Objective**: Reclaim substantial APK storage by stripping unused localized strings while preserving user-selected languages (default: English).
 * **Internal Mechanisms**:
   * Scans `assets/strings#lang_*` bundles and removes unselected translation files.
   * Preserves default app language to ensure zero missing resource exceptions.
-  * Configurable via the `languages` option (defaults to preserving English: `"en"`).
+  * Configurable via the `locales` option (defaults to preserving English: `"en"`).
+

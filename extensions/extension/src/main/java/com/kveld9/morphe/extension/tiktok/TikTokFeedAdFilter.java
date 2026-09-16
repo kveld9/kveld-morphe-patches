@@ -31,6 +31,18 @@ public final class TikTokFeedAdFilter {
     private static Method getShareUrlMethod;
     private static Method isLiveMethod;
     private static Method getAwemeTypeMethod;
+    private static Method getRoomMethod;
+    private static Method getRoomFeedCellStructMethod;
+    private static Method getLiveIdMethod;
+    private static Method getStreamUrlModelMethod;
+    private static Method getAuthorLiveMethod;
+    private static Method getLiveTypeMethod;
+    private static Field roomField;
+    private static Field roomFeedCellField;
+    private static Field newLiveRoomDataField;
+    private static Field liveIdField;
+    private static Field streamUrlModelField;
+    private static Field authorLiveField;
     private static Method setAnchorsMethod;
     private static Method setAnchorInfoMethod;
 
@@ -95,6 +107,18 @@ public final class TikTokFeedAdFilter {
             try { getShareUrlMethod = awemeClass.getMethod("getShareUrl"); getShareUrlMethod.setAccessible(true); } catch (Throwable ignored) {}
             try { isLiveMethod = awemeClass.getMethod("isLive"); isLiveMethod.setAccessible(true); } catch (Throwable ignored) {}
             try { getAwemeTypeMethod = awemeClass.getMethod("getAwemeType"); getAwemeTypeMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { getRoomMethod = awemeClass.getMethod("getRoom"); getRoomMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { getRoomFeedCellStructMethod = awemeClass.getMethod("getRoomFeedCellStruct"); getRoomFeedCellStructMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { getLiveIdMethod = awemeClass.getMethod("getLiveId"); getLiveIdMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { getStreamUrlModelMethod = awemeClass.getMethod("getStreamUrlModel"); getStreamUrlModelMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { getAuthorLiveMethod = awemeClass.getMethod("getAuthorLive"); getAuthorLiveMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { getLiveTypeMethod = awemeClass.getMethod("getLiveType"); getLiveTypeMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { roomField = awemeClass.getDeclaredField("room"); roomField.setAccessible(true); } catch (Throwable ignored) {}
+            try { roomFeedCellField = awemeClass.getDeclaredField("mRoomFeedCellStruct"); roomFeedCellField.setAccessible(true); } catch (Throwable ignored) {}
+            try { newLiveRoomDataField = awemeClass.getDeclaredField("newLiveRoomData"); newLiveRoomDataField.setAccessible(true); } catch (Throwable ignored) {}
+            try { liveIdField = awemeClass.getDeclaredField("liveId"); liveIdField.setAccessible(true); } catch (Throwable ignored) {}
+            try { streamUrlModelField = awemeClass.getDeclaredField("streamUrlModel"); streamUrlModelField.setAccessible(true); } catch (Throwable ignored) {}
+            try { authorLiveField = awemeClass.getDeclaredField("authorLive"); authorLiveField.setAccessible(true); } catch (Throwable ignored) {}
             try { setAnchorsMethod = awemeClass.getMethod("setAnchors", List.class); setAnchorsMethod.setAccessible(true); } catch (Throwable ignored) {}
             try {
                 for (Method m : awemeClass.getMethods()) {
@@ -192,13 +216,61 @@ public final class TikTokFeedAdFilter {
             return false;
         }
         try {
+            if (getRoomMethod != null && getRoomMethod.invoke(aweme) != null) {
+                return true;
+            }
+            if (getRoomFeedCellStructMethod != null && getRoomFeedCellStructMethod.invoke(aweme) != null) {
+                return true;
+            }
+            if (getLiveIdMethod != null) {
+                Object id = getLiveIdMethod.invoke(aweme);
+                if (id instanceof Long && ((Long) id) > 0) {
+                    return true;
+                }
+            }
+            if (getStreamUrlModelMethod != null && getStreamUrlModelMethod.invoke(aweme) != null) {
+                return true;
+            }
+            if (getAuthorLiveMethod != null && Boolean.TRUE.equals(getAuthorLiveMethod.invoke(aweme))) {
+                return true;
+            }
+            if (getLiveTypeMethod != null) {
+                Object lt = getLiveTypeMethod.invoke(aweme);
+                if (lt instanceof String && !((String) lt).isEmpty()) {
+                    return true;
+                }
+            }
+
+            if (roomField != null && roomField.get(aweme) != null) {
+                return true;
+            }
+            if (roomFeedCellField != null && roomFeedCellField.get(aweme) != null) {
+                return true;
+            }
+            if (newLiveRoomDataField != null && newLiveRoomDataField.get(aweme) != null) {
+                return true;
+            }
+            if (liveIdField != null) {
+                long lid = liveIdField.getLong(aweme);
+                if (lid > 0) return true;
+            }
+            if (streamUrlModelField != null && streamUrlModelField.get(aweme) != null) {
+                return true;
+            }
+            if (authorLiveField != null && Boolean.TRUE.equals(authorLiveField.get(aweme))) {
+                return true;
+            }
+
             if (isLiveMethod != null && Boolean.TRUE.equals(isLiveMethod.invoke(aweme))) {
                 return true;
             }
             if (getAwemeTypeMethod != null) {
                 Object type = getAwemeTypeMethod.invoke(aweme);
-                if (type instanceof Integer && ((Integer) type) == 101) {
-                    return true;
+                if (type instanceof Integer) {
+                    int t = ((Integer) type).intValue();
+                    if (t == 101 || t == 68 || t == 102 || t == 69) {
+                        return true;
+                    }
                 }
             }
         } catch (Throwable ignored) {}
@@ -519,6 +591,14 @@ public final class TikTokFeedAdFilter {
             ensureInitialized(followItem.getClass().getClassLoader());
         }
         try {
+            if (followGetFeedTypeMethod != null) {
+                Object ft = followGetFeedTypeMethod.invoke(followItem);
+                if (ft instanceof Integer && ((Integer) ft) == 2) return true;
+            }
+            if (followFeedTypeField != null) {
+                Object ft = followFeedTypeField.get(followItem);
+                if (ft instanceof Integer && ((Integer) ft) == 2) return true;
+            }
             if (followGetRoomMethod != null) {
                 Object room = followGetRoomMethod.invoke(followItem);
                 if (room != null) return true;
