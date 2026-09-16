@@ -1,3 +1,9 @@
+## [1.33.1](https://github.com/kveld9/kveld-morphe-patches/compare/v1.33.0...v1.33.1) (2026-09-16)
+
+### Bug Fixes
+
+* **tiktok:** neutralize Tako AI feed action bar triggers and router services ([2e6cd87](https://github.com/kveld9/kveld-morphe-patches/commit/2e6cd87e5622b11064a6fc5afa0e69c8da326cdf))
+
 ## [1.33.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.32.0...v1.33.0) (2026-09-16)
 
 ### New Features
