@@ -112,6 +112,7 @@ object Constants {
     const val TIKTOK_EXTENSION_MEDIA_HOOK = "Lcom/kveld9/morphe/extension/tiktok/TikTokMediaHook;"
     const val TIKTOK_EXTENSION_SPEED_HOOK = "Lcom/kveld9/morphe/extension/tiktok/TikTokSpeedHook;"
     const val TIKTOK_EXTENSION_QUALITY_HOOK = "Lcom/kveld9/morphe/extension/tiktok/TikTokVideoQualityHook;"
+    const val TIKTOK_EXTENSION_BROWSER_HOOK = "Lcom/kveld9/morphe/extension/tiktok/TikTokBrowserHook;"
 }
 
 
