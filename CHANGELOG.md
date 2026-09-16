@@ -1,3 +1,9 @@
+## [1.31.2](https://github.com/kveld9/kveld-morphe-patches/compare/v1.31.1...v1.31.2) (2026-09-16)
+
+### Bug Fixes
+
+* **gboard:** clear try blocks to prevent VerifyError in clipboard hooks ([c1a5d22](https://github.com/kveld9/kveld-morphe-patches/commit/c1a5d226f6408d78d27dee667e41d5688f2359d0))
+
 ## [1.31.1](https://github.com/kveld9/kveld-morphe-patches/compare/v1.31.0...v1.31.1) (2026-09-16)
 
 ### Bug Fixes
