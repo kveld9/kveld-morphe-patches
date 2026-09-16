@@ -12,8 +12,8 @@ Comprehensive breakdown of the **23 patches** included in the Morphe TikTok patc
 | **Usability** | **Playback Speed Persistence** | `bytecodePatch` | Persists user-selected video speed across feed scrolling and restarts |
 | **Usability** | **Video Quality Governor** | `bytecodePatch` | Caps maximum video playback resolution (1080p, 720p, 540p, 480p, 360p) to reduce GPU/MediaCodec load and memory retention |
 | **Privacy** | **Clean Share URL** | `bytecodePatch` | Strips tracking query parameters, user tokens, and campaign IDs |
-| **Privacy** | **Device Privacy Guard** | `bytecodePatch` | Blocks background clipboard inspection and suppresses screenshot/recording triggers |
-| **Privacy** | **In-App Browser Privacy Guard** | `bytecodePatch` | Neutralizes WebView JavaScript injection service and AJAX hookers |
+| **Privacy** | **Device Privacy Guard** | `bytecodePatch` | Blocks background clipboard inspection, purges 33 invasive permissions, suppresses screenshot/recording triggers, and bypasses FLAG_SECURE |
+| **Privacy** | **In-App Browser Privacy Guard** | `bytecodePatch` | Redirects external links to default system browser, neutralizes WebView JS tracking injection and AJAX hookers |
 | **Privacy** | **Client-Side AI & Behavioral Profiling Governor** | `bytecodePatch` | Neutralizes Pitaya on-device ML, Tako AI chatbot entries, and AI search clutter |
 | **Privacy** | **Region & Geo-Restriction Bypass** | `bytecodePatch` | Spoofs SIM and network country ISO codes to bypass regional restrictions |
 | **Privacy** | **Feed Ad Blocker** | `bytecodePatch` | Filters sponsored cards, brand promotions, and commercial audio |
@@ -28,7 +28,7 @@ Comprehensive breakdown of the **23 patches** included in the Morphe TikTok patc
 | **Performance** | **Disable Push Notifications** | `bytecodePatch` | Neutralizes background push socket polling and persistent wake locks |
 | **Performance** | **Live Stream 3D Gift Optimizer** | `bytecodePatch` | Disables 3D gift particle effect engine to eliminate live frame drops |
 | **Performance** | **Live Stream Suite Optimizer** | `rawResourcePatch` | Strips `liblink_mic_sdk.so`, Lyrax RTC broadcaster libs, and battle minigames |
-| **Slimmer** | **Core Asset De-bloat** | `rawResourcePatch` | Strips Microblink OCR models, C2PA AI libs, profiling/Python engines, non-Latin fonts, V8 |
+| **Slimmer** | **Core Asset De-bloat** | `rawResourcePatch` | Strips Microblink OCR models, C2PA AI libs, ByteDance TTWebView engine, non-Latin fonts, V8 |
 | **Slimmer** | **Studio & Creation De-bloat** | `rawResourcePatch` | Strips AR camera engine (`libeffect_plugin.so`) and video editor SDK (`libttvesdk_plugin.so`) |
 | **Slimmer** | **Language Pack Purger** | `rawResourcePatch` | Strips unselected language string bundles from `assets/strings#lang_*` |
 
@@ -95,11 +95,16 @@ Comprehensive breakdown of the **23 patches** included in the Morphe TikTok patc
     * Attribution & marketing telemetry: `utm_source`, `utm_campaign`, `utm_medium`, `_r`, `checksum`, `tt_from`.
 
 ### 4. Device Privacy Guard (`devicePrivacyGuardPatch`)
-* **Objective**: Prevent background snooping on sensitive device APIs, eliminate annoying screenshot popups, and block local network scanning.
+* **Objective**: Prevent background snooping on sensitive device APIs, eliminate annoying screenshot popups, purge invasive Android manifest permissions, block local network scanning, and bypass restrictive `FLAG_SECURE` screen recording blocks.
 * **Internal Mechanisms**:
-  * **Local Network Privacy**:
-    * Strips `android.permission.ACCESS_LOCAL_NETWORK` from `AndroidManifest.xml` via companion resource patch to prevent unauthorized local subnet scanning.
+  * **Manifest Permission Purge**:
+    * Strips 33 invasive permissions from `AndroidManifest.xml` via companion resource patch, eliminating advertising IDs (`com.google.android.gms.permission.AD_ID`), Google Play Billing (`com.android.vending.BILLING`), precise/coarse GPS location (`ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION`), NFC, Bluetooth scanning, audio recording (`RECORD_AUDIO`), fingerprint sensor access, and OEM hardware tracking (Huawei/Xiaomi/Oppo push and analytics tokens).
+    * Strips `android.permission.ACCESS_LOCAL_NETWORK` to prevent unauthorized local subnet scanning.
     * Preserves `android.permission.DETECT_SCREEN_CAPTURE` to maintain crash-free compatibility with Android 14+ platform callback registrations.
+  * **FLAG_SECURE Bypass (Unrestricted Screen Capture & Recording)**:
+    * Neutralizes `LivePcsCourseVideoAntiScreenshotSetting.getValue()Z` -> returns `false`, preventing live courses and paywalled video sessions from enforcing anti-screenshot restrictions.
+    * Injects `const/4 p1, 0x0` into `AntiScreenRecordController.applyFlag(Z)V` to permanently clear the window secure flag via native `Window.clearFlags(FLAG_SECURE / 0x2000)`.
+    * Injects `const/4 p2, 0x0` into `makeScreenProtection(Landroid/view/Window;Z)V` to force `enableScreenProtection=false`, ensuring `canRecordScreen` evaluates to `true` and clearing secure flags during broadcasts.
   * **Clipboard Snooping Protection**:
     * Neutralizes `IMMessageListClipboardServiceImpl.LIZ()` -> `return-void`.
   * **Screenshot & Screen Recording Detection & Telemetry Suppression**:
@@ -111,10 +116,17 @@ Comprehensive breakdown of the **23 patches** included in the Morphe TikTok patc
     * Suppresses quick-share popup modals and Tako AI screenshot triggers.
 
 ### 5. In-App Browser Privacy Guard (`inAppBrowserPrivacyGuardPatch`)
-* **Objective**: Protect user browsing sessions inside TikTok's embedded web views by neutralizing arbitrary JavaScript tracking injections and AJAX network interception.
+* **Objective**: Protect user privacy by redirecting external and third-party web links directly to the user's default system browser (Brave, Firefox, Chrome), preventing third-party browsing sessions from ever running inside TikTok's process, and neutralizing residual tracking inside essential internal WebViews.
 * **Internal Mechanisms**:
-  * Forces the inline JS injection predicate (`webview_inline_inject_js`) -> returns `false` to prevent TikTok from injecting tracking scripts into third-party websites.
-  * Neutralizes `WebViewAjaxHooker.onPageStarted()` with `return-void` to block TikTok from hooking into `XMLHttpRequest` and `fetch()` calls inside the in-app browser.
+  * **External Web Navigation Redirection**:
+    * Intercepts `SparkThird` container dispatcher (`LX/042u;->LIZIZ()`) at entry, extracting the destination URL and launching an independent `Intent.ACTION_VIEW` with `FLAG_ACTIVITY_NEW_TASK` straight to the system default browser.
+    * Intercepts `SparkThirdPopUp` modal dispatcher (`LX/042u;->LIZJ()`) to prevent third-party links from rendering in half-screen web modals, redirecting them externally.
+    * Forces `AnchorInfoStruct.getOpenSystemBrowser()` -> returns `true` across commercial and rich ad models (`com.ss.android.ugc.aweme.commercialize.model.feed.anchor` and `com.bytedance.ies.ugc.aweme.rich.model.commercialize.feed.anchor`), delegating ad links to the system browser.
+  * **Residual WebView Tracking Neutralization**:
+    * Forces the inline JS injection predicate (`webview_inline_inject_js`) -> returns `false` to prevent TikTok from injecting tracking scripts into web views.
+    * Neutralizes `WebViewAjaxHooker.onPageStarted()` with `return-void` to block TikTok from hooking into `XMLHttpRequest` and `fetch()` calls inside residual in-app WebViews.
+  * **Proprietary Web Engine De-bloat**:
+    * Strips ByteDance's proprietary TTWebView engine binary (`libdex_df_ttwebview.so`) and dynamic feature manifest (`df_ttwebview.json`) via `coreAssetDebloatPatch`, forcing any residual hybrid views to rely on the clean, sandboxed system AOSP WebView.
 
 ### 6. Client-Side AI & Behavioral Profiling Governor (`clientAiGovernorPatch`)
 * **Objective**: Neutralize ByteDance's "Pitaya" on-device machine learning engine, suppress the Tako AI chatbot across feeds and comments, and eradicate AI smart search and summary clutter.
