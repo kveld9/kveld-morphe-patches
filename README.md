@@ -182,11 +182,11 @@
 |----------|----------------|-----------|
 | **Clean Share URL** | Strips tracking parameters, user IDs, device fingerprints, and marketing tokens from shared TikTok links. |  |
 | **Client-Side AI & Behavioral Profiling Governor** | Neutralizes on-device machine learning inference, Pitaya behavioral profiling tasks, and on-device ad re-ranking. |  |
-| **Core Asset De-bloat** | Strips embedded Microblink credit card OCR models, TikTok Shop FinTech/card scanners, Pitaya AI, ByteNN on-device LLM, C2PA AI content origin verification, and redundant fonts to save APK space. |  |
-| **Device Privacy Guard** | Neutralizes background clipboard snooping, local network scanning (ACCESS_LOCAL_NETWORK), and screenshot telemetry reporting to protect user privacy. |  |
+| **Core Asset De-bloat** | Strips embedded Microblink/FinTech card scanner models, Pitaya AI & ByteNN LLM engines, C2PA origin verification, DLNA cast scanners, and redundant non-Latin fonts to save APK space. |  |
+| **Device Privacy Guard** | Neutralizes background clipboard snooping routines, local network scanning permissions, and screenshot/recording detection and telemetry listeners to protect user data. |  |
 | **Disable Push Notifications** | Neutralizes background push notification tasks and persistent socket wake locks to eliminate background battery drain. |  |
 | **Feed Ad Blocker** | Removes sponsored advertisements, brand promotions, and promotional audio from the For You and Following feeds. |  |
-| **Feed Bloat & Distraction Blocker** | Removes non-video clutter from the For You and Following feeds, including suggested friend cards, mini-games, CapCut/template creation prompts, memories ('On This Day'), surveys, mini-drama paywalls, and Lemon8 promo tasks. |  |
+| **Feed Bloat & Distraction Blocker** | Removes non-video clutter and floating ad widgets from the For You and Following feeds, including Touchpoint Rewards pendants, floating ad stickers, suggested friend cards, mini-games, CapCut/template creation prompts, memories ('On This Day'), surveys, and mini-drama paywalls. |  |
 | **Feed Live Stream Blocker** | Removes live stream broadcast cards and live recommendations from the For You and Following feeds. |  |
 | **Hide TikTok Shop & Mall** | Removes product showcase badges, shopping cart tags, and the TikTok Shop / Mall tab from navigation bars and video posts. |  |
 | **In-App Browser Privacy Guard** | Neutralizes inline JavaScript tracking injection, DOM monitoring, and AJAX hooking when opening external links inside the in-app WebView. |  |
@@ -199,7 +199,7 @@
 | **Playback Speed Persistence** | Persists selected video playback speed across all feed videos and application restarts. |  |
 | **Resource & Battery Governor** | Throttles background sensor polling (gyroscope/accelerometer 3D ads), prevents aggressive video buffer preloading, and caps Fresco animated image memory retention to conserve battery and RAM. |  |
 | **SIM Region Selector** | Spoofs the detected SIM and network country ISO code to bypass regional feed restrictions and catalog blocks. | • Spoofed Region ISO Code |
-| **Studio & Creation De-bloat** | Strips camera AR face filters, CapCut NLE video editing SDKs, and creation plugins across ABIs to save over 100MB. |  |
+| **Studio & Creation De-bloat** | Strips heavy video creation plugins, CapCut NLE editor SDKs, effect plugins, and AR camera face models to significantly reduce APK size. |  |
 | **Unified Telemetry & Tracker Silencer** | Neutralizes ByteDance AppLog user tracking, APM/Npth/Heimdallr crash monitors, AppsFlyer attribution, and Firebase analytics. |  |
 | **Update Prompt Suppressor** | Neutralizes background update polling tasks and device ID check routines to prevent forced update popups. |  |
 

@@ -1,3 +1,9 @@
+## [1.31.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.30.1...v1.31.0) (2026-09-16)
+
+### New Features
+
+* **tiktok:** add privacy guards, block floating ad pendants, and harden live stream filtering ([eaba502](https://github.com/kveld9/kveld-morphe-patches/commit/eaba502c52bbc83c9df556b0af2e0a8d1060a1a1)), closes [#33](https://github.com/kveld9/kveld-morphe-patches/issues/33) [#33](https://github.com/kveld9/kveld-morphe-patches/issues/33)
+
 ## [1.30.1](https://github.com/kveld9/kveld-morphe-patches/compare/v1.30.0...v1.30.1) (2026-09-16)
 
 ### Bug Fixes
