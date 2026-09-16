@@ -137,7 +137,8 @@ Comprehensive breakdown of the **23 patches** included in the Morphe TikTok patc
 * **Internal Mechanisms**:
   * Hooks BPEA telephony abstraction wrapper `LX/067c;->LIZJ(Landroid/telephony/TelephonyManager;LX/019X;)Ljava/lang/String;` (`getSimCountryIso`) to return the user-configured ISO country code.
   * Hooks BPEA telephony abstraction wrapper `LX/067c;->LIZ(Landroid/telephony/TelephonyManager;LX/019X;)Ljava/lang/String;` (`getNetworkCountryIso`) to return the user-configured ISO country code.
-  * Configurable via the `region` patch option (defaults to `"US"`; see the [Patch Configuration Guide](patch-configuration.md#sim-region-selector) for popular ISO 3166-1 country codes and feed scope).
+  * Configurable via the `region` patch option (defaults to `"US"`).
+  * **Region Selection & Recommendations**: For detailed guidance on picking the best region (e.g. `CH` for minimal e-commerce bloat and full audio catalogs vs `CA`/`US` for North American trends) and avoiding problematic country codes (such as `CN`, `IN`, `RU`, `JP`, or `DE`), see the [SIM Region Selection Guide](patch-configuration.md#sim-region-selector).
 
 ### 8. Feed Ad Blocker (`tikTokFeedAdBlockerPatch`)
 * **Objective**: Completely clean the For You Page (FYP) and Following feeds from promotional intrusions.
