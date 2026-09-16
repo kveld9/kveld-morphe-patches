@@ -197,13 +197,13 @@ The **`SIM Region Selector`** patch bypasses geographic content restrictions, re
 
 | Option | Key | Type | Default | Range / Format | Description |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Region** | `region` | String | `US` | 2-letter ISO 3166-1 alpha-2 code | 2-letter ISO country code to spoof for SIM and network country checks. |
+| **Region** | `region` | String | `CH` | 2-letter ISO 3166-1 alpha-2 code | 2-letter ISO country code to spoof for SIM and network country checks. |
 
 ### Region Selection Guide & Operational Trade-Offs
 
 When selecting a region code, balance **e-commerce bloat (TikTok Shop / Mall / Live selling)** against **audio licensing and content availability**:
 
-#### 1. Optimal Baseline: `CH` (Switzerland)
+#### 1. Optimal Baseline: `CH` (Switzerland — Default)
 * **Zero E-Commerce Bloat**: TikTok Shop, shopping tabs, and affiliate product showcases are not deployed.
 * **Full Music Catalog**: Complete access to commercial and international audio without local licensing mutes.
 * **No EU Regulatory Overhead**: Being outside the European Union, it avoids recurring Digital Markets Act (DMA) consent dialogs and cookie barriers.
@@ -212,7 +212,7 @@ When selecting a region code, balance **e-commerce bloat (TikTok Shop / Mall / L
 
 #### 2. Anglo-American Trends & North American Catalog: `CA`, `AU`, or `US`
 * **`CA` (Canada) / `AU` (Australia)**: Full access to North American and global trending audios with significantly less commercial push and fewer affiliate streams than the US.
-* **`US` (United States — Default)**: Maximum creator and audio catalog, but carries the heaviest native deployment of TikTok Shop, live shopping cards, and commercial anchors.
+* **`US` (United States)**: Maximum creator and audio catalog, but carries the heaviest native deployment of TikTok Shop, live shopping cards, and commercial anchors.
   * *Recommendation*: When using `US`, ensure [Hide TikTok Shop & Mall](tiktok-patches.md#9-hide-tiktok-shop--mall-hidetiktokshopanchorspatch) and [Feed Live Stream Blocker](tiktok-patches.md#10-feed-live-stream-blocker-feedlivestreamblockerpatch) are activated.
 
 #### 3. Problematic Regions to Avoid
@@ -232,8 +232,8 @@ The patch accepts any valid **2-letter ISO 3166-1 alpha-2** country code. Inputs
 
 | Region | ISO Code | Description / Feed Scope |
 | :--- | :--- | :--- |
-| **Switzerland** | `CH` | **Recommended**: Cleanest interface, zero TikTok Shop bloat, full audio catalog, no EU DMA modals |
-| **United States** | `US` *(Default)* | Global catalog, unrestricted English feed, US creator content (pair with Shop & Live debloat patches) |
+| **Switzerland** | `CH` *(Default)* | **Recommended**: Cleanest interface, zero TikTok Shop bloat, full audio catalog, no EU DMA modals |
+| **United States** | `US` | Global catalog, unrestricted English feed, US creator content (pair with Shop & Live debloat patches) |
 | **Canada** | `CA` | Canadian feed & North American audio catalog (less commercial bloat than US) |
 | **Australia** | `AU` | Australian & Oceania feed and trending catalog |
 | **United Kingdom** | `GB` | UK feed & European creator catalog |

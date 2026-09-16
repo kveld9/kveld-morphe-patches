@@ -16,14 +16,14 @@ val regionBypassPatch = bytecodePatch(
     val targetRegion by stringOption(
         key = "region",
         title = "Spoofed Region ISO Code",
-        description = "Two-letter ISO country code for SIM and network country spoofing (e.g. 'US', 'JP', 'GB', 'DE').",
-        default = "US",
+        description = "Two-letter ISO country code for SIM and network country spoofing (e.g. 'CH', 'US', 'JP', 'GB').",
+        default = "CH",
         required = false,
     )
 
     execute {
-        val raw = targetRegion?.trim()?.lowercase() ?: "us"
-        val region = if (raw.matches(Regex("^[a-z]{2}$"))) raw else "us"
+        val raw = targetRegion?.trim()?.lowercase() ?: "ch"
+        val region = if (raw.matches(Regex("^[a-z]{2}$"))) raw else "ch"
         var patched = 0
 
         // 1. Hook getSimCountryIso with Cert token wrapper
