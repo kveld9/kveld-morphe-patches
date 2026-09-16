@@ -1,3 +1,11 @@
+## [1.34.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.33.1...v1.34.0) (2026-09-16)
+
+### New Features
+
+* **tiktok:** bypass FLAG_SECURE and purge invasive permissions ([98c66e4](https://github.com/kveld9/kveld-morphe-patches/commit/98c66e46b557977234ee599c166841c4ef496809))
+* **tiktok:** redirect external links to system browser ([6e5d210](https://github.com/kveld9/kveld-morphe-patches/commit/6e5d210e0537b2e020a2dffc7cf46168908a8bc0))
+* **tiktok:** strip proprietary TTWebView engine and manifest ([56b7c49](https://github.com/kveld9/kveld-morphe-patches/commit/56b7c492dfe9c25488f4715bdf242db3e50a99cb))
+
 ## [1.33.1](https://github.com/kveld9/kveld-morphe-patches/compare/v1.33.0...v1.33.1) (2026-09-16)
 
 ### Bug Fixes
