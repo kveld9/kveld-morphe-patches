@@ -8,6 +8,7 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.stringOption
 import app.morphe.patches.shared.Constants
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
@@ -57,6 +58,7 @@ val gboardClipboardEnhancementsPatch = bytecodePatch(
                 parameters = listOf("Landroid/content/Context;"),
             )
             fpTtl.method.apply {
+                clearTryBlocks()
                 removeInstructions(0, implementation!!.instructions.count())
                 addInstructions(
                     0,
@@ -110,6 +112,7 @@ val gboardClipboardEnhancementsPatch = bytecodePatch(
                 parameters = emptyList(),
             )
             fpKeyboard.method.apply {
+                clearTryBlocks()
                 removeInstructions(0, implementation!!.instructions.count())
                 addInstructions(
                     0,
@@ -126,5 +129,22 @@ val gboardClipboardEnhancementsPatch = bytecodePatch(
         }
 
         println("[Clipboard Enhancements] Applied $patched clipboard enhancement hook(s) (limit: $parsedLimit clips, retention: $parsedHours hours, columns: $parsedColumns).")
+    }
+}
+
+private fun Method.clearTryBlocks() {
+    val impl = implementation ?: return
+    var clazz: Class<*>? = impl.javaClass
+    while (clazz != null) {
+        try {
+            val field = clazz.getDeclaredField("tryBlocks")
+            field.isAccessible = true
+            (field.get(impl) as? MutableList<*>)?.clear()
+            break
+        } catch (_: NoSuchFieldException) {
+            clazz = clazz.superclass
+        } catch (_: Exception) {
+            break
+        }
     }
 }
