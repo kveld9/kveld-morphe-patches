@@ -232,7 +232,7 @@ Comprehensive breakdown of the **22 patches** included in the Morphe TikTok patc
   * Strips embedded Microblink credit card OCR models (`assets/microblink/`).
   * Zeroes out TikTok Shop FinTech & Card Scanner libraries (`libBlinkCard.so`, `libdex_df_pipo_bnpl.so`, `libdex_df_ccdc_impl_ocr.so`, `libdex_df_pipo_external_payments.so`, `libpipo-security-sdk.so`) and checkout UI models (`assets/pipo_ui_default_checkout.json`, `assets/pipo_ui_default_components.json`).
   * Zeroes out Pitaya AI native libraries (`libAndroidPitayaCore.so`, `libAndroidPitayaProxy.so`, `libPitayaBdComponent.so`, `libPitayaTTPPolicy.so`, `libdex_df_pitaya.so`).
-  * Zeroes out ByteDance Neural Network & Local LLM libraries (`libbytenn.so`, `libbytennllm.so`, `libbytennllm-jni.so`, `libbytennwrapper.so`, `libdex_df_gemini_nano.so`).
+  * Zeroes out ByteDance Local LLM and Gemini Nano libraries (`libbytennllm.so`, `libbytennllm-jni.so`, `libdex_df_gemini_nano.so`), while preserving core `libbytenn.so` and `libbytennwrapper.so` required for native audio effects (`libaudioeffect.so`) and Starship SDK (`libstarship_sdk.so`).
   * Zeroes out SSDP/DLNA local network scanner binary (`libdex_df_live_cast.so`).
   * Zeroes out C2PA AI content origin verification libraries (`libtt_c2pa_sdk.so`, `libtt_c2pa_sdk_d.so`).
   * Zeroes out internal diagnostic, profiling, and Python runtime libraries (`libreschecker.so`, `libpy-cv-numpycv.so`, `libpythonA.so`, `libpy-numpy.so`, `libBDMicroPythonVM.so`, `libBDPythonVM.so`).

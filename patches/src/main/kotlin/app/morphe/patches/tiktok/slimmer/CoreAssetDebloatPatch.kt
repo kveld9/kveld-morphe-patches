@@ -102,14 +102,12 @@ val coreAssetDebloatPatch = rawResourcePatch(
             "assets/pipo_ui_default_components.json",
         ).forEach { stripFile(it) }
 
-        // 5. ByteDance Neural Network & Local LLM libraries
+        // 5. ByteDance Local LLM & Gemini Nano libraries (libbytenn.so and libbytennwrapper.so preserved for libaudioeffect.so and libstarship_sdk.so)
         stripNative(
             abis,
             listOf(
-                "libbytenn.so",
                 "libbytennllm.so",
                 "libbytennllm-jni.so",
-                "libbytennwrapper.so",
                 "libdex_df_gemini_nano.so",
             ),
         )
