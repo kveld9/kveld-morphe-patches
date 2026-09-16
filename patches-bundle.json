@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-09-16T20:19:33",
-  "description": "## [1.32.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.31.2...v1.32.0) (2026-09-16)\n\n### New Features\n\n* **tiktok:** expand client AI governor to neutralize Tako AI and search clutter ([d885f41](https://github.com/kveld9/kveld-morphe-patches/commit/d885f410037a82bb019fab98ff6c5bbfa35c02fa))",
-  "download_url": "https://github.com/kveld9/kveld-morphe-patches/releases/download/v1.32.0/patches-1.32.0.mpp",
+  "created_at": "2026-09-16T20:28:13",
+  "description": "## [1.33.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.32.0...v1.33.0) (2026-09-16)\n\n### New Features\n\n* **tiktok:** add video quality governor patch with configurable ceilings ([3540b62](https://github.com/kveld9/kveld-morphe-patches/commit/3540b625b7c1ce3a0ca592afd2db260babd14d53))",
+  "download_url": "https://github.com/kveld9/kveld-morphe-patches/releases/download/v1.33.0/patches-1.33.0.mpp",
   "signature_download_url": "",
-  "version": "1.32.0"
+  "version": "1.33.0"
 }
