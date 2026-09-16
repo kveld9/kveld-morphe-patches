@@ -36,10 +36,6 @@ val devicePrivacyGuardPatch = bytecodePatch(
             println("[Device Privacy Guard] IMMessageListClipboardServiceImpl note: ${e.message}")
         }
 
-
-
-
-
         // ==========================================
         // 2. SCREENSHOT DETECTION SUPPRESSION
         // ==========================================
@@ -109,7 +105,6 @@ val devicePrivacyGuardPatch = bytecodePatch(
         } catch (e: Exception) {
             println("[Device Privacy Guard] ScreenShotFeedbackService.safelyShowDialog note: ${e.message}")
         }
-
 
         println("[Device Privacy Guard] Applied $patched device privacy protection hook(s).")
     }

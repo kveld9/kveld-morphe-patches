@@ -28,11 +28,10 @@ val feedBloatBlockerPatch = bytecodePatch(
             val method = feedApiFingerprint.method
             val returnIndices = method.implementation?.instructions?.withIndex()
                 ?.filter { it.value.opcode == Opcode.RETURN_OBJECT }
-                ?.map { it.index }
+                ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
                 ?.toList() ?: emptyList()
 
-            returnIndices.asReversed().forEach { returnIndex ->
-                val reg = (method.implementation!!.instructions[returnIndex] as OneRegisterInstruction).registerA
+            returnIndices.asReversed().forEach { (returnIndex, reg) ->
                 method.addInstructions(
                     returnIndex,
                     """
@@ -128,5 +127,3 @@ val feedBloatBlockerPatch = bytecodePatch(
         println("[Feed Bloat Blocker] Applied $patched feed bloat blocker hook(s) -> Non-video distractions neutralized.")
     }
 }
-
-val feedSuggestedAccountsBlockerPatch = feedBloatBlockerPatch

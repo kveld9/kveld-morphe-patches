@@ -212,4 +212,13 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
         required_strings=["isPreventDownload", "getDownloadWithoutWatermark", "getDownloadAddr"],
         criticality="HIGH",
     ),
+    PatchContract(
+        patch_id="playback_speed_persistence",
+        name="Playback Speed Persistence",
+        target_type="bytecode",
+        description="Persists selected video playback speed across all feed videos and application restarts.",
+        required_classes=["Lcom/ss/android/ugc/aweme/feed/model/Aweme;"],
+        required_strings=["getParameterizedSpeed"],
+        criticality="MEDIUM",
+    ),
 ]
