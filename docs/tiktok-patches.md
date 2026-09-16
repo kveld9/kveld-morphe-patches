@@ -13,7 +13,7 @@ Comprehensive breakdown of the **22 patches** included in the Morphe TikTok patc
 | **Privacy** | **Clean Share URL** | `bytecodePatch` | Strips tracking query parameters, user tokens, and campaign IDs |
 | **Privacy** | **Device Privacy Guard** | `bytecodePatch` | Blocks background clipboard inspection and suppresses screenshot/recording triggers |
 | **Privacy** | **In-App Browser Privacy Guard** | `bytecodePatch` | Neutralizes WebView JavaScript injection service and AJAX hookers |
-| **Privacy** | **Client AI & ML Model Governor** | `bytecodePatch` | Neutralizes Pitaya on-device ML bootloader and background inference tasks |
+| **Privacy** | **Client-Side AI & Behavioral Profiling Governor** | `bytecodePatch` | Neutralizes Pitaya on-device ML, Tako AI chatbot entries, and AI search clutter |
 | **Privacy** | **Region & Geo-Restriction Bypass** | `bytecodePatch` | Spoofs SIM and network country ISO codes to bypass regional restrictions |
 | **Privacy** | **Feed Ad Blocker** | `bytecodePatch` | Filters sponsored cards, brand promotions, and commercial audio |
 | **Privacy** | **Hide TikTok Shop & Mall** | `bytecodePatch` | Removes product anchors, showcase badges, and bottom/top Shop navigation tabs |
@@ -96,11 +96,21 @@ Comprehensive breakdown of the **22 patches** included in the Morphe TikTok patc
   * Forces the inline JS injection predicate (`webview_inline_inject_js`) -> returns `false` to prevent TikTok from injecting tracking scripts into third-party websites.
   * Neutralizes `WebViewAjaxHooker.onPageStarted()` with `return-void` to block TikTok from hooking into `XMLHttpRequest` and `fetch()` calls inside the in-app browser.
 
-### 6. Client AI & ML Model Governor (`clientAiGovernorPatch`)
-* **Objective**: Neutralize ByteDance's "Pitaya" on-device machine learning engine and background inference tasks that profile user behavioral telemetry and dynamically re-rank ads locally.
+### 6. Client-Side AI & Behavioral Profiling Governor (`clientAiGovernorPatch`)
+* **Objective**: Neutralize ByteDance's "Pitaya" on-device machine learning engine, suppress the Tako AI chatbot across feeds and comments, and eradicate AI smart search and summary clutter.
 * **Internal Mechanisms**:
-  * Injects `return-void` into `PitayaBootLoader.setup()` to neutralize on-device ML model initialization.
-  * Injects `return-void` into `BootTask.run()` within the Pitaya initialization pipeline to halt model downloads and execution.
+  * **On-Device Inference & Behavioral Profiling**:
+    * Injects `return-void` into `PitayaBootLoader.setup()` to neutralize on-device ML model initialization.
+    * Injects `return-void` into `PitayaBootLoader.commitBootTaskBySettings()` and `BootTask.run()` to halt model downloads and inference tasks.
+  * **Tako AI Chatbot Neutralization**:
+    * Forces `TakoLaunchServiceImpl.LJ()Z` -> returns `false` to globally kill the Tako framework at launch.
+    * Neutralizes `TakoFeedIconServiceImpl.LIZIZ()` -> returns `null` to eliminate the floating Tako icon in the feed.
+    * Forces `TakoCommentTopBarServiceImpl.canShow()` -> returns `false` to prevent AI questions and Tako prompts from rendering at the top of comments.
+  * **AI Search & Summary Clutter Removal**:
+    * Forces `SearchMixFeed.isTako()` -> returns `false` and `getBot()` -> returns `null` to eliminate AI bot result cards.
+    * Neutralizes `SearchMixFeed.getAiAdCard()` -> returns `null` to remove AI-generated commerce summary cards.
+    * Forces `SearchTakoSugListAssem.bb()` -> returns `false` to suppress Tako suggestion lists.
+    * Forces `SearchTakoCardProtocol.zX()`, `SearchTakoNewBotCardProtocol.zX()`, and `SearchAdAISummaryCardProtocol.zX()` -> returns `false`.
 
 ### 7. Region & Geo-Restriction Bypass (`regionBypassPatch`)
 * **Objective**: Bypass regional content restrictions, geo-blocked feeds, and country-specific account barriers without requiring physical SIM ejection.
