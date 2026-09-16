@@ -1,6 +1,6 @@
 # 🎵 TikTok: Technical Patch Specifications & Deep Breakdown
 
-Comprehensive breakdown of the **22 patches** included in the Morphe TikTok patch suite pinned to target version **`46.9.3`** (supporting both `com.zhiliaoapp.musically` Global and `com.ss.android.ugc.trill` Asia APKs).
+Comprehensive breakdown of the **23 patches** included in the Morphe TikTok patch suite pinned to target version **`46.9.3`** (supporting both `com.zhiliaoapp.musically` Global and `com.ss.android.ugc.trill` Asia APKs).
 
 ---
 
@@ -10,6 +10,7 @@ Comprehensive breakdown of the **22 patches** included in the Morphe TikTok patc
 | :--- | :--- | :--- | :--- |
 | **Usability** | **Media Usability & Watermark-Free Downloader** | `bytecodePatch` | Forced seekbar scrubbing, unblock download button, unwatermarked stream routing |
 | **Usability** | **Playback Speed Persistence** | `bytecodePatch` | Persists user-selected video speed across feed scrolling and restarts |
+| **Usability** | **Video Quality Governor** | `bytecodePatch` | Caps maximum video playback resolution (1080p, 720p, 540p, 480p, 360p) to reduce GPU/MediaCodec load and memory retention |
 | **Privacy** | **Clean Share URL** | `bytecodePatch` | Strips tracking query parameters, user tokens, and campaign IDs |
 | **Privacy** | **Device Privacy Guard** | `bytecodePatch` | Blocks background clipboard inspection and suppresses screenshot/recording triggers |
 | **Privacy** | **In-App Browser Privacy Guard** | `bytecodePatch` | Neutralizes WebView JavaScript injection service and AJAX hookers |
@@ -61,7 +62,26 @@ Comprehensive breakdown of the **22 patches** included in the Morphe TikTok patc
   * **Persistent Storage**:
     * Stores current speed in dedicated `SharedPreferences` (`morphe_tiktok_speed_prefs`), restoring preference upon cold launch.
 
+### 3. Video Quality Governor (`videoQualityGovernorPatch`)
+* **Objective**: Enforce user-configured maximum video playback resolution (1080p, 720p, 540p, 480p, 360p) to reduce GPU/MediaCodec load, lower GraphicBuffers RAM retention, eliminate scroll stutter, and control bandwidth.
+* **Internal Mechanisms**:
+  * **Opt-In & Configurable Resolution Ceiling**:
+    * Set to `default = false` (opt-in) with `stringOption("maxQuality")` allowing selection of `1080`, `720`, `540`, `480`, or `360`.
+    * Stores configuration in runtime helper `TikTokVideoQualityHook` and persists to `morphe_tiktok_quality_prefs`.
+  * **Feed Model & Bitrate List Capping**:
+    * Hooks `Video.getBitRate()` and `Video.getRawBitRate()` return points, routing them through `TikTokVideoQualityHook.filterBitrates()`.
+    * Discards all rendition ladders exceeding the configured resolution ceiling (`getVideoHeight() > maxAllowedResolution` or parsing `gearName`).
+    * Preserves surviving renditions sorted in descending order so the optimal stream within the cap is served first.
+  * **Primary Playback Stream Redirection**:
+    * Hooks `Aweme.getVideo()`, executing `TikTokVideoQualityHook.capVideoObject(Video)`.
+    * Reassigns default playback endpoints (`playAddrValue` and `playAddrBytevc1Value`) to the highest allowed stream within the resolution ceiling.
+  * **PlayerKit Engine Bitrate Filtering**:
+    * Hooks `SimVideoUrlModel.getBitRate()`, delivering only capped `SimBitRate` candidates to the underlying `TTPlayer` playback engine.
+  * **Live Stream Invariant**:
+    * Live streams are exempted to prevent audio/video desynchronization on real-time RTMP/WebRTC broadcasts.
+
 ---
+
 
 ## 🛡️ Privacy & Tracker Suppression
 

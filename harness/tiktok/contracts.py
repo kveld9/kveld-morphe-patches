@@ -221,4 +221,18 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
         required_strings=["getParameterizedSpeed"],
         criticality="MEDIUM",
     ),
+    PatchContract(
+        patch_id="video_quality_governor",
+        name="Video Quality Governor",
+        target_type="bytecode",
+        description="Caps maximum video playback resolution (1080p, 720p, 540p, 480p, 360p) to reduce GPU/MediaCodec load, lower memory retention, and prevent playback buffering.",
+        required_classes=[
+            "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
+            "Lcom/ss/android/ugc/aweme/feed/model/Video;",
+            "Lcom/ss/android/ugc/playerkit/simapicommon/model/SimVideoUrlModel;",
+        ],
+        required_strings=["getVideo", "getBitRate"],
+        criticality="HIGH",
+    ),
 ]
+
