@@ -1,3 +1,9 @@
+## [1.31.1](https://github.com/kveld9/kveld-morphe-patches/compare/v1.31.0...v1.31.1) (2026-09-16)
+
+### Bug Fixes
+
+* **tiktok:** preserve libbytenn to avoid dlopen failure in native dependencies ([6de816c](https://github.com/kveld9/kveld-morphe-patches/commit/6de816c83a1c60f0f5a1c5e00adce140585900ca))
+
 ## [1.31.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.30.1...v1.31.0) (2026-09-16)
 
 ### New Features
