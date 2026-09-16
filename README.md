@@ -181,7 +181,7 @@
 | Patch | Description | Options |
 |----------|----------------|-----------|
 | **Clean Share URL** | Strips tracking parameters, user IDs, device fingerprints, and marketing tokens from shared TikTok links. |  |
-| **Client-Side AI & Behavioral Profiling Governor** | Neutralizes on-device machine learning inference, Pitaya behavioral profiling tasks, and on-device ad re-ranking. |  |
+| **Client-Side AI & Behavioral Profiling Governor** | Neutralizes on-device machine learning inference (Pitaya), Tako AI chatbot entry points and icons, and AI smart search suggestion clutter. |  |
 | **Core Asset De-bloat** | Strips embedded Microblink/FinTech card scanner models, Pitaya AI & ByteNN LLM engines, C2PA origin verification, DLNA cast scanners, and redundant non-Latin fonts to save APK space. |  |
 | **Device Privacy Guard** | Neutralizes background clipboard snooping routines, local network scanning permissions, and screenshot/recording detection and telemetry listeners to protect user data. |  |
 | **Disable Push Notifications** | Neutralizes background push notification tasks and persistent socket wake locks to eliminate background battery drain. |  |

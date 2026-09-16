@@ -1,3 +1,9 @@
+## [1.32.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.31.2...v1.32.0) (2026-09-16)
+
+### New Features
+
+* **tiktok:** expand client AI governor to neutralize Tako AI and search clutter ([d885f41](https://github.com/kveld9/kveld-morphe-patches/commit/d885f410037a82bb019fab98ff6c5bbfa35c02fa))
+
 ## [1.31.2](https://github.com/kveld9/kveld-morphe-patches/compare/v1.31.1...v1.31.2) (2026-09-16)
 
 ### Bug Fixes
