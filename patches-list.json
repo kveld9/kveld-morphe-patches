@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.30.0",
+  "version": "1.30.1",
   "patches": [
     {
       "name": "APK Junk Cleaner",
@@ -1148,7 +1148,7 @@
     },
     {
       "name": "Feed Bloat & Distraction Blocker",
-      "description": "Removes non-video clutter from the For You and Following feeds, including suggested friend cards, mini-games, CapCut/template creation prompts, memories ('En este día'), surveys, mini-drama paywalls, and Lemon8 promo tasks.",
+      "description": "Removes non-video clutter from the For You and Following feeds, including suggested friend cards, mini-games, CapCut/template creation prompts, memories ('On This Day'), surveys, mini-drama paywalls, and Lemon8 promo tasks.",
       "default": true,
       "dependencies": [],
       "compatiblePackages": [
