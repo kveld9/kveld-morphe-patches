@@ -1,3 +1,9 @@
+## [1.37.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.36.1...v1.37.0) (2026-09-17)
+
+### New Features
+
+* **brave:** add clean new tab page, sensor privacy, and link tracking sanitizer ([192c1b1](https://github.com/kveld9/kveld-morphe-patches/commit/192c1b1e1ec7af7a934f81baf87a6b0c18c070d3))
+
 ## [1.36.1](https://github.com/kveld9/kveld-morphe-patches/compare/v1.36.0...v1.36.1) (2026-09-17)
 
 ### Bug Fixes
