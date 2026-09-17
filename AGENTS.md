@@ -157,6 +157,13 @@ For non-trivial logic, Smali hooks, native ARM64 patching (`libchrome.so`), or s
 13. **Strict Prohibition of Emojis in Code, Scripts & Tooling**:
     - Under no circumstances should emojis or unicode pictographs be used anywhere in codebase source files, including Kotlin, Java, Python, Smali, Bash/Shell scripts, Gradle build files, configuration files, test files, diagnostic telemetry, or CLI/runtime logs.
     - All code, logs, comments, and console outputs MUST strictly use clean, standard ASCII / plain-text formatting (e.g. `[INFO]`, `[WARN]`, `[PASS]`, `[FAIL]`, `[AUDIT]`, `[BUILD]`). Emojis are tolerated exclusively in end-user documentation (such as `README.md`) if already present, but are strictly prohibited in codebase implementation files and tooling.
+14. **Mandatory Atomic Commits Policy**:
+    - Never bundle unrelated changes across testing infrastructure, app patches, shared compatibility, and documentation into a single monolithic commit. Changes must be committed in distinct, atomic units:
+      a) **Tooling & Test Harness** (`test(harness): ...` or `refactor(harness): ...`): Must be isolated from patch logic.
+      b) **Feature & Patch Core** (`feat(<app>): ...` or `fix(<app>): ...`): Committed per target app or cohesive functional domain.
+      c) **Cross-Compatibility & Shared Contracts** (`feat(patches): ...` or `feat(shared): ...`): Isolated when bridging features across apps.
+      d) **Technical Documentation** (`docs(<app>): ...` or `docs: ...`): Committed independently from code changes.
+    - Each commit must adhere strictly to Conventional Commits to ensure clean `@semantic-release` changelog generation and bisectability.
 
 ---
 
