@@ -34,22 +34,9 @@ val sensorPrivacyPatch = bytecodePatch(
             println("[Sensor Privacy Guard] PlatformSensorProvider.hasSensorType hook note: ${e.message}")
         }
 
-        // 2. Neutralize PlatformSensorProvider.create() -> return null
-        try {
-            Fingerprint(
-                definingClass = "Lorg/chromium/device/sensors/PlatformSensorProvider;",
-                name = "create",
-                parameters = emptyList(),
-            ).method.apply {
-                replaceWithReturnNull()
-                hookedMethods.add("PlatformSensorProvider.create")
-                patched++
-            }
-        } catch (e: Exception) {
-            println("[Sensor Privacy Guard] PlatformSensorProvider.create hook note: ${e.message}")
-        }
-
-        // 3. Neutralize PlatformSensor.create(PlatformSensorProvider, int, long) -> return null
+        // 2. Neutralize PlatformSensor.create(PlatformSensorProvider, int, long) -> return null
+        // Note: PlatformSensorProvider.create() must NOT return null as C++ PlatformSensorProviderAndroid
+        // binds its JNI receiver to it; returning null triggers SIGSEGV / JNI abort on hasSensorType calls.
         try {
             Fingerprint(
                 definingClass = "Lorg/chromium/device/sensors/PlatformSensor;",
