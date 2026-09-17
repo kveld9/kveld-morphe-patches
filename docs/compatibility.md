@@ -32,13 +32,13 @@ Always use `Bravemonoarm64.apk` from [Brave GitHub Releases](https://github.com/
 ### 🔴 Vivaldi Browser: Stable Transition (`com.vivaldi.browser`)
 Download the official `arm64-v8a` bundle release from [APKMirror](https://www.apkmirror.com/apk/vivaldi-technologies/vivaldi-browser-beta/).
 
-- **Stable Target**: Morphe Patches has transitioned to the stable release of Vivaldi Browser (`com.vivaldi.browser`, v8.2.4147.58).
+- **Stable Target**: Morphe Patches has transitioned to the stable release of Vivaldi Browser (`com.vivaldi.browser`, v8.2.4147.77).
 - **APKM Bundle Requirement**: Distributed as an Android App Bundle (`.apkm` / split APKs) containing `base.apk` and `split_chrome.apk`. **Do not download the ~320 MB standalone APK option on APKMirror**, as that is merely an unbundled `base.apk` stripped of browser bytecode. Select the **BUNDLE (`.apkm`)** file so Morphe can fuse split modules and apply the complete patch suite.
 
 ### 🏋️ Hevy: Gym Log Workout Tracker (`com.hevy`)
 Download the official `arm64-v8a` bundle release from [APKMirror](https://www.apkmirror.com/apk/hevy/hevy-gym-log-workout-tracker/).
 
-- **Current Target**: `3.1.13` (`com.hevy`, APKM bundle).
+- **Current Target**: `3.1.14` (`com.hevy`, APKM bundle).
 - **Bundle Format**: Distributed as an APKM / split APK set (`base.apk`, `split_config.arm64_v8a.apk`, `split_config.xxhdpi.apk`, etc.). Morphe patches both Dalvik bytecode in `classes*.dex`, manifest components in `AndroidManifest.xml`, and the Hermes bytecode bundle in `assets/index.android.bundle`.
 
 ### 🎵 TikTok: Global & Asia (`com.zhiliaoapp.musically` / `com.ss.android.ugc.trill`)
