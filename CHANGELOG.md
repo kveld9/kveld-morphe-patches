@@ -1,3 +1,9 @@
+## [1.38.4](https://github.com/kveld9/kveld-morphe-patches/compare/v1.38.3...v1.38.4) (2026-09-17)
+
+### Bug Fixes
+
+* **tiktok:** ensure publish date is visible across feed cards ([4c70235](https://github.com/kveld9/kveld-morphe-patches/commit/4c70235782db56e81a676c83bdf0ea1ff521329e))
+
 ## [1.38.3](https://github.com/kveld9/kveld-morphe-patches/compare/v1.38.2...v1.38.3) (2026-09-17)
 
 ### Bug Fixes
