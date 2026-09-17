@@ -11,6 +11,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstructio
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
+import app.morphe.patches.shared.ensureRegisterCount
 
 @Suppress("unused")
 val vivaldiDisablePromptsPatch = bytecodePatch(
@@ -156,7 +157,7 @@ val vivaldiDisablePromptsPatch = bytecodePatch(
             println("[Disable Prompts] Vivaldia game pref hook note: ${e.message}")
         }
 
-        // 9. MainSettings: Unconditionally strip Rate Vivaldi and Default Browser promo cards
+        // 9. MainSettings: Unconditionally strip Rate Vivaldi and Default Browser promo cards in onStart
         try {
             val fpMainSettings = Fingerprint(
                 definingClass = "Lorg/chromium/chrome/browser/settings/MainSettings;",
@@ -166,25 +167,124 @@ val vivaldiDisablePromptsPatch = bytecodePatch(
                 it.parameterTypes == listOf("Ljava/lang/String;") && it.returnType == "V"
             }?.name
             if (removePrefMethod != null) {
-                val returnIdx = fpMainSettings.method.implementation?.instructions?.indexOfLast { it.opcode == Opcode.RETURN_VOID } ?: -1
-                if (returnIdx >= 0) {
-                    fpMainSettings.method.addInstructions(
-                        returnIdx,
-                        """
-                            const-string v0, "rate_vivaldi"
-                            invoke-virtual {p0, v0}, Lorg/chromium/chrome/browser/settings/MainSettings;->$removePrefMethod(Ljava/lang/String;)V
-                            const-string v0, "default_browser_promo"
-                            invoke-virtual {p0, v0}, Lorg/chromium/chrome/browser/settings/MainSettings;->$removePrefMethod(Ljava/lang/String;)V
-                        """,
-                    )
-                    val cMain = app.morphe.patches.shared.LocaleUtils.cleanClassName(fpMainSettings.originalClassDef.type)
-                    hookedMethods.add("$cMain.${fpMainSettings.method.name}")
-                }
+                val fpOnStart = Fingerprint(
+                    definingClass = "Lorg/chromium/chrome/browser/settings/MainSettings;",
+                    name = "onStart",
+                    parameters = emptyList(),
+                    returnType = "V",
+                )
+                fpOnStart.method.ensureRegisterCount(2)
+                fpOnStart.method.addInstructions(
+                    0,
+                    """
+                        const-string v0, "rate_vivaldi"
+                        invoke-virtual {p0, v0}, Lorg/chromium/chrome/browser/settings/MainSettings;->$removePrefMethod(Ljava/lang/String;)V
+                        const-string v0, "default_browser_promo"
+                        invoke-virtual {p0, v0}, Lorg/chromium/chrome/browser/settings/MainSettings;->$removePrefMethod(Ljava/lang/String;)V
+                    """,
+                )
+                val cMain = app.morphe.patches.shared.LocaleUtils.cleanClassName(fpMainSettings.originalClassDef.type)
+                hookedMethods.add("$cMain.onStartStripCards")
             } else {
                 println("[Disable Prompts] MainSettings: removePreference method not found")
             }
         } catch (e: Exception) {
             println("[Disable Prompts] MainSettings promo cleanup hook note: ${e.message}")
+        }
+
+        // 10. DefaultBrowserPromoPreference: force setVisible(false) on attach
+        try {
+            val fpPromoPref = Fingerprint(
+                definingClass = "Lorg/vivaldi/browser/preferences/DefaultBrowserPromoPreference;",
+                parameters = emptyList(),
+                returnType = "V",
+                custom = { method, _ -> method.name != "<init>" },
+            )
+            fpPromoPref.method.ensureRegisterCount(2)
+            fpPromoPref.method.addInstructions(
+                0,
+                """
+                    invoke-super {p0}, Landroidx/preference/Preference;->u()V
+                    const/4 v0, 0x0
+                    invoke-virtual {p0, v0}, Landroidx/preference/Preference;->b0(Z)V
+                    return-void
+                """,
+            )
+            hookedMethods.add("DefaultBrowserPromoPreference.uHide")
+        } catch (e: Exception) {
+            println("[Disable Prompts] DefaultBrowserPromoPreference hook note: ${e.message}")
+        }
+
+        // 11. Vivaldi Default Browser Role Helper: force isDefaultBrowser -> true and neutralize role request prompt
+        try {
+            val fpRoleHelper = Fingerprint(
+                returnType = "Z",
+                parameters = listOf("Landroid/content/Context;"),
+                strings = listOf("android.app.role.BROWSER"),
+                custom = { _, classDef ->
+                    classDef.methods.any {
+                        it.parameterTypes == listOf("Landroid/app/Activity;") && it.returnType == "V"
+                    }
+                },
+            )
+            fpRoleHelper.method.ensureRegisterCount(1)
+            fpRoleHelper.method.addInstructions(
+                0,
+                """
+                    const/4 v0, 0x1
+                    return v0
+                """,
+            )
+            val roleClass = fpRoleHelper.originalClassDef.type
+            val cleanRoleClass = app.morphe.patches.shared.LocaleUtils.cleanClassName(roleClass)
+            hookedMethods.add("$cleanRoleClass.isDefaultBrowserTrue")
+
+            val fpRolePrompt = Fingerprint(
+                definingClass = roleClass,
+                returnType = "V",
+                parameters = listOf("Landroid/app/Activity;"),
+            )
+            fpRolePrompt.method.addInstructions(0, "return-void")
+            hookedMethods.add("$cleanRoleClass.rolePromptNeutralized")
+        } catch (e: Exception) {
+            println("[Disable Prompts] Default browser role helper hook note: ${e.message}")
+        }
+
+        // 12. Chromium Upstream Default Browser Promo Utils: neutralize promo eligibility checks
+        try {
+            val fpChromiumPromo = Fingerprint(
+                returnType = "Z",
+                strings = listOf("disable-default-browser-promo", "android.app.role.BROWSER"),
+                parameters = listOf("Landroid/content/Context;"),
+            )
+            fpChromiumPromo.method.ensureRegisterCount(1)
+            fpChromiumPromo.method.addInstructions(
+                0,
+                """
+                    const/4 v0, 0x0
+                    return v0
+                """,
+            )
+            val promoClass = fpChromiumPromo.originalClassDef.type
+            val cleanPromoClass = app.morphe.patches.shared.LocaleUtils.cleanClassName(promoClass)
+            hookedMethods.add("$cleanPromoClass.promoEligibilityFalse")
+
+            val fpChromiumPromo2 = Fingerprint(
+                definingClass = promoClass,
+                returnType = "Z",
+                parameters = listOf("Landroid/content/Context;", "I"),
+            )
+            fpChromiumPromo2.method.ensureRegisterCount(1)
+            fpChromiumPromo2.method.addInstructions(
+                0,
+                """
+                    const/4 v0, 0x0
+                    return v0
+                """,
+            )
+            hookedMethods.add("$cleanPromoClass.promoEligibilityWithRoleFalse")
+        } catch (e: Exception) {
+            println("[Disable Prompts] Chromium DefaultBrowserPromoUtils hook note: ${e.message}")
         }
 
         val targetClasses = hookedMethods.map { it.substringBefore('.') }.distinct()
