@@ -116,6 +116,7 @@ object Constants {
     const val TIKTOK_EXTENSION_COMMENT_HOOK = "Lcom/kveld9/morphe/extension/tiktok/TikTokCommentHook;"
     const val TIKTOK_EXTENSION_SEEKBAR_HOOK = "Lcom/kveld9/morphe/extension/tiktok/TikTokSeekbarHook;"
     const val BRAVE_EXTENSION_CLASS = "Lcom/kveld9/morphe/extension/BraveExtension;"
+    const val CHROMIUM_EXTENSION_CLASS = "Lcom/kveld9/morphe/extension/ChromiumExtension;"
 }
 
 

@@ -1,4 +1,4 @@
-package app.morphe.patches.brave
+package app.morphe.patches.chromium
 
 import app.morphe.patcher.patch.rawResourcePatch
 import app.morphe.patcher.patch.stringOption
@@ -20,7 +20,8 @@ private val EMPTY_DATAPACK_V5 by lazy {
     )
 }
 
-val braveLocaleSlimmerPatch = rawResourcePatch(
+@Suppress("unused")
+val localePakSlimmerPatch = rawResourcePatch(
     name = "Locale PAK Slimmer",
     description = "Strips unselected language resource PAKs from assets/locales/.",
     default = false,

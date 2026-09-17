@@ -10,18 +10,18 @@ Comprehensive technical breakdown of all **15 patches** included in the Morphe V
 | :--- | :--- | :--- | :--- |
 | **Privacy & Telemetry** | **[Block Vivaldi Telemetry](#1-block-vivaldi-telemetry-vivaldiblocktelemetrypatch)** | Composite (`bytecode` + `rawResource` + `resource`) | Redirects 10 native telemetry/geolocation endpoints to `0.0.0.0`, neutralizes UKM event dispatch, strips DataTransport schedulers |
 | **Privacy & Telemetry** | **[Block Vivaldi Sync](#2-block-vivaldi-sync-vivaldiblocksyncpatch)** | `rawResourcePatch` | Redirects `bifrost.vivaldi.com` to `0.0.0.0` in `libchrome.so` for air-gapped operation |
-| **Privacy & Anti-Tracking** | **[Clean Share URL](#3-clean-share-url-bravecleanshareurlpatch)** | `bytecodePatch` | Strips tracking query parameters (`utm_*`, `fbclid`, `gclid`, etc.) on share intents and clipboard copy |
-| **Privacy & Anti-Tracking** | **[Sensor Privacy Guard](#4-sensor-privacy-guard-bravesensorprivacypatch)** | `bytecodePatch` | Neutralizes W3C Generic Sensor APIs (gyroscope, accelerometer, ambient light) to prevent hardware fingerprinting |
-| **Privacy & Anti-Tracking** | **[Disable Battery Status API & OS Listener](#5-disable-battery-status-api--os-listener-bravebatteryoptimizationpatch)** | `bytecodePatch` | Neutralizes `navigator.getBattery` and drops `BATTERY_CHANGED` broadcast events |
+| **Privacy & Anti-Tracking** | **[Clean Share URL](#3-clean-share-url-cleanshareurlpatch)** | `bytecodePatch` | Strips tracking query parameters (`utm_*`, `fbclid`, `gclid`, etc.) on share intents and clipboard copy |
+| **Privacy & Anti-Tracking** | **[Sensor Privacy Guard](#4-sensor-privacy-guard-sensorprivacypatch)** | `bytecodePatch` | Neutralizes W3C Generic Sensor APIs (gyroscope, accelerometer, ambient light) to prevent hardware fingerprinting |
+| **Privacy & Anti-Tracking** | **[Disable Battery Status API & OS Listener](#5-disable-battery-status-api--os-listener-batteryoptimizationpatch)** | `bytecodePatch` | Neutralizes `navigator.getBattery` and drops `BATTERY_CHANGED` broadcast events |
 | **De-promotional & UX** | **[Disable Vivaldi Prompts & In-App Popups](#6-disable-prompts--in-app-popups-vivaldidisablepromptspatch)** | `bytecodePatch` | Dismisses "Rate Vivaldi" modals, blocks donation sheets, strips settings promo cards, silences privacy alarms, and hides the Vivaldia game |
 | **De-promotional & UX** | **[Clean Speed Dial Bookmarks](#7-clean-speed-dial-bookmarks-vivaldicleanspeeddialpatch)** | Composite (`bytecode` + `rawResource`) | Sanitizes affiliate bookmarks JSON, hides 3-dot customize/add buttons, disables phantom touch lag on blank Start Page |
 | **Usability & Media** | **[Background Media Playback](#8-background-media-playback-vivaldibackgroundmediapatch)** | `bytecodePatch` | Injects `--disable-background-media-suspend` via `CommandLine.init` for uninterrupted background audio/video |
 | **Usability & UX** | **[Close Tabs on Exit](#9-close-tabs-on-exit-vivaldiclosetabsonexitpatch)** | `bytecodePatch` | Neutralizes `TabStateFileManager.readTabState` to guarantee a clean Start Page session on every launch |
-| **Usability & UX** | **[Skip First Run](#10-skip-first-run-braveskipfirstrunpatch)** | `bytecodePatch` | Skips first-run wizard, search engine picker, and terms of service onboarding |
+| **Usability & UX** | **[Skip First Run](#10-skip-first-run-skipfirstrunpatch)** | `bytecodePatch` | Skips first-run wizard, search engine picker, and terms of service onboarding |
 | **Performance & Battery** | **[Vivaldi Startup Performance Optimization](#11-startup-performance-optimization-vivaldistartupperformancepatch)** | `bytecodePatch` | Bypasses OEM partner initialization, guards `CompositorView` against startup NPE crashes, and silences Automotive reflection spam |
 | **Performance & Battery** | **[Disable Background Sync & Periodic Sync](#12-disable-background-sync--periodic-sync-vivaldibackgroundsyncpatch)** | `bytecodePatch` | Neutralizes periodic and one-shot BackgroundSync task wakeups in Android JobScheduler |
 | **Performance & Battery** | **[Disable Chromium Tips & Notification Scheduler](#13-disable-chromium-tips--notification-scheduler-vivaldinotificationoptimizerpatch)** | `bytecodePatch` | Neutralizes background tips scheduling alarms (Job ID 105) and tips promo agents |
-| **APK Slimmer** | **[Locale PAK Slimmer](#14-locale-pak-slimmer-bravelocaleslimmerpatch)** | `rawResourcePatch` | Strips unselected language PAKs from `assets/locales/` (~21.2 MB saved) using zero-crash binary fallback substitution |
+| **APK Slimmer** | **[Locale PAK Slimmer](#14-locale-pak-slimmer-localepakslimmerpatch)** | `rawResourcePatch` | Strips unselected language PAKs from `assets/locales/` (~21.2 MB saved) using zero-crash binary fallback substitution |
 | **APK Slimmer** | **[Resource Slimmer](#15-resource-slimmer-vivaldiresourceslimmerpatch)** | `rawResourcePatch` | Empties bundled stock wallpapers, Speed Dial thumbnails, partner favicons, Privacy Sandbox attestations, and hardens defaults (~6.7 MB saved) |
 
 ---
@@ -58,13 +58,13 @@ Comprehensive technical breakdown of all **15 patches** included in the Morphe V
 * **Internal Mechanism**:
   - Redirects `bifrost.vivaldi.com` to `0.0.0.0\0` at verified binary offsets in `lib/arm64-v8a/libchrome.so`.
 
-### 3. Clean Share URL (`braveCleanShareUrlPatch`)
+### 3. Clean Share URL (`cleanShareUrlPatch`)
 * **Objective**: Protect user privacy when sharing or copying links from the browser.
 * **Internal Mechanism**:
   - Hooks Vivaldi share intent builder (`Latb.a`) and system clipboard copy (`Clipboard.setText`) via companion Java extension logic.
   - Strips tracking tokens (`utm_*`, `fbclid`, `gclid`, `igshid`, `si`, `msclkid`, `mc_eid`, etc.) while strictly preserving functional query parameters (`v`, `id`, `q`, `t`).
 
-### 4. Sensor Privacy Guard (`braveSensorPrivacyPatch`)
+### 4. Sensor Privacy Guard (`sensorPrivacyPatch`)
 * **Objective**: Prevent hardware-based device fingerprinting and side-channel keystroke acoustic sniffing via W3C Generic Sensor APIs.
 * **Internal Mechanism**:
   - Forces `PlatformSensorProvider.hasSensorType(int)` -> `false`.
@@ -72,7 +72,7 @@ Comprehensive technical breakdown of all **15 patches** included in the Morphe V
   - Forces `PlatformSensor.create(...)` -> `null`.
   - Conforms to W3C specifications so web pages receive standard unavailable states without crashing.
 
-### 5. Disable Battery Status API & OS Listener (`braveBatteryOptimizationPatch`)
+### 5. Disable Battery Status API & OS Listener (`batteryOptimizationPatch`)
 * **Objective**: Stop battery level tracking (`navigator.getBattery()`) used for cross-site visitor correlation.
 * **Internal Mechanism**:
   - Injects early `return-void` into the `BATTERY_CHANGED` broadcast receiver (`onReceive`), eliminating wakeups and battery querying.
@@ -115,7 +115,7 @@ Comprehensive technical breakdown of all **15 patches** included in the Morphe V
   - Locates `TabStateFileManager` via unique string constants (`tab_state`, `.bak`, `.new`).
   - Neutralizes `readTabState()I` to return `0`, bypassing session tab reconstruction.
 
-### 10. Skip First Run (`braveSkipFirstRunPatch`)
+### 10. Skip First Run (`skipFirstRunPatch`)
 * **Objective**: Eliminate first-launch onboarding wizards, default search engine selection prompts, and terms of service dialogs on clean installs.
 * **Internal Mechanism**:
   - Forces `first_run_flow_complete` flag to `true` and bypasses the FRE sequencer.
@@ -143,7 +143,7 @@ Comprehensive technical breakdown of all **15 patches** included in the Morphe V
 
 ## 📦 APK Slimming & Storage Reclamation
 
-### 14. Locale PAK Slimmer (`braveLocaleSlimmerPatch`)
+### 14. Locale PAK Slimmer (`localePakSlimmerPatch`)
 * **Objective**: Strip unselected language resource PAKs from `assets/locales/` to reclaim **~21.2 MB** of storage.
 * **Internal Mechanism**:
   - Chromium DataPack v5 files cannot be truncated to 0 bytes or deleted without causing native C++ crashes.

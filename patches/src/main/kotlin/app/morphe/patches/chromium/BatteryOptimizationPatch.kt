@@ -1,4 +1,4 @@
-package app.morphe.patches.brave
+package app.morphe.patches.chromium
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
@@ -6,7 +6,7 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 
 @Suppress("unused")
-val braveBatteryOptimizationPatch = bytecodePatch(
+val batteryOptimizationPatch = bytecodePatch(
     name = "Disable Battery Status API & OS Listener",
     description = "Neutralizes the Battery Status API (navigator.getBattery) to prevent cross-site device fingerprinting and drops OS battery change broadcasts.",
     default = true,

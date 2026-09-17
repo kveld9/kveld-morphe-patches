@@ -1,11 +1,12 @@
-package app.morphe.patches.brave
+package app.morphe.patches.chromium
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 
-val braveSkipFirstRunPatch = bytecodePatch(
+@Suppress("unused")
+val skipFirstRunPatch = bytecodePatch(
     name = "Skip First Run",
     description = "Skips the welcome screen, search engine selection, and onboarding First Run Experience (FRE) on clean installs.",
     default = true,

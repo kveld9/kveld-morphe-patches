@@ -1,4 +1,4 @@
-package app.morphe.patches.brave
+package app.morphe.patches.chromium
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.patch.bytecodePatch
@@ -7,7 +7,7 @@ import app.morphe.patches.shared.replaceWithReturnBoolean
 import app.morphe.patches.shared.replaceWithReturnNull
 
 @Suppress("unused")
-val braveSensorPrivacyPatch = bytecodePatch(
+val sensorPrivacyPatch = bytecodePatch(
     name = "Sensor Privacy Guard",
     description = "Neutralizes motion, ambient, and orientation sensor providers to prevent hardware fingerprinting and tracking via Generic Sensor APIs.",
     default = true,

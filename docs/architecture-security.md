@@ -49,7 +49,7 @@ The parameter sanitizer does **not** attempt to match every ad network parameter
 - **Comparison with Domain-Conditional Engines**: Projects like ClearURLs, AdGuard URL Tracking Protection, or Brave's upstream C++ `url_cleaner` maintain hundreds of rules scoped to specific domains (e.g. stripping `tag` only on `amazon.com` or `rdt_cid` only on `reddit.com`). Morphe's lightweight companion runtime prioritizes high-confidence global tokens that can be removed with zero risk of site breakage.
 
 #### Complete Catalog of Filtered Parameters (Chromium Extension)
-Implemented in [`BraveExtension.java`](../extensions/extension/src/main/java/com/kveld9/morphe/extension/BraveExtension.java#L38-L101) and [`isTrackingParam`](../extensions/extension/src/main/java/com/kveld9/morphe/extension/BraveExtension.java#L214-L235):
+Implemented in [`ChromiumExtension.java`](../extensions/extension/src/main/java/com/kveld9/morphe/extension/ChromiumExtension.java#L34-L94) and [`isTrackingParam`](../extensions/extension/src/main/java/com/kveld9/morphe/extension/ChromiumExtension.java#L214-L235):
 - **Prefix Families (Global Dynamic Matching)**:
   - `utm_*`: Urchin Tracking Module / Google Analytics marketing attribution (`utm_source`, `utm_medium`, `utm_campaign`, `utm_term`, `utm_content`).
   - `ga_*`: Google Analytics client parameters.

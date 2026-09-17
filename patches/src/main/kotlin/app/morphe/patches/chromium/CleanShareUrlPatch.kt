@@ -1,4 +1,4 @@
-package app.morphe.patches.brave
+package app.morphe.patches.chromium
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
@@ -8,7 +8,7 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
 @Suppress("unused")
-val braveCleanShareUrlPatch = bytecodePatch(
+val cleanShareUrlPatch = bytecodePatch(
     name = "Clean Share URL",
     description = "Strips tracking parameters (utm_*, fbclid, gclid, igshid, si, msclkid) when sharing or copying links.",
     default = true,
@@ -36,7 +36,7 @@ val braveCleanShareUrlPatch = bytecodePatch(
                 method.addInstructions(
                     returnIndex,
                     """
-                        invoke-static {v$reg}, ${Constants.BRAVE_EXTENSION_CLASS}->cleanShareIntent(Landroid/content/Intent;)Landroid/content/Intent;
+                        invoke-static {v$reg}, ${Constants.CHROMIUM_EXTENSION_CLASS}->cleanShareIntent(Landroid/content/Intent;)Landroid/content/Intent;
                         move-result-object v$reg
                     """.trimIndent(),
                 )
@@ -60,7 +60,7 @@ val braveCleanShareUrlPatch = bytecodePatch(
                 addInstructions(
                     0,
                     """
-                        invoke-static {p1}, ${Constants.BRAVE_EXTENSION_CLASS}->cleanShareUrl(Ljava/lang/String;)Ljava/lang/String;
+                        invoke-static {p1}, ${Constants.CHROMIUM_EXTENSION_CLASS}->cleanShareUrl(Ljava/lang/String;)Ljava/lang/String;
                         move-result-object p1
                     """.trimIndent(),
                 )
