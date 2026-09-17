@@ -286,22 +286,15 @@ fun main(args: Array<String>) {
                 }
             }
 
-            if (splitDexes.isEmpty()) {
-                apkmZip.getInputStream(baseEntry).use { input ->
-                    extractedBase.outputStream().buffered().use { output ->
-                        input.copyTo(output)
-                    }
+            apkmZip.getInputStream(baseEntry).use { input ->
+                extractedBase.outputStream().buffered().use { output ->
+                    input.copyTo(output)
                 }
-            } else {
-                val baseTemp = File(apkmExtractDir, "base_raw.apk")
-                apkmZip.getInputStream(baseEntry).use { input ->
-                    baseTemp.outputStream().buffered().use { output ->
-                        input.copyTo(output)
-                    }
-                }
+            }
 
+            if (splitDexes.isNotEmpty()) {
                 var maxDexIndex = 1
-                java.util.zip.ZipFile(baseTemp).use { baseZip ->
+                java.util.zip.ZipFile(extractedBase).use { baseZip ->
                     baseZip.entries().asSequence().forEach { entry ->
                         val m = Regex("^classes(\\d*)\\.dex$").matchEntire(entry.name)
                         if (m != null) {
@@ -310,25 +303,17 @@ fun main(args: Array<String>) {
                             if (idx > maxDexIndex) maxDexIndex = idx
                         }
                     }
+                }
 
-                    java.util.zip.ZipOutputStream(extractedBase.outputStream().buffered()).use { outZip ->
-                        for (entry in baseZip.entries()) {
-                            val zipEntry = java.util.zip.ZipEntry(entry.name)
-                            outZip.putNextEntry(zipEntry)
-                            baseZip.getInputStream(entry).use { it.copyTo(outZip) }
-                            outZip.closeEntry()
-                        }
-                        for (dexBytes in splitDexes) {
-                            maxDexIndex++
-                            val entryName = "classes$maxDexIndex.dex"
-                            val zipEntry = java.util.zip.ZipEntry(entryName)
-                            outZip.putNextEntry(zipEntry)
-                            outZip.write(dexBytes)
-                            outZip.closeEntry()
-                        }
+                val uri = java.net.URI.create("jar:" + extractedBase.toURI())
+                val env = mapOf("create" to "false")
+                java.nio.file.FileSystems.newFileSystem(uri, env).use { fs ->
+                    for (dexBytes in splitDexes) {
+                        maxDexIndex++
+                        val entryPath = fs.getPath("classes$maxDexIndex.dex")
+                        java.nio.file.Files.write(entryPath, dexBytes)
                     }
                 }
-                baseTemp.delete()
                 println("[APKM] Merged ${splitDexes.size} DEX file(s) from split APK(s) into base.apk (total DEX files: $maxDexIndex)")
             }
         }
@@ -398,8 +383,7 @@ fun main(args: Array<String>) {
                 actualApkFile.copyTo(unsignedApk, overwrite = true)
                 println("\n[PACK] Applying patcher result to APK...")
                 patcherResult.applyTo(unsignedApk)
-                println("[SIGN] Signing patched APK -> ${outFile.name}...")
-                val keystoreFile = File(tempDir, "morphe-debug.keystore")
+                val keystoreFile = File("build/morphe-debug.keystore").absoluteFile
                 val ksDetails = ApkUtils.KeyStoreDetails(
                     keyStore = keystoreFile,
                     alias = "morphe",
@@ -412,6 +396,29 @@ fun main(args: Array<String>) {
                     keyStoreDetails = ksDetails,
                 )
                 println("[DONE] Patched & signed APK saved at: ${outFile.absolutePath}")
+
+                if (effectiveApkFile.name.endsWith(".apkm", ignoreCase = true)) {
+                    java.util.zip.ZipFile(effectiveApkFile).use { apkmZip ->
+                        val splitApkEntries = apkmZip.entries().asSequence()
+                            .filter { it.name.endsWith(".apk", ignoreCase = true) && it.name != "base.apk" }
+                            .toList()
+                        for (splitEntry in splitApkEntries) {
+                            val rawSplitFile = File(tempDir, splitEntry.name)
+                            apkmZip.getInputStream(splitEntry).use { input ->
+                                rawSplitFile.outputStream().buffered().use { output -> input.copyTo(output) }
+                            }
+                            val signedSplitFile = File(outFile.parentFile, splitEntry.name)
+                            println("[SIGN] Signing companion split -> ${signedSplitFile.name}...")
+                            ApkUtils.signApk(
+                                inputApkFile = rawSplitFile,
+                                outputApkFile = signedSplitFile,
+                                signer = "Morphe",
+                                keyStoreDetails = ksDetails,
+                            )
+                            println("[DONE] Signed companion split saved at: ${signedSplitFile.absolutePath}")
+                        }
+                    }
+                }
             }
         }
     } finally {
