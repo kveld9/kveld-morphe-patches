@@ -1,3 +1,10 @@
+## [1.38.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.37.0...v1.38.0) (2026-09-17)
+
+### New Features
+
+* **patches:** enable sensor privacy and clean share url for vivaldi ([3077171](https://github.com/kveld9/kveld-morphe-patches/commit/30771712f5d4d9243679d6f563496bf60eb62abb))
+* **vivaldi:** add background media, telemetry blocking, and UI debloat patches ([4c1f36b](https://github.com/kveld9/kveld-morphe-patches/commit/4c1f36b99e8c59b0217bfa56f3c6ec0e7696c823))
+
 ## [1.37.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.36.1...v1.37.0) (2026-09-17)
 
 ### New Features
