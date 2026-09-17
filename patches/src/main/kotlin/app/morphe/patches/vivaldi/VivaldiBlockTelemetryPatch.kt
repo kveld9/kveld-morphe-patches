@@ -139,30 +139,6 @@ private val vivaldiDataTransportResourcePatch = resourcePatch(
 
         var disabledCount = 0
         document(manifestFile.absolutePath).use { doc ->
-            val root = doc.documentElement
-            if (root != null) {
-                listOf(
-                    "android:requiredSplitTypes",
-                    "android:splitTypes",
-                    "android:isolatedSplits",
-                    "android:isSplitRequired",
-                ).forEach { attr ->
-                    if (root.hasAttribute(attr)) {
-                        root.removeAttribute(attr)
-                    }
-                }
-            }
-
-            val metaElements = doc.getElementsByTagName("meta-data")
-            val splitsMeta = mutableListOf<Element>()
-            for (i in 0 until metaElements.length) {
-                val elem = metaElements.item(i) as? Element ?: continue
-                if (elem.getAttribute("android:name") == "com.android.vending.splits") {
-                    splitsMeta.add(elem)
-                }
-            }
-            splitsMeta.forEach { it.parentNode?.removeChild(it) }
-
             val tags = listOf("service", "receiver")
             for (tag in tags) {
                 val elements = doc.getElementsByTagName(tag)

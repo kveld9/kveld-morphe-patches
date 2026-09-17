@@ -4,6 +4,7 @@ import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.ensureRegisterCount
 import com.android.tools.smali.dexlib2.Opcode
 
 @Suppress("unused")
@@ -39,6 +40,7 @@ val vivaldiBackgroundMediaPatch = bytecodePatch(
                 return@execute
             }
 
+            fpCommandLine.method.ensureRegisterCount(4)
             fpCommandLine.method.addInstructionsWithLabels(
                 returnIdx,
                 """

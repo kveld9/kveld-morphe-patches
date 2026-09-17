@@ -24,80 +24,98 @@ val vivaldiDisablePromptsPatch = bytecodePatch(
         val hookedMethods = mutableListOf<String>()
 
         // 1. Rate Vivaldi In-App Promo Dialog: dismiss immediately on view creation
-        val fp1 = Fingerprint(
-            returnType = "V",
-            parameters = listOf("Landroid/view/View;", "Landroid/os/Bundle;"),
-            strings = listOf("prompt_shown_count", "skip_until_time"),
-        )
-        fp1.method.addInstructions(
-            0,
-            """
-                invoke-virtual {p0}, Lcom/google/android/material/bottomsheet/BottomSheetDialogFragment;->dismissAllowingStateLoss()V
-                return-void
-            """,
-        )
-        val c1 = app.morphe.patches.shared.LocaleUtils.cleanClassName(fp1.originalClassDef.type)
-        hookedMethods.add("$c1.onViewCreated")
+        try {
+            val fp1 = Fingerprint(
+                returnType = "V",
+                parameters = listOf("Landroid/view/View;", "Landroid/os/Bundle;"),
+                strings = listOf("prompt_shown_count", "skip_until_time"),
+            )
+            fp1.method.addInstructions(
+                0,
+                """
+                    invoke-virtual {p0}, Lcom/google/android/material/bottomsheet/BottomSheetDialogFragment;->dismissAllowingStateLoss()V
+                    return-void
+                """,
+            )
+            val c1 = app.morphe.patches.shared.LocaleUtils.cleanClassName(fp1.originalClassDef.type)
+            hookedMethods.add("$c1.onViewCreated")
+        } catch (e: Exception) {
+            println("[Disable Prompts] Rate Vivaldi dialog hook note: ${e.message}")
+        }
 
         // 2. Search Engine Switch & Donation BottomSheet Launcher: neutralize display helper
-        val fpLauncher = Fingerprint(
-            returnType = "V",
-            strings = listOf("DIALOG_TYPE"),
-            custom = { method, _ ->
-                method.parameterTypes.size == 4 &&
-                    method.parameterTypes.first() == "Lcom/google/android/material/bottomsheet/BottomSheetDialogFragment;"
-            },
-        )
-        fpLauncher.method.addInstructions(0, "return-void")
-        val cLauncher = app.morphe.patches.shared.LocaleUtils.cleanClassName(fpLauncher.originalClassDef.type)
-        hookedMethods.add("$cLauncher.showBottomSheetPrompt")
+        try {
+            val fpLauncher = Fingerprint(
+                returnType = "V",
+                strings = listOf("DIALOG_TYPE"),
+                custom = { method, _ ->
+                    method.parameterTypes.size == 4 &&
+                        method.parameterTypes.first() == "Lcom/google/android/material/bottomsheet/BottomSheetDialogFragment;"
+                },
+            )
+            fpLauncher.method.addInstructions(0, "return-void")
+            val cLauncher = app.morphe.patches.shared.LocaleUtils.cleanClassName(fpLauncher.originalClassDef.type)
+            hookedMethods.add("$cLauncher.showBottomSheetPrompt")
+        } catch (e: Exception) {
+            println("[Disable Prompts] Search switch bottomsheet hook note: ${e.message}")
+        }
 
         // 3. Donation Promotional Click Handler: neutralize click action
-        val fp3 = Fingerprint(
-            returnType = "V",
-            parameters = listOf("Landroid/view/View;"),
-            strings = listOf("https://login.vivaldi.net/profile/donations#mtm_campaign=Android-Donate-SearchEngineSwitchDialog"),
-        )
-        fp3.method.addInstructions(
-            0,
-            """
-                return-void
-            """,
-        )
-        val c3 = app.morphe.patches.shared.LocaleUtils.cleanClassName(fp3.originalClassDef.type)
-        hookedMethods.add("$c3.onClick")
+        try {
+            val fp3 = Fingerprint(
+                returnType = "V",
+                parameters = listOf("Landroid/view/View;"),
+                strings = listOf("https://login.vivaldi.net/profile/donations#mtm_campaign=Android-Donate-SearchEngineSwitchDialog"),
+            )
+            fp3.method.addInstructions(0, "return-void")
+            val c3 = app.morphe.patches.shared.LocaleUtils.cleanClassName(fp3.originalClassDef.type)
+            hookedMethods.add("$c3.onClick")
+        } catch (e: Exception) {
+            println("[Disable Prompts] Donation click handler hook note: ${e.message}")
+        }
 
         // 4. Privacy Report Notification Receiver: neutralize onReceive handler
-        Fingerprint(
-            definingClass = "Lorg/vivaldi/browser/prompts/PrivacyReportNotificationReceiver;",
-            name = "onReceive",
-            returnType = "V",
-            parameters = listOf("Landroid/content/Context;", "Landroid/content/Intent;"),
-        ).method.apply {
-            addInstructions(0, "return-void")
-            hookedMethods.add("PrivacyReportNotificationReceiver.onReceive")
+        try {
+            Fingerprint(
+                definingClass = "Lorg/vivaldi/browser/prompts/PrivacyReportNotificationReceiver;",
+                name = "onReceive",
+                returnType = "V",
+                parameters = listOf("Landroid/content/Context;", "Landroid/content/Intent;"),
+            ).method.apply {
+                addInstructions(0, "return-void")
+                hookedMethods.add("PrivacyReportNotificationReceiver.onReceive")
+            }
+        } catch (e: Exception) {
+            println("[Disable Prompts] PrivacyReport onReceive hook note: ${e.message}")
         }
 
         // 5. Privacy Report Notification Receiver: neutralize periodic alarm scheduler
-        Fingerprint(
-            definingClass = "Lorg/vivaldi/browser/prompts/PrivacyReportNotificationReceiver;",
-            name = "a",
-            returnType = "V",
-            parameters = listOf("Landroid/content/Context;"),
-        ).method.apply {
-            addInstructions(0, "return-void")
-            hookedMethods.add("PrivacyReportNotificationReceiver.a")
+        try {
+            Fingerprint(
+                definingClass = "Lorg/vivaldi/browser/prompts/PrivacyReportNotificationReceiver;",
+                returnType = "V",
+                parameters = listOf("Landroid/content/Context;"),
+            ).method.apply {
+                addInstructions(0, "return-void")
+                hookedMethods.add("PrivacyReportNotificationReceiver.alarmScheduler")
+            }
+        } catch (e: Exception) {
+            println("[Disable Prompts] PrivacyReport scheduler hook note: ${e.message}")
         }
 
         // 6. Default Browser Promo Notification Receiver: neutralize onReceive handler
-        Fingerprint(
-            definingClass = "Lorg/vivaldi/browser/prompts/DefaultBrowserNotificationReceiver;",
-            name = "onReceive",
-            returnType = "V",
-            parameters = listOf("Landroid/content/Context;", "Landroid/content/Intent;"),
-        ).method.apply {
-            addInstructions(0, "return-void")
-            hookedMethods.add("DefaultBrowserNotificationReceiver.onReceive")
+        try {
+            Fingerprint(
+                definingClass = "Lorg/vivaldi/browser/prompts/DefaultBrowserNotificationReceiver;",
+                name = "onReceive",
+                returnType = "V",
+                parameters = listOf("Landroid/content/Context;", "Landroid/content/Intent;"),
+            ).method.apply {
+                addInstructions(0, "return-void")
+                hookedMethods.add("DefaultBrowserNotificationReceiver.onReceive")
+            }
+        } catch (e: Exception) {
+            println("[Disable Prompts] DefaultBrowser onReceive hook note: ${e.message}")
         }
 
         // 7. Hide Vivaldia game from App Menu (default to false)
@@ -146,21 +164,24 @@ val vivaldiDisablePromptsPatch = bytecodePatch(
             )
             val removePrefMethod = fpMainSettings.originalClassDef.methods.firstOrNull {
                 it.parameterTypes == listOf("Ljava/lang/String;") && it.returnType == "V"
-            }?.name ?: "m1"
-
-            val returnIdx = fpMainSettings.method.implementation?.instructions?.indexOfLast { it.opcode == Opcode.RETURN_VOID } ?: -1
-            if (returnIdx >= 0) {
-                fpMainSettings.method.addInstructions(
-                    returnIdx,
-                    """
-                        const-string v0, "rate_vivaldi"
-                        invoke-virtual {p0, v0}, Lorg/chromium/chrome/browser/settings/MainSettings;->$removePrefMethod(Ljava/lang/String;)V
-                        const-string v0, "default_browser_promo"
-                        invoke-virtual {p0, v0}, Lorg/chromium/chrome/browser/settings/MainSettings;->$removePrefMethod(Ljava/lang/String;)V
-                    """,
-                )
-                val cMain = app.morphe.patches.shared.LocaleUtils.cleanClassName(fpMainSettings.originalClassDef.type)
-                hookedMethods.add("$cMain.${fpMainSettings.method.name}")
+            }?.name
+            if (removePrefMethod != null) {
+                val returnIdx = fpMainSettings.method.implementation?.instructions?.indexOfLast { it.opcode == Opcode.RETURN_VOID } ?: -1
+                if (returnIdx >= 0) {
+                    fpMainSettings.method.addInstructions(
+                        returnIdx,
+                        """
+                            const-string v0, "rate_vivaldi"
+                            invoke-virtual {p0, v0}, Lorg/chromium/chrome/browser/settings/MainSettings;->$removePrefMethod(Ljava/lang/String;)V
+                            const-string v0, "default_browser_promo"
+                            invoke-virtual {p0, v0}, Lorg/chromium/chrome/browser/settings/MainSettings;->$removePrefMethod(Ljava/lang/String;)V
+                        """,
+                    )
+                    val cMain = app.morphe.patches.shared.LocaleUtils.cleanClassName(fpMainSettings.originalClassDef.type)
+                    hookedMethods.add("$cMain.${fpMainSettings.method.name}")
+                }
+            } else {
+                println("[Disable Prompts] MainSettings: removePreference method not found")
             }
         } catch (e: Exception) {
             println("[Disable Prompts] MainSettings promo cleanup hook note: ${e.message}")
