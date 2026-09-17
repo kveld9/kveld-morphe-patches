@@ -32,9 +32,9 @@ Official Brave periodically downloads full-screen sponsored advertising wallpape
 
 ### 2. Sensor Privacy Guard (W3C Generic Sensor API Neutralization)
 Web applications can fingerprint device hardware variations or infer user input patterns (keystroke acoustic leakage and walking cadence) via high-frequency accelerometer and gyroscope APIs. The **`Sensor Privacy Guard`** patch neutralizes the underlying Chromium sensor providers:
-- **`PlatformSensorProvider.hasSensorType(int)`**: Forces return `false` (`0x0`).
-- **`PlatformSensorProvider.create()`**: Forces return `null`.
-- **`PlatformSensor.create(PlatformSensorProvider, int, long)`**: Forces return `null`.
+- **`PlatformSensorProvider.hasSensorType(int)`**: Forces return `false` (`0x0`) so hardware sensor existence queries report unsupported.
+- **`PlatformSensor.create(PlatformSensorProvider, int, long)`**: Forces return `null` so any low-level or sensor-fusion creation attempts gracefully resolve to `nullptr`.
+- **JNI Receiver Stability**: Preserves the `PlatformSensorProvider` Java instance created by `PlatformSensorProvider.create()` because Chromium's native `PlatformSensorProviderAndroid` caches it as a JNI receiver; returning null would trigger a fatal `SIGSEGV` / CheckJNI abort when calling instance methods.
 - **Standard Compliant Fallback**: Follows W3C Generic Sensor specifications: sites querying sensors receive standard "NotReadableError" or sensor unavailable responses without crashing web pages.
 
 ### 3. Clean Share URL (Link Tracking Sanitization)

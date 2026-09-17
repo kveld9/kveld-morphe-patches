@@ -68,8 +68,8 @@ Comprehensive technical breakdown of all **15 patches** included in the Morphe V
 * **Objective**: Prevent hardware-based device fingerprinting and side-channel keystroke acoustic sniffing via W3C Generic Sensor APIs.
 * **Internal Mechanism**:
   - Forces `PlatformSensorProvider.hasSensorType(int)` -> `false`.
-  - Forces `PlatformSensorProvider.create(...)` -> `null`.
   - Forces `PlatformSensor.create(...)` -> `null`.
+  - Preserves `PlatformSensorProvider` instance stability for C++ JNI bridge bindings.
   - Conforms to W3C specifications so web pages receive standard unavailable states without crashing.
 
 ### 5. Disable Battery Status API & OS Listener (`batteryOptimizationPatch`)
