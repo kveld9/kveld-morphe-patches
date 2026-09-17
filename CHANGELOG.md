@@ -1,3 +1,9 @@
+## [1.36.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.35.0...v1.36.0) (2026-09-17)
+
+### New Features
+
+* **tiktok:** add google login fix, seekbar restore, publish date, and clean comment copy ([34f13fc](https://github.com/kveld9/kveld-morphe-patches/commit/34f13fccc71b3b1a0395484a10ac3571a2a774e2))
+
 ## [1.35.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.34.0...v1.35.0) (2026-09-17)
 
 ### New Features
