@@ -53,8 +53,9 @@ When commits are pushed to `main`, the automated release pipeline executes:
 
 ---
 
-## 3. Branching Strategy
-
-- **Single-Branch Workflow**: Development and releases are anchored on `main`.
-- Automated releases trigger exclusively on pushes to `main`.
-- **Never force-push** after a release tag has been created.
+## 3. Branching Strategy & Direct Commit Workflow
+ 
+ - **Single-Branch Workflow**: Development and releases are anchored on `main`.
+ - **Strict Direct Workflow (No Pull Requests)**: This repository operates without PRs. Work is committed directly or managed locally without PRs. Under no circumstances should agents propose, generate, or ask about PR titles, descriptions, or PR workflows.
+ - Automated releases trigger exclusively on pushes to `main`.
+ - **Never force-push** after a release tag has been created.

@@ -30,6 +30,7 @@ morphe-patches/
 │   └── src/main/kotlin/
 │       ├── app/morphe/patches/
 │       │   ├── brave/       # Specific Brave Browser patch implementations
+│       │   ├── chromium/    # Shared Chromium engine patch implementations
 │       │   ├── gboard/      # Specific Gboard Lite patch implementations
 │       │   ├── hevy/        # Specific Hevy patch implementations
 │       │   ├── tiktok/      # Specific TikTok patch implementations
@@ -164,6 +165,11 @@ For non-trivial logic, Smali hooks, native ARM64 patching (`libchrome.so`), or s
       c) **Cross-Compatibility & Shared Contracts** (`feat(patches): ...` or `feat(shared): ...`): Isolated when bridging features across apps.
       d) **Technical Documentation** (`docs(<app>): ...` or `docs: ...`): Committed independently from code changes.
     - Each commit must adhere strictly to Conventional Commits to ensure clean `@semantic-release` changelog generation and bisectability.
+15. **Strict No-PR Policy (Direct Repository Workflow)**:
+    - This repository and maintainer DO NOT work with Pull Requests (PRs). Work is committed directly or managed locally without PRs.
+    - Under NO circumstances should you ask to proceed with the `commit -> push -> PR title/description generation` closing sequence.
+    - NEVER generate PR titles, PR descriptions, or suggest opening PRs.
+    - When an implementation unit is complete and verified, simply present the technical outcome, validation evidence, and conclude.
 
 ---
 
