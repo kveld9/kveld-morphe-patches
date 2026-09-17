@@ -304,3 +304,20 @@ The following Brave patches are enabled by default and operate automatically wit
 | **`Sensor Privacy Guard`** | Privacy & Anti-Fingerprinting | Forces `PlatformSensorProvider.hasSensorType -> false`, `PlatformSensorProvider.create -> null`, and `PlatformSensor.create -> null`. | Neutralizes W3C Generic Sensor APIs (accelerometer, gyroscope, ambient light) to prevent hardware jitter profiling and acoustic keystroke fingerprinting. |
 | **`Clean Share URL`** | Privacy & Anti-Tracking | Hooks Android share intent builder (`Lcch.a`) and clipboard copy (`Clipboard.setText`) via [`BraveExtension`](file:///home/kveld/Documentos/repos/brave-origin-patches/extensions/extension/src/main/java/com/kveld9/morphe/extension/BraveExtension.java). | Automatically purges telemetry query tokens (`utm_*`, `fbclid`, `gclid`, `igshid`, `si`, `msclkid`, etc.) from shared or copied URLs while preserving functional parameters (`id`, `v`, `q`, `t`). |
 | **`Block Brave Telemetry`** | Privacy & Telemetry | Intercepts `PrefService.e` (P3A, stats, WDP), aborts variations seed HTTP connection, and redirects native endpoints to `0.0.0.0`. | Completely stops outbound analytic pings and variations fetch loops. |
+
+### Architectural Rationale: Non-Applicability of Vivaldi Patches in Brave
+
+The following patches present in Vivaldi are intentionally omitted from Brave Browser:
+
+1. **Google Privacy Sandbox Attestations Zeroing (`privacy-sandbox-attestations.dat`)**:
+   - **Why Vivaldi needs it**: Vivaldi inherits standard Chromium components without stripping Google Privacy Sandbox ad-tech features at the engine level. Emptying `assets/privacy_sandbox_attestations/privacy-sandbox-attestations.dat` invalidates partner attestations and blocks Topics/Protected Audience tracking.
+   - **Why Brave omits it**: Brave removes and disables all Google Privacy Sandbox APIs (Topics API, FLEDGE / Protected Audience, Attribution Reporting, Private Aggregation) directly at the C++ level in `brave-core`. While the `.dat` file is packaged into the APK as a standard Chromium GN asset dependency, the underlying APIs are completely uncallable by web content. Zeroing the file provides zero privacy improvement in Brave.
+
+2. **UKM (URL-Keyed Metrics) Recorder Neutralization (`UkmRecorder.c()V`)**:
+   - **Why Vivaldi needs it**: Standard Chromium dispatches URL-keyed browsing metrics to Google servers (`clients4.google.com`). Hooking `UkmRecorder.c()V` to `return-void` eliminates native event collection in forks that retain upstream telemetry hooks.
+   - **Why Brave omits it**: Brave strips Google UMA and UKM metric reporting pipelines in C++ and replaces them with its own opt-out P3A (*Privacy-Preserving Product Analytics*), WDP, and Brave Stats. The `Block Brave Telemetry` patch already fully neutralizes P3A and WDP at both bytecode (`PrefService.e`) and native socket levels (redirecting `*.bsg.brave.com`, `*.wdp.brave.com`, and `usage-ping.brave.com` to `0.0.0.0`). Hooking upstream `UkmRecorder` in Brave is redundant because the reporting pipeline does not transmit to Google.
+
+3. **Close Tabs on Exit (`TabStateFileManager` Hook)**:
+   - **Why Vivaldi needs it**: Vivaldi does not provide a native switch to discard non-incognito tabs on process termination, requiring bytecode neutralization in `TabStateFileManager`.
+   - **Why Brave omits it**: Brave provides a native, user-configurable preference directly in its Settings (*Settings -> Close tabs on exit*). Enforcing tab state discard via bytecode hooks would override user configuration and break intentional session retention.
+

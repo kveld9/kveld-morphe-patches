@@ -47,3 +47,18 @@ Download the official APK release from [APKMirror (TikTok)](https://www.apkmirro
 - **Package Names**: `com.zhiliaoapp.musically` (Global) and `com.ss.android.ugc.trill` (Asia).
 - **APK Format**: Standalone nodpi APK (`arm64-v8a` or dual-ABI `arm64-v8a, armeabi-v7a`).
 - **Compatibility**: Patches operate on stable ByteDance SDK boundaries and MultiDEX classes across versions, with slimmers targeting ByteDance assets and heavy native libraries.
+
+---
+
+## Cross-Browser Patch Policy: Brave vs. Vivaldi
+
+While both browsers derive from Chromium, their underlying engine modifications differ fundamentally:
+
+| Candidate Feature / Patch | Vivaldi Browser | Brave Browser | Technical Rationale |
+| :--- | :--- | :--- | :--- |
+| **Privacy Sandbox Attestations** | **Applied** (`Resource Slimmer`) | **Omitted** | Brave strips Google Topics, Protected Audience, and Attribution Reporting at the C++ engine level (`brave-core`). Pre-bundled `.dat` assets are uncallable by web content. |
+| **UKM Metrics Neutralization** | **Applied** (`Block Telemetry`) | **Omitted** | Brave replaces Chromium UMA/UKM reporting pipelines with its own P3A/WDP telemetry in C++. `Block Brave Telemetry` intercepts P3A and WDP at bytecode and network levels (`0.0.0.0`), rendering upstream UKM hooks obsolete. |
+| **Close Tabs on Exit** | **Applied** (Bytecode hook) | **Omitted** | Brave provides a native, first-party toggle in *Settings -> Close tabs on exit*. Bytecode overrides would break user configuration. |
+| **Sensor Privacy Guard** | **Applied** (Shared patch) | **Applied** (Shared patch) | Both browsers expose W3C Generic Sensor APIs to web content. Intercepting `PlatformSensor` prevents gyroscope/accelerometer fingerprinting. |
+| **Clean Share URL** | **Applied** (Shared patch) | **Applied** (Shared patch) | Both browsers invoke Android share intents and clipboard setters with tracking tokens. Intercepting share/clipboard sanitizes query parameters across both. |
+
