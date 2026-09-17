@@ -71,8 +71,9 @@ enum class TargetApp(
         appName = "Vivaldi Browser",
         packageName = Constants.VIVALDI_PACKAGE_NAME,
         candidateFilenames = listOf(
-            "Vivaldi.${Constants.VIVALDI_TARGET_VERSION}_arm64-v8a.apk",
             "Vivaldi.${Constants.VIVALDI_TARGET_VERSION}_arm64-v8a.apkm",
+            "com.vivaldi.browser_${Constants.VIVALDI_TARGET_VERSION}-541470077_1feat_0705103ed141e76c0c95ecc38009481f_apkmirror.com.apkm",
+            "Vivaldi.${Constants.VIVALDI_TARGET_VERSION}_arm64-v8a.apk",
             "Vivaldi.8.2.4147.58_arm64-v8a.apk",
         ),
         filePattern = Regex("(?i).*vivaldi.*\\.(?:apk|apkm)$"),
@@ -229,22 +230,111 @@ fun main(args: Array<String>) {
     tempDir.deleteRecursively()
     tempDir.mkdirs()
 
-    val actualApkFile = if (apkFile.name.endsWith(".apkm", ignoreCase = true)) {
+    val effectiveApkFile = if (apkFile.name.endsWith(".apk", ignoreCase = true)) {
+        val companionApkm = File("${apkFile.absolutePath}m")
+            .takeIf { it.exists() && it.isFile }
+            ?: File(apkFile.parentFile, "${apkFile.nameWithoutExtension}.apkm")
+                .takeIf { it.exists() && it.isFile }
+        if (companionApkm != null) {
+            val isPartialSplit = try {
+                java.util.zip.ZipFile(apkFile).use { zip ->
+                    zip.getEntry("classes2.dex") == null && zip.getEntry("lib/arm64-v8a/libchrome.so") != null
+                }
+            } catch (_: Exception) {
+                false
+            }
+            if (isPartialSplit) {
+                println("[APKM] Detected partial base APK without split DEX. Redirecting to bundle: ${companionApkm.name}")
+                companionApkm
+            } else {
+                apkFile
+            }
+        } else {
+            apkFile
+        }
+    } else {
+        apkFile
+    }
+
+    val actualApkFile = if (effectiveApkFile.name.endsWith(".apkm", ignoreCase = true)) {
         val apkmExtractDir = File("build/tmp/patcher-apkm-source").absoluteFile
         apkmExtractDir.deleteRecursively()
         apkmExtractDir.mkdirs()
         val extractedBase = File(apkmExtractDir, "base.apk")
-        java.util.zip.ZipFile(apkFile).use { zip ->
-            val entry = zip.getEntry("base.apk") ?: error("No base.apk found in APKM bundle: ${apkFile.name}")
-            zip.getInputStream(entry).use { input ->
-                extractedBase.outputStream().use { output ->
-                    input.copyTo(output)
+        java.util.zip.ZipFile(effectiveApkFile).use { apkmZip ->
+            val baseEntry = apkmZip.getEntry("base.apk") ?: error("No base.apk found in APKM bundle: ${effectiveApkFile.name}")
+            val splitApkEntries = apkmZip.entries().asSequence()
+                .filter { it.name.endsWith(".apk", ignoreCase = true) && it.name != "base.apk" }
+                .sortedBy { it.name }
+                .toList()
+
+            val splitDexes = mutableListOf<ByteArray>()
+            for (splitEntry in splitApkEntries) {
+                apkmZip.getInputStream(splitEntry).use { splitStream ->
+                    java.util.zip.ZipInputStream(splitStream).use { splitZip ->
+                        val currentSplitDexes = mutableListOf<Pair<String, ByteArray>>()
+                        var entry = splitZip.nextEntry
+                        while (entry != null) {
+                            if (!entry.isDirectory && Regex("^classes\\d*\\.dex$").matches(entry.name)) {
+                                currentSplitDexes.add(entry.name to splitZip.readBytes())
+                            }
+                            entry = splitZip.nextEntry
+                        }
+                        currentSplitDexes.sortBy { it.first }
+                        splitDexes.addAll(currentSplitDexes.map { it.second })
+                    }
                 }
+            }
+
+            if (splitDexes.isEmpty()) {
+                apkmZip.getInputStream(baseEntry).use { input ->
+                    extractedBase.outputStream().buffered().use { output ->
+                        input.copyTo(output)
+                    }
+                }
+            } else {
+                val baseTemp = File(apkmExtractDir, "base_raw.apk")
+                apkmZip.getInputStream(baseEntry).use { input ->
+                    baseTemp.outputStream().buffered().use { output ->
+                        input.copyTo(output)
+                    }
+                }
+
+                var maxDexIndex = 1
+                java.util.zip.ZipFile(baseTemp).use { baseZip ->
+                    baseZip.entries().asSequence().forEach { entry ->
+                        val m = Regex("^classes(\\d*)\\.dex$").matchEntire(entry.name)
+                        if (m != null) {
+                            val num = m.groupValues[1]
+                            val idx = if (num.isEmpty()) 1 else num.toInt()
+                            if (idx > maxDexIndex) maxDexIndex = idx
+                        }
+                    }
+
+                    java.util.zip.ZipOutputStream(extractedBase.outputStream().buffered()).use { outZip ->
+                        for (entry in baseZip.entries()) {
+                            val zipEntry = java.util.zip.ZipEntry(entry.name)
+                            outZip.putNextEntry(zipEntry)
+                            baseZip.getInputStream(entry).use { it.copyTo(outZip) }
+                            outZip.closeEntry()
+                        }
+                        for (dexBytes in splitDexes) {
+                            maxDexIndex++
+                            val entryName = "classes$maxDexIndex.dex"
+                            val zipEntry = java.util.zip.ZipEntry(entryName)
+                            outZip.putNextEntry(zipEntry)
+                            outZip.write(dexBytes)
+                            outZip.closeEntry()
+                        }
+                    }
+                }
+                baseTemp.delete()
+                println("[APKM] Merged ${splitDexes.size} DEX file(s) from split APK(s) into base.apk (total DEX files: $maxDexIndex)")
             }
         }
         extractedBase
     } else {
-        apkFile
+        effectiveApkFile
     }
 
     val config = PatcherConfig(
@@ -254,7 +344,7 @@ fun main(args: Array<String>) {
         frameworkFileDirectory = null,
         useArsclib = false,
         keepArchitectures = setOf(CpuArchitecture.ARM64_V8A),
-        useBytecodeMode = BytecodeMode.FULL,
+        useBytecodeMode = BytecodeMode.STRIP_FAST,
         verifier = NoOpDexVerifier
     )
 
@@ -262,70 +352,73 @@ fun main(args: Array<String>) {
     val patcher = Patcher(config)
     patcher += targetPatches
 
-    println("[EXEC] Executing patch pipeline on ${apkFile.name} (target: ${targetApp.appName})...")
+    println("[EXEC] Executing patch pipeline on ${effectiveApkFile.name} (target: ${targetApp.appName})...")
     var totalPatches = 0
     var successfulPatches = 0
     var failedPatches = 0
     val failures = mutableListOf<String>()
 
-    runBlocking {
-        patcher().collect { result ->
-            totalPatches++
-            val patchName = result.patch.name ?: "Unknown"
-            if (result.exception == null) {
-                successfulPatches++
-                println("[PASS] $patchName")
-            } else {
-                failedPatches++
-                val err = result.exception?.message ?: "Unknown error"
-                println("[FAIL] $patchName -> $err")
-                result.exception?.printStackTrace()
-                failures.add("$patchName: $err")
+    try {
+        runBlocking {
+            patcher().collect { result ->
+                totalPatches++
+                val patchName = result.patch.name ?: "Unknown"
+                if (result.exception == null) {
+                    successfulPatches++
+                    println("[PASS] $patchName")
+                } else {
+                    failedPatches++
+                    val err = result.exception?.message ?: "Unknown error"
+                    println("[FAIL] $patchName -> $err")
+                    result.exception?.printStackTrace()
+                    failures.add("$patchName: $err")
+                }
             }
         }
-    }
 
-    println("\n========================================")
-    println("FINAL PATCHING RESULT")
-    println("========================================")
-    println("Target App:    ${targetApp.appName} (${targetApp.packageName})")
-    println("APK File:      ${apkFile.name}")
-    println("Total patches: $totalPatches")
-    println("Successful:    $successfulPatches")
-    println("Failed:        $failedPatches")
+        println("\n========================================")
+        println("FINAL PATCHING RESULT")
+        println("========================================")
+        println("Target App:    ${targetApp.appName} (${targetApp.packageName})")
+        println("APK File:      ${effectiveApkFile.name}")
+        println("Total patches: $totalPatches")
+        println("Successful:    $successfulPatches")
+        println("Failed:        $failedPatches")
 
-    if (failedPatches == 0) {
-        println("\n[BUILD] Compiling modified bytecode & assets via patcher.get()...")
-        val patcherResult = patcher.get()
-        println("[BUILD] Compiled ${patcherResult.dexFiles.size} DEX files successfully.")
+        if (failedPatches == 0) {
+            println("\n[BUILD] Compiling modified bytecode & assets via patcher.get()...")
+            val patcherResult = patcher.get()
+            println("[BUILD] Compiled ${patcherResult.dexFiles.size} DEX files successfully.")
 
-        val outPath = System.getProperty("outputApk")
-        if (outPath != null) {
-            val outFile = File(outPath).absoluteFile
-            outFile.parentFile?.mkdirs()
-            val unsignedApk = File(tempDir, "unsigned.apk")
-            actualApkFile.copyTo(unsignedApk, overwrite = true)
-            println("\n[PACK] Applying patcher result to APK...")
-            patcherResult.applyTo(unsignedApk)
-            println("[SIGN] Signing patched APK -> ${outFile.name}...")
-            val keystoreFile = File(tempDir, "morphe-debug.keystore")
-            val ksDetails = ApkUtils.KeyStoreDetails(
-                keyStore = keystoreFile,
-                alias = "morphe",
-                password = "morphepassword",
-            )
-            ApkUtils.signApk(
-                inputApkFile = unsignedApk,
-                outputApkFile = outFile,
-                signer = "Morphe",
-                keyStoreDetails = ksDetails,
-            )
-            println("[DONE] Patched & signed APK saved at: ${outFile.absolutePath}")
+            val outPath = System.getProperty("outputApk")
+            if (outPath != null) {
+                val outFile = File(outPath).absoluteFile
+                outFile.parentFile?.mkdirs()
+                val unsignedApk = File(tempDir, "unsigned.apk")
+                actualApkFile.copyTo(unsignedApk, overwrite = true)
+                println("\n[PACK] Applying patcher result to APK...")
+                patcherResult.applyTo(unsignedApk)
+                println("[SIGN] Signing patched APK -> ${outFile.name}...")
+                val keystoreFile = File(tempDir, "morphe-debug.keystore")
+                val ksDetails = ApkUtils.KeyStoreDetails(
+                    keyStore = keystoreFile,
+                    alias = "morphe",
+                    password = "morphepassword",
+                )
+                ApkUtils.signApk(
+                    inputApkFile = unsignedApk,
+                    outputApkFile = outFile,
+                    signer = "Morphe",
+                    keyStoreDetails = ksDetails,
+                )
+                println("[DONE] Patched & signed APK saved at: ${outFile.absolutePath}")
+            }
         }
+    } finally {
+        patcher.close()
+        tempDir.deleteRecursively()
+        File("build/tmp/patcher-apkm-source").deleteRecursively()
     }
-
-    patcher.close()
-    tempDir.deleteRecursively()
 
     if (failedPatches > 0) {
         println("\nFailure details:")

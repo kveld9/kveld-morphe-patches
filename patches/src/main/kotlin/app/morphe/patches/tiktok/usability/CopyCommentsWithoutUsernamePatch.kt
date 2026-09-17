@@ -154,7 +154,6 @@ val copyCommentsWithoutUsernamePatch = bytecodePatch(
         // the returned ClipData contains clean comment text only without the "@username: " prefix.
         try {
             val clipDataBuilderFingerprint = Fingerprint(
-                accessFlags = listOf(AccessFlags.STATIC),
                 returnType = "Landroid/content/ClipData;",
                 parameters = listOf(
                     "Ljava/lang/String;",
@@ -162,6 +161,9 @@ val copyCommentsWithoutUsernamePatch = bytecodePatch(
                     "Ljava/util/List;",
                 ),
                 strings = listOf("copy_label"),
+                custom = { method, _ ->
+                    (method.accessFlags and AccessFlags.STATIC.value) != 0
+                },
             )
 
             clipDataBuilderFingerprint.matchAll().forEach { match ->
@@ -184,7 +186,6 @@ val copyCommentsWithoutUsernamePatch = bytecodePatch(
         // 2. Secondary fallback: BPEA clipboard helper callers (e.g. bulletin/now/favorites)
         try {
             val clipboardHelperMatch = Fingerprint(
-                accessFlags = listOf(AccessFlags.STATIC),
                 returnType = "V",
                 parameters = listOf(
                     "Ljava/lang/String;",
@@ -193,9 +194,10 @@ val copyCommentsWithoutUsernamePatch = bytecodePatch(
                     "Lcom/bytedance/bpea/basics/Cert;",
                 ),
                 custom = { method, _ ->
-                    method.implementation?.instructions?.any { instruction ->
-                        ((instruction as? ReferenceInstruction)?.reference as? MethodReference)?.isClipDataNewPlainText() == true
-                    } == true
+                    (method.accessFlags and AccessFlags.STATIC.value) != 0 &&
+                        method.implementation?.instructions?.any { instruction ->
+                            ((instruction as? ReferenceInstruction)?.reference as? MethodReference)?.isClipDataNewPlainText() == true
+                        } == true
                 },
             ).match()
 

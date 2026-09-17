@@ -30,17 +30,19 @@ val fixGoogleLoginPatch = bytecodePatch(
         }
 
         // 2. GoogleOneTapAuth.isAvailable()Z -> return false (if present in variant)
-        try {
-            Fingerprint(
-                definingClass = "Lcom/bytedance/lobby/google/GoogleOneTapAuth;",
-                name = "isAvailable",
-                returnType = "Z",
-                parameters = emptyList(),
-            ).method.replaceWithReturnBoolean(false)
-            println("[Fix Google Login] Forced GoogleOneTapAuth.isAvailable() -> false.")
-            patched++
-        } catch (e: Exception) {
-            println("[Fix Google Login] GoogleOneTapAuth.isAvailable note: ${e.message}")
+        if (classDefByOrNull("Lcom/bytedance/lobby/google/GoogleOneTapAuth;") != null) {
+            try {
+                Fingerprint(
+                    definingClass = "Lcom/bytedance/lobby/google/GoogleOneTapAuth;",
+                    name = "isAvailable",
+                    returnType = "Z",
+                    parameters = emptyList(),
+                ).method.replaceWithReturnBoolean(false)
+                println("[Fix Google Login] Forced GoogleOneTapAuth.isAvailable() -> false.")
+                patched++
+            } catch (e: Exception) {
+                println("[Fix Google Login] GoogleOneTapAuth.isAvailable note: ${e.message}")
+            }
         }
 
         println("[Fix Google Login] Applied $patched Google sign-in fallback hook(s).")
