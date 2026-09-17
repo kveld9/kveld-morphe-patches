@@ -3,38 +3,48 @@ package com.kveld9.morphe.extension;
 import android.content.Intent;
 import android.net.Uri;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Extension helper class for Morphe Brave patches.
+ * Extension helper class for Morphe Brave and Vivaldi patches.
+ *
+ * Architectural Note:
+ * This sanitizer intercepts URLs at the boundary where links leave Chromium and are passed
+ * to the OS (via Android share intents or the system clipboard). Network blocklists
+ * (Brave Shields, AdGuard, uBlock) are blind to these operations because no network requests
+ * occur when copying or sharing text.
+ *
+ * Design Philosophy:
+ * 1. Deterministic & Static (KISS): No background network fetching, no heavy external rule parsers.
+ * 2. Zero UI Jank: Uses O(1) hash lookups without runtime regular expression matching.
+ * 3. False-Positive Safety: Ambiguous tokens (such as 'si', 'ref_src', 'trk') are strictly scoped
+ *    to their authoritative target domains, while global stripping is reserved for unambiguous adtech keys.
  */
 @SuppressWarnings("unused")
 public class BraveExtension {
 
     private static final Pattern URL_PATTERN = Pattern.compile("https?://[^\\s\"'<>]+");
 
-    private static final Set<String> TRACKING_PARAM_EXACT = new HashSet<>(Arrays.asList(
+    private static final Set<String> GLOBAL_TRACKING_PARAMS = new HashSet<>(Arrays.asList(
         // Facebook / Meta
         "fbclid",
-        // Google Ads / Analytics / DoubleClick
+        // Google Ads / Analytics / DoubleClick / Conversion
         "gclid",
         "gbraid",
         "wbraid",
         "dclid",
         // Instagram
         "igshid",
-        // YouTube / Spotify
-        "si",
         // Microsoft / Bing
         "msclkid",
-        // Twitter / X
+        // Twitter / X click identifier
         "twclid",
-        "ref_src",
-        "ref_url",
         // Yandex
         "yclid",
         // HubSpot
@@ -45,23 +55,43 @@ public class BraveExtension {
         "mc_eid",
         // Adobe Analytics / Omniture
         "s_kwcid",
-        // LinkedIn / TikTok
-        "trk",
-        "tt_medium",
-        "tt_content",
         // Marketo / Wicked Reports
         "mkt_tok",
         "wickedid",
-        // Snapchat & Advertising
+        // Snapchat & Advertising Networks
         "sc_channel",
         "sc_campaign",
         "sc_geo",
         "zanpid",
         "vero_id",
-        "vero_conv",
-        "cmpid",
-        "spref"
+        "vero_conv"
     ));
+
+    private static final Map<String, Set<String>> DOMAIN_TRACKING_PARAMS = new HashMap<>();
+
+    static {
+        // YouTube share source identifier
+        Set<String> youtubeParams = new HashSet<>(Arrays.asList("si"));
+        DOMAIN_TRACKING_PARAMS.put("youtube.com", youtubeParams);
+        DOMAIN_TRACKING_PARAMS.put("youtu.be", youtubeParams);
+
+        // Spotify share source identifier
+        Set<String> spotifyParams = new HashSet<>(Arrays.asList("si"));
+        DOMAIN_TRACKING_PARAMS.put("spotify.com", spotifyParams);
+
+        // Twitter / X attribution
+        Set<String> twitterParams = new HashSet<>(Arrays.asList("ref_src", "ref_url"));
+        DOMAIN_TRACKING_PARAMS.put("x.com", twitterParams);
+        DOMAIN_TRACKING_PARAMS.put("twitter.com", twitterParams);
+
+        // LinkedIn tracking
+        Set<String> linkedinParams = new HashSet<>(Arrays.asList("trk"));
+        DOMAIN_TRACKING_PARAMS.put("linkedin.com", linkedinParams);
+
+        // TikTok ad/marketing campaign parameters
+        Set<String> tiktokParams = new HashSet<>(Arrays.asList("tt_medium", "tt_content"));
+        DOMAIN_TRACKING_PARAMS.put("tiktok.com", tiktokParams);
+    }
 
     /**
      * Sanitizes an Android share Intent's EXTRA_TEXT, data URI, and ClipData payloads
@@ -181,14 +211,30 @@ public class BraveExtension {
         return c == '.' || c == ',' || c == ')' || c == ']' || c == ';' || c == '!' || c == '"' || c == '\'';
     }
 
-    private static boolean isTrackingParam(String param) {
+    private static boolean isTrackingParam(String host, String param) {
         if (param == null) return false;
-        String lower = param.toLowerCase(Locale.ROOT);
-        return lower.startsWith("utm_")
-            || lower.startsWith("ga_")
-            || lower.startsWith("pk_")
-            || lower.startsWith("matomo_")
-            || TRACKING_PARAM_EXACT.contains(lower);
+        String lowerParam = param.toLowerCase(Locale.ROOT);
+        if (lowerParam.startsWith("utm_")
+            || lowerParam.startsWith("ga_")
+            || lowerParam.startsWith("pk_")
+            || lowerParam.startsWith("matomo_")
+            || GLOBAL_TRACKING_PARAMS.contains(lowerParam)) {
+            return true;
+        }
+        if (host != null) {
+            String lowerHost = host.toLowerCase(Locale.ROOT);
+            for (Map.Entry<String, Set<String>> entry : DOMAIN_TRACKING_PARAMS.entrySet()) {
+                String domain = entry.getKey();
+                if (matchesDomain(lowerHost, domain) && entry.getValue().contains(lowerParam)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean matchesDomain(String host, String targetDomain) {
+        return host.equals(targetDomain) || host.endsWith("." + targetDomain);
     }
 
     private static String cleanSingleUrl(String originalUrl) {
@@ -200,9 +246,10 @@ public class BraveExtension {
             if (uri.getQuery() == null || uri.getQueryParameterNames().isEmpty()) {
                 return originalUrl;
             }
+            String host = uri.getHost();
             Uri.Builder builder = uri.buildUpon().clearQuery();
             for (String param : uri.getQueryParameterNames()) {
-                if (isTrackingParam(param)) {
+                if (isTrackingParam(host, param)) {
                     continue;
                 }
                 for (String val : uri.getQueryParameters(param)) {
