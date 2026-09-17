@@ -25,7 +25,7 @@ find . -maxdepth 3 -type d -name "morphe-temporary-files" -exec rm -rf {} + 2>/d
 
 # 4. Clean Gradle build outputs
 echo "==> Cleaning Gradle build directories..."
-rm -rf build/ patches/build/ extensions/extension/build/
+rm -rf build/ patches/build/ patches/patches/ patches/bin/ extensions/extension/build/
 
 # 5. Clean Python bytecode caches
 echo "==> Cleaning Python caches..."
