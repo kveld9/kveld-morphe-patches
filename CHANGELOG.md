@@ -1,3 +1,10 @@
+## [1.35.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.34.0...v1.35.0) (2026-09-17)
+
+### New Features
+
+* **tiktok:** bypass mandatory login and skip first-launch onboarding ([31ed012](https://github.com/kveld9/kveld-morphe-patches/commit/31ed0122fb4c4b81a14e1005b8d5938dc66609f2))
+* **tiktok:** default SIM region selector spoof target to CH ([b44a749](https://github.com/kveld9/kveld-morphe-patches/commit/b44a74951fd89cd4f22e0cf9ab48faa4e4bb7178))
+
 ## [1.34.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.33.1...v1.34.0) (2026-09-16)
 
 ### New Features
