@@ -146,7 +146,7 @@
 </details>
 
 <details>
-<summary>Brave Private Web Browser, VPN&nbsp;&nbsp;•&nbsp;&nbsp;<b>9 patches</b></summary>
+<summary>Brave Private Web Browser, VPN&nbsp;&nbsp;•&nbsp;&nbsp;<b>12 patches</b></summary>
 <br>
 
 **Supported versions:**
@@ -160,10 +160,13 @@
 | **Brave In-Product & Commercial Notification Optimizer** | Eliminates background wakeups and notifications from Chromium tips scheduler (Job ID 105), Brave Rewards onboarding promo, and retention marketing campaigns. |  |
 | **Brave Origin** | Unlocks Brave Origin and enables local feature toggle controls. |  |
 | **Brave Startup Performance Optimization** | Optimizes startup time and eliminates background CPU/disk overhead by disabling unused OEM carrier partner customizations. |  |
+| **Clean New Tab Page** | Removes sponsored wallpaper images, Brave News/Today feeds, marketing widgets, and promo cards from the New Tab Page. |  |
+| **Clean Share URL** | Strips tracking parameters (utm_*, fbclid, gclid, igshid, si, msclkid) when sharing or copying links. |  |
 | **Disable Background Sync & Periodic Sync** | Eliminates background wakeups, radio modem activity, and battery drain by forcing GooglePlayServicesChecker.shouldDisableBackgroundSync() -> true and neutralizing wakeup tasks. |  |
 | **Disable Battery Status API & OS Listener** | Neutralizes the Battery Status API (navigator.getBattery) to prevent cross-site device fingerprinting and drops OS battery change broadcasts. |  |
 | **Locale PAK Slimmer** | Strips unselected language resource PAKs from assets/locales/. | • Locales to keep |
 | **Native Bloat Slimmer** | Strips unused native companion binaries (Impress Vision AI, WireGuard VPN, and Android XR) to significantly reduce APK size. |  |
+| **Sensor Privacy Guard** | Neutralizes motion, ambient, and orientation sensor providers to prevent hardware fingerprinting and tracking via Generic Sensor APIs. |  |
 | **Skip First Run** | Skips the welcome screen, search engine selection, and onboarding First Run Experience (FRE) on clean installs. |  |
 
 </details>

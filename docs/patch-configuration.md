@@ -292,6 +292,15 @@ The **`Video Quality Governor`** patch enforces user-configured maximum resoluti
 - **Fail-Safe Fallback**: If an uploaded video only provides renditions exceeding the ceiling, the governor preserves the lowest available stream rather than black-screening or stalling playback.
 - **Preference Persistence**: User selection is saved to `morphe_tiktok_quality_prefs` SharedPreferences, maintaining state across restarts.
 
+---
 
+## 🦁 Brave Browser: Zero-Configuration Privacy & Debloat Patches
 
+The following Brave patches are enabled by default and operate automatically without requiring user configuration in Morphe Manager:
 
+| Patch | Category | Primary Mechanism | Technical Impact |
+| :--- | :--- | :--- | :--- |
+| **`Clean New Tab Page`** | Debloat & Performance | Sanitizes `default.json` asset campaigns, forces NTP marketing preference defaults to `false`, and intercepts `PrefService.e` gates. | Completely suppresses sponsored full-screen advertising wallpapers (~15–30 MB/mo saved) and Brave News/Today feeds. |
+| **`Sensor Privacy Guard`** | Privacy & Anti-Fingerprinting | Forces `PlatformSensorProvider.hasSensorType -> false`, `PlatformSensorProvider.create -> null`, and `PlatformSensor.create -> null`. | Neutralizes W3C Generic Sensor APIs (accelerometer, gyroscope, ambient light) to prevent hardware jitter profiling and acoustic keystroke fingerprinting. |
+| **`Clean Share URL`** | Privacy & Anti-Tracking | Hooks Android share intent builder (`Lcch.a`) and clipboard copy (`Clipboard.setText`) via [`BraveExtension`](file:///home/kveld/Documentos/repos/brave-origin-patches/extensions/extension/src/main/java/com/kveld9/morphe/extension/BraveExtension.java). | Automatically purges telemetry query tokens (`utm_*`, `fbclid`, `gclid`, `igshid`, `si`, `msclkid`, etc.) from shared or copied URLs while preserving functional parameters (`id`, `v`, `q`, `t`). |
+| **`Block Brave Telemetry`** | Privacy & Telemetry | Intercepts `PrefService.e` (P3A, stats, WDP), aborts variations seed HTTP connection, and redirects native endpoints to `0.0.0.0`. | Completely stops outbound analytic pings and variations fetch loops. |

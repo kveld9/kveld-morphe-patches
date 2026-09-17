@@ -22,6 +22,29 @@ Genuine Brave telemetry is fully neutralized by the **Block Brave Telemetry** pa
 
 ---
 
+## Brave Browser: Privacy, Debloat & Anti-Fingerprinting Architecture
+
+### 1. Clean New Tab Page (Sponsored Wallpaper & Feed Neutralization)
+Official Brave periodically downloads full-screen sponsored advertising wallpapers and updates the Brave News/Today feed in the background. The **`Clean New Tab Page`** patch enforces a lightweight, zero-ad startup state across three layers:
+- **Asset Schema Sanitization (`rawResourcePatch`)**: Overwrites `assets/brave/sponsored-images/default.json` with an empty campaigns schema (`{"schemaVersion":1,"campaigns":[]}`). Chromium's sponsored image coordinator finds zero campaigns to download, preventing background bandwidth consumption (~15–30 MB/month) and memory allocations.
+- **Preference Defaults Enforcement (`resourcePatch`)**: Sets XML defaults for `show_sponsored_images`, `new_tab_page_show_sponsored_images`, `brave_news_switch`, and `show_brave_news` to `false`.
+- **Dalvik Gatekeeper Interception (`bytecodePatch`)**: Intercepts `PrefService.e` for `brave.new_tab_page.show_sponsored_images`, `brave.today.enabled`, `brave.today.opted_in`, and `brave.new_tab_page.show_brave_news`, returning `false` directly at the preference service layer.
+
+### 2. Sensor Privacy Guard (W3C Generic Sensor API Neutralization)
+Web applications can fingerprint device hardware variations or infer user input patterns (keystroke acoustic leakage and walking cadence) via high-frequency accelerometer and gyroscope APIs. The **`Sensor Privacy Guard`** patch neutralizes the underlying Chromium sensor providers:
+- **`PlatformSensorProvider.hasSensorType(int)`**: Forces return `false` (`0x0`).
+- **`PlatformSensorProvider.create()`**: Forces return `null`.
+- **`PlatformSensor.create(PlatformSensorProvider, int, long)`**: Forces return `null`.
+- **Standard Compliant Fallback**: Follows W3C Generic Sensor specifications: sites querying sensors receive standard "NotReadableError" or sensor unavailable responses without crashing web pages.
+
+### 3. Clean Share URL (Link Tracking Sanitization)
+When sharing links via Android's native share sheet or copying URLs from the address bar and context menus, sites frequently attach tracking and attribution query tokens (`utm_*`, `fbclid`, `gclid`, `igshid`, `si`, `msclkid`, etc.). The **`Clean Share URL`** patch intercepts shared and copied data:
+- **Android Share Sheet Dispatch (`Lcch.a`)**: Intercepts the generated `android.content.Intent` across all share entrypoints, sanitizing `Intent.EXTRA_TEXT`, `Intent.getData()`, and `ClipData` via [`BraveExtension.cleanShareIntent`](file:///home/kveld/Documentos/repos/brave-origin-patches/extensions/extension/src/main/java/com/kveld9/morphe/extension/BraveExtension.java).
+- **Clipboard Sanitization (`Clipboard.setText`)**: Cleans single URLs and embedded URLs in composite text before strings enter the system clipboard.
+- **Invariant Preservation**: Functional parameters such as video identifiers (`v`), navigation anchors (`t`), and search queries (`q`) are strictly preserved while stripping profiling tokens.
+
+---
+
 ## Chromium DataPack v5 vs. Android Resource Architecture
 
 ### Why Chromium Requires Specialized PAK Slimming

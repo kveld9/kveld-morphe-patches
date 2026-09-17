@@ -99,6 +99,21 @@ class TestMigratorAndValidator(unittest.TestCase):
         self.assertEqual(audit_res.status, PatchStatus.VERIFIED)
         self.assertEqual(len(audit_res.fingerprint_results), 2)
 
+    # 16. Origin pref key migration -> updated
+    def test_origin_pref_key_migration(self):
+        symbols = BraveOriginSymbols(
+            locked_field=ResolvedSymbol("origin_locked_field", "", "N0:Z", "O0:Z", "field", SymbolConfidence.VERIFIED),
+            key_mapping_method=ResolvedSymbol("origin_key_mapping", "", "b5", "j5(Ljava/lang/String;)Ljava/lang/String;", "method", SymbolConfidence.VERIFIED),
+            context_getter_method=ResolvedSymbol("origin_context_getter", "", "B4", "S3()Landroid/content/Context;", "method", SymbolConfidence.VERIFIED),
+            update_prefs_method=ResolvedSymbol("origin_update_prefs", "", "e5", "i5()V", "method", SymbolConfidence.VERIFIED),
+            find_pref_method=ResolvedSymbol("origin_find_pref", "", "P4", "W4(Ljava/lang/CharSequence;)Landroidx/preference/Preference;", "method", SymbolConfidence.VERIFIED),
+            pref_listener_field=ResolvedSymbol("origin_pref_listener", "", "y", "y", "field", SymbolConfidence.VERIFIED),
+            pref_key_field=ResolvedSymbol("origin_pref_key_field", "", "G:Ljava/lang/String;", "H:Ljava/lang/String;", "field", SymbolConfidence.VERIFIED),
+        )
+        plan = self.migrator.plan_origin_symbols_update(symbols)
+        self.assertTrue(plan.has_changes)
+        self.assertIn("Updated Preference key field to 'H'", plan.changes)
+
 
 if __name__ == "__main__":
     unittest.main()

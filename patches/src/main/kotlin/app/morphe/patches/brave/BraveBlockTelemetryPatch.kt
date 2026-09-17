@@ -7,6 +7,8 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.rawResourcePatch
 import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patches.shared.Constants
+import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import org.w3c.dom.Element
 import java.io.RandomAccessFile
 
@@ -141,10 +143,11 @@ private val braveHostsBlockerPatch = rawResourcePatch(
 @Suppress("unused")
 val braveBlockTelemetryPatch = bytecodePatch(
     name = "Block Brave Telemetry",
-    description = "Blocks P3A product analytics, Brave Stats usage pings, crash dump uploads, WDP, and Variations seed fetching.",
+    description = "Blocks P3A product analytics, Brave Stats usage pings, crash dump uploads, WDP, Chromium UMA metrics, and Variations seed fetching.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_BRAVE)
+    extendWith("extensions/extension.mpe")
 
     dependsOn(braveTelemetryResourcePatch, braveHostsBlockerPatch)
 
@@ -174,63 +177,60 @@ val braveBlockTelemetryPatch = bytecodePatch(
         }
 
         // 3. Variations: Abort HTTP connection before socket opens
-        val variationsFp = Fingerprint(
-            returnType = "Ljava/net/HttpURLConnection;",
-            strings = listOf("https://variations.brave.com/seed"),
-        )
-        variationsFp.method.apply {
-            addInstructions(
-                0,
-                """
-                    new-instance v0, Ljava/io/IOException;
-                    const-string v1, "Blocked by Morphe"
-                    invoke-direct {v0, v1}, Ljava/io/IOException;-><init>(Ljava/lang/String;)V
-                    throw v0
-                """,
+        try {
+            val variationsFp = Fingerprint(
+                returnType = "Ljava/net/HttpURLConnection;",
+                strings = listOf("https://variations.brave.com/seed"),
             )
-            val className = variationsFp.originalClassDef.type.substringAfterLast('/').removeSuffix(";")
-            hookedMethods.add("$className.$name")
+            variationsFp.method.apply {
+                addInstructions(
+                    0,
+                    """
+                        new-instance v0, Ljava/io/IOException;
+                        const-string v1, "Blocked by Morphe"
+                        invoke-direct {v0, v1}, Ljava/io/IOException;-><init>(Ljava/lang/String;)V
+                        throw v0
+                    """,
+                )
+                val className = variationsFp.originalClassDef.type.substringAfterLast('/').removeSuffix(";")
+                hookedMethods.add("$className.$name")
+            }
+        } catch (e: Exception) {
+            println("[Block Telemetry] Variations hook note: ${e.message}")
         }
 
-        // 4. PrefService.e(String): Strict conditional check for P3A, Stats, and WDP
-        Fingerprint(
-            definingClass = "Lorg/chromium/components/prefs/PrefService;",
-            name = "e",
-            returnType = "Z",
-            parameters = listOf("Ljava/lang/String;"),
-        ).method.apply {
-            addInstructions(
-                0,
-                """
-                    const-string v0, "brave.p3a.enabled"
-                    invoke-virtual {v0, p1}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
-                    move-result v0
-                    if-eqz v0, :not_p3a
-                    const/4 v0, 0x0
-                    return v0
-                    :not_p3a
-
-                    const-string v0, "brave.stats.reporting_enabled"
-                    invoke-virtual {v0, p1}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
-                    move-result v0
-                    if-eqz v0, :not_stats
-                    const/4 v0, 0x0
-                    return v0
-                    :not_stats
-
-                    const-string v0, "brave.web_discovery_enabled"
-                    invoke-virtual {v0, p1}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
-                    move-result v0
-                    if-eqz v0, :not_wdp
-                    const/4 v0, 0x0
-                    return v0
-                    :not_wdp
-                """,
+        // 4. PrefService.e(String): Filter telemetry preferences (P3A, Stats, WDP) at return
+        try {
+            val prefFp = Fingerprint(
+                definingClass = "Lorg/chromium/components/prefs/PrefService;",
+                name = "e",
+                returnType = "Z",
+                parameters = listOf("Ljava/lang/String;"),
             )
-            hookedMethods.add("PrefService.e")
+            val method = prefFp.method
+            val returnIndices = method.implementation?.instructions?.withIndex()
+                ?.filter { it.value.opcode == Opcode.RETURN }
+                ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
+                ?.toList() ?: emptyList()
+
+            returnIndices.asReversed().forEach { (returnIndex, reg) ->
+                method.addInstructions(
+                    returnIndex,
+                    """
+                        invoke-static {p1, v$reg}, ${Constants.BRAVE_EXTENSION_CLASS}->filterTelemetryPref(Ljava/lang/String;Z)Z
+                        move-result v$reg
+                    """.trimIndent(),
+                )
+            }
+            if (returnIndices.isNotEmpty()) {
+                hookedMethods.add("PrefService.e")
+            }
+        } catch (e: Exception) {
+            println("[Block Telemetry] PrefService.e hook note: ${e.message}")
         }
 
         val targetClasses = hookedMethods.map { it.substringBefore('.') }.distinct()
         println("[Block Telemetry] Hooked ${hookedMethods.size} bytecode telemetry methods across ${targetClasses.size} classes")
     }
 }
+

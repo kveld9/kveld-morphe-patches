@@ -5,6 +5,7 @@ Deterministically identifies obfuscated method and field renames across Brave br
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Dict, List, Optional
@@ -38,6 +39,15 @@ class BraveOriginSymbols:
     update_prefs_method: ResolvedSymbol
     find_pref_method: ResolvedSymbol
     pref_listener_field: ResolvedSymbol
+    pref_key_field: ResolvedSymbol = field(default_factory=lambda: ResolvedSymbol(
+        symbol_id="origin_pref_key_field",
+        target_class="Landroidx/preference/Preference;",
+        old_symbol="G:Ljava/lang/String;",
+        new_symbol="G:Ljava/lang/String;",
+        symbol_type="field",
+        confidence=SymbolConfidence.VERIFIED,
+        evidence=["Resolved Preference key field"]
+    ))
 
 
 @dataclass
@@ -89,6 +99,7 @@ class SymbolResolver:
             update_prefs_method=self._resolve_origin_update_prefs(cls, cls_name),
             find_pref_method=self._resolve_origin_find_pref(hierarchy_methods, cls_name),
             pref_listener_field=self._resolve_origin_pref_listener(),
+            pref_key_field=self._resolve_origin_pref_key(cls),
         )
 
     @staticmethod
@@ -200,6 +211,30 @@ class SymbolResolver:
             symbol_type="field",
             confidence=SymbolConfidence.VERIFIED,
             evidence=[f"Reflection listener field on Preference: '{pref_listener_field}'"]
+        )
+
+    @staticmethod
+    def _resolve_origin_pref_key(cls: IndexedClass) -> ResolvedSymbol:
+        key_field = "G"
+        for m in cls.methods:
+            if m.return_type == "Z" and len(m.parameters) in (1, 2) and m.parameters[0] == "Landroidx/preference/Preference;":
+                code = m.encoded_method.get_code()
+                if code:
+                    for ins in code.get_bc().get_instructions():
+                        raw = str(ins)
+                        if "iget-object" in raw and "Landroidx/preference/Preference;->" in raw and ":Ljava/lang/String;" in raw:
+                            match = re.search(r"Landroidx/preference/Preference;->([A-Za-z0-9_]+):Ljava/lang/String;", raw)
+                            if match:
+                                key_field = match.group(1)
+                                break
+        return ResolvedSymbol(
+            symbol_id="origin_pref_key_field",
+            target_class="Landroidx/preference/Preference;",
+            old_symbol="G:Ljava/lang/String;",
+            new_symbol=f"{key_field}:Ljava/lang/String;",
+            symbol_type="field",
+            confidence=SymbolConfidence.VERIFIED if key_field != "G" else SymbolConfidence.HIGH,
+            evidence=[f"Preference key field resolved as '{key_field}'"]
         )
 
     def resolve_notification_scheduler_symbols(self) -> Optional[BraveNotificationSchedulerSymbols]:

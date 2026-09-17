@@ -13,7 +13,9 @@ import app.morphe.patcher.string
 import app.morphe.patches.shared.Constants
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import org.w3c.dom.Element
 
 // ════════════════════════════════════════════════════════════════════════════════
@@ -295,6 +297,12 @@ val braveOriginPatch = bytecodePatch(
             returnType = "Z",
             parameters = listOf("Landroidx/preference/Preference;", "Ljava/lang/Object;"),
         )
+        val prefKeyField = onPrefChangeFingerprint.method.implementation?.instructions
+            ?.filterIsInstance<ReferenceInstruction>()
+            ?.mapNotNull { it.reference as? FieldReference }
+            ?.firstOrNull { it.definingClass == "Landroidx/preference/Preference;" && it.type == "Ljava/lang/String;" }
+            ?.name ?: "G"
+
         onPrefChangeFingerprint.method.apply {
             removeInstructions(0, implementation!!.instructions.count())
             addInstructionsWithLabels(
@@ -305,7 +313,7 @@ val braveOriginPatch = bytecodePatch(
                     const/4 v0, 0x0
                     return v0
                     :not_locked
-                    iget-object v0, p1, Landroidx/preference/Preference;->G:Ljava/lang/String;
+                    iget-object v0, p1, Landroidx/preference/Preference;->$prefKeyField:Ljava/lang/String;
                     invoke-static {v0}, Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;->j5(Ljava/lang/String;)Ljava/lang/String;
                     move-result-object v0
                     if-eqz v0, :no_key

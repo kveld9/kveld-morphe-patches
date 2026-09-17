@@ -72,3 +72,14 @@ fun MutableMethod.replaceWithReturnVoid() {
     removeInstructions(0, impl.instructions.count())
     addInstructions(0, "return-void")
 }
+
+/**
+ * Safely purges try-catch ranges and replaces the entire method body with a null object return.
+ */
+fun MutableMethod.replaceWithReturnNull() {
+    val impl = implementation ?: return
+    clearTryBlocks()
+    ensureRegisterCount(1)
+    removeInstructions(0, impl.instructions.count())
+    addInstructions(0, "const/4 v0, 0x0\nreturn-object v0")
+}

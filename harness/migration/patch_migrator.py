@@ -204,6 +204,23 @@ class PatchMigrator:
             changes.append(f"Updated Preference listener reflection field to '{listener_field}'")
             new_content = new_content2
 
+        # 7. Preference key field in onPreferenceChange smali hook
+        if hasattr(symbols, "pref_key_field") and symbols.pref_key_field:
+            key_field_name = symbols.pref_key_field.new_symbol.split(":")[0]
+            new_content2 = re.sub(
+                r'(\?: ")[A-Za-z0-9_]+(")',
+                rf'\g<1>{key_field_name}\g<2>',
+                new_content
+            )
+            new_content2 = re.sub(
+                r"(iget-object v0, p1, Landroidx/preference/Preference;->)[A-Za-z0-9_]+(:Ljava/lang/String;)",
+                rf"\g<1>{key_field_name}\g<2>",
+                new_content2
+            )
+            if new_content2 != new_content:
+                changes.append(f"Updated Preference key field to '{key_field_name}'")
+                new_content = new_content2
+
         return MigrationPlan(self.origin_patch_file, content, new_content, changes)
 
     def plan_scheduler_symbols_update(self, symbols: BraveNotificationSchedulerSymbols) -> MigrationPlan:
