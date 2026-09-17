@@ -146,7 +146,7 @@
 </details>
 
 <details>
-<summary>Vivaldi Browser - Fast & Safe&nbsp;&nbsp;•&nbsp;&nbsp;<b>16 patches</b></summary>
+<summary>Vivaldi Browser - Fast & Safe&nbsp;&nbsp;•&nbsp;&nbsp;<b>15 patches</b></summary>
 <br>
 
 **Supported versions:**
@@ -156,7 +156,6 @@
 
 | Patch | Description | Options |
 |----------|----------------|-----------|
-| **Background Media Playback** | Enables uninterrupted background audio and video playback when minimizing the browser or switching tabs by disabling background media suspension. |  |
 | **Block Vivaldi Sync** | Redirects bifrost.vivaldi.com to 0.0.0.0 in libchrome.so to completely disable Vivaldi account synchronization for an air-gapped experience. |  |
 | **Block Vivaldi Telemetry** | Blocks Vivaldi usage statistics, crash reporting, Crashpad endpoints, DirectMatch suggestions, install referrer transmission, and background wallpaper polling. |  |
 | **Clean Share URL** | Strips tracking parameters (utm_*, fbclid, gclid, igshid, si, msclkid) when sharing or copying links. |  |

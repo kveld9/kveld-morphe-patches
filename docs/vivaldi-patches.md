@@ -1,6 +1,6 @@
 # 🔴 Vivaldi Browser: Technical Patch Specifications & Architecture
 
-Comprehensive technical breakdown of all **15 patches** included in the Morphe Vivaldi patch suite pinned to stable target version **`8.2.4147.77`** (`com.vivaldi.browser` ARM64 APKM bundle).
+Comprehensive technical breakdown of all **14 patches** included in the Morphe Vivaldi patch suite pinned to stable target version **`8.2.4147.77`** (`com.vivaldi.browser` ARM64 APKM bundle).
 
 ---
 
@@ -15,14 +15,13 @@ Comprehensive technical breakdown of all **15 patches** included in the Morphe V
 | **Privacy & Anti-Tracking** | **[Disable Battery Status API & OS Listener](#5-disable-battery-status-api--os-listener-batteryoptimizationpatch)** | `bytecodePatch` | Neutralizes `navigator.getBattery` and drops `BATTERY_CHANGED` broadcast events |
 | **De-promotional & UX** | **[Disable Vivaldi Prompts & In-App Popups](#6-disable-prompts--in-app-popups-vivaldidisablepromptspatch)** | `bytecodePatch` | Dismisses "Rate Vivaldi" modals, blocks donation sheets, strips settings promo cards, silences privacy alarms, and hides the Vivaldia game |
 | **De-promotional & UX** | **[Clean Speed Dial Bookmarks](#7-clean-speed-dial-bookmarks-vivaldicleanspeeddialpatch)** | Composite (`bytecode` + `rawResource`) | Sanitizes affiliate bookmarks JSON, hides 3-dot customize/add buttons, disables phantom touch lag on blank Start Page |
-| **Usability & Media** | **[Background Media Playback](#8-background-media-playback-vivaldibackgroundmediapatch)** | `bytecodePatch` | Injects `--disable-background-media-suspend` via `CommandLine.init` for uninterrupted background audio/video |
-| **Usability & UX** | **[Close Tabs on Exit](#9-close-tabs-on-exit-vivaldiclosetabsonexitpatch)** | `bytecodePatch` | Neutralizes `TabStateFileManager.readTabState` to guarantee a clean Start Page session on every launch |
-| **Usability & UX** | **[Skip First Run](#10-skip-first-run-skipfirstrunpatch)** | `bytecodePatch` | Skips first-run wizard, search engine picker, and terms of service onboarding |
-| **Performance & Battery** | **[Vivaldi Startup Performance Optimization](#11-startup-performance-optimization-vivaldistartupperformancepatch)** | `bytecodePatch` | Bypasses OEM partner initialization, guards `CompositorView` against startup NPE crashes, and silences Automotive reflection spam |
-| **Performance & Battery** | **[Disable Background Sync & Periodic Sync](#12-disable-background-sync--periodic-sync-vivaldibackgroundsyncpatch)** | `bytecodePatch` | Neutralizes periodic and one-shot BackgroundSync task wakeups in Android JobScheduler |
-| **Performance & Battery** | **[Disable Chromium Tips & Notification Scheduler](#13-disable-chromium-tips--notification-scheduler-vivaldinotificationoptimizerpatch)** | `bytecodePatch` | Neutralizes background tips scheduling alarms (Job ID 105) and tips promo agents |
-| **APK Slimmer** | **[Locale PAK Slimmer](#14-locale-pak-slimmer-localepakslimmerpatch)** | `rawResourcePatch` | Strips unselected language PAKs from `assets/locales/` (~21.2 MB saved) using zero-crash binary fallback substitution |
-| **APK Slimmer** | **[Resource Slimmer](#15-resource-slimmer-vivaldiresourceslimmerpatch)** | `rawResourcePatch` | Empties bundled stock wallpapers, Speed Dial thumbnails, partner favicons, Privacy Sandbox attestations, and hardens defaults (~6.7 MB saved) |
+| **Usability & UX** | **[Close Tabs on Exit](#8-close-tabs-on-exit-vivaldiclosetabsonexitpatch)** | `bytecodePatch` | Neutralizes `TabStateFileManager.readTabState` to guarantee a clean Start Page session on every launch |
+| **Usability & UX** | **[Skip First Run](#9-skip-first-run-skipfirstrunpatch)** | `bytecodePatch` | Skips first-run wizard, search engine picker, and terms of service onboarding |
+| **Performance & Battery** | **[Vivaldi Startup Performance Optimization](#10-startup-performance-optimization-vivaldistartupperformancepatch)** | `bytecodePatch` | Bypasses OEM partner initialization, guards `CompositorView` against startup NPE crashes, and silences Automotive reflection spam |
+| **Performance & Battery** | **[Disable Background Sync & Periodic Sync](#11-disable-background-sync--periodic-sync-vivaldibackgroundsyncpatch)** | `bytecodePatch` | Neutralizes periodic and one-shot BackgroundSync task wakeups in Android JobScheduler |
+| **Performance & Battery** | **[Disable Chromium Tips & Notification Scheduler](#12-disable-chromium-tips--notification-scheduler-vivaldinotificationoptimizerpatch)** | `bytecodePatch` | Neutralizes background tips scheduling alarms (Job ID 105) and tips promo agents |
+| **APK Slimmer** | **[Locale PAK Slimmer](#13-locale-pak-slimmer-localepakslimmerpatch)** | `rawResourcePatch` | Strips unselected language PAKs from `assets/locales/` (~21.2 MB saved) using zero-crash binary fallback substitution |
+| **APK Slimmer** | **[Resource Slimmer](#14-resource-slimmer-vivaldiresourceslimmerpatch)** | `rawResourcePatch` | Empties bundled stock wallpapers, Speed Dial thumbnails, partner favicons, Privacy Sandbox attestations, and hardens defaults (~6.7 MB saved) |
 
 ---
 
@@ -103,36 +102,30 @@ Comprehensive technical breakdown of all **15 patches** included in the Morphe V
 
 ## ⚡ Usability & Startup Performance
 
-### 8. Background Media Playback (`vivaldiBackgroundMediaPatch`)
-* **Objective**: Allow uninterrupted audio and video playback when switching tabs, opening other applications, or turning off the screen.
-* **Internal Mechanism**:
-  - Resolves `org.chromium.base.CommandLine` in Dalvik bytecode.
-  - Injects `--disable-background-media-suspend` into `CommandLine.init([Ljava/lang/String;)V` using dynamic reflection/AST resolution of the singleton field and `appendSwitchWithValue` method.
-
-### 9. Close Tabs on Exit (`vivaldiCloseTabsOnExitPatch`)
+### 8. Close Tabs on Exit (`vivaldiCloseTabsOnExitPatch`)
 * **Objective**: Guarantee that the browser always opens to a fresh Start Page session without restoring previous background tabs.
 * **Internal Mechanism**:
   - Locates `TabStateFileManager` via unique string constants (`tab_state`, `.bak`, `.new`).
   - Neutralizes `readTabState()I` to return `0`, bypassing session tab reconstruction.
 
-### 10. Skip First Run (`skipFirstRunPatch`)
+### 9. Skip First Run (`skipFirstRunPatch`)
 * **Objective**: Eliminate first-launch onboarding wizards, default search engine selection prompts, and terms of service dialogs on clean installs.
 * **Internal Mechanism**:
   - Forces `first_run_flow_complete` flag to `true` and bypasses the FRE sequencer.
 
-### 11. Vivaldi Startup Performance Optimization (`vivaldiStartupPerformancePatch`)
+### 10. Vivaldi Startup Performance Optimization (`vivaldiStartupPerformancePatch`)
 * **Objective**: Eliminate cold-start latency and protect against fatal null pointer crashes during initialization.
 * **Internal Mechanisms**:
   - **Carrier Customizations Bypass**: Bypasses `PartnerBrowserCustomizations.initializeAsync(Context)` by immediately setting field `Boolean.TRUE` and returning, avoiding main-thread SharedPreferences reads, background ThreadPool tasks, ContentResolver queries, and 10-second timeout task scheduling.
   - **CompositorView LayoutStateObserver Null Safety**: Guards `CompositorView` against early cold-startup NPE when `TabbedRootUiCoordinator` triggers `onStartedShowing(2)` before child views are inflated.
   - **Automotive Reflection Suppression**: Stubs `CarDataProvider.isModel(String)` to return `false`, suppressing `ClassNotFoundException` reflection error log spam on non-automotive Android devices.
 
-### 12. Disable Background Sync & Periodic Sync (`vivaldiBackgroundSyncPatch`)
+### 11. Disable Background Sync & Periodic Sync (`vivaldiBackgroundSyncPatch`)
 * **Objective**: Prevent web pages from scheduling wakeups via Web Background Sync and Periodic Sync APIs.
 * **Internal Mechanism**:
   - Injects `return-void` into `BackgroundSync.Periodic.Wakeup.DelayTime` and `BackgroundSync.Wakeup.DelayTime` runners in Android JobScheduler.
 
-### 13. Disable Chromium Tips & Notification Scheduler (`vivaldiNotificationOptimizerPatch`)
+### 12. Disable Chromium Tips & Notification Scheduler (`vivaldiNotificationOptimizerPatch`)
 * **Objective**: Eliminate background wakeups, native library loading, and in-product promotional tips from Chromium's tips scheduler.
 * **Internal Mechanism**:
   - Stubs `NotificationSchedulerTask.schedule(JJ)V` to `return-void`.
@@ -143,13 +136,13 @@ Comprehensive technical breakdown of all **15 patches** included in the Morphe V
 
 ## 📦 APK Slimming & Storage Reclamation
 
-### 14. Locale PAK Slimmer (`localePakSlimmerPatch`)
+### 13. Locale PAK Slimmer (`localePakSlimmerPatch`)
 * **Objective**: Strip unselected language resource PAKs from `assets/locales/` to reclaim **~21.2 MB** of storage.
 * **Internal Mechanism**:
   - Chromium DataPack v5 files cannot be truncated to 0 bytes or deleted without causing native C++ crashes.
   - Replaces stripped base language PAKs with `en-US.pak` byte tables and populates grammatical gender variants (`*_FEMININE`, `*_MASCULINE`) with 18-byte minimal valid DataPack headers, maintaining 100% startup stability.
 
-### 15. Resource Slimmer (`vivaldiResourceSlimmerPatch`)
+### 14. Resource Slimmer (`vivaldiResourceSlimmerPatch`)
 * **Objective**: Strip bundled bloat assets and harden declarative preference defaults to save **~6.7 MB**.
 * **Internal Mechanisms**:
   - **Asset Trimming**: Zeros bundled stock wallpapers (`assets/wallpapers`), sponsored Speed Dial thumbnails (`assets/sd_thumbnails`), partner favicons (`assets/favicons`), and Google Privacy Sandbox attestations (`assets/privacy_sandbox_attestations/privacy-sandbox-attestations.dat`).
