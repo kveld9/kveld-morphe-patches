@@ -1,3 +1,9 @@
+## [1.36.1](https://github.com/kveld9/kveld-morphe-patches/compare/v1.36.0...v1.36.1) (2026-09-17)
+
+### Bug Fixes
+
+* **tiktok:** resolve comment copy fingerprint matching and guard one-tap auth ([a038068](https://github.com/kveld9/kveld-morphe-patches/commit/a038068d17dff29686eadb6e83c99927d45f8ddd))
+
 ## [1.36.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.35.0...v1.36.0) (2026-09-17)
 
 ### New Features

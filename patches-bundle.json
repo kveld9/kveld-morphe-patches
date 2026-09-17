@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-09-17T17:16:59",
-  "description": "## [1.36.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.35.0...v1.36.0) (2026-09-17)\n\n### New Features\n\n* **tiktok:** add google login fix, seekbar restore, publish date, and clean comment copy ([34f13fc](https://github.com/kveld9/kveld-morphe-patches/commit/34f13fccc71b3b1a0395484a10ac3571a2a774e2))",
-  "download_url": "https://github.com/kveld9/kveld-morphe-patches/releases/download/v1.36.0/patches-1.36.0.mpp",
+  "created_at": "2026-09-17T18:22:18",
+  "description": "## [1.36.1](https://github.com/kveld9/kveld-morphe-patches/compare/v1.36.0...v1.36.1) (2026-09-17)\n\n### Bug Fixes\n\n* **tiktok:** resolve comment copy fingerprint matching and guard one-tap auth ([a038068](https://github.com/kveld9/kveld-morphe-patches/commit/a038068d17dff29686eadb6e83c99927d45f8ddd))",
+  "download_url": "https://github.com/kveld9/kveld-morphe-patches/releases/download/v1.36.1/patches-1.36.1.mpp",
   "signature_download_url": "",
-  "version": "1.36.0"
+  "version": "1.36.1"
 }
