@@ -39,9 +39,46 @@ Web applications can fingerprint device hardware variations or infer user input 
 
 ### 3. Clean Share URL (Link Tracking Sanitization)
 When sharing links via Android's native share sheet or copying URLs from the address bar and context menus, sites frequently attach tracking and attribution query tokens (`utm_*`, `fbclid`, `gclid`, `igshid`, `si`, `msclkid`, etc.). The **`Clean Share URL`** patch intercepts shared and copied data:
-- **Android Share Sheet Dispatch (`Lcch.a`)**: Intercepts the generated `android.content.Intent` across all share entrypoints, sanitizing `Intent.EXTRA_TEXT`, `Intent.getData()`, and `ClipData` via [`BraveExtension.cleanShareIntent`](file:///home/kveld/Documentos/repos/brave-origin-patches/extensions/extension/src/main/java/com/kveld9/morphe/extension/BraveExtension.java).
+- **Android Share Sheet Dispatch (`Lcch.a`)**: Intercepts the generated `android.content.Intent` across all share entrypoints, sanitizing `Intent.EXTRA_TEXT`, `Intent.getData()`, and `ClipData` via [`BraveExtension.cleanShareIntent`](../extensions/extension/src/main/java/com/kveld9/morphe/extension/BraveExtension.java).
 - **Clipboard Sanitization (`Clipboard.setText`)**: Cleans single URLs and embedded URLs in composite text before strings enter the system clipboard.
 - **Invariant Preservation**: Functional parameters such as video identifiers (`v`), navigation anchors (`t`), and search queries (`q`) are strictly preserved while stripping profiling tokens.
+
+#### Scope & False-Positive Prevention Strategy
+The parameter sanitizer does **not** attempt to match every ad network parameter across the entire web. It is intentionally designed as a **domain-agnostic deterministic filter**:
+- **Why not strip all unknown parameters?** Broad or generic query keys (such as `ref`, `source`, `token`, `id`, `session`, `click`, `campaign`) cannot be purged universally without domain context, as doing so breaks legitimate web navigation, e-commerce checkouts, faceted search filters, and one-time authentication links.
+- **Comparison with Domain-Conditional Engines**: Projects like ClearURLs, AdGuard URL Tracking Protection, or Brave's upstream C++ `url_cleaner` maintain hundreds of rules scoped to specific domains (e.g. stripping `tag` only on `amazon.com` or `rdt_cid` only on `reddit.com`). Morphe's lightweight companion runtime prioritizes high-confidence global tokens that can be removed with zero risk of site breakage.
+
+#### Complete Catalog of Filtered Parameters (Chromium Extension)
+Implemented in [`BraveExtension.java`](../extensions/extension/src/main/java/com/kveld9/morphe/extension/BraveExtension.java#L38-L101) and [`isTrackingParam`](../extensions/extension/src/main/java/com/kveld9/morphe/extension/BraveExtension.java#L214-L235):
+- **Prefix Families (Global Dynamic Matching)**:
+  - `utm_*`: Urchin Tracking Module / Google Analytics marketing attribution (`utm_source`, `utm_medium`, `utm_campaign`, `utm_term`, `utm_content`).
+  - `ga_*`: Google Analytics client parameters.
+  - `pk_*`: Piwik / Matomo campaign tracking.
+  - `matomo_*`: Modern Matomo campaign tracking tokens.
+- **Global Tokens (Unambiguous AdTech Identifiers)**:
+  - *Meta / Facebook / Instagram*: `fbclid`, `igshid`
+  - *Google Ads / DoubleClick*: `gclid`, `gbraid`, `wbraid`, `dclid`
+  - *Microsoft / Bing*: `msclkid`
+  - *Twitter / X*: `twclid`
+  - *Yandex*: `yclid`
+  - *HubSpot*: `_hsenc`, `_hsmi`
+  - *Mailchimp*: `mc_cid`, `mc_eid`
+  - *Adobe Analytics / Omniture*: `s_kwcid`
+  - *Marketo & Wicked Reports*: `mkt_tok`, `wickedid`
+  - *Affiliate & Advertising Networks*: `sc_channel`, `sc_campaign`, `sc_geo`, `zanpid`, `vero_id`, `vero_conv`
+- **Domain-Scoped Tokens (Authoritative Context Matching)**:
+  - *YouTube* (`youtube.com`, `youtu.be`): `si` (share source identifier)
+  - *Spotify* (`spotify.com`): `si` (share source identifier)
+  - *Twitter / X* (`x.com`, `twitter.com`): `ref_src`, `ref_url`
+  - *LinkedIn* (`linkedin.com`): `trk`
+  - *TikTok* (`tiktok.com`): `tt_medium`, `tt_content`
+
+#### Platform-Specific Companion: TikTok URL Sanitization
+In contrast to the browser implementation, the TikTok companion filter ([`TikTokFeedAdFilter.sanitizeShareUrl`](../extensions/extension/src/main/java/com/kveld9/morphe/extension/tiktok/TikTokFeedAdFilter.java#L305-L328)) is domain-scoped (`tiktok.com`) and purges ByteDance-specific user tracking and device fingerprinting keys:
+- `user_id`, `sec_user_id`, `u_code` (sender user identification)
+- `sender_device`, `checksum` (device telemetry and verification)
+- `share_link_id`, `share_item_id`, `share_app_id`, `ug_source`, `tt_from`, `timestamp`, `_r`, `source` (viral loop and graph correlation)
+
 
 ---
 
