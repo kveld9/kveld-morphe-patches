@@ -2,13 +2,20 @@ package app.morphe.patches.vivaldi
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.shared.Constants
+import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.reference.StringReference
 
 @Suppress("unused")
 val vivaldiDisablePromptsPatch = bytecodePatch(
     name = "Disable Vivaldi Prompts & In-App Popups",
-    description = "Disables in-app donation prompts, search engine switch promos, rate-app popups, background privacy report alarms, and default browser promotional handlers.",
+    description = "Disables in-app donation prompts, search engine switch promos, rate-app popups, background privacy report alarms, default browser promo handlers, and hides the Vivaldia game from the main menu.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_VIVALDI)
@@ -93,7 +100,101 @@ val vivaldiDisablePromptsPatch = bytecodePatch(
             hookedMethods.add("DefaultBrowserNotificationReceiver.onReceive")
         }
 
+        // 7. Hide Vivaldia game from App Menu (default to false)
+        try {
+            val fpGameMenu = Fingerprint(
+                strings = listOf("show_vivaldi_game_in_menu"),
+                custom = { method, _ -> method.parameterTypes.isEmpty() },
+            )
+            val patched = replaceNarrowLiteralNearString(
+                method = fpGameMenu.method,
+                targetString = "show_vivaldi_game_in_menu",
+                searchOffsets = listOf(1, 2, 3),
+                expectedLiteral = 1,
+            ) { reg -> "const/4 v$reg, 0x0" }
+            if (patched) {
+                hookedMethods.add("AppMenuPropertiesDelegate.hideVivaldiaGame")
+            }
+        } catch (e: Exception) {
+            println("[Disable Prompts] Vivaldia menu hook note: ${e.message}")
+        }
+
+        // 8. Vivaldia Game Preference: set default switch state to false
+        try {
+            val fpGamePref = Fingerprint(
+                definingClass = "Lorg/vivaldi/browser/preferences/VivaldiGamePreference;",
+                strings = listOf("show_vivaldi_game_in_menu"),
+            )
+            val patched = replaceNarrowLiteralNearString(
+                method = fpGamePref.method,
+                targetString = "show_vivaldi_game_in_menu",
+                searchOffsets = listOf(-1, -2, -3),
+                expectedLiteral = 1,
+            ) { reg -> "const/4 v$reg, 0x0" }
+            if (patched) {
+                hookedMethods.add("VivaldiGamePreference.defaultOff")
+            }
+        } catch (e: Exception) {
+            println("[Disable Prompts] Vivaldia game pref hook note: ${e.message}")
+        }
+
+        // 9. MainSettings: Unconditionally strip Rate Vivaldi and Default Browser promo cards
+        try {
+            val fpMainSettings = Fingerprint(
+                definingClass = "Lorg/chromium/chrome/browser/settings/MainSettings;",
+                strings = listOf("rate_vivaldi", "default_browser_promo"),
+            )
+            val removePrefMethod = fpMainSettings.originalClassDef.methods.firstOrNull {
+                it.parameterTypes == listOf("Ljava/lang/String;") && it.returnType == "V"
+            }?.name ?: "m1"
+
+            val returnIdx = fpMainSettings.method.implementation?.instructions?.indexOfLast { it.opcode == Opcode.RETURN_VOID } ?: -1
+            if (returnIdx >= 0) {
+                fpMainSettings.method.addInstructions(
+                    returnIdx,
+                    """
+                        const-string v0, "rate_vivaldi"
+                        invoke-virtual {p0, v0}, Lorg/chromium/chrome/browser/settings/MainSettings;->$removePrefMethod(Ljava/lang/String;)V
+                        const-string v0, "default_browser_promo"
+                        invoke-virtual {p0, v0}, Lorg/chromium/chrome/browser/settings/MainSettings;->$removePrefMethod(Ljava/lang/String;)V
+                    """,
+                )
+                val cMain = app.morphe.patches.shared.LocaleUtils.cleanClassName(fpMainSettings.originalClassDef.type)
+                hookedMethods.add("$cMain.${fpMainSettings.method.name}")
+            }
+        } catch (e: Exception) {
+            println("[Disable Prompts] MainSettings promo cleanup hook note: ${e.message}")
+        }
+
         val targetClasses = hookedMethods.map { it.substringBefore('.') }.distinct()
         println("[Disable Prompts] Neutralized ${hookedMethods.size} promo handlers across ${targetClasses.size} classes (${targetClasses.joinToString(", ")})")
     }
+}
+
+private fun replaceNarrowLiteralNearString(
+    method: MutableMethod,
+    targetString: String,
+    searchOffsets: List<Int>,
+    expectedLiteral: Int,
+    replacementSmali: (Int) -> String,
+): Boolean {
+    val instructions = method.implementation?.instructions?.toList() ?: return false
+    val strIdx = instructions.indexOfFirst {
+        it.opcode == Opcode.CONST_STRING &&
+            ((it as? ReferenceInstruction)?.reference as? StringReference)?.string == targetString
+    }
+    if (strIdx < 0) return false
+
+    for (offset in searchOffsets) {
+        val targetIdx = strIdx + offset
+        if (targetIdx < 0 || targetIdx >= instructions.size) continue
+        val ins = instructions[targetIdx]
+        if (ins.opcode != Opcode.CONST_4) continue
+        val narrow = ins as? NarrowLiteralInstruction ?: continue
+        if (narrow.narrowLiteral != expectedLiteral) continue
+        val reg = (ins as OneRegisterInstruction).registerA
+        method.replaceInstruction(targetIdx, replacementSmali(reg))
+        return true
+    }
+    return false
 }

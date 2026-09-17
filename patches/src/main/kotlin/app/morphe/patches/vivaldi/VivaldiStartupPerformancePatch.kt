@@ -67,6 +67,25 @@ val vivaldiStartupPerformancePatch = bytecodePatch(
         )
         val c2 = app.morphe.patches.shared.LocaleUtils.cleanClassName(fp2.originalClassDef.type)
 
-        println("[Startup Performance] Neutralized $c1 async OEM init & patched $c2 CompositorView null safety")
+        // 3. Android Automotive OEM Reflection Guard:
+        // CarDataProvider.isModel(String) attempts Class.forName reflection on car OEM classes,
+        // throwing ClassNotFoundException and logging error spam on non-automotive Android devices.
+        var automotivePatched = false
+        try {
+            Fingerprint(
+                definingClass = "Lorg/vivaldi/browser/oem_extensions/CarDataProvider;",
+                name = "isModel",
+                parameters = listOf("Ljava/lang/String;"),
+                returnType = "Z",
+            ).method.apply {
+                addInstructions(0, "const/4 v0, 0x0\nreturn v0")
+                automotivePatched = true
+            }
+        } catch (e: Exception) {
+            println("[Startup Performance] CarDataProvider hook note: ${e.message}")
+        }
+
+        val autoNote = if (automotivePatched) " & suppressed Automotive reflection" else ""
+        println("[Startup Performance] Neutralized $c1 async OEM init, patched $c2 CompositorView null safety$autoNote")
     }
 }
