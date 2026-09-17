@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.38.2",
+  "version": "1.38.3",
   "patches": [
     {
       "name": "APK Junk Cleaner",
@@ -111,32 +111,6 @@
           "targets": [
             {
               "version": "46.9.3",
-              "versionCodes": null,
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            }
-          ]
-        }
-      ],
-      "options": []
-    },
-    {
-      "name": "Background Media Playback",
-      "description": "Enables uninterrupted background audio and video playback when minimizing the browser or switching tabs by disabling background media suspension.",
-      "default": true,
-      "dependencies": [],
-      "compatiblePackages": [
-        {
-          "packageName": "com.vivaldi.browser",
-          "name": "Vivaldi Browser - Fast & Safe",
-          "description": null,
-          "apkFileType": "APKM",
-          "appIconColor": "#EF3939",
-          "signatures": null,
-          "targets": [
-            {
-              "version": "8.2.4147.77",
               "versionCodes": null,
               "isExperimental": false,
               "minSdk": null,

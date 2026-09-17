@@ -1,3 +1,9 @@
+## [1.38.3](https://github.com/kveld9/kveld-morphe-patches/compare/v1.38.2...v1.38.3) (2026-09-17)
+
+### Bug Fixes
+
+* **vivaldi:** neutralize default browser prompts and remove redundant background media patch ([22c2970](https://github.com/kveld9/kveld-morphe-patches/commit/22c2970eaab824af5f9106273bab86534813af62))
+
 ## [1.38.2](https://github.com/kveld9/kveld-morphe-patches/compare/v1.38.1...v1.38.2) (2026-09-17)
 
 ### Bug Fixes

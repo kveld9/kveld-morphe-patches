@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-09-17T22:27:15",
-  "description": "## [1.38.2](https://github.com/kveld9/kveld-morphe-patches/compare/v1.38.1...v1.38.2) (2026-09-17)\n\n### Bug Fixes\n\n* **chromium:** preserve PlatformSensorProvider JNI receiver stability ([c71ef43](https://github.com/kveld9/kveld-morphe-patches/commit/c71ef43cf6212e82d3ca21c9d0e6b8aaab5e40ec))",
-  "download_url": "https://github.com/kveld9/kveld-morphe-patches/releases/download/v1.38.2/patches-1.38.2.mpp",
+  "created_at": "2026-09-17T23:18:21",
+  "description": "## [1.38.3](https://github.com/kveld9/kveld-morphe-patches/compare/v1.38.2...v1.38.3) (2026-09-17)\n\n### Bug Fixes\n\n* **vivaldi:** neutralize default browser prompts and remove redundant background media patch ([22c2970](https://github.com/kveld9/kveld-morphe-patches/commit/22c2970eaab824af5f9106273bab86534813af62))",
+  "download_url": "https://github.com/kveld9/kveld-morphe-patches/releases/download/v1.38.3/patches-1.38.3.mpp",
   "signature_download_url": "",
-  "version": "1.38.2"
+  "version": "1.38.3"
 }
