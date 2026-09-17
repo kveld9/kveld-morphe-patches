@@ -12,7 +12,7 @@ val braveSensorPrivacyPatch = bytecodePatch(
     description = "Neutralizes motion, ambient, and orientation sensor providers to prevent hardware fingerprinting and tracking via Generic Sensor APIs.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_BRAVE)
+    compatibleWith(Constants.COMPATIBILITY_BRAVE, Constants.COMPATIBILITY_VIVALDI)
 
     execute {
         var patched = 0

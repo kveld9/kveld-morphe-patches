@@ -13,7 +13,7 @@ val braveCleanShareUrlPatch = bytecodePatch(
     description = "Strips tracking parameters (utm_*, fbclid, gclid, igshid, si, msclkid) when sharing or copying links.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_BRAVE)
+    compatibleWith(Constants.COMPATIBILITY_BRAVE, Constants.COMPATIBILITY_VIVALDI)
     extendWith("extensions/extension.mpe")
 
     execute {

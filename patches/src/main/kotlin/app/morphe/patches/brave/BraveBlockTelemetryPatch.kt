@@ -151,6 +151,10 @@ val braveBlockTelemetryPatch = bytecodePatch(
 
     dependsOn(braveTelemetryResourcePatch, braveHostsBlockerPatch)
 
+    // Note: Google Privacy Sandbox APIs (Topics, Protected Audience) and upstream UKM metric
+    // reporting to Google servers are already stripped/disabled by Brave at the C++ engine level
+    // (brave-core). Upstream UkmRecorder hooks and dat zeroing are omitted here as Brave routes
+    // its telemetry through P3A, Stats, and WDP, which are fully neutralized below and in libchrome.so.
     execute {
         val hookedMethods = mutableListOf<String>()
 
