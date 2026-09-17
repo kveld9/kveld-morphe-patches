@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.38.0",
+  "version": "1.38.1",
   "patches": [
     {
       "name": "APK Junk Cleaner",
@@ -2512,6 +2512,32 @@
       "options": []
     },
     {
+      "name": "Split Bundle Compatibility",
+      "description": "Removes split APK constraints (isSplitRequired, isolatedSplits) and split metadata from AndroidManifest.xml for standalone APK installation.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.vivaldi.browser",
+          "name": "Vivaldi Browser - Fast & Safe",
+          "description": null,
+          "apkFileType": "APKM",
+          "appIconColor": "#EF3939",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "8.2.4147.77",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Studio & Creation De-bloat",
       "description": "Strips heavy video creation plugins, CapCut NLE editor SDKs, effect plugins, and AR camera face models to significantly reduce APK size.",
       "default": true,
@@ -2730,7 +2756,9 @@
       "name": "Vivaldi Startup Performance Optimization",
       "description": "Guards against fatal CompositorView NullPointerException crashes on cold startup and bypasses carrier partner customizations.",
       "default": true,
-      "dependencies": [],
+      "dependencies": [
+        "ResourcePatch"
+      ],
       "compatiblePackages": [
         {
           "packageName": "com.vivaldi.browser",

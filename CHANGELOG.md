@@ -1,3 +1,14 @@
+## [1.38.1](https://github.com/kveld9/kveld-morphe-patches/compare/v1.38.0...v1.38.1) (2026-09-17)
+
+### Bug Fixes
+
+* **vivaldi:** harden bytecode register allocation, promo handlers, and split compatibility ([509d2ac](https://github.com/kveld9/kveld-morphe-patches/commit/509d2ac1af554af03ef2b7ad62d77332577de483))
+
+### Code Refactoring
+
+* **chromium:** decouple shared browser patches and extension runtime from brave ([783cede](https://github.com/kveld9/kveld-morphe-patches/commit/783cedea464b99967e7a7cfb351eef9d7b00ed34))
+* **extension:** isolate ambiguous link tracking parameters to target domains ([1f304fa](https://github.com/kveld9/kveld-morphe-patches/commit/1f304fa55ae415a489e37a52588b9677b376a616))
+
 ## [1.38.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.37.0...v1.38.0) (2026-09-17)
 
 ### New Features

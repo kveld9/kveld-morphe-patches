@@ -146,7 +146,7 @@
 </details>
 
 <details>
-<summary>Vivaldi Browser - Fast & Safe&nbsp;&nbsp;•&nbsp;&nbsp;<b>15 patches</b></summary>
+<summary>Vivaldi Browser - Fast & Safe&nbsp;&nbsp;•&nbsp;&nbsp;<b>16 patches</b></summary>
 <br>
 
 **Supported versions:**
@@ -170,6 +170,7 @@
 | **Resource Slimmer** | Strips bundled stock wallpapers, sponsored Speed Dial thumbnails, partner favicons, Privacy Sandbox attestations, and hardens declarative preference defaults. |  |
 | **Sensor Privacy Guard** | Neutralizes motion, ambient, and orientation sensor providers to prevent hardware fingerprinting and tracking via Generic Sensor APIs. |  |
 | **Skip First Run** | Skips the welcome screen, search engine selection, and onboarding First Run Experience (FRE) on clean installs. |  |
+| **Split Bundle Compatibility** | Removes split APK constraints (isSplitRequired, isolatedSplits) and split metadata from AndroidManifest.xml for standalone APK installation. |  |
 | **Vivaldi Startup Performance Optimization** | Guards against fatal CompositorView NullPointerException crashes on cold startup and bypasses carrier partner customizations. |  |
 
 </details>
