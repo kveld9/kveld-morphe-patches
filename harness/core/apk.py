@@ -6,7 +6,6 @@ Manages safe temporary workspace lifecycle and metadata extraction.
 from __future__ import annotations
 
 import hashlib
-import os
 import io
 import shutil
 import tempfile
@@ -178,3 +177,18 @@ class ApkContext:
                 with zf.open("lib/arm64-v8a/libchrome.so") as src, open(target_path, "wb") as dst:
                     shutil.copyfileobj(src, dst)
         return target_path
+
+    def get_all_entry_names(self) -> List[str]:
+        """Returns all entry names contained within the APK or split APK bundle."""
+        entries = []
+        with zipfile.ZipFile(self.apk_path, "r") as zf:
+            namelist = zf.namelist()
+            entries.extend(namelist)
+            if "base.apk" in namelist:
+                for inner in sorted([n for n in namelist if n.endswith(".apk")]):
+                    try:
+                        with zipfile.ZipFile(io.BytesIO(zf.read(inner)), "r") as izf:
+                            entries.extend(izf.namelist())
+                    except Exception:
+                        pass
+        return entries

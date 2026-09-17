@@ -1,0 +1,74 @@
+package app.morphe.patches.shared
+
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions
+import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
+import com.android.tools.smali.dexlib2.iface.Method
+
+/**
+ * Clears exception try-catch blocks from a method implementation before replacing instructions.
+ * Prevents Dalvik / ART VerifyError caused by dangling try blocks referencing wiped instruction offsets.
+ */
+fun Method.clearTryBlocks() {
+    val impl = implementation ?: return
+    var clazz: Class<*>? = impl.javaClass
+    while (clazz != null) {
+        try {
+            val field = clazz.getDeclaredField("tryBlocks")
+            field.isAccessible = true
+            val list = field.get(impl) as? MutableList<*>
+            if (list != null) {
+                try {
+                    list.clear()
+                } catch (_: Exception) {
+                    field.set(impl, mutableListOf<Any>())
+                }
+            }
+            break
+        } catch (_: NoSuchFieldException) {
+            clazz = clazz.superclass
+        } catch (_: Exception) {
+            break
+        }
+    }
+}
+
+fun Method.ensureRegisterCount(min: Int) {
+    val impl = implementation ?: return
+    if (impl.registerCount < min) {
+        var clazz: Class<*>? = impl.javaClass
+        while (clazz != null) {
+            try {
+                val field = clazz.getDeclaredField("registerCount")
+                field.isAccessible = true
+                field.setInt(impl, min)
+                break
+            } catch (_: NoSuchFieldException) {
+                clazz = clazz.superclass
+            } catch (_: Exception) {
+                break
+            }
+        }
+    }
+}
+
+/**
+ * Safely purges try-catch ranges and replaces the entire method body with a boolean return value.
+ */
+fun MutableMethod.replaceWithReturnBoolean(value: Boolean) {
+    val impl = implementation ?: return
+    clearTryBlocks()
+    ensureRegisterCount(1)
+    removeInstructions(0, impl.instructions.count())
+    addInstructions(0, "const/4 v0, ${if (value) "0x1" else "0x0"}\nreturn v0")
+}
+
+/**
+ * Safely purges try-catch ranges and replaces the entire method body with a void return.
+ */
+fun MutableMethod.replaceWithReturnVoid() {
+    val impl = implementation ?: return
+    clearTryBlocks()
+    removeInstructions(0, impl.instructions.count())
+    addInstructions(0, "return-void")
+}

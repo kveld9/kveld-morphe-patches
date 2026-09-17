@@ -844,7 +844,10 @@ class AdversarialValidator:
         if not patches_dir.exists():
             return False, f"Patches directory not found: {patches_dir}"
 
-        kt_files = [f for f in patches_dir.rglob("*.kt") if f.name not in ("Constants.kt", "LocaleUtils.kt")]
+        kt_files = [
+            f for f in patches_dir.rglob("*.kt")
+            if not (f.parent.name == "shared" and not f.name.endswith("Patch.kt"))
+        ]
         missing_logs = []
         for kt in kt_files:
             content = kt.read_text(encoding="utf-8")

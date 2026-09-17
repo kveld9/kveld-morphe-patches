@@ -1,6 +1,6 @@
 # 🎵 TikTok: Technical Patch Specifications & Deep Breakdown
 
-Comprehensive breakdown of the **23 patches** included in the Morphe TikTok patch suite pinned to target version **`46.9.3`** (supporting both `com.zhiliaoapp.musically` Global and `com.ss.android.ugc.trill` Asia APKs).
+Comprehensive breakdown of the **25 patches** included in the Morphe TikTok patch suite pinned to target version **`46.9.3`** (supporting both `com.zhiliaoapp.musically` Global and `com.ss.android.ugc.trill` Asia APKs).
 
 ---
 
@@ -11,6 +11,8 @@ Comprehensive breakdown of the **23 patches** included in the Morphe TikTok patc
 | **Usability** | **Media Usability & Watermark-Free Downloader** | `bytecodePatch` | Forced seekbar scrubbing, unblock download button, unwatermarked stream routing |
 | **Usability** | **Playback Speed Persistence** | `bytecodePatch` | Persists user-selected video speed across feed scrolling and restarts |
 | **Usability** | **Video Quality Governor** | `bytecodePatch` | Caps maximum video playback resolution (1080p, 720p, 540p, 480p, 360p) to reduce GPU/MediaCodec load and memory retention |
+| **Usability** | **Skip First-Launch Onboarding** | `bytecodePatch` | Bypasses interest pickers, swipe-up tutorial, language prompts, and consent sheets directly to FYP feed |
+| **Privacy** | **Bypass Mandatory Login** | `bytecodePatch` | Neutralizes mandatory login walls, dynamic regional forced login gates, and guest mode browsing restrictions |
 | **Privacy** | **Clean Share URL** | `bytecodePatch` | Strips tracking query parameters, user tokens, and campaign IDs |
 | **Privacy** | **Device Privacy Guard** | `bytecodePatch` | Blocks background clipboard inspection, purges 33 invasive permissions, suppresses screenshot/recording triggers, and bypasses FLAG_SECURE |
 | **Privacy** | **In-App Browser Privacy Guard** | `bytecodePatch` | Redirects external links to default system browser, neutralizes WebView JS tracking injection and AJAX hookers |
@@ -80,12 +82,34 @@ Comprehensive breakdown of the **23 patches** included in the Morphe TikTok patc
   * **Live Stream Invariant**:
     * Live streams are exempted to prevent audio/video desynchronization on real-time RTMP/WebRTC broadcasts.
 
+### 4. Skip First-Launch Onboarding (`skipFirstLaunchOnboardingPatch`)
+* **Objective**: Bypass the entire first-run introduction funnel (interest pickers, swipe-up tutorial, language prompts, and consent sheets) directly to the main feed upon first install.
+* **Internal Mechanisms**:
+  * **Direct Main Page Assembly**:
+    * Hooks `MainPageFragment.JS()Z` -> returns `false`.
+    * Ensures `MainPageFragment` directly executes `zS()`, immediately mounting feed video player, navigation, and page assems without entering the deferred onboarding waiting state.
+  * **New User Journey Completion & Suppression**:
+    * Hooks `NewUserJourneyService` method referencing `did_finish_nuj` (`LIZJ()Z`) -> returns `true` (`did_finish_nuj = true` across all service callers).
+    * Hooks `NewUserJourneyService` method referencing `new_user_journey` (`LJJJI(Activity)Z`) -> returns `false` (suppresses evaluating whether to present NUJ).
+    * Hooks `NewUserJourneyService` taking `BaseActivity` (`LJIJJLI(BaseActivity)Z`) -> returns `false` (suppresses launching NUJ container activity).
+    * Neutralizes `NewUserJourneyService` methods referencing `deeplink_intent_about_welcome_screen` (`LJIJI`) and `reorder_new_journey_front` (`LJJJ`) with immediate `return-void` to prevent launching or reordering the onboarding activity container.
+
 ---
 
 
 ## 🛡️ Privacy & Tracker Suppression
 
-### 3. Clean Share URL (`cleanShareUrlPatch`)
+### 1. Bypass Mandatory Login (`mandatoryLoginBypassPatch`)
+* **Objective**: Neutralize mandatory login walls, dynamic regional forced login gates, and guest browsing restrictions.
+* **Internal Mechanisms**:
+  * **Forced Login Evaluation Suppression**:
+    * Hooks `MandatoryLoginService.shouldShowForcedLogin(Z)Z` -> returns `false`.
+    * Hooks `MandatoryLoginService.enableForcedLogin(Z)Z` -> returns `false`.
+    * Hooks `MandatoryLoginService.shouldShowLoginTabFirst()Z` -> returns `false` (prevents auto-focusing on login tabs).
+  * **Fullscreen Login Wall Neutralization**:
+    * Hooks `MandatoryLoginService.tryShowMandatoryLoginPage(...)V` with immediate `return-void` to prevent invoking `SignUpOrLoginActivity` over the feed.
+
+### 2. Clean Share URL (`cleanShareUrlPatch`)
 * **Objective**: Protect user privacy when sharing video links with friends or third-party apps.
 * **Internal Mechanisms**:
   * Hooks `Aweme.getShareUrl()Ljava/lang/String;` at all return points.
@@ -94,7 +118,7 @@ Comprehensive breakdown of the **23 patches** included in the Morphe TikTok patc
     * App & session tokens: `share_app_id`, `share_item_id`, `share_link_id`, `ug_source`, `sender_device`.
     * Attribution & marketing telemetry: `utm_source`, `utm_campaign`, `utm_medium`, `_r`, `checksum`, `tt_from`.
 
-### 4. Device Privacy Guard (`devicePrivacyGuardPatch`)
+### 3. Device Privacy Guard (`devicePrivacyGuardPatch`)
 * **Objective**: Prevent background snooping on sensitive device APIs, eliminate annoying screenshot popups, purge invasive Android manifest permissions, block local network scanning, and bypass restrictive `FLAG_SECURE` screen recording blocks.
 * **Internal Mechanisms**:
   * **Manifest Permission Purge**:
@@ -115,7 +139,7 @@ Comprehensive breakdown of the **23 patches** included in the Morphe TikTok patc
     * Neutralizes `ScreenShotFeedbackService.isFeedbackEnable()` and `tryShowScreenShotFloatingView()` -> returns `false`.
     * Suppresses quick-share popup modals and Tako AI screenshot triggers.
 
-### 5. In-App Browser Privacy Guard (`inAppBrowserPrivacyGuardPatch`)
+### 4. In-App Browser Privacy Guard (`inAppBrowserPrivacyGuardPatch`)
 * **Objective**: Protect user privacy by redirecting external and third-party web links directly to the user's default system browser (Brave, Firefox, Chrome), preventing third-party browsing sessions from ever running inside TikTok's process, and neutralizing residual tracking inside essential internal WebViews.
 * **Internal Mechanisms**:
   * **External Web Navigation Redirection**:
@@ -128,7 +152,7 @@ Comprehensive breakdown of the **23 patches** included in the Morphe TikTok patc
   * **Proprietary Web Engine De-bloat**:
     * Strips ByteDance's proprietary TTWebView engine binary (`libdex_df_ttwebview.so`) and dynamic feature manifest (`df_ttwebview.json`) via `coreAssetDebloatPatch`, forcing any residual hybrid views to rely on the clean, sandboxed system AOSP WebView.
 
-### 6. Client-Side AI & Behavioral Profiling Governor (`clientAiGovernorPatch`)
+### 5. Client-Side AI & Behavioral Profiling Governor (`clientAiGovernorPatch`)
 * **Objective**: Neutralize ByteDance's "Pitaya" on-device machine learning engine, suppress the Tako AI chatbot across feeds and comments, and eradicate AI smart search and summary clutter.
 * **Internal Mechanisms**:
   * **On-Device Inference & Behavioral Profiling**:
@@ -144,7 +168,7 @@ Comprehensive breakdown of the **23 patches** included in the Morphe TikTok patc
     * Forces `SearchTakoSugListAssem.bb()` -> returns `false` to suppress Tako suggestion lists.
     * Forces `SearchTakoCardProtocol.zX()`, `SearchTakoNewBotCardProtocol.zX()`, and `SearchAdAISummaryCardProtocol.zX()` -> returns `false`.
 
-### 7. Region & Geo-Restriction Bypass (`regionBypassPatch`)
+### 6. Region & Geo-Restriction Bypass (`regionBypassPatch`)
 * **Objective**: Bypass regional content restrictions, geo-blocked feeds, and country-specific account barriers without requiring physical SIM ejection.
 * **Internal Mechanisms**:
   * Hooks BPEA telephony abstraction wrapper `LX/067c;->LIZJ(Landroid/telephony/TelephonyManager;LX/019X;)Ljava/lang/String;` (`getSimCountryIso`) to return the user-configured ISO country code.
@@ -152,14 +176,14 @@ Comprehensive breakdown of the **23 patches** included in the Morphe TikTok patc
   * Configurable via the `region` patch option (defaults to `"CH"`).
   * **Region Selection & Recommendations**: For detailed guidance on picking the best region (e.g. `CH` for minimal e-commerce bloat and full audio catalogs vs `CA`/`US` for North American trends) and avoiding problematic country codes (such as `CN`, `IN`, `RU`, `JP`, or `DE`), see the [SIM Region Selection Guide](patch-configuration.md#sim-region-selector).
 
-### 8. Feed Ad Blocker (`tikTokFeedAdBlockerPatch`)
+### 7. Feed Ad Blocker (`tikTokFeedAdBlockerPatch`)
 * **Objective**: Completely clean the For You Page (FYP) and Following feeds from promotional intrusions.
 * **Internal Mechanisms**:
   * Bytecode hooks in `FeedApiService.fetchFeedList()`, `FeedItemList.getItems()`, and `FollowFeedList.getItems()`.
   * Delegates feed filtering to runtime helper `TikTokFeedAdFilter`:
     * Evaluates `Aweme.isAd()`, `Aweme.isSoftAd()`, `Aweme.isWithPromotionalMusic()`, and link ad metadata to purge commercial items.
 
-### 9. Hide TikTok Shop & Mall (`hideTikTokShopAnchorsPatch`)
+### 8. Hide TikTok Shop & Mall (`hideTikTokShopAnchorsPatch`)
 * **Objective**: Completely eliminate shopping distractions by removing product tags, commercial anchors, and the dedicated Shop tab from top and bottom navigation bars.
 * **Internal Mechanisms**:
   * **Video Feed Anchor Stripping**: Hooks `FeedApiService.fetchFeedList()`, `FeedItemList.getItems()`, and `FollowFeedList.getItems()` to invoke `TikTokFeedAdFilter.stripCommercialAnchors()`, clearing product tags (`setAnchors(null)`) and showcase links (`setAnchorInfo(null)`).
@@ -167,7 +191,7 @@ Comprehensive breakdown of the **23 patches** included in the Morphe TikTok patc
   * **Shop Top Tab Neutralization**: Hooks `ShopTopTabProtocol.enable()Z` -> returns `false`.
   * **Shop Icon & Entry Service Neutralization**: Hooks `ShopIconServiceImpl.rw()Z` -> returns `false`.
 
-### 10. Feed Live Stream Blocker (`feedLiveStreamBlockerPatch`)
+### 9. Feed Live Stream Blocker (`feedLiveStreamBlockerPatch`)
 * **Objective**: Eliminate live broadcast recommendations and live stream preview cards from the For You Page (FYP) and Following feeds as an independent, modular toggle.
 * **Internal Mechanisms**:
   * Bytecode hooks in `FeedApiService.fetchFeedList()`, `FeedItemList.getItems()`, and `FollowFeedList.getItems()`.
@@ -175,7 +199,7 @@ Comprehensive breakdown of the **23 patches** included in the Morphe TikTok patc
     * Multi-signal detection inspecting `Room`, `RoomFeedCellStruct`, `liveId > 0`, `StreamUrlModel`, `authorLive`, and live aweme types (`101`, `68`, `102`, `69`) as well as Following feed live broadcasts (`feedType == 2`).
     * Purges matching live broadcast cards from feed lists before UI adapter binding.
 
-### 11. Feed Bloat & Distraction Blocker (`feedBloatBlockerPatch`)
+### 10. Feed Bloat & Distraction Blocker (`feedBloatBlockerPatch`)
 * **Objective**: Eliminate non-video clutter, intrusive recommendation cards, Touchpoint Rewards pendants, floating ad stickers, mini-games, creation prompts, surveys, and promotional distraction cards from the For You and Following feeds.
 * **Internal Mechanisms**:
   * **Touchpoint Rewards & Ad Pendant Neutralization (Issue #33)**:
@@ -204,14 +228,14 @@ Comprehensive breakdown of the **23 patches** included in the Morphe TikTok patc
       * **Lynx In-Feed Promos**: `Aweme.getAwemeType() == 106`.
     * Prunes matching cards from list iterators in-situ with zero crashes or UI gaps.
 
-### 12. Unified Telemetry & Tracker Silencer (`unifiedTelemetryTrackerSilencerPatch`)
+### 11. Unified Telemetry & Tracker Silencer (`unifiedTelemetryTrackerSilencerPatch`)
 * **Objective**: Cut off background surveillance, user behavior analytics, and diagnostic reporting to ByteDance servers.
 * **Internal Mechanisms**:
   * **ByteDance AppLog**: Neutralizes `AppLog.onEvent()` and `AppLog.report()` entrypoints with immediate `return-void`.
   * **Crash Handlers & Telemetry Schedulers**: Neutralizes Lego initialization tasks for Npth crash reporting (`NpthCoreInitTask`), APM metrics (`ApmInit`), and Heimallr performance monitors.
   * **Attribution Trackers**: Neutralizes `InitAppsFlyer` and Firebase analytics startup initialization tasks.
 
-### 13. Update Prompt Suppressor (`disableInAppUpdateNagsPatch`)
+### 12. Update Prompt Suppressor (`disableInAppUpdateNagsPatch`)
 * **Objective**: Prevent forced upgrade popups and version enforcement dialogs.
 * **Internal Mechanisms**:
   * Neutralizes Lego update check tasks: `CheckUpdateChangeDeviceIDTaskHolder$Background`, `UpdateTaskHolder$Background`, `CheckUpdateChangeDeviceIDTaskHolder$BootFinish`, and `UpdateTaskHolder$BootFinish`.

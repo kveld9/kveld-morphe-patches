@@ -123,6 +123,7 @@ gradle-app.setting
 *.idsig
 apks-ultima-version/
 apks/
+candidate_apks/
 
 # Local sensitive configuration, environment & secrets
 local.properties

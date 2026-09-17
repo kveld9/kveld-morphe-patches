@@ -3,12 +3,12 @@ Adversarial validator for TikTok patches against target APK bytecode and assets.
 """
 
 from __future__ import annotations
-from typing import Any, Dict, List
+from typing import Any, Dict
 from pathlib import Path
 
 from harness.core.dex import DexIndex
 from harness.reporting.reporter import PatchAuditResult, PatchStatus
-from harness.tiktok.contracts import TIKTOK_PATCH_CONTRACTS, PatchContract
+from harness.tiktok.contracts import TIKTOK_PATCH_CONTRACTS
 
 
 class TikTokValidator:
@@ -27,23 +27,35 @@ class TikTokValidator:
 
             # 1. Bytecode target validation
             if contract.target_type == "bytecode":
+                found_classes = []
                 for cls_desc in contract.required_classes:
                     matched = self.dex_index.find_class(cls_desc)
                     if matched:
                         details.append(f"Found class `{cls_desc}` in `{matched.dex_name}`")
+                        found_classes.append(matched)
                     else:
-                        status = "BLOCKED" if contract.criticality == "CRITICAL" else "WARNING"
+                        status = "BLOCKED" if contract.criticality in ("CRITICAL", "HIGH") else "WARNING"
                         details.append(f"Missing class `{cls_desc}`")
 
                 for req_str in contract.required_strings:
-                    # Fast check in indexed method names
-                    matched_methods = [m for m in self.dex_index.methods if req_str in m.name]
-                    if matched_methods:
-                        details.append(f"Target method `{req_str}` found ({len(matched_methods)} occurrence(s))")
+                    if found_classes:
+                        # Scoped to required classes: check method name or referenced string
+                        matched_methods = [
+                            m for cls in found_classes for m in cls.methods
+                            if req_str == m.name or req_str in m.referenced_strings
+                        ]
                     else:
-                        if not contract.required_classes:
-                            status = "WARNING"
-                            details.append(f"Symbol `{req_str}` not directly declared")
+                        # Unscoped: check globally across all methods
+                        matched_methods = [
+                            m for m in self.dex_index.methods
+                            if req_str in m.name or req_str in m.referenced_strings
+                        ]
+
+                    if matched_methods:
+                        details.append(f"Target `{req_str}` found ({len(matched_methods)} occurrence(s))")
+                    else:
+                        status = "BLOCKED" if contract.criticality in ("CRITICAL", "HIGH") else "WARNING"
+                        details.append(f"Target `{req_str}` not found")
 
             # 2. Resource / Asset / ABI validation
             elif contract.target_type in ("raw_resource", "resource"):
@@ -52,6 +64,7 @@ class TikTokValidator:
                     if matches:
                         details.append(f"Found {len(matches)} entries matching `{req_entry}`")
                     else:
+                        status = "BLOCKED" if contract.criticality in ("CRITICAL", "HIGH") else "WARNING"
                         details.append(f"No entries matching `{req_entry}` found in APK")
 
             patch_status = (

@@ -243,5 +243,56 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
         required_strings=["getVideo", "getBitRate"],
         criticality="HIGH",
     ),
+    PatchContract(
+        patch_id="mandatory_login_bypass",
+        name="Bypass Mandatory Login",
+        target_type="bytecode",
+        description="Neutralizes mandatory login walls, dynamic regional forced login gates, and guest mode browsing restrictions.",
+        required_classes=[
+            "Lcom/ss/android/ugc/aweme/services/MandatoryLoginService;",
+        ],
+        required_strings=["shouldShowForcedLogin", "enableForcedLogin", "shouldShowLoginTabFirst", "tryShowMandatoryLoginPage"],
+        criticality="HIGH",
+    ),
+    PatchContract(
+        patch_id="skip_first_launch_onboarding",
+        name="Skip First-Launch Onboarding",
+        target_type="bytecode",
+        description="Bypasses the entire first-run introduction funnel directly to the feed.",
+        required_classes=[
+            "Lcom/ss/android/ugc/aweme/main/MainPageFragment;",
+            "Lcom/ss/android/ugc/aweme/NewUserJourneyService;",
+        ],
+        required_strings=["JS", "did_finish_nuj", "new_user_journey"],
+        criticality="HIGH",
+    ),
+    PatchContract(
+        patch_id="client_ai_governor",
+        name="Client-Side AI & Behavioral Profiling Governor",
+        target_type="bytecode",
+        description="Neutralizes on-device machine learning inference (Pitaya), Tako AI chatbot entry points and icons, and AI smart search suggestion clutter.",
+        required_classes=["Lcom/bytedance/pitaya/api/PitayaBootLoader;"],
+        required_strings=["setup", "commitBootTaskBySettings"],
+        criticality="HIGH",
+    ),
+    PatchContract(
+        patch_id="region_bypass",
+        name="SIM Region Selector",
+        target_type="bytecode",
+        description="Spoofs the detected SIM and network country ISO code to bypass regional feed restrictions and catalog blocks.",
+        required_classes=[],
+        required_strings=["TelephonyManager_getSimCountryIso", "TelephonyManager_getNetworkCountryIso"],
+        criticality="HIGH",
+    ),
+    PatchContract(
+        patch_id="p2p_video_relay_blocker",
+        name="P2P Video Relay & Mesh CDN Blocker",
+        target_type="raw_resource",
+        description="Strips background Peer-to-Peer CDN distribution binaries (libavmdlp2pv2.so and libp2plivevdp.so) to prevent battery drain, background data upload, and mesh relay.",
+        required_classes=[],
+        required_strings=["libavmdlp2pv2.so", "libp2plivevdp.so"],
+        criticality="HIGH",
+    ),
 ]
+
 

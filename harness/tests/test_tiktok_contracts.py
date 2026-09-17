@@ -3,7 +3,7 @@ Unit tests for TikLite TikTok patch contracts and invariants.
 """
 
 import unittest
-from harness.tiktok.contracts import TIKTOK_PATCH_CONTRACTS, PatchContract
+from harness.tiktok.contracts import TIKTOK_PATCH_CONTRACTS
 
 
 class TestTikTokContracts(unittest.TestCase):
