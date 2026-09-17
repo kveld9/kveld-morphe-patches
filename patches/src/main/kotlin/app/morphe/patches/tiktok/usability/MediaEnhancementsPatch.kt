@@ -6,13 +6,14 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLa
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.ensureRegisterCount
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 
 val mediaEnhancementsPatch = bytecodePatch(
     name = "Media Usability & Watermark-Free Downloader",
-    description = "Enables progress seekbar scrubbing on all videos, unblocks the download button on creator-restricted videos, and routes downloads to clean unwatermarked media streams.",
+    description = "Unblocks the download button on creator-restricted videos and routes downloads to clean unwatermarked media streams.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
@@ -282,6 +283,7 @@ val mediaEnhancementsPatch = bytecodePatch(
                 it.parameterTypes == listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;", "Z")
             }?.name ?: "LIZ"
 
+            method.ensureRegisterCount(3)
             method.addInstructions(
                 0,
                 """
