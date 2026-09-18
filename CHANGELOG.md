@@ -1,3 +1,18 @@
+## [1.41.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.40.0...v1.41.0) (2026-09-18)
+
+### Bug Fixes
+
+* **tiktok:** clamp refresh rate to display peak and fix static hook register ([8dbf732](https://github.com/kveld9/kveld-morphe-patches/commit/8dbf73221ab1cf2e0a92411716cbadf9c85d2085))
+* **tiktok:** implement reactive call-site skipping and typing suppression for ghost mode ([250f722](https://github.com/kveld9/kveld-morphe-patches/commit/250f72232195240c8b010a1228b1252a26c63e30))
+
+### New Features
+
+* **shared:** add CFG register liveness analysis and bytecode call-site helpers ([8b96aa3](https://github.com/kveld9/kveld-morphe-patches/commit/8b96aa38aa863de421862f28344a7503a3608c73))
+
+### Code Refactoring
+
+* **harness:** support targeted patch filtering in runPatchTest ([fbf47ef](https://github.com/kveld9/kveld-morphe-patches/commit/fbf47ef761ad13d3328bad6c2fc675300436960d))
+
 ## [1.40.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.39.0...v1.40.0) (2026-09-18)
 
 ### New Features
