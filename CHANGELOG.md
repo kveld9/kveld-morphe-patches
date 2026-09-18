@@ -1,3 +1,13 @@
+## [1.40.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.39.0...v1.40.0) (2026-09-18)
+
+### New Features
+
+* **shared:** add TikTok privacy and refresh rate extension hook constants ([af0e943](https://github.com/kveld9/kveld-morphe-patches/commit/af0e943622763f1bce87291d470b08e922a08681))
+* **tiktok:** add display refresh rate governor patch ([0809d22](https://github.com/kveld9/kveld-morphe-patches/commit/0809d224cf708af334643e75af6049b5e6f4a09a))
+* **tiktok:** add ghost mode patch for anonymous profile and story browsing ([dd72e1b](https://github.com/kveld9/kveld-morphe-patches/commit/dd72e1b4af7d81055590a6bc6ef7dffe3ce13dd3))
+* **tiktok:** decouple download quality ceiling and unblock story downloads ([0258045](https://github.com/kveld9/kveld-morphe-patches/commit/0258045a13c7d7e8cb843b7372bf7d5dfb21d912))
+* **tiktok:** harden device privacy guard against package scanning, contacts access, and sensor fingerprinting ([ec5bab1](https://github.com/kveld9/kveld-morphe-patches/commit/ec5bab13de4d319b1654ac7f72ab3a9825c98c1e))
+
 ## [1.39.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.38.4...v1.39.0) (2026-09-18)
 
 ### Bug Fixes
