@@ -5,22 +5,10 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.ensureRegisterCount
 import com.android.tools.smali.dexlib2.AccessFlags
-import com.android.tools.smali.dexlib2.iface.ClassDef
-import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
-import com.android.tools.smali.dexlib2.iface.reference.StringReference
 
 private const val AWEME_CLASS = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;"
-
-private fun isTargetFeedClass(classDef: ClassDef): Boolean =
-    classDef.methods.any { sibling ->
-        sibling.implementation?.instructions?.any { instruction ->
-            (instruction as? ReferenceInstruction)?.reference?.let { reference ->
-                reference is StringReference &&
-                    (reference.string == "homepage_hot" || reference.string == "FeedRecommendFragment")
-            } ?: false
-        } == true
-    }
 
 val showSeekbarPatch = bytecodePatch(
     name = "Show seekbar",
@@ -33,31 +21,34 @@ val showSeekbarPatch = bytecodePatch(
     execute {
         var patched = 0
 
-        // 1. ShouldShowProgressBar predicate -> return true when Aweme != null
+        // 1. Aweme.getVideoControl() -> force draftProgressBar = 1 and showProgressBar = 1
         try {
             val fp = Fingerprint(
-                accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC, AccessFlags.FINAL),
-                returnType = "Z",
-                parameters = listOf(AWEME_CLASS),
-                custom = { method, classDef ->
-                    isTargetFeedClass(classDef) && (method.implementation?.instructions?.count() ?: 0) <= 20
-                },
+                definingClass = AWEME_CLASS,
+                name = "getVideoControl",
+                returnType = "Lcom/ss/android/ugc/aweme/feed/model/VideoControl;",
             )
             val method = fp.method
+            method.ensureRegisterCount(3)
             method.addInstructionsWithLabels(
                 0,
                 """
-                    if-eqz p0, :show_seekbar_continue
-                    const/4 p0, 0x1
-                    return p0
-                    :show_seekbar_continue
-                    nop
+                    iget-object v0, p0, Lcom/ss/android/ugc/aweme/feed/model/Aweme;->videoControl:Lcom/ss/android/ugc/aweme/feed/model/VideoControl;
+                    if-eqz v0, :show_seekbar_init
+                    new-instance v0, Lcom/ss/android/ugc/aweme/feed/model/VideoControl;
+                    invoke-direct {v0}, Lcom/ss/android/ugc/aweme/feed/model/VideoControl;-><init>()V
+                    iput-object v0, p0, Lcom/ss/android/ugc/aweme/feed/model/Aweme;->videoControl:Lcom/ss/android/ugc/aweme/feed/model/VideoControl;
+                    :show_seekbar_init
+                    const/4 v1, 0x1
+                    iput v1, v0, Lcom/ss/android/ugc/aweme/feed/model/VideoControl;->draftProgressBar:I
+                    iput v1, v0, Lcom/ss/android/ugc/aweme/feed/model/VideoControl;->showProgressBar:I
+                    return-object v0
                 """.trimIndent(),
             )
-            println("[Show Seekbar] Hooked feed ShouldShowProgressBar predicate -> Always enabled for active Aweme.")
+            println("[Show Seekbar] Hooked Aweme.getVideoControl() -> Forced draftProgressBar=1 and showProgressBar=1.")
             patched++
         } catch (e: Exception) {
-            println("[Show Seekbar] ShouldShowProgressBar note: ${e.message}")
+            println("[Show Seekbar] Aweme.getVideoControl note: ${e.message}")
         }
 
         // 2. SetSeekBarShowType handler -> override hidden types (3 and 4) to visible type 0
