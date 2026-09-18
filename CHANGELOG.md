@@ -1,3 +1,13 @@
+## [1.39.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.38.4...v1.39.0) (2026-09-18)
+
+### Bug Fixes
+
+* **tiktok:** restore seekbar by targeting Aweme.getVideoControl ([633c238](https://github.com/kveld9/kveld-morphe-patches/commit/633c23813c1c6a414918bd1fb28ce3a9866f1f6e)), closes [#39](https://github.com/kveld9/kveld-morphe-patches/issues/39)
+
+### New Features
+
+* **chromium:** strip fragment tracking and add mercadolibre support ([bdcd9db](https://github.com/kveld9/kveld-morphe-patches/commit/bdcd9db4f484dbde8730de4dc2176912b220b467))
+
 ## [1.38.4](https://github.com/kveld9/kveld-morphe-patches/compare/v1.38.3...v1.38.4) (2026-09-17)
 
 ### Bug Fixes
