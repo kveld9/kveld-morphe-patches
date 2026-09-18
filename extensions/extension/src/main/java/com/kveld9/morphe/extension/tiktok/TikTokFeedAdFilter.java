@@ -57,7 +57,13 @@ public final class TikTokFeedAdFilter {
     private static Method followGetFeedTypeMethod;
     private static Field followFeedTypeField;
     private static Method followGetRoomMethod;
+    private static Method followGetRoomStructMethod;
     private static Field followRoomField;
+    private static Field followRoomStructField;
+    private static Method followGetLastViewDataMethod;
+    private static Field followLastViewDataField;
+    private static Method followGetRecommendUserMethod;
+    private static Field followRecommendUserField;
 
     private static final String SHOP_PROMO_MARKER = "placeholder_product_id";
 
@@ -162,9 +168,21 @@ public final class TikTokFeedAdFilter {
                     try { followGetAwemeMethod = followClass.getMethod("getAweme"); followGetAwemeMethod.setAccessible(true); } catch (Throwable ignored) {}
                     try { followAwemeField = followClass.getDeclaredField("aweme"); followAwemeField.setAccessible(true); } catch (Throwable ignored) {}
                     try { followGetFeedTypeMethod = followClass.getMethod("getFeedType"); followGetFeedTypeMethod.setAccessible(true); } catch (Throwable ignored) {}
+                    if (followGetFeedTypeMethod == null) {
+                        try { followGetFeedTypeMethod = followClass.getMethod("getFeedTypeValue"); followGetFeedTypeMethod.setAccessible(true); } catch (Throwable ignored) {}
+                    }
                     try { followFeedTypeField = followClass.getDeclaredField("feedType"); followFeedTypeField.setAccessible(true); } catch (Throwable ignored) {}
+                    if (followFeedTypeField == null) {
+                        try { followFeedTypeField = followClass.getDeclaredField("feedTypeValue"); followFeedTypeField.setAccessible(true); } catch (Throwable ignored) {}
+                    }
                     try { followGetRoomMethod = followClass.getMethod("getRoom"); followGetRoomMethod.setAccessible(true); } catch (Throwable ignored) {}
+                    try { followGetRoomStructMethod = followClass.getMethod("getRoomStruct"); followGetRoomStructMethod.setAccessible(true); } catch (Throwable ignored) {}
                     try { followRoomField = followClass.getDeclaredField("room"); followRoomField.setAccessible(true); } catch (Throwable ignored) {}
+                    try { followRoomStructField = followClass.getDeclaredField("roomStruct"); followRoomStructField.setAccessible(true); } catch (Throwable ignored) {}
+                    try { followGetLastViewDataMethod = followClass.getMethod("getLastViewData"); followGetLastViewDataMethod.setAccessible(true); } catch (Throwable ignored) {}
+                    try { followLastViewDataField = followClass.getDeclaredField("lastViewData"); followLastViewDataField.setAccessible(true); } catch (Throwable ignored) {}
+                    try { followGetRecommendUserMethod = followClass.getMethod("getRecommendUser"); followGetRecommendUserMethod.setAccessible(true); } catch (Throwable ignored) {}
+                    try { followRecommendUserField = followClass.getDeclaredField("recommendUser"); followRecommendUserField.setAccessible(true); } catch (Throwable ignored) {}
                 }
             } catch (Throwable ignored) {}
 
@@ -585,28 +603,71 @@ public final class TikTokFeedAdFilter {
         } catch (Throwable ignored) {}
     }
 
+    private static int getFollowItemFeedType(Object followItem) {
+        if (followItem == null) return -1;
+        try {
+            if (followGetFeedTypeMethod != null) {
+                Object ft = followGetFeedTypeMethod.invoke(followItem);
+                if (ft instanceof Number) return ((Number) ft).intValue();
+            }
+            if (followFeedTypeField != null) {
+                Object ft = followFeedTypeField.get(followItem);
+                if (ft instanceof Number) return ((Number) ft).intValue();
+            }
+        } catch (Throwable ignored) {}
+        return -1;
+    }
+
+    private static boolean isLastWatchHistoryItem(Object followItem) {
+        if (followItem == null) return false;
+        try {
+            int feedType = getFollowItemFeedType(followItem);
+            if (feedType == 65280 || feedType == 65465 || feedType == 65298) {
+                return true;
+            }
+            if (followGetLastViewDataMethod != null && followGetLastViewDataMethod.invoke(followItem) != null) {
+                return true;
+            }
+            if (followLastViewDataField != null && followLastViewDataField.get(followItem) != null) {
+                return true;
+            }
+        } catch (Throwable ignored) {}
+        return false;
+    }
+
+    private static boolean isFollowRecommendationCard(Object followItem) {
+        if (followItem == null) return false;
+        try {
+            int feedType = getFollowItemFeedType(followItem);
+            if (feedType == 3 || feedType == 62) {
+                return true;
+            }
+            if (followGetRecommendUserMethod != null && followGetRecommendUserMethod.invoke(followItem) != null) {
+                return true;
+            }
+            if (followRecommendUserField != null && followRecommendUserField.get(followItem) != null) {
+                return true;
+            }
+        } catch (Throwable ignored) {}
+        return false;
+    }
+
     public static boolean isFollowItemLive(Object followItem) {
         if (followItem == null) return false;
         if (!initialized) {
             ensureInitialized(followItem.getClass().getClassLoader());
         }
+        if (isLastWatchHistoryItem(followItem)) {
+            return false;
+        }
         try {
-            if (followGetFeedTypeMethod != null) {
-                Object ft = followGetFeedTypeMethod.invoke(followItem);
-                if (ft instanceof Integer && ((Integer) ft) == 2) return true;
-            }
-            if (followFeedTypeField != null) {
-                Object ft = followFeedTypeField.get(followItem);
-                if (ft instanceof Integer && ((Integer) ft) == 2) return true;
-            }
-            if (followGetRoomMethod != null) {
-                Object room = followGetRoomMethod.invoke(followItem);
-                if (room != null) return true;
-            }
-            if (followRoomField != null) {
-                Object room = followRoomField.get(followItem);
-                if (room != null) return true;
-            }
+            int feedType = getFollowItemFeedType(followItem);
+            if (feedType == 2) return true;
+
+            if (followGetRoomMethod != null && followGetRoomMethod.invoke(followItem) != null) return true;
+            if (followGetRoomStructMethod != null && followGetRoomStructMethod.invoke(followItem) != null) return true;
+            if (followRoomField != null && followRoomField.get(followItem) != null) return true;
+            if (followRoomStructField != null && followRoomStructField.get(followItem) != null) return true;
         } catch (Throwable ignored) {}
         return false;
     }
@@ -677,15 +738,7 @@ public final class TikTokFeedAdFilter {
                 return true;
             }
 
-            // 3. Recommendation Card Types (>0 indicates recommendation slot)
-            if (getRecommendCardTypeMethod != null) {
-                Object recType = getRecommendCardTypeMethod.invoke(aweme);
-                if (recType instanceof Integer && ((Integer) recType) > 0) {
-                    return true;
-                }
-            }
-
-            // 4. CardInsertInfo checks:
+            // 3. CardInsertInfo checks:
             // 49: RecUser / Suggested Accounts Card Insert
             // 120: Mini-Game Instant Play Card
             // 127: On This Day (Recuerdos) Creation Card
@@ -770,6 +823,10 @@ public final class TikTokFeedAdFilter {
     }
 
     public static boolean isFollowFeedBloat(Object followItem) {
+        return isFollowFeedBloat(followItem, true);
+    }
+
+    public static boolean isFollowFeedBloat(Object followItem, boolean allowPruningCards) {
         if (followItem == null) return false;
         if (!initialized) {
             ensureInitialized(followItem.getClass().getClassLoader());
@@ -781,33 +838,23 @@ public final class TikTokFeedAdFilter {
             // Live streams in Following feed belong to FeedLiveStreamBlockerPatch, not bloat blocker
             return false;
         }
-        if (followGetAwemeMethod == null && followAwemeField == null) {
+        if (isLastWatchHistoryItem(followItem)) {
+            // Vital position and history markers must never be pruned as doing so triggers
+            // IndexOutOfBoundsException in presenter index calculations (Issue #42).
             return false;
         }
+
         Object aweme = extractAwemeFromFollowItem(followItem);
-        if (aweme == null) {
-            // Non-video, non-live recommendation cards in Following feed (e.g. suggested friends carousels)
+        if (aweme != null) {
+            return isFeedBloat(aweme);
+        }
+
+        // For non-video items without an Aweme (e.g. suggested accounts carousels):
+        // Only prune when allowPruningCards is true and the item is confirmed as a recommendation card.
+        if (allowPruningCards && isFollowRecommendationCard(followItem)) {
             return true;
         }
-        if (isFeedBloat(aweme)) {
-            return true;
-        }
-        if (followGetFeedTypeMethod != null || followFeedTypeField != null) {
-            try {
-                int feedType = -1;
-                if (followGetFeedTypeMethod != null) {
-                    Object res = followGetFeedTypeMethod.invoke(followItem);
-                    if (res instanceof Number) feedType = ((Number) res).intValue();
-                } else if (followFeedTypeField != null) {
-                    Object res = followFeedTypeField.get(followItem);
-                    if (res instanceof Number) feedType = ((Number) res).intValue();
-                }
-                // Feed types >= 3 represent user recommendation / friend suggestion carousels
-                if (feedType >= 3) {
-                    return true;
-                }
-            } catch (Throwable ignored) {}
-        }
+
         return false;
     }
 
@@ -827,11 +874,25 @@ public final class TikTokFeedAdFilter {
                     }
                 }
 
+                // Guard: Count valid video aweme items in the list.
+                // If there are zero videos (e.g. fresh account or caught up feed with only suggested accounts),
+                // pruning all items will cause the Following presenter (LX/1IVX) to see an empty list and fail
+                // with a network error. In that scenario, keep recommendation cards so the feed does not break.
+                int validVideos = 0;
+                for (Object item : items) {
+                    if (item == null) continue;
+                    Object aweme = extractAwemeFromFollowItem(item);
+                    if (aweme != null && !isFeedBloat(aweme) && !isLiveStream(aweme)) {
+                        validVideos++;
+                    }
+                }
+                boolean allowPruningCards = validVideos > 0;
+
                 int removed = 0;
                 Iterator<Object> iterator = items.iterator();
                 while (iterator.hasNext()) {
                     Object followItem = iterator.next();
-                    if (isFollowFeedBloat(followItem)) {
+                    if (isFollowFeedBloat(followItem, allowPruningCards)) {
                         iterator.remove();
                         removed++;
                     }
