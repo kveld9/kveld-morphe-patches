@@ -19,7 +19,7 @@ Comprehensive breakdown of the **31 patches** included in the Morphe TikTok patc
 | **Privacy** | **Bypass Mandatory Login** | `bytecodePatch` | Neutralizes mandatory login walls, dynamic regional forced login gates, and guest mode browsing restrictions |
 | **Privacy** | **Clean Share URL** | `bytecodePatch` | Strips tracking query parameters, user tokens, and campaign IDs |
 | **Privacy** | **Device Privacy Guard** | `bytecodePatch` | Blocks background clipboard inspection, purges 35 invasive permissions, prunes 92 external package query declarations, silences HAR hardware sensors, and bypasses FLAG_SECURE |
-| **Privacy** | **Ghost Mode** | `bytecodePatch` | Enables anonymous profile and story browsing by suppressing outbound view reporting records and story view pings |
+| **Privacy** | **Ghost Mode** | `bytecodePatch` | Enables anonymous profile, story, and conversation browsing: suppresses outbound view records, story view pings, and typing indicators |
 | **Privacy** | **In-App Browser Privacy Guard** | `bytecodePatch` | Redirects external links to default system browser, neutralizes WebView JS tracking injection and AJAX hookers |
 | **Privacy** | **Client-Side AI & Behavioral Profiling Governor** | `bytecodePatch` | Neutralizes Pitaya on-device ML, Tako AI chatbot entries, and AI search clutter |
 | **Privacy** | **Region & Geo-Restriction Bypass** | `bytecodePatch` | Spoofs SIM and network country ISO codes to bypass regional restrictions |
@@ -200,12 +200,16 @@ Comprehensive breakdown of the **31 patches** included in the Morphe TikTok patc
     * Suppresses quick-share popup modals and Tako AI screenshot triggers.
 
 ### 5. Ghost Mode (`ghostModePatch`)
-* **Objective**: Enable fully anonymous profile and story browsing, allowing you to view profiles and stories without alerting creators or leaving view history traces, while preserving your own profile viewer list.
+* **Objective**: Enable fully anonymous profile, story, and conversation browsing: view profiles and stories without alerting creators or leaving view history traces, and browse conversations without sending typing indicators, while preserving your ability to view follower counts and your own viewer list.
 * **Internal Mechanisms**:
-  * **Profile View Suppression**:
-    * Intercepts `ProfileViewerApiService.reportView(String, String, String)` -> returns empty single `LX/02um;->LJJJJZI("")`, completely suppressing outbound profile visit beacons.
-  * **Story View Ping Suppression**:
-    * Intercepts `LX/07Rx.LIZIZ(Boolean, String, String)` (`StoryApi.reportStoryViewed`) -> immediate `return-void`, preventing outbound story view notifications from being dispatched to ByteDance servers.
+  * **Reactive Call-Site Skipping (Profile & Story View Suppression)**:
+    * Dynamically identifies callers of `ProfileViewerApiService.reportView` and `StoryApi` methods (`reportStoryViewed`, `reportUserInteraction`, `reportStoryReveal`).
+    * Traces Dalvik execution chains from invocation through `.subscribeOn(...)` to terminal `.subscribe()` / `.enqueue()` dispatch points.
+    * Injects conditional branches (`skipReportAtCallSite`) backed by backward control-flow graph register liveness analysis (`RegisterLiveness`), safely jumping over the entire dispatch pipeline when `TikTokGhostModeHook` is active. This avoids passing invalid/dummy objects into RxJava or Kotlin coroutine state machines, completely preventing `NullPointerException` crashes and preserved follower counts.
+  * **Outbound Typing Status Suppression**:
+    * Guards `TypingStatusSenderTimer.LIZ(String)` and `LIZIZ(String)` entrypoints with early `return-void` via `TikTokGhostModeHook.shouldBlockTypingStatus()`.
+  * **Companion Runtime Hook**:
+    * Bridges hooks through `TikTokGhostModeHook` in `extensions/extension.mpe` with granular diagnostic telemetry.
 
 ### 6. In-App Browser Privacy Guard (`inAppBrowserPrivacyGuardPatch`)
 * **Objective**: Protect user privacy by redirecting external and third-party web links directly to the user's default system browser (Brave, Firefox, Chrome), preventing third-party browsing sessions from ever running inside TikTok's process, and neutralizing residual tracking inside essential internal WebViews.
@@ -316,14 +320,16 @@ Comprehensive breakdown of the **31 patches** included in the Morphe TikTok patc
 ### 15. Display Refresh Rate Governor (`displayRefreshRateGovernorPatch`)
 * **Objective**: Eliminate micro-stutter and forced refresh rate drops, locking TikTok's window display rate to peak hardware frequency (120Hz/90Hz) or a user-selected target, while neutralizing internal framerate downclocking routines during feed playback.
 * **Internal Mechanisms**:
-  * **Opt-In & Configurable Frequency**:
+  * **Opt-In & Configurable Frequency with Hardware Clamping**:
     * Configurable via `targetRate` option: `max` (peak display rate detected dynamically via `Display.getSupportedModes()` with fallback to `Display.getSupportedRefreshRates()`), `120` (120 Hz), `90` (90 Hz), or `60` (60 Hz).
+    * **Hardware Capability Boundary Protection**: `TikTokRefreshRateHook` queries actual physical display modes via `Display.getSupportedModes()` / `Display.getSupportedRefreshRates()`. If a requested target rate exceeds the panel's maximum physical frequency (e.g., selecting 120Hz on a 90Hz or 60Hz screen), it automatically clamps to the screen's peak supported rate instead of attempting an out-of-bounds mode switch that crashes the app or display pipeline.
+    * Activity lifecycle guards verify the `Activity` is active and not finishing/destroyed before applying LayoutParams.
   * **Safe Video Playback Downclocking Neutralization**:
     * Hooks `LX/09YB.invoke()` (`ui_video_frame_rate_opt`) to return `Boolean.TRUE`, causing `PlayerController.LJJZZIII` to branch past internal downclocking instructions without aborting `onRenderFirstFrame` callbacks.
     * Neutralizes `LX/07tH.invoke()` (`setRefreshRateIfNeeded`) -> returns `Unit.LIZ`.
   * **Touch & Drag Release Frequency Enforcement**:
     * Overrides `LX/0JOJ.LIZ()` to immediately re-apply the target refresh rate to `Window.LayoutParams.preferredRefreshRate` whenever drag gestures stop.
-    * Overrides `LX/1PFE.LIZ()` and `LX/1PFE.LIZIZ()` (`RefreshFrequencyTutor`) passing the target `Activity` instance to prevent resetting the display back to 60Hz.
+    * Overrides `LX/1PFE.LIZ()` (instance) and `LX/1PFE.LIZIZ()` (static) (`RefreshFrequencyTutor`) passing the target `Activity` instance to prevent resetting the display back to 60Hz.
   * **Activity Lifecycle Lock**:
     * Hooks `MainActivity.onResume()` and `MainActivity.onWindowFocusChanged(boolean)` to ensure window parameters remain strictly locked to target refresh rate across focus switches and app switching.
 
