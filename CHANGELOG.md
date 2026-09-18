@@ -1,3 +1,9 @@
+## [1.41.1](https://github.com/kveld9/kveld-morphe-patches/compare/v1.41.0...v1.41.1) (2026-09-18)
+
+### Bug Fixes
+
+* **tiktok:** resolve unauthenticated profile navigation playback freeze ([be3cf7c](https://github.com/kveld9/kveld-morphe-patches/commit/be3cf7c4a9ada6164f20d6e32c6b31e6a2acdc3e))
+
 ## [1.41.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.40.0...v1.41.0) (2026-09-18)
 
 ### Bug Fixes
