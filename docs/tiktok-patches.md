@@ -153,8 +153,10 @@ Comprehensive breakdown of the **31 patches** included in the Morphe TikTok patc
     * Hooks `MandatoryLoginService.shouldShowForcedLogin(Z)Z` -> returns `false`.
     * Hooks `MandatoryLoginService.enableForcedLogin(Z)Z` -> returns `false`.
     * Hooks `MandatoryLoginService.shouldShowLoginTabFirst()Z` -> returns `false` (prevents auto-focusing on login tabs).
-  * **Fullscreen Login Wall Neutralization**:
-    * Hooks `MandatoryLoginService.tryShowMandatoryLoginPage(...)V` with immediate `return-void` to prevent invoking `SignUpOrLoginActivity` over the feed.
+  * **Fullscreen Login Wall Neutralization & Playback Resumption**:
+    * Hooks `MandatoryLoginService.tryShowMandatoryLoginPage(...)V` to dispatch `TikTokLoginHook.notifyLoginResult(listener)` with `onResult(1, 2, null)` on the main Looper before `return-void`. This dismisses login wait states immediately and signals `VideoViewComponent` to resume video playback without stalling for watchdog timeouts when switching tabs.
+  * **Authoritative Guest Mode State Resolution**:
+    * Hooks `GuestModeServiceImpl.isGuestMode()Z` to delegate to `TikTokLoginHook.isGuestMode()`, querying `AccountUserService.isLogin()` via reflection. This decouples guest browsing validity from skipped first-launch onboarding / Keva age gate consent flags.
 
 ### 3. Clean Share URL (`cleanShareUrlPatch`)
 * **Objective**: Protect user privacy when sharing video links with friends or third-party apps.
