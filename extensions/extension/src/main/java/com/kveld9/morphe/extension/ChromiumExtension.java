@@ -93,6 +93,53 @@ public class ChromiumExtension {
         DOMAIN_TRACKING_PARAMS.put("tiktok.com", tiktokParams);
     }
 
+    private static final Set<String> MERCADOLIBRE_DOMAINS = new HashSet<>(Arrays.asList(
+        "mercadolibre.com",
+        "mercadolibre.com.ar",
+        "mercadolivre.com.br",
+        "mercadolibre.com.mx",
+        "mercadolibre.com.co",
+        "mercadolibre.cl",
+        "mercadolibre.com.uy",
+        "mercadolibre.com.pe",
+        "mercadolibre.com.ve",
+        "mercadolibre.com.ec",
+        "mercadolibre.co.cr",
+        "mercadolibre.com.do",
+        "mercadolibre.com.pa",
+        "mercadolibre.com.gt",
+        "mercadolibre.com.bo",
+        "mercadolibre.com.py",
+        "mercadolibre.com.hn",
+        "mercadolibre.com.sv",
+        "mercadolibre.com.ni"
+    ));
+
+    private static final Set<String> MERCADOLIBRE_TRACKING_PARAMS = new HashSet<>(Arrays.asList(
+        "polycard_client",
+        "be_origin",
+        "overlay_label",
+        "search_layout",
+        "position",
+        "type",
+        "tracking_id",
+        "wid",
+        "sid",
+        "pdp_filters",
+        "deal_id",
+        "deal_print_id",
+        "promotion_id",
+        "reco_id",
+        "reco_backend",
+        "reco_backend_type",
+        "reco_client",
+        "reco_model",
+        "matt_tool",
+        "matt_word",
+        "matt_source",
+        "matt_campaign_id"
+    ));
+
     /**
      * Sanitizes an Android share Intent's EXTRA_TEXT, data URI, and ClipData payloads
      * before the system share sheet displays it.
@@ -174,7 +221,7 @@ public class ChromiumExtension {
         if (text == null || text.isEmpty()) {
             return text;
         }
-        if (!text.contains("?") && !text.contains("&")) {
+        if (!text.contains("?") && !text.contains("&") && !text.contains("#")) {
             return text;
         }
         try {
@@ -211,53 +258,144 @@ public class ChromiumExtension {
         return c == '.' || c == ',' || c == ')' || c == ']' || c == ';' || c == '!' || c == '"' || c == '\'';
     }
 
-    private static boolean isTrackingParam(String host, String param) {
-        if (param == null) return false;
-        String lowerParam = param.toLowerCase(Locale.ROOT);
-        if (lowerParam.startsWith("utm_")
+    private static boolean isGlobalTrackingParam(String lowerParam) {
+        return lowerParam.startsWith("utm_")
             || lowerParam.startsWith("ga_")
             || lowerParam.startsWith("pk_")
             || lowerParam.startsWith("matomo_")
-            || GLOBAL_TRACKING_PARAMS.contains(lowerParam)) {
-            return true;
-        }
-        if (host != null) {
-            String lowerHost = host.toLowerCase(Locale.ROOT);
-            for (Map.Entry<String, Set<String>> entry : DOMAIN_TRACKING_PARAMS.entrySet()) {
-                String domain = entry.getKey();
-                if (matchesDomain(lowerHost, domain) && entry.getValue().contains(lowerParam)) {
-                    return true;
-                }
+            || GLOBAL_TRACKING_PARAMS.contains(lowerParam);
+    }
+
+    private static boolean isMercadoLibreHost(String host) {
+        if (host == null) return false;
+        String lower = host.toLowerCase(Locale.ROOT);
+        for (String domain : MERCADOLIBRE_DOMAINS) {
+            if (matchesDomain(lower, domain)) {
+                return true;
             }
         }
         return false;
+    }
+
+    private static boolean isMercadoLibreTrackingParam(String lowerParam) {
+        return MERCADOLIBRE_TRACKING_PARAMS.contains(lowerParam) || lowerParam.startsWith("c_");
+    }
+
+    private static boolean isDomainScopedTrackingParam(String lowerHost, String lowerParam) {
+        for (Map.Entry<String, Set<String>> entry : DOMAIN_TRACKING_PARAMS.entrySet()) {
+            if (matchesDomain(lowerHost, entry.getKey()) && entry.getValue().contains(lowerParam)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isTrackingParam(String host, String param) {
+        if (param == null) return false;
+        String lowerParam = param.toLowerCase(Locale.ROOT);
+        if (isGlobalTrackingParam(lowerParam)) {
+            return true;
+        }
+        if (host == null) {
+            return false;
+        }
+        String lowerHost = host.toLowerCase(Locale.ROOT);
+        if (isMercadoLibreHost(lowerHost) && isMercadoLibreTrackingParam(lowerParam)) {
+            return true;
+        }
+        return isDomainScopedTrackingParam(lowerHost, lowerParam);
     }
 
     private static boolean matchesDomain(String host, String targetDomain) {
         return host.equals(targetDomain) || host.endsWith("." + targetDomain);
     }
 
+    private static String cleanParamString(String host, String paramString) {
+        if (paramString == null || paramString.isEmpty()) {
+            return "";
+        }
+        String[] pairs = paramString.split("&");
+        StringBuilder sb = new StringBuilder();
+        for (String pair : pairs) {
+            if (pair.isEmpty()) {
+                continue;
+            }
+            int eqIdx = pair.indexOf('=');
+            String key = eqIdx != -1 ? pair.substring(0, eqIdx) : pair;
+            String decodedKey = Uri.decode(key);
+            if (isTrackingParam(host, decodedKey)) {
+                continue;
+            }
+            if (sb.length() > 0) {
+                sb.append('&');
+            }
+            sb.append(pair);
+        }
+        return sb.toString();
+    }
+
+    private static String cleanFragment(String host, String fragment) {
+        if (fragment == null || fragment.isEmpty()) {
+            return null;
+        }
+        if (!fragment.contains("=") && !fragment.contains("&")) {
+            return fragment;
+        }
+        int qIdx = fragment.indexOf('?');
+        if (qIdx != -1) {
+            String route = fragment.substring(0, qIdx);
+            String cleanedQuery = cleanParamString(host, fragment.substring(qIdx + 1));
+            return cleanedQuery.isEmpty() ? route : route + "?" + cleanedQuery;
+        }
+        String cleaned = cleanParamString(host, fragment);
+        return cleaned.isEmpty() ? null : cleaned;
+    }
+
+    private static String cleanTrailingArtifacts(String url) {
+        if (url == null) return null;
+        if (url.endsWith("?")) {
+            return url.substring(0, url.length() - 1);
+        }
+        if (url.endsWith("#")) {
+            return url.substring(0, url.length() - 1);
+        }
+        return url;
+    }
+
     private static String cleanSingleUrl(String originalUrl) {
-        if (originalUrl == null || (!originalUrl.contains("?") && !originalUrl.contains("&"))) {
+        if (originalUrl == null || (!originalUrl.contains("?") && !originalUrl.contains("&") && !originalUrl.contains("#"))) {
             return originalUrl;
         }
         try {
             Uri uri = Uri.parse(originalUrl);
-            if (uri.getQuery() == null || uri.getQueryParameterNames().isEmpty()) {
+            String host = uri.getHost();
+            boolean hasQuery = uri.getQuery() != null && !uri.getQueryParameterNames().isEmpty();
+            String originalFragment = uri.getFragment();
+            boolean hasFragment = originalFragment != null && !originalFragment.isEmpty();
+
+            if (!hasQuery && !hasFragment) {
                 return originalUrl;
             }
-            String host = uri.getHost();
-            Uri.Builder builder = uri.buildUpon().clearQuery();
-            for (String param : uri.getQueryParameterNames()) {
-                if (isTrackingParam(host, param)) {
-                    continue;
-                }
-                for (String val : uri.getQueryParameters(param)) {
-                    builder.appendQueryParameter(param, val);
+
+            Uri.Builder builder = uri.buildUpon();
+            if (hasQuery) {
+                builder.clearQuery();
+                for (String param : uri.getQueryParameterNames()) {
+                    if (isTrackingParam(host, param)) {
+                        continue;
+                    }
+                    for (String val : uri.getQueryParameters(param)) {
+                        builder.appendQueryParameter(param, val);
+                    }
                 }
             }
-            String cleaned = builder.build().toString();
-            return cleaned.endsWith("?") ? cleaned.substring(0, cleaned.length() - 1) : cleaned;
+
+            if (hasFragment) {
+                String cleanedFragment = cleanFragment(host, originalFragment);
+                builder.fragment(cleanedFragment);
+            }
+
+            return cleanTrailingArtifacts(builder.build().toString());
         } catch (Throwable t) {
             return originalUrl;
         }
