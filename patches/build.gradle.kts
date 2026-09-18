@@ -60,9 +60,13 @@ tasks {
         if (project.hasProperty("outputApk")) {
             systemProperty("outputApk", project.property("outputApk").toString())
         }
+        if (project.hasProperty("patch")) {
+            systemProperty("patchName", project.property("patch").toString())
+        }
         System.getProperty("targetApp")?.let { systemProperty("targetApp", it) }
         System.getProperty("targetApk")?.let { systemProperty("targetApk", it) }
         System.getProperty("outputApk")?.let { systemProperty("outputApk", it) }
+        System.getProperty("patchName")?.let { systemProperty("patchName", it) }
     }
 
     jar {

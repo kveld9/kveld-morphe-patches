@@ -214,9 +214,11 @@ fun main(args: Array<String>) {
     )
     val allPatches = loadPatchesFromJar(patchFiles)
 
+    val patchNameFilter = System.getProperty("patchName")?.trim()
     val targetPatches = allPatches.filter { patch ->
         val cp = patch.compatibility
-        cp != null && cp.any { it.packageName == targetApp.packageName }
+        cp != null && cp.any { it.packageName == targetApp.packageName } &&
+            (patchNameFilter.isNullOrEmpty() || patch.name.equals(patchNameFilter, ignoreCase = true))
     }.toSet()
 
     require(targetPatches.isNotEmpty()) {
