@@ -52,19 +52,50 @@ Hevy's native backend API (`api.hevyapp.com`) authenticates email and password c
 
 ---
 
-## Verifying Pro Capabilities (Free Label vs. Unlocked Features)
+## Pro Capabilities: Client-Side Unlocks vs. Server-Side Limitations
 
-> [!NOTE]
-> **Why does the Profile or Settings screen still say "Free" or show "Get Hevy Pro"?**
-> The account badge in your profile is populated directly by Hevy's backend servers (`api.hevyapp.com`), reflecting your remote subscription status in their database. The patch modifies client-side JavaScript execution in Hermes Bytecode (Pro property getters `isPro`, `isPaying`, `isInGracePeriod`) rather than remote server records.
+The **Unlock Pro** patch operates strictly on client-side JavaScript execution by overriding property getters (`isPro`, `isPaying`, `isInGracePeriod`, `isWithinProOfflineGracePeriod`) within the React Native Hermes Bytecode (`assets/index.android.bundle`).
+
+Because remote database records on `api.hevyapp.com` are not modified, features are divided into client-side gated (fully unlocked) and server-side gated (governed by remote API rules):
+
+### 1. Unlocked Capabilities (Client-Side Gated)
 
 To verify that **Hevy Pro is active and functioning**:
 
 1. **Unlimited Workout Routines (Bypass 4-Routine Cap):**
    - Free accounts are strictly capped at **4 routine templates**.
-   - Navigate to the **Workout** tab and create a **5th routine**. On Free, a blocking paywall appears (*"You've reached the 4 routine limit"*). With the patch, you can create and save unlimited routines.
+   - Navigate to the **Workout** tab and create a **5th routine**. On Free, a blocking paywall appears (*"You've reached the 4 routine limit"*). With the patch, you can create, save, and sync unlimited routines.
 2. **Routine Folders:**
    - Go to **Workout > Routines** and tap **New Folder**. In Free, folder creation is locked behind Pro. With the patch, you can create and organize folders freely.
 3. **Advanced Progress Graphs & Exercise History:**
-   - Open any exercise detail view and inspect the progress/analytics charts (e.g. 1RM progression, estimated volume). Paywalled charts are unlocked and fully readable.
+   - Open any exercise detail view and inspect the progress/analytics charts (e.g. 1RM progression, estimated volume, set distribution). Paywalled charts are unlocked and fully readable.
+
+---
+
+### 2. Server-Side Limitations & Known Errors
+
+| Feature / Behavior | Technical Reason | User Experience / Error |
+| :--- | :--- | :--- |
+| **Custom Exercises (> 7)** | `POST https://api.hevyapp.com/custom_exercise_template` is strictly validated by the backend database against free tier quotas. | Shows **`Failed to save exercise`** popup dialog. |
+| **Profile "Free" Badge** | User profile status is returned directly in backend session JSON payloads. | Profile and settings show "Free" / "Get Hevy Pro". |
+| **Deep Server Sync Features** | Server-side background jobs that query account entitlement tables. | Governed by remote database records. |
+
+#### Diagnosing "Failed to save exercise"
+
+> [!WARNING]
+> **Why does saving a custom exercise fail with `"Failed to save exercise"`?**
+>
+> 1. **7 Custom Exercises Backend Quota (Primary Cause):**
+>    - Hevy's backend restricts Free accounts to a maximum of **7 custom exercises**.
+>    - When tapping **Save** in the *Create Exercise* screen, `CreateExerciseViewModel` invokes `postCustomExerciseTemplate`, which sends an HTTP `POST` to `api.hevyapp.com/custom_exercise_template`.
+>    - Since the patch only affects client-side bytecode, the backend recognizes the account as Free. If you already have 7 custom exercises, the server rejects the request.
+>    - The app catches the HTTP rejection and displays `createExercise.alert.errorSave` (*"Failed to save exercise"*).
+>    - **Resolution:** Delete an unused custom exercise from your exercise library so your account total is below 7, then save the new one.
+>
+> 2. **Network / Offline Creation:**
+>    - Custom exercises are not queued or saved locally in SQLite when offline; the app requires an immediate successful response from `api.hevyapp.com`. If you have no connection or packet loss, saving will fail.
+>
+> 3. **Stale Session Token:**
+>    - If your login token is corrupted or expired, log out and log back in using your Email and Password.
+
 
