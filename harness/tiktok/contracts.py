@@ -213,7 +213,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
         patch_id="media_enhancements",
         name="Media Usability & Watermark-Free Downloader",
         target_type="bytecode",
-        description="Unblocks the download button on creator-restricted videos and routes downloads to clean unwatermarked media streams.",
+        description="Unblocks the download button on creator-restricted videos and Stories in the Share panel, routing downloads to clean unwatermarked media streams.",
         required_classes=[
             "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
             "Lcom/ss/android/ugc/aweme/feed/model/Video;",
@@ -234,7 +234,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
         patch_id="video_quality_governor",
         name="Video Quality Governor",
         target_type="bytecode",
-        description="Caps maximum video playback resolution (1080p, 720p, 540p, 480p, 360p) to reduce GPU/MediaCodec load, lower memory retention, and prevent playback buffering.",
+        description="Enforces configurable resolution ceilings for video playback and downloads independently (1080p, 720p, 540p, 480p, or uncapped).",
         required_classes=[
             "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
             "Lcom/ss/android/ugc/aweme/feed/model/Video;",
@@ -307,8 +307,8 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
         name="Show seekbar",
         target_type="bytecode",
         description="Restores TikTok's native video seekbar and scrubbing controls where normally hidden or disabled.",
-        required_classes=[],
-        required_strings=["seekbar show type change, change to:"],
+        required_classes=["Lcom/ss/android/ugc/aweme/feed/model/Aweme;"],
+        required_strings=["getVideoControl", "seekbar show type change, change to:"],
         criticality="HIGH",
     ),
     PatchContract(
@@ -329,6 +329,28 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
             "Lcom/ss/android/ugc/aweme/comment/model/Comment;",
         ],
         required_strings=["getText"],
+        criticality="HIGH",
+    ),
+    PatchContract(
+        patch_id="display_refresh_rate_governor",
+        name="Display Refresh Rate Governor",
+        target_type="bytecode",
+        description="Forces TikTok to run at peak display refresh rate (120Hz/90Hz/60Hz) and neutralizes video playback framerate downclocking routines.",
+        required_classes=[
+            "Lcom/ss/android/ugc/aweme/main/MainActivity;",
+        ],
+        required_strings=["onResume", "onWindowFocusChanged"],
+        criticality="HIGH",
+    ),
+    PatchContract(
+        patch_id="ghost_mode",
+        name="Ghost Mode",
+        target_type="bytecode",
+        description="Enables anonymous profile and story browsing by suppressing outbound view reporting.",
+        required_classes=[
+            "Lcom/ss/android/ugc/profile/business/ci/viewer/api/ProfileViewerApiService;",
+        ],
+        required_strings=["reportView", "reportStoryViewed"],
         criticality="HIGH",
     ),
 ]
