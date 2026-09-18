@@ -49,8 +49,11 @@ Comprehensive breakdown of the **31 patches** included in the Morphe TikTok patc
 * **Internal Mechanisms**:
   * **Forced Download Button Unblock**:
     * Hooks `Aweme.isPreventDownload()Z` -> returns `false`.
+    * Hooks `Aweme.getIsCommentPostVideo()Z` -> returns `false`.
     * Invokes `TikTokMediaHook` to dynamically flip internal `canDownload` boolean fields via reflection, restoring the "Save video" action in the share modal.
-    * Hooks `AwemeExtKt.isSharedStoryVisible(Aweme;)Z` -> returns `true`, unblocking the native "Save video" action in `LX/0HGG;->LJJI()` and `LX/0HJb;->enable()` for Stories in the native Share panel (eliminating the need for accidental download on story pause long-press).
+    * Hooks `AwemeExtKt.isSharedStoryVisible(Aweme;)Z` -> returns `true`.
+    * Intercepts Share panel action builder (`LX/0HGG;->LJJI()`) and neutralizes all early `return-void` guards (story type 45, 46, 180, 181, comment video, and restriction checks) prior to action instantiation, ensuring the "Save video" button (`LX/0HJb`) is unconditionally constructed and appended to the Share panel for Stories.
+    * Hooks download action `LX/0HJb;->enable()Z` and `now_save` action -> returns `true`, guaranteeing the Save action in the Share panel is always clickable and active rather than grayed out.
   * **Clean Watermark-Free Downloads**:
     * Hooks `Aweme.getDownloadWithoutWatermark()Z` -> returns `true`.
     * Hooks `Aweme.needTTSWatermarkWhenDownload()Z` -> returns `false` (suppresses text-to-speech audio watermark stamps).
