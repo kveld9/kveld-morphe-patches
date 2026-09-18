@@ -35,11 +35,11 @@
 <a href="https://www.apkmirror.com/apk/google-inc/gboard/gboard-the-google-keyboard-18-2-4-969776716-release/"><img src="https://img.shields.io/badge/Download-Gboard_Lite_18.2.4.969776716_(APK_nodpi)-4285F4?style=for-the-badge&logo=google&logoColor=white" alt="Download Gboard Lite APK" /></a>
 
 ### 🦁 Brave Browser
-- **Current Target**: `1.95.101` (`Bravemonoarm64.apk`)
+- **Current Target**: `1.95.102` (`Bravemonoarm64.apk`)
 - **Architecture**: `arm64-v8a` (Monochrome only)
 - **Package**: `com.brave.browser`
 
-<a href="https://github.com/brave/brave-browser/releases/download/v1.95.101/Bravemonoarm64.apk"><img src="https://img.shields.io/badge/Download-Bravemonoarm64.apk_(v1.95.101)-FF4500?style=for-the-badge&logo=brave&logoColor=white" alt="Download Brave APK" /></a>
+<a href="https://github.com/brave/brave-browser/releases/download/v1.95.102/Bravemonoarm64.apk"><img src="https://img.shields.io/badge/Download-Bravemonoarm64.apk_(v1.95.102)-FF4500?style=for-the-badge&logo=brave&logoColor=white" alt="Download Brave APK" /></a>
 
 ### 🔴 Vivaldi Browser
 - **Current Target**: `8.2.4147.77` (APKM bundle)
@@ -153,7 +153,7 @@
 
 **Supported versions:**
 
-| 1.95.101 |
+| 1.95.102 |
 | :---: |
 
 | Patch | Description | Options |
