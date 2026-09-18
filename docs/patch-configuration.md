@@ -268,29 +268,52 @@ TH, TR, TW, UA, US, UY, VN, ZA
 
 ## 🎵 TikTok: Video Quality Governor
 
-The **`Video Quality Governor`** patch enforces user-configured maximum resolution ceilings (`1080p`, `720p`, `540p`, `480p`, `360p`) across video feeds. While standard TikTok features like "Data Saver" only compress network transfers under cellular conditions without capping hardware decoders, this governor caps the actual rendition ladder (`bitRateList` and `SimBitRate`) parsed by PlayerKit/TTPlayer, reducing hardware MediaCodec load, thermals, GraphicBuffers memory consumption, and frame drops on lower-spec or battery-sensitive devices.
+The **`Video Quality Governor`** patch enforces user-configured maximum resolution ceilings (`1080p`, `720p`, `540p`, `480p`, or unconstrained) across video feeds while allowing independent configuration of download quality. While standard TikTok features like "Data Saver" only compress network transfers under cellular conditions without capping hardware decoders, this governor caps the actual rendition ladder (`bitRateList` and `SimBitRate`) parsed by PlayerKit/TTPlayer, reducing hardware MediaCodec load, thermals, GraphicBuffers memory consumption, and frame drops on lower-spec or battery-sensitive devices.
+
+Crucially, **playback quality and download quality are decoupled**: users can browse their feed in battery-efficient 480p while downloading clean videos and stories in full 1080p.
 
 ### Configuration in Morphe Manager
 
 | Option | Key | Type | Default | Supported Ceilings | Description |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Maximum Video Resolution** | `maxQuality` | String | `480` | `1080`, `720`, `540`, `480`, `360` | Maximum video playback height in vertical pixels. Discards higher rendition profiles. |
+| **Maximum Playback Resolution** | `maxQuality` | String | `480` | `1080`, `720`, `540`, `480`, `none` | Caps video playback height in vertical pixels. Discards higher rendition profiles in feed. |
+| **Maximum Download Resolution** | `maxDownloadQuality` | String | `1080` | `1080`, `720`, `540`, `480`, `none` | Sets download resolution ceiling independently of playback, allowing high-fidelity saving. |
 
 ### Supported Resolution Ceilings
 
 | Option String | Resolution Height | Typical Bitrate Band | Target Profile & Resource Rationale |
 | :--- | :--- | :--- | :--- |
-| `1080` | 1080p | ~2500–4000 kbps | **ExtremelyHigh**: Uncapped full-HD playback for high-end devices and unmetered Wi-Fi. |
+| `none` | Uncapped | Source bitrates | **Unconstrained**: Preserves the highest bitrate stream provided by TikTok servers without modification. |
+| `1080` | 1080p | ~2500–4000 kbps | **ExtremelyHigh**: Uncapped full-HD rendition; recommended default for downloads. |
 | `720` | 720p | ~1200–2000 kbps | **SuperHigh**: High-definition baseline balancing sharp visual fidelity with moderate GPU decoding. |
 | `540` | 540p | ~800–1200 kbps | **H_High**: Balanced midpoint optimizing fluid 60fps feed scrolling without thermal buildup. |
-| `480` *(Default)* | 480p | ~500–800 kbps | **High**: Recommended sweet spot significantly reducing GraphicBuffers RAM allocation and decoding wattage. |
-| `360` | 360p | ~300–500 kbps | **Standard**: Maximum resource and battery conservation; ideal for background listening or weak connections. |
+| `480` *(Playback Default)* | 480p | ~500–800 kbps | **High**: Recommended sweet spot significantly reducing GraphicBuffers RAM allocation and decoding wattage. |
 
 ### Technical Architecture
 - **Dalvik Hooking**: Injects hooks into `Aweme.getVideo()` (return object synchronization), `Video.getBitRate()` & `Video.getRawBitRate()` (candidate ladder filtering), and `SimVideoUrlModel.getBitRate()` (PlayerKit engine filtering).
-- **In-Situ Synchronization**: Invokes `TikTokVideoQualityHook.capVideoObject(Video)` and `TikTokVideoQualityHook.filterBitrates(List)`. Discards streams exceeding the cap and prioritizes the highest valid stream within the ceiling.
+- **Decoupled Quality Caching**: Before mutating `Video` candidate streams for PlayerKit playback, `TikTokVideoQualityHook.capVideoObject(Video)` extracts and preserves the highest-bitrate stream within the download ceiling inside `uncappedDownloadAddrs`.
+- **Downloader Routing**: `TikTokMediaHook` checks `TikTokVideoQualityHook.getBestDownloadPlayAddr(video)` when extracting clean media URLs, ensuring downloaded videos and Stories maintain full 1080p/720p resolution regardless of feed playback caps.
+- **In-Situ Synchronization**: Invokes `TikTokVideoQualityHook.capVideoObject(Video)` and `TikTokVideoQualityHook.filterBitrates(List)`. Discards streams exceeding the playback cap and prioritizes the highest valid stream within the ceiling.
 - **Fail-Safe Fallback**: If an uploaded video only provides renditions exceeding the ceiling, the governor preserves the lowest available stream rather than black-screening or stalling playback.
-- **Preference Persistence**: User selection is saved to `morphe_tiktok_quality_prefs` SharedPreferences, maintaining state across restarts.
+- **Preference Persistence**: User selections are saved to `morphe_tiktok_quality_prefs` SharedPreferences, maintaining state across restarts.
+
+---
+
+## 🎵 TikTok: Display Refresh Rate Governor
+
+The **`Display Refresh Rate Governor`** patch locks TikTok's window rendering frequency to peak hardware refresh rates (120Hz/90Hz) or a user-selected ceiling, neutralizing TikTok's internal refresh rate downclocking mechanisms. Under standard execution, PlayerKit lowers the window refresh rate to match video fps (typically 24–30fps or 60fps), which creates perceptible UI stutter when interacting with comments, scrolling feeds, or viewing overlays.
+
+### Configuration in Morphe Manager
+
+| Option | Key | Type | Default | Supported Values | Description |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Target Refresh Rate** | `targetRate` | String | `max` | `max`, `120`, `90`, `60` | Select target display refresh rate. `max` queries the display hardware for its highest supported rate. |
+
+### Technical Architecture
+- **Hardware Query**: In `TikTokRefreshRateHook.resolveTargetRate()`, queries `Display.getSupportedModes()` (Android M+) with fallback to `Display.getSupportedRefreshRates()` to detect the physical screen's maximum capability.
+- **Window Locking**: Enforces `WindowManager.LayoutParams.preferredRefreshRate` on `MainActivity` during `onResume()` and `onWindowFocusChanged()`.
+- **Downclock Neutralization**: Bypasses video playback framerate downclocking via `LX/09YB.invoke()` (`ui_video_frame_rate_opt`) and `LX/07tH.invoke()` (`setRefreshRateIfNeeded`) while preserving all `onRenderFirstFrame` callbacks intact.
+- **Gesture Drag Synchronization**: Overrides `LX/0JOJ.LIZ()` and `LX/1PFE.LIZ()` / `LIZIZ()` to immediately re-lock preferred refresh rate upon gesture completion.
 
 ---
 
