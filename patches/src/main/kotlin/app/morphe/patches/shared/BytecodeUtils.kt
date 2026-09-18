@@ -1,9 +1,21 @@
 package app.morphe.patches.shared
 
+import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
+import app.morphe.patcher.extensions.InstructionExtensions.removeInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions
+import app.morphe.patcher.util.proxy.mutableTypes.MutableClass
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
+import app.morphe.patcher.util.smali.ExternalLabel
+import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.iface.instruction.Instruction
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import com.android.tools.smali.dexlib2.iface.reference.Reference
+import com.android.tools.smali.dexlib2.util.MethodUtil
 
 /**
  * Clears exception try-catch blocks from a method implementation before replacing instructions.
@@ -83,3 +95,29 @@ fun MutableMethod.replaceWithReturnNull() {
     removeInstructions(0, impl.instructions.count())
     addInstructions(0, "const/4 v0, 0x0\nreturn-object v0")
 }
+
+inline fun <reified T : Reference> Instruction.getReference(): T? =
+    (this as? ReferenceInstruction)?.reference as? T
+
+fun MutableClass.findMutableMethodOf(method: MethodReference): MutableMethod =
+    this.methods.first { MethodUtil.methodSignaturesMatch(it, method) }
+
+fun MutableMethod.addInstructionsAtControlFlowLabel(
+    insertIndex: Int,
+    instructions: String,
+    vararg externalLabels: ExternalLabel,
+) {
+    addInstruction(insertIndex + 1, getInstruction(insertIndex))
+    addInstructionsWithLabels(insertIndex + 1, instructions, *externalLabels)
+    removeInstruction(insertIndex)
+}
+
+val Method.numberOfParameterRegisters: Int
+    get() {
+        var count = if (AccessFlags.STATIC.isSet(accessFlags)) 0 else 1
+        for (param in parameters) {
+            count += if (param.type == "J" || param.type == "D") 2 else 1
+        }
+        return count
+    }
+
