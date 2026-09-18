@@ -18,17 +18,15 @@ val displayRefreshRateGovernorPatch = bytecodePatch(
     val targetRate by stringOption(
         key = "targetRate",
         title = "Target Refresh Rate",
-        description = "Select target display refresh rate: max (display peak rate), 120 (120 Hz), 90 (90 Hz), or 60 (60 Hz).",
+        description = "Select target display refresh rate: max (display peak rate), 120 (120 Hz), 90 (90 Hz), or 60 (60 Hz). Clamped automatically to display maximum.",
         default = "max",
         required = false,
     )
 
     execute {
-        val rateFloat = when (targetRate?.trim()?.lowercase()) {
-            "120" -> 120.0f
-            "90" -> 90.0f
-            "60" -> 60.0f
-            else -> 0.0f
+        val rateFloat = when (val trimmed = targetRate?.trim()?.lowercase()) {
+            null, "", "max" -> 0.0f
+            else -> trimmed.toFloatOrNull() ?: 0.0f
         }
         val rateBits = java.lang.Float.floatToIntBits(rateFloat)
 
@@ -51,7 +49,7 @@ val displayRefreshRateGovernorPatch = bytecodePatch(
                     sput v0, ${Constants.TIKTOK_EXTENSION_REFRESH_RATE_HOOK}->targetRefreshRate:F
                 """.trimIndent(),
             )
-            println("[Refresh Rate Governor] Initialized targetRefreshRate=${if (rateFloat == 0f) "max" else "${rateFloat.toInt()}Hz"}.")
+            println("[Refresh Rate Governor] Initialized targetRefreshRate=${if (rateFloat == 0f) "max" else "${rateFloat.toInt()}Hz"} (hardware bounded).")
             patched++
         } catch (e: Exception) {
             println("[Refresh Rate Governor] TikTokRefreshRateHook.<clinit> note: ${e.message}")
@@ -115,7 +113,7 @@ val displayRefreshRateGovernorPatch = bytecodePatch(
             println("[Refresh Rate Governor] LX/0JOJ.LIZ note: ${e.message}")
         }
 
-        // 4. Override LX/1PFE.LIZ & LIZIZ (RefreshFrequencyTutor instance methods where p1 is the Activity)
+        // 4. Override LX/1PFE.LIZ (instance, p1=Activity) & LIZIZ (static, p0=Activity) (RefreshFrequencyTutor)
         try {
             Fingerprint(
                 definingClass = "LX/1PFE;",
@@ -144,7 +142,7 @@ val displayRefreshRateGovernorPatch = bytecodePatch(
             ).method.addInstructions(
                 0,
                 """
-                    invoke-static {p1}, ${Constants.TIKTOK_EXTENSION_REFRESH_RATE_HOOK}->applyToWindow(Landroid/app/Activity;)V
+                    invoke-static {p0}, ${Constants.TIKTOK_EXTENSION_REFRESH_RATE_HOOK}->applyToWindow(Landroid/app/Activity;)V
                     return-void
                 """.trimIndent(),
             )
