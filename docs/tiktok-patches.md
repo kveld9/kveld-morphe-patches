@@ -294,7 +294,7 @@ Comprehensive breakdown of the **31 patches** included in the Morphe TikTok patc
     * Hooks `FeedApiService.fetchFeedList()`, `FeedItemList.getItems()`, and `FollowFeedList.getItems()`.
     * Neutralizes Lego cross-promotion task `Lemon8ServiceInitTask.run(Context)`.
     * Delegates to `TikTokFeedAdFilter.isFeedBloat(Aweme)`:
-      * **Suggested Accounts**: `Aweme.getAwemeType() == 4004` (`TTRecUserBigCardViewHolder`), `CardInsertInfo.getCardType() == 49`, `Aweme.isFriendsTabFakeAweme() == true`, `Aweme.getRecommendCardType() > 0`.
+      * **Suggested Accounts**: `Aweme.getAwemeType() == 4004` (`TTRecUserBigCardViewHolder`), `CardInsertInfo.getCardType() == 49`, `Aweme.isFriendsTabFakeAweme() == true`.
       * **Mini-Games**: `Aweme.getAwemeType() == 104` or `CardInsertInfo.getCardType() == 120` (`MiniGameInstantPlayCardVH`).
       * **Creation & CapCut Prompts**: `CardInsertInfo.getCardType() in 188..191` (`CreationFeedCardViewHolder`).
       * **Memories ("On This Day")**: `CardInsertInfo.getCardType() == 127` (`OnThisDayCreationCardViewHolder`).
@@ -303,6 +303,7 @@ Comprehensive breakdown of the **31 patches** included in the Morphe TikTok patc
       * **Surveys & Feedback**: `CardInsertInfo.getCardType() == 4` or `16` (`BottomSurveyAssem`).
       * **Mini-Dramas & Series Promos**: `Aweme.getAwemeType() == 110` (`MiniDramaCard`).
       * **Lynx In-Feed Promos**: `Aweme.getAwemeType() == 106`.
+    * **Following Feed Invariants**: Preserves essential watch history and unread markers (`feedType == 65280`, `65465`, `65298`, `lastViewData`) to prevent presenter index out-of-bounds crashes, while safely isolating and pruning confirmed recommendation cards (`feedType == 3`, `62`, `recommendUser`).
     * Prunes matching cards from list iterators in-situ with zero crashes or UI gaps.
 
 ### 13. Unified Telemetry & Tracker Silencer (`unifiedTelemetryTrackerSilencerPatch`)
