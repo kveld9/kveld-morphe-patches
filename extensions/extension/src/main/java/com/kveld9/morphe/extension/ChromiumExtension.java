@@ -112,7 +112,17 @@ public class ChromiumExtension {
         "mercadolibre.com.py",
         "mercadolibre.com.hn",
         "mercadolibre.com.sv",
-        "mercadolibre.com.ni"
+        "mercadolibre.com.ni",
+        "meli.la",
+        "mercadopago.com",
+        "mercadopago.com.ar",
+        "mercadopago.com.br",
+        "mercadopago.com.mx",
+        "mercadopago.cl",
+        "mercadopago.com.co",
+        "mercadopago.com.uy",
+        "mercadopago.com.pe",
+        "mpago.la"
     ));
 
     private static final Set<String> MERCADOLIBRE_TRACKING_PARAMS = new HashSet<>(Arrays.asList(
@@ -137,7 +147,8 @@ public class ChromiumExtension {
         "matt_tool",
         "matt_word",
         "matt_source",
-        "matt_campaign_id"
+        "matt_campaign_id",
+        "searchvariation"
     ));
 
     /**
@@ -168,48 +179,78 @@ public class ChromiumExtension {
         return intent;
     }
 
+    /**
+     * Sanitizes an Android ClipData payload by stripping marketing and tracking query parameters
+     * from all text, HTML, and URI items before writing to system clipboard.
+     */
+    public static android.content.ClipData cleanClipData(android.content.ClipData clipData) {
+        if (clipData == null || clipData.getItemCount() == 0) {
+            return clipData;
+        }
+        try {
+            boolean modified = false;
+            android.content.ClipData newClip = null;
+            for (int i = 0; i < clipData.getItemCount(); i++) {
+                android.content.ClipData.Item item = clipData.getItemAt(i);
+                Uri itemUri = item.getUri();
+                CharSequence itemText = item.getText();
+                String itemHtml = item.getHtmlText();
+
+                Uri newUri = itemUri;
+                CharSequence newText = itemText;
+                String newHtml = itemHtml;
+
+                if (itemUri != null) {
+                    String uStr = itemUri.toString();
+                    String cStr = cleanShareUrl(uStr);
+                    if (!uStr.equals(cStr)) {
+                        newUri = Uri.parse(cStr);
+                        modified = true;
+                    }
+                }
+                if (itemText != null) {
+                    String tStr = itemText.toString();
+                    String cStr = cleanShareUrl(tStr);
+                    if (!tStr.equals(cStr)) {
+                        newText = cStr;
+                        modified = true;
+                    }
+                }
+                if (itemHtml != null) {
+                    String cStr = cleanShareUrl(itemHtml);
+                    if (!itemHtml.equals(cStr)) {
+                        newHtml = cStr;
+                        modified = true;
+                    }
+                }
+
+                android.content.ClipData.Item newItem = new android.content.ClipData.Item(
+                    newText, newHtml, item.getIntent(), newUri
+                );
+                if (newClip == null) {
+                    newClip = new android.content.ClipData(clipData.getDescription(), newItem);
+                } else {
+                    newClip.addItem(newItem);
+                }
+            }
+            if (modified && newClip != null) {
+                android.util.Log.i("ChromiumExtension", "[Clean Share URL] Sanitized ClipData with " + newClip.getItemCount() + " item(s)");
+                return newClip;
+            }
+            return clipData;
+        } catch (Throwable t) {
+            return clipData;
+        }
+    }
+
     private static void sanitizeClipData(Intent intent) {
         android.content.ClipData clipData = intent.getClipData();
-        if (clipData == null || clipData.getItemCount() == 0) {
+        if (clipData == null) {
             return;
         }
-        boolean modified = false;
-        android.content.ClipData newClip = null;
-        for (int i = 0; i < clipData.getItemCount(); i++) {
-            android.content.ClipData.Item item = clipData.getItemAt(i);
-            Uri itemUri = item.getUri();
-            CharSequence itemText = item.getText();
-            Uri newUri = itemUri;
-            CharSequence newText = itemText;
-
-            if (itemUri != null) {
-                String uStr = itemUri.toString();
-                String cStr = cleanShareUrl(uStr);
-                if (!uStr.equals(cStr)) {
-                    newUri = Uri.parse(cStr);
-                    modified = true;
-                }
-            }
-            if (itemText != null) {
-                String tStr = itemText.toString();
-                String cStr = cleanShareUrl(tStr);
-                if (!tStr.equals(cStr)) {
-                    newText = cStr;
-                    modified = true;
-                }
-            }
-
-            android.content.ClipData.Item newItem = new android.content.ClipData.Item(
-                newText, item.getHtmlText(), item.getIntent(), newUri
-            );
-            if (newClip == null) {
-                newClip = new android.content.ClipData(clipData.getDescription(), newItem);
-            } else {
-                newClip.addItem(newItem);
-            }
-        }
-        if (modified && newClip != null) {
-            intent.setClipData(newClip);
+        android.content.ClipData cleaned = cleanClipData(clipData);
+        if (cleaned != clipData) {
+            intent.setClipData(cleaned);
         }
     }
 
@@ -227,11 +268,16 @@ public class ChromiumExtension {
         try {
             // Fast-path: strictly whitespace-free single URL
             if (isPureSingleUrl(text)) {
-                return cleanSingleUrl(text);
+                String cleaned = cleanSingleUrl(text);
+                if (!text.equals(cleaned)) {
+                    android.util.Log.i("ChromiumExtension", "[Clean Share URL] Sanitized URL: " + text + " -> " + cleaned);
+                }
+                return cleaned;
             }
             // Multi-token or combined text+URL payload: match and clean URLs while preserving text and punctuation
             Matcher matcher = URL_PATTERN.matcher(text);
             StringBuffer sb = new StringBuffer();
+            boolean anyModified = false;
             while (matcher.find()) {
                 String rawUrl = matcher.group();
                 String trailing = "";
@@ -239,11 +285,18 @@ public class ChromiumExtension {
                     trailing = rawUrl.substring(rawUrl.length() - 1) + trailing;
                     rawUrl = rawUrl.substring(0, rawUrl.length() - 1);
                 }
-                String cleaned = cleanSingleUrl(rawUrl) + trailing;
-                matcher.appendReplacement(sb, Matcher.quoteReplacement(cleaned));
+                String cleaned = cleanSingleUrl(rawUrl);
+                if (!rawUrl.equals(cleaned)) {
+                    anyModified = true;
+                }
+                matcher.appendReplacement(sb, Matcher.quoteReplacement(cleaned + trailing));
             }
             matcher.appendTail(sb);
-            return sb.toString();
+            String result = sb.toString();
+            if (anyModified) {
+                android.util.Log.i("ChromiumExtension", "[Clean Share URL] Sanitized composite text: " + text + " -> " + result);
+            }
+            return result;
         } catch (Throwable t) {
             return text;
         }

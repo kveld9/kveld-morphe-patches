@@ -50,7 +50,30 @@ val cleanShareUrlPatch = bytecodePatch(
             println("[Clean Share URL] Share Intent builder hook note: ${e.message}")
         }
 
-        // 1. Hook Clipboard.setText so copied links (address bar, context menu, share dialog) are cleaned
+        // 1. Hook ClipboardImpl.setPrimaryClip so all copied links, URLs, and text are sanitized
+        try {
+            val fpClipboard = Fingerprint(
+                returnType = "Z",
+                parameters = listOf("Landroid/content/ClipData;"),
+                strings = listOf("google"),
+            )
+            fpClipboard.method.apply {
+                addInstructions(
+                    0,
+                    """
+                        invoke-static {p1}, ${Constants.CHROMIUM_EXTENSION_CLASS}->cleanClipData(Landroid/content/ClipData;)Landroid/content/ClipData;
+                        move-result-object p1
+                    """.trimIndent(),
+                )
+                val className = fpClipboard.originalClassDef.type.substringAfterLast('/').removeSuffix(";")
+                hookedTargets.add("$className.$name")
+                patched++
+            }
+        } catch (e: Exception) {
+            println("[Clean Share URL] ClipboardImpl.setPrimaryClip hook note: ${e.message}")
+        }
+
+        // 2. Fallback hook for Clipboard.setText
         try {
             Fingerprint(
                 definingClass = "Lorg/chromium/ui/base/Clipboard;",
