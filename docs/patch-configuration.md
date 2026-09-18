@@ -307,13 +307,14 @@ The **`Display Refresh Rate Governor`** patch locks TikTok's window rendering fr
 
 | Option | Key | Type | Default | Supported Values | Description |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Target Refresh Rate** | `targetRate` | String | `max` | `max`, `120`, `90`, `60` | Select target display refresh rate. `max` queries the display hardware for its highest supported rate. |
+| **Target Refresh Rate** | `targetRate` | String | `max` | `max`, `120`, `90`, `60` | Select target display refresh rate. `max` queries the display hardware for its highest supported rate. Any value exceeding the physical screen capability is automatically clamped to avoid display driver crashes. |
 
 ### Technical Architecture
-- **Hardware Query**: In `TikTokRefreshRateHook.resolveTargetRate()`, queries `Display.getSupportedModes()` (Android M+) with fallback to `Display.getSupportedRefreshRates()` to detect the physical screen's maximum capability.
+- **Hardware Query & Boundary Clamping**: In `TikTokRefreshRateHook.resolveTargetRate()`, queries `Display.getSupportedModes()` (Android M+) with fallback to `Display.getSupportedRefreshRates()` to detect physical display capabilities. If a configured rate exceeds the physical panel frequency (e.g. selecting 120Hz on a 90Hz or 60Hz display), it automatically clamps to `maxSupportedRate` to prevent fatal WindowManager / SurfaceFlinger mode switch aborts.
+- **Lifecycle Guards**: Validates that the `Activity` is non-null, not finishing, and not destroyed before applying window layout parameters.
 - **Window Locking**: Enforces `WindowManager.LayoutParams.preferredRefreshRate` on `MainActivity` during `onResume()` and `onWindowFocusChanged()`.
 - **Downclock Neutralization**: Bypasses video playback framerate downclocking via `LX/09YB.invoke()` (`ui_video_frame_rate_opt`) and `LX/07tH.invoke()` (`setRefreshRateIfNeeded`) while preserving all `onRenderFirstFrame` callbacks intact.
-- **Gesture Drag Synchronization**: Overrides `LX/0JOJ.LIZ()` and `LX/1PFE.LIZ()` / `LIZIZ()` to immediately re-lock preferred refresh rate upon gesture completion.
+- **Gesture Drag Synchronization**: Overrides `LX/0JOJ.LIZ()` and `LX/1PFE.LIZ()` (instance) / `LX/1PFE.LIZIZ()` (static) to immediately re-lock preferred refresh rate upon gesture completion.
 
 ---
 
