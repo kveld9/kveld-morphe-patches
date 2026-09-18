@@ -10,12 +10,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 /**
- * Runtime hook helper for TikTok video playback resolution capping.
+ * Runtime hook helper for TikTok video playback and download resolution capping.
  * Intercepts video bitrate lists and play address models to enforce user-defined
  * resolution ceilings (1080p, 720p, 540p, 480p, 360p), conserving device thermals,
- * GPU/MediaCodec load, RAM GraphicBuffers, and mobile data.
+ * GPU/MediaCodec load, RAM GraphicBuffers, and mobile data, while allowing downloads
+ * to independently preserve full/high resolution.
  */
 @SuppressWarnings("unused")
 public final class TikTokVideoQualityHook {
@@ -23,8 +26,13 @@ public final class TikTokVideoQualityHook {
     private static final String TAG = "MorpheTikTok";
     private static final String PREFS_NAME = "morphe_tiktok_quality_prefs";
     private static final String KEY_MAX_QUALITY = "max_video_quality";
+    private static final String KEY_DOWNLOAD_QUALITY = "download_video_quality";
 
     public static volatile int maxAllowedResolution = 480;
+    public static volatile int downloadAllowedResolution = 1080;
+
+    private static final Map<Object, Object> uncappedDownloadAddrs =
+        Collections.synchronizedMap(new WeakHashMap<Object, Object>());
 
     private static volatile boolean reflectionInitialized = false;
     private static Field videoBitRateListField;
@@ -76,6 +84,37 @@ public final class TikTokVideoQualityHook {
         } catch (Throwable t) {
             Log.w(TAG, "[Video Quality Governor] SharedPreferences write note: " + t.getMessage());
         }
+    }
+
+    public static int getDownloadResolution() {
+        SharedPreferences sp = getPrefs();
+        if (sp != null) {
+            int saved = sp.getInt(KEY_DOWNLOAD_QUALITY, downloadAllowedResolution);
+            if (isValidResolution(saved)) {
+                downloadAllowedResolution = saved;
+                return saved;
+            }
+        }
+        return downloadAllowedResolution;
+    }
+
+    public static void setDownloadResolution(int resolution) {
+        if (!isValidResolution(resolution)) return;
+        downloadAllowedResolution = resolution;
+        try {
+            SharedPreferences sp = getPrefs();
+            if (sp != null) {
+                sp.edit().putInt(KEY_DOWNLOAD_QUALITY, resolution).apply();
+            }
+            Log.i(TAG, "[Video Quality Governor] Active download resolution cap set to: " + resolution + "p");
+        } catch (Throwable t) {
+            Log.w(TAG, "[Video Quality Governor] Download SharedPreferences write note: " + t.getMessage());
+        }
+    }
+
+    public static Object getBestDownloadPlayAddr(Object videoObj) {
+        if (videoObj == null) return null;
+        return uncappedDownloadAddrs.get(videoObj);
     }
 
     public static boolean isValidResolution(int res) {
@@ -250,9 +289,36 @@ public final class TikTokVideoQualityHook {
         } catch (Throwable ignored) {}
     }
 
+    private static Object extractPlayAddrFromBitrate(Object bitrateObj) {
+        if (bitrateObj == null) return null;
+        try {
+            Method m = (bitrateGetPlayAddrMethod != null) ?
+                bitrateGetPlayAddrMethod : bitrateObj.getClass().getMethod("getPlayAddr");
+            return m.invoke(bitrateObj);
+        } catch (Throwable ignored) {
+            return null;
+        }
+    }
+
+    @SuppressWarnings("rawtypes")
+    private static Object resolveBestBitrate(List bitrates, int cap) {
+        if (bitrates == null || bitrates.isEmpty()) return null;
+        Object bestMatch = null;
+        int bestHeight = 0;
+        for (Object item : bitrates) {
+            int h = resolveBitrateHeight(item);
+            if (h <= cap && h > bestHeight) {
+                bestHeight = h;
+                bestMatch = item;
+            }
+        }
+        return (bestMatch != null) ? bestMatch : bitrates.get(0);
+    }
+
     /**
      * Intercepts Video objects before playback to ensure both bitRateList and
-     * the default play addresses (playAddrValue, playAddrBytevc1Value) obey the resolution cap.
+     * the default play addresses (playAddrValue, playAddrBytevc1Value) obey the resolution cap,
+     * while preserving the highest-quality stream matching download resolution ceiling for downloads.
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
     public static void capVideoObject(Object videoObj) {
@@ -267,6 +333,14 @@ public final class TikTokVideoQualityHook {
                 Object listObj = videoBitRateListField.get(videoObj);
                 if (listObj instanceof List) {
                     List originalList = (List) listObj;
+
+                    // Preserve uncapped stream matching download resolution ceiling for downloads
+                    Object bestDownloadBitrate = resolveBestBitrate(originalList, getDownloadResolution());
+                    Object bestDownloadPlayAddr = extractPlayAddrFromBitrate(bestDownloadBitrate);
+                    if (bestDownloadPlayAddr != null) {
+                        uncappedDownloadAddrs.put(videoObj, bestDownloadPlayAddr);
+                    }
+
                     List cappedList = filterBitrates(originalList);
                     videoBitRateListField.set(videoObj, cappedList);
 

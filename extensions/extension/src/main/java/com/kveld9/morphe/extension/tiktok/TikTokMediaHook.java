@@ -141,6 +141,12 @@ public final class TikTokMediaHook {
     private static Object selectCleanFallback(Object videoObj) {
         if (videoObj == null) return null;
 
+        // 0. Try uncapped download stream preserved by Video Quality Governor
+        try {
+            Object governorStream = TikTokVideoQualityHook.getBestDownloadPlayAddr(videoObj);
+            if (hasUsableUrl(governorStream)) return governorStream;
+        } catch (Throwable ignored) {}
+
         // 1. Try h264PlayAddrValue field
         if (h264PlayAddrValueField != null) {
             try {
@@ -233,6 +239,15 @@ public final class TikTokMediaHook {
         if (!forceWatermarkFreeDownload || videoObj == null) return originalUrl;
         try {
             ensureVideoReflection(videoObj.getClass().getClassLoader());
+
+            // 0. Prefer uncapped high-resolution stream preserved by Video Quality Governor
+            try {
+                Object governorStream = TikTokVideoQualityHook.getBestDownloadPlayAddr(videoObj);
+                if (hasUsableUrl(governorStream)) {
+                    Log.i(TAG, "[Watermark Free] Used high-resolution quality governor stream for download.");
+                    return governorStream;
+                }
+            } catch (Throwable ignored) {}
 
             if (downloadNoWatermarkAddrField != null) {
                 Object currentNoWatermark = downloadNoWatermarkAddrField.get(videoObj);

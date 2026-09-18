@@ -13,7 +13,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 
 val mediaEnhancementsPatch = bytecodePatch(
     name = "Media Usability & Watermark-Free Downloader",
-    description = "Unblocks the download button on creator-restricted videos and routes downloads to clean unwatermarked media streams.",
+    description = "Unblocks the download button on creator-restricted videos and Stories inside the Share panel, and routes downloads to clean unwatermarked media streams.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
@@ -296,6 +296,26 @@ val mediaEnhancementsPatch = bytecodePatch(
             patched++
         } catch (e: Exception) {
             println("[Media Usability] DownloaderSpec redirect note: ${e.message}")
+        }
+
+        // 10. Unblock Story downloading in share panel by forcing AwemeExtKt.isSharedStoryVisible() -> true
+        try {
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/feed/model/AwemeExtKt;",
+                name = "isSharedStoryVisible",
+                parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;"),
+                returnType = "Z",
+            ).method.addInstructions(
+                0,
+                """
+                    const/4 v0, 0x1
+                    return v0
+                """.trimIndent(),
+            )
+            println("[Media Usability] Forced AwemeExtKt.isSharedStoryVisible() -> true (unblocks Story download action in Share panel).")
+            patched++
+        } catch (e: Exception) {
+            println("[Media Usability] AwemeExtKt.isSharedStoryVisible note: ${e.message}")
         }
 
         println("[Media Usability & Watermark-Free Downloader] Applied $patched media usability and watermark-free download hook(s).")

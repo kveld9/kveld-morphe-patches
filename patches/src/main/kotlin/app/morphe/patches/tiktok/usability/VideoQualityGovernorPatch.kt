@@ -10,7 +10,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
 val videoQualityGovernorPatch = bytecodePatch(
     name = "Video Quality Governor",
-    description = "Caps maximum video playback resolution (1080p, 720p, 540p, 480p, 360p) to reduce GPU/MediaCodec load, lower memory retention, and prevent playback buffering.",
+    description = "Caps video playback and download resolutions (1080p, 720p, 540p, 480p, 360p) independently to conserve battery, GPU/MediaCodec load, and mobile data.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
@@ -18,25 +18,39 @@ val videoQualityGovernorPatch = bytecodePatch(
 
     val maxQuality by stringOption(
         key = "maxQuality",
-        title = "Maximum Video Resolution",
-        description = "Select maximum resolution ceiling: 1080 (1080p ExtremelyHigh), 720 (720p SuperHigh), 540 (540p H_High), 480 (480p High), or 360 (360p Standard).",
+        title = "Maximum Playback Resolution",
+        description = "Select maximum video playback resolution ceiling: 1080 (1080p ExtremelyHigh), 720 (720p SuperHigh), 540 (540p H_High), 480 (480p High), or 360 (360p Standard).",
         default = "480",
         required = false,
     )
 
+    val maxDownloadQuality by stringOption(
+        key = "maxDownloadQuality",
+        title = "Maximum Download Resolution",
+        description = "Select maximum video download resolution ceiling: 1080 (1080p Maximum Quality), 720 (720p SuperHigh), 540 (540p H_High), 480 (480p High), or 360 (360p Standard).",
+        default = "1080",
+        required = false,
+    )
+
     execute {
-        val rawQuality = maxQuality?.trim()?.lowercase() ?: "480"
-        val chosenRes = when {
-            rawQuality.contains("1080") -> 1080
-            rawQuality.contains("720") -> 720
-            rawQuality.contains("540") -> 540
-            rawQuality.contains("360") -> 360
-            else -> 480
+        fun parseResolution(raw: String?, defaultRes: Int): Int {
+            val q = raw?.trim()?.lowercase() ?: return defaultRes
+            return when {
+                q.contains("1080") -> 1080
+                q.contains("720") -> 720
+                q.contains("540") -> 540
+                q.contains("360") -> 360
+                q.contains("480") -> 480
+                else -> defaultRes
+            }
         }
+
+        val chosenPlaybackRes = parseResolution(maxQuality, 480)
+        val chosenDownloadRes = parseResolution(maxDownloadQuality, 1080)
 
         var patched = 0
 
-        // 1. Initialize default maxAllowedResolution in TikTokVideoQualityHook.<clinit>
+        // 1. Initialize default maxAllowedResolution & downloadAllowedResolution in TikTokVideoQualityHook.<clinit>
         try {
             val hookClinitFp = Fingerprint(
                 definingClass = Constants.TIKTOK_EXTENSION_QUALITY_HOOK,
@@ -45,11 +59,13 @@ val videoQualityGovernorPatch = bytecodePatch(
             hookClinitFp.method.addInstructions(
                 0,
                 """
-                    const/16 v0, $chosenRes
+                    const/16 v0, $chosenPlaybackRes
                     sput v0, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->maxAllowedResolution:I
+                    const/16 v0, $chosenDownloadRes
+                    sput v0, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->downloadAllowedResolution:I
                 """.trimIndent(),
             )
-            println("[Video Quality Governor] Initialized default resolution cap to ${chosenRes}p.")
+            println("[Video Quality Governor] Initialized default caps: playback=${chosenPlaybackRes}p, download=${chosenDownloadRes}p.")
             patched++
         } catch (e: Exception) {
             println("[Video Quality Governor] TikTokVideoQualityHook.<clinit> note: ${e.message}")
@@ -174,6 +190,6 @@ val videoQualityGovernorPatch = bytecodePatch(
             println("[Video Quality Governor] SimVideoUrlModel.getBitRate note: ${e.message}")
         }
 
-        println("[Video Quality Governor] Applied $patched video resolution capping hook(s) (cap: ${chosenRes}p).")
+        println("[Video Quality Governor] Applied $patched video resolution capping hook(s) (playback: ${chosenPlaybackRes}p, download: ${chosenDownloadRes}p).")
     }
 }
