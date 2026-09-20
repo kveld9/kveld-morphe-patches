@@ -25,6 +25,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import com.android.tools.smali.dexlib2.iface.reference.StringReference
 
 private const val MAX_CHAIN_SEARCH_LENGTH = 24
 
@@ -47,9 +48,30 @@ private object StoryViewReportFingerprint : Fingerprint(
     },
 )
 
+private object StoryFeedServiceReportFingerprint : Fingerprint(
+    custom = { method, classDef ->
+        method.name == "run" &&
+            method.returnType == "V" &&
+            method.implementation?.instructions?.any { inst ->
+                val str = inst.getReference<StringReference>()?.string
+                str != null && str.contains("StoryFeedService") && str.contains("reportStoryViewed")
+            } == true
+    },
+)
+
 private object ProfileViewReportFingerprint : Fingerprint(
     custom = { method, classDef ->
         classDef.type.endsWith("/ProfileViewerApiService;") && method.name == "reportView"
+    },
+)
+
+private object ProfileRequestResponseFingerprint : Fingerprint(
+    custom = { method, classDef ->
+        classDef.type.endsWith("/ProfilePlatformViewModel;") &&
+            method.returnType == "V" &&
+            method.implementation?.instructions?.any { inst ->
+                inst.getReference<StringReference>()?.string == "profile_request_response"
+            } == true
     },
 )
 
@@ -75,6 +97,7 @@ val ghostModePatch = bytecodePatch(
 
         val targets = listOf(
             Triple(StoryViewReportFingerprint, "shouldBlockStoryView", "Story View"),
+            Triple(StoryFeedServiceReportFingerprint, "shouldBlockStoryView", "Story Secondary Dispatch"),
             Triple(ProfileViewReportFingerprint, "shouldBlockProfileView", "Profile View"),
             Triple(TypingStatusSenderFingerprint, "shouldBlockTypingStatus", "Typing Indicator"),
         )
@@ -105,6 +128,44 @@ val ghostModePatch = bytecodePatch(
             } catch (e: Exception) {
                 println("[Ghost Mode] $featureName note: ${e.message}")
             }
+        }
+
+        try {
+            val prrMatches = ProfileRequestResponseFingerprint.matchAll()
+            var prrPatched = 0
+            for (match in prrMatches) {
+                val method = match.method
+                val liveness = RegisterLiveness.of(method)
+                val insts = method.instructions.toList()
+                val targetIndexes = insts.withIndex()
+                    .filter { (_, inst) ->
+                        inst.getReference<StringReference>()?.string == "profile_request_response"
+                    }
+                    .map { it.index }
+
+                for (idx in targetIndexes.sortedDescending()) {
+                    val flagReg = findDeadRegister(method, liveness.liveInto(idx)) ?: continue
+                    val skipLabel = "morphe_prr_skip_${guardLabelSeq++}"
+                    method.addInstructionsWithLabels(
+                        idx,
+                        """
+                            invoke-static {}, ${Constants.TIKTOK_EXTENSION_GHOST_MODE_HOOK}->shouldBlockProfileView()Z
+                            move-result v$flagReg
+                            if-eqz v$flagReg, :$skipLabel
+                            return-void
+                            :$skipLabel
+                            nop
+                        """.trimIndent(),
+                    )
+                    prrPatched++
+                }
+            }
+            if (prrPatched > 0) {
+                println("[Ghost Mode] Profile View: suppressed $prrPatched profile_request_response analytics event site(s).")
+                patched += prrPatched
+            }
+        } catch (e: Exception) {
+            println("[Ghost Mode] Profile View note: ${e.message}")
         }
 
         println("[Ghost Mode] Applied $patched ghost mode hook(s).")
@@ -199,23 +260,44 @@ private fun skipReportCallChain(
 
     return when (chain) {
         is ReportChain.Sent -> {
-            val landingIndex = chain.terminalIndex + 1
-            if (landingIndex >= method.instructions.count()) return false
+            val isStoryDispatchCaller = guardMethod == "shouldBlockStoryView" &&
+                method.returnType == "V" &&
+                method.instructions.any { it.getReference<MethodReference>()?.name == "reportStoryViewed" }
 
-            val liveAtLanding = liveness.liveInto(landingIndex)
-            if (chain.definedRegisters.any { it in liveAtLanding }) return false
+            if (isStoryDispatchCaller) {
+                val flagReg = findDeadRegister(method, liveness.liveInto(callIndex)) ?: return false
+                val skipLabel = "morphe_ghost_skip_${guardLabelSeq++}"
+                method.addInstructionsWithLabels(
+                    callIndex,
+                    """
+                        $guardInvocation
+                        move-result v$flagReg
+                        if-eqz v$flagReg, :$skipLabel
+                        return-void
+                        :$skipLabel
+                        nop
+                    """.trimIndent(),
+                )
+                true
+            } else {
+                val landingIndex = chain.terminalIndex + 1
+                if (landingIndex >= method.instructions.count()) return false
 
-            val flagReg = findDeadRegister(method, liveness.liveInto(callIndex) + liveAtLanding) ?: return false
-            method.addInstructionsAtControlFlowLabel(
-                callIndex,
-                """
-                    $guardInvocation
-                    move-result v$flagReg
-                    if-nez v$flagReg, :morphe_ghost_skip
-                """.trimIndent(),
-                ExternalLabel("morphe_ghost_skip", method.getInstruction(landingIndex)),
-            )
-            true
+                val liveAtLanding = liveness.liveInto(landingIndex)
+                if (chain.definedRegisters.any { it in liveAtLanding }) return false
+
+                val flagReg = findDeadRegister(method, liveness.liveInto(callIndex) + liveAtLanding) ?: return false
+                method.addInstructionsAtControlFlowLabel(
+                    callIndex,
+                    """
+                        $guardInvocation
+                        move-result v$flagReg
+                        if-nez v$flagReg, :morphe_ghost_skip
+                    """.trimIndent(),
+                    ExternalLabel("morphe_ghost_skip", method.getInstruction(landingIndex)),
+                )
+                true
+            }
         }
         is ReportChain.SuspendedCheck -> {
             val resultReg = (method.getInstruction(callIndex + 1) as OneRegisterInstruction).registerA
