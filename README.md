@@ -38,6 +38,7 @@
 - **Current Target**: `1.95.104` (`Bravemonoarm64.apk`)
 - **Architecture**: `arm64-v8a` (Monochrome only)
 - **Package**: `com.brave.browser`
+- ⚠️ *Monolithic APK Required*: You **must** download **`Bravemonoarm64.apk`** from [Brave GitHub Releases](https://github.com/brave/brave-browser/releases) (not APKMirror). APKMirror splits or other variants (`Bravearm64Universal.apk`, 32-bit builds) use different R8 obfuscation passes and native ELF offsets, which will fail patching.
 
 <a href="https://github.com/brave/brave-browser/releases/download/v1.95.104/Bravemonoarm64.apk"><img src="https://img.shields.io/badge/Download-Bravemonoarm64.apk_(v1.95.104)-FF4500?style=for-the-badge&logo=brave&logoColor=white" alt="Download Brave APK" /></a>
 
@@ -243,13 +244,13 @@ Comprehensive technical references and setup manuals have been modularized for f
 
 | Guide | Description |
 | :--- | :--- |
-| **[Compatibility Guide](docs/compatibility.md)** | CPU architecture policy (ARM64 vs 32-bit ARMv7a) and APK variant rationales (`Bravemonoarm64`, Vivaldi Browser). |
+| **[Compatibility Guide](docs/compatibility.md)** | CPU architecture policy (ARM64 vs 32-bit ARMv7a) and APK variant rationales. |
 | **[Gboard Setup & Dictionaries](docs/gboard-setup.md)** | Step-by-step setup for predictive text, offline dictionaries, and Glide Typing on fresh installs. |
 | **[Hevy Setup & Authentication](docs/hevy-setup.md)** | Account authentication notice (Google Sign-In SHA-1 limitation & Email/Password login) and Pro features overview. |
-| **[TikTok Patch Specifications](docs/tiktok-patches.md)** | Deep technical breakdown of all 31 TikTok patches, bytecode hooks, privacy guards, and media downloaders. |
-| **[Vivaldi Patch Specifications](docs/vivaldi-patches.md)** | Technical breakdown of all 15 Vivaldi patches, native GURL redirection, UKM neutralization, and Start Page debloat. |
+| **[TikTok Patch Specifications](docs/tiktok-patches.md)** | Technical breakdown of TikTok patches, bytecode hooks, privacy guards, and media downloaders. |
+| **[Vivaldi Patch Specifications](docs/vivaldi-patches.md)** | Technical breakdown of Vivaldi patches, native GURL redirection, UKM neutralization, and Start Page debloat. |
 | **[Project Scope & Out of Scope](docs/out-of-scope.md)** | Non-negotiable engineering philosophy, compile-time invariants, and explicitly out-of-scope feature requests (in-app settings panels, multi-version legacy support, server bypasses). |
-| **[Patch Configuration & Options](docs/patch-configuration.md)** | Detailed guides for `Clipboard Enhancements`, `SIM Region Selector`, `Locale Slimmer`, and `DPI Resource Slimmer`. |
+| **[Patch Configuration & Options](docs/patch-configuration.md)** | Configuration guides and parameter reference for customizable patch options. |
 | **[Architecture & Security Notes](docs/architecture-security.md)** | Explanation of privacy scanner false positives (ML Kit / Play Billing) and native ELF/Dalvik telemetry neutralization. |
 | **[Building & Development](docs/building.md)** | Toolchain prerequisites, Gradle build tasks, test execution, and catalog synchronization. |
 
