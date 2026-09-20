@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "ignoredIssues": [
+    {
+      "issue": 13,
+      "reason": "False positive in App Manager scanner signatures (closed as answered)"
+    },
+    {
+      "issue": 30,
+      "reason": "Referred to external Morphe patch repository (d0nj/morphe-patches)"
+    }
+  ],
+  "contributors": [
+    {
+      "username": "Lxchoooo",
+      "customText": "🧪 Daily patch testing, runtime APK validation, and bug diagnostics."
+    },
+    {
+      "username": "ll0r3nt3",
+      "contributions": [
+        {
+          "title": "DPI Resource Slimmer",
+          "issue": 16
+        },
+        {
+          "title": "Vivaldi Browser Stable migration",
+          "issue": 20
+        }
+      ]
+    },
+    {
+      "username": "aidenking2102-dotcom",
+      "contributions": [
+        {
+          "title": "TikTok Feed Ad Blocker",
+          "issue": 23
+        },
+        {
+          "title": "Playback Speed Setter",
+          "issue": 25
+        },
+        {
+          "title": "Floating Ad Pendant / Sticker Blocker",
+          "issue": 33
+        }
+      ]
+    },
+    {
+      "username": "mparvezalam808",
+      "contributions": [
+        {
+          "title": "TikTok Always show publish date, Copy comments without username, Fix Google login, and Show seekbar",
+          "issue": 35
+        }
+      ]
+    },
+    {
+      "username": "raxelbyte",
+      "contributions": [
+        {
+          "title": "Gboard Lite Clipboard Enhancements",
+          "issue": 17
+        }
+      ]
+    }
+  ]
+}
