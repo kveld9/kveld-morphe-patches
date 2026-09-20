@@ -343,17 +343,6 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
         criticality="HIGH",
     ),
     PatchContract(
-        patch_id="ghost_mode",
-        name="Ghost Mode",
-        target_type="bytecode",
-        description="Enables anonymous profile and story browsing by suppressing outbound view reporting.",
-        required_classes=[
-            "Lcom/ss/android/ugc/profile/business/ci/viewer/api/ProfileViewerApiService;",
-        ],
-        required_strings=["reportView", "reportStoryViewed"],
-        criticality="HIGH",
-    ),
-    PatchContract(
         patch_id="custom_offline_videos_limit",
         name="Custom Offline Videos Limit",
         target_type="bytecode",
