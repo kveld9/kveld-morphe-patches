@@ -248,9 +248,18 @@ Comprehensive technical references and setup manuals have been modularized for f
 | **[Hevy Setup & Authentication](docs/hevy-setup.md)** | Account authentication notice (Google Sign-In SHA-1 limitation & Email/Password login) and Pro features overview. |
 | **[TikTok Patch Specifications](docs/tiktok-patches.md)** | Deep technical breakdown of all 31 TikTok patches, bytecode hooks, privacy guards, and media downloaders. |
 | **[Vivaldi Patch Specifications](docs/vivaldi-patches.md)** | Technical breakdown of all 15 Vivaldi patches, native GURL redirection, UKM neutralization, and Start Page debloat. |
+| **[Project Scope & Out of Scope](docs/out-of-scope.md)** | Non-negotiable engineering philosophy, compile-time invariants, and explicitly out-of-scope feature requests (in-app settings panels, multi-version legacy support, server bypasses). |
 | **[Patch Configuration & Options](docs/patch-configuration.md)** | Detailed guides for `Clipboard Enhancements`, `SIM Region Selector`, `Locale Slimmer`, and `DPI Resource Slimmer`. |
 | **[Architecture & Security Notes](docs/architecture-security.md)** | Explanation of privacy scanner false positives (ML Kit / Play Billing) and native ELF/Dalvik telemetry neutralization. |
 | **[Building & Development](docs/building.md)** | Toolchain prerequisites, Gradle build tasks, test execution, and catalog synchronization. |
+
+---
+
+## 🎯 Contributing & Feature Requests
+
+Before requesting a new feature or proposing modifications, please review our **[Project Scope & Out-of-Scope Philosophy](docs/out-of-scope.md)**.
+
+We prioritize **surgical, lightweight, zero-overhead compile-time transformations** and rapid upstream synchronization with the latest app versions. Feature requests for dynamic in-app settings panels, legacy multi-version support, server-side exploits, or heavy feature bloat are explicitly out of scope and will be closed as not planned.
 
 ---
 
