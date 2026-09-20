@@ -146,7 +146,7 @@ class BaseTargetPipeline(abc.ABC):
     def is_all_verified(self, patch_results: Dict[str, Any], extra_data: Any) -> bool:
         """Determines if all patches and safety gates passed."""
         return all(
-            res.status in (PatchStatus.VERIFIED, PatchStatus.NOT_AFFECTED) for res in patch_results.values()
+            res.status in (PatchStatus.VERIFIED, PatchStatus.STATICALLY_VERIFIED, PatchStatus.NOT_AFFECTED) for res in patch_results.values()
         )
 
     def collect_blocked_reasons(self, patch_results: Dict[str, Any], extra_data: Any) -> List[str]:

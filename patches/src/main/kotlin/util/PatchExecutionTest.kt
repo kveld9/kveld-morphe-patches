@@ -25,10 +25,14 @@ enum class TargetApp(
         appName = "TikTok Global",
         packageName = Constants.TIKTOK_GLOBAL_PACKAGE_NAME,
         candidateFilenames = listOf(
+            "tiktok_${Constants.TIKTOK_TARGET_VERSION}_orig.apk",
             "tiktok_global_${Constants.TIKTOK_TARGET_VERSION}.apk",
+            "tiktok_${Constants.TIKTOK_TARGET_VERSION}.apk",
+            "tiktok_orig.apk",
             "tiktok_global.apk",
+            "tiktok.apk",
         ),
-        filePattern = Regex("(?i).*tiktok.*global.*\\.apk$"),
+        filePattern = Regex("(?i).*tiktok.*\\.apk$"),
         patchDirectoryPart = "tiktok",
     ),
     TIKTOK_ASIA(
@@ -37,7 +41,9 @@ enum class TargetApp(
         packageName = Constants.TIKTOK_ASIA_PACKAGE_NAME,
         candidateFilenames = listOf(
             "com.ss.android.ugc.trill_${Constants.TIKTOK_TARGET_VERSION}.apk",
-            "com.ss.android.ugc.trill_${Constants.TIKTOK_TARGET_VERSION}-460903_minAPI23(arm64-v8a,armeabi-v7a)(nodpi)_apkmirror.com.apk",
+            "trill_${Constants.TIKTOK_TARGET_VERSION}_orig.apk",
+            "trill_${Constants.TIKTOK_TARGET_VERSION}.apk",
+            "trill.apk",
         ),
         filePattern = Regex("(?i).*trill.*\\.apk$"),
         patchDirectoryPart = "tiktok",
@@ -133,6 +139,10 @@ private fun getSearchDirectories(userHome: String): List<File> {
     dirs.add(File(userHome, "Downloads"))
     dirs.add(File(userHome, "Descargas"))
     dirs.add(File("."))
+    dirs.add(File(".."))
+    dirs.add(File("candidate_apks"))
+    dirs.add(File("../candidate_apks"))
+    dirs.add(File(userHome, "candidate_apks"))
     return dirs.distinctBy { it.absolutePath }.filter { it.isDirectory }
 }
 
@@ -184,11 +194,20 @@ fun main(args: Array<String>) {
         ?: System.getProperty("targetApp")
         ?: System.getProperty("app")
 
+    val explicitApkFile = explicitApkArg?.let { raw ->
+        val direct = File(raw)
+        if (direct.isFile) direct
+        else {
+            val fromParent = File("..", raw)
+            if (fromParent.isFile) fromParent else direct
+        }
+    }
+
     val apkFile: File
     val targetApp: TargetApp
 
-    if (explicitApkArg != null && File(explicitApkArg).isFile) {
-        apkFile = File(explicitApkArg)
+    if (explicitApkFile != null && explicitApkFile.isFile) {
+        apkFile = explicitApkFile
         targetApp = explicitTargetArg?.let { TargetApp.fromId(it) }
             ?: TargetApp.fromFileName(apkFile.name)
             ?: error("Could not infer target app for APK: ${apkFile.name}. Specify app via -Papp=<target> or args.")
