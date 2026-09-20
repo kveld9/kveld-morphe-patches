@@ -59,13 +59,13 @@
 <a href="https://www.apkmirror.com/apk/hevy-gym-workout-tracker/hevy-gym-log-workout-tracker/hevy-gym-log-workout-tracker-3-1-14-release/"><img src="https://img.shields.io/badge/Download-Hevy_3.1.14_(APKM)-FF4500?style=for-the-badge&logo=target&logoColor=white" alt="Download Hevy APKM" /></a>
 
 ### 🎵 TikTok (Global & Asia)
-- **Current Target**: `46.9.3`
+- **Current Target**: `47.0.3`
 - **Architecture**: `arm64-v8a` (nodpi APK)
 - **Package**: `com.zhiliaoapp.musically` (Global) & `com.ss.android.ugc.trill` (Asia)
 
-<a href="https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-46-9-3-release/"><img src="https://img.shields.io/badge/Download-TikTok_Global_46.9.3_(APK_nodpi)-FE2C55?style=for-the-badge&logo=tiktok&logoColor=white" alt="Download TikTok Global APK" /></a>
+<a href="https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-47-0-3-release/"><img src="https://img.shields.io/badge/Download-TikTok_Global_47.0.3_(APK_nodpi)-FE2C55?style=for-the-badge&logo=tiktok&logoColor=white" alt="Download TikTok Global APK" /></a>
 &nbsp;&nbsp;
-<a href="https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok/tiktok-46-9-3-2-release/"><img src="https://img.shields.io/badge/Download-TikTok_Asia_46.9.3_(APK_nodpi)-25F4EE?style=for-the-badge&logo=tiktok&logoColor=white" alt="Download TikTok Asia APK" /></a>
+<a href="https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok/tiktok-47-0-3-2-release/"><img src="https://img.shields.io/badge/Download-TikTok_Asia_47.0.3_(APK_nodpi)-25F4EE?style=for-the-badge&logo=tiktok&logoColor=white" alt="Download TikTok Asia APK" /></a>
 
 ---
 
@@ -104,12 +104,12 @@
 </details>
 
 <details>
-<summary>TikTok&nbsp;&nbsp;•&nbsp;&nbsp;<b>32 patches</b></summary>
+<summary>TikTok&nbsp;&nbsp;•&nbsp;&nbsp;<b>31 patches</b></summary>
 <br>
 
 **Supported versions:**
 
-| 46.9.3 |
+| 47.0.3 |
 | :---: |
 
 | Patch | Description | Options |

@@ -1,6 +1,6 @@
 # 🎵 TikTok: Technical Patch Specifications & Deep Breakdown
 
-Comprehensive breakdown of the patches included in the Morphe TikTok patch suite pinned to target version **`46.9.3`** (supporting both `com.zhiliaoapp.musically` Global and `com.ss.android.ugc.trill` Asia APKs).
+Comprehensive breakdown of the patches included in the Morphe TikTok patch suite pinned to target version **`47.0.3`** (supporting both `com.zhiliaoapp.musically` Global and `com.ss.android.ugc.trill` Asia APKs).
 
 ---
 
@@ -137,7 +137,7 @@ Comprehensive breakdown of the patches included in the Morphe TikTok patch suite
 * **Objective**: Configure a custom maximum video count for offline video download caching (e.g. 200, 500, or any target number) with dynamic duration and storage estimation.
 * **Internal Mechanisms**:
   * **Configurable Target Limit**:
-    * Configurable via `stringOption("customLimit")` (default: `200`).
+    * Configurable via `intOption("customLimit")` (default: `200`).
     * Initializes `TikTokOfflineVideosHook.targetLimit` during class initialization.
   * **Offline Limits List Injection**:
     * Dynamically discovers `OfflineModeSheetPageAssem.onAssemPostCreate()` and resolves the limits list provider method (`()Ljava/util/List;`).
@@ -269,7 +269,7 @@ Comprehensive breakdown of the patches included in the Morphe TikTok patch suite
   * **Video Feed Anchor Stripping**: Hooks `FeedApiService.fetchFeedList()`, `FeedItemList.getItems()`, and `FollowFeedList.getItems()` to invoke `TikTokFeedAdFilter.stripCommercialAnchors()`, clearing product tags (`setAnchors(null)`) and showcase links (`setAnchorInfo(null)`).
   * **Shop Bottom Tab Neutralization**: Hooks `ShopBottomTabProtocol.enable()Z` -> returns `false`.
   * **Shop Top Tab Neutralization**: Hooks `ShopTopTabProtocol.enable()Z` -> returns `false`.
-  * **Shop Icon & Entry Service Neutralization**: Hooks `ShopIconServiceImpl.rw()Z` -> returns `false`.
+  * **Shop Icon & Entry Service Neutralization**: Hooks `ShopIconServiceImpl.vw()Z` (or `rw()Z` on 46.9.x) -> returns `false`.
 
 ### 10. Feed Live Stream Blocker (`feedLiveStreamBlockerPatch`)
 * **Objective**: Eliminate live broadcast recommendations and live stream preview cards from the For You Page (FYP) and Following feeds as an independent, modular toggle.
@@ -334,11 +334,11 @@ Comprehensive breakdown of the patches included in the Morphe TikTok patch suite
     * **Hardware Capability Boundary Protection**: `TikTokRefreshRateHook` queries actual physical display modes via `Display.getSupportedModes()` / `Display.getSupportedRefreshRates()`. If a requested target rate exceeds the panel's maximum physical frequency (e.g., selecting 120Hz on a 90Hz or 60Hz screen), it automatically clamps to the screen's peak supported rate instead of attempting an out-of-bounds mode switch that crashes the app or display pipeline.
     * Activity lifecycle guards verify the `Activity` is active and not finishing/destroyed before applying LayoutParams.
   * **Safe Video Playback Downclocking Neutralization**:
-    * Hooks `LX/09YB.invoke()` (`ui_video_frame_rate_opt`) to return `Boolean.TRUE`, causing `PlayerController.LJJZZIII` to branch past internal downclocking instructions without aborting `onRenderFirstFrame` callbacks.
-    * Neutralizes `LX/07tH.invoke()` (`setRefreshRateIfNeeded`) -> returns `Unit.LIZ`.
+    * Hooks `LX/09iz.invoke()` (formerly `LX/09YB`, `ui_video_frame_rate_opt`) to return `Boolean.TRUE`, causing `PlayerController.LJJZZIII` to branch past internal downclocking instructions without aborting `onRenderFirstFrame` callbacks.
+    * Neutralizes `LX/087o.invoke()` (formerly `LX/07tH`, `setRefreshRateIfNeeded`) -> returns `Unit.LIZ`.
   * **Touch & Drag Release Frequency Enforcement**:
     * Overrides `LX/0JOJ.LIZ()` to immediately re-apply the target refresh rate to `Window.LayoutParams.preferredRefreshRate` whenever drag gestures stop.
-    * Overrides `LX/1PFE.LIZ()` (instance) and `LX/1PFE.LIZIZ()` (static) (`RefreshFrequencyTutor`) passing the target `Activity` instance to prevent resetting the display back to 60Hz.
+    * Overrides `LX/1RHf.LIZ()` (instance) and `LX/1RHf.LIZIZ()` (static) (formerly `LX/1PFE`, `RefreshFrequencyTutor`) passing the target `Activity` instance to prevent resetting the display back to 60Hz.
   * **Activity Lifecycle Lock**:
     * Hooks `MainActivity.onResume()` and `MainActivity.onWindowFocusChanged(boolean)` to ensure window parameters remain strictly locked to target refresh rate across focus switches and app switching.
 
@@ -347,8 +347,8 @@ Comprehensive breakdown of the patches included in the Morphe TikTok patch suite
 * **Internal Mechanisms**:
   * Neutralizes Lego splash tasks: `SplashAdManagerPreloadTask.run()` and `SplashAdManagerPreloadTaskEntry.run()`.
   * Forces `SplashSettingServiceImpl.LIZ()` and `LIZIZ()` -> `return false`.
-  * Neutralizes `RealTimeSplashManagerImpl.LIZJ()` -> `return false` (eliminates synchronous waiting for remote TopView splash video assets during cold start).
-  * Neutralizes `SplashAdServiceImpl.LJ()`, `LJIILJJIL()`, and `LJJIJIIJIL()` -> `return false` (suppresses splash ad presentation and background fetch).
+  * Neutralizes `RealTimeSplashManagerImpl.LIZLLL()` (formerly `LIZJ()`) -> `return false` (eliminates synchronous waiting for remote TopView splash video assets during cold start).
+  * Neutralizes `SplashAdServiceImpl.LJFF()`, `LJIILIIL()`, and `LJJIJIL()` (formerly `LJ()`, `LJIILJJIL()`, `LJJIJIIJIL()`) -> `return false` (suppresses splash ad presentation and background fetch).
 
 ### 16. Resource & Battery Governor (`resourceGovernorPatch`)
 * **Objective**: Eliminate battery-draining background operations, sensor polling, and memory leaks.
@@ -359,7 +359,7 @@ Comprehensive breakdown of the patches included in the Morphe TikTok patch suite
   * **Network Traffic & Video Buffer Governor**:
     * Forces `PreloadStrategyConfig.isEnableBufferPreload()Z` -> `return false`, preventing aggressive multi-video background buffer downloads on cellular data.
   * **Memory Retention Governor**:
-    * Caps animated bitmap frame caching in Facebook Fresco (`FrescoFrameCache.LIZJ()`, `LJFF()`), preventing OOM crashes during long scrolling sessions.
+    * Caps animated bitmap frame caching in Facebook Fresco (`FrescoFrameCache.LIZJ()`, `LIZLLL()`), preventing OOM crashes during long scrolling sessions.
 
 ### 17. P2P Video Relay Blocker (`p2pVideoRelayBlockerPatch`)
 * **Objective**: Prevent TikTok from utilizing user device battery, CPU, and cellular data as a distributed P2P edge CDN relay for other users' video streams.

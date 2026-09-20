@@ -313,8 +313,8 @@ The **`Display Refresh Rate Governor`** patch locks TikTok's window rendering fr
 - **Hardware Query & Boundary Clamping**: In `TikTokRefreshRateHook.resolveTargetRate()`, queries `Display.getSupportedModes()` (Android M+) with fallback to `Display.getSupportedRefreshRates()` to detect physical display capabilities. If a configured rate exceeds the physical panel frequency (e.g. selecting 120Hz on a 90Hz or 60Hz display), it automatically clamps to `maxSupportedRate` to prevent fatal WindowManager / SurfaceFlinger mode switch aborts.
 - **Lifecycle Guards**: Validates that the `Activity` is non-null, not finishing, and not destroyed before applying window layout parameters.
 - **Window Locking**: Enforces `WindowManager.LayoutParams.preferredRefreshRate` on `MainActivity` during `onResume()` and `onWindowFocusChanged()`.
-- **Downclock Neutralization**: Bypasses video playback framerate downclocking via `LX/09YB.invoke()` (`ui_video_frame_rate_opt`) and `LX/07tH.invoke()` (`setRefreshRateIfNeeded`) while preserving all `onRenderFirstFrame` callbacks intact.
-- **Gesture Drag Synchronization**: Overrides `LX/0JOJ.LIZ()` and `LX/1PFE.LIZ()` (instance) / `LX/1PFE.LIZIZ()` (static) to immediately re-lock preferred refresh rate upon gesture completion.
+- **Downclock Neutralization**: Bypasses video playback framerate downclocking via `LX/09iz.invoke()` (formerly `LX/09YB`, `ui_video_frame_rate_opt`) and `LX/087o.invoke()` (formerly `LX/07tH`, `setRefreshRateIfNeeded`) while preserving all `onRenderFirstFrame` callbacks intact.
+- **Gesture Drag Synchronization**: Overrides `LX/0KAE.LIZ()` (formerly `LX/0JOJ`) and `LX/1RHf.LIZ()` (instance) / `LX/1RHf.LIZIZ()` (static) (formerly `LX/1PFE`) to immediately re-lock preferred refresh rate upon gesture completion.
 
 ---
 
@@ -326,12 +326,12 @@ The **`Custom Offline Videos Limit`** patch customizes the maximum video caching
 
 | Option | Key | Type | Default | Supported Values | Description |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Custom Offline Videos Limit** | `customLimit` | String | `200` | Any integer `1` to `50000` | Maximum number of offline videos that can be cached for offline playback. |
+| **Custom Offline Videos Limit** | `customLimit` | Integer | `200` | Any integer `1` to `50000` | Maximum number of offline videos that can be cached for offline playback. |
 
 ### Technical Architecture
-- **Non-Destructive Limits Injection**: Intercepts the limits list provider (`LX/09qy.LJFF()`) to insert the configured limit in sorted order while keeping the `-1` (Auto-adjust) marker at index 0. Preserves native user choice without locking Keva cache.
-- **Plural Title Resolution**: Intercepts `LX/0tnl.LIZ()` to format the header title using Android's native plural quantity strings (`2131755487`) or clean localized fallbacks.
-- **Dynamic Duration & Storage Estimation**: Intercepts radio item instantiation in `LX/0tnn.LIZLLL()` and download progress in `LX/0tnk.getSubtitle()`. Dynamically computes duration (`Math.round(count * 0.5)` mins) and storage size (`count * 2` MB / GB) when standard enum lookup fails for custom numbers.
+- **Non-Destructive Limits Injection**: Intercepts the limits list provider in `OfflineModeSheetPageAssem.onAssemPostCreate()` to insert the configured limit in sorted order while keeping the `-1` (Auto-adjust) marker at index 0. Preserves native user choice without locking Keva cache.
+- **Plural Title Resolution**: Intercepts title formatting in `OfflineModeSheetPageAssem.Kr()` to format the header title using Android's native plural quantity strings (`2131755487`) or clean localized fallbacks.
+- **Dynamic Duration & Storage Estimation**: Intercepts radio item instantiation and download progress in `OfflineModeSheetPageAssem.Sr()` / subtitle formatter. Dynamically computes duration (`Math.round(count * 0.5)` mins) and storage size (`count * 2` MB / GB) when standard enum lookup fails for custom numbers.
 
 ---
 
