@@ -318,6 +318,23 @@ The **`Display Refresh Rate Governor`** patch locks TikTok's window rendering fr
 
 ---
 
+## 🎵 TikTok: Custom Offline Videos Limit
+
+The **`Custom Offline Videos Limit`** patch customizes the maximum video caching limit available in TikTok's native Offline Mode bottom sheet. While stock TikTok restricts offline download caching to fixed tiers (e.g. 50, 100, 150), this patch injects a user-configurable count (default: `200`, clamped `1..50000`) into the options list while preserving native Keva persistence and the Auto-adjust option.
+
+### Configuration in Morphe Manager
+
+| Option | Key | Type | Default | Supported Values | Description |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Custom Offline Videos Limit** | `customLimit` | String | `200` | Any integer `1` to `50000` | Maximum number of offline videos that can be cached for offline playback. |
+
+### Technical Architecture
+- **Non-Destructive Limits Injection**: Intercepts the limits list provider (`LX/09qy.LJFF()`) to insert the configured limit in sorted order while keeping the `-1` (Auto-adjust) marker at index 0. Preserves native user choice without locking Keva cache.
+- **Plural Title Resolution**: Intercepts `LX/0tnl.LIZ()` to format the header title using Android's native plural quantity strings (`2131755487`) or clean localized fallbacks.
+- **Dynamic Duration & Storage Estimation**: Intercepts radio item instantiation in `LX/0tnn.LIZLLL()` and download progress in `LX/0tnk.getSubtitle()`. Dynamically computes duration (`Math.round(count * 0.5)` mins) and storage size (`count * 2` MB / GB) when standard enum lookup fails for custom numbers.
+
+---
+
 ## 🦁 Brave Browser: Zero-Configuration Privacy & Debloat Patches
 
 The following Brave patches are enabled by default and operate automatically without requiring user configuration in Morphe Manager:

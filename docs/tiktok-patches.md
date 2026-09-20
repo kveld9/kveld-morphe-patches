@@ -15,6 +15,7 @@ Comprehensive breakdown of the patches included in the Morphe TikTok patch suite
 | **Usability** | **Playback Speed Persistence** | `bytecodePatch` | Persists user-selected video speed across feed scrolling and restarts |
 | **Usability** | **Video Quality Governor** | `bytecodePatch` | Enforces independent resolution ceilings for playback (e.g. 480p) and downloads (e.g. 1080p, 720p, or uncapped) |
 | **Usability** | **Skip First-Launch Onboarding** | `bytecodePatch` | Bypasses interest pickers, swipe-up tutorial, language prompts, and consent sheets directly to FYP feed |
+| **Usability** | **Custom Offline Videos Limit** | `bytecodePatch` | Customizes maximum offline videos download caching limit (~X mins, Y GB/MB) |
 | **Privacy** | **Fix Google login** | `bytecodePatch` | Restores Google account sign-in via Web OAuth fallback when GMS rejects modified APK signature |
 | **Privacy** | **Bypass Mandatory Login** | `bytecodePatch` | Neutralizes mandatory login walls, dynamic regional forced login gates, and guest mode browsing restrictions |
 | **Privacy** | **Clean Share URL** | `bytecodePatch` | Strips tracking query parameters, user tokens, and campaign IDs |
@@ -135,6 +136,23 @@ Comprehensive breakdown of the patches included in the Morphe TikTok patch suite
     * Matches methods referencing `Comment.getText()` and invoking the clipboard helper.
     * Hooks `Comment.getText()` to capture the original unformatted comment text into `TikTokCommentHook.captureCommentText(String)`.
     * Hooks the clipboard helper invocation call site directly, sanitizing the text to be copied via `TikTokCommentHook.sanitizeCopiedComment(String)` to strip the author prefix with zero stack frame perturbation.
+
+### 8. Custom Offline Videos Limit (`customOfflineVideosLimitPatch`)
+* **Objective**: Configure a custom maximum video count for offline video download caching (e.g. 200, 500, or any target number) with dynamic duration and storage estimation.
+* **Internal Mechanisms**:
+  * **Configurable Target Limit**:
+    * Configurable via `stringOption("customLimit")` (default: `200`).
+    * Initializes `TikTokOfflineVideosHook.targetLimit` during class initialization.
+  * **Offline Limits List Injection**:
+    * Dynamically discovers `OfflineModeSheetPageAssem.onAssemPostCreate()` and resolves the limits list provider method (`()Ljava/util/List;`).
+    * Intercepts all `return-object` points, routing through `TikTokOfflineVideosHook.getOfflineLimits(List)` to insert `targetLimit` and return a sorted list while preserving `-1` (auto-adjust).
+  * **Pluralized Title Formatting**:
+    * Dynamically discovers `OfflineModeSheetPageAssem.Kr()` and resolves title formatter `(ILandroid/app/Activity;)Ljava/lang/String;`.
+    * Intercepts all `return-object` points, wrapping with `TikTokOfflineVideosHook.formatTitle(int, Activity, String)` to use native plural quantity resources (`2131755487`) or localized fallback.
+  * **Progress & Radio Item Subtitle Computation**:
+    * Dynamically discovers `OfflineModeSheetPageAssem.Sr()` and resolves `getSubtitle` (`(Context, int, ...)Ljava/lang/String;`).
+    * Wraps return points with `TikTokOfflineVideosHook.formatProgressSubtitle(Context, int, String)` to compute duration and storage estimations (`~X mins, Y GB/MB`) when enum matching fails for custom numbers.
+    * Discovers the radio item cell class by field types `[I, Activity, OfflineModeManagerVM]` and intercepts subtitle string parameter before item instantiation in `LIZLLL()`.
 
 ---
 
