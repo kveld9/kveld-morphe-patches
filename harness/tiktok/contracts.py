@@ -213,7 +213,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
         patch_id="media_enhancements",
         name="Media Usability & Watermark-Free Downloader",
         target_type="bytecode",
-        description="Unblocks the download button on creator-restricted videos and Stories in the Share panel, routing downloads to clean unwatermarked media streams.",
+        description="Unblocks the download button on creator-restricted videos in the Share panel, routing downloads to clean unwatermarked media streams.",
         required_classes=[
             "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
             "Lcom/ss/android/ugc/aweme/feed/model/Video;",
