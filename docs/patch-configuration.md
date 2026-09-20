@@ -270,7 +270,7 @@ TH, TR, TW, UA, US, UY, VN, ZA
 
 The **`Video Quality Governor`** patch enforces user-configured maximum resolution ceilings (`1080p`, `720p`, `540p`, `480p`, or unconstrained) across video feeds while allowing independent configuration of download quality. While standard TikTok features like "Data Saver" only compress network transfers under cellular conditions without capping hardware decoders, this governor caps the actual rendition ladder (`bitRateList` and `SimBitRate`) parsed by PlayerKit/TTPlayer, reducing hardware MediaCodec load, thermals, GraphicBuffers memory consumption, and frame drops on lower-spec or battery-sensitive devices.
 
-Crucially, **playback quality and download quality are decoupled**: users can browse their feed in battery-efficient 480p while downloading clean videos and stories in full 1080p.
+Crucially, **playback quality and download quality are decoupled**: users can browse their feed in battery-efficient 480p while downloading clean videos in full 1080p.
 
 ### Configuration in Morphe Manager
 
@@ -292,7 +292,7 @@ Crucially, **playback quality and download quality are decoupled**: users can br
 ### Technical Architecture
 - **Dalvik Hooking**: Injects hooks into `Aweme.getVideo()` (return object synchronization), `Video.getBitRate()` & `Video.getRawBitRate()` (candidate ladder filtering), and `SimVideoUrlModel.getBitRate()` (PlayerKit engine filtering).
 - **Decoupled Quality Caching**: Before mutating `Video` candidate streams for PlayerKit playback, `TikTokVideoQualityHook.capVideoObject(Video)` extracts and preserves the highest-bitrate stream within the download ceiling inside `uncappedDownloadAddrs`.
-- **Downloader Routing**: `TikTokMediaHook` checks `TikTokVideoQualityHook.getBestDownloadPlayAddr(video)` when extracting clean media URLs, ensuring downloaded videos and Stories maintain full 1080p/720p resolution regardless of feed playback caps.
+- **Downloader Routing**: `TikTokMediaHook` checks `TikTokVideoQualityHook.getBestDownloadPlayAddr(video)` when extracting clean media URLs, ensuring downloaded videos maintain full 1080p/720p resolution regardless of feed playback caps.
 - **In-Situ Synchronization**: Invokes `TikTokVideoQualityHook.capVideoObject(Video)` and `TikTokVideoQualityHook.filterBitrates(List)`. Discards streams exceeding the playback cap and prioritizes the highest valid stream within the ceiling.
 - **Fail-Safe Fallback**: If an uploaded video only provides renditions exceeding the ceiling, the governor preserves the lowest available stream rather than black-screening or stalling playback.
 - **Preference Persistence**: User selections are saved to `morphe_tiktok_quality_prefs` SharedPreferences, maintaining state across restarts.
