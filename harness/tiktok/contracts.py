@@ -353,6 +353,17 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
         required_strings=["reportView", "reportStoryViewed"],
         criticality="HIGH",
     ),
+    PatchContract(
+        patch_id="custom_offline_videos_limit",
+        name="Custom Offline Videos Limit",
+        target_type="bytecode",
+        description="Customizes the maximum number of videos available for offline download caching.",
+        required_classes=[
+            "Lcom/ss/android/ugc/aweme/offlinemode/ui/sheet/OfflineModeSheetPageAssem;",
+        ],
+        required_strings=["onAssemPostCreate"],
+        criticality="HIGH",
+    ),
 ]
 
 
