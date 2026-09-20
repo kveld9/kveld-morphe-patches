@@ -70,10 +70,6 @@ object Constants {
             AppTarget(
                 version = HEVY_TARGET_VERSION,
                 description = "Download com.hevy v$HEVY_TARGET_VERSION (APKM bundle) from APKMirror"
-            ),
-            AppTarget(
-                version = "3.1.13",
-                description = "Download com.hevy v3.1.13 (APKM bundle) from APKMirror"
             )
         )
     )
