@@ -1,6 +1,6 @@
 # 🔴 Vivaldi Browser: Technical Patch Specifications & Architecture
 
-Comprehensive technical breakdown of all **14 patches** included in the Morphe Vivaldi patch suite pinned to stable target version **`8.2.4147.77`** (`com.vivaldi.browser` ARM64 APKM bundle).
+Comprehensive technical breakdown of the patches included in the Morphe Vivaldi patch suite pinned to stable target version **`8.2.4147.93`** (`com.vivaldi.browser` ARM64 APKM bundle).
 
 ---
 
