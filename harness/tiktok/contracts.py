@@ -109,7 +109,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     ),
     PatchContract(
         patch_id="hide_tiktok_shop_anchors",
-        name="Hide TikTok Shop Anchors",
+        name="Hide TikTok Shop & Mall",
         target_type="bytecode",
         description="Removes product showcase badges, shopping cart tags, and TikTok Shop commercial anchors from video posts in the feed.",
         required_classes=[
@@ -197,7 +197,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
             "Lcom/facebook/fresco/animation/bitmap/cache/FrescoFrameCache;",
             "Lcom/ss/android/ugc/aweme/video/preload/model/PreloadStrategyConfig;",
         ],
-        required_strings=["isEnableBufferPreload", "LIZJ", "LJFF"],
+        required_strings=["isEnableBufferPreload", "LIZJ", "LIZLLL"],
         criticality="HIGH",
     ),
     PatchContract(
@@ -263,7 +263,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
             "Lcom/ss/android/ugc/aweme/main/MainPageFragment;",
             "Lcom/ss/android/ugc/aweme/NewUserJourneyService;",
         ],
-        required_strings=["JS", "did_finish_nuj", "new_user_journey"],
+        required_strings=["did_finish_nuj", "new_user_journey"],
         criticality="HIGH",
     ),
     PatchContract(
@@ -308,7 +308,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
         target_type="bytecode",
         description="Restores TikTok's native video seekbar and scrubbing controls where normally hidden or disabled.",
         required_classes=["Lcom/ss/android/ugc/aweme/feed/model/Aweme;"],
-        required_strings=["getVideoControl", "seekbar show type change, change to:"],
+        required_strings=["getVideoControl"],
         criticality="HIGH",
     ),
     PatchContract(

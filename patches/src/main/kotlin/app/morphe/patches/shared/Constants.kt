@@ -76,7 +76,7 @@ object Constants {
 
     const val TIKTOK_GLOBAL_PACKAGE_NAME = "com.zhiliaoapp.musically"
     const val TIKTOK_ASIA_PACKAGE_NAME = "com.ss.android.ugc.trill"
-    const val TIKTOK_TARGET_VERSION = "46.9.3"
+    const val TIKTOK_TARGET_VERSION = "47.0.3"
 
     val COMPATIBILITY_TIKTOK = Compatibility(
         name = "TikTok",
