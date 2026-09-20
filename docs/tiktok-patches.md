@@ -1,6 +1,6 @@
 # 🎵 TikTok: Technical Patch Specifications & Deep Breakdown
 
-Comprehensive breakdown of the **31 patches** included in the Morphe TikTok patch suite pinned to target version **`46.9.3`** (supporting both `com.zhiliaoapp.musically` Global and `com.ss.android.ugc.trill` Asia APKs).
+Comprehensive breakdown of the patches included in the Morphe TikTok patch suite pinned to target version **`46.9.3`** (supporting both `com.zhiliaoapp.musically` Global and `com.ss.android.ugc.trill` Asia APKs).
 
 ---
 
@@ -53,6 +53,7 @@ Comprehensive breakdown of the **31 patches** included in the Morphe TikTok patc
     * Invokes `TikTokMediaHook` to dynamically flip internal `canDownload` boolean fields via reflection, restoring the "Save video" action in the share modal.
     * Hooks `AwemeExtKt.isSharedStoryVisible(Aweme;)Z` -> returns `true`.
     * Intercepts Share panel action builder (`LX/0HGG;->LJJI()`) and neutralizes all early `return-void` guards (story type 45, 46, 180, 181, comment video, and restriction checks) prior to action instantiation, ensuring the "Save video" button (`LX/0HJb`) is unconditionally constructed and appended to the Share panel for Stories.
+    * Patches modern Share panel action generator `LX/0uEq;->LIZIZ(LX/0uFr;)Ljava/util/List;`, neutralizing the `if-eqz` story type bypass guard with `nop` to instantiate and append `LX/0uF9` for all Stories.
     * Hooks download action `LX/0HJb;->enable()Z` and `now_save` action -> returns `true`, guaranteeing the Save action in the Share panel is always clickable and active rather than grayed out.
   * **Clean Watermark-Free Downloads**:
     * Hooks `Aweme.getDownloadWithoutWatermark()Z` -> returns `true`.
