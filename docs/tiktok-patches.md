@@ -211,6 +211,10 @@ Comprehensive breakdown of the **31 patches** included in the Morphe TikTok patc
     * Dynamically identifies callers of `ProfileViewerApiService.reportView` and `StoryApi` methods (`reportStoryViewed`, `reportUserInteraction`, `reportStoryReveal`).
     * Traces Dalvik execution chains from invocation through `.subscribeOn(...)` to terminal `.subscribe()` / `.enqueue()` dispatch points.
     * Injects conditional branches (`skipReportAtCallSite`) backed by backward control-flow graph register liveness analysis (`RegisterLiveness`), safely jumping over the entire dispatch pipeline when `TikTokGhostModeHook` is active. This avoids passing invalid/dummy objects into RxJava or Kotlin coroutine state machines, completely preventing `NullPointerException` crashes and preserved follower counts.
+  * **Secondary Story View Dispatch Suppression**:
+    * Directly guards `LX/0x6G;->run()V` (`StoryFeedService.reportStoryViewed$3`) with `TikTokGhostModeHook.shouldBlockStoryView()` and exits `LX/07Rx;->LIZIZ` early, preventing background dispatch of delayed story view notifications.
+  * **Profile Visit Telemetry Neutralization**:
+    * Suppresses outbound `profile_request_response` analytics emission sites in `ProfilePlatformViewModel;->J53`, preventing recipient user identifiers (`to_user_id`) from leaking through AppLog telemetry channels.
   * **Outbound Typing Status Suppression**:
     * Guards `TypingStatusSenderTimer.LIZ(String)` and `LIZIZ(String)` entrypoints with early `return-void` via `TikTokGhostModeHook.shouldBlockTypingStatus()`.
   * **Companion Runtime Hook**:
