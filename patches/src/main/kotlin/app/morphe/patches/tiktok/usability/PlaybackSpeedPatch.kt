@@ -84,6 +84,33 @@ val playbackSpeedPatch = bytecodePatch(
             println("[Playback Speed Persistence] Speed selection handler note: ${e.message}")
         }
 
+        // 4. Hook PlayerManager.setSpeed(F)V (Core playback engine speed dispatcher)
+        // Prevents search, profile, and non-FYP controllers from resetting playback speed back to 1.0f
+        try {
+            val playerManagerFp = Fingerprint(
+                strings = listOf("PlayerManager con useV3:"),
+            )
+            val setSpeedMethod = playerManagerFp.classDef.methods.firstOrNull {
+                it.implementation != null &&
+                    it.parameterTypes == listOf("F") &&
+                    it.returnType == "V" &&
+                    it.name != "seek"
+            } ?: error("Could not find setSpeed(F)V method in PlayerManager (${playerManagerFp.classDef.type})")
+
+            val speedParamReg = if (AccessFlags.STATIC.isSet(setSpeedMethod.accessFlags)) "p0" else "p1"
+            setSpeedMethod.addInstructions(
+                0,
+                """
+                    invoke-static {$speedParamReg}, ${Constants.TIKTOK_EXTENSION_SPEED_HOOK}->resolvePlayerSpeed(F)F
+                    move-result $speedParamReg
+                """.trimIndent(),
+            )
+            println("[Playback Speed Persistence] Hooked core PlayerManager.setSpeed (${playerManagerFp.classDef.type}->${setSpeedMethod.name}) -> Global speed persistence across Search and Profiles active.")
+            patched++
+        } catch (e: Exception) {
+            println("[Playback Speed Persistence] PlayerManager.setSpeed note: ${e.message}")
+        }
+
         println("[Playback Speed Persistence] Applied $patched playback speed hook(s) -> Persistent speed active.")
     }
 }

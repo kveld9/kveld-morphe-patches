@@ -72,6 +72,23 @@ public final class TikTokSpeedHook {
     }
 
     /**
+     * Resolves speed dispatched directly to PlayerManager.
+     * Prevents internal feed controllers (search, profile, ad-skip, onRenderFirstFrame)
+     * from resetting playback speed back to 1.0f when a persistent speed is active.
+     */
+    public static float resolvePlayerSpeed(float requestedSpeed) {
+        float persisted = getPlaybackSpeed(null);
+        if (persisted > 0.0f && Math.abs(persisted - 1.0f) > 0.001f) {
+            // If the app tries to reset speed to 1.0x (e.g. video change or search/profile load),
+            // enforce the persistent speed selected by the user.
+            if (Math.abs(requestedSpeed - 1.0f) < 0.001f) {
+                return persisted;
+            }
+        }
+        return requestedSpeed;
+    }
+
+    /**
      * Intercepts user speed selection from native TikTok speed sheet / menu.
      */
     public static void onSpeedSelected(float speed) {
