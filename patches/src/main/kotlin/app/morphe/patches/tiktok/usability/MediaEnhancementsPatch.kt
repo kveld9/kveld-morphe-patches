@@ -10,6 +10,7 @@ import app.morphe.patches.shared.ensureRegisterCount
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.reference.StringReference
 
 val mediaEnhancementsPatch = bytecodePatch(
     name = "Media Usability & Watermark-Free Downloader",
@@ -417,6 +418,48 @@ val mediaEnhancementsPatch = bytecodePatch(
             }
         } catch (e: Exception) {
             println("[Media Usability] NowSaveAction note: ${e.message}")
+        }
+
+        // 13. Unblock modern Share panel download action for Stories and restricted content
+        try {
+            val shareActionListFp = Fingerprint(
+                returnType = "Ljava/util/List;",
+                strings = listOf("panel_download_bar", "homepage_podcast", "save_photo"),
+            )
+            val method = shareActionListFp.method
+            val instructions = method.implementation?.instructions?.toList() ?: emptyList()
+
+            var panelStrIdx = -1
+            for ((idx, ins) in instructions.withIndex()) {
+                if (ins.opcode == Opcode.CONST_STRING || ins.opcode == Opcode.CONST_STRING_JUMBO) {
+                    val str = ((ins as? ReferenceInstruction)?.reference as? StringReference)?.string
+                    if (str == "panel_download_bar") {
+                        panelStrIdx = idx
+                        break
+                    }
+                }
+            }
+
+            if (panelStrIdx != -1) {
+                var ifEqzIdx = -1
+                var downloadReg = -1
+                for (idx in (panelStrIdx - 1) downTo maxOf(0, panelStrIdx - 10)) {
+                    val ins = instructions[idx]
+                    if (ins.opcode == Opcode.IF_EQZ && ins is OneRegisterInstruction) {
+                        ifEqzIdx = idx
+                        downloadReg = ins.registerA
+                        break
+                    }
+                }
+
+                if (ifEqzIdx != -1 && downloadReg != -1) {
+                    method.replaceInstruction(ifEqzIdx, "nop")
+                    println("[Media Usability] Neutralized modern share panel download guard (if-eqz v$downloadReg) -> unblocked Stories.")
+                    patched++
+                }
+            }
+        } catch (e: Exception) {
+            println("[Media Usability] Modern ShareActionList note: ${e.message}")
         }
 
         println("[Media Usability & Watermark-Free Downloader] Applied $patched media usability and watermark-free download hook(s).")
