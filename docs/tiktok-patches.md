@@ -8,7 +8,7 @@ Comprehensive breakdown of the patches included in the Morphe TikTok patch suite
 
 | Category | Patch Name | Type | Key Target / Mechanism |
 | :--- | :--- | :--- | :--- |
-| **Usability** | **Media Usability & Watermark-Free Downloader** | `bytecodePatch` | Unblock download button for posts & Stories in Share panel, unwatermarked stream routing |
+| **Usability** | **Media Usability & Watermark-Free Downloader** | `bytecodePatch` | Unblock download button for restricted videos in Share panel, unwatermarked stream routing |
 | **Usability** | **Show seekbar** | `bytecodePatch` | Restores video seekbar and scrubbing controls where normally hidden or disabled |
 | **Usability** | **Always show publish date** | `bytecodePatch` | Forces video publish and upload timestamps to remain visible across all feed cards |
 | **Usability** | **Copy comments without username** | `bytecodePatch` | Sanitizes comment copy actions to exclude the prepended author username |
@@ -20,7 +20,6 @@ Comprehensive breakdown of the patches included in the Morphe TikTok patch suite
 | **Privacy** | **Bypass Mandatory Login** | `bytecodePatch` | Neutralizes mandatory login walls, dynamic regional forced login gates, and guest mode browsing restrictions |
 | **Privacy** | **Clean Share URL** | `bytecodePatch` | Strips tracking query parameters, user tokens, and campaign IDs |
 | **Privacy** | **Device Privacy Guard** | `bytecodePatch` | Blocks background clipboard inspection, purges 35 invasive permissions, prunes 92 external package query declarations, silences HAR hardware sensors, and bypasses FLAG_SECURE |
-| **Privacy** | **Ghost Mode** | `bytecodePatch` | Enables anonymous profile, story, and conversation browsing: suppresses outbound view records, story view pings, and typing indicators |
 | **Privacy** | **In-App Browser Privacy Guard** | `bytecodePatch` | Redirects external links to default system browser, neutralizes WebView JS tracking injection and AJAX hookers |
 | **Privacy** | **Client-Side AI & Behavioral Profiling Governor** | `bytecodePatch` | Neutralizes Pitaya on-device ML, Tako AI chatbot entries, and AI search clutter |
 | **Privacy** | **Region & Geo-Restriction Bypass** | `bytecodePatch` | Spoofs SIM and network country ISO codes to bypass regional restrictions |
@@ -46,16 +45,13 @@ Comprehensive breakdown of the patches included in the Morphe TikTok patch suite
 ## 🎬 Usability & Media
 
 ### 1. Media Usability & Watermark-Free Downloader (`mediaEnhancementsPatch`)
-* **Objective**: Unlock core playback, story saving, and media download features that creators or the platform restrict.
+* **Objective**: Unlock core playback and media download features that creators or the platform restrict.
 * **Internal Mechanisms**:
   * **Forced Download Button Unblock**:
     * Hooks `Aweme.isPreventDownload()Z` -> returns `false`.
     * Hooks `Aweme.getIsCommentPostVideo()Z` -> returns `false`.
     * Invokes `TikTokMediaHook` to dynamically flip internal `canDownload` boolean fields via reflection, restoring the "Save video" action in the share modal.
-    * Hooks `AwemeExtKt.isSharedStoryVisible(Aweme;)Z` -> returns `true`.
-    * Intercepts Share panel action builder (`LX/0HGG;->LJJI()`) and neutralizes all early `return-void` guards (story type 45, 46, 180, 181, comment video, and restriction checks) prior to action instantiation, ensuring the "Save video" button (`LX/0HJb`) is unconditionally constructed and appended to the Share panel for Stories.
-    * Patches modern Share panel action generator `LX/0uEq;->LIZIZ(LX/0uFr;)Ljava/util/List;`, neutralizing the `if-eqz` story type bypass guard with `nop` to instantiate and append `LX/0uF9` for all Stories.
-    * Hooks download action `LX/0HJb;->enable()Z` and `now_save` action -> returns `true`, guaranteeing the Save action in the Share panel is always clickable and active rather than grayed out.
+    * Hooks download action `LX/0HJb;->enable()Z` -> returns `true`, guaranteeing the Save action in the Share panel is always clickable and active rather than grayed out.
   * **Clean Watermark-Free Downloads**:
     * Hooks `Aweme.getDownloadWithoutWatermark()Z` -> returns `true`.
     * Hooks `Aweme.needTTSWatermarkWhenDownload()Z` -> returns `false` (suppresses text-to-speech audio watermark stamps).
@@ -223,23 +219,7 @@ Comprehensive breakdown of the patches included in the Morphe TikTok patch suite
     * Neutralizes `ScreenShotFeedbackService.isFeedbackEnable()` and `tryShowScreenShotFloatingView()` -> returns `false`.
     * Suppresses quick-share popup modals and Tako AI screenshot triggers.
 
-### 5. Ghost Mode (`ghostModePatch`)
-* **Objective**: Enable fully anonymous profile, story, and conversation browsing: view profiles and stories without alerting creators or leaving view history traces, and browse conversations without sending typing indicators, while preserving your ability to view follower counts and your own viewer list.
-* **Internal Mechanisms**:
-  * **Reactive Call-Site Skipping (Profile & Story View Suppression)**:
-    * Dynamically identifies callers of `ProfileViewerApiService.reportView` and `StoryApi` methods (`reportStoryViewed`, `reportUserInteraction`, `reportStoryReveal`).
-    * Traces Dalvik execution chains from invocation through `.subscribeOn(...)` to terminal `.subscribe()` / `.enqueue()` dispatch points.
-    * Injects conditional branches (`skipReportAtCallSite`) backed by backward control-flow graph register liveness analysis (`RegisterLiveness`), safely jumping over the entire dispatch pipeline when `TikTokGhostModeHook` is active. This avoids passing invalid/dummy objects into RxJava or Kotlin coroutine state machines, completely preventing `NullPointerException` crashes and preserved follower counts.
-  * **Secondary Story View Dispatch Suppression**:
-    * Directly guards `LX/0x6G;->run()V` (`StoryFeedService.reportStoryViewed$3`) with `TikTokGhostModeHook.shouldBlockStoryView()` and exits `LX/07Rx;->LIZIZ` early, preventing background dispatch of delayed story view notifications.
-  * **Profile Visit Telemetry Neutralization**:
-    * Suppresses outbound `profile_request_response` analytics emission sites in `ProfilePlatformViewModel;->J53`, preventing recipient user identifiers (`to_user_id`) from leaking through AppLog telemetry channels.
-  * **Outbound Typing Status Suppression**:
-    * Guards `TypingStatusSenderTimer.LIZ(String)` and `LIZIZ(String)` entrypoints with early `return-void` via `TikTokGhostModeHook.shouldBlockTypingStatus()`.
-  * **Companion Runtime Hook**:
-    * Bridges hooks through `TikTokGhostModeHook` in `extensions/extension.mpe` with granular diagnostic telemetry.
-
-### 6. In-App Browser Privacy Guard (`inAppBrowserPrivacyGuardPatch`)
+### 5. In-App Browser Privacy Guard (`inAppBrowserPrivacyGuardPatch`)
 * **Objective**: Protect user privacy by redirecting external and third-party web links directly to the user's default system browser (Brave, Firefox, Chrome), preventing third-party browsing sessions from ever running inside TikTok's process, and neutralizing residual tracking inside essential internal WebViews.
 * **Internal Mechanisms**:
   * **External Web Navigation Redirection**:
@@ -329,14 +309,14 @@ Comprehensive breakdown of the patches included in the Morphe TikTok patch suite
     * **Following Feed Invariants**: Preserves essential watch history and unread markers (`feedType == 65280`, `65465`, `65298`, `lastViewData`) to prevent presenter index out-of-bounds crashes, while safely isolating and pruning confirmed recommendation cards (`feedType == 3`, `62`, `recommendUser`).
     * Prunes matching cards from list iterators in-situ with zero crashes or UI gaps.
 
-### 13. Unified Telemetry & Tracker Silencer (`unifiedTelemetryTrackerSilencerPatch`)
+### 12. Unified Telemetry & Tracker Silencer (`unifiedTelemetryTrackerSilencerPatch`)
 * **Objective**: Cut off background surveillance, user behavior analytics, and diagnostic reporting to ByteDance servers.
 * **Internal Mechanisms**:
   * **ByteDance AppLog**: Neutralizes `AppLog.onEvent()` and `AppLog.report()` entrypoints with immediate `return-void`.
   * **Crash Handlers & Telemetry Schedulers**: Neutralizes Lego initialization tasks for Npth crash reporting (`NpthCoreInitTask`), APM metrics (`ApmInit`), and Heimallr performance monitors.
   * **Attribution Trackers**: Neutralizes `InitAppsFlyer` and Firebase analytics startup initialization tasks.
 
-### 14. Update Prompt Suppressor (`disableInAppUpdateNagsPatch`)
+### 13. Update Prompt Suppressor (`disableInAppUpdateNagsPatch`)
 * **Objective**: Prevent forced upgrade popups and version enforcement dialogs.
 * **Internal Mechanisms**:
   * Neutralizes Lego update check tasks: `CheckUpdateChangeDeviceIDTaskHolder$Background`, `UpdateTaskHolder$Background`, `CheckUpdateChangeDeviceIDTaskHolder$BootFinish`, and `UpdateTaskHolder$BootFinish`.
@@ -346,7 +326,7 @@ Comprehensive breakdown of the patches included in the Morphe TikTok patch suite
 
 ## ⚡ Performance, RAM & Battery
 
-### 15. Display Refresh Rate Governor (`displayRefreshRateGovernorPatch`)
+### 14. Display Refresh Rate Governor (`displayRefreshRateGovernorPatch`)
 * **Objective**: Eliminate micro-stutter and forced refresh rate drops, locking TikTok's window display rate to peak hardware frequency (120Hz/90Hz) or a user-selected target, while neutralizing internal framerate downclocking routines during feed playback.
 * **Internal Mechanisms**:
   * **Opt-In & Configurable Frequency with Hardware Clamping**:
@@ -362,7 +342,7 @@ Comprehensive breakdown of the patches included in the Morphe TikTok patch suite
   * **Activity Lifecycle Lock**:
     * Hooks `MainActivity.onResume()` and `MainActivity.onWindowFocusChanged(boolean)` to ensure window parameters remain strictly locked to target refresh rate across focus switches and app switching.
 
-### 16. Instant Launch & Splash Blocker (`instantColdStartPatch`)
+### 15. Instant Launch & Splash Blocker (`instantColdStartPatch`)
 * **Objective**: Accelerate application launch time to sub-second speeds (<0.4s) and bypass startup ads.
 * **Internal Mechanisms**:
   * Neutralizes Lego splash tasks: `SplashAdManagerPreloadTask.run()` and `SplashAdManagerPreloadTaskEntry.run()`.
@@ -370,7 +350,7 @@ Comprehensive breakdown of the patches included in the Morphe TikTok patch suite
   * Neutralizes `RealTimeSplashManagerImpl.LIZJ()` -> `return false` (eliminates synchronous waiting for remote TopView splash video assets during cold start).
   * Neutralizes `SplashAdServiceImpl.LJ()`, `LJIILJJIL()`, and `LJJIJIIJIL()` -> `return false` (suppresses splash ad presentation and background fetch).
 
-### 17. Resource & Battery Governor (`resourceGovernorPatch`)
+### 16. Resource & Battery Governor (`resourceGovernorPatch`)
 * **Objective**: Eliminate battery-draining background operations, sensor polling, and memory leaks.
 * **Internal Mechanisms**:
   * **3D Ad Sensors & Gyroscope Polling**:
@@ -381,24 +361,24 @@ Comprehensive breakdown of the patches included in the Morphe TikTok patch suite
   * **Memory Retention Governor**:
     * Caps animated bitmap frame caching in Facebook Fresco (`FrescoFrameCache.LIZJ()`, `LJFF()`), preventing OOM crashes during long scrolling sessions.
 
-### 18. P2P Video Relay Blocker (`p2pVideoRelayBlockerPatch`)
+### 17. P2P Video Relay Blocker (`p2pVideoRelayBlockerPatch`)
 * **Objective**: Prevent TikTok from utilizing user device battery, CPU, and cellular data as a distributed P2P edge CDN relay for other users' video streams.
 * **Internal Mechanisms**:
   * Zeroes out native P2P video delivery engine: `libavmdlp2pv2.so` (~7.9 MB).
   * Zeroes out native P2P live stream distribution module: `libp2plivevdp.so` (~1.9 MB).
   * Reclaims ~9.83 MB of storage while completely eliminating unmetered peer-to-peer relay network activity.
 
-### 19. Disable Push Notifications (`disablePushNotificationsPatch`)
+### 18. Disable Push Notifications (`disablePushNotificationsPatch`)
 * **Objective**: Neutralize background push notification tasks and persistent socket wake locks to eliminate background battery drain.
 * **Internal Mechanisms**:
   * Neutralizes `InitPushTask.run()` -> disables early startup wake lock acquisition and persistent background push sockets.
 
-### 20. Live Stream 3D Gift Optimizer (`liveGiftEffectOptimizerPatch`)
+### 19. Live Stream 3D Gift Optimizer (`liveGiftEffectOptimizerPatch`)
 * **Objective**: Disable Live 3D gift particle effect engine and widget rendering lifecycle to eliminate frame drops during live streams.
 * **Internal Mechanisms**:
   * Injects `return-void` into `LiveGiftEffectWidget.initView()` and `LiveGiftEffectWidget.onCreate()`.
 
-### 21. Live Stream Suite Optimizer (`liveStreamSuiteOptimizerPatch`)
+### 20. Live Stream Suite Optimizer (`liveStreamSuiteOptimizerPatch`)
 * **Objective**: Strip unneeded interactive streaming libraries, live RTC broadcaster SDKs, and minigame assets for users who only watch regular videos or standard live streams.
 * **Internal Mechanisms**:
   * Zeroes out native interactive streaming binaries: `liblink_mic_sdk.so`.
@@ -410,7 +390,7 @@ Comprehensive breakdown of the patches included in the Morphe TikTok patch suite
 
 ## 📦 APK Size & Resource Slimming
 
-### 22. Core Asset De-bloat (`coreAssetDebloatPatch`)
+### 21. Core Asset De-bloat (`coreAssetDebloatPatch`)
 * **Objective**: Strip unneeded third-party SDK models, embedded engines, FinTech/card scanners, and client AI runtime binaries across both `arm64-v8a` and `armeabi-v7a`.
 * **Internal Mechanisms**:
   * Strips embedded Microblink credit card OCR models (`assets/microblink/`).
@@ -423,7 +403,7 @@ Comprehensive breakdown of the patches included in the Morphe TikTok patch suite
   * Prunes non-Latin and exotic bundled fonts (`assets/fonts/` such as Greek, Hebrew, Armenian, Georgian, Khmer, Lao, Myanmar, Thai).
   * Reclaims over 77 MB of uncompressed APK storage.
 
-### 23. Studio & Creation De-bloat (`creatorBloatSlimmerPatch`)
+### 22. Studio & Creation De-bloat (`creatorBloatSlimmerPatch`)
 * **Objective**: Strip camera AR face filters, CapCut NLE video editing SDKs, and creation plugins across both `arm64-v8a` and `armeabi-v7a` for feed-only users.
 * **Internal Mechanisms**:
   * Zeroes out camera AR effects engine: `libeffect_plugin.so`, `libEffectCreatorJni.so`.
@@ -433,7 +413,7 @@ Comprehensive breakdown of the patches included in the Morphe TikTok patch suite
   * Purges bundled face mesh and facial landmark tracking models (`assets/model/ttfacemodel`).
   * Reclaims over 101 MB of uncompressed APK storage.
 
-### 24. Language Pack Purger (`localeSlimmerPatch`)
+### 23. Language Pack Purger (`localeSlimmerPatch`)
 * **Objective**: Reclaim substantial APK storage by stripping unused localized strings while preserving user-selected languages (default: English).
 * **Internal Mechanisms**:
   * Scans `assets/strings#lang_*` bundles and removes unselected translation files.
