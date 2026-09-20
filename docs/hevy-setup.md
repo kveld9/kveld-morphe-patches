@@ -6,7 +6,7 @@
 > Download the official release bundle from [APKMirror (Hevy - Gym Log Workout Tracker)](https://www.apkmirror.com/apk/hevy/hevy-gym-log-workout-tracker/):
 > - **Format**: `BUNDLE` (APKM / Split APKs)
 > - **Architecture**: `arm64-v8a`
-> - **Target Version**: `3.1.13`
+> - **Target Version**: `3.1.14`
 
 Morphe Manager automatically extracts and merges the necessary split modules (`base.apk`, `split_config.arm64_v8a.apk`, device DPI, and locale splits) into a unified installable APK during patching.
 
