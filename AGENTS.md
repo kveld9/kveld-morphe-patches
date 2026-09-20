@@ -51,6 +51,7 @@ morphe-patches/
 1. **Declarative Metadata & Single Source of Truth**:
    - `app.morphe.patches.shared.Constants`: Every patch must strictly consume centralized constants (`Constants.COMPATIBILITY_BRAVE`, `Constants.COMPATIBILITY_GBOARD`, `Constants.COMPATIBILITY_VIVALDI`, `Constants.COMPATIBILITY_HEVY`, `Constants.COMPATIBILITY_TIKTOK`, `Constants.COMPATIBILITY_TIKTOK_ASIA`) instead of instantiating redundant inline `Compatibility(...)` objects.
    - Target versions, app colors, package names, and download source hints for all 5 active targets are maintained exclusively in `Constants.kt`.
+   - **Single Target Version Invariant**: Every supported application MUST target strictly ONE version (the latest supported release) in `targets = listOf(AppTarget(...))`. Never retain multiple version targets or legacy fallback code for older versions. When bumping an application target, completely replace previous version targets and synchronize all documentation references.
    - **Universal Patches**: Omitting `compatibleWith(...)` produces a universal patch applicable across any target APK in Morphe Manager / CLI (e.g. `LocaleResourceSlimmerPatch`, `DpiResourceSlimmerPatch`).
    - **Multi-Target Varargs**: Patches targeting multiple package variants (e.g. TikTok Global and Asia) declare them via `compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)`.
 
@@ -170,6 +171,8 @@ For non-trivial logic, Smali hooks, native ARM64 patching (`libchrome.so`), or s
     - Under NO circumstances should you ask to proceed with the `commit -> push -> PR title/description generation` closing sequence.
     - NEVER generate PR titles, PR descriptions, or suggest opening PRs.
     - When an implementation unit is complete and verified, simply present the technical outcome, validation evidence, and conclude.
+16. **Prohibition of Multi-Version Target Retentions**:
+    - Under no circumstances should any target application declare multiple supported versions in `Constants.kt` or `README.md`. Always target strictly the latest supported version (`targets = listOf(AppTarget(version = ..., ...))`). Any residual compatibility blocks, fallbacks, or documentation references to older target versions must be completely eliminated upon updating.
 
 ---
 

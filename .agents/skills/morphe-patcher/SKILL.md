@@ -165,6 +165,8 @@ Active targets defined in `Constants.kt`:
 4. **Hevy**: `Constants.COMPATIBILITY_HEVY` (`com.hevy`)
 5. **TikTok**: `Constants.COMPATIBILITY_TIKTOK` (`com.zhiliaoapp.musically`) & `Constants.COMPATIBILITY_TIKTOK_ASIA` (`com.ss.android.ugc.trill`)
 
+**Single Target Version Invariant**: Every target app maintains strictly ONE active version (the latest supported release) in `targets = listOf(AppTarget(...))`. Never retain older versions or multi-version entries in `targets`.
+
 ---
 
 ## 6. Diagnostic Telemetry Invariants & Harness Compliance
