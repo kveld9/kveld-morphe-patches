@@ -149,14 +149,14 @@ val hideTikTokShopAnchorsPatch = bytecodePatch(
             val iconServiceFp = try {
                 Fingerprint(
                     definingClass = "Lcom/ss/android/ugc/aweme/ecommerce/mall/vm/ShopIconServiceImpl;",
-                    name = "rw",
+                    name = "vw",
                     returnType = "Z",
                 )
             } catch (_: Exception) {
                 Fingerprint(
                     definingClass = "Lcom/ss/android/ugc/aweme/ecommerce/mall/vm/ShopIconServiceImpl;",
+                    name = "rw",
                     returnType = "Z",
-                    parameters = emptyList(),
                 )
             }
             iconServiceFp.method.addInstructions(

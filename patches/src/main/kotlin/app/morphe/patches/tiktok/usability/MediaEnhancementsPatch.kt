@@ -241,7 +241,7 @@ val mediaEnhancementsPatch = bytecodePatch(
         // 7. Strip client-side drawn watermark on saved image posts & comment pictures
         try {
             val fp = Fingerprint(
-                strings = listOf("[tiktok_logo]", "image/jpeg", "is_pending"),
+                strings = listOf("[tiktok_logo]"),
                 parameters = listOf("Landroid/graphics/Bitmap;"),
                 returnType = "V",
             )

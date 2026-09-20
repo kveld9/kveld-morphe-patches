@@ -55,101 +55,107 @@ val displayRefreshRateGovernorPatch = bytecodePatch(
             println("[Refresh Rate Governor] TikTokRefreshRateHook.<clinit> note: ${e.message}")
         }
 
-        // 2. Neutralize PlayerController video framerate downclocking by forcing ui_video_frame_rate_opt (LX/09YB.invoke() -> Boolean.TRUE)
-        try {
-            Fingerprint(
-                definingClass = "LX/09YB;",
-                name = "invoke",
-                returnType = "Ljava/lang/Object;",
-            ).method.addInstructions(
-                0,
-                """
-                    sget-object v0, Ljava/lang/Boolean;->TRUE:Ljava/lang/Boolean;
-                    return-object v0
-                """.trimIndent(),
-            )
-            println("[Refresh Rate Governor] Forced LX/09YB.invoke() -> Boolean.TRUE (bypasses PlayerController downclocking safely without aborting onRenderFirstFrame).")
-            patched++
-        } catch (e: Exception) {
-            println("[Refresh Rate Governor] LX/09YB.invoke note: ${e.message}")
+        // 2. Neutralize PlayerController video framerate downclocking by forcing ui_video_frame_rate_opt (LX/09iz in 47.0.3 / LX/09YB in 46.9.3)
+        for (cls in listOf("LX/09iz;", "LX/09YB;")) {
+            try {
+                Fingerprint(
+                    definingClass = cls,
+                    name = "invoke",
+                    returnType = "Ljava/lang/Object;",
+                ).method.addInstructions(
+                    0,
+                    """
+                        sget-object v0, Ljava/lang/Boolean;->TRUE:Ljava/lang/Boolean;
+                        return-object v0
+                    """.trimIndent(),
+                )
+                println("[Refresh Rate Governor] Forced $cls.invoke() -> Boolean.TRUE (bypasses PlayerController downclocking safely without aborting onRenderFirstFrame).")
+                patched++
+                break
+            } catch (_: Exception) {}
         }
 
-        // 2.2 Neutralize setRefreshRateIfNeeded (LX/07tH.invoke() -> Unit.LIZ)
-        try {
-            Fingerprint(
-                definingClass = "LX/07tH;",
-                name = "invoke",
-                returnType = "Ljava/lang/Object;",
-            ).method.addInstructions(
-                0,
-                """
-                    sget-object v0, Lkotlin/Unit;->LIZ:Lkotlin/Unit;
-                    return-object v0
-                """.trimIndent(),
-            )
-            println("[Refresh Rate Governor] Neutralized LX/07tH.invoke() (setRefreshRateIfNeeded) -> forced Unit.LIZ.")
-            patched++
-        } catch (e: Exception) {
-            println("[Refresh Rate Governor] LX/07tH.invoke note: ${e.message}")
+        // 2.2 Neutralize setRefreshRateIfNeeded (LX/087o in 47.0.3 / LX/07tH in 46.9.3)
+        for (cls in listOf("LX/087o;", "LX/07tH;")) {
+            try {
+                Fingerprint(
+                    definingClass = cls,
+                    name = "invoke",
+                    returnType = "Ljava/lang/Object;",
+                ).method.addInstructions(
+                    0,
+                    """
+                        sget-object v0, Lkotlin/Unit;->LIZ:Lkotlin/Unit;
+                        return-object v0
+                    """.trimIndent(),
+                )
+                println("[Refresh Rate Governor] Neutralized $cls.invoke() (setRefreshRateIfNeeded) -> forced Unit.LIZ.")
+                patched++
+                break
+            } catch (_: Exception) {}
         }
 
-        // 3. Override LX/0JOJ.LIZ (window refresh rate reset when drag stops)
-        try {
-            Fingerprint(
-                definingClass = "LX/0JOJ;",
-                name = "LIZ",
-                parameters = listOf("LX/02J7;", "F", "Z"),
-                returnType = "V",
-            ).method.addInstructions(
-                0,
-                """
-                    invoke-static {p0}, ${Constants.TIKTOK_EXTENSION_REFRESH_RATE_HOOK}->applyToWindow(Landroid/app/Activity;)V
-                    return-void
-                """.trimIndent(),
-            )
-            println("[Refresh Rate Governor] Overrode LX/0JOJ.LIZ() -> enforced target rate on drag release.")
-            patched++
-        } catch (e: Exception) {
-            println("[Refresh Rate Governor] LX/0JOJ.LIZ note: ${e.message}")
+        // 3. Override LX/0KAE.LIZ (47.0.3) / LX/0JOJ.LIZ (46.9.3) (window refresh rate reset when drag stops)
+        for (target in listOf(Pair("LX/0KAE;", "LX/02HM;"), Pair("LX/0JOJ;", "LX/02J7;"))) {
+            try {
+                Fingerprint(
+                    definingClass = target.first,
+                    name = "LIZ",
+                    parameters = listOf(target.second, "F", "Z"),
+                    returnType = "V",
+                ).method.addInstructions(
+                    0,
+                    """
+                        invoke-static {p0}, ${Constants.TIKTOK_EXTENSION_REFRESH_RATE_HOOK}->applyToWindow(Landroid/app/Activity;)V
+                        return-void
+                    """.trimIndent(),
+                )
+                println("[Refresh Rate Governor] Overrode ${target.first}.LIZ() -> enforced target rate on drag release.")
+                patched++
+                break
+            } catch (_: Exception) {}
         }
 
-        // 4. Override LX/1PFE.LIZ (instance, p1=Activity) & LIZIZ (static, p0=Activity) (RefreshFrequencyTutor)
-        try {
-            Fingerprint(
-                definingClass = "LX/1PFE;",
-                name = "LIZ",
-                parameters = listOf("Landroid/app/Activity;"),
-                returnType = "V",
-            ).method.addInstructions(
-                0,
-                """
-                    invoke-static {p1}, ${Constants.TIKTOK_EXTENSION_REFRESH_RATE_HOOK}->applyToWindow(Landroid/app/Activity;)V
-                    return-void
-                """.trimIndent(),
-            )
-            println("[Refresh Rate Governor] Overrode LX/1PFE.LIZ() (RefreshFrequencyTutor restore) -> enforced target rate.")
-            patched++
-        } catch (e: Exception) {
-            println("[Refresh Rate Governor] LX/1PFE.LIZ note: ${e.message}")
-        }
+        // 4. Override RefreshFrequencyTutor (LX/1RHf in 47.0.3 / LX/1PFE in 46.9.3)
+        for (cls in listOf("LX/1RHf;", "LX/1PFE;")) {
+            var applied = false
+            try {
+                Fingerprint(
+                    definingClass = cls,
+                    name = "LIZ",
+                    parameters = listOf("Landroid/app/Activity;"),
+                    returnType = "V",
+                ).method.addInstructions(
+                    0,
+                    """
+                        invoke-static {p1}, ${Constants.TIKTOK_EXTENSION_REFRESH_RATE_HOOK}->applyToWindow(Landroid/app/Activity;)V
+                        return-void
+                    """.trimIndent(),
+                )
+                println("[Refresh Rate Governor] Overrode $cls.LIZ() (RefreshFrequencyTutor restore) -> enforced target rate.")
+                patched++
+                applied = true
+            } catch (_: Exception) {}
 
-        try {
-            Fingerprint(
-                definingClass = "LX/1PFE;",
-                name = "LIZIZ",
-                parameters = listOf("Landroid/app/Activity;"),
-                returnType = "V",
-            ).method.addInstructions(
-                0,
-                """
-                    invoke-static {p0}, ${Constants.TIKTOK_EXTENSION_REFRESH_RATE_HOOK}->applyToWindow(Landroid/app/Activity;)V
-                    return-void
-                """.trimIndent(),
-            )
-            println("[Refresh Rate Governor] Overrode LX/1PFE.LIZIZ() (RefreshFrequencyTutor set) -> enforced target rate.")
-            patched++
-        } catch (e: Exception) {
-            println("[Refresh Rate Governor] LX/1PFE.LIZIZ note: ${e.message}")
+            try {
+                Fingerprint(
+                    definingClass = cls,
+                    name = "LIZIZ",
+                    parameters = listOf("Landroid/app/Activity;"),
+                    returnType = "V",
+                ).method.addInstructions(
+                    0,
+                    """
+                        invoke-static {p0}, ${Constants.TIKTOK_EXTENSION_REFRESH_RATE_HOOK}->applyToWindow(Landroid/app/Activity;)V
+                        return-void
+                    """.trimIndent(),
+                )
+                println("[Refresh Rate Governor] Overrode $cls.LIZIZ() (RefreshFrequencyTutor set) -> enforced target rate.")
+                patched++
+                applied = true
+            } catch (_: Exception) {}
+
+            if (applied) break
         }
 
         // 5. Lock refresh rate in MainActivity.onResume()

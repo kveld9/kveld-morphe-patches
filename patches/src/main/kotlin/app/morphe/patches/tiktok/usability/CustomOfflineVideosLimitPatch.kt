@@ -3,7 +3,7 @@ package app.morphe.patches.tiktok.usability
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.bytecodePatch
-import app.morphe.patcher.patch.stringOption
+import app.morphe.patcher.patch.intOption
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.ensureRegisterCount
 import com.android.tools.smali.dexlib2.Opcode
@@ -21,17 +21,17 @@ val customOfflineVideosLimitPatch = bytecodePatch(
     compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
     extendWith("extensions/extension.mpe")
 
-    val customLimit by stringOption(
+    val customLimit by intOption(
         key = "customLimit",
         title = "Custom Offline Videos Limit",
         description = "Maximum number of offline videos that can be cached for offline playback (default: 200).",
-        default = "200",
+        default = 200,
         required = false,
     )
 
     execute {
         var patched = 0
-        val chosenLimit = customLimit?.trim()?.toIntOrNull()?.takeIf { it in 1..50000 } ?: 200
+        val chosenLimit = customLimit?.takeIf { it in 1..50000 } ?: 200
 
         // 1. Initialize targetLimit in TikTokOfflineVideosHook.<clinit>
         try {

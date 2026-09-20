@@ -103,23 +103,32 @@ val resourceGovernorPatch = bytecodePatch(
             println("[Resource Governor] FrescoFrameCache.LIZJ note: ${e.message}")
         }
 
-        // 3.2 FrescoFrameCache parameterized frame getter (LJFF in v46.9.3) -> return null
+        // 3.2 FrescoFrameCache parameterized frame getter (LIZLLL in v47.0.3 / LJFF in v46.9.3) -> return null
         try {
-            Fingerprint(
-                definingClass = "Lcom/facebook/fresco/animation/bitmap/cache/FrescoFrameCache;",
-                name = "LJFF",
-                custom = { method, _ -> method.returnType.startsWith("L") },
-            ).method.addInstructions(
+            val fp = try {
+                Fingerprint(
+                    definingClass = "Lcom/facebook/fresco/animation/bitmap/cache/FrescoFrameCache;",
+                    name = "LIZLLL",
+                    custom = { method, _ -> method.returnType.startsWith("L") },
+                )
+            } catch (_: Exception) {
+                Fingerprint(
+                    definingClass = "Lcom/facebook/fresco/animation/bitmap/cache/FrescoFrameCache;",
+                    name = "LJFF",
+                    custom = { method, _ -> method.returnType.startsWith("L") },
+                )
+            }
+            fp.method.addInstructions(
                 0,
                 """
                     const/4 v0, 0x0
                     return-object v0
                 """.trimIndent(),
             )
-            println("[Resource Governor] Capped FrescoFrameCache.LJFF() -> Frame cache allocation suppressed.")
+            println("[Resource Governor] Capped FrescoFrameCache frame getter -> Frame cache allocation suppressed.")
             patched++
         } catch (e: Exception) {
-            println("[Resource Governor] FrescoFrameCache.LJFF note: ${e.message}")
+            println("[Resource Governor] FrescoFrameCache frame getter note: ${e.message}")
         }
 
         println("[Resource & Battery Governor] Applied $patched hardware, network, and memory governor hook(s).")
