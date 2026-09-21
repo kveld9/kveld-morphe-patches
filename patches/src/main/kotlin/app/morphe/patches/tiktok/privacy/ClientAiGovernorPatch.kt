@@ -87,83 +87,51 @@ val clientAiGovernorPatch = bytecodePatch(
             println("[Client-Side AI & Behavioral Profiling Governor] TakoLaunchServiceImpl.LJ note: ${e.message}")
         }
 
-        // 5. Neutralize TakoTrigger.Qr() -> suppresses Tako button in feed interact right area
-        try {
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/feed/assem/tikbot/TakoTrigger;",
-                name = "Qr",
-                returnType = "Z",
-            ).method.addInstructions(
-                0,
-                """
-                const/4 v0, 0
-                return v0
-                """.trimIndent()
-            )
-            patched++
-        } catch (e: Exception) {
-            println("[Client-Side AI & Behavioral Profiling Governor] TakoTrigger.Qr note: ${e.message}")
+        // 5. Neutralize TakoTrigger methods returning boolean (Kr, Mr, yr, k9) -> suppresses Tako button in feed interact area
+        listOf("Kr", "Mr", "yr", "k9").forEach { methodName ->
+            try {
+                Fingerprint(
+                    definingClass = "Lcom/ss/android/ugc/aweme/feed/assem/tikbot/TakoTrigger;",
+                    name = methodName,
+                    returnType = "Z",
+                ).method.addInstructions(
+                    0,
+                    """
+                    const/4 v0, 0
+                    return v0
+                    """.trimIndent()
+                )
+                patched++
+            } catch (e: Exception) {
+                println("[Client-Side AI & Behavioral Profiling Governor] TakoTrigger.$methodName note: ${e.message}")
+            }
         }
 
-        // 6. Neutralize TakoTrigger.Cr() -> suppresses Tako button for feed page
-        try {
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/feed/assem/tikbot/TakoTrigger;",
-                name = "Cr",
-                returnType = "Z",
-            ).method.addInstructions(
-                0,
-                """
-                const/4 v0, 0
-                return v0
-                """.trimIndent()
-            )
-            patched++
-        } catch (e: Exception) {
-            println("[Client-Side AI & Behavioral Profiling Governor] TakoTrigger.Cr note: ${e.message}")
+        // 6. Neutralize TakoTriggerRoof methods returning boolean (Kr, Mr, yr) -> suppresses Tako roof trigger in feed
+        listOf("Kr", "Mr", "yr").forEach { methodName ->
+            try {
+                Fingerprint(
+                    definingClass = "Lcom/ss/android/ugc/aweme/feed/assem/tikbot/TakoTriggerRoof;",
+                    name = methodName,
+                    returnType = "Z",
+                ).method.addInstructions(
+                    0,
+                    """
+                    const/4 v0, 0
+                    return v0
+                    """.trimIndent()
+                )
+                patched++
+            } catch (e: Exception) {
+                println("[Client-Side AI & Behavioral Profiling Governor] TakoTriggerRoof.$methodName note: ${e.message}")
+            }
         }
 
-        // 7. Neutralize TakoTriggerRoof.Qr() -> suppresses Tako roof trigger in feed
-        try {
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/feed/assem/tikbot/TakoTriggerRoof;",
-                name = "Qr",
-                returnType = "Z",
-            ).method.addInstructions(
-                0,
-                """
-                const/4 v0, 0
-                return v0
-                """.trimIndent()
-            )
-            patched++
-        } catch (e: Exception) {
-            println("[Client-Side AI & Behavioral Profiling Governor] TakoTriggerRoof.Qr note: ${e.message}")
-        }
-
-        // 8. Neutralize TakoTriggerRoof.Cr() -> suppresses Tako roof page trigger in feed
-        try {
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/feed/assem/tikbot/TakoTriggerRoof;",
-                name = "Cr",
-                returnType = "Z",
-            ).method.addInstructions(
-                0,
-                """
-                const/4 v0, 0
-                return v0
-                """.trimIndent()
-            )
-            patched++
-        } catch (e: Exception) {
-            println("[Client-Side AI & Behavioral Profiling Governor] TakoTriggerRoof.Cr note: ${e.message}")
-        }
-
-        // 9. Neutralize TakoServiceImpl.LJIJ() -> blocks feed right-bottom entrance assem creation
+        // 7. Neutralize TakoServiceImpl.LJLLJ() -> blocks feed right-bottom entrance assem creation
         try {
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/tako/TakoServiceImpl;",
-                name = "LJIJ",
+                name = "LJLLJ",
                 returnType = "Lcom/bytedance/assem/arch/reused/ReusedUIAssem;",
             ).method.addInstructions(
                 0,
@@ -174,14 +142,14 @@ val clientAiGovernorPatch = bytecodePatch(
             )
             patched++
         } catch (e: Exception) {
-            println("[Client-Side AI & Behavioral Profiling Governor] TakoServiceImpl.LJIJ note: ${e.message}")
+            println("[Client-Side AI & Behavioral Profiling Governor] TakoServiceImpl.LJLLJ note: ${e.message}")
         }
 
-        // 10. Neutralize TakoRightBottomEntranceTrigger.Qr() -> blocks right-bottom entrance trigger
+        // 8. Neutralize TakoRightBottomEntranceTrigger.Kr() -> blocks right-bottom entrance trigger
         try {
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/tako/otherpage/feed/mainentrance/ui/TakoRightBottomEntranceTrigger;",
-                name = "Qr",
+                name = "Kr",
                 returnType = "Z",
             ).method.addInstructions(
                 0,
@@ -192,7 +160,7 @@ val clientAiGovernorPatch = bytecodePatch(
             )
             patched++
         } catch (e: Exception) {
-            println("[Client-Side AI & Behavioral Profiling Governor] TakoRightBottomEntranceTrigger.Qr note: ${e.message}")
+            println("[Client-Side AI & Behavioral Profiling Governor] TakoRightBottomEntranceTrigger.Kr note: ${e.message}")
         }
 
         // 11. Neutralize TakoRouterServiceImpl.LIZ() & LIZIZ() -> neutralizes any routing to Tako chat
@@ -318,11 +286,11 @@ val clientAiGovernorPatch = bytecodePatch(
             println("[Client-Side AI & Behavioral Profiling Governor] SearchMixFeed.getAiAdCard note: ${e.message}")
         }
 
-        // 17. Neutralize SearchTakoSugListAssem.bb() -> suppresses Tako suggestion list cards
+        // 17. Neutralize SearchTakoSugListAssem.Nb() -> suppresses Tako suggestion list cards
         try {
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/search/arch/v2/protocol/card/components/SearchTakoSugListAssem;",
-                name = "bb",
+                name = "Nb",
                 parameters = listOf("Ljava/lang/Object;"),
                 returnType = "Z",
             ).method.addInstructions(
@@ -334,14 +302,14 @@ val clientAiGovernorPatch = bytecodePatch(
             )
             patched++
         } catch (e: Exception) {
-            println("[Client-Side AI & Behavioral Profiling Governor] SearchTakoSugListAssem.bb note: ${e.message}")
+            println("[Client-Side AI & Behavioral Profiling Governor] SearchTakoSugListAssem.Nb note: ${e.message}")
         }
 
-        // 18. Neutralize SearchTakoCardProtocol.zX() -> suppresses legacy Tako search card matching
+        // 18. Neutralize SearchTakoCardProtocol.Lr2() -> suppresses legacy Tako search card matching
         try {
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/search/pages/result/bot/component/SearchTakoCardProtocol;",
-                name = "zX",
+                name = "Lr2",
                 returnType = "Z",
                 custom = { method, _ -> method.parameterTypes.size == 1 },
             ).method.addInstructions(
@@ -353,14 +321,14 @@ val clientAiGovernorPatch = bytecodePatch(
             )
             patched++
         } catch (e: Exception) {
-            println("[Client-Side AI & Behavioral Profiling Governor] SearchTakoCardProtocol.zX note: ${e.message}")
+            println("[Client-Side AI & Behavioral Profiling Governor] SearchTakoCardProtocol.Lr2 note: ${e.message}")
         }
 
-        // 19. Neutralize SearchTakoNewBotCardProtocol.zX() -> suppresses new Tako bot search card matching
+        // 19. Neutralize SearchTakoNewBotCardProtocol.Lr2() -> suppresses new Tako bot search card matching
         try {
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/search/pages/result/topsearch/tako/newbot/SearchTakoNewBotCardProtocol;",
-                name = "zX",
+                name = "Lr2",
                 returnType = "Z",
                 custom = { method, _ -> method.parameterTypes.size == 1 },
             ).method.addInstructions(
@@ -372,14 +340,14 @@ val clientAiGovernorPatch = bytecodePatch(
             )
             patched++
         } catch (e: Exception) {
-            println("[Client-Side AI & Behavioral Profiling Governor] SearchTakoNewBotCardProtocol.zX note: ${e.message}")
+            println("[Client-Side AI & Behavioral Profiling Governor] SearchTakoNewBotCardProtocol.Lr2 note: ${e.message}")
         }
 
-        // 20. Neutralize SearchAdAISummaryCardProtocol.zX() -> suppresses AI summary cards in search
+        // 20. Neutralize SearchAdAISummaryCardProtocol.Lr2() -> suppresses AI summary cards in search
         try {
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/search/pages/result/topsearch/commerce/aisummarycard/SearchAdAISummaryCardProtocol;",
-                name = "zX",
+                name = "Lr2",
                 returnType = "Z",
                 custom = { method, _ -> method.parameterTypes.size == 1 },
             ).method.addInstructions(
@@ -391,7 +359,7 @@ val clientAiGovernorPatch = bytecodePatch(
             )
             patched++
         } catch (e: Exception) {
-            println("[Client-Side AI & Behavioral Profiling Governor] SearchAdAISummaryCardProtocol.zX note: ${e.message}")
+            println("[Client-Side AI & Behavioral Profiling Governor] SearchAdAISummaryCardProtocol.Lr2 note: ${e.message}")
         }
 
         println("[Client-Side AI & Behavioral Profiling Governor] Applied $patched client-side AI, Tako, and search clutter governors.")

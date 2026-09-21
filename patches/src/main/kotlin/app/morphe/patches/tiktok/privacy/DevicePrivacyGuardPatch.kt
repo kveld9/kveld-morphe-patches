@@ -160,29 +160,10 @@ val devicePrivacyGuardPatch = bytecodePatch(
             println("[Device Privacy Guard] IMMessageListClipboardServiceImpl note: ${e.message}")
         }
 
-        // 1.2 Programmatic clipboard guard: intercept programmatic clipboard reading (LX/01ZZ;->LIZ)
+        // 1.2 Intercept BPEA clipboard reading (LX/1KAa;->LIZIZ)
         try {
             Fingerprint(
-                definingClass = "LX/01ZZ;",
-                name = "LIZ",
-                returnType = "LX/00A1;",
-            ).method.addInstructions(
-                0,
-                """
-                    const/4 v0, 0x0
-                    return-object v0
-                """.trimIndent(),
-            )
-            println("[Device Privacy Guard] Neutralized LX/01ZZ.LIZ() -> forced null.")
-            patched++
-        } catch (e: Exception) {
-            println("[Device Privacy Guard] LX/01ZZ.LIZ note: ${e.message}")
-        }
-
-        // 1.3 Intercept BPEA clipboard reading (LX/0jUy;->LIZIZ)
-        try {
-            Fingerprint(
-                definingClass = "LX/0jUy;",
+                definingClass = "LX/1KAa;",
                 name = "LIZIZ",
                 parameters = listOf("Landroid/content/ClipboardManager;", "Lcom/bytedance/bpea/basics/Cert;"),
                 returnType = "Landroid/content/ClipData;",
@@ -193,10 +174,10 @@ val devicePrivacyGuardPatch = bytecodePatch(
                     return-object v0
                 """.trimIndent(),
             )
-            println("[Device Privacy Guard] Neutralized LX/0jUy.LIZIZ() (BPEA clipboard read) -> forced null.")
+            println("[Device Privacy Guard] Neutralized LX/1KAa.LIZIZ() (BPEA clipboard read) -> forced null.")
             patched++
         } catch (e: Exception) {
-            println("[Device Privacy Guard] LX/0jUy.LIZIZ note: ${e.message}")
+            println("[Device Privacy Guard] LX/1KAa.LIZIZ note: ${e.message}")
         }
 
         // ==========================================
@@ -384,138 +365,8 @@ val devicePrivacyGuardPatch = bytecodePatch(
         }
 
         // ==========================================
-        // 4. UNIVERSAL PACKAGE QUERY TRAMPOLINE & SCANNING PROTECTION
+        // 4. SENSOR HAR (HUMAN ACTIVITY RECOGNITION) ISOLATION
         // ==========================================
-
-        // 4.1 Secure LX/00m8.U3 (PackageManager.getPackageInfo trampoline)
-        try {
-            Fingerprint(
-                definingClass = "LX/00m8;",
-                name = "U3",
-                parameters = listOf("Landroid/content/pm/PackageManager;", "Ljava/lang/String;", "I"),
-                returnType = "Landroid/content/pm/PackageInfo;",
-            ).method.addInstructions(
-                0,
-                """
-                    invoke-static {p1}, ${Constants.TIKTOK_EXTENSION_PRIVACY_HOOK}->checkPackageAllowed(Ljava/lang/String;)V
-                """.trimIndent(),
-            )
-            println("[Device Privacy Guard] Secured LX/00m8.U3 (PackageManager.getPackageInfo trampoline).")
-            patched++
-        } catch (e: Exception) {
-            println("[Device Privacy Guard] LX/00m8.U3 note: ${e.message}")
-        }
-
-        // 4.2 Secure LX/00m8.R3 (PackageManager.getApplicationInfo trampoline)
-        try {
-            Fingerprint(
-                definingClass = "LX/00m8;",
-                name = "R3",
-                parameters = listOf("Landroid/content/pm/PackageManager;", "Ljava/lang/String;", "I"),
-                returnType = "Landroid/content/pm/ApplicationInfo;",
-            ).method.addInstructions(
-                0,
-                """
-                    invoke-static {p1}, ${Constants.TIKTOK_EXTENSION_PRIVACY_HOOK}->checkPackageAllowed(Ljava/lang/String;)V
-                """.trimIndent(),
-            )
-            println("[Device Privacy Guard] Secured LX/00m8.R3 (PackageManager.getApplicationInfo trampoline).")
-            patched++
-        } catch (e: Exception) {
-            println("[Device Privacy Guard] LX/00m8.R3 note: ${e.message}")
-        }
-
-        // ==========================================
-        // 5. CONTACTS BPEA & CONTENTRESOLVER ISOLATION
-        // ==========================================
-
-        // 5.1 Intercept BPEA contacts reader (LX/0OFU;->LIZ)
-        try {
-            Fingerprint(
-                definingClass = "LX/0OFU;",
-                name = "LIZ",
-                returnType = "Ljava/util/List;",
-            ).method.addInstructions(
-                0,
-                """
-                    invoke-static {}, Ljava/util/Collections;->emptyList()Ljava/util/List;
-                    move-result-object v0
-                    return-object v0
-                """.trimIndent(),
-            )
-            println("[Device Privacy Guard] Neutralized LX/0OFU.LIZ() (BPEA contacts reader) -> forced emptyList().")
-            patched++
-        } catch (e: Exception) {
-            println("[Device Privacy Guard] LX/0OFU.LIZ note: ${e.message}")
-        }
-
-        // 5.2 Intercept BPEA ContentResolver query (LX/0OFw;->LIZ)
-        try {
-            Fingerprint(
-                definingClass = "LX/0OFw;",
-                name = "LIZ",
-                parameters = listOf(
-                    "Landroid/content/ContentResolver;",
-                    "Landroid/net/Uri;",
-                    "Lcom/bytedance/bpea/basics/Cert;",
-                    "LX/0OG0;",
-                ),
-                returnType = "Landroid/database/Cursor;",
-            ).method.addInstructions(
-                0,
-                """
-                    const/4 v0, 0x0
-                    return-object v0
-                """.trimIndent(),
-            )
-            println("[Device Privacy Guard] Neutralized LX/0OFw.LIZ() (BPEA ContentResolver query) -> forced null.")
-            patched++
-        } catch (e: Exception) {
-            println("[Device Privacy Guard] LX/0OFw.LIZ note: ${e.message}")
-        }
-
-        // ==========================================
-        // 6. SENSOR HAR (HUMAN ACTIVITY RECOGNITION) ISOLATION
-        // ==========================================
-
-        // 6.1 Intercept HarSensorManager sensor registration (LX/18eO;->LIZIZ)
-        try {
-            Fingerprint(
-                definingClass = "LX/18eO;",
-                name = "LIZIZ",
-                parameters = listOf("Landroid/content/Context;"),
-                returnType = "I",
-            ).method.addInstructions(
-                0,
-                """
-                    const/4 v0, -0x1
-                    return v0
-                """.trimIndent(),
-            )
-            println("[Device Privacy Guard] Neutralized LX/18eO.LIZIZ() (HarSensorManager init) -> forced -1.")
-            patched++
-        } catch (e: Exception) {
-            println("[Device Privacy Guard] LX/18eO.LIZIZ note: ${e.message}")
-        }
-
-        // 6.2 Intercept sensor event listener polling (LX/18eO;->onSensorChanged)
-        try {
-            Fingerprint(
-                definingClass = "LX/18eO;",
-                name = "onSensorChanged",
-                parameters = listOf("Landroid/hardware/SensorEvent;"),
-                returnType = "V",
-            ).method.addInstructions(
-                0,
-                """
-                    return-void
-                """.trimIndent(),
-            )
-            println("[Device Privacy Guard] Neutralized LX/18eO.onSensorChanged() -> return-void.")
-            patched++
-        } catch (e: Exception) {
-            println("[Device Privacy Guard] LX/18eO.onSensorChanged note: ${e.message}")
-        }
 
         // 6.3 Intercept SmartHARServiceImpl.enable() -> false
         try {
