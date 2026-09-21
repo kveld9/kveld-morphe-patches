@@ -31,7 +31,7 @@ Comprehensive breakdown of the patches included in the Morphe TikTok patch suite
 | **Privacy** | **Update Prompt Suppressor** | `bytecodePatch` | Neutralizes background update polling tasks and device ID check routines |
 | **Performance** | **Display Refresh Rate Governor** | `bytecodePatch` | Forces TikTok to run at peak display refresh rate (120Hz/90Hz/60Hz) and neutralizes video playback framerate downclocking |
 | **Performance** | **Instant Launch & Splash Blocker** | `bytecodePatch` | Eliminates cold start delays, splash ad tasks, and TopView preload waits (<0.4s) |
-| **Performance** | **Resource & Battery Governor** | `bytecodePatch` | Suppresses 3D shake ad sensors, video buffer preloading, and Fresco RAM retention |
+| **Performance** | **Resource & Battery Governor** | `bytecodePatch` | Suppresses 3D shake ad sensors and video buffer preloading |
 | **Performance** | **P2P Video Relay Blocker** | `rawResourcePatch` | Strips `libavmdlp2pv2.so` and `libp2plivevdp.so` to stop background P2P CDN seeding |
 | **Performance** | **Disable Push Notifications** | `bytecodePatch` | Neutralizes background push socket polling and persistent wake locks |
 | **Performance** | **Live Stream 3D Gift Optimizer** | `bytecodePatch` | Disables 3D gift particle effect engine to eliminate live frame drops |
@@ -351,15 +351,13 @@ Comprehensive breakdown of the patches included in the Morphe TikTok patch suite
   * Neutralizes `SplashAdServiceImpl.LJFF()`, `LJIILIIL()`, and `LJJIJIL()` (formerly `LJ()`, `LJIILJJIL()`, `LJJIJIIJIL()`) -> `return false` (suppresses splash ad presentation and background fetch).
 
 ### 16. Resource & Battery Governor (`resourceGovernorPatch`)
-* **Objective**: Eliminate battery-draining background operations, sensor polling, and memory leaks.
+* **Objective**: Eliminate battery-draining background operations, sensor polling, and aggressive video buffer preloading.
 * **Internal Mechanisms**:
   * **3D Ad Sensors & Gyroscope Polling**:
     * Neutralizes `ShakeEggService.LIZ()` -> returns `false`.
     * Neutralizes `ShakeEggService.LIZIZ()` -> returns `null`.
   * **Network Traffic & Video Buffer Governor**:
     * Forces `PreloadStrategyConfig.isEnableBufferPreload()Z` -> `return false`, preventing aggressive multi-video background buffer downloads on cellular data.
-  * **Memory Retention Governor**:
-    * Caps animated bitmap frame caching in Facebook Fresco (`FrescoFrameCache.LIZJ()`, `LIZLLL()`), preventing OOM crashes during long scrolling sessions.
 
 ### 17. P2P Video Relay Blocker (`p2pVideoRelayBlockerPatch`)
 * **Objective**: Prevent TikTok from utilizing user device battery, CPU, and cellular data as a distributed P2P edge CDN relay for other users' video streams.
