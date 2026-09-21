@@ -192,12 +192,11 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
         patch_id="resource_governor",
         name="Resource & Battery Governor",
         target_type="bytecode",
-        description="Throttles background sensor polling (gyroscope/accelerometer 3D ads), prevents aggressive video buffer preloading, and caps Fresco animated image memory retention.",
+        description="Throttles background sensor polling (gyroscope/accelerometer 3D ads) and prevents aggressive video buffer preloading.",
         required_classes=[
-            "Lcom/facebook/fresco/animation/bitmap/cache/FrescoFrameCache;",
             "Lcom/ss/android/ugc/aweme/video/preload/model/PreloadStrategyConfig;",
         ],
-        required_strings=["isEnableBufferPreload", "LIZJ", "LIZLLL"],
+        required_strings=["isEnableBufferPreload"],
         criticality="HIGH",
     ),
     PatchContract(

@@ -7,7 +7,7 @@ import app.morphe.patches.shared.Constants
 
 val resourceGovernorPatch = bytecodePatch(
     name = "Resource & Battery Governor",
-    description = "Throttles background sensor polling (gyroscope/accelerometer 3D ads), prevents aggressive video buffer preloading, and caps Fresco animated image memory retention to conserve battery and RAM.",
+    description = "Throttles background sensor polling (gyroscope/accelerometer 3D ads) and prevents aggressive video buffer preloading to conserve battery and CPU resources.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
@@ -80,57 +80,6 @@ val resourceGovernorPatch = bytecodePatch(
             println("[Resource Governor] PreloadStrategyConfig note: ${e.message}")
         }
 
-        // ==========================================
-        // 3. RUNTIME MEMORY & BITMAP CACHE
-        // ==========================================
-
-        // 3.1 FrescoFrameCache frame getter (LIZJ in v46.9.3) -> return null
-        try {
-            Fingerprint(
-                definingClass = "Lcom/facebook/fresco/animation/bitmap/cache/FrescoFrameCache;",
-                name = "LIZJ",
-                custom = { method, _ -> method.returnType.startsWith("L") },
-            ).method.addInstructions(
-                0,
-                """
-                    const/4 v0, 0x0
-                    return-object v0
-                """.trimIndent(),
-            )
-            println("[Resource Governor] Capped FrescoFrameCache.LIZJ() -> Frame bitmap memory retention bounded.")
-            patched++
-        } catch (e: Exception) {
-            println("[Resource Governor] FrescoFrameCache.LIZJ note: ${e.message}")
-        }
-
-        // 3.2 FrescoFrameCache parameterized frame getter (LIZLLL in v47.0.3 / LJFF in v46.9.3) -> return null
-        try {
-            val fp = try {
-                Fingerprint(
-                    definingClass = "Lcom/facebook/fresco/animation/bitmap/cache/FrescoFrameCache;",
-                    name = "LIZLLL",
-                    custom = { method, _ -> method.returnType.startsWith("L") },
-                )
-            } catch (_: Exception) {
-                Fingerprint(
-                    definingClass = "Lcom/facebook/fresco/animation/bitmap/cache/FrescoFrameCache;",
-                    name = "LJFF",
-                    custom = { method, _ -> method.returnType.startsWith("L") },
-                )
-            }
-            fp.method.addInstructions(
-                0,
-                """
-                    const/4 v0, 0x0
-                    return-object v0
-                """.trimIndent(),
-            )
-            println("[Resource Governor] Capped FrescoFrameCache frame getter -> Frame cache allocation suppressed.")
-            patched++
-        } catch (e: Exception) {
-            println("[Resource Governor] FrescoFrameCache frame getter note: ${e.message}")
-        }
-
-        println("[Resource & Battery Governor] Applied $patched hardware, network, and memory governor hook(s).")
+        println("[Resource & Battery Governor] Applied $patched hardware and network governor hook(s).")
     }
 }
