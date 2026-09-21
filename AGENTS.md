@@ -73,7 +73,7 @@ morphe-patches/
 4. **Surgical Diagnostic Telemetry (Debugging Contract)**:
    Every patch MUST emit concise, high-signal telemetry to stdout (captured by Morphe Manager / CLI logs `[WARN] [STDIO]: [...]`) so issues are immediately identifiable from user logs without decompiling:
    - **Standardized Prefix**: Every log line must start with the bracketed patch name prefix: `[Patch Name] ...`.
-   - **Granular Target Tracking**: Track applied hooks dynamically (`var patched = 0`). Individual risky/obfuscated hooks must catch exceptions and log notes (`println("[Patch Name] Target note: ${e.message}")`) so partial target shifts are pinpointed without crashing the entire suite.
+   - **Granular Target Tracking & Zero Zombie Fingerprints**: Track applied hooks dynamically (`var patched = 0`). During development/triage, individual risky/obfuscated hooks may catch exceptions and log notes (`println("[Patch Name] Target note: ${e.message}")`) to pinpoint target shifts without crashing early. However, before declaring completion or committing, all targets must be updated to resolve cleanly or obsolete hooks pruned so that ZERO fingerprint mismatch exceptions are caught or logged.
    - **Consolidated Interpolated Summary**: Emit a single concise conclusion line (`println("[Patch Name] Applied $patched hooks -> feature disabled.")`).
    - **Failure & Guard Transparency**: If an early return occurs (missing feature, unsupported architecture, or optional inputs absent), log an explicit descriptive reason (`println("[Patch Name] Skipped: Reason...")`).
    - **Zero Loop Spam**: Never place `println` inside `walkTopDown()` or high-volume loops; aggregate deltas and report final saved KB/MB, pruned directories, or count metrics.
@@ -113,7 +113,13 @@ When adding or updating any patch, the following gates are **MANDATORY**:
    # Or with an explicit APK file path:
    ./gradlew runPatchTest -Papk=/path/to/app.apk
    ```
-   The patching run MUST complete with **100% success** (0 failed patches, 0 fingerprint errors, 0 exceptions). Never consider any patch task complete if this gate has not executed or has any failure.
+   The patching run MUST complete with **100% success** (0 failed patches, 0 fingerprint errors, 0 exceptions).
+   **Zero-Fingerprint-Mismatch Invariant (Definitive Completion Gate)**:
+   A patch update or the creation of a new patch is **NEVER** complete if there is even a single `Failed to match the fingerprint` or `fingerprint mismatch` in the patcher logs (standard or verbose).
+   Wrapping hooks in `try-catch` with diagnostic log lines (`Target note: ${e.message}`) is strictly a temporary development aid to pinpoint shifted targets during initial triage; it is **STRICTLY PROHIBITED** to leave failing fingerprints caught by try-catch in final/committed code. Every single hook target must either:
+   a) Be updated with the newly shifted obfuscated class/method in the target APK version.
+   b) Or, if the underlying feature was completely removed upstream by the app developers, the obsolete hook/fingerprint MUST be pruned from the patch entirely rather than left as a failing zombie fingerprint.
+   Never consider any patch task complete if this gate has not executed or has any failure or fingerprint mismatch.
 2. **Code Injection Verification**: Assert that the modified bytecode/resources/ELF offsets were correctly injected into the final APK.
 3. **Smoke Launch Verification (Zero-Crash Baseline)**: Verify that the patched APK launches cleanly without runtime crashes or uncaught startup exceptions.
 
@@ -154,8 +160,8 @@ For non-trivial logic, Smali hooks, native ARM64 patching (`libchrome.so`), or s
     - All validation runtime outputs (`validation/runtime/`, `validation/physical_harness/results/`) must remain strictly excluded via `.gitignore` and sanitized by `scripts/clean_workspace.sh`.
 11. **Metadata Synchronization Integrity**:
     - When patch options, default values, or descriptions are modified in Kotlin source code, verify that patch catalog generator tasks (`./gradlew generatePatchesList`) are synchronized before release packaging.
-12. **DO NOT Declare Patch Tasks Complete Without In-Situ Morphe Patcher Verification**:
-    - Never conclude any patch edit or declare a task complete without executing `./gradlew runPatchTest -Papp=<target>` with all corresponding patches active for that target app and asserting 100% success (0 failed patches, 0 fingerprint mismatches).
+12. **DO NOT Declare Patch Tasks Complete Without In-Situ Morphe Patcher Verification & Zero Fingerprint Mismatches**:
+    - Never conclude any patch edit or declare a task complete without executing `./gradlew runPatchTest -Papp=<target>` with all corresponding patches active for that target app and asserting 100% success (0 failed patches, 0 exceptions, and 0 fingerprint mismatches/failed fingerprints in the logs). Any log line containing `Failed to match the fingerprint` or `fingerprint mismatch` constitutes an incomplete/broken patch that blocks completion.
 13. **Strict Prohibition of Emojis in Code, Scripts & Tooling**:
     - Under no circumstances should emojis or unicode pictographs be used anywhere in codebase source files, including Kotlin, Java, Python, Smali, Bash/Shell scripts, Gradle build files, configuration files, test files, diagnostic telemetry, or CLI/runtime logs.
     - All code, logs, comments, and console outputs MUST strictly use clean, standard ASCII / plain-text formatting (e.g. `[INFO]`, `[WARN]`, `[PASS]`, `[FAIL]`, `[AUDIT]`, `[BUILD]`). Emojis are tolerated exclusively in end-user documentation (such as `README.md`) if already present, but are strictly prohibited in codebase implementation files and tooling.

@@ -178,7 +178,7 @@ Every patch execution must emit concise, high-signal diagnostic telemetry captur
    ```kotlin
    var patched = 0
    ```
-3. **Per-Hook Try/Catch with Notes**: Wrap individual hook/fingerprint blocks in `try/catch` to allow partial degradation without failing the entire patch run:
+3. **Development Triage vs Final Zero-Mismatch Gate**: Wrap risky hook/fingerprint blocks in `try/catch` during development to allow partial degradation and pinpoint shifting targets without halting the suite prematurely:
    ```kotlin
    try {
        // fingerprint resolution and hook injection
@@ -187,6 +187,7 @@ Every patch execution must emit concise, high-signal diagnostic telemetry captur
        println("[Patch Name] Component note: ${e.message}")
    }
    ```
+   **CRITICAL GATE**: Prior to final verification, committing, or release, every single fingerprint failure (`Failed to match the fingerprint`) MUST be resolved to the new shifted target or pruned if the feature was deleted upstream. Retaining failing fingerprints in production/committed code is strictly forbidden.
 4. **Consolidated Summary Log**: Emit a quantifiable summary upon completing operations:
    ```kotlin
    println("[Patch Name] Successfully applied $patched hooks across target components.")
