@@ -10,7 +10,10 @@ import app.morphe.patches.shared.Constants
 import app.morphe.patcher.apk.ApkUtils
 import app.morphe.patcher.apk.ApkUtils.applyTo
 import kotlinx.coroutines.runBlocking
+import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.OutputStream
+import java.io.PrintStream
 
 enum class TargetApp(
     val id: String,
@@ -364,6 +367,62 @@ fun main(args: Array<String>) {
     var failedPatches = 0
     val failures = mutableListOf<String>()
 
+    val originalOut = System.out
+    val originalErr = System.err
+    val fingerprintErrors = java.util.concurrent.CopyOnWriteArrayList<String>()
+
+    class InterceptingOutputStream(val delegate: OutputStream) : OutputStream() {
+        private val buffer = ByteArrayOutputStream()
+
+        override fun write(b: Int) {
+            delegate.write(b)
+            if (b == '\n'.code) {
+                checkLine(buffer.toString("UTF-8"))
+                buffer.reset()
+            } else if (b != '\r'.code) {
+                buffer.write(b)
+            }
+        }
+
+        override fun write(b: ByteArray, off: Int, len: Int) {
+            delegate.write(b, off, len)
+            for (i in off until off + len) {
+                val byte = b[i]
+                if (byte == '\n'.code.toByte()) {
+                    checkLine(buffer.toString("UTF-8"))
+                    buffer.reset()
+                } else if (byte != '\r'.code.toByte()) {
+                    buffer.write(byte.toInt())
+                }
+            }
+        }
+
+        private fun checkLine(line: String) {
+            val lower = line.lowercase()
+            if (line.startsWith("Detected Fingerprint Failures:") || line.startsWith("[ERROR]") || line.startsWith("FINAL PATCHING RESULT")) return
+            if (lower.contains("failed to match the fingerprint") || (lower.contains("fingerprint mismatch") && !line.startsWith("Detected Fingerprint Failures:"))) {
+                fingerprintErrors.add(line.trim())
+            }
+        }
+
+        override fun flush() {
+            delegate.flush()
+        }
+
+        override fun close() {
+            if (buffer.size() > 0) {
+                checkLine(buffer.toString("UTF-8"))
+                buffer.reset()
+            }
+            delegate.close()
+        }
+    }
+
+    val interceptingOut = PrintStream(InterceptingOutputStream(originalOut), true, "UTF-8")
+    val interceptingErr = PrintStream(InterceptingOutputStream(originalErr), true, "UTF-8")
+    System.setOut(interceptingOut)
+    System.setErr(interceptingErr)
+
     try {
         runBlocking {
             patcher().collect { result ->
@@ -390,8 +449,9 @@ fun main(args: Array<String>) {
         println("Total patches: $totalPatches")
         println("Successful:    $successfulPatches")
         println("Failed:        $failedPatches")
+        println("Detected Fingerprint Failures: ${fingerprintErrors.size}")
 
-        if (failedPatches == 0) {
+        if (failedPatches == 0 && fingerprintErrors.isEmpty()) {
             println("\n[BUILD] Compiling modified bytecode & assets via patcher.get()...")
             val patcherResult = patcher.get()
             println("[BUILD] Compiled ${patcherResult.dexFiles.size} DEX files successfully.")
@@ -443,9 +503,17 @@ fun main(args: Array<String>) {
             }
         }
     } finally {
+        System.setOut(originalOut)
+        System.setErr(originalErr)
         patcher.close()
         tempDir.deleteRecursively()
         File("build/tmp/patcher-apkm-source").deleteRecursively()
+    }
+
+    if (fingerprintErrors.isNotEmpty()) {
+        println("\n[ERROR] Unresolved fingerprint mismatches detected during patch execution (${fingerprintErrors.size}):")
+        fingerprintErrors.forEach { println("  • $it") }
+        error("Patcher execution failed: ${fingerprintErrors.size} fingerprint mismatch(es) detected! A patch update or creation is NEVER complete until 100% of fingerprints resolve cleanly.")
     }
 
     if (failedPatches > 0) {
@@ -453,6 +521,6 @@ fun main(args: Array<String>) {
         failures.forEach { println("  - $it") }
         error("Patcher finished with $failedPatches failure(s)")
     } else {
-        println("\n100% OF ${targetApp.appName.uppercase()} PATCHES APPLIED WITH ZERO ERRORS!")
+        println("\n100% OF ${targetApp.appName.uppercase()} PATCHES APPLIED WITH ZERO ERRORS AND ZERO FINGERPRINT MISMATCHES!")
     }
 }
