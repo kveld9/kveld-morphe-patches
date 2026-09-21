@@ -1,3 +1,9 @@
+## [1.42.2](https://github.com/kveld9/kveld-morphe-patches/compare/v1.42.1...v1.42.2) (2026-09-21)
+
+### Bug Fixes
+
+* **tiktok:** restore fresco animation frame cache to fix animated sticker lag in comments ([8cc4534](https://github.com/kveld9/kveld-morphe-patches/commit/8cc45347e6b26dcc15fb67f329520894b45f9b2f))
+
 ## [1.42.1](https://github.com/kveld9/kveld-morphe-patches/compare/v1.42.0...v1.42.1) (2026-09-21)
 
 ### Bug Fixes
