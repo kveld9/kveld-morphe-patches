@@ -1,3 +1,9 @@
+## [1.42.1](https://github.com/kveld9/kveld-morphe-patches/compare/v1.42.0...v1.42.1) (2026-09-21)
+
+### Bug Fixes
+
+* **tiktok:** resolve shifted bytecode targets and prune obsolete hooks for v47.0.3 ([5c60743](https://github.com/kveld9/kveld-morphe-patches/commit/5c60743908079d09c06ca2a62c56bc76792764e2))
+
 ## [1.42.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.41.1...v1.42.0) (2026-09-20)
 
 ### Bug Fixes
