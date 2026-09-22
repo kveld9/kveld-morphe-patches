@@ -1,18 +1,26 @@
-# 🏋️ Hevy: Setup & Authentication Guide
+# 🏋️ Hevy: Complete Patch, Authentication & Configuration Guide
 
-## Target Variant Selection
-
-> [!IMPORTANT]
-> Download the official release bundle from [APKMirror (Hevy - Gym Log Workout Tracker)](https://www.apkmirror.com/apk/hevy/hevy-gym-log-workout-tracker/):
-> - **Format**: `BUNDLE` (APKM / Split APKs)
-> - **Architecture**: `arm64-v8a`
-> - **Target Version**: `3.1.14`
-
-Morphe Manager automatically extracts and merges the necessary split modules (`base.apk`, `split_config.arm64_v8a.apk`, device DPI, and locale splits) into a unified installable APK during patching.
+Comprehensive technical, authentication, and configuration guide for **Hevy - Gym Log Workout Tracker** (`com.hevy`), covering target requirements, Google Sign-In vs Email authentication workflows, applied patches, configurable options, and Hermes Bytecode client-side Pro unlocks.
 
 ---
 
-## Authentication: Google Sign-In vs. Email Login
+## 🎯 Target & Compatibility
+
+| Property | Value |
+| :--- | :--- |
+| **Target Application** | Hevy - Gym Log Workout Tracker |
+| **Package Name** | `com.hevy` |
+| **Supported Target Version** | **`3.1.14`** |
+| **Target File Format** | Split APK Bundle (`BUNDLE` / APKM) |
+| **Target Architecture** | `arm64-v8a` |
+| **Official Download Source** | [APKMirror: Hevy - Gym Log Workout Tracker](https://www.apkmirror.com/apk/hevy/hevy-gym-log-workout-tracker/hevy-gym-log-workout-tracker-3-1-14-release/) |
+
+> [!NOTE]
+> Morphe Manager automatically extracts and merges the necessary split modules (`base.apk`, `split_config.arm64_v8a.apk`, device DPI, and locale splits) into a unified installable APK during patching.
+
+---
+
+## 🔑 Authentication: Google Sign-In vs. Email Login
 
 > [!WARNING]
 > **Google Sign-In will fail with `"Error al iniciar sesión con Google"` (or `DEVELOPER_ERROR 10` / `SIGN_IN_FAILED 12500`).**
@@ -22,7 +30,7 @@ Morphe Manager automatically extracts and merges the necessary split modules (`b
 Google Play Services OAuth 2.0 enforces cryptographic certificate verification. When Google Sign-In is triggered:
 1. Google Play Services queries Android's `PackageManager` for the caller's signing certificate SHA-1 fingerprint.
 2. The Google OAuth authentication backend verifies whether the SHA-1 matches the official production keystore registered in Hevy's Google Developer Console.
-3. Because Morphe Manager must re-sign modified APKs with a local private keystore, Google Play Services detects the certificate mismatch and rejects the authentication request.
+3. Because Morphe Manager re-signs modified APKs with a local private keystore, Google Play Services detects the certificate mismatch and rejects the authentication request.
 
 ### Solution: Email & Password Authentication
 
@@ -40,27 +48,36 @@ Hevy's native backend API (`api.hevyapp.com`) authenticates email and password c
 
 ---
 
-## Patch Capabilities & Features
+## 📋 Applied Patches Catalog
 
-| Patch | Description | Recommended |
-| :--- | :--- | :---: |
-| **Unlock Pro** | Unlocks local Hevy Pro capabilities (unlimited workout routines, routine folders, advanced graphs, and local analytics) via Hermes Bytecode (HBC96) Pro getter overrides. | ✅ Yes |
-| **Block Hevy Telemetry & Trackers** | Disables Sentry native SDK crash reporting, Adjust attribution queues, Facebook AppEvents telemetry, Branch referral links, and WearOS background sync. | ✅ Yes |
-| **Hevy Battery Optimization** | Neutralizes background WorkManager alarms, periodic job schedulers, Firebase wakeups, and DataTransport schedulers to eliminate idle battery drain. | ✅ Yes |
-| **Hevy Resource Slimmer** | Strips embedded onboarding MP4 tutorial video and heavy photo editor stickers/textures, reducing APK size by ~12 MB. | ✅ Yes |
-| **Universal Slimmers & Cleaners** | `APK Junk Cleaner`, `DPI Resource Slimmer`, and `PNG Asset Optimizer` further reduce APK size and optimize resources. | ✅ Yes |
+| Patch Name | Type | Category | Default | Primary Mechanism |
+| :--- | :--- | :--- | :---: | :--- |
+| **Unlock Pro** | `rawResourcePatch` | Feature Unlock | ✅ Yes | Unlocks local Hevy Pro capabilities via Hermes Bytecode (HBC96) Pro getter overrides. |
+| **Block Hevy Telemetry & Trackers** | `bytecodePatch` + `resourcePatch` | Privacy & Telemetry | ✅ Yes | Disables Sentry native SDK crash reporting, Adjust attribution, Facebook AppEvents, Branch referral links, and WearOS background sync. |
+| **Hevy Battery Optimization** | `resourcePatch` | Battery & Performance | ✅ Yes | Neutralizes background WorkManager alarms, periodic job schedulers, Firebase wakeups, and DataTransport schedulers. |
+| **Hevy Resource Slimmer** | `rawResourcePatch` | Storage Reclamation | ✅ Yes | Strips embedded onboarding MP4 tutorial video and heavy photo editor textures, reducing APK size by ~12 MB. |
+| **Universal Slimmers** | `resourcePatch` + `rawResourcePatch` | Optimization | ✅ Yes | `Locale Resource Slimmer`, `DPI Resource Slimmer`, `PNG Asset Optimizer`, and `APK Junk Cleaner`. |
 
 ---
 
-## Pro Capabilities: Client-Side Unlocks vs. Server-Side Limitations
+## ⚙️ Configurable Options in Morphe Manager
+
+The **`Block Hevy Telemetry & Trackers`** patch exposes the following optional toggles:
+
+| Option | Key | Type | Default | Description |
+| :--- | :--- | :--- | :---: | :--- |
+| **Keep WearOS Companion Sync** | `keepWearOs` | Boolean | `false` | When enabled, preserves WearOS background communication services and manifest receivers for paired smartwatches. |
+| **Keep Sentry Native Crash Reports** | `keepSentry` | Boolean | `false` | When enabled, preserves native Sentry crash dump collection and error reporting. |
+
+---
+
+## 🔓 Pro Capabilities: Client-Side Unlocks vs. Server-Side Limits
 
 The **Unlock Pro** patch operates strictly on client-side JavaScript execution by overriding property getters (`isPro`, `isPaying`, `isInGracePeriod`, `isWithinProOfflineGracePeriod`) within the React Native Hermes Bytecode (`assets/index.android.bundle`).
 
 Because remote database records on `api.hevyapp.com` are not modified, features are divided into client-side gated (fully unlocked) and server-side gated (governed by remote API rules):
 
 ### 1. Unlocked Capabilities (Client-Side Gated)
-
-To verify that **Hevy Pro is active and functioning**:
 
 1. **Unlimited Workout Routines (Bypass 4-Routine Cap):**
    - Free accounts are strictly capped at **4 routine templates**.
@@ -97,5 +114,3 @@ To verify that **Hevy Pro is active and functioning**:
 >
 > 3. **Stale Session Token:**
 >    - If your login token is corrupted or expired, log out and log back in using your Email and Password.
-
-

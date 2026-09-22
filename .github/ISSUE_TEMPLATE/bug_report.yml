@@ -11,7 +11,7 @@ body:
         Before creating a new bug report, please keep the following in mind:
 
         - **Do not submit a duplicate bug report**: Search for existing bug reports [here](https://github.com/kveld9/kveld-morphe-patches/issues?q=label%3A%22Bug+report%22).
-        - **Check Setup Guides**: If reporting missing dictionaries or Glide Typing on Gboard Lite, verify the [Gboard Setup Guide](https://github.com/kveld9/kveld-morphe-patches/blob/main/docs/gboard-setup.md). For Hevy login errors, verify the [Hevy Authentication Guide](https://github.com/kveld9/kveld-morphe-patches/blob/main/docs/hevy-setup.md).
+        - **Check Setup Guides**: If reporting missing dictionaries or Glide Typing on Gboard Lite, verify the [Gboard Lite Guide](https://github.com/kveld9/kveld-morphe-patches/blob/main/docs/apps/gboard.md). For Hevy login errors, verify the [Hevy Guide](https://github.com/kveld9/kveld-morphe-patches/blob/main/docs/apps/hevy.md).
         - **Review existing issues**: Make sure your bug report includes all requested information.
   - type: dropdown
     id: app

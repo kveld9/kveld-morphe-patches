@@ -36,15 +36,15 @@
 > [!TIP]
 > For CPU architecture guidelines (ARM64 vs 32-bit ARMv7a) and variant selection rationales, consult the [Compatibility Guide](docs/compatibility.md).
 
-| Application | Package ID | Target Version | Architecture / Variant | Download Source | Guide / Notes |
+| Application | Package ID | Target Version | Architecture / Variant | Download Source | Complete Guide |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Gboard Lite** | `com.google.android.inputmethod.latin` | `18.2.4.969776716` | `arm64-v8a`<br>`armeabi-v7a` (nodpi) | [APKMirror](https://www.apkmirror.com/apk/google-inc/gboard/gboard-the-google-keyboard-18-2-4-969776716-release/) | [Setup Guide](docs/gboard-setup.md) |
-| **Brave Browser** | `com.brave.browser` | `1.95.104` | `arm64-v8a`<br>`armeabi-v7a` (Monolithic) | [ARM64](https://github.com/brave/brave-browser/releases/download/v1.95.104/Bravemonoarm64.apk) · [ARM32](https://github.com/brave/brave-browser/releases/download/v1.95.104/BraveMonoarm.apk) | Monolithic APK from GitHub only |
-| **Vivaldi Browser** | `com.vivaldi.browser` | `8.2.4147.93` | `arm64-v8a` (APKM Bundle) | [APKMirror](https://www.apkmirror.com/apk/vivaldi-technologies/vivaldi-browser-beta/vivaldi-browser-fast-safe-8-2-4147-93-release/) | `.apkm` bundle required |
-| **Hevy** | `com.hevy` | `3.1.14` | `arm64-v8a` (APKM Bundle) | [APKMirror](https://www.apkmirror.com/apk/hevy-gym-workout-tracker/hevy-gym-log-workout-tracker/hevy-gym-log-workout-tracker-3-1-14-release/) | [Auth Guide](docs/hevy-setup.md) |
-| **TikTok** | `com.zhiliaoapp.musically`<br>`com.ss.android.ugc.trill` | `47.0.3` | `arm64-v8a` (nodpi) | [Global](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-47-0-3-release/) · [Asia](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok/tiktok-47-0-3-2-release/) | [Patch Specs](docs/tiktok-patches.md) |
-| **NokoPrint** | `com.nokoprint` | `5.10.8` | Universal (nodpi) | [APKMirror](https://www.apkmirror.com/apk/nokoprint-llc/nokoprint-wifi-bluetooth-usb-printing/nokoprint-wifi-bluetooth-usb-printing-5-10-8-release/nokoprint-mobile-printing-5-10-8-android-apk-download/) | Standalone APK |
-| **Xiaomi Earbuds** | `com.mi.earphone` | `1.38.0i` | Universal (XAPK Bundle) | [APKPure](https://d.apkpure.com/b/XAPK/com.mi.earphone?versionCode=138000) | `.xapk` bundle required |
+| **Brave Browser** | `com.brave.browser` | `1.95.104` | `arm64-v8a`<br>`armeabi-v7a` (Monolithic) | [ARM64](https://github.com/brave/brave-browser/releases/download/v1.95.104/Bravemonoarm64.apk) · [ARM32](https://github.com/brave/brave-browser/releases/download/v1.95.104/BraveMonoarm.apk) | [Brave Guide](docs/apps/brave.md) |
+| **Gboard Lite** | `com.google.android.inputmethod.latin` | `18.2.4.969776716` | `arm64-v8a`<br>`armeabi-v7a` (nodpi) | [APKMirror](https://www.apkmirror.com/apk/google-inc/gboard/gboard-the-google-keyboard-18-2-4-969776716-release/) | [Gboard Lite Guide](docs/apps/gboard.md) |
+| **Hevy** | `com.hevy` | `3.1.14` | `arm64-v8a` (APKM Bundle) | [APKMirror](https://www.apkmirror.com/apk/hevy-gym-workout-tracker/hevy-gym-log-workout-tracker/hevy-gym-log-workout-tracker-3-1-14-release/) | [Hevy Guide](docs/apps/hevy.md) |
+| **NokoPrint** | `com.nokoprint` | `5.10.8` | Universal (nodpi) | [APKMirror](https://www.apkmirror.com/apk/nokoprint-llc/nokoprint-wifi-bluetooth-usb-printing/nokoprint-wifi-bluetooth-usb-printing-5-10-8-release/nokoprint-mobile-printing-5-10-8-android-apk-download/) | [NokoPrint Guide](docs/apps/nokoprint.md) |
+| **TikTok** | `com.zhiliaoapp.musically`<br>`com.ss.android.ugc.trill` | `47.0.3` | `arm64-v8a` (nodpi) | [Global](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-47-0-3-release/) · [Asia](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok/tiktok-47-0-3-2-release/) | [TikTok Guide](docs/apps/tiktok.md) |
+| **Vivaldi Browser** | `com.vivaldi.browser` | `8.2.4147.93` | `arm64-v8a` (APKM Bundle) | [APKMirror](https://www.apkmirror.com/apk/vivaldi-technologies/vivaldi-browser-beta/vivaldi-browser-fast-safe-8-2-4147-93-release/) | [Vivaldi Guide](docs/apps/vivaldi.md) |
+| **Xiaomi Earbuds** | `com.mi.earphone` | `1.38.0i` | Universal (XAPK Bundle) | [APKPure](https://d.apkpure.com/b/XAPK/com.mi.earphone?versionCode=138000) | [Xiaomi Earbuds Guide](docs/apps/xiaomi-earbuds.md) |
 
 ---
 
@@ -269,21 +269,24 @@
 
 Technical references, setup manuals, and architecture notes are organized by focus area:
 
-### 📱 Application Setup Guides
-| Guide | Description |
-| :--- | :--- |
-| **[Gboard Setup & Dictionaries](docs/gboard-setup.md)** | Initial configuration for predictive text, offline language dictionaries, and Glide Typing. |
-| **[Hevy Setup & Authentication](docs/hevy-setup.md)** | Google Sign-In SHA-1 limitations, Email/Password login workflow, and Pro feature overview. |
-| **[Compatibility Guide](docs/compatibility.md)** | CPU architecture policy (`arm64-v8a` vs `armeabi-v7a`) and APK variant selection rationales. |
-| **[Patch Configuration & Options](docs/patch-configuration.md)** | Customizable patch parameters, defaults, and override reference. |
+### 📱 Dedicated Application Guides
+| Application | Guide | Description |
+| :--- | :--- | :--- |
+| **Brave Browser** | **[Brave Guide](docs/apps/brave.md)** | Zero-configuration debloat, telemetry neutralization, sponsored NTP removal, and PAK slimmer. |
+| **Gboard Lite** | **[Gboard Lite Guide](docs/apps/gboard.md)** | Offline dictionaries & Glide Typing setup, MDD sync debloat, and clipboard retention options. |
+| **Hevy** | **[Hevy Guide](docs/apps/hevy.md)** | Email authentication workflow, Hermes bytecode Pro unlocks, client vs server limits, and telemetry. |
+| **NokoPrint** | **[NokoPrint Guide](docs/apps/nokoprint.md)** | In-app ad loaders neutralization, premium status enforcement, multi-store debloat, and network security. |
+| **TikTok** | **[TikTok Guide](docs/apps/tiktok.md)** | SIM region spoofing, decoupled quality governor, 120Hz refresh lock, watermark-free downloader, and ad filters. |
+| **Vivaldi Browser** | **[Vivaldi Guide](docs/apps/vivaldi.md)** | Native GURL redirection in `libchrome.so`, UKM telemetry neutralization, Start Page debloat, and PAK slimmer. |
+| **Xiaomi Earbuds** | **[Xiaomi Earbuds Guide](docs/apps/xiaomi-earbuds.md)** | Initial pairing workflow, anti-tamper bypass, spatial audio / aptX 96kHz unlocks, and offline isolation. |
 
-### 🏛️ Architecture & Governance
+### 🌐 Universal & Architecture Reference
 | Guide | Description |
 | :--- | :--- |
+| **[Universal Patches & Options](docs/universal-patches.md)** | Universal resource slimmers: Locale PAK, Locale Resource, DPI Drawable, PNG Optimizer, and Junk Cleaner. |
+| **[Compatibility Guide](docs/compatibility.md)** | CPU architecture policy (`arm64-v8a` vs `armeabi-v7a`), APK variant requirements, and SHA-256 baseline. |
 | **[Project Scope & Out of Scope](docs/out-of-scope.md)** | Non-negotiable design philosophy, compile-time invariants, and rejected feature categories. |
 | **[Architecture & Security Notes](docs/architecture-security.md)** | Static analysis scanner false positives (ML Kit, Play Billing) and native ELF telemetry neutralization. |
-| **[TikTok Patch Specifications](docs/tiktok-patches.md)** | Technical breakdown of TikTok bytecode hooks, privacy guards, and media downloaders. |
-| **[Vivaldi Patch Specifications](docs/vivaldi-patches.md)** | Deep dive into native GURL redirection, UKM telemetry neutralization, and Start Page debloat. |
 
 ### 🛠️ Developer & Tooling
 | Guide | Description |
