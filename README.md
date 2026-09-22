@@ -35,12 +35,13 @@
 <a href="https://www.apkmirror.com/apk/google-inc/gboard/gboard-the-google-keyboard-18-2-4-969776716-release/"><img src="https://img.shields.io/badge/Download-Gboard_Lite_18.2.4.969776716_(APK_nodpi)-4285F4?style=for-the-badge&logo=google&logoColor=white" alt="Download Gboard Lite APK" /></a>
 
 ### 🦁 Brave Browser
-- **Current Target**: `1.95.104` (`Bravemonoarm64.apk`)
-- **Architecture**: `arm64-v8a` (Monochrome only)
+- **Current Target**: `1.95.104` (`Bravemonoarm64.apk` or `BraveMonoarm.apk`)
+- **Architecture**: `arm64-v8a` (64-bit) or `armeabi-v7a` (32-bit)
 - **Package**: `com.brave.browser`
-- ⚠️ *Monolithic APK Required*: You **must** download **`Bravemonoarm64.apk`** from [Brave GitHub Releases](https://github.com/brave/brave-browser/releases) (not APKMirror). APKMirror splits or other variants (`Bravearm64Universal.apk`, 32-bit builds) use different R8 obfuscation passes and native ELF offsets, which will fail patching.
+- ⚠️ *Monolithic APK Required*: You **must** download **`Bravemonoarm64.apk`** or **`BraveMonoarm.apk`** from [Brave GitHub Releases](https://github.com/brave/brave-browser/releases) (not APKMirror). APKMirror splits or other variants (`Bravearm64Universal.apk`) use different R8 obfuscation passes, which will fail patching.
 
-<a href="https://github.com/brave/brave-browser/releases/download/v1.95.104/Bravemonoarm64.apk"><img src="https://img.shields.io/badge/Download-Bravemonoarm64.apk_(v1.95.104)-FF4500?style=for-the-badge&logo=brave&logoColor=white" alt="Download Brave APK" /></a>
+<a href="https://github.com/brave/brave-browser/releases/download/v1.95.104/Bravemonoarm64.apk"><img src="https://img.shields.io/badge/Download-Bravemonoarm64.apk_(v1.95.104)-FF4500?style=for-the-badge&logo=brave&logoColor=white" alt="Download Brave ARM64 APK" /></a>&nbsp;
+<a href="https://github.com/brave/brave-browser/releases/download/v1.95.104/BraveMonoarm.apk"><img src="https://img.shields.io/badge/Download-BraveMonoarm.apk_ARM32_(v1.95.104)-E53935?style=for-the-badge&logo=brave&logoColor=white" alt="Download Brave ARM32 APK" /></a>
 
 ### 🔴 Vivaldi Browser
 - **Current Target**: `8.2.4147.93` (APKM bundle)
@@ -284,6 +285,7 @@ Need assistance, have questions regarding patch configurations, or want to discu
 | <a href="https://github.com/mparvezalam808"><img src="https://github.com/mparvezalam808.png" width="48" height="48" style="border-radius: 50%;" /><br><b>@mparvezalam808</b></a> | 💡 Proposed TikTok Always show publish date, Copy comments without username, Fix Google login, and Show seekbar feature request ([#35](https://github.com/kveld9/kveld-morphe-patches/issues/35)). |
 | <a href="https://github.com/raxelbyte"><img src="https://github.com/raxelbyte.png" width="48" height="48" style="border-radius: 50%;" /><br><b>@raxelbyte</b></a> | 💡 Proposed Gboard Lite Clipboard Enhancements feature request ([#17](https://github.com/kveld9/kveld-morphe-patches/issues/17)). |
 | <a href="https://github.com/rafipasya"><img src="https://github.com/rafipasya.png" width="48" height="48" style="border-radius: 50%;" /><br><b>@rafipasya</b></a> | 💡 Proposed TikTok Auto-translate comments feature request ([#48](https://github.com/kveld9/kveld-morphe-patches/issues/48)). |
+| <a href="https://github.com/Fahry-a"><img src="https://github.com/Fahry-a.png" width="48" height="48" style="border-radius: 50%;" /><br><b>@Fahry-a</b></a> | 💡 Proposed Brave ARMv7a (32-bit) architecture support feature request ([#50](https://github.com/kveld9/kveld-morphe-patches/issues/50)). |
 <!-- CONTRIBUTORS_END -->
 
 ---

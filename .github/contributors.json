@@ -71,6 +71,15 @@
           "issue": 48
         }
       ]
+    },
+    {
+      "username": "Fahry-a",
+      "contributions": [
+        {
+          "title": "Brave ARMv7a (32-bit) architecture support",
+          "issue": 50
+        }
+      ]
     }
   ]
 }
