@@ -16,6 +16,7 @@ Comprehensive breakdown of the patches included in the Morphe TikTok patch suite
 | **Usability** | **Video Quality Governor** | `bytecodePatch` | Enforces independent resolution ceilings for playback (e.g. 480p) and downloads (e.g. 1080p, 720p, or uncapped) |
 | **Usability** | **Skip First-Launch Onboarding** | `bytecodePatch` | Bypasses interest pickers, swipe-up tutorial, language prompts, and consent sheets directly to FYP feed |
 | **Usability** | **Custom Offline Videos Limit** | `bytecodePatch` | Customizes maximum offline videos download caching limit (~X mins, Y GB/MB) |
+| **Usability** | **Auto-translate comments** | `bytecodePatch` | Intercepts incoming comment lists and binds cells to dispatch batch translations via TikTok's native translation engine |
 | **Privacy** | **Fix Google login** | `bytecodePatch` | Restores Google account sign-in via Web OAuth fallback when GMS rejects modified APK signature |
 | **Privacy** | **Bypass Mandatory Login** | `bytecodePatch` | Neutralizes mandatory login walls, dynamic regional forced login gates, and guest mode browsing restrictions |
 | **Privacy** | **Clean Share URL** | `bytecodePatch` | Strips tracking query parameters, user tokens, and campaign IDs |
@@ -149,6 +150,26 @@ Comprehensive breakdown of the patches included in the Morphe TikTok patch suite
     * Dynamically discovers `OfflineModeSheetPageAssem.Sr()` and resolves `getSubtitle` (`(Context, int, ...)Ljava/lang/String;`).
     * Wraps return points with `TikTokOfflineVideosHook.formatProgressSubtitle(Context, int, String)` to compute duration and storage estimations (`~X mins, Y GB/MB`) when enum matching fails for custom numbers.
     * Discovers the radio item cell class by field types `[I, Activity, OfflineModeManagerVM]` and intercepts subtitle string parameter before item instantiation in `LIZLLL()`.
+
+### 9. Auto-Translate Comments (`commentAutoTranslatePatch`)
+* **Objective**: Automatically translates comments into the user's preferred language using TikTok's native batch translation engine without manual tapping.
+* **Internal Mechanisms**:
+  * **Comment Cell Binding & Native Translation Manager Discovery**:
+    * Targets `BaseCommentCell` bind method (`baseCommentCellBindFingerprint`) matching `"comment_panel"` and method calls returning `Comment`.
+    * Locates the initialized native comment translation manager via `IPUT_OBJECT` instruction pattern.
+    * Injects call to `TikTokCommentTranslateHook.registerCommentCell(itemView, manager)` upon cell binding.
+  * **Comment List Batch Capture**:
+    * Targets `CommentItemList` deserialization/response handling (`commentListLoadedFingerprint`) matching fields `items` (`Ljava/util/List;`) and `lazySplitItemsParseTask`.
+    * Injects call to `TikTokCommentTranslateHook.onCommentListLoaded(commentItemList)` to immediately queue loaded comments by Aweme ID and Comment ID (`aid`/`cid`).
+  * **Native Batch Dispatch & Deduplication**:
+    * Discovers the static native translation method `(List, Context, boolean)V` on the runtime manager class via reflection.
+    * Deduplicates translation requests using composite keys (`requestKey + ":lang:" + currentLanguagePolicyKey`) to prevent redundant network requests and UI flashing.
+  * **Native Language Policy & Exemption Synchronization**:
+    * Reflects on `TranslationLangKevaServiceImpl` to query `getSelectedDoNotTranslateLanguageCodes()` and target translation language.
+    * Skips translation for comments matching the target language or languages explicitly included in the user's "Do not translate" list.
+    * Falls back to system/display locale if native preferences are uninitialized.
+  * **Zero Network Protocol Invariant**:
+    * Relies 100% on ByteDance's native client-side translation pipeline and cloud APIs; no custom endpoints, external proxies, or translation keys required.
 
 ---
 
