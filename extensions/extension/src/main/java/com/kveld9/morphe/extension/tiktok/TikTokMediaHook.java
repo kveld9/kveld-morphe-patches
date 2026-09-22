@@ -138,72 +138,190 @@ public final class TikTokMediaHook {
         return false;
     }
 
-    private static Object selectCleanFallback(Object videoObj) {
-        if (videoObj == null) return null;
-
-        // 0. Try uncapped download stream preserved by Video Quality Governor
+    public static boolean isPhotoMode(Object awemeObj) {
+        if (awemeObj == null) return false;
         try {
-            Object governorStream = TikTokVideoQualityHook.getBestDownloadPlayAddr(videoObj);
-            if (hasUsableUrl(governorStream)) return governorStream;
+            Method getAwemeTypeMethod = awemeObj.getClass().getMethod("getAwemeType");
+            Object typeObj = getAwemeTypeMethod.invoke(awemeObj);
+            if (typeObj instanceof Integer) {
+                int type = (Integer) typeObj;
+                if (type == 68 || type == 150) {
+                    return true;
+                }
+            }
         } catch (Throwable ignored) {}
 
-        // 1. Try h264PlayAddrValue field
+        try {
+            Method isPhotoModeMethod = awemeObj.getClass().getMethod("isPhotoMode");
+            Object res = isPhotoModeMethod.invoke(awemeObj);
+            if (Boolean.TRUE.equals(res)) {
+                return true;
+            }
+        } catch (Throwable ignored) {}
+
+        try {
+            Class<?> extKtClass = awemeObj.getClass().getClassLoader().loadClass("com.ss.android.ugc.aweme.feed.model.AwemeExtKt");
+            Method extMethod = extKtClass.getMethod("isPhotoMode", awemeObj.getClass());
+            Object res = extMethod.invoke(null, awemeObj);
+            if (Boolean.TRUE.equals(res)) {
+                return true;
+            }
+        } catch (Throwable ignored) {}
+
+        try {
+            Method getPhotoInfoMethod = awemeObj.getClass().getMethod("getPhotoModeImageInfo");
+            Object info = getPhotoInfoMethod.invoke(awemeObj);
+            if (info != null) {
+                return true;
+            }
+        } catch (Throwable ignored) {}
+
+        return false;
+    }
+
+    public static boolean isValidVideo(Object videoObj) {
+        if (videoObj == null) return false;
+        try {
+            int h = -1;
+            int w = -1;
+            try {
+                Method mH = videoObj.getClass().getMethod("getHeight");
+                Object resH = mH.invoke(videoObj);
+                if (resH instanceof Integer) h = (Integer) resH;
+            } catch (Throwable ignored) {}
+            try {
+                Method mW = videoObj.getClass().getMethod("getWidth");
+                Object resW = mW.invoke(videoObj);
+                if (resW instanceof Integer) w = (Integer) resW;
+            } catch (Throwable ignored) {}
+
+            if (h == 0 || w == 0) return false;
+        } catch (Throwable ignored) {}
+        return true;
+    }
+
+    public static boolean isH264VideoUrlModel(Object model) {
+        if (!hasUsableUrl(model)) return false;
+        if (TikTokVideoQualityHook.isBytevcPlayAddr(model)) {
+            return false;
+        }
+        try {
+            Method mBytevc1 = model.getClass().getMethod("isBytevc1");
+            Object res = mBytevc1.invoke(model);
+            if (res instanceof Integer && ((Integer) res) != 0) return false;
+            if (Boolean.TRUE.equals(res)) return false;
+        } catch (Throwable ignored) {}
+
+        try {
+            Method mCodec = model.getClass().getMethod("getCodecType");
+            Object codec = mCodec.invoke(model);
+            if (codec instanceof Integer) {
+                int c = ((Integer) codec);
+                if (c == 1 || c == 2) return false;
+            }
+        } catch (Throwable ignored) {}
+
+        try {
+            Method mFormat = model.getClass().getMethod("getFormat");
+            Object fmt = mFormat.invoke(model);
+            if (fmt instanceof String) {
+                String sFmt = ((String) fmt).toLowerCase();
+                if (sFmt.contains("bytevc1") || sFmt.contains("bytevc2") || sFmt.contains("bvc2") || sFmt.contains("hevc") || sFmt.contains("h265") || sFmt.contains("vvc") || sFmt.contains("h266")) return false;
+                if (sFmt.contains("audio") || sFmt.contains("m4a") || sFmt.contains("mp3")) return false;
+            }
+        } catch (Throwable ignored) {}
+
+        try {
+            Method mUri = model.getClass().getMethod("getUri");
+            Object uriObj = mUri.invoke(model);
+            if (uriObj instanceof String) {
+                String uri = ((String) uriObj).toLowerCase();
+                if (uri.contains("bytevc1") || uri.contains("bytevc2") || uri.contains("bvc2") || uri.contains("hevc") || uri.contains("h265") || uri.contains("vvc") || uri.contains("h266") || uri.contains("codec_type=bytevc1") || uri.contains("codec_type=bytevc2") || uri.contains("codec_type=bvc2")) return false;
+                if (uri.contains("dash_audio") || uri.contains("audio_id=") || uri.endsWith(".m4a") || uri.endsWith(".mp3")) return false;
+            }
+        } catch (Throwable ignored) {}
+
+        try {
+            Method mUrls = model.getClass().getMethod("getUrlList");
+            Object urlsObj = mUrls.invoke(model);
+            if (urlsObj instanceof List) {
+                for (Object u : (List) urlsObj) {
+                    if (u instanceof String) {
+                        String url = ((String) u).toLowerCase();
+                        if (url.contains("bytevc1") || url.contains("bytevc2") || url.contains("bvc2") || url.contains("hevc") || url.contains("h265") || url.contains("vvc") || url.contains("h266") || url.contains("codec_type=bytevc1") || url.contains("codec_type=bytevc2") || url.contains("codec_type=bvc2")) return false;
+                        if (url.contains("mime_type=audio") || url.contains("dash_audio") || url.endsWith(".m4a") || url.endsWith(".mp3")) return false;
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
+
+        return true;
+    }
+
+    private static Object selectCleanFallback(Object videoObj) {
+        if (videoObj == null || !isValidVideo(videoObj)) return null;
+
+        // 1. High-resolution stream preserved by Video Quality Governor (guaranteed H.264 video)
+        try {
+            Object governorStream = TikTokVideoQualityHook.getBestDownloadPlayAddr(videoObj);
+            if (isH264VideoUrlModel(governorStream)) return governorStream;
+        } catch (Throwable ignored) {}
+
+        // 2. Native H.264 streams (matches LX/0oMC.LIZ)
         if (h264PlayAddrValueField != null) {
             try {
                 Object model = h264PlayAddrValueField.get(videoObj);
-                if (hasUsableUrl(model)) return model;
+                if (isH264VideoUrlModel(model)) return model;
             } catch (Throwable ignored) {}
         }
 
-        // 2. Try getH264PlayAddr()
         if (getH264PlayAddrMethod != null) {
             try {
                 Object model = getH264PlayAddrMethod.invoke(videoObj);
-                if (hasUsableUrl(model)) return model;
+                if (isH264VideoUrlModel(model)) return model;
             } catch (Throwable ignored) {}
         }
 
-        // 3. Try playAddrValue field
+        // 3. Standard playAddr (default TikTok stream)
         if (playAddrValueField != null) {
             try {
                 Object model = playAddrValueField.get(videoObj);
-                if (hasUsableUrl(model)) return model;
+                if (isH264VideoUrlModel(model)) return model;
             } catch (Throwable ignored) {}
         }
 
-        // 4. Try getPlayAddr()
         if (getPlayAddrMethod != null) {
             try {
                 Object model = getPlayAddrMethod.invoke(videoObj);
-                if (hasUsableUrl(model)) return model;
+                if (isH264VideoUrlModel(model)) return model;
             } catch (Throwable ignored) {}
         }
 
-        // 5. Try playAddrBytevc1Value field
-        if (playAddrBytevc1ValueField != null) {
-            try {
-                Object model = playAddrBytevc1ValueField.get(videoObj);
-                if (hasUsableUrl(model)) return model;
-            } catch (Throwable ignored) {}
-        }
-
-        // 6. Try getProperPlayAddr()
+        // 4. getProperPlayAddr()
         if (getProperPlayAddrMethod != null) {
             try {
                 Object model = getProperPlayAddrMethod.invoke(videoObj);
-                if (hasUsableUrl(model)) return model;
+                if (isH264VideoUrlModel(model)) return model;
             } catch (Throwable ignored) {}
         }
 
         return null;
     }
 
+    public static void patchVideoObject(Object videoObj) {
+        patchVideoObject(videoObj, null);
+    }
+
     /**
      * Intercepts Aweme.getVideo() to ensure video.downloadNoWatermarkAddr is pre-populated
      * with the clean playback stream if missing from TikTok's API response.
      */
-    public static void patchVideoObject(Object videoObj) {
-        if (!forceWatermarkFreeDownload || videoObj == null) return;
+    public static void patchVideoObject(Object videoObj, Object awemeObj) {
+        if (!forceWatermarkFreeDownload || videoObj == null || !isValidVideo(videoObj)) return;
+        if (isPhotoMode(awemeObj)) {
+            Log.i(TAG, "[Watermark Free] Skipped patchVideoObject for photo mode post.");
+            return;
+        }
         try {
             ensureVideoReflection(videoObj.getClass().getClassLoader());
 
@@ -212,7 +330,7 @@ public final class TikTokMediaHook {
                 currentNoWatermark = downloadNoWatermarkAddrField.get(videoObj);
             }
 
-            if (hasUsableUrl(currentNoWatermark)) {
+            if (isH264VideoUrlModel(currentNoWatermark)) {
                 return;
             }
 
@@ -236,29 +354,31 @@ public final class TikTokMediaHook {
      * and returns the watermark-free stream.
      */
     public static Object getWatermarkFreeDownloadUrl(Object originalUrl, Object videoObj) {
-        if (!forceWatermarkFreeDownload || videoObj == null) return originalUrl;
+        if (!forceWatermarkFreeDownload || videoObj == null || !isValidVideo(videoObj)) return originalUrl;
         try {
             ensureVideoReflection(videoObj.getClass().getClassLoader());
 
-            // 0. Prefer uncapped high-resolution stream preserved by Video Quality Governor
+            // 1. Prefer high-resolution uncapped stream preserved by Video Quality Governor
             try {
                 Object governorStream = TikTokVideoQualityHook.getBestDownloadPlayAddr(videoObj);
-                if (hasUsableUrl(governorStream)) {
+                if (isH264VideoUrlModel(governorStream)) {
                     Log.i(TAG, "[Watermark Free] Used high-resolution quality governor stream for download.");
                     return governorStream;
                 }
             } catch (Throwable ignored) {}
 
+            // 2. Prefer official clean unwatermarked stream if present and H.264
             if (downloadNoWatermarkAddrField != null) {
                 Object currentNoWatermark = downloadNoWatermarkAddrField.get(videoObj);
-                if (hasUsableUrl(currentNoWatermark)) {
+                if (isH264VideoUrlModel(currentNoWatermark)) {
                     return currentNoWatermark;
                 }
             }
 
+            // 3. Select clean fallback adhering strictly to H.264 priority
             Object cleanStream = selectCleanFallback(videoObj);
             if (cleanStream != null) {
-                Log.i(TAG, "[Watermark Free] Replaced download stream with unwatermarked playAddr.");
+                Log.i(TAG, "[Watermark Free] Replaced download stream with clean playAddr.");
                 return cleanStream;
             }
         } catch (Throwable ignored) {}

@@ -135,7 +135,7 @@ val mediaEnhancementsPatch = bytecodePatch(
                 method.addInstructions(
                     returnIndex,
                     """
-                        invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_MEDIA_HOOK}->patchVideoObject(Ljava/lang/Object;)V
+                        invoke-static {v$reg, p0}, ${Constants.TIKTOK_EXTENSION_MEDIA_HOOK}->patchVideoObject(Ljava/lang/Object;Ljava/lang/Object;)V
                     """.trimIndent(),
                 )
             }
@@ -302,15 +302,20 @@ val mediaEnhancementsPatch = bytecodePatch(
             }?.name ?: "LIZ"
 
             method.ensureRegisterCount(3)
-            method.addInstructions(
+            method.addInstructionsWithLabels(
                 0,
                 """
+                    invoke-static {p1}, ${Constants.TIKTOK_EXTENSION_MEDIA_HOOK}->isPhotoMode(Ljava/lang/Object;)Z
+                    move-result v0
+                    if-nez v0, :cond_skip_redirect
                     const/4 v0, 0x1
                     invoke-virtual {p0, p1, v0}, ${classDef.type}->$targetMethod(Lcom/ss/android/ugc/aweme/feed/model/Aweme;Z)V
                     return-void
+                    :cond_skip_redirect
+                    nop
                 """.trimIndent(),
             )
-            println("[Media Usability] Redirected downloader spec ($targetMethod) -> unwatermarked mode permanently.")
+            println("[Media Usability] Redirected downloader spec ($targetMethod) -> unwatermarked mode (photo mode preserved).")
             patched++
         } catch (e: Exception) {
             println("[Media Usability] DownloaderSpec redirect note: ${e.message}")

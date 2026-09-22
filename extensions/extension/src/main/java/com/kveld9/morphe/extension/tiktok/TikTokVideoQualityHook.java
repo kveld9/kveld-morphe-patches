@@ -34,10 +34,20 @@ public final class TikTokVideoQualityHook {
     private static final Map<Object, Object> uncappedDownloadAddrs =
         Collections.synchronizedMap(new WeakHashMap<Object, Object>());
 
+    private static final Map<Object, Boolean> playAddrIsBytevc =
+        Collections.synchronizedMap(new WeakHashMap<Object, Boolean>());
+
+    public static boolean isBytevcPlayAddr(Object playAddr) {
+        if (playAddr == null) return false;
+        Boolean isBvc = playAddrIsBytevc.get(playAddr);
+        return Boolean.TRUE.equals(isBvc);
+    }
+
     private static volatile boolean reflectionInitialized = false;
     private static Field videoBitRateListField;
     private static Field videoPlayAddrValueField;
     private static Field videoPlayAddrBytevc1ValueField;
+    private static Field videoH264PlayAddrValueField;
 
     private static Method bitrateGetHeightMethod;
     private static Method bitrateGetGearNameMethod;
@@ -150,6 +160,11 @@ public final class TikTokVideoQualityHook {
                     videoPlayAddrBytevc1ValueField.setAccessible(true);
                 } catch (Throwable ignored) {}
 
+                try {
+                    videoH264PlayAddrValueField = videoClass.getDeclaredField("h264PlayAddrValue");
+                    videoH264PlayAddrValueField.setAccessible(true);
+                } catch (Throwable ignored) {}
+
                 Class<?> bitRateClass = classLoader.loadClass("com.ss.android.ugc.aweme.feed.model.BitRate");
                 try {
                     bitrateGetHeightMethod = bitRateClass.getMethod("getVideoHeight");
@@ -174,6 +189,181 @@ public final class TikTokVideoQualityHook {
         }
     }
 
+    public static boolean isValidVideo(Object videoObj) {
+        if (videoObj == null) return false;
+        try {
+            int h = -1;
+            int w = -1;
+            try {
+                Method mH = videoObj.getClass().getMethod("getHeight");
+                Object resH = mH.invoke(videoObj);
+                if (resH instanceof Integer) h = (Integer) resH;
+            } catch (Throwable ignored) {}
+            try {
+                Method mW = videoObj.getClass().getMethod("getWidth");
+                Object resW = mW.invoke(videoObj);
+                if (resW instanceof Integer) w = (Integer) resW;
+            } catch (Throwable ignored) {}
+
+            if (h == 0 || w == 0) return false;
+        } catch (Throwable ignored) {}
+        return true;
+    }
+
+    public static boolean isAudioBitrate(Object bitrateObj) {
+        if (bitrateObj == null) return false;
+        try {
+            Method mAudioId = bitrateObj.getClass().getMethod("getAudioFileId");
+            Object audioId = mAudioId.invoke(bitrateObj);
+            if (audioId instanceof String && !((String) audioId).trim().isEmpty()) {
+                return true;
+            }
+        } catch (Throwable ignored) {}
+
+        try {
+            Method mFormat = bitrateObj.getClass().getMethod("getFormat");
+            Object fmt = mFormat.invoke(bitrateObj);
+            if (fmt instanceof String) {
+                String sFmt = ((String) fmt).toLowerCase();
+                if (sFmt.contains("audio") || sFmt.contains("m4a") || sFmt.contains("mp3")) {
+                    return true;
+                }
+            }
+        } catch (Throwable ignored) {}
+
+        try {
+            Method mDash = bitrateObj.getClass().getMethod("isDash");
+            Object dashObj = mDash.invoke(bitrateObj);
+            if (Boolean.TRUE.equals(dashObj) && resolveBitrateHeight(bitrateObj) <= 0) {
+                return true;
+            }
+        } catch (Throwable ignored) {}
+
+        try {
+            Object playAddr = extractPlayAddrFromBitrate(bitrateObj);
+            if (playAddr != null) {
+                Method mUri = playAddr.getClass().getMethod("getUri");
+                Object uriObj = mUri.invoke(playAddr);
+                if (uriObj instanceof String) {
+                    String uri = ((String) uriObj).toLowerCase();
+                    if (uri.contains("dash_audio") || uri.contains("audio_id=") || uri.endsWith(".m4a") || uri.endsWith(".mp3")) {
+                        return true;
+                    }
+                }
+                Method mUrls = playAddr.getClass().getMethod("getUrlList");
+                Object urlsObj = mUrls.invoke(playAddr);
+                if (urlsObj instanceof List) {
+                    for (Object u : (List) urlsObj) {
+                        if (u instanceof String) {
+                            String url = ((String) u).toLowerCase();
+                            if (url.contains("mime_type=audio") || url.contains("dash_audio") || url.endsWith(".m4a") || url.endsWith(".mp3")) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
+
+        return false;
+    }
+
+    public static boolean isBytevc1(Object bitrateObj) {
+        if (bitrateObj == null) return false;
+        try {
+            Method m = null;
+            try {
+                m = bitrateObj.getClass().getMethod("isBytevc1");
+            } catch (Throwable ignored) {
+                m = bitrateObj.getClass().getMethod("getIsBytevc1");
+            }
+            if (m != null) {
+                Object res = m.invoke(bitrateObj);
+                if (res instanceof Integer) return ((Integer) res) != 0;
+                if (res instanceof Boolean) return (Boolean) res;
+            }
+        } catch (Throwable ignored) {}
+
+        try {
+            Field f = bitrateObj.getClass().getDeclaredField("isBytevc1");
+            f.setAccessible(true);
+            Object res = f.get(bitrateObj);
+            if (res instanceof Integer) return ((Integer) res) != 0;
+        } catch (Throwable ignored) {}
+
+        try {
+            Method mCodec = bitrateObj.getClass().getMethod("getCodecType");
+            Object codecObj = mCodec.invoke(bitrateObj);
+            if (codecObj instanceof Integer) {
+                int c = ((Integer) codecObj);
+                if (c != 0) {
+                    return true;
+                }
+            }
+        } catch (Throwable ignored) {}
+
+        try {
+            Method mFormat = bitrateObj.getClass().getMethod("getFormat");
+            Object fmt = mFormat.invoke(bitrateObj);
+            if (fmt instanceof String) {
+                String sFmt = ((String) fmt).toLowerCase();
+                if (sFmt.contains("bytevc1") || sFmt.contains("bytevc2") || sFmt.contains("bvc2") || sFmt.contains("hevc") || sFmt.contains("h265") || sFmt.contains("vvc") || sFmt.contains("h266")) {
+                    return true;
+                }
+            }
+        } catch (Throwable ignored) {}
+
+        try {
+            Method mGear = bitrateObj.getClass().getMethod("getGearName");
+            Object gear = mGear.invoke(bitrateObj);
+            if (gear instanceof String) {
+                String sGear = ((String) gear).toLowerCase();
+                if (sGear.contains("bytevc1") || sGear.contains("bytevc2") || sGear.contains("bvc2") || sGear.contains("hevc") || sGear.contains("h265")) {
+                    return true;
+                }
+            }
+        } catch (Throwable ignored) {}
+
+        try {
+            Object playAddr = extractPlayAddrFromBitrate(bitrateObj);
+            if (playAddr != null) {
+                Method mUri = playAddr.getClass().getMethod("getUri");
+                Object uriObj = mUri.invoke(playAddr);
+                if (uriObj instanceof String) {
+                    String uri = ((String) uriObj).toLowerCase();
+                    if (uri.contains("bytevc1") || uri.contains("bytevc2") || uri.contains("bvc2") || uri.contains("hevc") || uri.contains("h265") || uri.contains("codec_type=bytevc1") || uri.contains("codec_type=bytevc2") || uri.contains("codec_type=bvc2")) {
+                        return true;
+                    }
+                }
+                Method mUrls = playAddr.getClass().getMethod("getUrlList");
+                Object urlsObj = mUrls.invoke(playAddr);
+                if (urlsObj instanceof List) {
+                    for (Object u : (List) urlsObj) {
+                        if (u instanceof String) {
+                            String url = ((String) u).toLowerCase();
+                            if (url.contains("bytevc1") || url.contains("bytevc2") || url.contains("bvc2") || url.contains("hevc") || url.contains("h265") || url.contains("codec_type=bytevc1") || url.contains("codec_type=bytevc2") || url.contains("codec_type=bvc2")) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
+
+        return false;
+    }
+
+    private static int parseResolutionFromString(String text) {
+        if (text == null) return 0;
+        if (text.contains("1080")) return 1080;
+        if (text.contains("720")) return 720;
+        if (text.contains("540")) return 540;
+        if (text.contains("480")) return 480;
+        if (text.contains("360")) return 360;
+        if (text.contains("240")) return 240;
+        return 0;
+    }
+
     private static int resolveBitrateHeight(Object bitrateObj) {
         if (bitrateObj == null) return 0;
         try {
@@ -192,7 +382,7 @@ public final class TikTokVideoQualityHook {
             }
         } catch (Throwable ignored) {}
 
-        // Fallback: parse resolution string from gearName or quality
+        // Fallback: parse resolution string from gearName
         try {
             Method mGear = null;
             try {
@@ -203,14 +393,34 @@ public final class TikTokVideoQualityHook {
             if (mGear != null) {
                 Object gearObj = mGear.invoke(bitrateObj);
                 if (gearObj instanceof String) {
-                    String gear = (String) gearObj;
-                    if (gear.contains("1080")) return 1080;
-                    if (gear.contains("720")) return 720;
-                    if (gear.contains("540")) return 540;
-                    if (gear.contains("480")) return 480;
-                    if (gear.contains("360")) return 360;
-                    if (gear.contains("240")) return 240;
+                    int h = parseResolutionFromString((String) gearObj);
+                    if (h > 0) return h;
                 }
+            }
+        } catch (Throwable ignored) {}
+
+        // Fallback: parse resolution string from quality
+        try {
+            Method mQuality = bitrateObj.getClass().getMethod("getQuality");
+            Object qObj = mQuality.invoke(bitrateObj);
+            if (qObj instanceof String) {
+                int h = parseResolutionFromString((String) qObj);
+                if (h > 0) return h;
+            }
+        } catch (Throwable ignored) {}
+
+        // Fallback: derive from width
+        try {
+            Method mWidth = bitrateObj.getClass().getMethod("getVideoWidth");
+            Object wObj = mWidth.invoke(bitrateObj);
+            if (wObj instanceof Integer) {
+                int w = (Integer) wObj;
+                if (w >= 1080) return 1080;
+                if (w >= 720) return 720;
+                if (w >= 540) return 540;
+                if (w >= 480) return 480;
+                if (w >= 360) return 360;
+                if (w > 0) return w;
             }
         } catch (Throwable ignored) {}
 
@@ -233,36 +443,59 @@ public final class TikTokVideoQualityHook {
         }
 
         List filtered = new ArrayList();
-        Object lowestStream = null;
-        int lowestHeight = Integer.MAX_VALUE;
+        Object lowestVideoStream = null;
+        int lowestVideoHeight = Integer.MAX_VALUE;
+        boolean hasVideoInFiltered = false;
 
         for (Object item : originalList) {
+            if (item == null) continue;
+            boolean isAudio = isAudioBitrate(item);
             int h = resolveBitrateHeight(item);
-            if (h > 0 && h < lowestHeight) {
-                lowestHeight = h;
-                lowestStream = item;
-            }
 
-            if (h <= 0 || h <= cap) {
+            if (!isAudio && h > 0) {
+                if (h < lowestVideoHeight) {
+                    lowestVideoHeight = h;
+                    lowestVideoStream = item;
+                }
+                if (h <= cap) {
+                    filtered.add(item);
+                    hasVideoInFiltered = true;
+                }
+            } else {
+                // Preserve audio stream for DASH playback engine
                 filtered.add(item);
             }
         }
 
-        // Failsafe: if all renditions exceeded the cap, keep the lowest available stream
-        if (filtered.isEmpty()) {
-            if (lowestStream != null) {
-                filtered.add(lowestStream);
-            } else {
-                return originalList;
-            }
+        // Failsafe: if all video renditions exceeded the cap, keep the lowest available video stream
+        if (!hasVideoInFiltered && lowestVideoStream != null) {
+            filtered.add(lowestVideoStream);
         }
 
-        // Sort surviving streams descending by resolution height so the best allowed stream is first
+        if (filtered.isEmpty()) {
+            return originalList;
+        }
+
+        // Sort surviving streams: video streams with positive height first (descending by height, H.264 over ByteVC1),
+        // audio streams (h <= 0) at the end.
         Collections.sort(filtered, new Comparator<Object>() {
             @Override
             public int compare(Object o1, Object o2) {
                 int h1 = resolveBitrateHeight(o1);
                 int h2 = resolveBitrateHeight(o2);
+                boolean a1 = isAudioBitrate(o1) || h1 <= 0;
+                boolean a2 = isAudioBitrate(o2) || h2 <= 0;
+                if (!a1 && a2) return -1;
+                if (a1 && !a2) return 1;
+                if (!a1 && !a2) {
+                    int cmp = Integer.compare(h2, h1);
+                    if (cmp != 0) return cmp;
+                    boolean b1 = isBytevc1(o1);
+                    boolean b2 = isBytevc1(o2);
+                    if (!b1 && b2) return -1;
+                    if (b1 && !b2) return 1;
+                    return 0;
+                }
                 return Integer.compare(h2, h1);
             }
         });
@@ -303,16 +536,45 @@ public final class TikTokVideoQualityHook {
     @SuppressWarnings("rawtypes")
     private static Object resolveBestBitrate(List bitrates, int cap) {
         if (bitrates == null || bitrates.isEmpty()) return null;
+
+        // 1. Collect only valid H.264 video streams (exclude audio-only, DASH audio, and ByteVC1)
+        List h264Streams = new ArrayList();
+        for (Object item : bitrates) {
+            if (item == null) continue;
+            if (isAudioBitrate(item)) continue;
+            if (isBytevc1(item)) continue;
+            int h = resolveBitrateHeight(item);
+            if (h > 0) {
+                h264Streams.add(item);
+            }
+        }
+
+        // Never fallback to ByteVC1 or audio for downloads
+        if (h264Streams.isEmpty()) {
+            return null;
+        }
+
+        // 2. Find the best H.264 stream adhering to the cap (highest resolution <= cap)
         Object bestMatch = null;
         int bestHeight = 0;
-        for (Object item : bitrates) {
+        Object lowestAboveCap = null;
+        int lowestHeightAboveCap = Integer.MAX_VALUE;
+
+        for (Object item : h264Streams) {
             int h = resolveBitrateHeight(item);
             if (h <= cap && h > bestHeight) {
                 bestHeight = h;
                 bestMatch = item;
             }
+            if (h > cap && h < lowestHeightAboveCap) {
+                lowestHeightAboveCap = h;
+                lowestAboveCap = item;
+            }
         }
-        return (bestMatch != null) ? bestMatch : bitrates.get(0);
+
+        if (bestMatch != null) return bestMatch;
+        if (lowestAboveCap != null) return lowestAboveCap;
+        return h264Streams.get(0);
     }
 
     /**
@@ -322,7 +584,7 @@ public final class TikTokVideoQualityHook {
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
     public static void capVideoObject(Object videoObj) {
-        if (videoObj == null) return;
+        if (videoObj == null || !isValidVideo(videoObj)) return;
         try {
             ensureReflection(videoObj.getClass().getClassLoader());
 
@@ -333,45 +595,97 @@ public final class TikTokVideoQualityHook {
                 Object listObj = videoBitRateListField.get(videoObj);
                 if (listObj instanceof List) {
                     List originalList = (List) listObj;
+                    if (originalList.isEmpty()) return;
 
-                    // Preserve uncapped stream matching download resolution ceiling for downloads
+                    // Track known codec classification for playAddr objects
+                    for (Object item : originalList) {
+                        if (item == null) continue;
+                        Object playAddr = extractPlayAddrFromBitrate(item);
+                        if (playAddr != null) {
+                            if (isBytevc1(item)) {
+                                playAddrIsBytevc.put(playAddr, Boolean.TRUE);
+                            } else if (!isAudioBitrate(item) && resolveBitrateHeight(item) > 0) {
+                                playAddrIsBytevc.put(playAddr, Boolean.FALSE);
+                            }
+                        }
+                    }
+                    if (videoPlayAddrBytevc1ValueField != null) {
+                        try {
+                            Object bvc = videoPlayAddrBytevc1ValueField.get(videoObj);
+                            if (bvc != null) playAddrIsBytevc.put(bvc, Boolean.TRUE);
+                        } catch (Throwable ignored) {}
+                    }
+                    if (videoH264PlayAddrValueField != null) {
+                        try {
+                            Object h264 = videoH264PlayAddrValueField.get(videoObj);
+                            if (h264 != null) playAddrIsBytevc.put(h264, Boolean.FALSE);
+                        } catch (Throwable ignored) {}
+                    }
+
+                    // Preserve uncapped H.264 stream matching download resolution ceiling for downloads
                     Object bestDownloadBitrate = resolveBestBitrate(originalList, getDownloadResolution());
-                    Object bestDownloadPlayAddr = extractPlayAddrFromBitrate(bestDownloadBitrate);
-                    if (bestDownloadPlayAddr != null) {
-                        uncappedDownloadAddrs.put(videoObj, bestDownloadPlayAddr);
+                    if (bestDownloadBitrate != null) {
+                        Object bestDownloadPlayAddr = extractPlayAddrFromBitrate(bestDownloadBitrate);
+                        if (bestDownloadPlayAddr != null) {
+                            uncappedDownloadAddrs.put(videoObj, bestDownloadPlayAddr);
+                            Log.i(TAG, "[Video Quality Governor] Saved uncapped H.264 download stream (" + resolveBitrateHeight(bestDownloadBitrate) + "p).");
+                        }
                     }
 
                     List cappedList = filterBitrates(originalList);
                     videoBitRateListField.set(videoObj, cappedList);
 
-                    // Sync default play addresses to the capped stream
+                    // Sync default play addresses strictly to the capped video streams without cross-codec contamination
                     if (!cappedList.isEmpty()) {
-                        Object bestAllowedBitrate = cappedList.get(0);
-                        Method getPlayAddrMethod = null;
-                        try {
-                            getPlayAddrMethod = bestAllowedBitrate.getClass().getMethod("getPlayAddr");
-                        } catch (Throwable ignored) {
-                            getPlayAddrMethod = bitrateGetPlayAddrMethod;
+                        Object bestAllowedH264 = null;
+                        Object bestAllowedBytevc1 = null;
+
+                        for (Object item : cappedList) {
+                            if (isAudioBitrate(item) || resolveBitrateHeight(item) <= 0) continue;
+                            if (isBytevc1(item)) {
+                                if (bestAllowedBytevc1 == null) {
+                                    bestAllowedBytevc1 = item;
+                                }
+                            } else {
+                                if (bestAllowedH264 == null) {
+                                    bestAllowedH264 = item;
+                                }
+                            }
+                            if (bestAllowedH264 != null && bestAllowedBytevc1 != null) break;
                         }
 
-                        if (getPlayAddrMethod != null) {
-                            Object cappedPlayAddr = getPlayAddrMethod.invoke(bestAllowedBitrate);
-                            if (cappedPlayAddr != null) {
+                        // Sync H.264 stream strictly to playAddrValue and h264PlayAddrValue
+                        if (bestAllowedH264 != null) {
+                            Object cappedH264PlayAddr = extractPlayAddrFromBitrate(bestAllowedH264);
+                            if (cappedH264PlayAddr != null) {
                                 if (videoPlayAddrValueField != null) {
                                     Object currentPlay = videoPlayAddrValueField.get(videoObj);
                                     if (currentPlay != null) {
-                                        syncUrlModel(currentPlay, cappedPlayAddr);
-                                    } else if (videoPlayAddrValueField.getType().isInstance(cappedPlayAddr)) {
-                                        videoPlayAddrValueField.set(videoObj, cappedPlayAddr);
+                                        syncUrlModel(currentPlay, cappedH264PlayAddr);
+                                    } else if (videoPlayAddrValueField.getType().isInstance(cappedH264PlayAddr)) {
+                                        videoPlayAddrValueField.set(videoObj, cappedH264PlayAddr);
                                     }
                                 }
-                                if (videoPlayAddrBytevc1ValueField != null) {
-                                    Object currentBytevc1 = videoPlayAddrBytevc1ValueField.get(videoObj);
-                                    if (currentBytevc1 != null) {
-                                        syncUrlModel(currentBytevc1, cappedPlayAddr);
-                                    } else if (videoPlayAddrBytevc1ValueField.getType().isInstance(cappedPlayAddr)) {
-                                        videoPlayAddrBytevc1ValueField.set(videoObj, cappedPlayAddr);
+                                if (videoH264PlayAddrValueField != null) {
+                                    Object currentH264 = videoH264PlayAddrValueField.get(videoObj);
+                                    if (currentH264 != null) {
+                                        syncUrlModel(currentH264, cappedH264PlayAddr);
+                                    } else if (videoH264PlayAddrValueField.getType().isInstance(cappedH264PlayAddr)) {
+                                        videoH264PlayAddrValueField.set(videoObj, cappedH264PlayAddr);
                                     }
+                                }
+                            }
+                        }
+
+                        // Sync ByteVC1 stream to playAddrBytevc1Value
+                        if (bestAllowedBytevc1 != null) {
+                            Object cappedBytevc1PlayAddr = extractPlayAddrFromBitrate(bestAllowedBytevc1);
+                            if (cappedBytevc1PlayAddr != null && videoPlayAddrBytevc1ValueField != null) {
+                                Object currentBytevc1 = videoPlayAddrBytevc1ValueField.get(videoObj);
+                                if (currentBytevc1 != null) {
+                                    syncUrlModel(currentBytevc1, cappedBytevc1PlayAddr);
+                                } else if (videoPlayAddrBytevc1ValueField.getType().isInstance(cappedBytevc1PlayAddr)) {
+                                    videoPlayAddrBytevc1ValueField.set(videoObj, cappedBytevc1PlayAddr);
                                 }
                             }
                         }
