@@ -209,95 +209,105 @@ expanded = (
 
 generated  = build_content(expanded=expanded)
 
-# Update text callouts in README for Gboard, Brave, Vivaldi, TikTok, and NokoPrint
+# Update target versions and download URLs in README table
 for entry in by_app.values():
     pkgs = entry["packages"]
     targets = entry.get("targets") or []
     if targets and targets[0].get("version"):
         target_ver = targets[0]["version"]
         if any("latin" in p for p in pkgs):
-            # Gboard current target
+            base_ver = target_ver.split("-")[0]
+            slug_ver = base_ver.replace(".", "-")
             readme = re.sub(
-                r"(\- \*\*Current Target\*\*: `)[^`]+(`)",
-                rf"\g<1>{target_ver}\g<2>",
+                r"(\|\s*\*\*Gboard Lite\*\*\s*\|\s*`com\.google\.android\.inputmethod\.latin`\s*\|\s*`)[^`]+(`\s*\|)",
+                rf"\g<1>{base_ver}\g<2>",
                 readme,
                 count=1,
             )
-            base_ver = target_ver.split("-")[0]
-            slug_ver = base_ver.replace(".", "-")
-            # Gboard direct download badge button
             readme = re.sub(
-                r'<a href="https://www\.apkmirror\.com/apk/google-inc/gboard/(?:gboard|gboard-the-google-keyboard)-[^/]+-release/"><img src="https://img\.shields\.io/badge/Download-Gboard_Lite_[^"]+" alt="Download Gboard Lite APK" /></a>',
-                f'<a href="https://www.apkmirror.com/apk/google-inc/gboard/gboard-the-google-keyboard-{slug_ver}-release/"><img src="https://img.shields.io/badge/Download-Gboard_Lite_{base_ver}_(APK_nodpi)-4285F4?style=for-the-badge&logo=google&logoColor=white" alt="Download Gboard Lite APK" /></a>',
+                r"https://www\.apkmirror\.com/apk/google-inc/gboard/(?:gboard|gboard-the-google-keyboard)-[^/]+-release/",
+                f"https://www.apkmirror.com/apk/google-inc/gboard/gboard-the-google-keyboard-{slug_ver}-release/",
                 readme,
                 count=1,
             )
         elif any("vivaldi" in p for p in pkgs):
-            # Vivaldi current target
+            slug_ver = target_ver.replace(".", "-")
             readme = re.sub(
-                r"(\- \*\*Current Target\*\*: `Vivaldi\.)[^`]+(_arm64-v8a\.apk`)",
+                r"(\|\s*\*\*Vivaldi Browser\*\*\s*\|\s*`com\.vivaldi\.browser`\s*\|\s*`)[^`]+(`\s*\|)",
                 rf"\g<1>{target_ver}\g<2>",
                 readme,
                 count=1,
             )
-            # Vivaldi direct download badge button
             readme = re.sub(
-                r'<a href="https://downloads\.vivaldi\.com/snapshot/Vivaldi\.[^/]+_arm64-v8a\.apk"><img src="https://img\.shields\.io/badge/Download-Vivaldi\.[^"]+" alt="Download Vivaldi APK" /></a>',
-                f'<a href="https://downloads.vivaldi.com/snapshot/Vivaldi.{target_ver}_arm64-v8a.apk"><img src="https://img.shields.io/badge/Download-Vivaldi.{target_ver}_arm64--v8a.apk-EF3939?style=for-the-badge&logo=vivaldi&logoColor=white" alt="Download Vivaldi APK" /></a>',
+                r"https://www\.apkmirror\.com/apk/vivaldi-technologies/(?:vivaldi-browser-beta|vivaldi-browser)/vivaldi-browser-fast-safe-[^/]+-release/",
+                f"https://www.apkmirror.com/apk/vivaldi-technologies/vivaldi-browser-beta/vivaldi-browser-fast-safe-{slug_ver}-release/",
                 readme,
                 count=1,
             )
         elif any("brave" in p for p in pkgs):
-            # Brave current target
             readme = re.sub(
-                r"(\- \*\*Current Target\*\*: `)[^`]+(` \(`Bravemonoarm64\.apk(?: or BraveMonoarm\.apk)?`\))",
+                r"(\|\s*\*\*Brave Browser\*\*\s*\|\s*`com\.brave\.browser`\s*\|\s*`)[^`]+(`\s*\|)",
                 rf"\g<1>{target_ver}\g<2>",
                 readme,
                 count=1,
             )
-            # Brave direct download badge button
             readme = re.sub(
-                r'<a href="https://github\.com/brave/brave-browser/releases/download/v[^/]+/Bravemonoarm64\.apk"><img src="https://img\.shields\.io/badge/Download-Bravemonoarm64\.apk_[^"]+" alt="Download Brave APK" /></a>',
-                f'<a href="https://github.com/brave/brave-browser/releases/download/v{target_ver}/Bravemonoarm64.apk"><img src="https://img.shields.io/badge/Download-Bravemonoarm64.apk_(v{target_ver})-FF4500?style=for-the-badge&logo=brave&logoColor=white" alt="Download Brave APK" /></a>',
+                r"https://github\.com/brave/brave-browser/releases/download/v[^/]+/Bravemonoarm64\.apk",
+                f"https://github.com/brave/brave-browser/releases/download/v{target_ver}/Bravemonoarm64.apk",
+                readme,
+                count=1,
+            )
+            readme = re.sub(
+                r"https://github\.com/brave/brave-browser/releases/download/v[^/]+/BraveMonoarm\.apk",
+                f"https://github.com/brave/brave-browser/releases/download/v{target_ver}/BraveMonoarm.apk",
+                readme,
+                count=1,
+            )
+        elif any("hevy" in p for p in pkgs):
+            slug_ver = target_ver.replace(".", "-")
+            readme = re.sub(
+                r"(\|\s*\*\*Hevy\*\*\s*\|\s*`com\.hevy`\s*\|\s*`)[^`]+(`\s*\|)",
+                rf"\g<1>{target_ver}\g<2>",
+                readme,
+                count=1,
+            )
+            readme = re.sub(
+                r"https://www\.apkmirror\.com/apk/hevy-gym-workout-tracker/hevy-gym-log-workout-tracker/hevy-gym-log-workout-tracker-[^/]+-release/",
+                f"https://www.apkmirror.com/apk/hevy-gym-workout-tracker/hevy-gym-log-workout-tracker/hevy-gym-log-workout-tracker-{slug_ver}-release/",
                 readme,
                 count=1,
             )
         elif any("musically" in p for p in pkgs) or any("trill" in p for p in pkgs):
-            # TikTok current target
+            slug_ver = target_ver.replace(".", "-")
             readme = re.sub(
-                r"(### .*?TikTok[^\n]*\n\- \*\*Current Target\*\*: `)[^`]+(`)",
+                r"(\|\s*\*\*TikTok\*\*\s*\|[^|\n]+\|\s*`)[^`]+(`\s*\|)",
                 rf"\g<1>{target_ver}\g<2>",
                 readme,
                 count=1,
             )
-            # TikTok Global download badge
-            slug_ver = target_ver.replace(".", "-")
             readme = re.sub(
-                r'<a href="https://www\.apkmirror\.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/(?:tik-tok-including-musical-ly|tiktok)-[^/]+-release/"><img src="https://img\.shields\.io/badge/Download-TikTok_Global_[^"]+" alt="Download TikTok Global APK" /></a>',
-                f'<a href="https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-{slug_ver}-release/"><img src="https://img.shields.io/badge/Download-TikTok_Global_{target_ver}_(APK_nodpi)-FE2C55?style=for-the-badge&logo=tiktok&logoColor=white" alt="Download TikTok Global APK" /></a>',
+                r"https://www\.apkmirror\.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-[^/]+-release/",
+                f"https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-{slug_ver}-release/",
                 readme,
                 count=1,
             )
-            # TikTok Asia download badge
             readme = re.sub(
-                r'<a href="https://www\.apkmirror\.com/apk/tiktok-pte-ltd/(?:tik-tok-asia|tik-tok)/(?:tik-tok-asia|tiktok)-[^/]+-release/"><img src="https://img\.shields\.io/badge/Download-TikTok_Asia_[^"]+" alt="Download TikTok Asia APK" /></a>',
-                f'<a href="https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok/tiktok-{slug_ver}-2-release/"><img src="https://img.shields.io/badge/Download-TikTok_Asia_{target_ver}_(APK_nodpi)-25F4EE?style=for-the-badge&logo=tiktok&logoColor=white" alt="Download TikTok Asia APK" /></a>',
+                r"https://www\.apkmirror\.com/apk/tiktok-pte-ltd/tik-tok/tiktok-[^/]+-2-release/",
+                f"https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok/tiktok-{slug_ver}-2-release/",
                 readme,
                 count=1,
             )
         elif any("nokoprint" in p for p in pkgs):
-            # NokoPrint current target
+            slug_ver = target_ver.replace(".", "-")
             readme = re.sub(
-                r"(### .*?NokoPrint[^\n]*\n\- \*\*Current Target\*\*: `)[^`]+(`)",
+                r"(\|\s*\*\*NokoPrint\*\*\s*\|\s*`com\.nokoprint`\s*\|\s*`)[^`]+(`\s*\|)",
                 rf"\g<1>{target_ver}\g<2>",
                 readme,
                 count=1,
             )
-            # NokoPrint direct download badge button
-            slug_ver = target_ver.replace(".", "-")
             readme = re.sub(
-                r'<a href="https://www\.apkmirror\.com/apk/(?:nokoprint|nokoprint-llc)/(?:nokoprint-wifi-bluetooth-usb|nokoprint-wifi-bluetooth-usb-printing)/[^"]+"><img src="https://img\.shields\.io/badge/Download-NokoPrint_[^"]+" alt="Download NokoPrint APK" /></a>',
-                f'<a href="https://www.apkmirror.com/apk/nokoprint-llc/nokoprint-wifi-bluetooth-usb-printing/nokoprint-wifi-bluetooth-usb-printing-{slug_ver}-release/nokoprint-mobile-printing-{slug_ver}-android-apk-download/"><img src="https://img.shields.io/badge/Download-NokoPrint_{target_ver}_(APK_nodpi)-0288D1?style=for-the-badge&logo=android&logoColor=white" alt="Download NokoPrint APK" /></a>',
+                r"https://www\.apkmirror\.com/apk/(?:nokoprint|nokoprint-llc)/(?:nokoprint-wifi-bluetooth-usb|nokoprint-wifi-bluetooth-usb-printing)/nokoprint-wifi-bluetooth-usb-printing-[^/]+-release/nokoprint-mobile-printing-[^/]+-android-apk-download/",
+                f"https://www.apkmirror.com/apk/nokoprint-llc/nokoprint-wifi-bluetooth-usb-printing/nokoprint-wifi-bluetooth-usb-printing-{slug_ver}-release/nokoprint-mobile-printing-{slug_ver}-android-apk-download/",
                 readme,
                 count=1,
             )
