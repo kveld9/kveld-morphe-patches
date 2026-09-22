@@ -1,8 +1,8 @@
 <p align="center">
-  <a href="https://github.com/kveld9/kveld-morphe-patches/releases/latest"><img src="https://img.shields.io/github/v/release/kveld9/kveld-morphe-patches?color=7928CA&label=Release&logo=github&style=for-the-badge" alt="Latest Release" /></a>
-  <a href="https://github.com/kveld9/kveld-morphe-patches/releases"><img src="https://img.shields.io/github/downloads/kveld9/kveld-morphe-patches/total?style=for-the-badge&logo=github" alt="Total Downloads" /></a>
-  <img src="https://img.shields.io/badge/Runtime-Morphe_Patcher_1.8.0-8A2BE2?style=for-the-badge" alt="Runtime" />
-  <img src="https://img.shields.io/badge/License-GPLv3-blue?style=for-the-badge" alt="License" />
+  <a href="https://github.com/kveld9/kveld-morphe-patches/releases/latest"><img src="https://img.shields.io/github/v/release/kveld9/kveld-morphe-patches?color=7928CA&label=Release&logo=github&style=flat-square" alt="Latest Release" /></a>
+  <a href="https://github.com/kveld9/kveld-morphe-patches/releases"><img src="https://img.shields.io/github/downloads/kveld9/kveld-morphe-patches/total?style=flat-square&logo=github" alt="Total Downloads" /></a>
+  <img src="https://img.shields.io/badge/Runtime-Morphe_Patcher_1.8.0-8A2BE2?style=flat-square" alt="Runtime" />
+  <img src="https://img.shields.io/badge/License-GPLv3-blue?style=flat-square" alt="License" />
 </p>
 
 <h1 align="center">🔮 Morphe Patches</h1>
@@ -15,65 +15,35 @@
   <a href="https://morphe.software/add-source?github=kveld9/kveld-morphe-patches"><img src="https://img.shields.io/badge/Morphe_Manager-Add_Patch_Source-8A2BE2?style=for-the-badge&logo=android&logoColor=white" alt="Add Source to Morphe Manager" /></a>
   &nbsp;&nbsp;
   <a href="https://github.com/kveld9/kveld-morphe-patches/releases/latest"><img src="https://img.shields.io/badge/Direct_Download-Get_.MPP_Bundle-0070F3?style=for-the-badge&logo=github&logoColor=white" alt="Download Latest Release" /></a>
-  <br/>
+  &nbsp;&nbsp;
   <a href="https://t.me/kveldmorphe"><img src="https://img.shields.io/badge/Telegram-Official_Support-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white" alt="Official Telegram Support Group" /></a>
 </p>
+
+---
+
+## ⚡ Key Advantages
+
+- **Zero Runtime Overhead**: Direct compile-time Dalvik bytecode manipulation, XML transformation, and native ELF patching without resident background daemons, proxy servers, or Xposed frameworks.
+- **Deep Telemetry Neutralization**: Neutralizes tracking, diagnostic pings, crash reporting, and analytics at method call sites (Google Primes, Chromium UMA, P3A, ByteDance AppLog, Adjust, Firebase, Sentry) instead of fragile network-level blackholing.
+- **Aggressive Asset Trimming**: Strips unneeded companion `.so` binaries, unused font families, localized resource bundles, and promotional assets to significantly reduce APK size and memory consumption.
+- **Rootless & Standalone**: Operates directly on userland APKs and APKM split bundles; no Magisk, KernelSU, or root privileges required.
+- **Strict Upstream Parity**: Enforces a strict single-version invariant targeting latest stable upstream releases with exact AST and fingerprint assertions.
 
 ---
 
 ## 🎯 Supported Targets & Downloads
 
 > [!TIP]
-> For architecture compatibility details (ARM64 vs 32-bit ARMv7a) and variant selection guidelines, see the [Compatibility Guide](docs/compatibility.md).
+> For CPU architecture guidelines (ARM64 vs 32-bit ARMv7a) and variant selection rationales, consult the [Compatibility Guide](docs/compatibility.md).
 
-### ⌨️ Gboard Lite
-- **Current Target**: `18.2.4.969776716-lite_beta-arm64-v8a` (or `armeabi-v7a`)
-- **Architecture**: `arm64-v8a` or `armeabi-v7a` (nodpi APK)
-- **Package**: `com.google.android.inputmethod.latin`
-- ⚠️ *Fresh install?* Read the [Gboard Offline Dictionary & Glide Typing Setup](docs/gboard-setup.md) before applying background debloat patches.
-
-<a href="https://www.apkmirror.com/apk/google-inc/gboard/gboard-the-google-keyboard-18-2-4-969776716-release/"><img src="https://img.shields.io/badge/Download-Gboard_Lite_18.2.4.969776716_(APK_nodpi)-4285F4?style=for-the-badge&logo=google&logoColor=white" alt="Download Gboard Lite APK" /></a>
-
-### 🦁 Brave Browser
-- **Current Target**: `1.95.104` (`Bravemonoarm64.apk` or `BraveMonoarm.apk`)
-- **Architecture**: `arm64-v8a` (64-bit) or `armeabi-v7a` (32-bit)
-- **Package**: `com.brave.browser`
-- ⚠️ *Monolithic APK Required*: You **must** download **`Bravemonoarm64.apk`** or **`BraveMonoarm.apk`** from [Brave GitHub Releases](https://github.com/brave/brave-browser/releases) (not APKMirror). APKMirror splits or other variants (`Bravearm64Universal.apk`) use different R8 obfuscation passes, which will fail patching.
-
-<a href="https://github.com/brave/brave-browser/releases/download/v1.95.104/Bravemonoarm64.apk"><img src="https://img.shields.io/badge/Download-Bravemonoarm64.apk_(v1.95.104)-FF4500?style=for-the-badge&logo=brave&logoColor=white" alt="Download Brave ARM64 APK" /></a>&nbsp;
-<a href="https://github.com/brave/brave-browser/releases/download/v1.95.104/BraveMonoarm.apk"><img src="https://img.shields.io/badge/Download-BraveMonoarm.apk_ARM32_(v1.95.104)-E53935?style=for-the-badge&logo=brave&logoColor=white" alt="Download Brave ARM32 APK" /></a>
-
-### 🔴 Vivaldi Browser
-- **Current Target**: `8.2.4147.93` (APKM bundle)
-- **Architecture**: `arm64-v8a`
-- **Package**: `com.vivaldi.browser`
-- ⚠️ *APKM Bundle Required*: You **must** download the **BUNDLE (`.apkm`)** variant from APKMirror. The standalone APK option on APKMirror is an unbundled base split lacking browser bytecode and will fail patching.
-
-<a href="https://www.apkmirror.com/apk/vivaldi-technologies/vivaldi-browser-beta/vivaldi-browser-fast-safe-8-2-4147-93-release/"><img src="https://img.shields.io/badge/Download-Vivaldi_8.2.4147.93_(APKM)-EF3939?style=for-the-badge&logo=vivaldi&logoColor=white" alt="Download Vivaldi APKM" /></a>
-
-### 🏋️ Hevy - Gym Log Workout Tracker
-- **Current Target**: `3.1.14` (APKM bundle)
-- **Architecture**: `arm64-v8a`
-- **Package**: `com.hevy`
-- ⚠️ *Google Sign-In Issue?* Read the [Hevy Setup & Authentication Guide](docs/hevy-setup.md) to log in with Email & Password.
-
-<a href="https://www.apkmirror.com/apk/hevy-gym-workout-tracker/hevy-gym-log-workout-tracker/hevy-gym-log-workout-tracker-3-1-14-release/"><img src="https://img.shields.io/badge/Download-Hevy_3.1.14_(APKM)-FF4500?style=for-the-badge&logo=target&logoColor=white" alt="Download Hevy APKM" /></a>
-
-### 🎵 TikTok (Global & Asia)
-- **Current Target**: `47.0.3`
-- **Architecture**: `arm64-v8a` (nodpi APK)
-- **Package**: `com.zhiliaoapp.musically` (Global) & `com.ss.android.ugc.trill` (Asia)
-
-<a href="https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-47-0-3-release/"><img src="https://img.shields.io/badge/Download-TikTok_Global_47.0.3_(APK_nodpi)-FE2C55?style=for-the-badge&logo=tiktok&logoColor=white" alt="Download TikTok Global APK" /></a>
-&nbsp;&nbsp;
-<a href="https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok/tiktok-47-0-3-2-release/"><img src="https://img.shields.io/badge/Download-TikTok_Asia_47.0.3_(APK_nodpi)-25F4EE?style=for-the-badge&logo=tiktok&logoColor=white" alt="Download TikTok Asia APK" /></a>
-
-### 🖨️ NokoPrint - WiFi, Bluetooth, USB
-- **Current Target**: `5.10.8` (nodpi APK)
-- **Architecture**: Pure bytecode (Universal)
-- **Package**: `com.nokoprint`
-
-<a href="https://www.apkmirror.com/apk/nokoprint-llc/nokoprint-wifi-bluetooth-usb-printing/nokoprint-wifi-bluetooth-usb-printing-5-10-8-release/nokoprint-mobile-printing-5-10-8-android-apk-download/"><img src="https://img.shields.io/badge/Download-NokoPrint_5.10.8_(APK_nodpi)-0288D1?style=for-the-badge&logo=android&logoColor=white" alt="Download NokoPrint APK" /></a>
+| Application | Package ID | Target Version | Architecture / Variant | Download Source | Guide / Notes |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Gboard Lite** | `com.google.android.inputmethod.latin` | `18.2.4.969776716` | `arm64-v8a`<br>`armeabi-v7a` (nodpi) | [APKMirror](https://www.apkmirror.com/apk/google-inc/gboard/gboard-the-google-keyboard-18-2-4-969776716-release/) | [Setup Guide](docs/gboard-setup.md) |
+| **Brave Browser** | `com.brave.browser` | `1.95.104` | `arm64-v8a`<br>`armeabi-v7a` (Monolithic) | [ARM64](https://github.com/brave/brave-browser/releases/download/v1.95.104/Bravemonoarm64.apk) · [ARM32](https://github.com/brave/brave-browser/releases/download/v1.95.104/BraveMonoarm.apk) | Monolithic APK from GitHub only |
+| **Vivaldi Browser** | `com.vivaldi.browser` | `8.2.4147.93` | `arm64-v8a` (APKM Bundle) | [APKMirror](https://www.apkmirror.com/apk/vivaldi-technologies/vivaldi-browser-beta/vivaldi-browser-fast-safe-8-2-4147-93-release/) | `.apkm` bundle required |
+| **Hevy** | `com.hevy` | `3.1.14` | `arm64-v8a` (APKM Bundle) | [APKMirror](https://www.apkmirror.com/apk/hevy-gym-workout-tracker/hevy-gym-log-workout-tracker/hevy-gym-log-workout-tracker-3-1-14-release/) | [Auth Guide](docs/hevy-setup.md) |
+| **TikTok** | `com.zhiliaoapp.musically`<br>`com.ss.android.ugc.trill` | `47.0.3` | `arm64-v8a` (nodpi) | [Global](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-47-0-3-release/) · [Asia](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok/tiktok-47-0-3-2-release/) | [Patch Specs](docs/tiktok-patches.md) |
+| **NokoPrint** | `com.nokoprint` | `5.10.8` | Universal (nodpi) | [APKMirror](https://www.apkmirror.com/apk/nokoprint-llc/nokoprint-wifi-bluetooth-usb-printing/nokoprint-wifi-bluetooth-usb-printing-5-10-8-release/nokoprint-mobile-printing-5-10-8-android-apk-download/) | Standalone APK |
 
 ---
 
@@ -271,35 +241,58 @@
 
 ## 📚 Documentation & Guides
 
-Comprehensive technical references and setup manuals have been modularized for fast navigation:
+Technical references, setup manuals, and architecture notes are organized by focus area:
 
+### 📱 Application Setup Guides
 | Guide | Description |
 | :--- | :--- |
-| **[Compatibility Guide](docs/compatibility.md)** | CPU architecture policy (ARM64 vs 32-bit ARMv7a) and APK variant rationales. |
-| **[Gboard Setup & Dictionaries](docs/gboard-setup.md)** | Step-by-step setup for predictive text, offline dictionaries, and Glide Typing on fresh installs. |
-| **[Hevy Setup & Authentication](docs/hevy-setup.md)** | Account authentication notice (Google Sign-In SHA-1 limitation & Email/Password login) and Pro features overview. |
-| **[TikTok Patch Specifications](docs/tiktok-patches.md)** | Technical breakdown of TikTok patches, bytecode hooks, privacy guards, and media downloaders. |
-| **[Vivaldi Patch Specifications](docs/vivaldi-patches.md)** | Technical breakdown of Vivaldi patches, native GURL redirection, UKM neutralization, and Start Page debloat. |
-| **[Project Scope & Out of Scope](docs/out-of-scope.md)** | Non-negotiable engineering philosophy, compile-time invariants, and explicitly out-of-scope feature requests (in-app settings panels, multi-version legacy support, server bypasses). |
-| **[Patch Configuration & Options](docs/patch-configuration.md)** | Configuration guides and parameter reference for customizable patch options. |
-| **[Architecture & Security Notes](docs/architecture-security.md)** | Explanation of privacy scanner false positives (ML Kit / Play Billing) and native ELF/Dalvik telemetry neutralization. |
+| **[Gboard Setup & Dictionaries](docs/gboard-setup.md)** | Initial configuration for predictive text, offline language dictionaries, and Glide Typing. |
+| **[Hevy Setup & Authentication](docs/hevy-setup.md)** | Google Sign-In SHA-1 limitations, Email/Password login workflow, and Pro feature overview. |
+| **[Compatibility Guide](docs/compatibility.md)** | CPU architecture policy (`arm64-v8a` vs `armeabi-v7a`) and APK variant selection rationales. |
+| **[Patch Configuration & Options](docs/patch-configuration.md)** | Customizable patch parameters, defaults, and override reference. |
+
+### 🏛️ Architecture & Governance
+| Guide | Description |
+| :--- | :--- |
+| **[Project Scope & Out of Scope](docs/out-of-scope.md)** | Non-negotiable design philosophy, compile-time invariants, and rejected feature categories. |
+| **[Architecture & Security Notes](docs/architecture-security.md)** | Static analysis scanner false positives (ML Kit, Play Billing) and native ELF telemetry neutralization. |
+| **[TikTok Patch Specifications](docs/tiktok-patches.md)** | Technical breakdown of TikTok bytecode hooks, privacy guards, and media downloaders. |
+| **[Vivaldi Patch Specifications](docs/vivaldi-patches.md)** | Deep dive into native GURL redirection, UKM telemetry neutralization, and Start Page debloat. |
+
+### 🛠️ Developer & Tooling
+| Guide | Description |
+| :--- | :--- |
 | **[Building & Development](docs/building.md)** | Toolchain prerequisites, Gradle build tasks, test execution, and catalog synchronization. |
+| **[Reverse Engineering & Update Harness](harness/README.md)** | Automated Python pipeline for multi-DEX indexing, obfuscated symbol resolution, and APK audits. |
+| **[Physical & Runtime ADB Test Suite](validation/physical_harness/README.md)** | Automated on-device validation for battery consumption, ServiceWorker sync, and runtime telemetry. |
 
 ---
 
 ## 🎯 Contributing & Feature Requests
 
-Before requesting a new feature or proposing modifications, please review our **[Project Scope & Out-of-Scope Philosophy](docs/out-of-scope.md)**.
+Before proposing new features or submitting modifications, please review our **[Project Scope & Out-of-Scope Philosophy](docs/out-of-scope.md)**.
 
-We prioritize **surgical, lightweight, zero-overhead compile-time transformations** and rapid upstream synchronization with the latest app versions. Feature requests for dynamic in-app settings panels, legacy multi-version support, server-side exploits, or heavy feature bloat are explicitly out of scope and will be closed as not planned.
+We prioritize **surgical, lightweight, zero-overhead compile-time transformations** and rapid upstream synchronization with the latest app versions. Dynamic in-app settings panels, legacy multi-version support, server-side exploits, or heavy feature bloat are explicitly out of scope.
+
+### Mandatory Verification Gates
+Every patch modification or contribution must pass the official Morphe Patcher in-situ verification gate with 100% success (0 failed patches, 0 fingerprint mismatches):
+```bash
+# Execute in-situ patching test for target application
+./gradlew runPatchTest -Papp=<targetApp>   # e.g., brave, gboard, vivaldi, hevy, tiktok, nokoprint
+```
+Additionally, ensure all Gradle checks and automated harness tests pass cleanly:
+```bash
+./gradlew check
+./venv/bin/python -m unittest discover harness/tests
+```
 
 ---
 
 ## 💬 Community & Support
 
-Need assistance, have questions regarding patch configurations, or want to discuss updates? Join the official support group on Telegram:
+Need assistance, have questions regarding patch configurations, or want to follow release announcements? Join the official Telegram community:
 
-- 💬 **Official Support Group**: [t.me/kveldmorphe](https://t.me/kveldmorphe)
+- 💬 **Telegram Support Group**: [t.me/kveldmorphe](https://t.me/kveldmorphe)
 
 ---
 
@@ -316,6 +309,14 @@ Need assistance, have questions regarding patch configurations, or want to discu
 | <a href="https://github.com/rafipasya"><img src="https://github.com/rafipasya.png" width="48" height="48" style="border-radius: 50%;" /><br><b>@rafipasya</b></a> | 💡 Proposed TikTok Auto-translate comments feature request ([#48](https://github.com/kveld9/kveld-morphe-patches/issues/48)). |
 | <a href="https://github.com/Fahry-a"><img src="https://github.com/Fahry-a.png" width="48" height="48" style="border-radius: 50%;" /><br><b>@Fahry-a</b></a> | 💡 Proposed Brave ARMv7a (32-bit) architecture support feature request ([#50](https://github.com/kveld9/kveld-morphe-patches/issues/50)). |
 <!-- CONTRIBUTORS_END -->
+
+---
+
+## ⚖️ Legal Disclaimer
+
+**Morphe Patches** is an independent, community-driven open-source project and is not affiliated, associated, authorized, endorsed by, or in any way officially connected with Brave Software, Inc., Google LLC, Vivaldi Technologies AS, Hevy App, ByteDance Ltd., NokoPrint LLC, or any of their subsidiaries or affiliates.
+
+All product names, logos, brands, and registered trademarks mentioned in this repository are the property of their respective holders. Their inclusion does not imply affiliation with or endorsement by them.
 
 ---
 
