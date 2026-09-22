@@ -73,7 +73,7 @@
 - **Architecture**: Pure bytecode (Universal)
 - **Package**: `com.nokoprint`
 
-<a href="https://www.apkmirror.com/apk/nokoprint/nokoprint-wifi-bluetooth-usb/nokoprint-wifi-bluetooth-usb-5-10-8-release/"><img src="https://img.shields.io/badge/Download-NokoPrint_5.10.8_(APK_nodpi)-0288D1?style=for-the-badge&logo=android&logoColor=white" alt="Download NokoPrint APK" /></a>
+<a href="https://www.apkmirror.com/apk/nokoprint-llc/nokoprint-wifi-bluetooth-usb-printing/nokoprint-wifi-bluetooth-usb-printing-5-10-8-release/nokoprint-mobile-printing-5-10-8-android-apk-download/"><img src="https://img.shields.io/badge/Download-NokoPrint_5.10.8_(APK_nodpi)-0288D1?style=for-the-badge&logo=android&logoColor=white" alt="Download NokoPrint APK" /></a>
 
 ---
 

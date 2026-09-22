@@ -296,8 +296,8 @@ for entry in by_app.values():
             # NokoPrint direct download badge button
             slug_ver = target_ver.replace(".", "-")
             readme = re.sub(
-                r'<a href="https://www\.apkmirror\.com/apk/nokoprint/nokoprint-wifi-bluetooth-usb/nokoprint-wifi-bluetooth-usb-[^/]+-release/"><img src="https://img\.shields\.io/badge/Download-NokoPrint_[^"]+" alt="Download NokoPrint APK" /></a>',
-                f'<a href="https://www.apkmirror.com/apk/nokoprint/nokoprint-wifi-bluetooth-usb/nokoprint-wifi-bluetooth-usb-{slug_ver}-release/"><img src="https://img.shields.io/badge/Download-NokoPrint_{target_ver}_(APK_nodpi)-0288D1?style=for-the-badge&logo=android&logoColor=white" alt="Download NokoPrint APK" /></a>',
+                r'<a href="https://www\.apkmirror\.com/apk/(?:nokoprint|nokoprint-llc)/(?:nokoprint-wifi-bluetooth-usb|nokoprint-wifi-bluetooth-usb-printing)/[^"]+"><img src="https://img\.shields\.io/badge/Download-NokoPrint_[^"]+" alt="Download NokoPrint APK" /></a>',
+                f'<a href="https://www.apkmirror.com/apk/nokoprint-llc/nokoprint-wifi-bluetooth-usb-printing/nokoprint-wifi-bluetooth-usb-printing-{slug_ver}-release/nokoprint-mobile-printing-{slug_ver}-android-apk-download/"><img src="https://img.shields.io/badge/Download-NokoPrint_{target_ver}_(APK_nodpi)-0288D1?style=for-the-badge&logo=android&logoColor=white" alt="Download NokoPrint APK" /></a>',
                 readme,
                 count=1,
             )
