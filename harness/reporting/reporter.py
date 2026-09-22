@@ -196,7 +196,7 @@ class HarnessReporter:
     @staticmethod
     def _render_telemetry_report(telemetry_report: TelemetryReport) -> List[str]:
         lines = [
-            "## Native Telemetry Audit (`libchrome.so` ARM64)",
+            "## Native Telemetry Audit (`libchrome.so`)",
             "",
             "| Hostname | Expected | Found | ELF Offset(s) | Status |",
             "| :--- | :---: | :---: | :--- | :---: |",

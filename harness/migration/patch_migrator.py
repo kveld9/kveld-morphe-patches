@@ -50,14 +50,14 @@ class PatchMigrator:
         if new_content != content:
             changes.append(f"Updated BRAVE_TARGET_VERSION to '{new_version}'")
 
-        # 2. description = "Download Bravemonoarm64.apk (v...) from github.com/brave/brave-browser/releases"
+        # 2. description = "Download Bravemonoarm64.apk or BraveMonoarm.apk (v...) from github.com/brave/brave-browser/releases"
         new_content2 = re.sub(
-            r'description = "Download (?:Bravemonoarm64\.apk \(v[^"]+\)|v[^"]+) from github\.com/brave/brave-browser/releases"',
-            f'description = "Download Bravemonoarm64.apk (v{new_version}) from github.com/brave/brave-browser/releases"',
+            r'description = "Download (?:Bravemonoarm64\.apk or BraveMonoarm\.apk \(v[^"]+\)|Bravemonoarm64\.apk \(v[^"]+\)|v[^"]+) from github\.com/brave/brave-browser/releases"',
+            f'description = "Download Bravemonoarm64.apk or BraveMonoarm.apk (v{new_version}) from github.com/brave/brave-browser/releases"',
             new_content
         )
         if new_content2 != new_content:
-            changes.append(f"Updated AppTarget description to 'Bravemonoarm64.apk (v{new_version})'")
+            changes.append(f"Updated AppTarget description to 'Bravemonoarm64.apk or BraveMonoarm.apk (v{new_version})'")
 
         return MigrationPlan(self.constants_file, content, new_content2, changes)
 
@@ -109,22 +109,41 @@ class PatchMigrator:
 
         return MigrationPlan(self.constants_file, content, new_content2, changes)
 
-    def plan_telemetry_hosts_update(self, host_results: List[HostAuditResult]) -> MigrationPlan:
+    def plan_telemetry_hosts_update(self, host_results: List[HostAuditResult], is_arm32: bool = False) -> MigrationPlan:
         content = self.telemetry_patch_file.read_text(encoding="utf-8")
         changes = []
 
+        # Parse existing entries to keep the sibling ABI's offset
+        dual_pattern = re.compile(r'HostEntry\(\s*0x([0-9a-fA-F]+)L\s*,\s*0x([0-9a-fA-F]+)L\s*,\s*"([^"]+)"\s*\)')
+        single_pattern = re.compile(r'HostEntry\(\s*0x([0-9a-fA-F]+)L\s*,\s*"([^"]+)"\s*\)')
+
+        existing_entries = []
+        for line in content.splitlines():
+            m_dual = dual_pattern.search(line)
+            if m_dual:
+                existing_entries.append((int(m_dual.group(1), 16), int(m_dual.group(2), 16), m_dual.group(3)))
+            else:
+                m_single = single_pattern.search(line)
+                if m_single:
+                    existing_entries.append((int(m_single.group(1), 16), 0, m_single.group(2)))
+
         # Build HostEntry lines
         entries_lines = []
+        match_idx = 0
         for r in host_results:
             for match in r.matches:
-                entries_lines.append(f'            HostEntry(0x{match.offset:08x}L, "{match.matched_string}"),')
+                arm64_off = match.offset if not is_arm32 else (existing_entries[match_idx][0] if match_idx < len(existing_entries) else 0)
+                arm32_off = match.offset if is_arm32 else (existing_entries[match_idx][1] if match_idx < len(existing_entries) else 0)
+                entries_lines.append(f'            HostEntry(0x{arm64_off:08x}L, 0x{arm32_off:08x}L, "{match.matched_string}"),')
+                match_idx += 1
 
         replacement_block = "        val hostEntries = listOf(\n" + "\n".join(entries_lines) + "\n        )"
 
         pattern = r"        val hostEntries = listOf\(.*?\n        \)"
         new_content = re.sub(pattern, replacement_block, content, flags=re.DOTALL)
         if new_content != content:
-            changes.append(f"Updated {len(entries_lines)} HostEntry native offsets in libchrome.so")
+            target_abi = "armeabi-v7a" if is_arm32 else "arm64-v8a"
+            changes.append(f"Updated {len(entries_lines)} HostEntry native offsets for {target_abi} in libchrome.so")
 
         return MigrationPlan(self.telemetry_patch_file, content, new_content, changes)
 

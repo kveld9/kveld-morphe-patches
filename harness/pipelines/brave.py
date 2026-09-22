@@ -60,7 +60,8 @@ class BravePipeline(BaseTargetPipeline):
 
         plans = [self.migrator.plan_constants_update(self.meta.version_name)]
         if telemetry_report and telemetry_report.known_results:
-            plans.append(self.migrator.plan_telemetry_hosts_update(telemetry_report.known_results))
+            is_arm32 = bool(self.elf_analyzer and self.elf_analyzer.is_arm32)
+            plans.append(self.migrator.plan_telemetry_hosts_update(telemetry_report.known_results, is_arm32=is_arm32))
         if symbols.get("origin"):
             plans.append(self.migrator.plan_origin_symbols_update(symbols["origin"]))
         if symbols.get("scheduler"):

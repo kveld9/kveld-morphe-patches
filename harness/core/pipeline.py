@@ -123,11 +123,12 @@ class BaseTargetPipeline(abc.ABC):
 
         libchrome_path = self.apk_ctx.extract_libchrome_path()
         if libchrome_path:
-            _safe_print("Extracting and analyzing ARM64 libchrome.so...")
+            _safe_print("Extracting and analyzing libchrome.so...")
             self.elf_analyzer = Elf64Analyzer(libchrome_path)
             _safe_print(
                 f"ELF parsed: valid={self.elf_analyzer.is_valid}, "
-                f"aarch64={self.elf_analyzer.is_aarch64}, size={len(self.elf_analyzer.data):,} bytes"
+                f"is_arm={self.elf_analyzer.is_arm} (aarch64={self.elf_analyzer.is_aarch64}, arm32={self.elf_analyzer.is_arm32}), "
+                f"size={len(self.elf_analyzer.data):,} bytes"
             )
 
     def get_old_target_version(self) -> str:

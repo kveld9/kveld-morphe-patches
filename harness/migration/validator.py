@@ -194,9 +194,9 @@ class AdversarialValidator:
         native_checks = []
         if self.elf_analyzer:
             if not self.elf_analyzer.is_valid:
-                blocking.append("libchrome.so is not a valid ELF64 binary.")
-            if not self.elf_analyzer.is_aarch64:
-                blocking.append("libchrome.so architecture is not ARM64 (AArch64).")
+                blocking.append("libchrome.so is not a valid ELF binary.")
+            if not (self.elf_analyzer.is_aarch64 or getattr(self.elf_analyzer, "is_arm32", False)):
+                blocking.append("libchrome.so architecture is not supported (expected ARM64 or ARM32).")
 
             # Check known hosts from patch file
             hosts_to_check = [

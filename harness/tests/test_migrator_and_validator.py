@@ -22,7 +22,7 @@ class TestMigratorAndValidator(unittest.TestCase):
         plan = self.migrator.plan_constants_update("1.95.100")
         self.assertTrue(plan.has_changes)
         self.assertIn('const val BRAVE_TARGET_VERSION = "1.95.100"', plan.modified_content)
-        self.assertIn('Download Bravemonoarm64.apk (v1.95.100) from github.com/brave/brave-browser/releases', plan.modified_content)
+        self.assertIn('Download Bravemonoarm64.apk or BraveMonoarm.apk (v1.95.100) from github.com/brave/brave-browser/releases', plan.modified_content)
 
     # 11. identical version -> NO-OP
     def test_version_identical_noop(self):
