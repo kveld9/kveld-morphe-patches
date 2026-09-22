@@ -10,7 +10,7 @@ The repository uses declarative configurations. Never assume or hardcode version
 
 | Component | Technology | Authoritative Source of Truth |
 | :--- | :--- | :--- |
-| **Binary Targets & Versions** | Brave, Gboard Lite, Vivaldi, Hevy, TikTok | `app.morphe.patches.shared.Constants` (`Constants.kt`) |
+| **Binary Targets & Versions** | Brave, Gboard Lite, Vivaldi, Hevy, TikTok, NokoPrint | `app.morphe.patches.shared.Constants` (`Constants.kt`) |
 | **Patcher Runtime** | Morphe Patcher Engine | `gradle/libs.versions.toml` (`versions.morphe-patcher`, `versions.smali`) |
 | **Gradle Plugin** | `app.morphe.patches` | `settings.gradle.kts` (`plugins { id(...) }`) |
 | **Build Tool** | Gradle Wrapper | `gradle/wrapper/gradle-wrapper.properties` (`distributionUrl`) |
@@ -33,6 +33,7 @@ morphe-patches/
 │       │   ├── chromium/    # Shared Chromium engine patch implementations
 │       │   ├── gboard/      # Specific Gboard Lite patch implementations
 │       │   ├── hevy/        # Specific Hevy patch implementations
+│       │   ├── nokoprint/   # Specific NokoPrint patch implementations
 │       │   ├── tiktok/      # Specific TikTok patch implementations
 │       │   ├── vivaldi/     # Specific Vivaldi patch implementations
 │       │   └── shared/      # Centralized Compatibility contracts (Constants.kt)
@@ -49,8 +50,8 @@ morphe-patches/
 ### Core Architectural Contracts
 
 1. **Declarative Metadata & Single Source of Truth**:
-   - `app.morphe.patches.shared.Constants`: Every patch must strictly consume centralized constants (`Constants.COMPATIBILITY_BRAVE`, `Constants.COMPATIBILITY_GBOARD`, `Constants.COMPATIBILITY_VIVALDI`, `Constants.COMPATIBILITY_HEVY`, `Constants.COMPATIBILITY_TIKTOK`, `Constants.COMPATIBILITY_TIKTOK_ASIA`) instead of instantiating redundant inline `Compatibility(...)` objects.
-   - Target versions, app colors, package names, and download source hints for all 5 active targets are maintained exclusively in `Constants.kt`.
+   - `app.morphe.patches.shared.Constants`: Every patch must strictly consume centralized constants (`Constants.COMPATIBILITY_BRAVE`, `Constants.COMPATIBILITY_GBOARD`, `Constants.COMPATIBILITY_VIVALDI`, `Constants.COMPATIBILITY_HEVY`, `Constants.COMPATIBILITY_TIKTOK`, `Constants.COMPATIBILITY_TIKTOK_ASIA`, `Constants.COMPATIBILITY_NOKOPRINT`) instead of instantiating redundant inline `Compatibility(...)` objects.
+   - Target versions, app colors, package names, and download source hints for all 6 active targets are maintained exclusively in `Constants.kt`.
    - **Single Target Version Invariant**: Every supported application MUST target strictly ONE version (the latest supported release) in `targets = listOf(AppTarget(...))`. Never retain multiple version targets or legacy fallback code for older versions. When bumping an application target, completely replace previous version targets and synchronize all documentation references.
    - **Universal Patches**: Omitting `compatibleWith(...)` produces a universal patch applicable across any target APK in Morphe Manager / CLI (e.g. `LocaleResourceSlimmerPatch`, `DpiResourceSlimmerPatch`).
    - **Multi-Target Varargs**: Patches targeting multiple package variants (e.g. TikTok Global and Asia) declare them via `compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)`.
@@ -108,7 +109,7 @@ When adding or updating any patch, the following gates are **MANDATORY**:
 1. **Full-Suite Morphe Patcher Execution (`In-Situ Patching Gate`)**:
    After completing ANY modification to any patch (bytecode, resource, or raw binary), you MUST execute the official Morphe Patcher pipeline against the target application APK with **ALL corresponding patches for that app activated**:
    ```bash
-   # Execute Morphe Patcher with all patches active for the target app (e.g. gboard, tiktok, brave, vivaldi, hevy)
+   # Execute Morphe Patcher with all patches active for the target app (e.g. gboard, tiktok, brave, vivaldi, hevy, nokoprint)
    ./gradlew runPatchTest -Papp=<targetApp>
    # Or with an explicit APK file path:
    ./gradlew runPatchTest -Papk=/path/to/app.apk
@@ -210,6 +211,7 @@ For non-trivial logic, Smali hooks, native ARM64 patching (`libchrome.so`), or s
 ./gradlew runPatchTest -Papp=brave
 ./gradlew runPatchTest -Papp=vivaldi
 ./gradlew runPatchTest -Papp=hevy
+./gradlew runPatchTest -Papp=nokoprint
 # Or auto-detect target app from git diff / candidate downloads:
 ./gradlew runPatchTest
 

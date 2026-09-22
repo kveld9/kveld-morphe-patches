@@ -8,7 +8,7 @@
 <h1 align="center">🔮 Morphe Patches</h1>
 
 <p align="center">
-  Modular bytecode, resource, and native patch suite for <b>Brave Browser</b>, <b>Vivaldi Browser</b>, <b>Gboard Lite</b>, <b>Hevy</b>, and <b>TikTok</b> on Android using the <b><a href="https://morphe.software">Morphe</a></b> patcher framework.
+  Modular bytecode, resource, and native patch suite for <b>Brave Browser</b>, <b>Vivaldi Browser</b>, <b>Gboard Lite</b>, <b>Hevy</b>, <b>TikTok</b>, and <b>NokoPrint</b> on Android using the <b><a href="https://morphe.software">Morphe</a></b> patcher framework.
 </p>
 
 <p align="center">
@@ -67,6 +67,13 @@
 <a href="https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-47-0-3-release/"><img src="https://img.shields.io/badge/Download-TikTok_Global_47.0.3_(APK_nodpi)-FE2C55?style=for-the-badge&logo=tiktok&logoColor=white" alt="Download TikTok Global APK" /></a>
 &nbsp;&nbsp;
 <a href="https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok/tiktok-47-0-3-2-release/"><img src="https://img.shields.io/badge/Download-TikTok_Asia_47.0.3_(APK_nodpi)-25F4EE?style=for-the-badge&logo=tiktok&logoColor=white" alt="Download TikTok Asia APK" /></a>
+
+### 🖨️ NokoPrint - WiFi, Bluetooth, USB
+- **Current Target**: `5.10.8` (nodpi APK)
+- **Architecture**: Pure bytecode (Universal)
+- **Package**: `com.nokoprint`
+
+<a href="https://www.apkmirror.com/apk/nokoprint/nokoprint-wifi-bluetooth-usb/nokoprint-wifi-bluetooth-usb-5-10-8-release/"><img src="https://img.shields.io/badge/Download-NokoPrint_5.10.8_(APK_nodpi)-0288D1?style=for-the-badge&logo=android&logoColor=white" alt="Download NokoPrint APK" /></a>
 
 ---
 
@@ -220,6 +227,28 @@
 | **Skip First Run** | Skips the welcome screen, search engine selection, and onboarding First Run Experience (FRE) on clean installs. |  |
 | **Split Bundle Compatibility** | Removes split APK constraints (isSplitRequired, isolatedSplits) and split metadata from AndroidManifest.xml for standalone APK installation. |  |
 | **Vivaldi Startup Performance Optimization** | Guards against fatal CompositorView NullPointerException crashes on cold startup and bypasses carrier partner customizations. |  |
+
+</details>
+
+<details>
+<summary>NokoPrint - WiFi, Bluetooth, USB&nbsp;&nbsp;•&nbsp;&nbsp;<b>8 patches</b></summary>
+<br>
+
+**Supported versions:**
+
+| 5.10.8 |
+| :---: |
+
+| Patch | Description | Options |
+|----------|----------------|-----------|
+| **NokoPrint Ad Activities Slimmer** | Disables over 40 third-party ad mediation activities, internal web browsers, and debuggers registered in AndroidManifest.xml. |  |
+| **NokoPrint Ad Dispatch Governor** | Neutralizes in-app banner, interstitial, and rewarded ad loaders, preloading schedulers, and refresh handlers. |  |
+| **NokoPrint Asset De-bloat** | Strips embedded secondary Meta Audience Network DEX and redundant web ad-viewer HTML/JS assets to save APK space. |  |
+| **NokoPrint Background Sync Optimizer** | Neutralizes background WorkManager constraint tasks and diagnostic wakelocks. |  |
+| **NokoPrint Block Telemetry & Trackers** | Neutralizes Firebase Analytics and Google Measurement tracking and event dispatching. |  |
+| **NokoPrint Multi-Store Debridger** | Disables orphan billing activities, background services, and permissions for alternative OEM stores (Huawei HMS, Xiaomi, Samsung, CafeBazaar, OneStore). |  |
+| **NokoPrint Network Security Hardening** | Enforces HTTPS encryption for driver downloads and backend communications with nokoprint.com while preserving local cleartext traffic for LAN network printers. |  |
+| **NokoPrint Startup Performance Optimizer** | Disables non-essential ad mediation and tracker ContentProviders that auto-initialize before Application.onCreate, accelerating cold startup. |  |
 
 </details>
 
