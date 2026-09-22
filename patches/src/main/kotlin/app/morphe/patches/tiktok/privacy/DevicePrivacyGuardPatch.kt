@@ -7,7 +7,7 @@ import app.morphe.patches.shared.Constants
 
 val devicePrivacyGuardPatch = bytecodePatch(
     name = "Device Privacy Guard",
-    description = "Neutralizes background clipboard snooping routines, local network scanning permissions, and screenshot/recording detection and telemetry listeners to protect user data.",
+    description = "Neutralizes background clipboard snooping routines, motion sensor profiling, and screenshot/recording detection and telemetry listeners to protect user data.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
