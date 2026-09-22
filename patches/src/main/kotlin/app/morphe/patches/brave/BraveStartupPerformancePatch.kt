@@ -3,7 +3,34 @@ package app.morphe.patches.brave
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patches.shared.Constants
+import org.w3c.dom.Element
+
+val braveNativeExtractionPatch = resourcePatch(
+    name = "Brave Native Library Extraction Compatibility",
+    description = "Enforces native library extraction in AndroidManifest.xml to ensure 16 KB page and BTI compatibility across modern ARM64 devices.",
+    default = true,
+) {
+    compatibleWith(Constants.COMPATIBILITY_BRAVE)
+
+    execute {
+        val manifestFile = get("AndroidManifest.xml")
+        if (!manifestFile.exists()) {
+            println("[Startup Performance] Skipped: AndroidManifest.xml not found.")
+            return@execute
+        }
+
+        document(manifestFile.absolutePath).use { doc ->
+            val appElements = doc.getElementsByTagName("application")
+            if (appElements.length > 0) {
+                val app = appElements.item(0) as? Element
+                app?.setAttribute("android:extractNativeLibs", "true")
+            }
+        }
+        println("[Startup Performance] Enforced android:extractNativeLibs=true in AndroidManifest.xml")
+    }
+}
 
 @Suppress("unused")
 val bravePerformanceOptimizationPatch = bytecodePatch(
@@ -12,6 +39,7 @@ val bravePerformanceOptimizationPatch = bytecodePatch(
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_BRAVE)
+    dependsOn(braveNativeExtractionPatch)
 
     execute {
         // Neutralize PartnerBrowserCustomizations.initializeAsync(Context).
