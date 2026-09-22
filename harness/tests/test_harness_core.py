@@ -3,6 +3,8 @@ Comprehensive Unit Tests for DEX, ELF, Fingerprints, and Symbols.
 Demonstrates deterministic behavior across all 12 edge cases specified in Phase 11.
 """
 
+from pathlib import Path
+import struct
 import unittest
 from unittest.mock import MagicMock
 from harness.core.dex import DexIndex, IndexedClass, IndexedMethod
@@ -153,6 +155,32 @@ class TestNativeElf(unittest.TestCase):
         expected_host = "usage-ping.brave.com"
         actual_bytes = b"usage-ping.brave.net"
         self.assertFalse(actual_bytes == expected_host.encode("ascii"))
+
+    # 10. ELF32 ARMv7 detection
+    def test_elf32_armv7_is_detected(self):
+        import tempfile
+        with tempfile.NamedTemporaryFile(delete=False) as f:
+            header = bytearray(52)
+            header[0:4] = b"\x7fELF"
+            header[4] = 1  # 32-bit
+            header[5] = 1  # little-endian
+            header[6] = 1  # original version
+            struct.pack_into("<HHIIIIIHHHHHH", header, 16, 3, Elf64Analyzer.EM_ARM, 1, 0, 52, 0, 0, 52, 32, 1, 40, 0, 0)
+            p_header = struct.pack("<IIIIIIII", 1, 0, 0x1000, 0x1000, 100, 100, 5, 0x1000)
+            host = b"usage-ping.brave.com"
+            payload = header + p_header + host
+            f.write(payload)
+            tmp_path = Path(f.name)
+
+        try:
+            analyzer = Elf64Analyzer(tmp_path)
+            self.assertTrue(analyzer.is_valid)
+            self.assertTrue(analyzer.is_arm32)
+            self.assertTrue(analyzer.is_arm)
+            self.assertFalse(analyzer.is_aarch64)
+            self.assertEqual(analyzer.find_string_occurrences(host.decode("ascii")), [84])
+        finally:
+            tmp_path.unlink(missing_ok=True)
 
 
 if __name__ == "__main__":

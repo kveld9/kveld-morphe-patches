@@ -25,12 +25,19 @@ class BravePipeline(BaseTargetPipeline):
 
     def validate_apk_sanity(self):
         apk_filename = self.apk_ctx.apk_path.name.lower()
-        is_mono_arm64 = "monoarm64" in apk_filename or ("monochrome" in apk_filename and "arm64" in apk_filename)
-        if not is_mono_arm64:
-            print(f"[WARN] APK filename '{self.apk_ctx.apk_path.name}' does not indicate a Monochrome ARM64 build.")
-            print("[WARN] Morphe Patches targets 'Bravemonoarm64.apk'.\n")
-        if not self.meta.has_arm64_libchrome:
-            print("[WARN] 'lib/arm64-v8a/libchrome.so' not found in APK.\n")
+        is_mono_arm = (
+            "monoarm64" in apk_filename
+            or "monoarm" in apk_filename
+            or ("monochrome" in apk_filename and ("arm64" in apk_filename or "arm32" in apk_filename))
+        )
+        if not is_mono_arm:
+            print(f"[WARN] APK filename '{self.apk_ctx.apk_path.name}' does not indicate a Monochrome ARM build.")
+            print("[WARN] Expected BraveMonoarm64.apk or BraveMonoarm.apk.\n")
+
+        if not self.meta.libchrome_abis:
+            print("[WARN] No ARM libchrome.so found in APK.\n")
+        else:
+            print(f"[INFO] Detected libchrome.so ABI(s): {', '.join(self.meta.libchrome_abis)}\n")
 
     def execute_audit_and_validation(self) -> Tuple[Dict[str, Any], Any]:
         print("[AUDIT] Resolving obfuscated members and structural contracts...")

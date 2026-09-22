@@ -49,8 +49,9 @@ class NativeStringMatch:
 
 
 class Elf64Analyzer:
-    """Parser and validator for ELF64 (AArch64) binaries (libchrome.so)."""
+    """Parser and validator for ELF binaries (libchrome.so), supporting ELF64/AArch64 and ELF32/ARMv7a."""
 
+    EM_ARM = 40       # 0x28
     EM_AARCH64 = 183  # 0xB7
 
     def __init__(self, binary_path: str | Path):
@@ -63,33 +64,53 @@ class Elf64Analyzer:
         self.segments: List[ElfSegment] = []
         self.is_valid = False
         self.is_aarch64 = False
+        self.is_arm32 = False
+        self.is_arm = False
         self._load()
 
     def _load(self):
         with open(self.path, "rb") as f:
             self.data = f.read()
 
-        if not self._is_valid_elf64():
+        if not self._is_valid_elf():
             return
 
         self.is_valid = True
+        ei_class = self.data[4]
+
+        if ei_class == 2:  # ELF64
+            (
+                e_type, e_machine, e_version, e_entry,
+                e_phoff, e_shoff, e_flags, e_ehsize,
+                e_phentsize, e_phnum, e_shentsize, e_shnum,
+                e_shstrndx,
+            ) = struct.unpack_from("<HHIQQQIHHHHHH", self.data, 16)
+
+            self.is_aarch64 = (e_machine == self.EM_AARCH64)
+            self.is_arm = self.is_aarch64
+            self._parse_segments(e_phoff, e_phnum, e_phentsize)
+            self._parse_sections(e_shoff, e_shnum, e_shentsize, e_shstrndx)
+            return
+
+        # ELF32 / ARMv7a
         (
             e_type, e_machine, e_version, e_entry,
             e_phoff, e_shoff, e_flags, e_ehsize,
             e_phentsize, e_phnum, e_shentsize, e_shnum,
             e_shstrndx,
-        ) = struct.unpack_from("<HHIQQQIHHHHHH", self.data, 16)
+        ) = struct.unpack_from("<HHIIIIIHHHHHH", self.data, 16)
 
-        self.is_aarch64 = (e_machine == self.EM_AARCH64)
-        self._parse_segments(e_phoff, e_phnum, e_phentsize)
-        self._parse_sections(e_shoff, e_shnum, e_shentsize, e_shstrndx)
+        self.is_arm32 = (e_machine == self.EM_ARM)
+        self.is_arm = self.is_arm32
+        self._parse_segments32(e_phoff, e_phnum, e_phentsize)
+        self._parse_sections32(e_shoff, e_shnum, e_shentsize, e_shstrndx)
 
-    def _is_valid_elf64(self) -> bool:
-        if len(self.data) < 64 or not self.data.startswith(b"\x7fELF"):
+    def _is_valid_elf(self) -> bool:
+        if len(self.data) < 52 or not self.data.startswith(b"\x7fELF"):
             return False
-        ei_class = self.data[4]  # 2 = 64-bit
+        ei_class = self.data[4]  # 1 = 32-bit, 2 = 64-bit
         ei_data = self.data[5]   # 1 = little endian
-        return ei_class == 2 and ei_data == 1
+        return ei_class in (1, 2) and ei_data == 1
 
     def _parse_segments(self, e_phoff: int, e_phnum: int, e_phentsize: int):
         for i in range(e_phnum):
@@ -110,6 +131,25 @@ class Elf64Analyzer:
                     p_align=p_align,
                 ))
 
+    def _parse_segments32(self, e_phoff: int, e_phnum: int, e_phentsize: int):
+        for i in range(e_phnum):
+            ph_offset = e_phoff + i * e_phentsize
+            if ph_offset + 32 <= len(self.data):
+                (
+                    p_type, p_offset, p_vaddr, p_paddr,
+                    p_filesz, p_memsz, p_flags, p_align,
+                ) = struct.unpack_from("<IIIIIIII", self.data, ph_offset)
+                self.segments.append(ElfSegment(
+                    p_type=p_type,
+                    p_flags=p_flags,
+                    p_offset=p_offset,
+                    p_vaddr=p_vaddr,
+                    p_paddr=p_paddr,
+                    p_filesz=p_filesz,
+                    p_memsz=p_memsz,
+                    p_align=p_align,
+                ))
+
     def _parse_sections(self, e_shoff: int, e_shnum: int, e_shentsize: int, e_shstrndx: int):
         if e_shoff == 0 or e_shnum <= 0:
             return
@@ -119,6 +159,36 @@ class Elf64Analyzer:
             sh_offset = e_shoff + i * e_shentsize
             if sh_offset + 64 <= len(self.data):
                 raw_sections.append(struct.unpack_from("<IIQQQQIIQQ", self.data, sh_offset))
+
+        shstrtab = self._extract_shstrtab(raw_sections, e_shstrndx)
+        for raw in raw_sections:
+            name_idx = raw[0]
+            sec_name = self._resolve_section_name(shstrtab, name_idx)
+            sec = ElfSection(
+                name=sec_name,
+                sh_type=raw[1],
+                sh_flags=raw[2],
+                sh_addr=raw[3],
+                sh_offset=raw[4],
+                sh_size=raw[5],
+                sh_link=raw[6],
+                sh_info=raw[7],
+                sh_addralign=raw[8],
+                sh_entsize=raw[9],
+            )
+            self.sections.append(sec)
+            if sec_name:
+                self.sections_by_name[sec_name] = sec
+
+    def _parse_sections32(self, e_shoff: int, e_shnum: int, e_shentsize: int, e_shstrndx: int):
+        if e_shoff == 0 or e_shnum <= 0:
+            return
+
+        raw_sections = []
+        for i in range(e_shnum):
+            sh_offset = e_shoff + i * e_shentsize
+            if sh_offset + 40 <= len(self.data):
+                raw_sections.append(struct.unpack_from("<IIIIIIIIII", self.data, sh_offset))
 
         shstrtab = self._extract_shstrtab(raw_sections, e_shstrndx)
         for raw in raw_sections:

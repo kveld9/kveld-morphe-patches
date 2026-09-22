@@ -29,6 +29,11 @@ class ApkMetadata:
     file_size: int
     dex_files: List[str]
     has_arm64_libchrome: bool
+    libchrome_abis: List[str] = None
+
+    def __post_init__(self):
+        if self.libchrome_abis is None:
+            self.libchrome_abis = ["arm64-v8a"] if self.has_arm64_libchrome else []
 
 
 class ApkContext:
@@ -57,7 +62,7 @@ class ApkContext:
             return self._metadata
 
         sha256_digest = self._compute_sha256()
-        dex_files, has_libchrome = self._inspect_zip_entries()
+        dex_files, has_libchrome, libchrome_abis = self._inspect_zip_entries()
         pkg_name, ver_name, ver_code = self._parse_manifest_info()
 
         self._metadata = ApkMetadata(
@@ -68,6 +73,7 @@ class ApkContext:
             file_size=self.apk_path.stat().st_size,
             dex_files=sorted(dex_files),
             has_arm64_libchrome=has_libchrome,
+            libchrome_abis=libchrome_abis,
         )
         return self._metadata
 
@@ -78,9 +84,11 @@ class ApkContext:
                 hasher.update(chunk)
         return hasher.hexdigest()
 
-    def _inspect_zip_entries(self) -> tuple[List[str], bool]:
+    def _inspect_zip_entries(self) -> tuple[List[str], bool, List[str]]:
         dex_files: List[str] = []
-        has_libchrome = False
+        libchrome_abis: set[str] = set()
+        arm_abis = {"arm64-v8a", "armeabi-v7a"}
+
         with zipfile.ZipFile(self.apk_path, "r") as zf:
             namelist = zf.namelist()
             if "base.apk" in namelist:
@@ -89,15 +97,19 @@ class ApkContext:
                         for name in izf.namelist():
                             if name.endswith(".dex") and ("classes" in name or "assets" in name):
                                 dex_files.append(f"{inner}_{name}")
-                            if name == "lib/arm64-v8a/libchrome.so":
-                                has_libchrome = True
+                            for abi in arm_abis:
+                                if name == f"lib/{abi}/libchrome.so":
+                                    libchrome_abis.add(abi)
             else:
                 for name in namelist:
                     if name.endswith(".dex") and ("classes" in name or "assets" in name):
                         dex_files.append(name)
-                    if name == "lib/arm64-v8a/libchrome.so":
-                        has_libchrome = True
-        return dex_files, has_libchrome
+                    for abi in arm_abis:
+                        if name == f"lib/{abi}/libchrome.so":
+                            libchrome_abis.add(abi)
+
+        sorted_abis = sorted(libchrome_abis)
+        return dex_files, ("arm64-v8a" in sorted_abis), sorted_abis
 
     def _parse_manifest_info(self) -> tuple[str, str, int]:
         with zipfile.ZipFile(self.apk_path, "r") as zf:
@@ -156,27 +168,39 @@ class ApkContext:
                         results.append((name, zf.read(name)))
         return results
 
-    def extract_libchrome_path(self) -> Optional[Path]:
-        """Extract lib/arm64-v8a/libchrome.so to the temporary workspace directory."""
+    def extract_libchrome_path(
+        self,
+        preferred_abis: tuple[str, ...] = ("arm64-v8a", "armeabi-v7a"),
+    ) -> Optional[Path]:
+        """Extract libchrome.so for the first available preferred ARM ABI."""
         if not self.temp_dir:
             raise RuntimeError("ApkContext must be entered via 'with' before extracting files.")
+
         target_path = self.temp_dir / "libchrome.so"
+
+        def extract_from_zip(zf: zipfile.ZipFile) -> Optional[Path]:
+            for abi in preferred_abis:
+                name = f"lib/{abi}/libchrome.so"
+                if name in zf.namelist():
+                    with zf.open(name) as src, open(target_path, "wb") as dst:
+                        shutil.copyfileobj(src, dst)
+                    return target_path
+            return None
+
         with zipfile.ZipFile(self.apk_path, "r") as zf:
             namelist = zf.namelist()
             if "base.apk" in namelist:
-                for inner in [n for n in namelist if n.endswith(".apk")]:
-                    with zipfile.ZipFile(io.BytesIO(zf.read(inner)), "r") as izf:
-                        if "lib/arm64-v8a/libchrome.so" in izf.namelist():
-                            with izf.open("lib/arm64-v8a/libchrome.so") as src, open(target_path, "wb") as dst:
-                                shutil.copyfileobj(src, dst)
-                            return target_path
+                for inner in sorted([n for n in namelist if n.endswith(".apk")]):
+                    try:
+                        with zipfile.ZipFile(io.BytesIO(zf.read(inner)), "r") as izf:
+                            extracted = extract_from_zip(izf)
+                            if extracted:
+                                return extracted
+                    except zipfile.BadZipFile:
+                        continue
                 return None
-            else:
-                if "lib/arm64-v8a/libchrome.so" not in namelist:
-                    return None
-                with zf.open("lib/arm64-v8a/libchrome.so") as src, open(target_path, "wb") as dst:
-                    shutil.copyfileobj(src, dst)
-        return target_path
+
+            return extract_from_zip(zf)
 
     def get_all_entry_names(self) -> List[str]:
         """Returns all entry names contained within the APK or split APK bundle."""

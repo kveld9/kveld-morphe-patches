@@ -68,9 +68,11 @@ enum class TargetApp(
         appName = "Brave Browser",
         packageName = Constants.BRAVE_PACKAGE_NAME,
         candidateFilenames = listOf(
+            "BraveMonoarm64_${Constants.BRAVE_TARGET_VERSION}_orig.apk",
+            "BraveMonoarm_${Constants.BRAVE_TARGET_VERSION}_orig.apk",
             "Bravemonoarm64_v${Constants.BRAVE_TARGET_VERSION}.apk",
             "BraveMonoarm64.apk",
-            "Bravemonoarm64_v1.94.121.apk",
+            "BraveMonoarm.apk",
         ),
         filePattern = Regex("(?i).*brave.*\\.apk$"),
         patchDirectoryPart = "brave",
@@ -352,7 +354,7 @@ fun main(args: Array<String>) {
         aaptBinaryPath = null,
         frameworkFileDirectory = null,
         useArsclib = false,
-        keepArchitectures = setOf(CpuArchitecture.ARM64_V8A),
+        keepArchitectures = setOf(CpuArchitecture.ARM64_V8A, CpuArchitecture.ARMEABI_V7A),
         useBytecodeMode = BytecodeMode.STRIP_FAST,
         verifier = NoOpDexVerifier
     )
