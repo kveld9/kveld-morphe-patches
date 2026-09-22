@@ -352,6 +352,17 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
         required_strings=["onAssemPostCreate"],
         criticality="HIGH",
     ),
+    PatchContract(
+        patch_id="comment_auto_translate",
+        name="Auto-translate comments",
+        target_type="bytecode",
+        description="Automatically translates comments into your preferred language using TikTok's native translation engine.",
+        required_classes=[
+            "Lcom/ss/android/ugc/aweme/commentv2/commentlist/powercell/BaseCommentCell;",
+        ],
+        required_strings=["comment_panel", "lazySplitItemsParseTask"],
+        criticality="HIGH",
+    ),
 ]
 
 
