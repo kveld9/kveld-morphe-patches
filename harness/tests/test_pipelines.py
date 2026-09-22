@@ -16,6 +16,7 @@ from harness.migration.patch_migrator import MigrationPlan, PatchMigrator
 from harness.pipelines.brave import BravePipeline
 from harness.pipelines.gboard import GboardPipeline
 from harness.pipelines.vivaldi import VivaldiPipeline
+from harness.pipelines.xiaomi import XiaomiEarbudsPipeline
 
 
 class TestPipelineRegistry(unittest.TestCase):
@@ -26,6 +27,8 @@ class TestPipelineRegistry(unittest.TestCase):
         self.assertEqual(PipelineRegistry.find_pipeline("com.google.android.inputmethod.latin"), GboardPipeline)
         self.assertEqual(PipelineRegistry.find_pipeline("com.google.android.apps.inputmethod.latin"), GboardPipeline)
         self.assertEqual(PipelineRegistry.find_pipeline("com.vivaldi.browser.snapshot"), VivaldiPipeline)
+        self.assertEqual(PipelineRegistry.find_pipeline("com.mi.earphone"), XiaomiEarbudsPipeline)
+
 
 
 class TestTransactionalMigrationContext(unittest.TestCase):

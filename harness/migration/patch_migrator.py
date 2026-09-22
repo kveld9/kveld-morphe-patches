@@ -109,6 +109,31 @@ class PatchMigrator:
 
         return MigrationPlan(self.constants_file, content, new_content2, changes)
 
+    def plan_xiaomi_earbuds_constants_update(self, new_version: str) -> MigrationPlan:
+        content = self.constants_file.read_text(encoding="utf-8")
+        changes = []
+
+        # 1. XIAOMI_EARBUDS_TARGET_VERSION = "..."
+        new_content = re.sub(
+            r'const val XIAOMI_EARBUDS_TARGET_VERSION = "[^"]+"',
+            f'const val XIAOMI_EARBUDS_TARGET_VERSION = "{new_version}"',
+            content
+        )
+        if new_content != content:
+            changes.append(f"Updated XIAOMI_EARBUDS_TARGET_VERSION to '{new_version}'")
+
+        # 2. description = "Download com.mi.earphone v... (XAPK bundle) from APKPure"
+        new_content2 = re.sub(
+            r'description = "Download com\.mi\.earphone v[^"]+ \(XAPK bundle\) from APKPure"',
+            f'description = "Download com.mi.earphone v{new_version} (XAPK bundle) from APKPure"',
+            new_content
+        )
+        if new_content2 != new_content:
+            changes.append(f"Updated Xiaomi Earbuds AppTarget description to 'Download com.mi.earphone v{new_version} (XAPK bundle) from APKPure'")
+
+        return MigrationPlan(self.constants_file, content, new_content2, changes)
+
+
     def plan_telemetry_hosts_update(self, host_results: List[HostAuditResult], is_arm32: bool = False) -> MigrationPlan:
         content = self.telemetry_patch_file.read_text(encoding="utf-8")
         changes = []

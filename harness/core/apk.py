@@ -84,6 +84,31 @@ class ApkContext:
                 hasher.update(chunk)
         return hasher.hexdigest()
 
+    def _find_base_apk_name(self, zf: zipfile.ZipFile) -> Optional[str]:
+        namelist = zf.namelist()
+        if "base.apk" in namelist:
+            return "base.apk"
+        if "manifest.json" in namelist:
+            try:
+                import json
+                m = json.loads(zf.read("manifest.json").decode("utf-8"))
+                for split in m.get("split_apks", []):
+                    if split.get("id") == "base":
+                        return split.get("file")
+            except Exception:
+                pass
+        apk_candidates = [n for n in namelist if n.endswith(".apk") and "/" not in n]
+        if not apk_candidates:
+            return None
+        best_cand = None
+        best_size = -1
+        for cand in apk_candidates:
+            info = zf.getinfo(cand)
+            if info.file_size > best_size:
+                best_size = info.file_size
+                best_cand = cand
+        return best_cand
+
     def _inspect_zip_entries(self) -> tuple[List[str], bool, List[str]]:
         dex_files: List[str] = []
         libchrome_abis: set[str] = set()
@@ -91,8 +116,9 @@ class ApkContext:
 
         with zipfile.ZipFile(self.apk_path, "r") as zf:
             namelist = zf.namelist()
-            if "base.apk" in namelist:
-                for inner in sorted([n for n in namelist if n.endswith(".apk")]):
+            inner_apks = sorted([n for n in namelist if n.endswith(".apk") and "/" not in n])
+            if inner_apks:
+                for inner in inner_apks:
                     with zipfile.ZipFile(io.BytesIO(zf.read(inner)), "r") as izf:
                         for name in izf.namelist():
                             if name.endswith(".dex") and ("classes" in name or "assets" in name):
@@ -113,12 +139,13 @@ class ApkContext:
 
     def _parse_manifest_info(self) -> tuple[str, str, int]:
         with zipfile.ZipFile(self.apk_path, "r") as zf:
-            if "base.apk" in zf.namelist():
+            base_apk_name = self._find_base_apk_name(zf)
+            if base_apk_name:
                 if not self.temp_dir:
                     self.temp_dir = Path(tempfile.mkdtemp(prefix="morphe_brave_harness_"))
-                base_path = self.temp_dir / "base.apk"
+                base_path = self.temp_dir / base_apk_name
                 with open(base_path, "wb") as f:
-                    f.write(zf.read("base.apk"))
+                    f.write(zf.read(base_apk_name))
                 return self._parse_manifest_from_path(base_path)
         return self._parse_manifest_from_path(self.apk_path)
 
@@ -156,8 +183,9 @@ class ApkContext:
         results = []
         with zipfile.ZipFile(self.apk_path, "r") as zf:
             namelist = zf.namelist()
-            if "base.apk" in namelist:
-                for inner in sorted([n for n in namelist if n.endswith(".apk")]):
+            inner_apks = sorted([n for n in namelist if n.endswith(".apk") and "/" not in n])
+            if inner_apks:
+                for inner in inner_apks:
                     with zipfile.ZipFile(io.BytesIO(zf.read(inner)), "r") as izf:
                         for name in sorted(izf.namelist()):
                             if name.endswith(".dex") and not name.startswith("META-INF/"):
@@ -189,8 +217,9 @@ class ApkContext:
 
         with zipfile.ZipFile(self.apk_path, "r") as zf:
             namelist = zf.namelist()
-            if "base.apk" in namelist:
-                for inner in sorted([n for n in namelist if n.endswith(".apk")]):
+            inner_apks = sorted([n for n in namelist if n.endswith(".apk") and "/" not in n])
+            if inner_apks:
+                for inner in inner_apks:
                     try:
                         with zipfile.ZipFile(io.BytesIO(zf.read(inner)), "r") as izf:
                             extracted = extract_from_zip(izf)
@@ -208,8 +237,9 @@ class ApkContext:
         with zipfile.ZipFile(self.apk_path, "r") as zf:
             namelist = zf.namelist()
             entries.extend(namelist)
-            if "base.apk" in namelist:
-                for inner in sorted([n for n in namelist if n.endswith(".apk")]):
+            inner_apks = sorted([n for n in namelist if n.endswith(".apk") and "/" not in n])
+            if inner_apks:
+                for inner in inner_apks:
                     try:
                         with zipfile.ZipFile(io.BytesIO(zf.read(inner)), "r") as izf:
                             entries.extend(izf.namelist())

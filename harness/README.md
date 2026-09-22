@@ -1,6 +1,6 @@
 # 🔮 Morphe Patches Automated Update & Reverse Engineering Harness
 
-Automated reverse-engineering and patch update harness for **Brave Browser** (`com.brave.browser`), **Vivaldi Browser** (`com.vivaldi.browser`), **Gboard Lite** (`com.google.android.inputmethod.latin`), and **Hevy** (`com.hevy`).
+Automated reverse-engineering and patch update harness for **Brave Browser** (`com.brave.browser`), **Vivaldi Browser** (`com.vivaldi.browser`), **Gboard Lite** (`com.google.android.inputmethod.latin`), **Hevy** (`com.hevy`), **TikTok** (`com.zhiliaoapp.musically`), **NokoPrint** (`com.nokoprint`), and **Xiaomi Earbuds** (`com.mi.earphone`).
 
 ---
 
@@ -9,7 +9,7 @@ Automated reverse-engineering and patch update harness for **Brave Browser** (`c
 The harness automates the reverse-engineering lifecycle when upstream releases new APKs:
 
 ```
-Target APK / APKM (Brave, Vivaldi, Gboard, or Hevy)
+Target APK / APKM (Brave, Vivaldi, Gboard, Hevy, TikTok, NokoPrint, or Xiaomi Earbuds)
      ↓
 [harness/update.py]            ➜ Package Identification & Pipeline Dispatcher
      ↓
@@ -19,19 +19,15 @@ Target APK / APKM (Brave, Vivaldi, Gboard, or Hevy)
      ↓
 [harness/core/symbols.py]      ➜ Obfuscated Symbol Resolution (Structural callers, types, opcodes)
      ↓
-[harness/gboard/contracts.py]  ➜ 18 Gboard Declarative Patch Contracts & Invariants
+[harness/<target>/contracts]   ➜ Declarative Patch Contracts & Invariants
      ↓
-[harness/migration/validator]  ➜ Adversarial Validation Engine (Brave & Vivaldi Contracts)
-     ↓
-[harness/gboard/themes.py]     ➜ AMOLED & Theme Duplication Safety Auditor
-     ↓
-[harness/gboard/invariants.py] ➜ Regression Contracts (IME service, multidex, asset integrity)
+[harness/<target>/validator]   ➜ Adversarial Validation Engine (DEX, AST, Assets)
      ↓
 [harness/migration/migrator]   ➜ Minimal Source Update (Constants.kt, Kotlin AST)
      ↓
 [Gradle / Toolchain]           ➜ check, buildAndroid, generatePatchesList, README sync
      ↓
-[harness/reporting/]           ➜ Structured Markdown Reports (BRAVE / VIVALDI / GBOARD / HEVY)
+[harness/reporting/]           ➜ Structured Markdown Reports
 ```
 
 ---
@@ -53,6 +49,9 @@ python harness/update.py <path-to-vivaldi.apkm> --audit
 
 # For Hevy (APKM bundle required)
 python harness/update.py <path-to-hevy.apkm> --audit
+
+# For Xiaomi Earbuds (XAPK bundle required)
+python harness/update.py <path-to-earbuds.xapk> --audit
 ```
 
 ### 2. Update and build for a new version
@@ -70,7 +69,11 @@ python harness/update.py <path-to-vivaldi.apkm> --update
 
 # For Hevy (APKM bundle required)
 python harness/update.py <path-to-hevy.apkm> --update
+
+# For Xiaomi Earbuds (XAPK bundle required)
+python harness/update.py <path-to-earbuds.xapk> --update
 ```
+
 
 This will:
 1. Validate all fingerprints, contracts, and safety gates.

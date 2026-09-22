@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Morphe Patches Automated Update & Reverse Engineering Harness.
-Modular pipeline orchestrator for Brave Browser, Gboard Lite, Vivaldi Browser, and Hevy.
+Modular pipeline orchestrator for Brave Browser, Gboard Lite, Vivaldi Browser, Hevy, TikTok, NokoPrint, and Xiaomi Earbuds.
 
 Usage:
     python harness/update.py <path-to-apk> [--audit | --update | --dry-run] [--output <report.md>]
@@ -10,7 +10,9 @@ Examples:
     python harness/update.py BraveMonoarm64.apk --audit
     python harness/update.py Gboard_v18.0.3.apk --audit
     python harness/update.py Gboard_v18.0.3.apk --update
+    python harness/update.py com.mi.earphone.apkm --audit
 """
+
 
 from __future__ import annotations
 
