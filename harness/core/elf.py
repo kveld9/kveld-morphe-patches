@@ -9,7 +9,7 @@ from __future__ import annotations
 import struct
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 
 @dataclass
@@ -110,7 +110,8 @@ class Elf64Analyzer:
             return False
         ei_class = self.data[4]  # 1 = 32-bit, 2 = 64-bit
         ei_data = self.data[5]   # 1 = little endian
-        return ei_class in (1, 2) and ei_data == 1
+        min_len = 52 if ei_class == 1 else 64
+        return ei_class in (1, 2) and ei_data == 1 and len(self.data) >= min_len
 
     def _parse_segments(self, e_phoff: int, e_phnum: int, e_phentsize: int):
         for i in range(e_phnum):
@@ -227,6 +228,8 @@ class Elf64Analyzer:
 
     def find_string_occurrences(self, target_str: str) -> List[int]:
         """Find all file offsets where the exact target ASCII string occurs."""
+        if not target_str:
+            return []
         needle = target_str.encode("ascii")
         offsets = []
         start = 0

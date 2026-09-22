@@ -250,7 +250,7 @@ for entry in by_app.values():
         elif any("brave" in p for p in pkgs):
             # Brave current target
             readme = re.sub(
-                r"(\- \*\*Current Target\*\*: `)[^`]+(` \(`Bravemonoarm64\.apk`\))",
+                r"(\- \*\*Current Target\*\*: `)[^`]+(` \(`Bravemonoarm64\.apk(?: or BraveMonoarm\.apk)?`\))",
                 rf"\g<1>{target_ver}\g<2>",
                 readme,
                 count=1,

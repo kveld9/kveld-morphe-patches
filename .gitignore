@@ -158,7 +158,7 @@ morphe-data/
 scratch/
 
 # Harness generated reports and differentials
-*_HARNESS_REPORT.md
+*HARNESS_REPORT.md
 APK_DIFF.md
 
 # Ignore vscode & kotlin daemon config

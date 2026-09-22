@@ -464,7 +464,7 @@ class AdversarialValidator:
         return PatchAuditResult(
             patch_name="Native Bloat Slimmer",
             status=PatchStatus.VERIFIED,
-            evidence=["Raw resource patch stripping bloat companion binaries in lib/arm64-v8a/"],
+            evidence=["Raw resource patch stripping bloat companion binaries across lib/arm64-v8a/ and lib/armeabi-v7a/"],
         )
 
     def _audit_vivaldi_telemetry_patch(self) -> PatchAuditResult:
