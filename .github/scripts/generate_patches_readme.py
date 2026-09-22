@@ -209,7 +209,7 @@ expanded = (
 
 generated  = build_content(expanded=expanded)
 
-# Update text callouts in README for Gboard, Brave, and Vivaldi
+# Update text callouts in README for Gboard, Brave, Vivaldi, TikTok, and NokoPrint
 for entry in by_app.values():
     pkgs = entry["packages"]
     targets = entry.get("targets") or []
@@ -282,6 +282,22 @@ for entry in by_app.values():
             readme = re.sub(
                 r'<a href="https://www\.apkmirror\.com/apk/tiktok-pte-ltd/(?:tik-tok-asia|tik-tok)/(?:tik-tok-asia|tiktok)-[^/]+-release/"><img src="https://img\.shields\.io/badge/Download-TikTok_Asia_[^"]+" alt="Download TikTok Asia APK" /></a>',
                 f'<a href="https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok/tiktok-{slug_ver}-2-release/"><img src="https://img.shields.io/badge/Download-TikTok_Asia_{target_ver}_(APK_nodpi)-25F4EE?style=for-the-badge&logo=tiktok&logoColor=white" alt="Download TikTok Asia APK" /></a>',
+                readme,
+                count=1,
+            )
+        elif any("nokoprint" in p for p in pkgs):
+            # NokoPrint current target
+            readme = re.sub(
+                r"(### .*?NokoPrint[^\n]*\n\- \*\*Current Target\*\*: `)[^`]+(`)",
+                rf"\g<1>{target_ver}\g<2>",
+                readme,
+                count=1,
+            )
+            # NokoPrint direct download badge button
+            slug_ver = target_ver.replace(".", "-")
+            readme = re.sub(
+                r'<a href="https://www\.apkmirror\.com/apk/nokoprint/nokoprint-wifi-bluetooth-usb/nokoprint-wifi-bluetooth-usb-[^/]+-release/"><img src="https://img\.shields\.io/badge/Download-NokoPrint_[^"]+" alt="Download NokoPrint APK" /></a>',
+                f'<a href="https://www.apkmirror.com/apk/nokoprint/nokoprint-wifi-bluetooth-usb/nokoprint-wifi-bluetooth-usb-{slug_ver}-release/"><img src="https://img.shields.io/badge/Download-NokoPrint_{target_ver}_(APK_nodpi)-0288D1?style=for-the-badge&logo=android&logoColor=white" alt="Download NokoPrint APK" /></a>',
                 readme,
                 count=1,
             )
