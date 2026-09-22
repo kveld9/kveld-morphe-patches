@@ -202,6 +202,10 @@ The **`Custom Offline Videos Limit`** patch customizes the maximum video caching
 - Respects native "Do not translate" language preferences from `TranslationLangKevaServiceImpl`.
 
 ### 3. Device Privacy Guard (`devicePrivacyGuardPatch`)
+> [!NOTE]
+> **Bytecode-Only Privacy Architecture (`ResourceMode.RAW`)**:
+> Unlike apps with standard resource structures, TikTok's entire patch suite strictly avoids resource decoding (`resourcePatch`). Re-encoding TikTok's obfuscated resource tree via `arsclib` drops launcher icon drawables (`res/a/aq2.xml`, `res/a/aq3.xml`). Privacy is enforced at the Dalvik bytecode execution layer (intercepting BPEA clipboard, silencing motion sensors, trapping package queries, and neutralizing analytics trackers via `Unified Telemetry & Tracker Silencer`), while dangerous permissions remain governed by Android's runtime permission model.
+
 - **Universal Package Query Isolation**: Intercepts `PackageManager` query trampolines (`LX/00m8.U3`, `LX/00m8.R3`) and throws a controlled `NameNotFoundException` when external installed apps are queried, isolating app visibility without requiring resource decoding.
 - **Contacts Isolation**: Neutralizes BPEA contacts reader `LX/0OFU.LIZ()` to return empty list and `LX/0OFw.LIZ()` to return a null cursor safely.
 - **HAR Motion Sensor Silencing**: Injects `return -1` into `HarSensorManager` init and stubs `onSensorChanged` to stop physical movement fingerprinting.
