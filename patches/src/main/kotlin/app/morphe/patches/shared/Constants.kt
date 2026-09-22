@@ -120,6 +120,22 @@ object Constants {
         )
     )
 
+    const val XIAOMI_EARBUDS_PACKAGE_NAME = "com.mi.earphone"
+    const val XIAOMI_EARBUDS_TARGET_VERSION = "1.38.0i"
+
+    val COMPATIBILITY_XIAOMI_EARBUDS = Compatibility(
+        name = "Xiaomi Earbuds",
+        packageName = XIAOMI_EARBUDS_PACKAGE_NAME,
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0xFF6700,
+        targets = listOf(
+            AppTarget(
+                version = XIAOMI_EARBUDS_TARGET_VERSION,
+                description = "Download com.mi.earphone v1.38.0i (XAPK bundle) from APKPure",
+            )
+        )
+    )
+
     const val TIKTOK_EXTENSION_FILTER_CLASS = "Lcom/kveld9/morphe/extension/tiktok/TikTokFeedAdFilter;"
     const val TIKTOK_EXTENSION_MEDIA_HOOK = "Lcom/kveld9/morphe/extension/tiktok/TikTokMediaHook;"
     const val TIKTOK_EXTENSION_SPEED_HOOK = "Lcom/kveld9/morphe/extension/tiktok/TikTokSpeedHook;"

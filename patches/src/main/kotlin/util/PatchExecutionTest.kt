@@ -113,6 +113,26 @@ enum class TargetApp(
         ),
         filePattern = Regex("(?i).*nokoprint.*\\.apk$"),
         patchDirectoryPart = "nokoprint",
+    ),
+    XIAOMI_EARBUDS(
+        id = "xiaomi_earbuds",
+        appName = "Xiaomi Earbuds",
+        packageName = Constants.XIAOMI_EARBUDS_PACKAGE_NAME,
+        candidateFilenames = listOf(
+            "Xiaomi+Earbuds_${Constants.XIAOMI_EARBUDS_TARGET_VERSION}_APKPure.xapk",
+            "Xiaomi+Earbuds_${Constants.XIAOMI_EARBUDS_TARGET_VERSION}.xapk",
+            "com.mi.earphone_${Constants.XIAOMI_EARBUDS_TARGET_VERSION}.xapk",
+            "com.mi.earphone_${Constants.XIAOMI_EARBUDS_TARGET_VERSION}.apkm",
+            "com.mi.earphone_${Constants.XIAOMI_EARBUDS_TARGET_VERSION}.apk",
+            "xiaomi_earbuds.xapk",
+            "xiaomi_earbuds.apkm",
+            "xiaomi_earbuds.apk",
+            "earphone.xapk",
+            "earphone.apkm",
+            "earphone.apk",
+        ),
+        filePattern = Regex("(?i).*(?:earphone|earbuds).*\\.(?:apk|apkm|xapk)$"),
+        patchDirectoryPart = "xiaomi",
     );
 
     companion object {
@@ -122,6 +142,7 @@ enum class TargetApp(
                 ?: when (normalized) {
                     "trill" -> TIKTOK_ASIA
                     "gboard_lite" -> GBOARD
+                    "earbuds", "earphone", "xiaomi" -> XIAOMI_EARBUDS
                     else -> null
                 }
         }
@@ -136,6 +157,7 @@ enum class TargetApp(
                 lower.contains("vivaldi") -> VIVALDI
                 lower.contains("hevy") -> HEVY
                 lower.contains("nokoprint") -> NOKOPRINT
+                lower.contains("earphone") || lower.contains("earbuds") -> XIAOMI_EARBUDS
                 else -> entries.firstOrNull { it.filePattern.containsMatchIn(fileName) }
             }
         }
@@ -296,15 +318,18 @@ fun main(args: Array<String>) {
         apkFile
     }
 
-    val actualApkFile = if (effectiveApkFile.name.endsWith(".apkm", ignoreCase = true)) {
+    val actualApkFile = if (effectiveApkFile.name.endsWith(".apkm", ignoreCase = true) || effectiveApkFile.name.endsWith(".xapk", ignoreCase = true)) {
         val apkmExtractDir = File("build/tmp/patcher-apkm-source").absoluteFile
         apkmExtractDir.deleteRecursively()
         apkmExtractDir.mkdirs()
         val extractedBase = File(apkmExtractDir, "base.apk")
         java.util.zip.ZipFile(effectiveApkFile).use { apkmZip ->
-            val baseEntry = apkmZip.getEntry("base.apk") ?: error("No base.apk found in APKM bundle: ${effectiveApkFile.name}")
+            val baseEntry = apkmZip.getEntry("base.apk")
+                ?: apkmZip.entries().asSequence().firstOrNull { it.name.endsWith(".apk") && (it.name.contains("base") || it.name.startsWith(targetApp.packageName)) }
+                ?: apkmZip.entries().asSequence().filter { it.name.endsWith(".apk") }.maxByOrNull { it.size }
+                ?: error("No base APK found in bundle: ${effectiveApkFile.name}")
             val splitApkEntries = apkmZip.entries().asSequence()
-                .filter { it.name.endsWith(".apk", ignoreCase = true) && it.name != "base.apk" }
+                .filter { it.name.endsWith(".apk", ignoreCase = true) && it.name != baseEntry.name }
                 .sortedBy { it.name }
                 .toList()
 
