@@ -104,6 +104,22 @@ object Constants {
         )
     )
 
+    const val NOKOPRINT_PACKAGE_NAME = "com.nokoprint"
+    const val NOKOPRINT_TARGET_VERSION = "5.10.8"
+
+    val COMPATIBILITY_NOKOPRINT = Compatibility(
+        name = "NokoPrint - WiFi, Bluetooth, USB",
+        packageName = NOKOPRINT_PACKAGE_NAME,
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0x0288D1,
+        targets = listOf(
+            AppTarget(
+                version = NOKOPRINT_TARGET_VERSION,
+                description = "Download com.nokoprint v$NOKOPRINT_TARGET_VERSION (nodpi APK) from APKMirror",
+            )
+        )
+    )
+
     const val TIKTOK_EXTENSION_FILTER_CLASS = "Lcom/kveld9/morphe/extension/tiktok/TikTokFeedAdFilter;"
     const val TIKTOK_EXTENSION_MEDIA_HOOK = "Lcom/kveld9/morphe/extension/tiktok/TikTokMediaHook;"
     const val TIKTOK_EXTENSION_SPEED_HOOK = "Lcom/kveld9/morphe/extension/tiktok/TikTokSpeedHook;"
