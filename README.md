@@ -8,7 +8,7 @@
 <h1 align="center">🔮 Morphe Patches</h1>
 
 <p align="center">
-  Modular bytecode, resource, and native patch suite for <b>Brave Browser</b>, <b>Vivaldi Browser</b>, <b>Gboard Lite</b>, <b>Hevy</b>, <b>TikTok</b>, and <b>NokoPrint</b> on Android using the <b><a href="https://morphe.software">Morphe</a></b> patcher framework.
+  Modular bytecode, resource, and native patch suite for <b>Brave Browser</b>, <b>Vivaldi Browser</b>, <b>Gboard Lite</b>, <b>Hevy</b>, <b>TikTok</b>, <b>NokoPrint</b>, and <b>Xiaomi Earbuds</b> on Android using the <b><a href="https://morphe.software">Morphe</a></b> patcher framework.
 </p>
 
 <p align="center">
@@ -44,6 +44,7 @@
 | **Hevy** | `com.hevy` | `3.1.14` | `arm64-v8a` (APKM Bundle) | [APKMirror](https://www.apkmirror.com/apk/hevy-gym-workout-tracker/hevy-gym-log-workout-tracker/hevy-gym-log-workout-tracker-3-1-14-release/) | [Auth Guide](docs/hevy-setup.md) |
 | **TikTok** | `com.zhiliaoapp.musically`<br>`com.ss.android.ugc.trill` | `47.0.3` | `arm64-v8a` (nodpi) | [Global](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-47-0-3-release/) · [Asia](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok/tiktok-47-0-3-2-release/) | [Patch Specs](docs/tiktok-patches.md) |
 | **NokoPrint** | `com.nokoprint` | `5.10.8` | Universal (nodpi) | [APKMirror](https://www.apkmirror.com/apk/nokoprint-llc/nokoprint-wifi-bluetooth-usb-printing/nokoprint-wifi-bluetooth-usb-printing-5-10-8-release/nokoprint-mobile-printing-5-10-8-android-apk-download/) | Standalone APK |
+| **Xiaomi Earbuds** | `com.mi.earphone` | `1.38.0i` | Universal (XAPK Bundle) | [APKPure](https://d.apkpure.com/b/XAPK/com.mi.earphone?versionCode=138000) | `.xapk` bundle required |
 
 ---
 
@@ -223,6 +224,31 @@
 </details>
 
 <details>
+<summary>Xiaomi Earbuds&nbsp;&nbsp;•&nbsp;&nbsp;<b>11 patches</b></summary>
+<br>
+
+**Supported versions:**
+
+| 1.38.0i |
+| :---: |
+
+| Patch | Description | Options |
+|----------|----------------|-----------|
+| **Xiaomi Earbuds Anti-Tamper Bypass** | Bypasses Xposed and hook detection, neutralizes VPN and ADB security checks, bypasses root and emulator detection, and hardens WebView JavaScript bridges. |  |
+| **Xiaomi Earbuds Background Optimizer** | Neutralizes KeepAliveForegroundService, background BLE observation, companion device manager, and MIUI Nearby discovery to eliminate persistent notifications, wakelocks, and background battery drain. |  |
+| **Xiaomi Earbuds Block Telemetry & Trackers** | Neutralizes Firebase Analytics, Xiaomi OneTrack, AutoReportHelper, and GlobalReport telemetry and event dispatching. |  |
+| **Xiaomi Earbuds Device Privacy Guard** | Blinds hardware device IDs, anonymizes device identifiers, neutralizes environment info leakage, and bypasses location checks for Bluetooth scanning. |  |
+| **Xiaomi Earbuds Disable Promos & Nags** | Bypasses startup privacy agreements, onboarding guides, region selector prompts, and Bluetooth permission nags, and disables in-app promotional banners, marketing activities, and store review nag dialogs. |  |
+| **Xiaomi Earbuds Guest OTA Unlock** | Bypasses mandatory Xiaomi account login checks for firmware update queries, allowing guest users to check and perform device OTA updates. |  |
+| **Xiaomi Earbuds Network Security & TLS Inspection** | Disables cleartext traffic, trusts user-installed certificates, and bypasses OkHttp certificate pinning. |  |
+| **Xiaomi Earbuds Offline Only** | Completely isolates the app from the network by revoking internet permissions and spoofing offline status to prevent background socket failures. *(Optional: keep disabled on first launch until earphones are paired)* | • Disabled by default |
+| **Xiaomi Earbuds Model Catalog Unlock** | Forces DeviceInfoListCache.isShowProduct to return true, bypassing version-gating and distribution restrictions so that all device models are always displayed and discoverable. |  |
+| **Xiaomi Earbuds Sound Features Unlock** | Unblocks Spatial Audio, hearing enhancement, and voice wake-up restrictions, unbans Spatial Audio on 96kHz aptX Adaptive connections, and bypasses XPAN requirements. |  |
+| **Xiaomi Earbuds Surgical OEM Unlock** | Bypasses Xiaomi OEM hardware gating for SuperAivs (function 5009) and suppresses MIUI-specific spatial audio system dialog nags. |  |
+
+</details>
+
+<details>
 <summary>Universal&nbsp;&nbsp;•&nbsp;&nbsp;<b>4 patches</b></summary>
 <br>
 
@@ -278,7 +304,7 @@ We prioritize **surgical, lightweight, zero-overhead compile-time transformation
 Every patch modification or contribution must pass the official Morphe Patcher in-situ verification gate with 100% success (0 failed patches, 0 fingerprint mismatches):
 ```bash
 # Execute in-situ patching test for target application
-./gradlew runPatchTest -Papp=<targetApp>   # e.g., brave, gboard, vivaldi, hevy, tiktok, nokoprint
+./gradlew runPatchTest -Papp=<targetApp>   # e.g., brave, gboard, vivaldi, hevy, tiktok, nokoprint, xiaomi_earbuds
 ```
 Additionally, ensure all Gradle checks and automated harness tests pass cleanly:
 ```bash
@@ -314,7 +340,7 @@ Need assistance, have questions regarding patch configurations, or want to follo
 
 ## ⚖️ Legal Disclaimer
 
-**Morphe Patches** is an independent, community-driven open-source project and is not affiliated, associated, authorized, endorsed by, or in any way officially connected with Brave Software, Inc., Google LLC, Vivaldi Technologies AS, Hevy App, ByteDance Ltd., NokoPrint LLC, or any of their subsidiaries or affiliates.
+**Morphe Patches** is an independent, community-driven open-source project and is not affiliated, associated, authorized, endorsed by, or in any way officially connected with Brave Software, Inc., Google LLC, Vivaldi Technologies AS, Hevy App, ByteDance Ltd., NokoPrint LLC, Xiaomi Inc., or any of their subsidiaries or affiliates.
 
 All product names, logos, brands, and registered trademarks mentioned in this repository are the property of their respective holders. Their inclusion does not imply affiliation with or endorsement by them.
 

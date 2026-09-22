@@ -51,7 +51,7 @@ ur, uz, vi, zh-CN, zh-HK, zh-TW, zu
 
 ## 🌐 Locale Resource Slimmer (Universal)
 
-The **`Locale Resource Slimmer`** patch strips unselected language translation directories from `res/` (such as `values-*`, `raw-*`, `xml-*`) across any supported target APK (e.g. Gboard Lite, Hevy, Brave, Vivaldi) to reduce APK size.
+The **`Locale Resource Slimmer`** patch strips unselected language translation directories from `res/` (such as `values-*`, `raw-*`, `xml-*`) across any supported target APK (e.g. Gboard Lite, Hevy, Brave, Vivaldi, TikTok, NokoPrint, Xiaomi Earbuds) to reduce APK size.
 
 > [!TIP]
 > **Chromium Browsers (Brave & Vivaldi)**: While `Locale Resource Slimmer` trims standard Android wrapper resources in `res/values-*`, Chromium browsers store over 95% of their strings (~10–22 MB) in native binary `.pak` files inside `assets/locales/`. For complete multilingual slimming in Brave and Vivaldi, combine this patch with the specialized **`Locale PAK Slimmer`**.
@@ -97,7 +97,7 @@ sw, ta, te, th, tl, tr, uk, ur, uz, vi, yo, zh, zh-rCN, zh-rHK, zh-rTW, zu
 
 ## 📱 DPI Resource Slimmer (Universal)
 
-The **`DPI Resource Slimmer`** patch is universal and strips unselected screen density asset directories (such as `drawable-mdpi`, `drawable-hdpi`, `drawable-xhdpi`, `mipmap-mdpi`, etc.) from `res/` across all supported target APKs (Vivaldi, Brave, Gboard, Hevy) to significantly reduce final APK size.
+The **`DPI Resource Slimmer`** patch is universal and strips unselected screen density asset directories (such as `drawable-mdpi`, `drawable-hdpi`, `drawable-xhdpi`, `mipmap-mdpi`, etc.) from `res/` across all supported target APKs (Vivaldi, Brave, Gboard, Hevy, TikTok, NokoPrint, Xiaomi Earbuds) to significantly reduce final APK size.
 
 ### Configuration in Morphe Manager
 
@@ -361,4 +361,38 @@ The following patches present in Vivaldi are intentionally omitted from Brave Br
 3. **Close Tabs on Exit (`TabStateFileManager` Hook)**:
    - **Why Vivaldi needs it**: Vivaldi does not provide a native switch to discard non-incognito tabs on process termination, requiring bytecode neutralization in `TabStateFileManager`.
    - **Why Brave omits it**: Brave provides a native, user-configurable preference directly in its Settings (*Settings -> Close tabs on exit*). Enforcing tab state discard via bytecode hooks would override user configuration and break intentional session retention.
+
+---
+
+## 🎧 Xiaomi Earbuds: Zero-Configuration Audio & Privacy Patches
+
+The Xiaomi Earbuds (`com.mi.earphone`) suite consists of **10 patches enabled by default** and **1 optional isolation patch** (`Xiaomi Earbuds Offline Only`, disabled by default):
+
+> [!WARNING]
+> ### ⚠️ First Boot & Initial Device Pairing Invariant (`Offline Only`)
+> Do **NOT** activate the **`Xiaomi Earbuds Offline Only`** patch on your first application launch or when pairing a new earphone model for the first time.
+> 
+> **Why this matters:**
+> - When pairing a device for the first time, Xiaomi Earbuds must reach Xiaomi CDN servers to download model-specific UI plugin assets, translation files, and earphone feature schemas to local storage (`/data/data/com.mi.earphone/files/plugins/`).
+> - The `Xiaomi Earbuds Offline Only` patch completely strips `INTERNET` and `ACCESS_NETWORK_STATE` permissions from `AndroidManifest.xml` and spoofs network availability queries to disconnected.
+> - If applied on initial setup, the app cannot download the device plugin, resulting in missing device management screens or connection timeouts.
+> 
+> **Recommended Workflow:**
+> 1. **Initial Setup**: Patch and install the app with default settings (`Xiaomi Earbuds Offline Only` unchecked/disabled).
+> 2. **Pair Device**: Open the app and pair your earphones, allowing the app to download the local plugin and device configuration assets.
+> 3. **Full Network Isolation (Optional)**: Once your earphones appear and are fully functional in the app, re-patch the APK with `Xiaomi Earbuds Offline Only` enabled for complete air-gapped privacy.
+
+| Patch | Category | Default | Primary Mechanism | Technical Impact |
+| :--- | :--- | :---: | :--- | :--- |
+| **`Xiaomi Earbuds Anti-Tamper Bypass`** | Security & Integrity | ✅ Yes | Intercepts Xposed/hook detection methods (`isHookByStack`, `isXposedHook`), bypasses root/emulator detection, neutralizes VPN/ADB checks, and hardens WebView interfaces. | Eliminates false-positive app crashes or restrictions when running on modified devices, rootless environments, or under network proxies. |
+| **`Xiaomi Earbuds Background Optimizer`** | Battery & Performance | ✅ Yes | Disables `KeepAliveForegroundService`, background BLE observation threads, CompanionDeviceManager registration, and MIUI Nearby discovery workers in bytecode and manifest. | Eliminates persistent foreground notification icons, background wakelocks, and battery drain during screen-off sleep. |
+| **`Xiaomi Earbuds Block Telemetry & Trackers`** | Privacy & Telemetry | ✅ Yes | Neutralizes Xiaomi OneTrack analytics dispatching, AutoReportHelper crash logs, and GlobalReport telemetry dispatchers. | Completely halts outbound telemetry pings and analytics data collection to Xiaomi servers. |
+| **`Xiaomi Earbuds Device Privacy Guard`** | Privacy & Anti-Profiling | ✅ Yes | Anonymizes hardware identifiers (OAID, GAID, Android ID, MAC addresses) and bypasses location permission assertions for Bluetooth scanning. | Prevents device tracking and persistent cross-device profiling while allowing BLE discovery without location services. |
+| **`Xiaomi Earbuds Disable Promos & Nags`** | Debloat & Usability | ✅ Yes | Forces startup privacy agreement checks, onboarding tutorials, region selector dialogs, and Bluetooth permission nags to return accepted/completed, and disables in-app promotional banners. | Instant app startup with clean navigation directly to connected devices without modal dialogs or store review nags. |
+| **`Xiaomi Earbuds Guest OTA Unlock`** | Usability & Firmware | ✅ Yes | Bypasses mandatory Xiaomi account login gates for device firmware updates. | Allows guest users without a Xiaomi account to check, download, and install official device firmware updates over-the-air. |
+| **`Xiaomi Earbuds Network Security & TLS Inspection`** | Security & Network | ✅ Yes | Disables cleartext HTTP traffic, adds user-installed certificate authority trusts, and bypasses OkHttp certificate pinning. | Protects transport security while permitting network inspection and reverse engineering in security research environments. |
+| **`Xiaomi Earbuds Offline Only`** | Privacy & Isolation | ❌ *Optional* | Revokes internet permissions in `AndroidManifest.xml` and spoofs network availability state to offline. | Completely isolates the app from the internet for zero-network operation while keeping local Bluetooth device management fully operational. |
+| **`Xiaomi Earbuds Model Catalog Unlock`** | Usability & Device Support | ✅ Yes | Forces `DeviceInfoListCache.isShowProduct` to return `true`, bypassing version gating and distribution channel checks. | Ensures all device models in the catalog are discoverable and selectable for Bluetooth pairing regardless of app version or distribution channel. |
+| **`Xiaomi Earbuds Sound Features Unlock`** | Audio & Features | ✅ Yes | Unblocks Spatial Audio, hearing enhancement, and voice wake-up restrictions, and bypasses the 96kHz aptX Adaptive sample rate restriction and XPAN requirements. | Activates advanced sound enhancements (Spatial Audio, aptX Adaptive 96kHz) across all supported companion hardware. |
+| **`Xiaomi Earbuds Surgical OEM Unlock`** | Hardware & OEM Bypass | ✅ Yes | Bypasses Xiaomi OEM device gating for SuperAivs (function 5009) and suppresses MIUI-specific spatial audio system dialog nags. | Unlocks full feature parity on non-Xiaomi/non-MIUI Android devices (Samsung, Google Pixel, Motorola, OnePlus, etc.). |
 

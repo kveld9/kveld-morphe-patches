@@ -4,7 +4,7 @@
 
 > [!NOTE]
 > **Architecture Matrix Summary:**
-> - **Gboard Lite & Brave Browser**: Officially support both **`arm64-v8a` (64-bit)** and **`armeabi-v7a` (32-bit)**.
+> - **Gboard Lite, Brave Browser, NokoPrint & Xiaomi Earbuds**: Officially support both **`arm64-v8a` (64-bit)** and **`armeabi-v7a` (32-bit)**.
 > - **TikTok**: Officially supports **`arm64-v8a`** (Global and Asia APK nodpi). Legacy `armeabi-v7a` libraries in dual-ABI APKs can be purged via debloat patches.
 > - **Vivaldi Browser & Hevy**: **`arm64-v8a` (64-bit only)**.
 
@@ -19,6 +19,9 @@ Vivaldi Browser depends on surgical byte-level patching of the native ELF binary
 
 ### Why Hevy is strictly 64-bit:
 Hevy runs on the Meta React Native framework with a pre-compiled 64-bit Hermes JavaScript runtime (`lib/arm64-v8a/libhermes.so`). The `Unlock Pro` patch performs dynamic Hermes Bytecode (HBC96) table parsing and surgical instruction replacement in `assets/index.android.bundle`.
+
+### Why Xiaomi Earbuds & NokoPrint support both 64-bit and 32-bit:
+All patches for Xiaomi Earbuds and NokoPrint operate strictly on Dalvik/ART MultiDEX bytecode and Android XML resources. They contain **zero native `.so` binary dependencies** and run identically across all Android CPU architectures (`arm64-v8a`, `armeabi-v7a`, `universal`).
 
 ---
 
@@ -48,6 +51,14 @@ Download the official APK release from [APKMirror (TikTok)](https://www.apkmirro
 - **Package Names**: `com.zhiliaoapp.musically` (Global) and `com.ss.android.ugc.trill` (Asia).
 - **APK Format**: Standalone nodpi APK (`arm64-v8a` or dual-ABI `arm64-v8a, armeabi-v7a`).
 - **Compatibility**: Patches operate on stable ByteDance SDK boundaries and MultiDEX classes across versions, with slimmers targeting ByteDance assets and heavy native libraries.
+ 
+### 🎧 Xiaomi Earbuds (`com.mi.earphone`)
+Download the official release from [APKPure](https://d.apkpure.com/b/XAPK/com.mi.earphone?versionCode=138000).
+
+- **Target**: `1.38.0i` (`com.mi.earphone`, XAPK bundle or standalone APK).
+- **Format**: Distributed either as a standalone APK or an XAPK bundle. Morphe patches Dalvik bytecode across MultiDEX classes (up to 10 DEX files) and XML resources.
+- **Architecture**: Supports all ABIs (`arm64-v8a`, `armeabi-v7a`, `universal`) as patches operate strictly on Android bytecode and resource layers.
+- **Initial Pairing Workflow**: The optional `Xiaomi Earbuds Offline Only` patch should not be applied on the very first boot; pair your earphones first with default patches so model UI plugins and schemas can download, then apply `Offline Only` if complete network isolation is desired.
 
 ---
 

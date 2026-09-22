@@ -115,3 +115,15 @@ Unlike traditional Android apps whose logic lives exclusively in Dalvik `.dex` f
 - **Sentry Crash Reporting**: Content providers disabled in manifest and native bridge methods in `classes6.dex` (`initNativeSdk`) stubbed to resolve boolean true and return immediately.
 - **Adjust, Facebook & Amplitude**: Native package dispatch and event queues (`AppEventQueue.flush`, `PackageHandler.addPackage`, `AndroidContextProvider.prefetch`) are neutralized at bytecode level without crashing React Native modules.
 
+---
+
+## Xiaomi Earbuds: Hardware OEM Gating & Catalog Architecture
+
+### 1. Model Catalog Filtering Bypass (`DeviceInfoListCache.isShowProduct`)
+- **Upstream Gating Mechanism**: Xiaomi Earbuds evaluates each earphone model against the installed application version using `DeviceInfoListCache.isShowProduct(String model)`. In upstream code, channel checks and strict version regexes can cause supported hardware models to be silently excluded from discovery caches, rejecting device models during Bluetooth LE scanning.
+- **Surgical Bytecode Override**: The `Xiaomi Earbuds Model Catalog Unlock` patch hooks `DeviceInfoListCache.isShowProduct(Ljava/lang/String;)Z` to return `true` unconditionally (`const/4 v0, 1; return v0`). This guarantees all device models defined in the internal catalog are recognized, retained in `DeviceInfoListCache`, and discoverable during manual pairing and BLE scanning.
+
+### 2. OEM Feature Gating & Audio Codec Unlock
+- **SuperAivs OEM Gating (`SurgicalOEMUnlockPatch`)**: Xiaomi restricts specific integrations (such as SuperAivs, function `5009`) to MIUI/HyperOS devices. The patch intercepts the hardware brand check to unlock full feature parity on non-Xiaomi Android devices (Samsung, Google Pixel, Motorola, OnePlus).
+- **Spatial Audio & aptX Adaptive 96kHz (`SoundFeaturesUnlockPatch`)**: Xiaomi restricts Spatial Audio when using 96kHz aptX Adaptive connections. The patch removes this restriction and server-side capability locks, enabling Spatial Audio and hearing enhancements across high-resolution Bluetooth connections.
+
