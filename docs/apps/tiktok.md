@@ -36,7 +36,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Privacy** | **Fix Google login** | `bytecodePatch` | Restores Google account sign-in via Web OAuth fallback when GMS rejects modified APK signature. |
 | **Privacy** | **Bypass Mandatory Login** | `bytecodePatch` | Neutralizes mandatory login walls, dynamic regional forced login gates, and guest browsing restrictions. |
 | **Privacy** | **Clean Share URL** | `bytecodePatch` | Strips tracking query parameters, user tokens, and campaign IDs from shared links. |
-| **Privacy** | **Device Privacy Guard** | `bytecodePatch` | Blocks background clipboard inspection, purges 35 invasive permissions, prunes 92 package query declarations, silences HAR hardware sensors, and clears `FLAG_SECURE`. |
+| **Privacy** | **Device Privacy Guard** | `bytecodePatch` | Blocks background clipboard inspection, isolates package queries, silences HAR hardware sensors, and clears `FLAG_SECURE`. |
 | **Privacy** | **In-App Browser Privacy Guard** | `bytecodePatch` | Redirects external links to default system browser, neutralizes WebView JS tracking injection and AJAX hookers. |
 | **Privacy** | **Client-Side AI & Behavioral Profiling Governor** | `bytecodePatch` | Neutralizes Pitaya on-device ML, Tako AI chatbot entries, and AI search clutter. |
 | **Privacy** | **[SIM Region Selector](#1-sim-region-selector)** | `bytecodePatch` | Spoofs SIM and network country ISO codes to bypass regional restrictions. |
@@ -202,8 +202,7 @@ The **`Custom Offline Videos Limit`** patch customizes the maximum video caching
 - Respects native "Do not translate" language preferences from `TranslationLangKevaServiceImpl`.
 
 ### 3. Device Privacy Guard (`devicePrivacyGuardPatch`)
-- **Permission Purge & Query Pruning**: Strips 35 invasive permissions from `AndroidManifest.xml` (`AD_ID`, billing, coarse/fine location, NFC, Bluetooth scanning, audio recording, local network scanning). Prunes 92 external `<package>` queries, restricting visibility strictly to TikTok internal packages.
-- **Universal Package Query Isolation**: Intercepts `PackageManager` query trampolines (`LX/00m8.U3`, `LX/00m8.R3`) and throws a controlled `NameNotFoundException` when external installed apps are queried.
+- **Universal Package Query Isolation**: Intercepts `PackageManager` query trampolines (`LX/00m8.U3`, `LX/00m8.R3`) and throws a controlled `NameNotFoundException` when external installed apps are queried, isolating app visibility without requiring resource decoding.
 - **Contacts Isolation**: Neutralizes BPEA contacts reader `LX/0OFU.LIZ()` to return empty list and `LX/0OFw.LIZ()` to return a null cursor safely.
 - **HAR Motion Sensor Silencing**: Injects `return -1` into `HarSensorManager` init and stubs `onSensorChanged` to stop physical movement fingerprinting.
 - **FLAG_SECURE Bypass**: Permanently clears `FLAG_SECURE` (`0x2000`) on window layouts via `AntiScreenRecordController.applyFlag`, enabling screenshots and screen recordings in all views.
