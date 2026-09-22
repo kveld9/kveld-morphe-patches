@@ -78,64 +78,77 @@ private val braveHostsBlockerPatch = rawResourcePatch(
     compatibleWith(Constants.COMPATIBILITY_BRAVE)
 
     execute {
-        val soFile = get("lib/arm64-v8a/libchrome.so")
-        if (!soFile.exists()) {
-            println("[BraveBlockTelemetry] Skipped: lib/arm64-v8a/libchrome.so not found.")
-            return@execute
-        }
-
         data class HostEntry(
-            val offset: Long,
+            val arm64Offset: Long,
+            val arm32Offset: Long,
             val hostName: String,
         )
 
         val hostEntries = listOf(
-            HostEntry(0x001f96f1L, "star-randsrv.bsg.brave.com"),
-            HostEntry(0x001f9722L, "collector.bsg.brave.com"),
-            HostEntry(0x001f9759L, "usage-ping.brave.com"),
-            HostEntry(0x001f957cL, "patterns.wdp.brave.com"),
-            HostEntry(0x001f9593L, "collector.wdp.brave.com"),
-            HostEntry(0x001f95abL, "star.wdp.brave.com"),
-            HostEntry(0x001f95beL, "quorum.wdp.brave.com"),
-            HostEntry(0x001f956fL, "cr.brave.com"),
-            HostEntry(0x0008989fL, "crashpad.chromium.org"),
-            HostEntry(0x004a499dL, "crashpad.chromium.org"),
-            HostEntry(0x001f9403L, "variations.brave.com"),
-            HostEntry(0x00335008L, "variations.brave.com"),
+            HostEntry(0x001f96f1L, 0x00586c83L, "star-randsrv.bsg.brave.com"),
+            HostEntry(0x001f9722L, 0x00586cb4L, "collector.bsg.brave.com"),
+            HostEntry(0x001f9759L, 0x00586cebL, "usage-ping.brave.com"),
+            HostEntry(0x001f957cL, 0x00586b0eL, "patterns.wdp.brave.com"),
+            HostEntry(0x001f9593L, 0x00586b25L, "collector.wdp.brave.com"),
+            HostEntry(0x001f95abL, 0x00586b3dL, "star.wdp.brave.com"),
+            HostEntry(0x001f95beL, 0x00586b50L, "quorum.wdp.brave.com"),
+            HostEntry(0x001f956fL, 0x00586b01L, "cr.brave.com"),
+            HostEntry(0x0008989fL, 0x0041d077L, "crashpad.chromium.org"),
+            HostEntry(0x004a499dL, 0x00825f18L, "crashpad.chromium.org"),
+            HostEntry(0x001f9403L, 0x00586995L, "variations.brave.com"),
+            HostEntry(0x00335008L, 0x006b9335L, "variations.brave.com"),
         )
 
-        val redirectionIp = "0.0.0.0".toByteArray(Charsets.US_ASCII)
-        var writtenHosts = 0
+        val targets = listOf(
+            "lib/arm64-v8a/libchrome.so" to { entry: HostEntry -> entry.arm64Offset },
+            "lib/armeabi-v7a/libchrome.so" to { entry: HostEntry -> entry.arm32Offset },
+        )
 
-        RandomAccessFile(soFile, "rw").use { raf ->
-            for (entry in hostEntries) {
-                val expectedBytes = entry.hostName.toByteArray(Charsets.US_ASCII)
-                val len = expectedBytes.size
-                if (entry.offset + len > raf.length()) {
-                    throw PatchException("Host offset 0x${entry.offset.toString(16)} out of bounds in libchrome.so")
-                }
-                val buf = ByteArray(len)
-                raf.seek(entry.offset)
-                raf.readFully(buf)
-                if (!buf.contentEquals(expectedBytes)) {
-                    throw PatchException(
-                        "Host fingerprint mismatch at 0x${entry.offset.toString(16)}. " +
-                            "Expected: ${entry.hostName}, Found: ${String(buf, Charsets.US_ASCII)}",
-                    )
-                }
+        val existingTargets = targets
+            .map { (path, offsetSelector) -> Triple(path, get(path), offsetSelector) }
+            .filter { (_, file, _) -> file.exists() && file.isFile }
 
-                // Construct replacement: "0.0.0.0" + null byte + zero padding to original length
-                val replacement = ByteArray(len)
-                System.arraycopy(redirectionIp, 0, replacement, 0, redirectionIp.size)
-                // remaining bytes are 0x00 (null padded)
-
-                raf.seek(entry.offset)
-                raf.write(replacement)
-                writtenHosts++
-            }
+        if (existingTargets.isEmpty()) {
+            println("[BraveBlockTelemetry] Skipped: no arm64-v8a or armeabi-v7a libchrome.so found.")
+            return@execute
         }
 
-        println("[Block Telemetry] Redirected $writtenHosts / ${hostEntries.size} endpoints to 0.0.0.0 in libchrome.so")
+        val redirectionIp = "0.0.0.0".toByteArray(Charsets.US_ASCII)
+
+        for ((relPath, soFile, offsetSelector) in existingTargets) {
+            var writtenHosts = 0
+
+            RandomAccessFile(soFile, "rw").use { raf ->
+                for (entry in hostEntries) {
+                    val offset = offsetSelector(entry)
+                    val expectedBytes = entry.hostName.toByteArray(Charsets.US_ASCII)
+                    val len = expectedBytes.size
+                    if (offset + len > raf.length()) {
+                        throw PatchException("Host offset 0x${offset.toString(16)} out of bounds in $relPath")
+                    }
+                    val buf = ByteArray(len)
+                    raf.seek(offset)
+                    raf.readFully(buf)
+                    if (!buf.contentEquals(expectedBytes)) {
+                        throw PatchException(
+                            "Host fingerprint mismatch at 0x${offset.toString(16)} in $relPath. " +
+                                "Expected: ${entry.hostName}, Found: ${String(buf, Charsets.US_ASCII)}",
+                        )
+                    }
+
+                    // Construct replacement: "0.0.0.0" + null byte + zero padding to original length
+                    val replacement = ByteArray(len)
+                    System.arraycopy(redirectionIp, 0, replacement, 0, redirectionIp.size)
+                    // remaining bytes are 0x00 (null padded)
+
+                    raf.seek(offset)
+                    raf.write(replacement)
+                    writtenHosts++
+                }
+            }
+
+            println("[Block Telemetry] $relPath: Redirected $writtenHosts / ${hostEntries.size} endpoints to 0.0.0.0 in libchrome.so")
+        }
     }
 }
 

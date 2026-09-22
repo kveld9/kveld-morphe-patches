@@ -27,16 +27,20 @@ val braveNativeBloatSlimmerPatch = rawResourcePatch(
         var savedBytes = 0L
         val strippedLibs = mutableListOf<String>()
 
-        val libDir = get("lib/arm64-v8a")
-        if (libDir.exists() && libDir.isDirectory) {
+        val abis = listOf("lib/arm64-v8a", "lib/armeabi-v7a")
+
+        abis.forEach { abi ->
+            val libDir = get(abi)
+            if (!libDir.exists() || !libDir.isDirectory) return@forEach
+
             BLOAT_NATIVE_LIBS.forEach { libName ->
-                val libFile = get("lib/arm64-v8a/$libName")
+                val libFile = get("$abi/$libName")
                 if (libFile.exists() && libFile.isFile) {
                     val originalSize = libFile.length()
                     if (originalSize > 0) {
                         libFile.writeBytes(EMPTY_STUB_BYTES)
                         savedBytes += (originalSize - libFile.length())
-                        strippedLibs.add(libName)
+                        strippedLibs.add("$abi/$libName")
                     }
                 }
             }
