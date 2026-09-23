@@ -249,7 +249,7 @@
 </details>
 
 <details>
-<summary>Universal&nbsp;&nbsp;•&nbsp;&nbsp;<b>4 patches</b></summary>
+<summary>Universal&nbsp;&nbsp;•&nbsp;&nbsp;<b>5 patches</b></summary>
 <br>
 
 | Patch | Description | Options |
@@ -258,6 +258,7 @@
 | **DPI Resource Slimmer** | Strips unselected screen density resource directories from res/ (e.g. drawable-mdpi, drawable-hdpi, mipmap-xhdpi). Density-independent resources (nodpi, anydpi) and orphan resources are safely preserved. | • DPI densities to keep |
 | **Locale Resource Slimmer** | Strips unselected language translation directories from res/ (e.g. values-*, raw-*, xml-*). Base fallback resources with no language qualifiers are always preserved. | • Locales to keep |
 | **PNG Asset Optimizer** | Losslessly recompresses PNG assets with maximum zlib compression and strips non-rendering metadata chunks (pHYs, tEXt, tIME) while preserving 9-patch structures and pixel accuracy. |  |
+| **Universal Offline Mode** | Forces offline execution across any application by revoking INTERNET and network permissions from AndroidManifest.xml and blocking cleartext HTTP traffic. | • Strip Network State Permissions<br>• Strip Wi-Fi Control Permissions<br>• Strip Push Notification Permissions<br>• Strip Google Services Sync Permissions<br>• Block Cleartext Traffic |
 
 </details>
 
@@ -283,7 +284,7 @@ Technical references, setup manuals, and architecture notes are organized by foc
 ### 🌐 Universal & Architecture Reference
 | Guide | Description |
 | :--- | :--- |
-| **[Universal Patches & Options](docs/universal-patches.md)** | Universal resource slimmers: Locale PAK, Locale Resource, DPI Drawable, PNG Optimizer, and Junk Cleaner. |
+| **[Universal Patches & Options](docs/universal-patches.md)** | Universal optimizations: Universal Offline Mode, Locale PAK, Locale Resource, DPI Drawable, PNG Optimizer, and Junk Cleaner. |
 | **[Compatibility Guide](docs/compatibility.md)** | CPU architecture policy (`arm64-v8a` vs `armeabi-v7a`), APK variant requirements, and SHA-256 baseline. |
 | **[Project Scope & Out of Scope](docs/out-of-scope.md)** | Non-negotiable design philosophy, compile-time invariants, and rejected feature categories. |
 | **[Architecture & Security Notes](docs/architecture-security.md)** | Static analysis scanner false positives (ML Kit, Play Billing) and native ELF telemetry neutralization. |

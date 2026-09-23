@@ -13,6 +13,7 @@ Comprehensive reference for universal optimization and resource slimming patches
 | **[DPI Resource Slimmer](#3-dpi-resource-slimmer-dpiresourceslimmerpatch)** | `resourcePatch` | Android Drawables (`res/drawable-*`) | Retains target device screen density, safe orphan forward-copy | **~5–30 MB** saved, reduced bitmap memory footprint |
 | **[PNG Asset Optimizer](#4-png-asset-optimizer-pngassetoptimizerpatch)** | `rawResourcePatch` | PNG Assets (`res/**`, `assets/**`) | In-memory RGBA-verified level 9 zlib recompression + metadata strip | **~1–8 MB** saved, 0% visual degradation |
 | **[APK Junk Cleaner](#5-apk-junk-cleaner-apkjunkcleanerpatch)** | `rawResourcePatch` | Root & Metadata (`META-INF/**`, root) | Prunes compiler metadata, Kotlin debug tables, duplicate licenses | **~0.5–2 MB** saved, cleaner packaging |
+| **[Universal Offline Mode](#6-universal-offline-mode-universalofflinepatch)** | `resourcePatch` | Manifest (`AndroidManifest.xml`) | Revokes `INTERNET` & network permissions + blocks cleartext HTTP | Complete network isolation at OS kernel level |
 
 ---
 
@@ -162,3 +163,22 @@ The **`APK Junk Cleaner`** strips non-functional build metadata, compiler proper
 - **Critical Extensions**: `.dex`, `.arsc`, `.xml`, `.so`, `.rsa`, `.sf`, `.dsa` are strictly protected.
 - **Service Loader Integrations**: `META-INF/services/` and `META-INF/MANIFEST.MF` are strictly preserved to maintain dynamic dependency injection.
 - **Root Whitelist**: Core root directories (`assets`, `res`, `lib`, `smali`) are protected from accidental pruning.
+
+---
+
+## 6. Universal Offline Mode (`universalOfflinePatch`)
+
+The **`Universal Offline Mode`** patch isolates any application from the network by stripping `android.permission.INTERNET` and associated network permissions from `AndroidManifest.xml` and enforcing `android:usesCleartextTraffic="false"` on the `<application>` element.
+
+> [!NOTE]
+> ### Kernel-Level Network Enforcement
+> In the Android security architecture, removing `android.permission.INTERNET` prevents the Linux kernel from assigning the `AID_INET` supplementary group to the application process at fork time. As a result, all network socket syscalls (`socket()`, `connect()`, `bind()`) fail with `EACCES` (Permission Denied) at the OS level. No bytecode or native library (`.so`) can bypass this barrier.
+
+### Configuration in Morphe Manager
+
+- **Strip Network State Permissions (`stripNetworkState`)**: Removes `ACCESS_NETWORK_STATE` and `ACCESS_WIFI_STATE` (default: `true`). If an app crashes with `SecurityException` due to unhandled connectivity checks, set to `false` to permit status queries while still blocking socket communication.
+- **Strip Wi-Fi Control Permissions (`stripWifiControls`)**: Removes `CHANGE_NETWORK_STATE`, `CHANGE_WIFI_STATE`, `CHANGE_WIFI_MULTICAST_STATE`, and `NEARBY_WIFI_DEVICES` (default: `true`).
+- **Strip Push Notification Permissions (`stripPush`)**: Removes `com.google.android.c2dm.permission.RECEIVE` (default: `false`).
+- **Strip Google Services Sync Permissions (`stripGoogleServices`)**: Removes `com.google.android.providers.gsf.permission.READ_GSERVICES` and `android.permission.GET_ACCOUNTS` (default: `false`).
+- **Block Cleartext Traffic (`blockCleartext`)**: Enforces `android:usesCleartextTraffic="false"` in `AndroidManifest.xml` (default: `true`).
+
