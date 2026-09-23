@@ -105,7 +105,7 @@ object Constants {
     )
 
     const val NOKOPRINT_PACKAGE_NAME = "com.nokoprint"
-    const val NOKOPRINT_TARGET_VERSION = "5.10.8"
+    const val NOKOPRINT_TARGET_VERSION = "5.28.4"
 
     val COMPATIBILITY_NOKOPRINT = Compatibility(
         name = "NokoPrint - WiFi, Bluetooth, USB",

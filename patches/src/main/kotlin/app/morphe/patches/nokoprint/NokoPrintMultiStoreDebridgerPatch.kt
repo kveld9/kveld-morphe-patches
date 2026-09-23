@@ -20,21 +20,37 @@ val nokoPrintMultiStoreDebridgerPatch = resourcePatch(
         }
 
         val orphanComponents = setOf(
-            // Huawei HMS & AGConnect
+            // Huawei HMS, AGConnect & OTA
             "com.huawei.hms.activity.BridgeActivity",
             "com.huawei.hms.activity.EnableServiceActivity",
             "com.huawei.agconnect.core.ServiceDiscovery",
             "com.huawei.agconnect.core.provider.AGConnectInitializeProvider",
-            // Xiaomi Billing
+            "com.huawei.updatesdk.service.otaupdate.AppUpdateActivity",
+            "com.huawei.updatesdk.support.pm.PackageInstallerActivity",
+            "com.huawei.updatesdk.fileprovider.UpdateSdkFileProvider",
+            "com.huawei.hms.account.internal.ui.activity.AccountSignInHubActivity",
+            "com.huawei.hms.hwid.internal.ui.activity.HwIdSignInHubActivity",
+            // Xiaomi Billing & Common IAP
             "com.xiaomi.billingclient.ui.ProxyBillingActivity",
             "com.xiaomi.billingclient.ui.ClientPaymentWebActivity",
             "com.xiaomi.billingclient.ui.ClientExtraWebActivity",
             "com.xiaomi.billingclient.floating.WebActivity",
+            "com.iap.common.floating.WebActivity",
+            "com.iap.common.ui.ClientExtraWebActivity",
+            "com.iap.common.ui.ClientPaymentWebActivity",
+            "com.iap.common.ui.ProxyBillingActivity",
             // Samsung IAP
             "com.samsung.android.sdk.iap.lib.activity.DialogActivity",
             "com.samsung.android.sdk.iap.lib.activity.CheckPackageActivity",
             "com.samsung.android.sdk.iap.lib.activity.AccountActivity",
             "com.samsung.android.sdk.iap.lib.activity.PaymentActivity",
+            "com.samsung.android.sdk.iap.lib.activity.ChangeSubscriptionPlanActivity",
+            // RuStore
+            "com.nokoprint.AppStoreRustoreActivity",
+            "ru.rustore.sdk.pay.internal.presentation.ui.PayActivity",
+            "ru.rustore.sdk.pay.RuStorePayContentProvider",
+            "ru.rustore.sdk.imaging.ImageLoaderContentProvider",
+            "ru.rustore.sdk.metrics.internal.presentation.SendMetricsEventJobService",
             // OneStore
             "com.gaa.sdk.iap.ProxyActivity",
             "com.gaa.sdk.auth.SignInActivity",
@@ -48,6 +64,7 @@ val nokoPrintMultiStoreDebridgerPatch = resourcePatch(
             "com.google.android.play.core.common.PlayCoreDialogWrapperActivity",
             "com.google.android.play.core.assetpacks.AssetPackExtractionService",
             "com.google.android.play.core.assetpacks.ExtractionForegroundService",
+            "com.pairip.licensecheck.LicenseActivity",
             // Internal Store Webpage
             "com.fyber.inneractive.sdk.activities.InternalStoreWebpageActivity",
         )
@@ -57,13 +74,17 @@ val nokoPrintMultiStoreDebridgerPatch = resourcePatch(
             "com.samsung.android.iap.permission.BILLING",
             "com.farsitel.bazaar.permission.PAY_THROUGH_BAZAAR",
             "com.android.vending.BILLING",
+            "com.android.vending.CHECK_LICENSE",
+            "com.huawei.appmarket.service.commondata.permission.GET_COMMON_DATA",
             // Ad & Attribution permissions
             "android.permission.ACCESS_ADSERVICES_AD_ID",
             "android.permission.ACCESS_ADSERVICES_ATTRIBUTION",
             "android.permission.ACCESS_ADSERVICES_TOPICS",
+            "android.permission.ACCESS_ADSERVICES_CUSTOM_AUDIENCE",
             "com.google.android.gms.permission.AD_ID",
             "com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE",
             "com.applovin.array.apphub.permission.BIND_APPHUB_SERVICE",
+            "com.amazon.privacypass.ATTEST",
             // Unused background sync / foreground service permissions
             "android.permission.FOREGROUND_SERVICE_DATA_SYNC",
         )

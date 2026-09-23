@@ -8,7 +8,6 @@ import app.morphe.patches.shared.Constants
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
-import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 
 @Suppress("unused")
@@ -22,175 +21,128 @@ val nokoPrintAdDispatchGovernorPatch = bytecodePatch(
     execute {
         val hookedMethods = mutableListOf<String>()
 
-        // 1. Stub com.nokoprint.ads.a.i (preload banner)
+        // 1. Force ActivityRoot.g(Z)Z to return true (is_no_ads active across entire activity hierarchy)
         Fingerprint(
-            definingClass = "Lcom/nokoprint/ads/a;",
-            name = "i",
-            parameters = listOf("Landroid/content/Context;", "Ljava/lang/String;", "Ljava/lang/String;", "Lcom/nokoprint/ads/a\$e;"),
-            returnType = "V",
-        ).method.apply {
-            addInstructions(0, "return-void")
-            hookedMethods.add("a.i(preloadBanner)")
-        }
-
-        // 2. Stub com.nokoprint.ads.a.j (preload interstitial)
-        Fingerprint(
-            definingClass = "Lcom/nokoprint/ads/a;",
-            name = "j",
-            parameters = listOf("Landroid/content/Context;", "Ljava/lang/String;", "Ljava/lang/String;"),
-            returnType = "V",
-        ).method.apply {
-            addInstructions(0, "return-void")
-            hookedMethods.add("a.j(preloadInterstitial)")
-        }
-
-        // 3. Stub com.nokoprint.ads.a.k (preload rewarded)
-        Fingerprint(
-            definingClass = "Lcom/nokoprint/ads/a;",
-            name = "k",
-            parameters = listOf("Landroid/content/Context;", "Ljava/lang/String;", "Ljava/lang/String;"),
-            returnType = "V",
-        ).method.apply {
-            addInstructions(0, "return-void")
-            hookedMethods.add("a.k(preloadRewarded)")
-        }
-
-        // 4. Stub com.nokoprint.ads.b.i (banner adapter preload)
-        Fingerprint(
-            definingClass = "Lcom/nokoprint/ads/b;",
-            name = "i",
-            parameters = listOf("Landroid/content/Context;", "Ljava/lang/String;", "Lcom/nokoprint/ads/b\$f;"),
-            returnType = "V",
-        ).method.apply {
-            addInstructions(0, "return-void")
-            hookedMethods.add("b.i(bannerPreload)")
-        }
-
-        // 5. Stub com.nokoprint.ads.b.j (interstitial adapter preload)
-        Fingerprint(
-            definingClass = "Lcom/nokoprint/ads/b;",
-            name = "j",
-            parameters = listOf("Landroid/content/Context;", "Ljava/lang/String;"),
-            returnType = "V",
-        ).method.apply {
-            addInstructions(0, "return-void")
-            hookedMethods.add("b.j(interstitialPreload)")
-        }
-
-        // 6. Stub com.nokoprint.ads.c.i (mediation adapter preload)
-        Fingerprint(
-            definingClass = "Lcom/nokoprint/ads/c;",
-            name = "i",
-            parameters = listOf("Landroid/content/Context;", "Ljava/lang/String;", "Lcom/nokoprint/ads/c\$g;"),
-            returnType = "V",
-        ).method.apply {
-            addInstructions(0, "return-void")
-            hookedMethods.add("c.i(mediationPreload)")
-        }
-
-        // 7. Force com.nokoprint.n.A(Z)Z to return true (is_no_ads active)
-        Fingerprint(
-            definingClass = "Lcom/nokoprint/n;",
-            name = "A",
+            definingClass = "Lcom/nokoprint/ActivityRoot;",
+            name = "g",
             parameters = listOf("Z"),
             returnType = "Z",
         ).method.apply {
             addInstructions(0, "const/4 v0, 0x1\nreturn v0")
-            hookedMethods.add("n.A(isNoAds)")
+            hookedMethods.add("ActivityRoot.g(isNoAds)")
         }
 
-        // 8. Stub com.nokoprint.c methods (update check, exit interstitial preload, show interstitial, subscription prompt)
+        // 2. Stub ActivityRoot.w(Z)V (banner container initialization & ad dispatching)
         Fingerprint(
-            definingClass = "Lcom/nokoprint/c;",
-            name = "y0",
-            parameters = emptyList(),
+            definingClass = "Lcom/nokoprint/ActivityRoot;",
+            name = "w",
+            parameters = listOf("Z"),
             returnType = "V",
         ).method.apply {
             addInstructions(0, "return-void")
-            hookedMethods.add("c.y0(checkUpdate)")
+            hookedMethods.add("ActivityRoot.w(bannerDispatcher)")
         }
 
+        // 3. Stub ActivityRoot.r (AdMob ad revenue & impression callback)
         Fingerprint(
-            definingClass = "Lcom/nokoprint/c;",
-            name = "T",
-            parameters = emptyList(),
+            definingClass = "Lcom/nokoprint/ActivityRoot;",
+            name = "r",
+            parameters = listOf("Ljava/lang/String;", "Lcom/google/android/gms/ads/AdValue;"),
             returnType = "V",
         ).method.apply {
             addInstructions(0, "return-void")
-            hookedMethods.add("c.T(preloadExitInterstitial)")
+            hookedMethods.add("ActivityRoot.r(adMobRevenue)")
         }
 
+        // 4. Stub ActivityRoot.s (AppLovin MAX ad revenue & attribution callback)
         Fingerprint(
-            definingClass = "Lcom/nokoprint/c;",
-            name = "z0",
-            parameters = emptyList(),
+            definingClass = "Lcom/nokoprint/ActivityRoot;",
+            name = "s",
+            parameters = listOf("Ljava/lang/String;", "Ljava/lang/String;", "Lcom/applovin/mediation/MaxAd;"),
             returnType = "V",
         ).method.apply {
             addInstructions(0, "return-void")
-            hookedMethods.add("c.z0(showInterstitial)")
+            hookedMethods.add("ActivityRoot.s(appLovinAdCallback)")
         }
 
+        // 5. Stub com.nokoprint.f4.b (interstitial ad preloading for AdMob / AppLovin)
         Fingerprint(
-            definingClass = "Lcom/nokoprint/c;",
-            name = "C0",
-            parameters = emptyList(),
-            returnType = "V",
-        ).method.apply {
-            addInstructions(0, "return-void")
-            hookedMethods.add("c.C0(subscriptionPrompt)")
-        }
-
-        // 9. Neutralize com.nokoprint.o.k(com.nokoprint.c)ArrayList (return empty list of store adapters)
-        Fingerprint(
-            definingClass = "Lcom/nokoprint/o;",
-            name = "k",
-            parameters = listOf("Lcom/nokoprint/c;"),
-            returnType = "Ljava/util/ArrayList;",
-        ).method.apply {
-            addInstructions(
-                0,
-                """
-                new-instance v0, Ljava/util/ArrayList;
-                invoke-direct {v0}, Ljava/util/ArrayList;-><init>()V
-                return-object v0
-                """.trimIndent(),
-            )
-            hookedMethods.add("o.k(emptyStoreAdapters)")
-        }
-
-        // 10. Silence com.nokoprint.h$t$c.b review prompts
-        Fingerprint(
-            definingClass = "Lcom/nokoprint/h\$t\$c;",
+            definingClass = "Lcom/nokoprint/f4;",
             name = "b",
-            parameters = listOf("Lcom/nokoprint/n\$p;"),
+            parameters = listOf("Lcom/google/android/material/carousel/d;", "Lcom/nokoprint/ActivityRoot;", "Ljava/util/Hashtable;"),
             returnType = "V",
         ).method.apply {
-            val instructions = implementation?.instructions?.toList() ?: emptyList()
-            val targetIdx = instructions.indexOfFirst { ins ->
-                val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference
-                ref?.definingClass == "Lcom/nokoprint/h;" && ref.name == "h1"
-            }
-            check(targetIdx >= 0) { "Target invocation Lcom/nokoprint/h;->h1 not found in com.nokoprint.h\$t\$c.b" }
-            addInstructions(targetIdx + 1, "return-void")
-            hookedMethods.add("h\$t\$c.b(silenceReviewPrompt)")
+            addInstructions(0, "return-void")
+            hookedMethods.add("f4.b(preloadInterstitial)")
         }
 
-        // 11. Rewrite printer driver download URL in com.nokoprint.d.r0 to HTTPS
+        // 6. Rewrite printer driver download protocol in ActivityCore.J to HTTPS
         Fingerprint(
-            definingClass = "Lcom/nokoprint/d;",
-            name = "r0",
+            definingClass = "Lcom/nokoprint/ActivityCore;",
+            name = "J",
             parameters = listOf("Ljava/lang/String;", "Ljava/lang/String;", "Z", "Z"),
             returnType = "Z",
         ).method.apply {
             val instructions = implementation?.instructions?.toList() ?: emptyList()
-            val targetIdx = instructions.indexOfFirst { ins ->
+            val urlIdx = instructions.indexOfFirst { ins ->
                 (ins.opcode == Opcode.CONST_STRING || ins.opcode == Opcode.CONST_STRING_JUMBO) &&
-                    ((ins as? ReferenceInstruction)?.reference as? StringReference)?.string == "http://nokoprint.com/android_packs/"
+                    ((ins as? ReferenceInstruction)?.reference as? StringReference)?.string == "://www.nokoprint.com/android_packs/"
             }
-            check(targetIdx >= 0) { "Target URL http://nokoprint.com/android_packs/ not found in com.nokoprint.d.r0" }
-            val reg = (instructions[targetIdx] as OneRegisterInstruction).registerA
-            replaceInstruction(targetIdx, "const-string v$reg, \"https://nokoprint.com/android_packs/\"")
-            hookedMethods.add("d.r0(rewriteDriverUrlToHttps)")
+            check(urlIdx >= 0) { "Target URL ://www.nokoprint.com/android_packs/ not found in ActivityCore.J" }
+
+            val httpIdx = instructions.subList(0, urlIdx).indexOfLast { ins ->
+                (ins.opcode == Opcode.CONST_STRING || ins.opcode == Opcode.CONST_STRING_JUMBO) &&
+                    ((ins as? ReferenceInstruction)?.reference as? StringReference)?.string == "http"
+            }
+            check(httpIdx >= 0) { "Target protocol 'http' not found before driver URL in ActivityCore.J" }
+
+            val reg = (instructions[httpIdx] as OneRegisterInstruction).registerA
+            replaceInstruction(httpIdx, "const-string v$reg, \"https\"")
+            hookedMethods.add("ActivityCore.J(rewriteDriverUrlToHttps)")
+        }
+
+        // 7. Stub com.pairip.licensecheck.LicenseClient.checkLicense to bypass Google Play anti-tamper exit
+        Fingerprint(
+            definingClass = "Lcom/pairip/licensecheck/LicenseClient;",
+            name = "checkLicense",
+            parameters = listOf("Landroid/content/Context;"),
+            returnType = "V",
+        ).method.apply {
+            addInstructions(0, "return-void")
+            hookedMethods.add("LicenseClient.checkLicense")
+        }
+
+        // 8. Stub ActivityRoot.i()Z (MobileAds.initialize) to return false
+        Fingerprint(
+            definingClass = "Lcom/nokoprint/ActivityRoot;",
+            name = "i",
+            parameters = emptyList(),
+            returnType = "Z",
+        ).method.apply {
+            addInstructions(0, "const/4 v0, 0x0\nreturn v0")
+            hookedMethods.add("ActivityRoot.i(initMobileAds)")
+        }
+
+        // 9. Stub ActivityRoot.k()Z (AppLovinSdk.initialize) to return false
+        Fingerprint(
+            definingClass = "Lcom/nokoprint/ActivityRoot;",
+            name = "k",
+            parameters = emptyList(),
+            returnType = "Z",
+        ).method.apply {
+            addInstructions(0, "const/4 v0, 0x0\nreturn v0")
+            hookedMethods.add("ActivityRoot.k(initAppLovinSdk)")
+        }
+
+        // 10. Stub ActivityRoot.a(J, Z, String)V (ad revenue tracking to Facebook & TikTok)
+        Fingerprint(
+            definingClass = "Lcom/nokoprint/ActivityRoot;",
+            name = "a",
+            parameters = listOf("J", "Z", "Ljava/lang/String;"),
+            returnType = "V",
+        ).method.apply {
+            addInstructions(0, "return-void")
+            hookedMethods.add("ActivityRoot.a(trackAdRevenue)")
         }
 
         println("[NokoPrint Ad Dispatch Governor] Neutralized ${hookedMethods.size} ad dispatch, promo, and telemetry hooks.")

@@ -13,7 +13,7 @@ Each application has an authoritative, all-in-one guide covering prerequisites, 
 | **Brave Browser** | `1.95.104` | `arm64-v8a`, `armeabi-v7a` | Standalone APK (`Bravemonoarm64.apk` / `BraveMonoarm.apk`) | [Brave Guide](apps/brave.md) |
 | **Gboard Lite** | `18.2.4.969776716` | `arm64-v8a`, `armeabi-v7a` | Standalone nodpi APK | [Gboard Lite Guide](apps/gboard.md) |
 | **Hevy** | `3.1.14` | `arm64-v8a` (64-bit only) | Split APK Bundle (`.apkm`) | [Hevy Guide](apps/hevy.md) |
-| **NokoPrint** | `5.10.8` | `arm64-v8a`, `armeabi-v7a`, `universal` | Standalone nodpi APK | [NokoPrint Guide](apps/nokoprint.md) |
+| **NokoPrint** | `5.28.4` | `arm64-v8a`, `armeabi-v7a`, `universal` | Standalone nodpi APK / Bundle | [NokoPrint Guide](apps/nokoprint.md) |
 | **TikTok** | `47.0.3` | `arm64-v8a` | Standalone nodpi APK (Global & Asia) | [TikTok Guide](apps/tiktok.md) |
 | **Vivaldi Browser** | `8.2.4147.93` | `arm64-v8a` (64-bit only) | Split APK Bundle (`.apkm`) | [Vivaldi Guide](apps/vivaldi.md) |
 | **Xiaomi Earbuds** | `1.38.0i` | `arm64-v8a`, `armeabi-v7a`, `universal` | Split Bundle (`.xapk` / `.apkm`) | [Xiaomi Earbuds Guide](apps/xiaomi-earbuds.md) |
@@ -65,8 +65,8 @@ Download the official `arm64-v8a` bundle release from [APKMirror](https://www.ap
 - **Bundle Format**: Distributed as an APKM / split APK set. Morphe fuses split modules into a unified APK. Details in [Hevy Guide](apps/hevy.md).
 
 ### 🖨️ NokoPrint: WiFi, Bluetooth, USB (`com.nokoprint`)
-Download the official release from [APKMirror](https://www.apkmirror.com/apk/nokoprint/nokoprint-wifi-bluetooth-usb/nokoprint-wifi-bluetooth-usb-5-10-8-release/).
-- **Current Target**: `5.10.8` (`com.nokoprint`, standalone nodpi APK). Details in [NokoPrint Guide](apps/nokoprint.md).
+Download the official release from [APKMirror](https://www.apkmirror.com/apk/nokoprint-llc/nokoprint-wifi-bluetooth-usb-printing/nokoprint-wifi-bluetooth-usb-printing-5-28-4-release/) or [APKPure](https://d.apkpure.com/b/XAPK/com.nokoprint?versionCode=52804).
+- **Current Target**: `5.28.4` (`com.nokoprint`, standalone nodpi APK or bundle). Details in [NokoPrint Guide](apps/nokoprint.md).
 
 ### 🎵 TikTok: Global & Asia (`com.zhiliaoapp.musically` / `com.ss.android.ugc.trill`)
 Download the official standalone APK release from [APKMirror (TikTok)](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/) or [APKMirror (TikTok Asia)](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok/).

@@ -33,6 +33,7 @@ private val nokoPrintTelemetryResourcePatch = resourcePatch(
             "com.google.android.gms.measurement.AppMeasurementReceiver",
             "com.google.firebase.provider.FirebaseInitProvider",
             "com.google.firebase.sessions.SessionLifecycleService",
+            "com.google.firebase.components.ComponentDiscoveryService",
         )
 
         var removedPermissions = 0
@@ -85,29 +86,18 @@ val nokoPrintBlockTelemetryPatch = bytecodePatch(
     execute {
         val hookedMethods = mutableListOf<String>()
 
-        // 1. Stub FirebaseAnalytics.a(String, Bundle)V (logEvent)
+        // 1. Stub FirebaseAnalytics.a(Bundle, String)V (logEvent in 5.28.4)
         Fingerprint(
             definingClass = "Lcom/google/firebase/analytics/FirebaseAnalytics;",
             name = "a",
-            parameters = listOf("Ljava/lang/String;", "Landroid/os/Bundle;"),
+            parameters = listOf("Landroid/os/Bundle;", "Ljava/lang/String;"),
             returnType = "V",
         ).method.apply {
             addInstructions(0, "return-void")
             hookedMethods.add("FirebaseAnalytics.a(logEvent)")
         }
 
-        // 2. Stub FirebaseAnalytics.b(Bundle) default parameters
-        Fingerprint(
-            definingClass = "Lcom/google/firebase/analytics/FirebaseAnalytics;",
-            name = "b",
-            parameters = listOf("Landroid/os/Bundle;"),
-            returnType = "V",
-        ).method.apply {
-            addInstructions(0, "return-void")
-            hookedMethods.add("FirebaseAnalytics.b(setDefaultEventParameters)")
-        }
-
-        // 3. Stub AppMeasurement.logEventInternal
+        // 2. Stub AppMeasurement.logEventInternal
         Fingerprint(
             definingClass = "Lcom/google/android/gms/measurement/AppMeasurement;",
             name = "logEventInternal",
@@ -118,26 +108,59 @@ val nokoPrintBlockTelemetryPatch = bytecodePatch(
             hookedMethods.add("AppMeasurement.logEventInternal")
         }
 
-        // 4. Stub com.nokoprint.App.B(Throwable)V (Crashlytics reporting)
+        // 3. Stub com.nokoprint.App.v(Exception)V (Crashlytics reporting in 5.28.4)
         Fingerprint(
             definingClass = "Lcom/nokoprint/App;",
-            name = "B",
-            parameters = listOf("Ljava/lang/Throwable;"),
+            name = "v",
+            parameters = listOf("Ljava/lang/Exception;"),
             returnType = "V",
         ).method.apply {
             addInstructions(0, "return-void")
-            hookedMethods.add("App.B(crashlyticsReport)")
+            hookedMethods.add("App.v(crashlyticsReport)")
         }
 
-        // 5. Stub com.nokoprint.App.C(Throwable, String)V (Crashlytics reporting)
+        // 4. Stub com.nokoprint.App.w(String, Throwable)V (Crashlytics logging in 5.28.4)
         Fingerprint(
             definingClass = "Lcom/nokoprint/App;",
-            name = "C",
-            parameters = listOf("Ljava/lang/Throwable;", "Ljava/lang/String;"),
+            name = "w",
+            parameters = listOf("Ljava/lang/String;", "Ljava/lang/Throwable;"),
             returnType = "V",
         ).method.apply {
             addInstructions(0, "return-void")
-            hookedMethods.add("App.C(crashlyticsLog)")
+            hookedMethods.add("App.w(crashlyticsLog)")
+        }
+
+        // 5. Stub TikTokBusinessSdk.initializeSdk
+        Fingerprint(
+            definingClass = "Lcom/tiktok/TikTokBusinessSdk;",
+            name = "initializeSdk",
+            parameters = listOf("Lcom/tiktok/TikTokBusinessSdk\$TTConfig;"),
+            returnType = "V",
+        ).method.apply {
+            addInstructions(0, "return-void")
+            hookedMethods.add("TikTokBusinessSdk.initializeSdk")
+        }
+
+        // 6. Stub TikTokBusinessSdk.startTrack
+        Fingerprint(
+            definingClass = "Lcom/tiktok/TikTokBusinessSdk;",
+            name = "startTrack",
+            parameters = emptyList(),
+            returnType = "V",
+        ).method.apply {
+            addInstructions(0, "return-void")
+            hookedMethods.add("TikTokBusinessSdk.startTrack")
+        }
+
+        // 7. Stub zzez.zzL (Measurement signing certificate telemetry reporting)
+        Fingerprint(
+            definingClass = "Lcom/google/android/gms/internal/measurement/zzez;",
+            name = "zzL",
+            parameters = listOf("Landroid/os/Bundle;"),
+            returnType = "V",
+        ).method.apply {
+            addInstructions(0, "return-void")
+            hookedMethods.add("zzez.zzL")
         }
 
         println("[NokoPrint Block Telemetry] Neutralized ${hookedMethods.size} telemetry dispatch methods.")

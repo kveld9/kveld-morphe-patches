@@ -2,7 +2,6 @@ package app.morphe.patches.nokoprint
 
 import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patches.shared.Constants
-import org.w3c.dom.Element
 
 @Suppress("unused")
 val nokoPrintNetworkSecurityHardeningPatch = resourcePatch(

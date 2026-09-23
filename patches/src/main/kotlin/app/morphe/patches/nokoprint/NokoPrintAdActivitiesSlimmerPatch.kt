@@ -7,7 +7,7 @@ import org.w3c.dom.Element
 @Suppress("unused")
 val nokoPrintAdActivitiesSlimmerPatch = resourcePatch(
     name = "NokoPrint Ad Activities Slimmer",
-    description = "Disables over 40 third-party ad mediation activities, internal web browsers, and debuggers registered in AndroidManifest.xml.",
+    description = "Disables over 100 third-party ad mediation activities, internal web browsers, and debuggers registered in AndroidManifest.xml.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_NOKOPRINT)
@@ -35,6 +35,12 @@ val nokoPrintAdActivitiesSlimmerPatch = resourcePatch(
             "net.pubnative.lite.",
             "com.smaato.sdk.",
             "com.google.android.gms.ads.",
+            "com.bytedance.sdk.",
+            "sg.bigo.ads.",
+            "com.ogury.",
+            "com.moloco.sdk.",
+            "com.pubmatic.sdk.",
+            "com.tappx.sdk.",
         )
 
         var disabledCount = 0

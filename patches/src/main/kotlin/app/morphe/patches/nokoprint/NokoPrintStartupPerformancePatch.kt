@@ -28,6 +28,10 @@ val nokoPrintStartupPerformancePatch = resourcePatch(
             "com.smaato.sdk.core.lifecycle.ProcessLifecycleOwnerInitializer",
             "com.appbrain.AppBrainInitProvider",
             "com.huawei.agconnect.core.provider.AGConnectInitializeProvider",
+            "sg.bigo.ads.controller.provider.BigoAdsProvider",
+            "com.vungle.ads.VungleProvider",
+            "com.mbridge.msdk.config.component.status.MBComponentLifecycleProvider",
+            "com.ironsource.lifecycle.LevelPlayActivityLifecycleProvider",
         )
 
         var disabledCount = 0
