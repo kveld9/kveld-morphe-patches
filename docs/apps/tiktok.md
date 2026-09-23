@@ -38,6 +38,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Usability** | **Hide STEM and Community Tabs** | `bytecodePatch` | Removes STEM and Comunidad (Explore / Topics) tabs from the top navigation feed strip. |
 | **Usability** | **Hide Profile Photo Follow Button** | `bytecodePatch` | Hides the plus (+) follow badge on creator profile avatars in the feed and disables its touch interaction. |
 | **Usability** | **Disable Profile Photo LIVE Status** | `bytecodePatch` | Removes pulsing LIVE ring/badge from creator avatars in feed and forces clicks directly to user profile. |
+| **Usability** | **Disable Story Feed Indicators** | `bytecodePatch` | Removes the top-center story drop-down indicator pill (e.g. '1 Story') and creator profile photo story rings from feed videos, ensuring avatar photos remain clean. |
 | **Usability** | **Auto-pause first video** | `bytecodePatch` | Automatically pauses the initial video on startup (frame 0) with center play icon; resumes instantly upon screen tap or feed scroll. |
 | **Privacy** | **Fix Google login** | `bytecodePatch` | Restores Google account sign-in via Web OAuth fallback when GMS rejects modified APK signature. |
 | **Privacy** | **Bypass Mandatory Login** | `bytecodePatch` | Neutralizes mandatory login walls, dynamic regional forced login gates, and guest browsing restrictions. |
@@ -271,4 +272,12 @@ The **`Custom Offline Videos Limit`** patch customizes the maximum video caching
 - **Passive Feed Input Trigger Neutralization**: Hooks `CommentPanelFakeInput.Gt()Z` -> returns `false`, preventing `HorizontalEmojiMiniPanelAssem` from attaching to the passive/feed comment bar prior to keyboard expansion.
 - **ViewModel Model Flag Enforcement**: Hooks `CommentKeyboardModel.getForceDisableExposedEmoji()Z` -> returns `true`, enforcing TikTok's native internal model flag across comment view models and cells.
 - **Internal Experiment Flag Enforcement**: Hooks `PersonalizedEmojiExperiment.LIZ()Z` -> returns `true` (`hideExposeEmoji`), suppressing emoji resource preloading, layout spacing allocation, and telemetry events.
+
+### 10. Disable Story Feed Indicators (`disableStoryFeedIndicatorsPatch`)
+- Removes the top-center story drop-down indicator pill (e.g. "1 Story ▼") and creator profile photo story rings from feed videos, ensuring avatar photos remain permanently clean.
+- **User Story Status Neutralization**: Hooks `User.getStoryStatus()I` -> returns `0`, preventing feed wrappers from detecting active author stories.
+- **Feed Avatar Story Ring & Click Neutralization**: Stubs `FeedAvatarSocialPublishAssem.onViewCreated(View)V`, `FeedAvatarSocialPublishAssem.onBind(Object)V`, and `FeedAvatarSocialPublishAssem.tr(VideoItemParams)V` with `return-void` to prevent inflating/animating the cyan story ring and remove the `CLICK_TAG_FEED_AVATAR_SOCIAL` click interceptor, keeping the avatar clean and routing taps strictly to the creator profile.
+- **Social Publish Distributor**: Hooks `SocPubDistributeServiceImpl.LJII(User)Z` -> returns `false`.
+- **Feed Story Tag Trigger & Predicate Neutralization**: Dynamically locates and hooks the story tag visibility evaluator (`LX/0AZy;->LIZ(Context, Aweme, String)Z`) -> returns `false`, and forces `FeedStoryTagTrigger.Kr()Z` and `FeedStoryTagTriggerV2.Kr()Z` to return `false`.
+- **Story Tag Assem & Canvas Neutralization**: Stubs `FeedStoryTagAssem.Sr(VideoItemParams)V`, `FeedStoryTagAssem.onBind(Object)V`, `FeedStoryTagAssemV2.Sr(VideoItemParams)V`, `FeedStoryTagAssemV2.onBind(Object)V`, and `StoryTag.onDraw(Canvas)V` with `return-void`.
 

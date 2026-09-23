@@ -377,6 +377,21 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
         required_strings=["getForceDisableExposedEmoji"],
         criticality="HIGH",
     ),
+    PatchContract(
+        patch_id="disable_story_feed_indicators",
+        name="Disable Story Feed Indicators",
+        target_type="bytecode",
+        description="Removes the top-center story drop-down indicator pill (e.g. '1 Story') and creator profile photo story rings from feed videos, ensuring avatar photos remain clean.",
+        required_classes=[
+            "Lcom/ss/android/ugc/aweme/profile/model/User;",
+            "Lcom/ss/android/ugc/aweme/feed/assem/avatar/FeedAvatarSocialPublishAssem;",
+            "Lcom/ss/android/ugc/aweme/feed/assem/story/FeedStoryTagTrigger;",
+            "Lcom/ss/android/ugc/aweme/feed/assem/story/FeedStoryTagAssem;",
+            "Lcom/ss/android/ugc/aweme/feed/ui/StoryTag;",
+        ],
+        required_strings=["getStoryStatus"],
+        criticality="HIGH",
+    ),
 ]
 
 

@@ -86,6 +86,17 @@ fun MutableMethod.replaceWithReturnVoid() {
 }
 
 /**
+ * Safely purges try-catch ranges and replaces the entire method body with an integer return value.
+ */
+fun MutableMethod.replaceWithReturnInt(value: Int) {
+    val impl = implementation ?: return
+    clearTryBlocks()
+    ensureRegisterCount(1)
+    removeInstructions(0, impl.instructions.count())
+    addInstructions(0, "const/4 v0, $value\nreturn v0")
+}
+
+/**
  * Safely purges try-catch ranges and replaces the entire method body with a null object return.
  */
 fun MutableMethod.replaceWithReturnNull() {
