@@ -45,9 +45,9 @@ val gboardClipboardEnhancementsPatch = bytecodePatch(
 
     execute {
         var patched = 0
-        val parsedLimit = unpinnedClipLimit?.trim()?.toIntOrNull()?.coerceIn(5, 100) ?: 50
-        val parsedHours = retentionHours?.trim()?.toLongOrNull()?.coerceAtLeast(1L) ?: 24L
-        val parsedColumns = gridColumns?.trim()?.toIntOrNull()?.coerceIn(1, 3) ?: 2
+        val parsedLimit = unpinnedClipLimit?.let { Regex("""\d+""").find(it)?.value?.toIntOrNull() }?.coerceIn(5, 100) ?: 50
+        val parsedHours = retentionHours?.let { Regex("""\d+""").find(it)?.value?.toLongOrNull() }?.coerceAtLeast(1L) ?: 24L
+        val parsedColumns = gridColumns?.let { Regex("""\d+""").find(it)?.value?.toIntOrNull() }?.coerceIn(1, 3) ?: 2
         val retentionMillis = parsedHours * 3600L * 1000L
 
         // 1. Extend SQLite retention TTL & UI query cutoff window
