@@ -14,7 +14,6 @@ private const val ANDROID_XML_NAMESPACE = "http://schemas.android.com/apk/res/an
 
 private val GBOARD_BLOCKED_PERMISSIONS = setOf(
     "android.permission.INTERNET",
-    "android.permission.ACCESS_NETWORK_STATE",
     "android.permission.ACCESS_WIFI_STATE",
     "android.permission.GET_ACCOUNTS",
     "com.google.android.providers.gsf.permission.READ_GSERVICES",
@@ -71,6 +70,8 @@ private fun blockCleartextTraffic(doc: Document) {
     }
 }
 
+private const val STRIP_CONTACTS_KEY = "stripContacts"
+
 private val gboardOfflineManifestResourcePatch = resourcePatch(
     name = "Gboard Offline Manifest Purge",
     description = "Removes network, account syncing, background scheduling, and diagnostic permissions from AndroidManifest.xml.",
@@ -86,7 +87,7 @@ private val gboardOfflineManifestResourcePatch = resourcePatch(
         }
 
         val blocked = GBOARD_BLOCKED_PERMISSIONS.toMutableSet()
-        val stripContactsOpt = gboardOfflineOnlyPatch.options["stripContacts"]?.value as? Boolean
+        val stripContactsOpt = gboardOfflineOnlyPatch.options[STRIP_CONTACTS_KEY]?.value as? Boolean
         if (stripContactsOpt == true) {
             blocked.add("android.permission.READ_CONTACTS")
         }
@@ -112,8 +113,9 @@ val gboardOfflineOnlyPatch: BytecodePatch = bytecodePatch(
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
     dependsOn(gboardOfflineManifestResourcePatch)
 
+    @Suppress("unused")
     val stripContacts by booleanOption(
-        key = "stripContacts",
+        key = STRIP_CONTACTS_KEY,
         title = "Strip Contacts Permission",
         description = "Revokes READ_CONTACTS permission from AndroidManifest.xml for maximum isolation.",
         default = false,
