@@ -54,9 +54,23 @@ If you perform a clean install of Gboard Lite with background sync debloat patch
 | **Disable MDD Background Sync** | `bytecodePatch` + `resourcePatch` | Battery & Debloat | ✅ Yes | Neutralizes Google Mobile Data Download periodic network polling and sync tasks. |
 | **Disable Superpacks Eager Sync** | `bytecodePatch` | Battery & Debloat | ✅ Yes | Prevents background Superpacks language model sync scheduling. |
 | **Disable WorkManager** | `resourcePatch` | Battery & Optimization | ✅ Yes | Neutralizes AndroidX WorkManager background schedulers in `AndroidManifest.xml`. |
+| **Offline Only** | `bytecodePatch` + `resourcePatch` | Privacy & Security | ❌ No | Completely isolates Gboard from network access by purging manifest permissions, disabling foreground sync services, neutralizing HTTP clients (Cronet, OkHttp, Superpacks), and spoofing offline status. |
 | **Universal Slimmers** | `resourcePatch` + `rawResourcePatch` | Optimization | ✅ Yes | `Locale Resource Slimmer`, `DPI Resource Slimmer`, `PNG Asset Optimizer`, and `APK Junk Cleaner`. |
 
 ---
+
+## 🔒 Configurable Options: Offline Only
+
+The **`Offline Only`** patch provides complete network isolation for privacy-focused setups:
+
+| Option | Key | Type | Default | Description |
+| :--- | :--- | :--- | :---: | :--- |
+| **Strip Contacts Permission** | `stripContacts` | Boolean | `false` | When enabled, additionally revokes `android.permission.READ_CONTACTS` from `AndroidManifest.xml` for complete device isolation. |
+
+### Technical Architecture:
+1. **Manifest Purge**: Strips 9 network/tracking permissions (`INTERNET`, `ACCESS_NETWORK_STATE`, `ACCESS_WIFI_STATE`, `GET_ACCOUNTS`, `READ_GSERVICES`, `GET_PACKAGE_SIZE`, `FOREGROUND_SERVICE`, `WAKE_LOCK`, `RECEIVE_BOOT_COMPLETED`), sets `android:usesCleartextTraffic="false"`, and disables network foreground services (`SuperpacksForegroundTaskService`, `SystemForegroundService`).
+2. **Bytecode Neutralization**: Spoofs `DeviceStatusMonitor` to `NO_CONNECTION`, mocks `NetworkInfoNotification` offline predicates, redirects central HTTP clients (Cronet, OkHttp, Superpacks) to immediate `IOException("Offline mode")` exceptions, neutralizes language download queues, and disconnects Glide/WorkManager connectivity listeners.
+
 
 ## ⚙️ Configurable Options: Clipboard Enhancements
 
