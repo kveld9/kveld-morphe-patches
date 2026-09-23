@@ -1,3 +1,31 @@
+## [1.43.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.42.2...v1.43.0) (2026-09-23)
+
+### Bug Fixes
+
+* **brave:** enforce native library extraction in manifest ([#49](https://github.com/kveld9/kveld-morphe-patches/issues/49)) ([476bbdb](https://github.com/kveld9/kveld-morphe-patches/commit/476bbdb3c931666e7913e893d2d3ac2cbad76f66))
+* **shared:** preserve network state by default and bind xml namespace in universal offline patch ([79853fd](https://github.com/kveld9/kveld-morphe-patches/commit/79853fd47cac5f091bb3a9a058e168d7ca233f75))
+* **tiktok:** display offline video counter label before download starts ([#40](https://github.com/kveld9/kveld-morphe-patches/issues/40)) ([48b52f6](https://github.com/kveld9/kveld-morphe-patches/commit/48b52f657250b84206586d79575325ef421b382c))
+* **tiktok:** eliminate manifest resource patch in device privacy guard to preserve launcher icons (closes [#51](https://github.com/kveld9/kveld-morphe-patches/issues/51)) ([bb7eb8b](https://github.com/kveld9/kveld-morphe-patches/commit/bb7eb8bbb29009de8e95d20362474ede73081381))
+* **tiktok:** enforce H.264 stream selection for video downloads and preserve photo mode ([31cb017](https://github.com/kveld9/kveld-morphe-patches/commit/31cb0172793518fa08daa87ca43037b309f1d8b0))
+
+### New Features
+
+* **brave:** support ARMv7a architecture across native patches (closes [#50](https://github.com/kveld9/kveld-morphe-patches/issues/50)) ([d0b4c3c](https://github.com/kveld9/kveld-morphe-patches/commit/d0b4c3c5d9edb5bdcb05ab99495610c732a5afb1))
+* **gboard:** add offline only patch with manifest purge and bytecode neutralization ([371fc3d](https://github.com/kveld9/kveld-morphe-patches/commit/371fc3dbcc38bd0719bcd1c6b9f8344117a1405c))
+* **nokoprint:** implement modular cleanup and optimization patch suite ([29df8d4](https://github.com/kveld9/kveld-morphe-patches/commit/29df8d42b81ec1ac66827e989c860ca88cd0c73b))
+* **shared:** declare NokoPrint target version and compatibility contracts ([31197cd](https://github.com/kveld9/kveld-morphe-patches/commit/31197cd837659cffa78d398cdf4d8f1eb993a49b))
+* **shared:** declare Xiaomi Earbuds target version and compatibility contracts ([7aa8452](https://github.com/kveld9/kveld-morphe-patches/commit/7aa8452cb08c090090df038ab29510a313789522))
+* **shared:** implement universal offline mode patch stripping network permissions ([7c37c44](https://github.com/kveld9/kveld-morphe-patches/commit/7c37c4493acfe7cc410b0c767f66a50163e080bf))
+* **tiktok:** add comment auto-translation patch (closes [#48](https://github.com/kveld9/kveld-morphe-patches/issues/48)) ([20413aa](https://github.com/kveld9/kveld-morphe-patches/commit/20413aafb656bf4c844a84f74828eec0a75649af))
+* **xiaomi:** implement modular privacy, audio, and debloat patch suite for Xiaomi Earbuds ([c9e3a89](https://github.com/kveld9/kveld-morphe-patches/commit/c9e3a89308ac3c08a1dcb512d4e6cfd71f9d1bc1))
+
+### Code Refactoring
+
+* **harness:** apply static audit hardening for elf parsing and readme generator ([81dbb48](https://github.com/kveld9/kveld-morphe-patches/commit/81dbb48b4dd6116d02a30dfc88f4ad0322e6fb24))
+* **scripts:** update target synchronization regexes for tabular layout ([3353a35](https://github.com/kveld9/kveld-morphe-patches/commit/3353a354b7c58341416c8d360f3d911eba7e1445))
+* **shared:** convert universal offline mode options to native boolean toggles ([efa0d7b](https://github.com/kveld9/kveld-morphe-patches/commit/efa0d7b59aaba6f37e3b2090b58e69ec46354eea))
+* **tiktok:** clarify bytecode-only privacy model in device privacy guard description ([641e64d](https://github.com/kveld9/kveld-morphe-patches/commit/641e64d702600db7c7d46602b35612a9324f7697))
+
 ## [1.42.2](https://github.com/kveld9/kveld-morphe-patches/compare/v1.42.1...v1.42.2) (2026-09-21)
 
 ### Bug Fixes
