@@ -29,6 +29,7 @@ Comprehensive technical and configuration guide for **Brave Browser** (`com.brav
 | **Sensor Privacy Guard** | `bytecodePatch` | Privacy & Anti-Fingerprinting | ✅ Yes | Forces `PlatformSensorProvider.hasSensorType -> false` and `PlatformSensor.create -> null`. Neutralizes W3C Generic Sensor APIs. |
 | **Clean Share URL** | `bytecodePatch` | Privacy & Anti-Tracking | ✅ Yes | Hooks Android share intent builder (`Lcch.a`) and clipboard copy (`Clipboard.setText`) to purge tracking parameters (`utm_*`, `fbclid`, `gclid`, etc.). |
 | **Block Brave Telemetry** | `bytecodePatch` + `rawResourcePatch` | Privacy & Telemetry | ✅ Yes | Intercepts `PrefService.e` (P3A, stats, WDP), aborts variations seed HTTP connection, and redirects native endpoints to `0.0.0.0`. |
+| **Suppress In-App Promos & Surveys** | `bytecodePatch` | Debloat & UX | ✅ Yes | Forces `RateEligibilityGate.d -> false`, neutralizes rating survey bottom sheets (`BraveRateDialogFragment`), and drops promotional dialogs (YouTube, ad-free callouts, Brave Ads). |
 | **Locale PAK Slimmer** | `rawResourcePatch` | Storage Reclamation | ✅ Yes | Strips unselected language PAKs from `assets/locales/` (~10.5 MB saved) using zero-crash binary fallback substitution. |
 | **Universal Patches Suite** | Multiple | Optimization & Privacy | Contextual | Compatible with universal slimmers and privacy patches (Telemetry Neutralizer, Native Binary Trimmer, WebP/PNG Optimizers, DPI/Locale Slimmers). See [Universal Patch Reference](../universal-patches.md). |
 
@@ -66,7 +67,15 @@ Comprehensive technical and configuration guide for **Brave Browser** (`com.brav
   - **Variations Connection Abort**: Injects early returns into HTTP loaders fetching experimentation variations seeds.
   - **Native Socket Redirection**: In `libchrome.so`, redirects native telemetry endpoints (`*.bsg.brave.com`, `*.wdp.brave.com`, `usage-ping.brave.com`) to `0.0.0.0`.
 
-### 5. Locale PAK Slimmer (`localePakSlimmerPatch`)
+### 5. Suppress In-App Promos & Surveys (`braveSuppressInAppPromosPatch`)
+- **Objective**: Eliminate intrusive in-app rating survey bottom sheets, Play Store review prompts, and unsolicited marketing promo popups while browsing.
+- **Mechanisms**:
+  - **Rating Eligibility Neutralization**: Forces `RateEligibilityGate.d(Context) -> false`, halting rating dialog triggers in `ChromeTabbedActivity` startup and suppressing promotional rating card insertion into the New Tab / News feed.
+  - **Survey Bottom Sheet Suppressor**: Intercepts `BraveRateDialogFragment.c5`, `BraveAskPlayStoreRatingDialog.c5`, and `BraveRateThanksFeedbackDialog.c5` with immediate `return-void` so dialog fragments never attach or display.
+  - **Promotional Dialog Interceptor**: Intercepts `BraveDialogFragment.c5` to suppress `OpenYtInBraveDialogFragment` and `BraveAdFreeCalloutDialogFragment` popups.
+  - **Brave Ads Onboarding Neutralization**: Forces `BraveAdsSignupDialog.a() -> false` and `BraveAdsSignupDialog.b(Context) -> return-void`.
+
+### 6. Locale PAK Slimmer (`localePakSlimmerPatch`)
 - **Objective**: Strip unselected language binary PAK archives from `assets/locales/` to reclaim **~10.5 MB** of APK space.
 - **Mechanisms**: Replaces stripped `.pak` files with the binary resource table of `en-US.pak` to satisfy Chromium's native C++ `ui::ResourceBundle` loader without triggering fatal assertion aborts.
 
