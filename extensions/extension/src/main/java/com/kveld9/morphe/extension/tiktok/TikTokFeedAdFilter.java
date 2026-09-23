@@ -65,6 +65,16 @@ public final class TikTokFeedAdFilter {
     private static Method followGetRecommendUserMethod;
     private static Field followRecommendUserField;
 
+    private static Method friendsV3GetAwemeMethod;
+    private static Field friendsV3AwemeField;
+    private static Method friendsV3GetRepostItemMethod;
+    private static Field friendsV3RepostItemField;
+    private static Method friendsV3GetRepostedAwemeMethod;
+    private static Field friendsV3RepostedAwemeField;
+
+    private static Method friendsFeedGetAwemeMethod;
+    private static Field friendsFeedAwemeField;
+
     private static final String SHOP_PROMO_MARKER = "placeholder_product_id";
 
     private static final Set<String> TRACKING_PARAMS = new HashSet<>(Arrays.asList(
@@ -183,6 +193,52 @@ public final class TikTokFeedAdFilter {
                     try { followLastViewDataField = followClass.getDeclaredField("lastViewData"); followLastViewDataField.setAccessible(true); } catch (Throwable ignored) {}
                     try { followGetRecommendUserMethod = followClass.getMethod("getRecommendUser"); followGetRecommendUserMethod.setAccessible(true); } catch (Throwable ignored) {}
                     try { followRecommendUserField = followClass.getDeclaredField("recommendUser"); followRecommendUserField.setAccessible(true); } catch (Throwable ignored) {}
+                }
+            } catch (Throwable ignored) {}
+
+            try {
+                ClassLoader loader = awemeClass != null ? awemeClass.getClassLoader() : classLoader;
+                Class<?> friendsV3ModelClass = null;
+                try {
+                    friendsV3ModelClass = loader.loadClass("com.ss.android.ugc.aweme.friendstab.repo.FriendsV3FeedModel");
+                } catch (Throwable t) {
+                    if (classLoader != loader) {
+                        friendsV3ModelClass = classLoader.loadClass("com.ss.android.ugc.aweme.friendstab.repo.FriendsV3FeedModel");
+                    }
+                }
+                if (friendsV3ModelClass != null) {
+                    try { friendsV3GetAwemeMethod = friendsV3ModelClass.getMethod("getAweme"); friendsV3GetAwemeMethod.setAccessible(true); } catch (Throwable ignored) {}
+                    try { friendsV3AwemeField = friendsV3ModelClass.getDeclaredField("aweme"); friendsV3AwemeField.setAccessible(true); } catch (Throwable ignored) {}
+                    try { friendsV3GetRepostItemMethod = friendsV3ModelClass.getMethod("getRepostItem"); friendsV3GetRepostItemMethod.setAccessible(true); } catch (Throwable ignored) {}
+                    try { friendsV3RepostItemField = friendsV3ModelClass.getDeclaredField("repostItem"); friendsV3RepostItemField.setAccessible(true); } catch (Throwable ignored) {}
+                }
+                Class<?> repostClass = null;
+                try {
+                    repostClass = loader.loadClass("com.ss.android.ugc.aweme.friendstab.repo.FriendsV3RepostModel");
+                } catch (Throwable t) {
+                    if (classLoader != loader) {
+                        repostClass = classLoader.loadClass("com.ss.android.ugc.aweme.friendstab.repo.FriendsV3RepostModel");
+                    }
+                }
+                if (repostClass != null) {
+                    try { friendsV3GetRepostedAwemeMethod = repostClass.getMethod("getRepostedAweme"); friendsV3GetRepostedAwemeMethod.setAccessible(true); } catch (Throwable ignored) {}
+                    try { friendsV3RepostedAwemeField = repostClass.getDeclaredField("repostedAweme"); friendsV3RepostedAwemeField.setAccessible(true); } catch (Throwable ignored) {}
+                }
+            } catch (Throwable ignored) {}
+
+            try {
+                ClassLoader loader = awemeClass != null ? awemeClass.getClassLoader() : classLoader;
+                Class<?> friendsFeedClass = null;
+                try {
+                    friendsFeedClass = loader.loadClass("com.ss.android.ugc.aweme.feed.model.friends.FriendsFeed");
+                } catch (Throwable t) {
+                    if (classLoader != loader) {
+                        friendsFeedClass = classLoader.loadClass("com.ss.android.ugc.aweme.feed.model.friends.FriendsFeed");
+                    }
+                }
+                if (friendsFeedClass != null) {
+                    try { friendsFeedGetAwemeMethod = friendsFeedClass.getMethod("getAweme"); friendsFeedGetAwemeMethod.setAccessible(true); } catch (Throwable ignored) {}
+                    try { friendsFeedAwemeField = friendsFeedClass.getDeclaredField("aweme"); friendsFeedAwemeField.setAccessible(true); } catch (Throwable ignored) {}
                 }
             } catch (Throwable ignored) {}
 
@@ -899,6 +955,176 @@ public final class TikTokFeedAdFilter {
                 }
                 if (removed > 0) {
                     Log.i(TAG, "[Feed Bloat Blocker] Pruned " + removed + " non-video bloat card(s) from Following feed.");
+                }
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    private static Object extractAwemeFromFriendsV3FeedModel(Object item) {
+        if (item == null) return null;
+        try {
+            if (friendsV3AwemeField != null) {
+                Object aweme = friendsV3AwemeField.get(item);
+                if (aweme != null) return aweme;
+            }
+            if (friendsV3GetAwemeMethod != null) {
+                Object aweme = friendsV3GetAwemeMethod.invoke(item);
+                if (aweme != null) return aweme;
+            }
+            if (friendsV3RepostItemField != null) {
+                Object repost = friendsV3RepostItemField.get(item);
+                if (repost != null) {
+                    if (friendsV3RepostedAwemeField != null) {
+                        Object aweme = friendsV3RepostedAwemeField.get(repost);
+                        if (aweme != null) return aweme;
+                    }
+                    if (friendsV3GetRepostedAwemeMethod != null) {
+                        Object aweme = friendsV3GetRepostedAwemeMethod.invoke(repost);
+                        if (aweme != null) return aweme;
+                    }
+                }
+            }
+            if (friendsV3GetRepostItemMethod != null) {
+                Object repost = friendsV3GetRepostItemMethod.invoke(item);
+                if (repost != null) {
+                    if (friendsV3RepostedAwemeField != null) {
+                        Object aweme = friendsV3RepostedAwemeField.get(repost);
+                        if (aweme != null) return aweme;
+                    }
+                    if (friendsV3GetRepostedAwemeMethod != null) {
+                        Object aweme = friendsV3GetRepostedAwemeMethod.invoke(repost);
+                        if (aweme != null) return aweme;
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
+        return null;
+    }
+
+    private static Object extractAwemeFromFriendsFeed(Object item) {
+        if (item == null) return null;
+        try {
+            if (friendsFeedAwemeField != null) {
+                Object aweme = friendsFeedAwemeField.get(item);
+                if (aweme != null) return aweme;
+            }
+            if (friendsFeedGetAwemeMethod != null) {
+                Object aweme = friendsFeedGetAwemeMethod.invoke(item);
+                if (aweme != null) return aweme;
+            }
+        } catch (Throwable ignored) {}
+        return null;
+    }
+
+    public static boolean isFriendsV3FeedBloat(Object item) {
+        if (item == null) return false;
+        Object aweme = extractAwemeFromFriendsV3FeedModel(item);
+        if (aweme != null) {
+            return isFeedBloat(aweme);
+        }
+        return false;
+    }
+
+    public static boolean isFriendsFeedBloat(Object item) {
+        if (item == null) return false;
+        Object aweme = extractAwemeFromFriendsFeed(item);
+        if (aweme != null) {
+            return isFeedBloat(aweme);
+        }
+        return false;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static void filterFeedBloatInFriendsV3Feeds(Object listObj) {
+        if (!(listObj instanceof List)) return;
+        List<Object> items = (List<Object>) listObj;
+        if (items.isEmpty()) return;
+
+        synchronized (items) {
+            try {
+                if (!initialized) {
+                    for (Object item : items) {
+                        if (item != null) {
+                            ensureInitialized(item.getClass().getClassLoader());
+                            break;
+                        }
+                    }
+                }
+
+                int removed = 0;
+                Iterator<Object> iterator = items.iterator();
+                while (iterator.hasNext()) {
+                    Object item = iterator.next();
+                    if (isFriendsV3FeedBloat(item)) {
+                        iterator.remove();
+                        removed++;
+                    }
+                }
+                if (removed > 0) {
+                    Log.i(TAG, "[Feed Bloat Blocker] Pruned " + removed + " bloat card(s) from Friends V3 feed.");
+                }
+            } catch (Throwable ignored) {}
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static void filterFeedBloatInFriendsFeedData(Object listObj) {
+        if (!(listObj instanceof List)) return;
+        List<Object> items = (List<Object>) listObj;
+        if (items.isEmpty()) return;
+
+        synchronized (items) {
+            try {
+                if (!initialized) {
+                    for (Object item : items) {
+                        if (item != null) {
+                            ensureInitialized(item.getClass().getClassLoader());
+                            break;
+                        }
+                    }
+                }
+
+                int removed = 0;
+                Iterator<Object> iterator = items.iterator();
+                while (iterator.hasNext()) {
+                    Object item = iterator.next();
+                    if (isFriendsFeedBloat(item)) {
+                        iterator.remove();
+                        removed++;
+                    }
+                }
+                if (removed > 0) {
+                    Log.i(TAG, "[Feed Bloat Blocker] Pruned " + removed + " bloat card(s) from Friends V2 feed.");
+                }
+            } catch (Throwable ignored) {}
+        }
+    }
+
+    public static void collapseRecUserCardCell(Object cellObj) {
+        if (cellObj == null) return;
+        try {
+            Field field = null;
+            Class<?> clazz = cellObj.getClass();
+            while (clazz != null && clazz != Object.class) {
+                try {
+                    field = clazz.getDeclaredField("itemView");
+                    field.setAccessible(true);
+                    break;
+                } catch (Throwable t) {
+                    clazz = clazz.getSuperclass();
+                }
+            }
+            if (field != null) {
+                Object viewObj = field.get(cellObj);
+                if (viewObj instanceof android.view.View) {
+                    android.view.View view = (android.view.View) viewObj;
+                    view.setVisibility(android.view.View.GONE);
+                    android.view.ViewGroup.LayoutParams params = view.getLayoutParams();
+                    if (params != null) {
+                        params.width = 0;
+                        params.height = 0;
+                        view.setLayoutParams(params);
+                    }
                 }
             }
         } catch (Throwable ignored) {}

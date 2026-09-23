@@ -9,7 +9,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
 val feedBloatBlockerPatch = bytecodePatch(
     name = "Feed Bloat & Distraction Blocker",
-    description = "Removes non-video clutter and floating ad widgets from the For You and Following feeds, including Touchpoint Rewards pendants, floating ad stickers, suggested friend cards, mini-games, CapCut/template creation prompts, memories ('On This Day'), surveys, and mini-drama paywalls.",
+    description = "Removes non-video clutter and floating ad widgets from the For You, Following, and Friends feeds, including Touchpoint Rewards pendants, floating ad stickers, suggested friend cards, mini-games, CapCut/template creation prompts, memories ('On This Day'), surveys, and mini-drama paywalls.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
@@ -321,6 +321,124 @@ val feedBloatBlockerPatch = bytecodePatch(
             patched++
         } catch (e: Exception) {
             println("[Feed Bloat Blocker] Aweme.getStandardComponentInfo note: ${e.message}")
+        }
+
+        // 7. Neutralize Friends Feed Bloat, Suggested Friend Cards & Recommended Users
+        try {
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/friendstab/experiment/FriendsV3RecUserConfig;",
+                name = "<init>",
+                parameters = listOf("Z", "Z"),
+                returnType = "V",
+            ).method.addInstructions(
+                0,
+                """
+                    const/4 p1, 0x0
+                    const/4 p2, 0x0
+                """.trimIndent(),
+            )
+            println("[Feed Bloat Blocker] Neutralized FriendsV3RecUserConfig.<init>(ZZ) -> Suggested friend card insertions disabled.")
+            patched++
+        } catch (e: Exception) {
+            println("[Feed Bloat Blocker] FriendsV3RecUserConfig note: ${e.message}")
+        }
+
+        try {
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/friendstab/repo/FriendsV3FeedResponse;",
+                name = "<init>",
+                parameters = listOf(
+                    "Ljava/util/List;",
+                    "Ljava/lang/Boolean;",
+                    "Ljava/lang/String;",
+                    "Ljava/lang/Boolean;",
+                    "Ljava/lang/String;",
+                    "Ljava/lang/String;",
+                    "Lcom/ss/android/ugc/aweme/friendstab/repo/LandingInfo;",
+                    "Ljava/util/List;",
+                    "I",
+                    "I",
+                    "Lcom/ss/android/ugc/aweme/feed/model/LogPbBean;",
+                ),
+                returnType = "V",
+            ).method.addInstructions(
+                0,
+                """
+                    invoke-static {p1}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterFeedBloatInFriendsV3Feeds(Ljava/lang/Object;)V
+                    const/4 p8, 0x0
+                """.trimIndent(),
+            )
+            println("[Feed Bloat Blocker] Hooked FriendsV3FeedResponse.<init> -> Friends V3 feed filtered and suggested friends nulled.")
+            patched++
+        } catch (e: Exception) {
+            println("[Feed Bloat Blocker] FriendsV3FeedResponse note: ${e.message}")
+        }
+
+        try {
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/friendstab/api/FriendsFeedResponse;",
+                name = "<init>",
+                parameters = listOf(
+                    "I",
+                    "Z",
+                    "Ljava/util/List;",
+                    "Ljava/lang/String;",
+                    "Ljava/lang/String;",
+                    "Lcom/ss/android/ugc/aweme/feed/model/LogPbBean;",
+                    "I",
+                    "Ljava/util/List;",
+                    "Ljava/util/List;",
+                    "Ljava/lang/String;",
+                ),
+                returnType = "V",
+            ).method.addInstructions(
+                0,
+                """
+                    invoke-static {p3}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterFeedBloatInFriendsFeedData(Ljava/lang/Object;)V
+                    const/4 p8, 0x0
+                    const/4 p9, 0x0
+                """.trimIndent(),
+            )
+            println("[Feed Bloat Blocker] Hooked FriendsFeedResponse.<init> -> Friends V2 feed filtered and inserted cards nulled.")
+            patched++
+        } catch (e: Exception) {
+            println("[Feed Bloat Blocker] FriendsFeedResponse note: ${e.message}")
+        }
+
+        try {
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/friendstab/ui/feed/cell/component/recuser/FriendsV3HorizontalRecUserCardCell;",
+                name = "onItemViewCreated",
+                returnType = "V",
+            ).method.addInstructions(
+                0,
+                """
+                    invoke-static {p0}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->collapseRecUserCardCell(Ljava/lang/Object;)V
+                    return-void
+                """.trimIndent(),
+            )
+            println("[Feed Bloat Blocker] Collapsed FriendsV3HorizontalRecUserCardCell.onItemViewCreated().")
+            patched++
+        } catch (e: Exception) {
+            println("[Feed Bloat Blocker] FriendsV3HorizontalRecUserCardCell note: ${e.message}")
+        }
+
+        try {
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/friendstab/ui/feed/cell/component/recuser/FriendsV3BottomRecUserListCell;",
+                name = "onItemViewCreated",
+                returnType = "V",
+            ).method.addInstructions(
+                0,
+                """
+                    invoke-static {p0}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->collapseRecUserCardCell(Ljava/lang/Object;)V
+                    return-void
+                """.trimIndent(),
+            )
+            println("[Feed Bloat Blocker] Collapsed FriendsV3BottomRecUserListCell.onItemViewCreated().")
+            patched++
+        } catch (e: Exception) {
+            println("[Feed Bloat Blocker] FriendsV3BottomRecUserListCell note: ${e.message}")
         }
 
         println("[Feed Bloat Blocker] Applied $patched feed bloat blocker hook(s) -> Non-video distractions neutralized.")
