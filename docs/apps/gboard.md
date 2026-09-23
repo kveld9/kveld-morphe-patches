@@ -56,6 +56,7 @@ If you perform a clean install of Gboard Lite with background sync debloat patch
 | **Disable WorkManager** | `resourcePatch` | Battery & Optimization | ✅ Yes | Neutralizes AndroidX WorkManager background schedulers in `AndroidManifest.xml`. |
 | **Enable Bluetooth Microphone** | `bytecodePatch` | Usability & Audio | ✅ Yes | Unlocks Bluetooth microphone recording toggle under Voice typing settings. |
 | **Enable Cursor Trackpad** | `bytecodePatch` | Navigation & Control | ✅ Yes | Enables 2D trackpad cursor navigation and cursor lock mode by holding the spacebar, neutralizing Phenotype flag reset conflicts. |
+| **Enable Dismiss Suggestions Button** | `bytecodePatch` | UI & Usability | ✅ Yes | Adds a close button (X) to dismiss proactive suggestions on the suggestion bar. |
 | **Enable Emoji Scale Setting** | `bytecodePatch` | UI & Appearance | ✅ Yes | Unlocks the emoji size scaling setting in Gboard appearance preferences. |
 | **Enable Grammar Checker** | `bytecodePatch` | Usability & Typing | ✅ Yes | Unlocks Grammar check and Smart Compose / inline suggestions under Text correction preferences. |
 | **Offline Only** | `bytecodePatch` + `resourcePatch` | Privacy & Security | ❌ No | Completely isolates Gboard from network access by purging manifest permissions, disabling foreground sync services, neutralizing HTTP clients (Cronet, OkHttp, Superpacks), and spoofing offline status. |
@@ -129,3 +130,6 @@ The **`Top Toolbar Item Count`** patch allows customizing the maximum number of 
 
 ### 4. Emoji Scale Setting (`Enable Emoji Scale Setting`)
 - **Behavior**: Unlocks the "Tamaño de los emojis" (Emoji size) slider under *Gboard Settings > Preferencias > Apariencia*, enabling granular scaling of emoji keys independently of system font sizing.
+
+### 5. Dismiss Suggestions Button (`Enable Dismiss Suggestions Button`)
+- **Behavior**: Renders a dedicated dismiss button (`X`) on the proactive suggestion bar, allowing quick hiding of proactive recommendations without opening menus.
