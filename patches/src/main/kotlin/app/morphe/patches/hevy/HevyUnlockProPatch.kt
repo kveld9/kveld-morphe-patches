@@ -12,14 +12,23 @@ private const val HERMES_VERSION_HBC96 = 96
 private val TARGET_PRO_PROPERTIES = listOf(
     "isPro",
     "isPaying",
-    "isInGracePeriod",
     "isWithinProOfflineGracePeriod",
+)
+
+// Target properties to force FALSE to suppress payment failure / subscription grace period warnings
+private val TARGET_FALSE_PROPERTIES = listOf(
+    "isInGracePeriod",
 )
 
 // Hermes bytecode instructions:
 //   78 00  LoadConstTrue r0
 //   5C 00  Ret r0
 private val FORCE_TRUE_PROLOGUE = byteArrayOf(0x78.toByte(), 0x00, 0x5C.toByte(), 0x00)
+
+// Hermes bytecode instructions:
+//   79 00  LoadConstFalse r0
+//   5C 00  Ret r0
+private val FORCE_FALSE_PROLOGUE = byteArrayOf(0x79.toByte(), 0x00, 0x5C.toByte(), 0x00)
 
 private data class HermesHeader(
     val fileLength: Int,
@@ -175,26 +184,102 @@ private fun getHermesFunction(
     return HermesFunction(index = index, offset = offset, size = size, name = name)
 }
 
-private fun patchFunctionPrologue(bundleBytes: ByteArray, function: HermesFunction): Boolean {
-    if (function.size < FORCE_TRUE_PROLOGUE.size || function.offset + FORCE_TRUE_PROLOGUE.size > bundleBytes.size) {
+private fun patchFunctionPrologue(
+    bundleBytes: ByteArray,
+    function: HermesFunction,
+    prologue: ByteArray,
+): Boolean {
+    if (function.size < prologue.size || function.offset + prologue.size > bundleBytes.size) {
         return false
     }
 
-    val isAlreadyPatched = FORCE_TRUE_PROLOGUE.indices.all { i ->
-        bundleBytes[function.offset + i] == FORCE_TRUE_PROLOGUE[i]
+    val isAlreadyPatched = prologue.indices.all { i ->
+        bundleBytes[function.offset + i] == prologue[i]
     }
     if (isAlreadyPatched) return false
 
-    FORCE_TRUE_PROLOGUE.forEachIndexed { i, b ->
+    prologue.forEachIndexed { i, b ->
         bundleBytes[function.offset + i] = b
     }
     return true
 }
 
+private fun findNamedFunctionTargets(
+    prop: String,
+    header: HermesHeader,
+    offsets: HermesTableOffsets,
+    buffer: ByteBuffer,
+    bundleBytes: ByteArray,
+    targets: MutableMap<Int, String>,
+) {
+    for (i in 0 until header.functionCount) {
+        val fn = getHermesFunction(buffer, bundleBytes, i, header, offsets)
+        if (fn.name == prop) {
+            targets[i] = "named '$prop'"
+        }
+    }
+}
+
+private fun findGetterClosureTargets(
+    stringId: Int,
+    prop: String,
+    header: HermesHeader,
+    offsets: HermesTableOffsets,
+    buffer: ByteBuffer,
+    bundleBytes: ByteArray,
+    targets: MutableMap<Int, String>,
+) {
+    if (stringId >= 65536) return
+
+    val low = (stringId and 0xFF).toByte()
+    val high = ((stringId ushr 8) and 0xFF).toByte()
+
+    for (i in 0 until header.functionCount) {
+        val fn = getHermesFunction(buffer, bundleBytes, i, header, offsets)
+        val end = fn.offset + fn.size - 13
+        if (end <= fn.offset || fn.offset + fn.size > bundleBytes.size) continue
+
+        for (k in fn.offset..end) {
+            val op = bundleBytes[k]
+            if ((op == 0x73.toByte() || op == 0x7a.toByte()) &&
+                bundleBytes[k + 2] == low &&
+                bundleBytes[k + 3] == high &&
+                bundleBytes[k + 4] == 0x3f.toByte()
+            ) {
+                val funcIdx = (bundleBytes[k + 11].toInt() and 0xFF) or
+                    ((bundleBytes[k + 12].toInt() and 0xFF) shl 8)
+
+                if (funcIdx < header.functionCount) {
+                    val getterFn = getHermesFunction(buffer, bundleBytes, funcIdx, header, offsets)
+                    if (getterFn.name == "get" || getterFn.name.isEmpty()) {
+                        targets[funcIdx] = "getter for '$prop'"
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun resolvePropertyTargets(
+    properties: List<String>,
+    header: HermesHeader,
+    offsets: HermesTableOffsets,
+    buffer: ByteBuffer,
+    bundleBytes: ByteArray,
+): Map<Int, String> {
+    val targets = mutableMapOf<Int, String>()
+    for (prop in properties) {
+        val stringId = findExactStringId(buffer, bundleBytes, prop, header, offsets) ?: continue
+        findNamedFunctionTargets(prop, header, offsets, buffer, bundleBytes, targets)
+        findGetterClosureTargets(stringId, prop, header, offsets, buffer, bundleBytes, targets)
+    }
+    return targets
+}
+
 @Suppress("unused")
 val hevyUnlockProPatch = rawResourcePatch(
     name = "Unlock Pro",
-    description = "Unlocks local Hevy Pro capabilities (unlimited workout routines, routine folders, advanced graphs, and local analytics) by dynamically enabling Pro getters in Hermes Bytecode (HBC96).",
+    description = "Unlocks local Hevy Pro capabilities (unlimited workout routines, routine folders, advanced graphs, and local analytics) by dynamically enabling Pro getters and suppressing grace period payment warnings in Hermes Bytecode (HBC96).",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_HEVY)
@@ -216,71 +301,38 @@ val hevyUnlockProPatch = rawResourcePatch(
         }
 
         val offsets = calculateTableOffsets(header)
-        val targetsToPatch = mutableMapOf<Int, String>()
+        val trueTargets = resolvePropertyTargets(TARGET_PRO_PROPERTIES, header, offsets, buffer, bundleBytes)
+        val falseTargets = resolvePropertyTargets(TARGET_FALSE_PROPERTIES, header, offsets, buffer, bundleBytes)
 
-        for (prop in TARGET_PRO_PROPERTIES) {
-            val stringId = findExactStringId(buffer, bundleBytes, prop, header, offsets) ?: continue
-
-            // 1. Scan for functions named exactly as the property
-            for (i in 0 until header.functionCount) {
-                val fn = getHermesFunction(buffer, bundleBytes, i, header, offsets)
-                if (fn.name == prop) {
-                    targetsToPatch[i] = "named '$prop'"
-                }
-            }
-
-            // 2. Scan for property getter closures in class definitions
-            if (stringId < 65536) {
-                val low = (stringId and 0xFF).toByte()
-                val high = ((stringId ushr 8) and 0xFF).toByte()
-
-                for (i in 0 until header.functionCount) {
-                    val fn = getHermesFunction(buffer, bundleBytes, i, header, offsets)
-                    val end = fn.offset + fn.size - 13
-                    if (end <= fn.offset || fn.offset + fn.size > bundleBytes.size) continue
-
-                    for (k in fn.offset..end) {
-                        val op = bundleBytes[k]
-                        if ((op == 0x73.toByte() || op == 0x7a.toByte()) &&
-                            bundleBytes[k + 2] == low &&
-                            bundleBytes[k + 3] == high &&
-                            bundleBytes[k + 4] == 0x3f.toByte()
-                        ) {
-                            val funcIdx = (bundleBytes[k + 11].toInt() and 0xFF) or
-                                ((bundleBytes[k + 12].toInt() and 0xFF) shl 8)
-
-                            if (funcIdx < header.functionCount) {
-                                val getterFn = getHermesFunction(buffer, bundleBytes, funcIdx, header, offsets)
-                                if (getterFn.name == "get" || getterFn.name.isEmpty()) {
-                                    targetsToPatch[funcIdx] = "getter for '$prop'"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        if (targetsToPatch.isEmpty()) {
+        if (trueTargets.isEmpty() && falseTargets.isEmpty()) {
             println("[Unlock Pro] No Pro getter or function targets found in Hermes bundle - skipping.")
             return@execute
         }
 
         var patchedCount = 0
-        for ((funcIdx, reason) in targetsToPatch) {
+        for ((funcIdx, reason) in trueTargets) {
             val fn = getHermesFunction(buffer, bundleBytes, funcIdx, header, offsets)
-            if (patchFunctionPrologue(bundleBytes, fn)) {
+            if (patchFunctionPrologue(bundleBytes, fn, FORCE_TRUE_PROLOGUE)) {
                 val offsetHex = "0x" + fn.offset.toString(16).uppercase()
                 println("[Unlock Pro] Patched $reason (Func #$funcIdx at $offsetHex, size: ${fn.size}B) with LoadConstTrue.")
                 patchedCount++
             }
         }
 
+        for ((funcIdx, reason) in falseTargets) {
+            val fn = getHermesFunction(buffer, bundleBytes, funcIdx, header, offsets)
+            if (patchFunctionPrologue(bundleBytes, fn, FORCE_FALSE_PROLOGUE)) {
+                val offsetHex = "0x" + fn.offset.toString(16).uppercase()
+                println("[Unlock Pro] Neutralized $reason (Func #$funcIdx at $offsetHex, size: ${fn.size}B) with LoadConstFalse.")
+                patchedCount++
+            }
+        }
+
         if (patchedCount > 0) {
             bundleFile.writeBytes(bundleBytes)
-            println("[Unlock Pro] Successfully unlocked Hevy Pro across $patchedCount functions in assets/index.android.bundle.")
+            println("[Unlock Pro] Successfully updated Hevy Pro across $patchedCount functions in assets/index.android.bundle.")
         } else {
-            println("[Unlock Pro] All ${targetsToPatch.size} Pro targets are already patched.")
+            println("[Unlock Pro] All targets (${trueTargets.size} Pro, ${falseTargets.size} suppressed) are already patched.")
         }
     }
 }

@@ -73,7 +73,7 @@ The **`Block Hevy Telemetry & Trackers`** patch exposes the following optional t
 
 ## 🔓 Pro Capabilities: Client-Side Unlocks vs. Server-Side Limits
 
-The **Unlock Pro** patch operates strictly on client-side JavaScript execution by overriding property getters (`isPro`, `isPaying`, `isInGracePeriod`, `isWithinProOfflineGracePeriod`) within the React Native Hermes Bytecode (`assets/index.android.bundle`).
+The **Unlock Pro** patch operates strictly on client-side JavaScript execution by overriding property getters in the React Native Hermes Bytecode (`assets/index.android.bundle`): enabling `isPro`, `isPaying`, and `isWithinProOfflineGracePeriod` (forced to `true`) while neutralizing `isInGracePeriod` (forced to `false` to suppress subscription payment failure alerts and warning banners).
 
 Because remote database records on `api.hevyapp.com` are not modified, features are divided into client-side gated (fully unlocked) and server-side gated (governed by remote API rules):
 
