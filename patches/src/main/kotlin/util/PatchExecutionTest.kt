@@ -106,12 +106,15 @@ enum class TargetApp(
         appName = "NokoPrint",
         packageName = Constants.NOKOPRINT_PACKAGE_NAME,
         candidateFilenames = listOf(
-            "com.nokoprint_${Constants.NOKOPRINT_TARGET_VERSION}-318_minAPI21(nodpi)_apkmirror.com.apk",
+            "nokoprint_${Constants.NOKOPRINT_TARGET_VERSION}_orig.xapk",
+            "NokoPrint+-+Print+from+Phone_${Constants.NOKOPRINT_TARGET_VERSION}_APKPure.xapk",
+            "com.nokoprint_${Constants.NOKOPRINT_TARGET_VERSION}.xapk",
             "com.nokoprint_${Constants.NOKOPRINT_TARGET_VERSION}.apk",
             "nokoprint_${Constants.NOKOPRINT_TARGET_VERSION}.apk",
+            "nokoprint.xapk",
             "nokoprint.apk",
         ),
-        filePattern = Regex("(?i).*nokoprint.*\\.apk$"),
+        filePattern = Regex("(?i).*nokoprint.*\\.(?:apk|xapk)$"),
         patchDirectoryPart = "nokoprint",
     ),
     XIAOMI_EARBUDS(
@@ -545,10 +548,13 @@ fun main(args: Array<String>) {
                     unsignedApk.delete()
                 }
 
-                if (effectiveApkFile.name.endsWith(".apkm", ignoreCase = true)) {
+                if (effectiveApkFile.name.endsWith(".apkm", ignoreCase = true) || effectiveApkFile.name.endsWith(".xapk", ignoreCase = true)) {
                     java.util.zip.ZipFile(effectiveApkFile).use { apkmZip ->
+                        val baseEntry = apkmZip.getEntry("base.apk")
+                            ?: apkmZip.entries().asSequence().firstOrNull { it.name.endsWith(".apk") && (it.name.contains("base") || it.name.startsWith(targetApp.packageName)) }
+                            ?: apkmZip.entries().asSequence().filter { it.name.endsWith(".apk") }.maxByOrNull { it.size }
                         val splitApkEntries = apkmZip.entries().asSequence()
-                            .filter { it.name.endsWith(".apk", ignoreCase = true) && it.name != "base.apk" }
+                            .filter { it.name.endsWith(".apk", ignoreCase = true) && it.name != baseEntry?.name }
                             .toList()
                         for (splitEntry in splitApkEntries) {
                             val rawSplitFile = File(tempDir, splitEntry.name)
