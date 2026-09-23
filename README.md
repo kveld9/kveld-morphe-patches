@@ -91,7 +91,7 @@
 </details>
 
 <details>
-<summary>TikTok&nbsp;&nbsp;•&nbsp;&nbsp;<b>36 patches</b></summary>
+<summary>TikTok&nbsp;&nbsp;•&nbsp;&nbsp;<b>37 patches</b></summary>
 <br>
 
 **Supported versions:**
@@ -102,6 +102,7 @@
 | Patch | Description | Options |
 |----------|----------------|-----------|
 | **Always show publish date** | Forces video publish/upload date to remain visible in video author information across all feed types. |  |
+| **Auto-pause first video** | Automatically pauses the first video when opening TikTok, allowing background initialization to complete without playback stutter. |  |
 | **Auto-translate comments** | Automatically translates comments into your preferred language using TikTok's native translation engine. |  |
 | **Bypass Mandatory Login** | Neutralizes mandatory login walls, dynamic regional forced login gates, and guest browsing restrictions. |  |
 | **Clean Share URL** | Strips tracking parameters, user IDs, device fingerprints, and marketing tokens from shared TikTok links. |  |
