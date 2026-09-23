@@ -277,15 +277,21 @@ fun main(args: Array<String>) {
     val patchNameFilter = System.getProperty("patchName")?.trim()
     val targetPatches = allPatches.filter { patch ->
         val cp = patch.compatibility
-        cp != null && cp.any { it.packageName == targetApp.packageName } &&
-            (patchNameFilter.isNullOrEmpty() || patch.name.equals(patchNameFilter, ignoreCase = true))
+        val matchesApp = if (cp == null) {
+            !patchNameFilter.isNullOrEmpty() && patch.name.equals(patchNameFilter, ignoreCase = true)
+        } else {
+            cp.any { it.packageName == targetApp.packageName }
+        }
+        val matchesName = patchNameFilter.isNullOrEmpty() || patch.name.equals(patchNameFilter, ignoreCase = true)
+        matchesApp && matchesName
     }.toSet()
 
     require(targetPatches.isNotEmpty()) {
-        "No patches found in ${patchFiles.first().name} for target ${targetApp.appName} (${targetApp.packageName})"
+        "No patches found in ${patchFiles.first().name} for target ${targetApp.appName} (${targetApp.packageName})" +
+            if (!patchNameFilter.isNullOrEmpty()) " matching '$patchNameFilter'" else ""
     }
 
-    println("Loaded ${targetPatches.size} ${targetApp.appName} patches from ${patchFiles.first().name}:")
+    println("Loaded ${targetPatches.size} patch(es) for ${targetApp.appName} from ${patchFiles.first().name}:")
     targetPatches.sortedBy { it.name }.forEach { println("  • ${it.name}") }
 
     val tempDir = File("build/tmp/patcher-test-workspace").absoluteFile
@@ -501,23 +507,43 @@ fun main(args: Array<String>) {
             if (outPath != null) {
                 val outFile = File(outPath).absoluteFile
                 outFile.parentFile?.mkdirs()
-                val unsignedApk = File(tempDir, "unsigned.apk")
+                val unsignedApk = File(outFile.parentFile, "unsigned-work.apk")
                 actualApkFile.copyTo(unsignedApk, overwrite = true)
-                println("\n[PACK] Applying patcher result to APK...")
+                println("\n[PACK] Applying patcher result to APK (source: ${unsignedApk.length()} bytes)...")
                 patcherResult.applyTo(unsignedApk)
+                patcherResult.resources.resourcesApk?.let { resApk ->
+                    java.util.zip.ZipFile(resApk).use { resZip ->
+                        val manifestEntry = resZip.getEntry("AndroidManifest.xml")
+                        if (manifestEntry != null) {
+                            val manifestBytes = resZip.getInputStream(manifestEntry).readBytes()
+                            val uri = java.net.URI.create("jar:" + unsignedApk.toURI())
+                            val env = mapOf("create" to "false")
+                            java.nio.file.FileSystems.newFileSystem(uri, env).use { fs ->
+                                val targetManifest = fs.getPath("AndroidManifest.xml")
+                                java.nio.file.Files.write(targetManifest, manifestBytes)
+                            }
+                            println("[PACK] Synchronized patched AndroidManifest.xml from resources.apk (${manifestBytes.size} bytes)")
+                        }
+                    }
+                }
+                println("[PACK] After applyTo: unsignedApk exists=${unsignedApk.exists()}, size=${unsignedApk.length()} bytes")
                 val keystoreFile = File("build/morphe-debug.keystore").absoluteFile
                 val ksDetails = ApkUtils.KeyStoreDetails(
                     keyStore = keystoreFile,
                     alias = "morphe",
                     password = "morphepassword",
                 )
-                ApkUtils.signApk(
-                    inputApkFile = unsignedApk,
-                    outputApkFile = outFile,
-                    signer = "Morphe",
-                    keyStoreDetails = ksDetails,
-                )
-                println("[DONE] Patched & signed APK saved at: ${outFile.absolutePath}")
+                try {
+                    ApkUtils.signApk(
+                        inputApkFile = unsignedApk,
+                        outputApkFile = outFile,
+                        signer = "Morphe",
+                        keyStoreDetails = ksDetails,
+                    )
+                    println("[DONE] Patched & signed APK saved at: ${outFile.absolutePath}")
+                } finally {
+                    unsignedApk.delete()
+                }
 
                 if (effectiveApkFile.name.endsWith(".apkm", ignoreCase = true)) {
                     java.util.zip.ZipFile(effectiveApkFile).use { apkmZip ->
