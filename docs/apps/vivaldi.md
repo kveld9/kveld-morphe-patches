@@ -38,7 +38,7 @@ Comprehensive technical, architectural, and configuration guide for **Vivaldi Br
 | **Performance & Battery** | **Disable Chromium Tips & Notification Scheduler** | `bytecodePatch` | Neutralizes background tips scheduling alarms (Job ID 105) and tips promo agents. |
 | **APK Slimmer** | **Locale PAK Slimmer** | `rawResourcePatch` | Strips unselected language PAKs from `assets/locales/` (~21.2 MB saved) using zero-crash binary fallback substitution. |
 | **APK Slimmer** | **Resource Slimmer** | `rawResourcePatch` | Empties bundled stock wallpapers, Speed Dial thumbnails, partner favicons, Privacy Sandbox attestations, and hardens defaults (~6.7 MB saved). |
-| **Universal Slimmers** | `resourcePatch` + `rawResourcePatch` | Optimization | `Locale Resource Slimmer`, `DPI Resource Slimmer`, `PNG Asset Optimizer`, and `APK Junk Cleaner`. |
+| **Universal Patches Suite** | Multiple | Optimization & Privacy | Contextual | Compatible with universal slimmers and privacy patches (Telemetry Neutralizer, Native Binary Trimmer, WebP/PNG Optimizers, DPI/Locale Slimmers). See [Universal Patch Reference](../universal-patches.md). |
 
 ---
 

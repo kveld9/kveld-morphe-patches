@@ -30,7 +30,7 @@ Comprehensive technical and configuration guide for **Brave Browser** (`com.brav
 | **Clean Share URL** | `bytecodePatch` | Privacy & Anti-Tracking | ✅ Yes | Hooks Android share intent builder (`Lcch.a`) and clipboard copy (`Clipboard.setText`) to purge tracking parameters (`utm_*`, `fbclid`, `gclid`, etc.). |
 | **Block Brave Telemetry** | `bytecodePatch` + `rawResourcePatch` | Privacy & Telemetry | ✅ Yes | Intercepts `PrefService.e` (P3A, stats, WDP), aborts variations seed HTTP connection, and redirects native endpoints to `0.0.0.0`. |
 | **Locale PAK Slimmer** | `rawResourcePatch` | Storage Reclamation | ✅ Yes | Strips unselected language PAKs from `assets/locales/` (~10.5 MB saved) using zero-crash binary fallback substitution. |
-| **Universal Slimmers** | `resourcePatch` + `rawResourcePatch` | Optimization | ✅ Yes | `Locale Resource Slimmer`, `DPI Resource Slimmer`, `PNG Asset Optimizer`, and `APK Junk Cleaner`. |
+| **Universal Patches Suite** | Multiple | Optimization & Privacy | Contextual | Compatible with universal slimmers and privacy patches (Telemetry Neutralizer, Native Binary Trimmer, WebP/PNG Optimizers, DPI/Locale Slimmers). See [Universal Patch Reference](../universal-patches.md). |
 
 ---
 

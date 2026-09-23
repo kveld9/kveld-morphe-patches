@@ -56,7 +56,7 @@ Hevy's native backend API (`api.hevyapp.com`) authenticates email and password c
 | **Block Hevy Telemetry & Trackers** | `bytecodePatch` + `resourcePatch` | Privacy & Telemetry | ✅ Yes | Disables Sentry native SDK crash reporting, Adjust attribution, Facebook AppEvents, Branch referral links, and WearOS background sync. |
 | **Hevy Battery Optimization** | `resourcePatch` | Battery & Performance | ✅ Yes | Neutralizes background WorkManager alarms, periodic job schedulers, Firebase wakeups, and DataTransport schedulers. |
 | **Hevy Resource Slimmer** | `rawResourcePatch` | Storage Reclamation | ✅ Yes | Strips embedded onboarding MP4 tutorial video and heavy photo editor textures, reducing APK size by ~12 MB. |
-| **Universal Slimmers** | `resourcePatch` + `rawResourcePatch` | Optimization | ✅ Yes | `Locale Resource Slimmer`, `DPI Resource Slimmer`, `PNG Asset Optimizer`, and `APK Junk Cleaner`. |
+| **Universal Patches Suite** | Multiple | Optimization & Privacy | Contextual | Compatible with universal slimmers and privacy patches (Telemetry Neutralizer, Native Binary Trimmer, WebP/PNG Optimizers, DPI/Locale Slimmers). See [Universal Patch Reference](../universal-patches.md). |
 
 ---
 

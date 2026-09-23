@@ -21,6 +21,35 @@ Comprehensive reference for universal optimization and resource slimming patches
 
 ---
 
+## 🛡️ Layered Architecture: Universal vs. App-Specific Patches
+
+Morphe Patches uses a multi-tiered **defense-in-depth** model separating generic packaging-level mitigations from specialized Dalvik runtime hooks:
+
+- **Universal Patches**: Operate at the platform and packaging tier. They transform Android XML resources (`AndroidManifest.xml`), optimize asset payloads (`res/**`, `assets/**`), and inspect standard native architecture directories (`lib/**`).
+- **App-Specific Patches**: Operate at the Dalvik bytecode execution tier (`dexlib2`), companion runtime DEX payloads (`extension.mpe`), and proprietary binary targets (`libchrome.so`). They neutralize internal state machines, spoof hardware checks, and stub obfuscated methods.
+
+### Coexistence & Pipeline Idempotency
+Applying both universal and app-specific patches simultaneously to the same target APK is **completely safe and idempotent**:
+1. **Manifest Operations**: If a universal patch (such as `Universal Telemetry Neutralizer`) and an app-specific patch (such as `NokoPrint Block Telemetry`) both target the same component (e.g., `AppMeasurementService`), assigning `android:enabled="false"` multiple times is idempotent.
+2. **Permission Revocation**: If a permission node is pruned by an earlier patch pass, subsequent passes skip the missing node without throwing exceptions.
+3. **Binary Trimming**: Universal native trimmers zero only standard crash/telemetry libraries without colliding with app-specific bloat trimmers (such as `Brave Native Bloat Slimmer` or `TikTok Core Asset De-bloat`).
+
+### Patch Selection Matrix: Universal Suitability
+
+| Universal Patch | Safe Across Any APK? | Notes & Usage Guidelines |
+| :--- | :---: | :--- |
+| **Universal Telemetry Neutralizer** | ✅ Yes | Strips advertising IDs and disables third-party analytics providers/receivers without impacting app functionality. |
+| **Universal Native Binary Trimmer** | ✅ Yes | Zeroes standard crash reporting and profiler `.so` files (`libcrashlytics`, `libsentry`, `libgwp-asan`). |
+| **Universal WebP Asset Optimizer** | ✅ Yes | Lossless metadata stripping adhering strictly to RFC 9649 / libwebp bitstream specification. |
+| **PNG Asset Optimizer** | ✅ Yes | Lossless RGBA-verified zlib recompression and chunk stripping. |
+| **APK Junk Cleaner** | ✅ Yes | Prunes compiler properties, Kotlin debug tables, and duplicate license files from the APK root. |
+| **DPI Resource Slimmer** | ✅ Yes | Safely retains target device screen density and preserves orphan resources. |
+| **Locale Resource Slimmer** | ✅ Yes | Prunes unselected translation folders from `res/values-*`. |
+| **Background Sync & JobScheduler Purge** | ⚠️ Safe by Default | Keep `stripWakeLock = false` (default) on web browsers (Brave, Vivaldi) to prevent suspending background file downloads when the screen turns off. |
+| **Universal Offline Mode** | ⚠️ Contextual | **Never apply to web browsers (Brave, Vivaldi) or streaming media apps (TikTok)**, as it halts socket creation at the OS kernel level (`AID_INET`). For Gboard Lite and Xiaomi Earbuds, pair with their companion app-specific offline patches for graceful timeout handling. |
+
+---
+
 ## 1. Locale PAK Slimmer (`localePakSlimmerPatch`)
 
 The **`Locale PAK Slimmer`** patch strips unneeded language resource PAKs from `assets/locales/` in Chromium-based browsers (Brave, Vivaldi) to reclaim substantial APK storage (**~10.5 MB in Brave** and **~21.2 MB in Vivaldi**).
@@ -181,7 +210,13 @@ The **`Universal Offline Mode`** patch isolates any application from the network
 > [!TIP]
 > ### Universal vs. App-Specific Offline Patches
 > - **`Universal Offline Mode`**: Operates at the Android manifest level (`AndroidManifest.xml`) by revoking `INTERNET` and enforcing `usesCleartextTraffic="false"`. It provides kernel-level socket blocking across any standard application (such as NokoPrint, Hevy, or custom tools).
-> - **App-Specific Offline Patches**: Applications managing physical hardware or aggressive background cloud sync (such as `Xiaomi Earbuds Offline Only`) provide companion Dalvik bytecode patches. Those specialized patches hook internal network listeners and cloud managers so local Bluetooth controls respond immediately without waiting for network timeout loops or displaying infinite loading spinners.
+> - **App-Specific Companion Patches**: Applications managing local hardware or maintaining internal network state machines provide companion Dalvik bytecode patches that should be applied alongside `Universal Offline Mode`:
+>   - **`Xiaomi Earbuds Offline Only`**: Hooks `NetworkExtKt.isNetworkAvailable() -> false` and network predicates so local Bluetooth controls respond instantly without waiting for cloud timeout loops or hanging on infinite loading spinners.
+>   - **`Gboard Offline Only`**: Spoofs `DeviceStatusMonitor` to `NO_CONNECTION` and forces HTTP clients (`Cronet`, `OkHttp3`, `Superpacks`) to immediately fail with graceful `IOException("Offline mode")` rather than raw socket permission errors, eliminating download queue retry storms and UI latency.
+
+> [!WARNING]
+> ### Do Not Apply to Browsers or Streaming Apps
+> Never enable **`Universal Offline Mode`** on applications that inherently require network access, such as web browsers (**Brave**, **Vivaldi**) or streaming platforms (**TikTok**). Revoking `android.permission.INTERNET` causes the Linux kernel to omit the `AID_INET` supplementary group at fork time, causing all web page navigation and video buffering to fail immediately at the OS level.
 
 ### Configuration in Morphe Manager
 
@@ -283,6 +318,6 @@ The **`Background Sync & JobScheduler Purge`** patch stops unneeded background w
 - **Strip RECEIVE_BOOT_COMPLETED Permission (`stripBootPermission`)**: Removes `android.permission.RECEIVE_BOOT_COMPLETED` and HTC/OEM quickboot permissions from `AndroidManifest.xml` (Toggle, default: `true`).
 - **Disable Boot & Package Receivers (`disableBootReceivers`)**: Disables broadcast receivers registered for device startup, reboot, and app replacement events (Toggle, default: `true`).
 - **Disable WorkManager & Job Schedulers (`disableWorkManager`)**: Disables WorkManager background services and constraint-checking broadcast receivers (Toggle, default: `true`).
-- **Strip WAKE_LOCK Permission (`stripWakeLock`)**: Removes `android.permission.WAKE_LOCK` from `AndroidManifest.xml` (Toggle, default: `false`). *Keep disabled if the target application requires wake locks for continuous audio playback, video recording, or foreground navigation.*
+- **Strip WAKE_LOCK Permission (`stripWakeLock`)**: Removes `android.permission.WAKE_LOCK` from `AndroidManifest.xml` (Toggle, default: `false`). *Keep disabled if the target application requires wake locks for continuous audio playback, video recording, screen-off background downloads (Brave, Vivaldi), or foreground navigation.*
 
 

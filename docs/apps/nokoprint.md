@@ -29,7 +29,7 @@ Comprehensive technical, architecture, and patch guide for **NokoPrint - WiFi, B
 | **NokoPrint Multi-Store Debridger** | `resourcePatch` | Debloat & Performance | ✅ Yes | Disables orphan billing activities, services, and permissions for alternative OEM stores (Huawei HMS, Xiaomi, Samsung, CafeBazaar, OneStore). |
 | **NokoPrint Network Security Hardening** | `resourcePatch` | Security & Network | ✅ Yes | Enforces HTTPS encryption for driver downloads and backend communication while preserving cleartext HTTP traffic for local LAN printers. |
 | **NokoPrint Startup Performance Optimizer** | `resourcePatch` | Performance & Startup | ✅ Yes | Disables non-essential ad mediation and tracking ContentProviders that auto-initialize before `Application.onCreate`. |
-| **Universal Slimmers** | `resourcePatch` + `rawResourcePatch` | Optimization | ✅ Yes | `Locale Resource Slimmer`, `DPI Resource Slimmer`, `PNG Asset Optimizer`, and `APK Junk Cleaner`. |
+| **Universal Patches Suite** | Multiple | Optimization & Privacy | Contextual | Compatible with universal slimmers and privacy patches (Telemetry Neutralizer, Native Binary Trimmer, WebP/PNG Optimizers, DPI/Locale Slimmers, Offline Mode). See [Universal Patch Reference](../universal-patches.md). |
 
 ---
 
