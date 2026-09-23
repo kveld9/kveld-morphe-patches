@@ -54,6 +54,7 @@ If you perform a clean install of Gboard Lite with background sync debloat patch
 | **Disable MDD Background Sync** | `bytecodePatch` + `resourcePatch` | Battery & Debloat | ✅ Yes | Neutralizes Google Mobile Data Download periodic network polling and sync tasks. |
 | **Disable Superpacks Eager Sync** | `bytecodePatch` | Battery & Debloat | ✅ Yes | Prevents background Superpacks language model sync scheduling. |
 | **Disable WorkManager** | `resourcePatch` | Battery & Optimization | ✅ Yes | Neutralizes AndroidX WorkManager background schedulers in `AndroidManifest.xml`. |
+| **Enable Cursor Trackpad** | `bytecodePatch` | Navigation & Control | ✅ Yes | Enables 2D trackpad cursor navigation and cursor lock mode by holding the spacebar, neutralizing Phenotype flag reset conflicts. |
 | **Offline Only** | `bytecodePatch` + `resourcePatch` | Privacy & Security | ❌ No | Completely isolates Gboard from network access by purging manifest permissions, disabling foreground sync services, neutralizing HTTP clients (Cronet, OkHttp, Superpacks), and spoofing offline status. |
 | **Phenotype Flag Resilience** | `bytecodePatch` | Stability & Resilience | ✅ Yes | Neutralizes Phenotype flag registration conflicts to allow runtime flag overrides without crashes. |
 | **Universal Slimmers** | `resourcePatch` + `rawResourcePatch` | Optimization | ✅ Yes | `Locale Resource Slimmer`, `DPI Resource Slimmer`, `PNG Asset Optimizer`, and `APK Junk Cleaner`. |
@@ -96,3 +97,11 @@ The **`Clipboard Enhancements`** patch modernizes Gboard Lite's local clipboard 
 
 3. **Custom Grid Span (`ClipboardKeyboard->b()I`)**:
    - Overrides the `StaggeredGridLayoutManager` span count to render 1, 2, or 3 columns cleanly across phones, foldables, and tablets.
+
+---
+
+## 🚀 Productivity & Usability Unlocks
+
+### 1. Cursor Trackpad Mode (`Enable Cursor Trackpad`)
+- **Behavior**: Long-pressing and swiping across the spacebar enters full 2D cursor navigation mode (moving horizontally and vertically) with haptic feedback. Holding until locked enters sticky cursor mode.
+- **Phenotype Resilience**: Neutralizes internal Google Phenotype flag assertions (`svl.n`) that previously triggered `IllegalStateException: Resetting default value is disallowed` when XML resource defaults conflicted with patched compile-time defaults.
