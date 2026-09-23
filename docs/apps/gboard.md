@@ -58,6 +58,7 @@ If you perform a clean install of Gboard Lite with background sync debloat patch
 | **Enable Cursor Trackpad** | `bytecodePatch` | Navigation & Control | ✅ Yes | Enables 2D trackpad cursor navigation and cursor lock mode by holding the spacebar, neutralizing Phenotype flag reset conflicts. |
 | **Offline Only** | `bytecodePatch` + `resourcePatch` | Privacy & Security | ❌ No | Completely isolates Gboard from network access by purging manifest permissions, disabling foreground sync services, neutralizing HTTP clients (Cronet, OkHttp, Superpacks), and spoofing offline status. |
 | **Phenotype Flag Resilience** | `bytecodePatch` | Stability & Resilience | ✅ Yes | Neutralizes Phenotype flag registration conflicts to allow runtime flag overrides without crashes. |
+| **Top Toolbar Item Count** | `bytecodePatch` | UI & Customization | ✅ Yes | Expands and customizes the maximum number of access point icons displayed directly on the top toolbar (default: 5, range: 4..8). |
 | **Universal Slimmers** | `resourcePatch` + `rawResourcePatch` | Optimization | ✅ Yes | `Locale Resource Slimmer`, `DPI Resource Slimmer`, `PNG Asset Optimizer`, and `APK Junk Cleaner`. |
 
 ---
@@ -98,6 +99,16 @@ The **`Clipboard Enhancements`** patch modernizes Gboard Lite's local clipboard 
 
 3. **Custom Grid Span (`ClipboardKeyboard->b()I`)**:
    - Overrides the `StaggeredGridLayoutManager` span count to render 1, 2, or 3 columns cleanly across phones, foldables, and tablets.
+
+---
+
+## 🎛️ Configurable Options: Top Toolbar Item Count
+
+The **`Top Toolbar Item Count`** patch allows customizing the maximum number of access point icons displayed directly in Gboard's top toolbar:
+
+| Option | Key | Type | Default | Range / Format | Description |
+| :--- | :--- | :--- | :---: | :--- | :--- |
+| **Toolbar item count** | `itemCount` | String | `5` | `4` to `8` | Maximum number of access point icons displayed on the top toolbar without collapsing into the overflow menu. |
 
 ---
 
