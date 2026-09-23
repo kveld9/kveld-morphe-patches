@@ -50,17 +50,30 @@ If you perform a clean install of Gboard Lite with background sync debloat patch
 
 | Patch Name | Type | Category | Default | Primary Mechanism |
 | :--- | :--- | :--- | :---: | :--- |
+| **Add AMOLED Theme** | `bytecodePatch` + `resourcePatch` | UI & Appearance | ✅ Yes | Adds a selectable Pure Black AMOLED theme using Gboard's native color_black theme package, without replacing standard themes. |
+| **Allow Modified APK** | `bytecodePatch` | Security & Integrity | ✅ Yes | Bypasses internal signature check to allow custom APK execution. |
+| **Block Telemetry** | `bytecodePatch` | Privacy & Security | ✅ Yes | Disables background metrics dispatch, event logging, daily pings, and crash reporting. |
 | **Clipboard Enhancements** | `bytecodePatch` | Usability & Storage | ✅ Yes | Removes hardcoded 1-hour TTL and 5-clip UI throttling, extending retention up to user-configured hours/items. |
-| **Disable MDD Background Sync** | `bytecodePatch` + `resourcePatch` | Battery & Debloat | ✅ Yes | Neutralizes Google Mobile Data Download periodic network polling and sync tasks. |
-| **Disable Superpacks Eager Sync** | `bytecodePatch` | Battery & Debloat | ✅ Yes | Prevents background Superpacks language model sync scheduling. |
-| **Disable WorkManager** | `resourcePatch` | Battery & Optimization | ✅ Yes | Neutralizes AndroidX WorkManager background schedulers in `AndroidManifest.xml`. |
+| **Clone Gboard** | `bytecodePatch` + `resourcePatch` | Utility & Modding | ✅ Yes | Appends a custom suffix to the package name to allow installing Gboard alongside the original application. |
+| **Disable Diagnostics** | `bytecodePatch` | Privacy & Telemetry | ✅ Yes | Disables Google AppDoctor diagnostic and recovery telemetry. |
+| **Disable Google Primes** | `bytecodePatch` | Battery & Debloat | ✅ Yes | Neutralizes Google Primes performance profiling, jank monitoring, native crash sidecars, and background telemetry threads. |
+| **Disable MDD Background Sync** | `bytecodePatch` + `resourcePatch` | Battery & Debloat | ❌ No | Neutralizes Mobile Data Download (MDD) periodic background sync and prefetch tasks (opt-in to preserve initial dictionary downloads). |
+| **Disable Remote Configuration** | `bytecodePatch` | Privacy & Stability | ✅ Yes | Disables periodic remote experiment flag synchronization and background updates. |
+| **Disable Superpacks Eager Sync** | `bytecodePatch` | Battery & Debloat | ❌ No | Neutralizes eager background Superpacks synchronization during application startup (opt-in to preserve initial dictionary downloads). |
+| **Disable Tenor Share Tracking** | `bytecodePatch` | Privacy & Telemetry | ✅ Yes | Disables Tenor GIF selection and share tracking telemetry. |
+| **Disable WorkManager** | `resourcePatch` | Battery & Optimization | ❌ No | Neutralizes AndroidX WorkManager background schedulers in `AndroidManifest.xml` (opt-in to preserve initial dictionary downloads). |
+| **Enable Access Points Menu Redesign** | `bytecodePatch` | UI & Appearance | ✅ Yes | Enables the redesigned access points menu bar and customization panel (Panel V2). |
 | **Enable Bluetooth Microphone** | `bytecodePatch` | Usability & Audio | ✅ Yes | Unlocks Bluetooth microphone recording toggle under Voice typing settings. |
 | **Enable Cursor Trackpad** | `bytecodePatch` | Navigation & Control | ✅ Yes | Enables 2D trackpad cursor navigation and cursor lock mode by holding the spacebar, neutralizing Phenotype flag reset conflicts. |
 | **Enable Dismiss Suggestions Button** | `bytecodePatch` | UI & Usability | ✅ Yes | Adds a close button (X) to dismiss proactive suggestions on the suggestion bar. |
 | **Enable Emoji Scale Setting** | `bytecodePatch` | UI & Appearance | ✅ Yes | Unlocks the emoji size scaling setting in Gboard appearance preferences. |
 | **Enable Grammar Checker** | `bytecodePatch` | Usability & Typing | ✅ Yes | Unlocks Grammar check and Smart Compose / inline suggestions under Text correction preferences. |
+| **Enable Key Shape Selection** | `bytecodePatch` | UI & Appearance | ✅ Yes | Enables the key border shape selection UI (Default, Semi-rounded, Round) in theme customization. |
+| **Force Incognito Mode** | `bytecodePatch` | Privacy & Security | ❌ No | Forces Gboard to always operate in incognito mode (disabling personalized learning and persistent input logging). |
+| **Hardened Intent Security** | `bytecodePatch` | Security & Integrity | ✅ Yes | Enables Gboard internal external intent protection against unauthorized intent hijacking. |
 | **Offline Only** | `bytecodePatch` + `resourcePatch` | Privacy & Security | ❌ No | Completely isolates Gboard from network access by purging manifest permissions, disabling foreground sync services, neutralizing HTTP clients (Cronet, OkHttp, Superpacks), and spoofing offline status. |
 | **Phenotype Flag Resilience** | `bytecodePatch` | Stability & Resilience | ✅ Yes | Neutralizes Phenotype flag registration conflicts to allow runtime flag overrides without crashes. |
+| **Resource Slimmer** | `bytecodePatch` | Optimization | ✅ Yes | Strips embedded third-party license text, onboarding tutorial Lottie animations, promotional GIFs, and APK root metadata/junk files. |
 | **Top Toolbar Item Count** | `bytecodePatch` | UI & Customization | ✅ Yes | Expands and customizes the maximum number of access point icons displayed directly on the top toolbar (default: 5, range: 4..8). |
 | **Universal Slimmers** | `resourcePatch` + `rawResourcePatch` | Optimization | ✅ Yes | `Locale Resource Slimmer`, `DPI Resource Slimmer`, `PNG Asset Optimizer`, and `APK Junk Cleaner`. |
 
