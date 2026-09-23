@@ -22,12 +22,20 @@ Automated semantic releases depend on commit messages adhering strictly to the c
 
 ### Mandatory Atomic Commits Policy
 
-Never squash or bundle unrelated changes across test harnesses, patch suites, cross-compatibility bridges, and documentation into a single monolithic commit. Every task must produce discrete, atomic commits:
+Never squash or bundle unrelated changes across test harnesses, patch suites, cross-compatibility bridges, and documentation into a single monolithic commit. Every patch and task must produce discrete, atomic commits:
 
-1. **Tooling & Test Harness** (`test(harness): ...` or `refactor(harness): ...`): Isolate test runner improvements from product patch logic.
-2. **App Patch Core** (`feat(<app>): ...` or `fix(<app>): ...`): Commit per target application or distinct functional feature.
-3. **Cross-Compatibility & Shared Contracts** (`feat(patches): ...` or `feat(shared): ...`): Isolate shared compatibility bindings across apps.
-4. **Technical Documentation** (`docs(<app>): ...` or `docs: ...`): Commit documentation and catalog updates independently from bytecode/native code changes.
+1. **Single Commit per Patch (New or Updated)** (`feat(<target>): ...` or `fix(<target>): ...`):
+   Every new patch or patch update MUST be committed in a single, autonomous commit containing both the patch implementation (Kotlin/Smali/resources/ELF) AND its accompanying documentation entries (README.md, app-specific docs).
+2. **Strict Prohibition of Documentation Batching & Multi-Patch Grouping**:
+   - Never split a patch's code and documentation into separate commits during patch creation or updates.
+   - Never bundle multiple distinct patches together into a single commit.
+   - Under NO circumstances should documentation from multiple distinct patches be grouped or batched into a collective `docs:` commit.
+3. **Tooling & Test Harness** (`test(harness): ...` or `refactor(harness): ...`):
+   Isolate test runner, automation, and harness improvements from product patch logic.
+4. **Cross-Compatibility & Shared Contracts** (`feat(patches): ...` or `feat(shared): ...`):
+   Isolate shared compatibility bindings across apps when not part of an individual patch unit.
+5. **Standalone Documentation** (`docs(<app>): ...` or `docs: ...`):
+   Strictly reserved for documentation-only updates unrelated to patch creation or modification (e.g. typo fixes, architectural guides, standalone FAQ edits).
 
 ---
 

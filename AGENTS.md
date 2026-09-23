@@ -169,11 +169,15 @@ For non-trivial logic, Smali hooks, native ARM64 patching (`libchrome.so`), or s
     - Under no circumstances should emojis or unicode pictographs be used anywhere in codebase source files, including Kotlin, Java, Python, Smali, Bash/Shell scripts, Gradle build files, configuration files, test files, diagnostic telemetry, or CLI/runtime logs.
     - All code, logs, comments, and console outputs MUST strictly use clean, standard ASCII / plain-text formatting (e.g. `[INFO]`, `[WARN]`, `[PASS]`, `[FAIL]`, `[AUDIT]`, `[BUILD]`). Emojis are tolerated exclusively in end-user documentation (such as `README.md`) if already present, but are strictly prohibited in codebase implementation files and tooling.
 14. **Mandatory Atomic Commits Policy**:
-    - Never bundle unrelated changes across testing infrastructure, app patches, shared compatibility, and documentation into a single monolithic commit. Changes must be committed in distinct, atomic units:
+    - Every new patch or patch update MUST be contained within a single atomic commit (`feat(<target>): ...` or `fix(<target>): ...`). That single commit MUST encapsulate both the patch implementation code (Kotlin, Smali, resources, ELF) AND its accompanying documentation entries (such as in `README.md` or app-specific docs).
+    - **Strict Prohibition of Multi-Patch Grouping & Documentation Batching**:
+      a) Never separate patch implementation and patch documentation into separate commits during patch creation or updates.
+      b) Never bundle multiple patches together into a single commit.
+      c) Under NO circumstances should documentation for multiple distinct patches be grouped or batched into a collective `docs:` commit. Each patch is an autonomous unit: 1 patch = 1 single commit.
+    - **Standalone Commits Scope**:
       a) **Tooling & Test Harness** (`test(harness): ...` or `refactor(harness): ...`): Must be isolated from patch logic.
-      b) **Feature & Patch Core** (`feat(<app>): ...` or `fix(<app>): ...`): Committed per target app or cohesive functional domain.
-      c) **Cross-Compatibility & Shared Contracts** (`feat(patches): ...` or `feat(shared): ...`): Isolated when bridging features across apps.
-      d) **Technical Documentation** (`docs(<app>): ...` or `docs: ...`): Committed independently from code changes.
+      b) **Cross-Compatibility & Shared Contracts** (`feat(patches): ...` or `feat(shared): ...`): Isolated when bridging shared features across apps outside an individual patch unit.
+      c) **Standalone Technical Documentation** (`docs(<app>): ...` or `docs: ...`): Strictly reserved for documentation-only changes that are NOT part of a patch creation or update (e.g. typos, global architecture notes, general README updates).
     - Each commit must adhere strictly to Conventional Commits to ensure clean `@semantic-release` changelog generation and bisectability.
 15. **Strict No-PR Policy (Direct Repository Workflow)**:
     - This repository and maintainer DO NOT work with Pull Requests (PRs). Work is committed directly or managed locally without PRs.
