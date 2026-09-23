@@ -5,6 +5,7 @@ import app.morphe.patcher.patch.stringOption
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 
+private const val ANDROID_XML_NAMESPACE = "http://schemas.android.com/apk/res/android"
 private const val PERMISSION_INTERNET = "android.permission.INTERNET"
 
 private val NETWORK_STATE_PERMISSIONS = setOf(
@@ -53,7 +54,7 @@ private fun buildBlockedPermissions(
 private fun getPermissionName(element: Element): String {
     val name = element.getAttribute("android:name")
     if (name.isNotBlank()) return name.trim()
-    val nameNs = element.getAttributeNS("http://schemas.android.com/apk/res/android", "name")
+    val nameNs = element.getAttributeNS(ANDROID_XML_NAMESPACE, "name")
     if (nameNs.isNotBlank()) return nameNs.trim()
     return element.getAttribute("name").trim()
 }
@@ -94,12 +95,12 @@ private fun enforceCleartextBlock(doc: Document): Boolean {
 
     val appElement = appNodes.item(0) as? Element ?: return false
     val currentSetting = appElement.getAttribute("android:usesCleartextTraffic").trim()
-    val currentSettingNs = appElement.getAttributeNS("http://schemas.android.com/apk/res/android", "usesCleartextTraffic").trim()
+    val currentSettingNs = appElement.getAttributeNS(ANDROID_XML_NAMESPACE, "usesCleartextTraffic").trim()
     if (currentSetting.equals("false", ignoreCase = true) || currentSettingNs.equals("false", ignoreCase = true)) {
         return false
     }
 
-    appElement.setAttribute("android:usesCleartextTraffic", "false")
+    appElement.setAttributeNS(ANDROID_XML_NAMESPACE, "android:usesCleartextTraffic", "false")
     return true
 }
 
@@ -113,8 +114,8 @@ val universalOfflinePatch = resourcePatch(
     val stripNetworkState by stringOption(
         key = "stripNetworkState",
         title = "Strip Network State Permissions",
-        description = "Also remove ACCESS_NETWORK_STATE and ACCESS_WIFI_STATE permissions. If false, network status queries remain permitted to prevent SecurityException crashes in apps that check connection state without error handling.",
-        default = "true",
+        description = "Also remove ACCESS_NETWORK_STATE and ACCESS_WIFI_STATE permissions. Default is false to prevent SecurityException crashes in apps that query network status without error handling.",
+        default = "false",
         required = false,
     )
 
@@ -157,7 +158,7 @@ val universalOfflinePatch = resourcePatch(
             return@execute
         }
 
-        val removeNetworkState = isOptionEnabled(stripNetworkState, defaultVal = true)
+        val removeNetworkState = isOptionEnabled(stripNetworkState, defaultVal = false)
         val removeWifiControls = isOptionEnabled(stripWifiControls, defaultVal = true)
         val removePush = isOptionEnabled(stripPush, defaultVal = false)
         val removeGoogleServices = isOptionEnabled(stripGoogleServices, defaultVal = false)
@@ -182,6 +183,11 @@ val universalOfflinePatch = resourcePatch(
 
         if (removedList.isEmpty() && !cleartextBlocked) {
             println("[Universal Offline Mode] No target network permissions found in AndroidManifest.xml (already offline).")
+            return@execute
+        }
+
+        if (removedList.isEmpty()) {
+            println("[Universal Offline Mode] Blocked cleartext HTTP traffic (0 network permissions present).")
             return@execute
         }
 
