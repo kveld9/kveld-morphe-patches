@@ -176,7 +176,7 @@ The **`Universal Offline Mode`** patch isolates any application from the network
 
 ### Configuration in Morphe Manager
 
-- **Strip Network State Permissions (`stripNetworkState`)**: Removes `ACCESS_NETWORK_STATE` and `ACCESS_WIFI_STATE` (default: `true`). If an app crashes with `SecurityException` due to unhandled connectivity checks, set to `false` to permit status queries while still blocking socket communication.
+- **Strip Network State Permissions (`stripNetworkState`)**: Removes `ACCESS_NETWORK_STATE` and `ACCESS_WIFI_STATE` (default: `false`). Keeps network queries permitted by default to prevent runtime `SecurityException` crashes in apps that check connection state without error handling, while socket creation remains blocked via `INTERNET` removal. Set to `true` for strict manifest permission elimination.
 - **Strip Wi-Fi Control Permissions (`stripWifiControls`)**: Removes `CHANGE_NETWORK_STATE`, `CHANGE_WIFI_STATE`, `CHANGE_WIFI_MULTICAST_STATE`, and `NEARBY_WIFI_DEVICES` (default: `true`).
 - **Strip Push Notification Permissions (`stripPush`)**: Removes `com.google.android.c2dm.permission.RECEIVE` (default: `false`).
 - **Strip Google Services Sync Permissions (`stripGoogleServices`)**: Removes `com.google.android.providers.gsf.permission.READ_GSERVICES` and `android.permission.GET_ACCOUNTS` (default: `false`).
