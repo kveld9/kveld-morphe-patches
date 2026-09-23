@@ -174,6 +174,11 @@ The **`Universal Offline Mode`** patch isolates any application from the network
 > ### Kernel-Level Network Enforcement
 > In the Android security architecture, removing `android.permission.INTERNET` prevents the Linux kernel from assigning the `AID_INET` supplementary group to the application process at fork time. As a result, all network socket syscalls (`socket()`, `connect()`, `bind()`) fail with `EACCES` (Permission Denied) at the OS level. No bytecode or native library (`.so`) can bypass this barrier.
 
+> [!TIP]
+> ### Universal vs. App-Specific Offline Patches
+> - **`Universal Offline Mode`**: Operates at the Android manifest level (`AndroidManifest.xml`) by revoking `INTERNET` and enforcing `usesCleartextTraffic="false"`. It provides kernel-level socket blocking across any standard application (such as NokoPrint, Hevy, or custom tools).
+> - **App-Specific Offline Patches**: Applications managing physical hardware or aggressive background cloud sync (such as `Xiaomi Earbuds Offline Only`) provide companion Dalvik bytecode patches. Those specialized patches hook internal network listeners and cloud managers so local Bluetooth controls respond immediately without waiting for network timeout loops or displaying infinite loading spinners.
+
 ### Configuration in Morphe Manager
 
 All options in **`Universal Offline Mode`** are declared as native boolean switches (toggles) in Morphe Manager to avoid manual text entry or typing errors:
