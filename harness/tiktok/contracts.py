@@ -363,6 +363,20 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
         required_strings=["comment_panel", "lazySplitItemsParseTask"],
         criticality="HIGH",
     ),
+    PatchContract(
+        patch_id="disable_comment_suggested_emojis",
+        name="Disable Comment Suggested Emojis",
+        target_type="bytecode",
+        description="Removes the horizontal bar of suggested quick emojis displayed above the comment input box.",
+        required_classes=[
+            "Lcom/ss/android/ugc/aweme/comment/keyboard/keyboardv2/refactor/ExposedEmojiPanelTrigger;",
+            "Lcom/ss/android/ugc/aweme/comment/keyboard/keyboardv2/refactor/CommentPanelFakeInput;",
+            "Lcom/ss/android/ugc/aweme/comment/model/CommentKeyboardModel;",
+            "Lcom/ss/android/ugc/aweme/comment/experiment/PersonalizedEmojiExperiment;",
+        ],
+        required_strings=["getForceDisableExposedEmoji"],
+        criticality="HIGH",
+    ),
 ]
 
 
