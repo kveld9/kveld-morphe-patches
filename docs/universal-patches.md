@@ -14,6 +14,10 @@ Comprehensive reference for universal optimization and resource slimming patches
 | **[PNG Asset Optimizer](#4-png-asset-optimizer-pngassetoptimizerpatch)** | `rawResourcePatch` | PNG Assets (`res/**`, `assets/**`) | In-memory RGBA-verified level 9 zlib recompression + metadata strip | **~1–8 MB** saved, 0% visual degradation |
 | **[APK Junk Cleaner](#5-apk-junk-cleaner-apkjunkcleanerpatch)** | `rawResourcePatch` | Root & Metadata (`META-INF/**`, root) | Prunes compiler metadata, Kotlin debug tables, duplicate licenses | **~0.5–2 MB** saved, cleaner packaging |
 | **[Universal Offline Mode](#6-universal-offline-mode-universalofflinepatch)** | `resourcePatch` | Manifest (`AndroidManifest.xml`) | Revokes `INTERNET` & network permissions + blocks cleartext HTTP | Complete network isolation at OS kernel level |
+| **[Universal Telemetry Neutralizer](#7-universal-telemetry-neutralizer-universaltelemetryneutralizerpatch)** | `resourcePatch` | Manifest (`AndroidManifest.xml`) | Strips ad permissions, disables analytics providers/services, injects opt-out flags | Neutralizes third-party analytics & telemetry dispatch |
+| **[Universal Native Binary Trimmer](#8-universal-native-binary-trimmer-universalnativebinarytrimmerpatch)** | `rawResourcePatch` | Native Libraries (`lib/**`) | In-situ byte-level zeroing of non-essential tracking & debug `.so` files | **~1–15 MB** saved, removes resident native crash sidecars |
+| **[Universal WebP Asset Optimizer](#9-universal-webp-asset-optimizer-universalwebpoptimizerpatch)** | `rawResourcePatch` | WebP Assets (`res/**`, `assets/**`) | Lossless chunk stripping (`EXIF`, `XMP`, `ICCP`) + VP8X header recalculation | **~0.5–5 MB** saved, 0% visual degradation |
+| **[Background Sync & JobScheduler Purge](#10-background-sync--jobscheduler-purge-backgroundsyncpurgepatch)** | `resourcePatch` | Manifest (`AndroidManifest.xml`) | Strips boot permissions and disables boot receivers & WorkManager schedulers | Eliminates background wakeups, radio alarms, and standby battery drain |
 
 ---
 
@@ -258,5 +262,27 @@ The **`Universal WebP Asset Optimizer`** losslessly strips non-rendering metadat
 - **Strip XMP Metadata (`stripXmp`)**: Removes `XMP ` chunks containing XML-based authoring and editing history (Toggle, default: `true`).
 - **Strip ICC Color Profiles (`stripIcc`)**: Removes embedded `ICCP` color profiles (Toggle, default: `true`).
 
+---
+
+## 10. Background Sync & JobScheduler Purge (`backgroundSyncPurgePatch`)
+
+The **`Background Sync & JobScheduler Purge`** patch stops unneeded background wakeups, radio modem alarms, and persistent standby battery drain by removing startup permissions and disabling boot-triggered broadcast receivers and periodic WorkManager scheduler components in `AndroidManifest.xml`.
+
+> [!NOTE]
+> ### Eliminating Standby Battery Drain
+> Many modern Android applications register broadcast receivers with `android.intent.action.BOOT_COMPLETED` and `android.intent.action.MY_PACKAGE_REPLACED`. Whenever the device boots or an app is updated, Android awakens the app process to reschedule background sync tasks, initialize databases, and ping remote servers. `Background Sync & JobScheduler Purge` eliminates this behavior entirely.
+
+### Neutralized Components
+
+- **Boot & Restart Receivers**: Receivers listening for `BOOT_COMPLETED`, `LOCKED_BOOT_COMPLETED`, `QUICKBOOT_POWERON`, `REBOOT`, `MY_PACKAGE_REPLACED`, `PACKAGE_REPLACED`, and `PACKAGE_RESTARTED`.
+- **WorkManager & JobScheduler Components**: `SystemJobService`, `SystemAlarmService`, `SystemForegroundService`, `RescheduleReceiver`, `ForceStopRunnable$BroadcastReceiver`, `ConstraintProxy`, and `DiagnosticsReceiver`.
+- **DataTransport Scheduling**: `JobInfoSchedulerService`, `TransportBackendDiscovery`, `AlarmManagerSchedulerBroadcastReceiver`.
+
+### Configuration in Morphe Manager
+
+- **Strip RECEIVE_BOOT_COMPLETED Permission (`stripBootPermission`)**: Removes `android.permission.RECEIVE_BOOT_COMPLETED` and HTC/OEM quickboot permissions from `AndroidManifest.xml` (Toggle, default: `true`).
+- **Disable Boot & Package Receivers (`disableBootReceivers`)**: Disables broadcast receivers registered for device startup, reboot, and app replacement events (Toggle, default: `true`).
+- **Disable WorkManager & Job Schedulers (`disableWorkManager`)**: Disables WorkManager background services and constraint-checking broadcast receivers (Toggle, default: `true`).
+- **Strip WAKE_LOCK Permission (`stripWakeLock`)**: Removes `android.permission.WAKE_LOCK` from `AndroidManifest.xml` (Toggle, default: `false`). *Keep disabled if the target application requires wake locks for continuous audio playback, video recording, or foreground navigation.*
 
 

@@ -75,11 +75,17 @@
 | **Disable Tenor Share Tracking** | Disables Tenor GIF selection and share tracking telemetry. |  |
 | **Disable WorkManager** | Neutralizes background WorkManager initialization, database creation, and periodic maintenance workers. |  |
 | **Enable Access Points Menu Redesign** | Enables the redesigned access points menu bar and customization panel (Panel V2). |  |
+| **Enable Bluetooth Microphone** | Unlocks the 'Use Bluetooth microphone' setting under Voice typing preferences. |  |
+| **Enable Cursor Trackpad** | Enables 2D trackpad cursor navigation and cursor lock mode by holding the spacebar. |  |
+| **Enable Dismiss Suggestions Button** | Adds a close button (X) to dismiss proactive suggestions on the suggestion bar. |  |
+| **Enable Emoji Scale Setting** | Unlocks the emoji size scaling setting in Gboard preferences. |  |
+| **Enable Grammar Checker** | Unlocks Grammar check and Smart Compose / inline suggestions settings under Text correction preferences. |  |
 | **Enable Key Shape Selection** | Enables the key border shape selection UI (Default, Semi-rounded, Round) in theme customization. |  |
 | **Force Incognito Mode** | Forces Gboard to always operate in incognito mode (disabling personalized learning and persistent input logging) while keeping clipboard functionality enabled. |  |
 | **Hardened Intent Security** | Enables Gboard internal external intent protection against unauthorized intent hijacking. |  |
 | **Offline Only** | Completely isolates Gboard from the network by revoking network permissions, neutralizing HTTP clients (Cronet, OkHttp, Superpacks), and spoofing offline status. | • Strip Contacts Permission |
 | **Resource Slimmer** | Strips embedded third-party license text, onboarding tutorial Lottie animations, promotional GIFs, and APK root metadata/junk files. |  |
+| **Top Toolbar Item Count** | Customizes the maximum number of access point icons displayed on the top toolbar. | • Toolbar item count |
 
 </details>
 
@@ -251,12 +257,13 @@
 </details>
 
 <details>
-<summary>Universal&nbsp;&nbsp;•&nbsp;&nbsp;<b>8 patches</b></summary>
+<summary>Universal&nbsp;&nbsp;•&nbsp;&nbsp;<b>9 patches</b></summary>
 <br>
 
 | Patch | Description | Options |
 |----------|----------------|-----------|
 | **APK Junk Cleaner** | Strips non-functional build metadata, compiler properties, Kotlin coroutines debug tables, and duplicate license texts from META-INF and APK root. |  |
+| **Background Sync & JobScheduler Purge** | Strips RECEIVE_BOOT_COMPLETED and disables boot, package-replacement, and periodic background sync receivers and services in AndroidManifest.xml to eliminate background wakeups and conserve battery. | • Strip RECEIVE_BOOT_COMPLETED Permission<br>• Disable Boot & Package Receivers<br>• Disable WorkManager & Job Schedulers<br>• Strip WAKE_LOCK Permission |
 | **DPI Resource Slimmer** | Strips unselected screen density resource directories from res/ (e.g. drawable-mdpi, drawable-hdpi, mipmap-xhdpi). Density-independent resources (nodpi, anydpi) and orphan resources are safely preserved. | • DPI densities to keep |
 | **Locale Resource Slimmer** | Strips unselected language translation directories from res/ (e.g. values-*, raw-*, xml-*). Base fallback resources with no language qualifiers are always preserved. | • Locales to keep |
 | **PNG Asset Optimizer** | Losslessly recompresses PNG assets with maximum zlib compression and strips non-rendering metadata chunks (pHYs, tEXt, tIME) while preserving 9-patch structures and pixel accuracy. |  |
@@ -289,7 +296,7 @@ Technical references, setup manuals, and architecture notes are organized by foc
 ### 🌐 Universal & Architecture Reference
 | Guide | Description |
 | :--- | :--- |
-| **[Universal Patches & Options](docs/universal-patches.md)** | Universal optimizations: Universal Offline Mode, Locale PAK, Locale Resource, DPI Drawable, PNG Optimizer, and Junk Cleaner. |
+| **[Universal Patches & Options](docs/universal-patches.md)** | Universal debloat & privacy suite: Telemetry Neutralizer, Native Binary Trimmer, WebP Optimizer, Background Sync Purge, Offline Mode, DPI/Locale Slimmers, and Asset Cleaners. |
 | **[Compatibility Guide](docs/compatibility.md)** | CPU architecture policy (`arm64-v8a` vs `armeabi-v7a`), APK variant requirements, and SHA-256 baseline. |
 | **[Project Scope & Out of Scope](docs/out-of-scope.md)** | Non-negotiable design philosophy, compile-time invariants, and rejected feature categories. |
 | **[Architecture & Security Notes](docs/architecture-security.md)** | Static analysis scanner false positives (ML Kit, Play Billing) and native ELF telemetry neutralization. |
