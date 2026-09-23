@@ -1,0 +1,192 @@
+package app.morphe.patches.shared
+
+import app.morphe.patcher.patch.resourcePatch
+import app.morphe.patcher.patch.stringOption
+import org.w3c.dom.Document
+import org.w3c.dom.Element
+
+private const val PERMISSION_INTERNET = "android.permission.INTERNET"
+
+private val NETWORK_STATE_PERMISSIONS = setOf(
+    "android.permission.ACCESS_NETWORK_STATE",
+    "android.permission.ACCESS_WIFI_STATE",
+)
+
+private val WIFI_CONTROL_PERMISSIONS = setOf(
+    "android.permission.CHANGE_NETWORK_STATE",
+    "android.permission.CHANGE_WIFI_STATE",
+    "android.permission.CHANGE_WIFI_MULTICAST_STATE",
+    "android.permission.NEARBY_WIFI_DEVICES",
+    "android.permission.OVERRIDE_WIFI_CONFIG",
+)
+
+private val PUSH_PERMISSIONS = setOf(
+    "com.google.android.c2dm.permission.RECEIVE",
+)
+
+private val GOOGLE_SERVICES_PERMISSIONS = setOf(
+    "com.google.android.providers.gsf.permission.READ_GSERVICES",
+    "android.permission.GET_ACCOUNTS",
+)
+
+private val PERMISSION_TAGS = listOf("uses-permission", "uses-permission-sdk-23")
+
+private fun isOptionEnabled(raw: String?, defaultVal: Boolean): Boolean {
+    if (raw.isNullOrBlank()) return defaultVal
+    return raw.trim().equals("true", ignoreCase = true)
+}
+
+private fun buildBlockedPermissions(
+    stripNetworkState: Boolean,
+    stripWifiControls: Boolean,
+    stripPush: Boolean,
+    stripGoogleServices: Boolean,
+): Set<String> {
+    val blocked = mutableSetOf(PERMISSION_INTERNET)
+    if (stripNetworkState) blocked.addAll(NETWORK_STATE_PERMISSIONS)
+    if (stripWifiControls) blocked.addAll(WIFI_CONTROL_PERMISSIONS)
+    if (stripPush) blocked.addAll(PUSH_PERMISSIONS)
+    if (stripGoogleServices) blocked.addAll(GOOGLE_SERVICES_PERMISSIONS)
+    return blocked
+}
+
+private fun getPermissionName(element: Element): String {
+    val name = element.getAttribute("android:name")
+    if (name.isNotBlank()) return name.trim()
+    val nameNs = element.getAttributeNS("http://schemas.android.com/apk/res/android", "name")
+    if (nameNs.isNotBlank()) return nameNs.trim()
+    return element.getAttribute("name").trim()
+}
+
+private fun stripPermissionsFromManifest(
+    doc: Document,
+    blockedPermissions: Set<String>,
+): List<String> {
+    val removed = mutableListOf<String>()
+
+    for (tag in PERMISSION_TAGS) {
+        val nodes = doc.getElementsByTagName(tag)
+        val elementsToRemove = mutableListOf<Pair<Element, String>>()
+
+        for (i in 0 until nodes.length) {
+            val element = nodes.item(i) as? Element ?: continue
+            val permissionName = getPermissionName(element)
+            if (permissionName in blockedPermissions) {
+                elementsToRemove.add(element to permissionName)
+            }
+        }
+
+        for ((element, name) in elementsToRemove) {
+            val parent = element.parentNode
+            if (parent != null) {
+                parent.removeChild(element)
+                removed.add(name)
+            }
+        }
+    }
+
+    return removed
+}
+
+private fun enforceCleartextBlock(doc: Document): Boolean {
+    val appNodes = doc.getElementsByTagName("application")
+    if (appNodes.length == 0) return false
+
+    val appElement = appNodes.item(0) as? Element ?: return false
+    val currentSetting = appElement.getAttribute("android:usesCleartextTraffic").trim()
+    val currentSettingNs = appElement.getAttributeNS("http://schemas.android.com/apk/res/android", "usesCleartextTraffic").trim()
+    if (currentSetting.equals("false", ignoreCase = true) || currentSettingNs.equals("false", ignoreCase = true)) {
+        return false
+    }
+
+    appElement.setAttribute("android:usesCleartextTraffic", "false")
+    return true
+}
+
+@Suppress("unused")
+val universalOfflinePatch = resourcePatch(
+    name = "Universal Offline Mode",
+    description = "Forces offline execution across any application by revoking INTERNET and network permissions from AndroidManifest.xml and blocking cleartext HTTP traffic at the OS level.",
+    default = false,
+) {
+    // Universal patch: applies to any target APK in Morphe Manager / CLI (no compatibleWith)
+    val stripNetworkState by stringOption(
+        key = "stripNetworkState",
+        title = "Strip Network State Permissions",
+        description = "Also remove ACCESS_NETWORK_STATE and ACCESS_WIFI_STATE permissions. If false, network status queries remain permitted to prevent SecurityException crashes in apps that check connection state without error handling.",
+        default = "true",
+        required = false,
+    )
+
+    val stripWifiControls by stringOption(
+        key = "stripWifiControls",
+        title = "Strip Wi-Fi Control Permissions",
+        description = "Remove CHANGE_NETWORK_STATE, CHANGE_WIFI_STATE, CHANGE_WIFI_MULTICAST_STATE, and NEARBY_WIFI_DEVICES permissions.",
+        default = "true",
+        required = false,
+    )
+
+    val stripPush by stringOption(
+        key = "stripPush",
+        title = "Strip Push Notification Permissions",
+        description = "Remove Google Cloud Messaging and Firebase Cloud Messaging push receiver permissions (com.google.android.c2dm.permission.RECEIVE).",
+        default = "false",
+        required = false,
+    )
+
+    val stripGoogleServices by stringOption(
+        key = "stripGoogleServices",
+        title = "Strip Google Services Sync Permissions",
+        description = "Remove Google Services Framework and account sync permissions (com.google.android.providers.gsf.permission.READ_GSERVICES, android.permission.GET_ACCOUNTS).",
+        default = "false",
+        required = false,
+    )
+
+    val blockCleartext by stringOption(
+        key = "blockCleartext",
+        title = "Block Cleartext Traffic",
+        description = "Enforce android:usesCleartextTraffic='false' on the application tag in AndroidManifest.xml.",
+        default = "true",
+        required = false,
+    )
+
+    execute {
+        val manifestFile = get("AndroidManifest.xml")
+        if (!manifestFile.exists()) {
+            println("[Universal Offline Mode] Skipped: AndroidManifest.xml not found.")
+            return@execute
+        }
+
+        val removeNetworkState = isOptionEnabled(stripNetworkState, defaultVal = true)
+        val removeWifiControls = isOptionEnabled(stripWifiControls, defaultVal = true)
+        val removePush = isOptionEnabled(stripPush, defaultVal = false)
+        val removeGoogleServices = isOptionEnabled(stripGoogleServices, defaultVal = false)
+        val shouldBlockCleartext = isOptionEnabled(blockCleartext, defaultVal = true)
+
+        val blockedPermissions = buildBlockedPermissions(
+            stripNetworkState = removeNetworkState,
+            stripWifiControls = removeWifiControls,
+            stripPush = removePush,
+            stripGoogleServices = removeGoogleServices,
+        )
+
+        var removedList: List<String> = emptyList()
+        var cleartextBlocked = false
+
+        document(manifestFile.absolutePath).use { doc ->
+            removedList = stripPermissionsFromManifest(doc, blockedPermissions)
+            if (shouldBlockCleartext) {
+                cleartextBlocked = enforceCleartextBlock(doc)
+            }
+        }
+
+        if (removedList.isEmpty() && !cleartextBlocked) {
+            println("[Universal Offline Mode] No target network permissions found in AndroidManifest.xml (already offline).")
+            return@execute
+        }
+
+        val shortNames = removedList.map { it.substringAfterLast('.') }.distinct()
+        val cleartextNote = if (cleartextBlocked) " + blocked cleartext HTTP" else ""
+        println("[Universal Offline Mode] Stripped ${removedList.size} permission(s) (${shortNames.joinToString(", ")})$cleartextNote.")
+    }
+}
