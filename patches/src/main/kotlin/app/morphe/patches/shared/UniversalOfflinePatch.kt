@@ -1,7 +1,7 @@
 package app.morphe.patches.shared
 
+import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.resourcePatch
-import app.morphe.patcher.patch.stringOption
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 
@@ -31,11 +31,6 @@ private val GOOGLE_SERVICES_PERMISSIONS = setOf(
 )
 
 private val PERMISSION_TAGS = listOf("uses-permission", "uses-permission-sdk-23")
-
-private fun isOptionEnabled(raw: String?, defaultVal: Boolean): Boolean {
-    if (raw.isNullOrBlank()) return defaultVal
-    return raw.trim().equals("true", ignoreCase = true)
-}
 
 private fun buildBlockedPermissions(
     stripNetworkState: Boolean,
@@ -111,43 +106,43 @@ val universalOfflinePatch = resourcePatch(
     default = false,
 ) {
     // Universal patch: applies to any target APK in Morphe Manager / CLI (no compatibleWith)
-    val stripNetworkState by stringOption(
+    val stripNetworkState by booleanOption(
         key = "stripNetworkState",
+        default = false,
         title = "Strip Network State Permissions",
         description = "Also remove ACCESS_NETWORK_STATE and ACCESS_WIFI_STATE permissions. Default is false to prevent SecurityException crashes in apps that query network status without error handling.",
-        default = "false",
         required = false,
     )
 
-    val stripWifiControls by stringOption(
+    val stripWifiControls by booleanOption(
         key = "stripWifiControls",
+        default = true,
         title = "Strip Wi-Fi Control Permissions",
         description = "Remove CHANGE_NETWORK_STATE, CHANGE_WIFI_STATE, CHANGE_WIFI_MULTICAST_STATE, and NEARBY_WIFI_DEVICES permissions.",
-        default = "true",
         required = false,
     )
 
-    val stripPush by stringOption(
+    val stripPush by booleanOption(
         key = "stripPush",
+        default = false,
         title = "Strip Push Notification Permissions",
         description = "Remove Google Cloud Messaging and Firebase Cloud Messaging push receiver permissions (com.google.android.c2dm.permission.RECEIVE).",
-        default = "false",
         required = false,
     )
 
-    val stripGoogleServices by stringOption(
+    val stripGoogleServices by booleanOption(
         key = "stripGoogleServices",
+        default = false,
         title = "Strip Google Services Sync Permissions",
         description = "Remove Google Services Framework and account sync permissions (com.google.android.providers.gsf.permission.READ_GSERVICES, android.permission.GET_ACCOUNTS).",
-        default = "false",
         required = false,
     )
 
-    val blockCleartext by stringOption(
+    val blockCleartext by booleanOption(
         key = "blockCleartext",
+        default = true,
         title = "Block Cleartext Traffic",
         description = "Enforce android:usesCleartextTraffic='false' on the application tag in AndroidManifest.xml.",
-        default = "true",
         required = false,
     )
 
@@ -158,11 +153,11 @@ val universalOfflinePatch = resourcePatch(
             return@execute
         }
 
-        val removeNetworkState = isOptionEnabled(stripNetworkState, defaultVal = false)
-        val removeWifiControls = isOptionEnabled(stripWifiControls, defaultVal = true)
-        val removePush = isOptionEnabled(stripPush, defaultVal = false)
-        val removeGoogleServices = isOptionEnabled(stripGoogleServices, defaultVal = false)
-        val shouldBlockCleartext = isOptionEnabled(blockCleartext, defaultVal = true)
+        val removeNetworkState = stripNetworkState ?: false
+        val removeWifiControls = stripWifiControls ?: true
+        val removePush = stripPush ?: false
+        val removeGoogleServices = stripGoogleServices ?: false
+        val shouldBlockCleartext = blockCleartext ?: true
 
         val blockedPermissions = buildBlockedPermissions(
             stripNetworkState = removeNetworkState,
