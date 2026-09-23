@@ -982,7 +982,7 @@
     },
     {
       "name": "Device Privacy Guard",
-      "description": "Neutralizes background clipboard snooping routines, motion sensor profiling, and screenshot/recording detection and telemetry listeners to protect user data.",
+      "description": "Neutralizes invasive runtime permissions (contacts sync, location tracking, nearby devices), advertising ID profiling, background clipboard snooping routines, motion sensor profiling, and screenshot/recording detection to protect user data.",
       "default": true,
       "dependencies": [],
       "compatiblePackages": [
@@ -1233,6 +1233,49 @@
             },
             {
               "version": "18.2.4.969776716-lite_beta-armeabi-v7a",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Disable Profile Photo LIVE Status",
+      "description": "Removes the pulsing LIVE ring and badge from creator avatars in the feed and ensures clicking navigates strictly to the user profile instead of launching the live stream.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.zhiliaoapp.musically",
+          "name": "TikTok",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#FE2C55",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "47.0.3",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        },
+        {
+          "packageName": "com.ss.android.ugc.trill",
+          "name": "TikTok",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#FE2C55",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "47.0.3",
               "versionCodes": null,
               "isExperimental": false,
               "minSdk": null,
@@ -2031,8 +2074,137 @@
       "options": []
     },
     {
+      "name": "Hide Profile Photo Follow Button",
+      "description": "Hides the plus (+) follow badge on creator profile avatars in the feed and disables its touch interaction.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.zhiliaoapp.musically",
+          "name": "TikTok",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#FE2C55",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "47.0.3",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        },
+        {
+          "packageName": "com.ss.android.ugc.trill",
+          "name": "TikTok",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#FE2C55",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "47.0.3",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Hide STEM and Community Tabs",
+      "description": "Removes the STEM and Comunidad (Explore / Topics) tabs from the top navigation feed strip.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.zhiliaoapp.musically",
+          "name": "TikTok",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#FE2C55",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "47.0.3",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        },
+        {
+          "packageName": "com.ss.android.ugc.trill",
+          "name": "TikTok",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#FE2C55",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "47.0.3",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Hide TikTok Shop & Mall",
       "description": "Removes product showcase badges, shopping cart tags, and the TikTok Shop / Mall tab from navigation bars and video posts.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.zhiliaoapp.musically",
+          "name": "TikTok",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#FE2C55",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "47.0.3",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        },
+        {
+          "packageName": "com.ss.android.ugc.trill",
+          "name": "TikTok",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#FE2C55",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "47.0.3",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Hide Top-Left LIVE Button",
+      "description": "Removes the top-left LIVE broadcast button and tab entry point from the top navigation bar.",
       "default": true,
       "dependencies": [],
       "compatiblePackages": [

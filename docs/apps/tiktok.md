@@ -33,6 +33,10 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Usability** | **Skip First-Launch Onboarding** | `bytecodePatch` | Bypasses interest pickers, swipe-up tutorial, language prompts, and consent sheets directly to FYP. |
 | **Usability** | **[Custom Offline Videos Limit](#4-custom-offline-videos-limit)** | `bytecodePatch` | Customizes maximum offline videos download caching limit (~X mins, Y GB/MB). |
 | **Usability** | **Auto-translate comments** | `bytecodePatch` | Automatically dispatches batch translations via TikTok's native engine. |
+| **Usability** | **Hide Top-Left LIVE Button** | `bytecodePatch` | Removes the top-left LIVE broadcast button and tab entry point from the top navigation bar. |
+| **Usability** | **Hide STEM and Community Tabs** | `bytecodePatch` | Removes STEM and Comunidad (Explore / Topics) tabs from the top navigation feed strip. |
+| **Usability** | **Hide Profile Photo Follow Button** | `bytecodePatch` | Hides the plus (+) follow badge on creator profile avatars in the feed and disables its touch interaction. |
+| **Usability** | **Disable Profile Photo LIVE Status** | `bytecodePatch` | Removes pulsing LIVE ring/badge from creator avatars in feed and forces clicks directly to user profile. |
 | **Privacy** | **Fix Google login** | `bytecodePatch` | Restores Google account sign-in via Web OAuth fallback when GMS rejects modified APK signature. |
 | **Privacy** | **Bypass Mandatory Login** | `bytecodePatch` | Neutralizes mandatory login walls, dynamic regional forced login gates, and guest browsing restrictions. |
 | **Privacy** | **Clean Share URL** | `bytecodePatch` | Strips tracking query parameters, user tokens, and campaign IDs from shared links. |
@@ -229,3 +233,32 @@ The **`Custom Offline Videos Limit`** patch customizes the maximum video caching
 - **Rewards Pendants Suppression**: Injects `return-void` into `SpecActWidget.bind(ViewGroup)` to prevent floating Rewards widgets (countdown coins, soccer ball stickers) from attaching to feed views.
 - **Sticker & Card Stripping**: Nullifies `Aweme.getActivityPendant()`, `getCommerceStickerInfo()`, `getFloatingCardInfo()`, and `getBannerTip()`.
 - **Feed Stream Purge**: Filters suggested accounts, mini-games, CapCut creation prompts, memories recaps, mini-dramas, and surveys before UI adapter binding.
+
+### 5. Hide Top-Left LIVE Button (`hideTopLiveEntrancePatch`)
+- Removes the top-left LIVE broadcast button and tab entry point from the top navigation toolbar.
+- Hooks `LiveIconGenerator.enabled()Z` -> returns `false`.
+- Hooks `LiveIconGenerator.LIZLLL()Z` -> returns `false`.
+- Hooks `LiveIconGenerator.b2(Context)View` -> returns `null` to prevent view inflation and attachment.
+- Hooks `LiveTabProtocol.enable()Z` -> returns `false` to suppress top live tab variants.
+
+### 6. Hide STEM & Community Tabs (`hideStemAndCommunityTabsPatch`)
+- Removes the STEM and Comunidad (Explore / Topics) tabs from the top navigation feed strip, leaving only the primary Following and For You feeds.
+- Hooks `StemTabProtocol.enable()Z` -> returns `false`.
+- Hooks `ExploreXTabProtocol.enable()Z` -> returns `false`.
+- Hooks `BaseTopicTabProtocol.enable()Z` -> returns `false` (disabling all inherited topic tabs such as Fashion, Food, Gaming, and Sports).
+- Hooks `BaseTopicFCPTabProtocol.enable()Z` -> returns `false`.
+- Hooks `BasePersonalizedTabProtocol.enable()Z` -> returns `false`.
+
+### 7. Hide Profile Photo Follow Button (`hideAvatarFollowButtonPatch`)
+- Hides the red plus (`+`) follow badge on creator profile avatars in the feed and eliminates accidental follow touches.
+- Hooks `FeedAvatarDefaultAssem.cs(ViewGroup, int, Object)` -> permanently sets visibility to `View.GONE` (`0x8`) and disables clickability.
+- Injects immediate `View.GONE` (`0x8`) and `setClickable(false)` into `FeedAvatarDefaultAssem.onViewCreated` right after `LLLIILIL` (`follow_view_container`) is assigned, preventing view flash on cell recycling.
+
+### 8. Disable Profile Photo LIVE Status (`disableAvatarLiveStatusPatch`)
+- Removes the pulsing LIVE ring animation and LIVE badge from creator avatars in the feed and ensures avatar taps route strictly to the creator's user profile instead of launching the live stream broadcast.
+- Dynamically locates and hooks the author live validator (`LX/09A7;->LIZIZ(Aweme, User)Z`) -> returns `false`.
+- Hooks `FeedAvatarAssemWrap.Yr()Z` -> returns `false`, preventing the attachment and lifecycle execution of `FeedAvatarLiveAssem`.
+- Hooks `FeedAvatarLiveAssem.ur()Z` -> returns `false`.
+- Stubs `FeedAvatarLiveAssem.Ar(ZZ)V` and `FeedAvatarLiveAssem.onBind(Object)V` with `return-void` to eliminate live streaming UI bindings and animations.
+- Preserves `FeedAvatarDefaultAssem`'s default avatar click handler (`LX/0BIx`), routing taps directly to `//user/profile`.
+

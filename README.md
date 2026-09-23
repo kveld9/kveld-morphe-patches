@@ -91,7 +91,7 @@
 </details>
 
 <details>
-<summary>TikTok&nbsp;&nbsp;•&nbsp;&nbsp;<b>32 patches</b></summary>
+<summary>TikTok&nbsp;&nbsp;•&nbsp;&nbsp;<b>36 patches</b></summary>
 <br>
 
 **Supported versions:**
@@ -110,13 +110,17 @@
 | **Core Asset De-bloat** | Strips embedded Microblink/FinTech card scanner models, Pitaya AI & ByteNN LLM engines, C2PA origin verification, DLNA cast scanners, and redundant non-Latin fonts to save APK space. |  |
 | **Custom Offline Videos Limit** | Customizes the maximum number of videos available for offline download caching. | • Custom Offline Videos Limit |
 | **Device Privacy Guard** | Neutralizes invasive runtime permissions (contacts sync, location tracking, nearby devices), advertising ID profiling, background clipboard snooping routines, motion sensor profiling, and screenshot/recording detection to protect user data. |  |
+| **Disable Profile Photo LIVE Status** | Removes the pulsing LIVE ring and badge from creator avatars in the feed and ensures clicking navigates strictly to the user profile instead of launching the live stream. |  |
 | **Disable Push Notifications** | Neutralizes background push notification tasks and persistent socket wake locks to eliminate background battery drain. |  |
 | **Display Refresh Rate Governor** | Forces TikTok to run at peak display refresh rate (120Hz/90Hz/60Hz) and neutralizes video playback framerate downclocking routines. | • Target Refresh Rate |
 | **Feed Ad Blocker** | Removes sponsored advertisements, brand promotions, and promotional audio from the For You and Following feeds. |  |
 | **Feed Bloat & Distraction Blocker** | Removes non-video clutter and floating ad widgets from the For You and Following feeds, including Touchpoint Rewards pendants, floating ad stickers, suggested friend cards, mini-games, CapCut/template creation prompts, memories ('On This Day'), surveys, and mini-drama paywalls. |  |
 | **Feed Live Stream Blocker** | Removes live stream broadcast cards and live recommendations from the For You and Following feeds. |  |
 | **Fix Google login** | Restores Google account sign-in after patching by forcing fallback to Web-based OAuth when Google Play Services rejects the modified APK signature. |  |
+| **Hide Profile Photo Follow Button** | Hides the plus (+) follow badge on creator profile avatars in the feed and disables its touch interaction. |  |
+| **Hide STEM and Community Tabs** | Removes the STEM and Comunidad (Explore / Topics) tabs from the top navigation feed strip. |  |
 | **Hide TikTok Shop & Mall** | Removes product showcase badges, shopping cart tags, and the TikTok Shop / Mall tab from navigation bars and video posts. |  |
+| **Hide Top-Left LIVE Button** | Removes the top-left LIVE broadcast button and tab entry point from the top navigation bar. |  |
 | **In-App Browser Privacy Guard** | Redirects external and third-party web links to the default system browser and neutralizes inline JavaScript tracking, DOM monitoring, and AJAX hooking in residual in-app WebViews. |  |
 | **Instant Launch & Splash Blocker** | Eliminates cold startup delays, real-time splash advertisements, and background TopView preloading (<0.4s launch). |  |
 | **Language Pack Purger** | Strips unselected language string bundles from assets/strings#lang_* to save APK space. | • Languages to keep |
