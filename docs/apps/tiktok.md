@@ -28,6 +28,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Usability** | **Show seekbar** | `bytecodePatch` | Restores video seekbar and scrubbing controls where hidden or disabled. |
 | **Usability** | **Always show publish date** | `bytecodePatch` | Forces video publish and upload timestamps to remain permanently visible on feed cards. |
 | **Usability** | **Copy comments without username** | `bytecodePatch` | Sanitizes comment copy actions to exclude the prepended author username. |
+| **Usability** | **Disable Comment Suggested Emojis** | `bytecodePatch` | Removes the horizontal bar of suggested quick emojis displayed above the comment input box. |
 | **Usability** | **Playback Speed Persistence** | `bytecodePatch` | Persists user-selected video speed across feed scrolling and restarts. |
 | **Usability** | **[Video Quality Governor](#2-video-quality-governor)** | `bytecodePatch` | Decoupled resolution ceilings for playback (e.g. 480p) and downloads (e.g. 1080p). |
 | **Usability** | **Skip First-Launch Onboarding** | `bytecodePatch` | Bypasses interest pickers, swipe-up tutorial, language prompts, and consent sheets directly to FYP. |
@@ -262,4 +263,11 @@ The **`Custom Offline Videos Limit`** patch customizes the maximum video caching
 - Hooks `FeedAvatarLiveAssem.ur()Z` -> returns `false`.
 - Stubs `FeedAvatarLiveAssem.Ar(ZZ)V` and `FeedAvatarLiveAssem.onBind(Object)V` with `return-void` to eliminate live streaming UI bindings and animations.
 - Preserves `FeedAvatarDefaultAssem`'s default avatar click handler (`LX/0BIx`), routing taps directly to `//user/profile`.
+
+### 9. Disable Comment Suggested Emojis (`disableCommentSuggestedEmojisPatch`)
+- Removes the horizontal bar of suggested quick emojis displayed above the comment input box in active keyboard mode and passive comment views.
+- **Active Keyboard Trigger Neutralization**: Hooks `ExposedEmojiPanelTrigger.wr(CommentContextSource, ...)Z` -> returns `false`, preventing the trigger manager from mounting `HorizontalEmojiMiniPanelAssemForKeyboard` into the active comment keyboard view hierarchy.
+- **Passive Feed Input Trigger Neutralization**: Hooks `CommentPanelFakeInput.Gt()Z` -> returns `false`, preventing `HorizontalEmojiMiniPanelAssem` from attaching to the passive/feed comment bar prior to keyboard expansion.
+- **ViewModel Model Flag Enforcement**: Hooks `CommentKeyboardModel.getForceDisableExposedEmoji()Z` -> returns `true`, enforcing TikTok's native internal model flag across comment view models and cells.
+- **Internal Experiment Flag Enforcement**: Hooks `PersonalizedEmojiExperiment.LIZ()Z` -> returns `true` (`hideExposeEmoji`), suppressing emoji resource preloading, layout spacing allocation, and telemetry events.
 
