@@ -115,7 +115,7 @@ object Constants {
         targets = listOf(
             AppTarget(
                 version = NOKOPRINT_TARGET_VERSION,
-                description = "Download com.nokoprint v$NOKOPRINT_TARGET_VERSION (nodpi APK) from APKMirror",
+                description = "Download com.nokoprint v$NOKOPRINT_TARGET_VERSION (XAPK bundle) from APKPure",
             )
         )
     )

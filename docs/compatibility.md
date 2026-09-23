@@ -65,7 +65,7 @@ Download the official `arm64-v8a` bundle release from [APKMirror](https://www.ap
 - **Bundle Format**: Distributed as an APKM / split APK set. Morphe fuses split modules into a unified APK. Details in [Hevy Guide](apps/hevy.md).
 
 ### 🖨️ NokoPrint: WiFi, Bluetooth, USB (`com.nokoprint`)
-Download the official release from [APKMirror](https://www.apkmirror.com/apk/nokoprint-llc/nokoprint-wifi-bluetooth-usb-printing/nokoprint-wifi-bluetooth-usb-printing-5-28-4-release/) or [APKPure](https://d.apkpure.com/b/XAPK/com.nokoprint?versionCode=52804).
+Download the official release from [APKPure](https://d.apkpure.com/b/XAPK/com.nokoprint?versionCode=52804).
 - **Current Target**: `5.28.4` (`com.nokoprint`, standalone nodpi APK or bundle). Details in [NokoPrint Guide](apps/nokoprint.md).
 
 ### 🎵 TikTok: Global & Asia (`com.zhiliaoapp.musically` / `com.ss.android.ugc.trill`)

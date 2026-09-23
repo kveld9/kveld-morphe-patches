@@ -13,7 +13,7 @@ Comprehensive technical, architecture, and patch guide for **NokoPrint - WiFi, B
 | **Supported Target Version** | **`5.28.4`** |
 | **Target File Format** | Standalone APK (`APK`) or Bundle (`XAPK`) |
 | **Screen Density** | `nodpi` / universal |
-| **Official Download Source** | [APKMirror: NokoPrint WiFi Bluetooth USB](https://www.apkmirror.com/apk/nokoprint-llc/nokoprint-wifi-bluetooth-usb-printing/nokoprint-wifi-bluetooth-usb-printing-5-28-4-release/) · [APKPure](https://d.apkpure.com/b/XAPK/com.nokoprint?versionCode=52804) |
+| **Official Download Source** | [APKPure](https://d.apkpure.com/b/XAPK/com.nokoprint?versionCode=52804) |
 
 ---
 

@@ -298,16 +298,9 @@ for entry in by_app.values():
                 count=1,
             )
         elif any("nokoprint" in p for p in pkgs):
-            slug_ver = target_ver.replace(".", "-")
             readme = re.sub(
                 r"(\|\s*\*\*NokoPrint\*\*\s*\|\s*`com\.nokoprint`\s*\|\s*`)[^`]+(`\s*\|)",
                 rf"\g<1>{target_ver}\g<2>",
-                readme,
-                count=1,
-            )
-            readme = re.sub(
-                r"https://www\.apkmirror\.com/apk/(?:nokoprint|nokoprint-llc)/(?:nokoprint-wifi-bluetooth-usb|nokoprint-wifi-bluetooth-usb-printing)/nokoprint-wifi-bluetooth-usb-printing-[^/]+-release/nokoprint-mobile-printing-[^/]+-android-apk-download/",
-                f"https://www.apkmirror.com/apk/nokoprint-llc/nokoprint-wifi-bluetooth-usb-printing/nokoprint-wifi-bluetooth-usb-printing-{slug_ver}-release/nokoprint-mobile-printing-{slug_ver}-android-apk-download/",
                 readme,
                 count=1,
             )
