@@ -109,17 +109,17 @@ val customOfflineVideosLimitPatch = bytecodePatch(
             println("[Custom Offline Videos Limit] onAssemPostCreate note: ${e.message}")
         }
 
-        // 3. Dynamic discovery through OfflineModeSheetPageAssem.Kr -> Title formatter
+        // 3. Dynamic discovery through OfflineModeSheetPageAssem -> Title formatter
         try {
             val assemClassFp = Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/offlinemode/ui/sheet/OfflineModeSheetPageAssem;",
             )
             val assemClass = assemClassFp.classDef
-            val krMethod = assemClass.methods.firstOrNull { it.name == "Kr" }
             var titleFormatterMethodRef: MethodReference? = null
 
-            if (krMethod?.implementation != null) {
-                for (instruction in krMethod.implementation!!.instructions) {
+            for (method in assemClass.methods) {
+                val insns = method.implementation?.instructions ?: continue
+                for (instruction in insns) {
                     val ref = (instruction as? ReferenceInstruction)?.reference as? MethodReference ?: continue
                     if (ref.returnType == "Ljava/lang/String;" &&
                         ref.parameterTypes.size == 2 &&
@@ -130,6 +130,7 @@ val customOfflineVideosLimitPatch = bytecodePatch(
                         break
                     }
                 }
+                if (titleFormatterMethodRef != null) break
             }
 
             if (titleFormatterMethodRef != null) {
@@ -160,23 +161,23 @@ val customOfflineVideosLimitPatch = bytecodePatch(
                     patched++
                 }
             } else {
-                println("[Custom Offline Videos Limit] Title formatter method not found in Kr.")
+                println("[Custom Offline Videos Limit] Title formatter method not found in OfflineModeSheetPageAssem.")
             }
         } catch (e: Exception) {
-            println("[Custom Offline Videos Limit] Kr note: ${e.message}")
+            println("[Custom Offline Videos Limit] Title formatter note: ${e.message}")
         }
 
-        // 4. Dynamic discovery through OfflineModeSheetPageAssem.Sr -> Progress subtitle
+        // 4. Dynamic discovery through OfflineModeSheetPageAssem -> Progress subtitle
         try {
             val assemClassFp = Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/offlinemode/ui/sheet/OfflineModeSheetPageAssem;",
             )
             val assemClass = assemClassFp.classDef
-            val srMethod = assemClass.methods.firstOrNull { it.name == "Sr" }
             var progressSubtitleMethodRef: MethodReference? = null
 
-            if (srMethod?.implementation != null) {
-                for (instruction in srMethod.implementation!!.instructions) {
+            for (method in assemClass.methods) {
+                val insns = method.implementation?.instructions ?: continue
+                for (instruction in insns) {
                     val ref = (instruction as? ReferenceInstruction)?.reference as? MethodReference ?: continue
                     if (ref.name == "getSubtitle" &&
                         ref.returnType == "Ljava/lang/String;" &&
@@ -188,6 +189,7 @@ val customOfflineVideosLimitPatch = bytecodePatch(
                         break
                     }
                 }
+                if (progressSubtitleMethodRef != null) break
             }
 
             if (progressSubtitleMethodRef != null) {
@@ -222,13 +224,13 @@ val customOfflineVideosLimitPatch = bytecodePatch(
                     patched++
                 }
             } else {
-                println("[Custom Offline Videos Limit] Progress subtitle method not found in Sr.")
+                println("[Custom Offline Videos Limit] Progress subtitle method not found in OfflineModeSheetPageAssem.")
             }
         } catch (e: Exception) {
-            println("[Custom Offline Videos Limit] Sr note: ${e.message}")
+            println("[Custom Offline Videos Limit] Progress subtitle note: ${e.message}")
         }
 
-        // 5. Radio item cell class discovery and subtitle hook
+        // 5. Radio item cell class discovery and title/subtitle hooks
         try {
             val radioCellFingerprint = Fingerprint(
                 custom = { method, classDef ->
@@ -279,14 +281,16 @@ val customOfflineVideosLimitPatch = bytecodePatch(
                     method.addInstructions(
                         hookIndex,
                         """
+                            invoke-static {v$titleReg}, ${Constants.TIKTOK_EXTENSION_OFFLINE_VIDEOS_HOOK}->formatRadioTitle(Ljava/lang/String;)Ljava/lang/String;
+                            move-result-object v$titleReg
                             invoke-static {v$titleReg, v$subtitleReg}, ${Constants.TIKTOK_EXTENSION_OFFLINE_VIDEOS_HOOK}->formatRadioSubtitle(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
                             move-result-object v$subtitleReg
                         """.trimIndent(),
                     )
-                    println("[Custom Offline Videos Limit] Hooked radio item subtitle in ${radioCellFingerprint.classDef.type}->${method.name} at instruction $hookIndex.")
+                    println("[Custom Offline Videos Limit] Hooked radio item title and subtitle in ${radioCellFingerprint.classDef.type}->${method.name} at instruction $hookIndex.")
                     patched++
                 } else {
-                    println("[Custom Offline Videos Limit] Constructor for radio item subtitle not found in ${radioCellFingerprint.classDef.type}->${method.name}.")
+                    println("[Custom Offline Videos Limit] Constructor for radio item not found in ${radioCellFingerprint.classDef.type}->${method.name}.")
                 }
             }
         } catch (e: Exception) {

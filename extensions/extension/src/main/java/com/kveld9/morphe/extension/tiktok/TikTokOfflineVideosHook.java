@@ -59,7 +59,7 @@ public final class TikTokOfflineVideosHook {
     }
 
     /**
-     * Formats the sheet header title using native plural resource (2131755487)
+     * Formats the sheet header title using native plural resources
      * when available, falling back to english pluralization if unresolvable.
      */
     public static String formatTitle(int count, Activity activity, String fallback) {
@@ -69,15 +69,43 @@ public final class TikTokOfflineVideosHook {
 
         int effectiveCount = count > 0 ? count : targetLimit;
         if (activity != null) {
-            try {
-                Resources res = activity.getResources();
-                if (res != null) {
-                    return res.getQuantityString(2131755487, effectiveCount, effectiveCount);
-                }
-            } catch (Throwable ignored) {}
+            String resolved = resolveTitleFromResources(activity, effectiveCount);
+            if (resolved != null) {
+                return resolved;
+            }
         }
 
         return effectiveCount == 1 ? "1 video" : effectiveCount + " videos";
+    }
+
+    private static String resolveTitleFromResources(Activity activity, int count) {
+        try {
+            Resources res = activity.getResources();
+            if (res != null) {
+                return res.getQuantityString(2131755497, count, count);
+            }
+        } catch (Throwable ignored) {}
+        try {
+            Resources res = activity.getResources();
+            if (res != null) {
+                return res.getQuantityString(2131755487, count, count);
+            }
+        } catch (Throwable ignored) {}
+        try {
+            return activity.getString(2131839949, count);
+        } catch (Throwable ignored) {}
+        return null;
+    }
+
+    /**
+     * Formats the radio item title in the offline videos sheet.
+     * Ensures custom limit selections never render with an empty title string.
+     */
+    public static String formatRadioTitle(String title) {
+        if (title != null && !title.trim().isEmpty()) {
+            return title;
+        }
+        return targetLimit == 1 ? "1 video" : targetLimit + " videos";
     }
 
     /**
