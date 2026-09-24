@@ -29,6 +29,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Usability** | **Always show publish date** | `bytecodePatch` | Forces video publish and upload timestamps to remain permanently visible on feed cards. |
 | **Usability** | **Copy comments without username** | `bytecodePatch` | Sanitizes comment copy actions to exclude the prepended author username. |
 | **Usability** | **Disable Comment Suggested Emojis** | `bytecodePatch` | Removes the horizontal bar of suggested quick emojis displayed above the comment input box. |
+| **Usability** | **Enable Voice Comments** | `bytecodePatch` | Forces the native voice comment recording button in comment input bars, bypassing regional rollout restrictions and remote server blocks. |
 | **Usability** | **Disable double tap to like** | `bytecodePatch` | Disables the double tap gesture to like videos in the feed, preventing accidental likes while scrolling or pausing. Videos can still be liked using the like button. |
 | **Usability** | **Playback Speed Persistence** | `bytecodePatch` | Persists user-selected video speed across feed scrolling and restarts. |
 | **Usability** | **[Video Quality Governor](#2-video-quality-governor)** | `bytecodePatch` | Decoupled resolution ceilings for playback (e.g. 480p) and downloads (e.g. 1080p). |
@@ -320,7 +321,15 @@ The **`Custom Offline Videos Limit`** patch customizes the maximum video caching
 - Removes the 'LIVE populares' (Popular LIVEs) recommendation card and stream broadcasts from the search intermediate discovery screen.
 - **Search Intermediate Raw Payload & Model Filtering**: Intercepts `RecomDataWrapper.<init>(String, SuggestWordResponse)` to filter out `"live_popular"` card items from the raw JSON payload and parsed response model before Lynx rendering.
 
-### 16. Hide AI-Generated Content (`hideAiTaggedContentPatch`)
+### 16. Enable Voice Comments (`enableVoiceCommentsPatch`)
+- Forces the activation of TikTok's native voice comment recording button in comment input bars, bypassing regional rollout restrictions and remote server blocks.
+- **Audio Comment Publish Experiment Flag**: Hooks the core experiment evaluator referencing `"audio_comment_publish"` -> returns `Integer(1)`.
+- **Comment Audio Publish Entry Gate**: Forces the gate method referencing `"comment_audio_publish_entry_forbidden"` -> returns `true`.
+- **Model Force-Disable Flag**: Hooks `CommentKeyboardModel.getForceDisableCommentAudio()` -> returns `false`.
+- **VEAudioRecorder Ready Check**: Bypasses `CreativeToolsPluginService` availability check to ensure `VEAudioRecorder` initializes cleanly.
+- **Speech-To-Text / ASR Translation**: Forces `"comment_audio_asr_translate_enable"` -> returns `Boolean.TRUE`.
+
+### 17. Hide AI-Generated Content (`hideAiTaggedContentPatch`)
 - Filters and skips videos tagged with native AI-generated metadata, C2PA content credentials, or creator AI disclosure tags across the For You, Following, and Friends feeds.
 - **Feed API Response Interception**: Hooks `FeedApiService.fetchFeedList` to filter incoming items at the network response boundary before model mapping.
 - **Feed Item Model Interception**: Hooks `FeedItemList.getItems()`, `FollowFeedList.getItems()`, `FriendsV3FeedResponse.<init>`, and `FriendsFeedResponse.<init>` to sanitize feed collections in-situ.

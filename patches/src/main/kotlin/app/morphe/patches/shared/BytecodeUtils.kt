@@ -107,6 +107,37 @@ fun MutableMethod.replaceWithReturnNull() {
     addInstructions(0, "const/4 v0, 0x0\nreturn-object v0")
 }
 
+/**
+ * Safely purges try-catch ranges and replaces the entire method body with a boxed Integer return.
+ */
+fun MutableMethod.replaceWithReturnIntegerObject(value: Int) {
+    val impl = implementation ?: return
+    clearTryBlocks()
+    ensureRegisterCount(1)
+    removeInstructions(0, impl.instructions.count())
+    addInstructions(0, """
+        const/4 v0, $value
+        invoke-static {v0}, Ljava/lang/Integer;->valueOf(I)Ljava/lang/Integer;
+        move-result-object v0
+        return-object v0
+    """.trimIndent())
+}
+
+/**
+ * Safely purges try-catch ranges and replaces the entire method body with a boxed Boolean return.
+ */
+fun MutableMethod.replaceWithReturnBooleanObject(value: Boolean) {
+    val impl = implementation ?: return
+    clearTryBlocks()
+    ensureRegisterCount(1)
+    removeInstructions(0, impl.instructions.count())
+    addInstructions(0, """
+        sget-object v0, Ljava/lang/Boolean;->${if (value) "TRUE" else "FALSE"}:Ljava/lang/Boolean;
+        return-object v0
+    """.trimIndent())
+}
+
+
 inline fun <reified T : Reference> Instruction.getReference(): T? =
     (this as? ReferenceInstruction)?.reference as? T
 
