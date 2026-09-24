@@ -437,6 +437,19 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
         criticality="HIGH",
     ),
     PatchContract(
+        patch_id="disable_watch_history_recording",
+        name="Disable Watch History Recording",
+        target_type="bytecode",
+        description="Prevents viewed videos from being recorded in account watch history, playback duration stores, and local history caches.",
+        required_classes=[
+            "Lcom/ss/android/ugc/aweme/feed/api/AwemeStatsApi;",
+            "LX/03nB;",
+            "LX/0a5M;",
+        ],
+        required_strings=["/aweme/v1/aweme/stats/"],
+        criticality="HIGH",
+    ),
+    PatchContract(
         patch_id="hide_suggested_searches",
         name="Hide Suggested Searches",
         target_type="bytecode",
@@ -460,5 +473,3 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
         criticality="HIGH",
     ),
 ]
-
-
