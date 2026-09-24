@@ -424,6 +424,18 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
         ],
         criticality="HIGH",
     ),
+    PatchContract(
+        patch_id="disable_search_history_recording",
+        name="Disable Search History Recording",
+        target_type="bytecode",
+        description="Prevents search queries and keywords from being recorded in local history, databases, and analytics stores.",
+        required_classes=[
+            "Lcom/ss/android/ugc/aweme/search/pages/middlepage/history/ManualSearchPvStore;",
+            "Lcom/ss/android/ugc/aweme/discover/model/suggest/SuggestWordResponse;",
+        ],
+        required_strings=["getTopHistoryWords"],
+        criticality="HIGH",
+    ),
 ]
 
 

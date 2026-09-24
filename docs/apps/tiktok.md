@@ -54,6 +54,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Privacy** | **Feed Live Stream Blocker** | `bytecodePatch` | Removes live broadcast cards and live recommendations from FYP and Following. |
 | **Privacy** | **Feed Bloat & Distraction Blocker** | `bytecodePatch` | Removes friend suggestions, suggested account carousels, mini-games, CapCut prompts, memories, surveys, mini-dramas, Lemon8 promo, and floating rewards pendants across For You, Following, and Friends feeds. |
 | **Privacy** | **Unified Telemetry & Tracker Silencer** | `bytecodePatch` | Neutralizes ByteDance AppLog, APM/Npth/Heimdallr crash telemetry, and AppsFlyer. |
+| **Privacy** | **Disable Search History Recording** | `bytecodePatch` | Prevents search queries and keywords from being recorded in local history, databases, and analytics stores. |
 | **Privacy** | **Update Prompt Suppressor** | `bytecodePatch` | Neutralizes background update polling tasks and version enforcement dialogs. |
 | **Performance** | **[Display Refresh Rate Governor](#3-display-refresh-rate-governor)** | `bytecodePatch` | Locks window to peak hardware refresh rate (120Hz/90Hz) and neutralizes playback downclocking. |
 | **Performance** | **Instant Launch & Splash Blocker** | `bytecodePatch` | Eliminates cold start delays, splash ad tasks, and TopView preload waits (<0.4s). |
@@ -296,4 +297,10 @@ The **`Custom Offline Videos Limit`** patch customizes the maximum video caching
 - **Tablet and Search Auto-Scroll**: Forces tablet/foldable (`"tablet_fyp_auto_scroll"`) and search feed (`"search_auto_scroll"`) experiment flags to return `true`.
 - **FeedBottomBarFacade Capability Hook**: Forces `FeedBottomBarFacadeImpl.LJIJJLI()` referencing `"panel_auto_scroll"` to return `true`.
 - **Long-Press Menu Item Constructor**: Overrides `createAutoScrollItem` in `LX/0oWb;->LJII`, neutralizing the `"panel_auto_scroll"` guard and the `isLogin()` requirement so that the Auto-scroll toggle option is permanently available and visible in the video long-press / share menu.
+
+### 13. Disable Search History Recording (`disableSearchHistoryRecordingPatch`)
+- Prevents search queries, keywords, and search interactions from being written to persistent local history or device storage.
+- **Search History Manager Hook**: Stubs `LX/0D7Z;->LIZ(SearchHistory, String)V` with `return-void` to neutralize search history record persistence.
+- **Manual Search PV Tracking Hook**: Stubs `ManualSearchPvStore.LJIIJ(String, String)V` with `return-void` to prevent manual search pageview and query history accumulation.
+- **Top History Recommendation Suppression**: Hooks `SuggestWordResponse.getTopHistoryWords()` -> returns `null` to neutralize server-pushed search history suggestions.
 
