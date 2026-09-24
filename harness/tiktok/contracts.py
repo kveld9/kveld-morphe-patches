@@ -450,6 +450,19 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
         criticality="HIGH",
     ),
     PatchContract(
+        patch_id="disable_double_tap_to_like",
+        name="Disable double tap to like",
+        target_type="bytecode",
+        description="Disables the double tap gesture to like videos in the feed, preventing accidental likes while scrolling or pausing. Videos can still be liked using the like button.",
+        required_classes=[
+            "Lcom/ss/android/ugc/feed/platform/panel/digg/DiggPanelComponent;",
+            "Lcom/ss/android/ugc/aweme/feed/landscape/LandscapeFragmentPanel;",
+            "Lcom/ss/android/ugc/aweme/friendstab/ui/feed/cell/component/base/FriendsV3GestureDetectorAssem;",
+        ],
+        required_strings=["handleDoubleClick"],
+        criticality="HIGH",
+    ),
+    PatchContract(
         patch_id="hide_suggested_searches",
         name="Hide Suggested Searches",
         target_type="bytecode",

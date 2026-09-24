@@ -29,6 +29,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Usability** | **Always show publish date** | `bytecodePatch` | Forces video publish and upload timestamps to remain permanently visible on feed cards. |
 | **Usability** | **Copy comments without username** | `bytecodePatch` | Sanitizes comment copy actions to exclude the prepended author username. |
 | **Usability** | **Disable Comment Suggested Emojis** | `bytecodePatch` | Removes the horizontal bar of suggested quick emojis displayed above the comment input box. |
+| **Usability** | **Disable double tap to like** | `bytecodePatch` | Disables the double tap gesture to like videos in the feed, preventing accidental likes while scrolling or pausing. Videos can still be liked using the like button. |
 | **Usability** | **Playback Speed Persistence** | `bytecodePatch` | Persists user-selected video speed across feed scrolling and restarts. |
 | **Usability** | **[Video Quality Governor](#2-video-quality-governor)** | `bytecodePatch` | Decoupled resolution ceilings for playback (e.g. 480p) and downloads (e.g. 1080p). |
 | **Usability** | **Skip First-Launch Onboarding** | `bytecodePatch` | Bypasses interest pickers, swipe-up tutorial, language prompts, and consent sheets directly to FYP. |
