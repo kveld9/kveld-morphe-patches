@@ -407,6 +407,23 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
         required_strings=["isDisableSearchTrendingBar", "getTrendingBar"],
         criticality="HIGH",
     ),
+    PatchContract(
+        patch_id="force_auto_scroll",
+        name="Force auto-scroll",
+        target_type="bytecode",
+        description="Forces the activation of the native video auto-scroll experiment flag for accounts and regions that lack it due to A/B testing.",
+        required_classes=[
+            "Lcom/ss/android/ugc/feed/platform/panel/autoscroll/FypAutoScrollServiceImpl;",
+            "Lcom/ss/android/ugc/aweme/feed/bottombar/FeedBottomBarFacadeImpl;",
+        ],
+        required_strings=[
+            "fyp_auto_scroll",
+            "tablet_fyp_auto_scroll",
+            "search_auto_scroll",
+            "createAutoScrollItem, add auto scroll item to the menu",
+        ],
+        criticality="HIGH",
+    ),
 ]
 
 
