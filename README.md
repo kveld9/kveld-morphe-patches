@@ -125,6 +125,7 @@
 | **Hide Feed Search Bar** | Removes the search suggestion pill and trending bar ('Search · <keyword>') from the bottom of feed videos. |  |
 | **Hide Profile Photo Follow Button** | Hides the plus (+) follow badge on creator profile avatars in the feed and disables its touch interaction. |  |
 | **Hide STEM and Community Tabs** | Removes the STEM and Comunidad (Explore / Topics) tabs from the top navigation feed strip. |  |
+| **Hide Suggested Searches** | Removes the 'Podría interesarte' (You may like / Guess Search) suggested keywords section from the search intermediate page. |  |
 | **Hide TikTok Shop & Mall** | Removes product showcase badges, shopping cart tags, and the TikTok Shop / Mall tab from navigation bars and video posts. |  |
 | **Hide Top-Left LIVE Button** | Removes the top-left LIVE broadcast button and tab entry point from the top navigation bar. |  |
 | **In-App Browser Privacy Guard** | Redirects external and third-party web links to the default system browser and neutralizes inline JavaScript tracking, DOM monitoring, and AJAX hooking in residual in-app WebViews. |  |

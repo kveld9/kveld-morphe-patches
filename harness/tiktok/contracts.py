@@ -436,6 +436,18 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
         required_strings=["getTopHistoryWords"],
         criticality="HIGH",
     ),
+    PatchContract(
+        patch_id="hide_suggested_searches",
+        name="Hide Suggested Searches",
+        target_type="bytecode",
+        description="Removes the 'Podría interesarte' (You may like / Guess Search) suggested keywords section from the search intermediate page.",
+        required_classes=[
+            "Lcom/ss/android/ugc/aweme/discover/model/suggest/RecomDataWrapper;",
+            "Lcom/ss/android/ugc/aweme/search/middle/DynamicSingleIntermediateFragmentNew;",
+        ],
+        required_strings=["yU"],
+        criticality="HIGH",
+    ),
 ]
 
 
