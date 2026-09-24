@@ -485,4 +485,33 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
         required_strings=[],
         criticality="HIGH",
     ),
+    PatchContract(
+        patch_id="enable_voice_comments",
+        name="Enable Voice Comments",
+        target_type="bytecode",
+        description="Forces the native voice comment recording button in comment input bars, bypassing regional rollout restrictions and remote server blocks.",
+        required_classes=[
+            "Lcom/ss/android/ugc/aweme/comment/model/CommentKeyboardModel;",
+        ],
+        required_strings=[
+            "audio_comment_publish",
+            "comment_audio_publish_entry_forbidden",
+            "comment_audio_asr_translate_enable",
+        ],
+        criticality="HIGH",
+    ),
+    PatchContract(
+        patch_id="hide_ai_tagged_content",
+        name="Hide AI-Generated Content",
+        target_type="bytecode",
+        description="Filters and skips videos tagged with native AI-generated metadata, C2PA content credentials, or creator AI disclosure tags across the For You, Following, and Friends feeds.",
+        required_classes=[
+            "Lcom/ss/android/ugc/aweme/feed/FeedApiService;",
+            "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;",
+            "Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;",
+            "Lcom/ss/android/ugc/aweme/feed/AIGCInfo;",
+        ],
+        required_strings=[],
+        criticality="HIGH",
+    ),
 ]

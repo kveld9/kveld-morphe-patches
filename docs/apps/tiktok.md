@@ -54,6 +54,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Privacy** | **[SIM Region Selector](#1-sim-region-selector)** | `bytecodePatch` | Spoofs SIM and network country ISO codes to bypass regional restrictions. |
 | **Privacy** | **Feed Ad Blocker** | `bytecodePatch` | Filters sponsored cards, brand promotions, and commercial audio. |
 | **Privacy** | **Hide TikTok Shop & Mall** | `bytecodePatch` | Removes product anchors, showcase badges, and bottom/top Shop navigation tabs. |
+| **Privacy** | **Hide AI-Generated Content** | `bytecodePatch` | Filters and skips videos tagged with native AI-generated metadata, C2PA content credentials, or creator AI disclosure tags across the For You, Following, and Friends feeds. |
 | **Privacy** | **Feed Live Stream Blocker** | `bytecodePatch` | Removes live broadcast cards and live recommendations from FYP and Following. |
 | **Privacy** | **Feed Bloat & Distraction Blocker** | `bytecodePatch` | Removes friend suggestions, suggested account carousels, mini-games, CapCut prompts, memories, surveys, mini-dramas, Lemon8 promo, and floating rewards pendants across For You, Following, and Friends feeds. |
 | **Privacy** | **Unified Telemetry & Tracker Silencer** | `bytecodePatch` | Neutralizes ByteDance AppLog, APM/Npth/Heimdallr crash telemetry, and AppsFlyer. |
@@ -318,5 +319,18 @@ The **`Custom Offline Videos Limit`** patch customizes the maximum video caching
 ### 15. Hide Popular Lives In Search (`hideSearchPopularLivesPatch`)
 - Removes the 'LIVE populares' (Popular LIVEs) recommendation card and stream broadcasts from the search intermediate discovery screen.
 - **Search Intermediate Raw Payload & Model Filtering**: Intercepts `RecomDataWrapper.<init>(String, SuggestWordResponse)` to filter out `"live_popular"` card items from the raw JSON payload and parsed response model before Lynx rendering.
+
+### 16. Hide AI-Generated Content (`hideAiTaggedContentPatch`)
+- Filters and skips videos tagged with native AI-generated metadata, C2PA content credentials, or creator AI disclosure tags across the For You, Following, and Friends feeds.
+- **Feed API Response Interception**: Hooks `FeedApiService.fetchFeedList` to filter incoming items at the network response boundary before model mapping.
+- **Feed Item Model Interception**: Hooks `FeedItemList.getItems()`, `FollowFeedList.getItems()`, `FriendsV3FeedResponse.<init>`, and `FriendsFeedResponse.<init>` to sanitize feed collections in-situ.
+- **Multi-Vector AI Metadata Inspection**: Inspects `Aweme` for:
+  - `AIGCInfo` (`AIGCLabelType != 0`, `createByAI == true`).
+  - `ModerationAigcInfo` (`moderationAigcLabelType != 0`, `moderationUserLabelStatus != 0`, `creatorGuidanceStatus != 0`, `moderationCreatorSegment` populated).
+  - `C2PAInfo` (`aigcSrc`, `firstAigcSrc`, `lastAigcSrc` populated).
+  - Specific AI sub-structures (`aiAliveInfo`, `aiPortraitInfo`, `aiRemixInfo`, `aiTheaterInfo`, `aiChatEditorInfo`).
+  - Native AI banners and anchors (`ANCHOR_AIGC`, Lynx AI disclosure templates).
+  - Video description and tag regex matching for creator-disclosed AI markers (`#aigenerated`, `#ai`, `#generadoporIA`, etc.).
+
 
 

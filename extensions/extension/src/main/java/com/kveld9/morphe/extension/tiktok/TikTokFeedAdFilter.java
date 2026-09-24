@@ -75,6 +75,44 @@ public final class TikTokFeedAdFilter {
     private static Method friendsFeedGetAwemeMethod;
     private static Field friendsFeedAwemeField;
 
+    private static Method getAigcInfoMethod;
+    private static Field aigcInfoField;
+    private static Method getAigcLabelTypeMethod;
+    private static Field aigcLabelTypeField;
+    private static Field createByAiField;
+
+    private static Method getModerationAigcInfoMethod;
+    private static Field moderationAigcInfoField;
+    private static Field moderationAigcLabelTypeField;
+    private static Field moderationUserLabelStatusField;
+    private static Field creatorGuidanceStatusField;
+    private static Field moderationCreatorSegmentField;
+
+    private static Method getC2paInfoMethod;
+    private static Field c2paInfoField;
+    private static Field c2paAigcSrcField;
+    private static Field c2paFirstAigcSrcField;
+    private static Field c2paLastAigcSrcField;
+
+    private static Field aiAliveInfoField;
+    private static Field aiPortraitInfoField;
+    private static Field aiRemixInfoField;
+    private static Field aiTheaterInfoField;
+    private static Field aiChatEditorInfoField;
+
+    private static Method getBannersMethod;
+    private static Field bannersField;
+    private static Method getAnchorsMethod;
+    private static Field anchorsField;
+    private static Method getDescMethod;
+    private static Field descField;
+    private static Method getContentDescMethod;
+    private static Field contentDescField;
+
+    private static final java.util.regex.Pattern AI_TAG_PATTERN = java.util.regex.Pattern.compile(
+        "(?i)(?:#(?:aigenerated|ai_generated|aigc|generadoporia|generado_por_ia|generadoconia|aiart|aivideo|iaart|iavideo|midjourney|sora|stable_diffusion|stablediffusion|dalle|chatgpt|runwayml|klingai|lumaai)\\b|\\[(?:ai[-_ ]?generated|generado por ia|aigc)\\]|\\b(?:ai[-_ ]generated|generado por ia|generado con ia)\\b)"
+    );
+
     private static final String SHOP_PROMO_MARKER = "placeholder_product_id";
 
     private static final Set<String> TRACKING_PARAMS = new HashSet<>(Arrays.asList(
@@ -239,6 +277,80 @@ public final class TikTokFeedAdFilter {
                 if (friendsFeedClass != null) {
                     try { friendsFeedGetAwemeMethod = friendsFeedClass.getMethod("getAweme"); friendsFeedGetAwemeMethod.setAccessible(true); } catch (Throwable ignored) {}
                     try { friendsFeedAwemeField = friendsFeedClass.getDeclaredField("aweme"); friendsFeedAwemeField.setAccessible(true); } catch (Throwable ignored) {}
+                }
+            } catch (Throwable ignored) {}
+
+            try { getAigcInfoMethod = awemeClass.getMethod("getAigcInfo"); getAigcInfoMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { aigcInfoField = awemeClass.getDeclaredField("aigcInfo"); aigcInfoField.setAccessible(true); } catch (Throwable ignored) {}
+            try { getModerationAigcInfoMethod = awemeClass.getMethod("getModerationAigcInfo"); getModerationAigcInfoMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { moderationAigcInfoField = awemeClass.getDeclaredField("moderationAigcInfo"); moderationAigcInfoField.setAccessible(true); } catch (Throwable ignored) {}
+            try { getC2paInfoMethod = awemeClass.getMethod("getC2paInfo"); getC2paInfoMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { c2paInfoField = awemeClass.getDeclaredField("c2paInfo"); c2paInfoField.setAccessible(true); } catch (Throwable ignored) {}
+
+            try { aiAliveInfoField = awemeClass.getDeclaredField("aiAliveInfo"); aiAliveInfoField.setAccessible(true); } catch (Throwable ignored) {}
+            try { aiPortraitInfoField = awemeClass.getDeclaredField("aiPortraitInfo"); aiPortraitInfoField.setAccessible(true); } catch (Throwable ignored) {}
+            try { aiRemixInfoField = awemeClass.getDeclaredField("aiRemixInfo"); aiRemixInfoField.setAccessible(true); } catch (Throwable ignored) {}
+            try { aiTheaterInfoField = awemeClass.getDeclaredField("aiTheaterInfo"); aiTheaterInfoField.setAccessible(true); } catch (Throwable ignored) {}
+            try { aiChatEditorInfoField = awemeClass.getDeclaredField("aiChatEditorInfo"); aiChatEditorInfoField.setAccessible(true); } catch (Throwable ignored) {}
+
+            try { getBannersMethod = awemeClass.getMethod("getBanners"); getBannersMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { bannersField = awemeClass.getDeclaredField("banners"); bannersField.setAccessible(true); } catch (Throwable ignored) {}
+            try { getAnchorsMethod = awemeClass.getMethod("getAnchors"); getAnchorsMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { anchorsField = awemeClass.getDeclaredField("anchors"); anchorsField.setAccessible(true); } catch (Throwable ignored) {}
+            try { getDescMethod = awemeClass.getMethod("getDesc"); getDescMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { descField = awemeClass.getDeclaredField("desc"); descField.setAccessible(true); } catch (Throwable ignored) {}
+            try { getContentDescMethod = awemeClass.getMethod("getContentDesc"); getContentDescMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { contentDescField = awemeClass.getDeclaredField("contentDesc"); contentDescField.setAccessible(true); } catch (Throwable ignored) {}
+
+            try {
+                ClassLoader loader = awemeClass != null ? awemeClass.getClassLoader() : classLoader;
+                Class<?> aigcInfoClass = null;
+                try {
+                    aigcInfoClass = loader.loadClass("com.ss.android.ugc.aweme.feed.AIGCInfo");
+                } catch (Throwable t) {
+                    if (classLoader != loader) {
+                        aigcInfoClass = classLoader.loadClass("com.ss.android.ugc.aweme.feed.AIGCInfo");
+                    }
+                }
+                if (aigcInfoClass != null) {
+                    try { getAigcLabelTypeMethod = aigcInfoClass.getMethod("getAIGCLabelType"); getAigcLabelTypeMethod.setAccessible(true); } catch (Throwable ignored) {}
+                    try { aigcLabelTypeField = aigcInfoClass.getDeclaredField("AIGCLabelType"); aigcLabelTypeField.setAccessible(true); } catch (Throwable ignored) {}
+                    try { createByAiField = aigcInfoClass.getDeclaredField("createByAI"); createByAiField.setAccessible(true); } catch (Throwable ignored) {}
+                }
+            } catch (Throwable ignored) {}
+
+            try {
+                ClassLoader loader = awemeClass != null ? awemeClass.getClassLoader() : classLoader;
+                Class<?> modAigcClass = null;
+                try {
+                    modAigcClass = loader.loadClass("com.ss.android.ugc.aweme.feed.model.ModerationAigcInfo");
+                } catch (Throwable t) {
+                    if (classLoader != loader) {
+                        modAigcClass = classLoader.loadClass("com.ss.android.ugc.aweme.feed.model.ModerationAigcInfo");
+                    }
+                }
+                if (modAigcClass != null) {
+                    try { moderationAigcLabelTypeField = modAigcClass.getDeclaredField("moderationAigcLabelType"); moderationAigcLabelTypeField.setAccessible(true); } catch (Throwable ignored) {}
+                    try { moderationUserLabelStatusField = modAigcClass.getDeclaredField("moderationUserLabelStatus"); moderationUserLabelStatusField.setAccessible(true); } catch (Throwable ignored) {}
+                    try { creatorGuidanceStatusField = modAigcClass.getDeclaredField("creatorGuidanceStatus"); creatorGuidanceStatusField.setAccessible(true); } catch (Throwable ignored) {}
+                    try { moderationCreatorSegmentField = modAigcClass.getDeclaredField("moderationCreatorSegment"); moderationCreatorSegmentField.setAccessible(true); } catch (Throwable ignored) {}
+                }
+            } catch (Throwable ignored) {}
+
+            try {
+                ClassLoader loader = awemeClass != null ? awemeClass.getClassLoader() : classLoader;
+                Class<?> c2paClass = null;
+                try {
+                    c2paClass = loader.loadClass("com.ss.android.ugc.aweme.feed.model.C2PAInfo");
+                } catch (Throwable t) {
+                    if (classLoader != loader) {
+                        c2paClass = classLoader.loadClass("com.ss.android.ugc.aweme.feed.model.C2PAInfo");
+                    }
+                }
+                if (c2paClass != null) {
+                    try { c2paAigcSrcField = c2paClass.getDeclaredField("aigcSrc"); c2paAigcSrcField.setAccessible(true); } catch (Throwable ignored) {}
+                    try { c2paFirstAigcSrcField = c2paClass.getDeclaredField("firstAigcSrc"); c2paFirstAigcSrcField.setAccessible(true); } catch (Throwable ignored) {}
+                    try { c2paLastAigcSrcField = c2paClass.getDeclaredField("lastAigcSrc"); c2paLastAigcSrcField.setAccessible(true); } catch (Throwable ignored) {}
                 }
             } catch (Throwable ignored) {}
 
@@ -1141,6 +1253,398 @@ public final class TikTokFeedAdFilter {
 
     public static void filterSuggestedAccountsInFollowFeedList(Object followFeedList) {
         filterFeedBloatInFollowFeedList(followFeedList);
+    }
+
+    // =========================================================================
+    // 5. HIDE / FILTER AI-GENERATED CONTENT (Independent Patch)
+    // =========================================================================
+
+    public static boolean isAiDescription(String text) {
+        if (text == null || text.isEmpty()) return false;
+        try {
+            return AI_TAG_PATTERN.matcher(text).find();
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
+    public static boolean isAiContent(Object aweme) {
+        if (aweme == null) return false;
+        if (!initialized) {
+            ensureInitialized(aweme.getClass().getClassLoader());
+        }
+        if (awemeClass != null && !awemeClass.isInstance(aweme)) {
+            return false;
+        }
+        try {
+            String aid = null;
+            try {
+                Method getAid = aweme.getClass().getMethod("getAid");
+                Object idObj = getAid.invoke(aweme);
+                if (idObj != null) aid = idObj.toString();
+            } catch (Throwable ignored) {}
+
+            // 1. Native AIGCInfo metadata (Creator disclosed or platform detected)
+            Object aigc = null;
+            if (getAigcInfoMethod != null) {
+                try { aigc = getAigcInfoMethod.invoke(aweme); } catch (Throwable ignored) {}
+            }
+            if (aigc == null && aigcInfoField != null) {
+                try { aigc = aigcInfoField.get(aweme); } catch (Throwable ignored) {}
+            }
+            if (aigc != null) {
+                if (getAigcLabelTypeMethod != null) {
+                    try {
+                        Object type = getAigcLabelTypeMethod.invoke(aigc);
+                        if (type instanceof Number && ((Number) type).intValue() > 0) {
+                            Log.i(TAG, "[Hide AI-Generated Content] Match [AIGCInfo.AIGCLabelType=" + type + "] on aid=" + aid);
+                            return true;
+                        }
+                    } catch (Throwable ignored) {}
+                }
+                if (aigcLabelTypeField != null) {
+                    try {
+                        int type = aigcLabelTypeField.getInt(aigc);
+                        if (type > 0) {
+                            Log.i(TAG, "[Hide AI-Generated Content] Match [AIGCInfo.AIGCLabelTypeField=" + type + "] on aid=" + aid);
+                            return true;
+                        }
+                    } catch (Throwable ignored) {}
+                }
+                if (createByAiField != null) {
+                    try {
+                        if (createByAiField.getBoolean(aigc)) {
+                            Log.i(TAG, "[Hide AI-Generated Content] Match [AIGCInfo.createByAI=true] on aid=" + aid);
+                            return true;
+                        }
+                    } catch (Throwable ignored) {}
+                }
+            }
+
+            // 2. Moderation AIGC metadata
+            Object modAigc = null;
+            if (getModerationAigcInfoMethod != null) {
+                try { modAigc = getModerationAigcInfoMethod.invoke(aweme); } catch (Throwable ignored) {}
+            }
+            if (modAigc == null && moderationAigcInfoField != null) {
+                try { modAigc = moderationAigcInfoField.get(aweme); } catch (Throwable ignored) {}
+            }
+            if (modAigc != null) {
+                if (moderationAigcLabelTypeField != null) {
+                    try {
+                        int type = moderationAigcLabelTypeField.getInt(modAigc);
+                        if (type > 0) {
+                            Log.i(TAG, "[Hide AI-Generated Content] Match [ModerationAigcInfo.labelType=" + type + "] on aid=" + aid);
+                            return true;
+                        }
+                    } catch (Throwable ignored) {}
+                }
+                if (moderationUserLabelStatusField != null) {
+                    try {
+                        int status = moderationUserLabelStatusField.getInt(modAigc);
+                        if (status > 0) {
+                            Log.i(TAG, "[Hide AI-Generated Content] Match [ModerationAigcInfo.userLabelStatus=" + status + "] on aid=" + aid);
+                            return true;
+                        }
+                    } catch (Throwable ignored) {}
+                }
+                if (creatorGuidanceStatusField != null) {
+                    try {
+                        int status = creatorGuidanceStatusField.getInt(modAigc);
+                        if (status > 0) {
+                            Log.i(TAG, "[Hide AI-Generated Content] Match [ModerationAigcInfo.creatorGuidance=" + status + "] on aid=" + aid);
+                            return true;
+                        }
+                    } catch (Throwable ignored) {}
+                }
+                if (moderationCreatorSegmentField != null) {
+                    try {
+                        Object seg = moderationCreatorSegmentField.get(modAigc);
+                        if (seg instanceof String && !((String) seg).isEmpty()) {
+                            String s = ((String) seg).toLowerCase();
+                            if (s.contains("aigc") || s.contains("short_drama_aigc") || s.equals("ai")) {
+                                Log.i(TAG, "[Hide AI-Generated Content] Match [ModerationAigcInfo.segment=" + seg + "] on aid=" + aid);
+                                return true;
+                            }
+                        }
+                    } catch (Throwable ignored) {}
+                }
+            }
+
+            // 3. C2PA Content Credentials metadata
+            Object c2pa = null;
+            if (getC2paInfoMethod != null) {
+                try { c2pa = getC2paInfoMethod.invoke(aweme); } catch (Throwable ignored) {}
+            }
+            if (c2pa == null && c2paInfoField != null) {
+                try { c2pa = c2paInfoField.get(aweme); } catch (Throwable ignored) {}
+            }
+            if (c2pa != null) {
+                if (c2paAigcSrcField != null) {
+                    try {
+                        Object src = c2paAigcSrcField.get(c2pa);
+                        if (src instanceof String && !((String) src).trim().isEmpty()) {
+                            Log.i(TAG, "[Hide AI-Generated Content] Match [C2PA.aigcSrc=" + src + "] on aid=" + aid);
+                            return true;
+                        }
+                    } catch (Throwable ignored) {}
+                }
+                if (c2paFirstAigcSrcField != null) {
+                    try {
+                        Object src = c2paFirstAigcSrcField.get(c2pa);
+                        if (src instanceof String && !((String) src).trim().isEmpty()) {
+                            Log.i(TAG, "[Hide AI-Generated Content] Match [C2PA.firstAigcSrc=" + src + "] on aid=" + aid);
+                            return true;
+                        }
+                    } catch (Throwable ignored) {}
+                }
+                if (c2paLastAigcSrcField != null) {
+                    try {
+                        Object src = c2paLastAigcSrcField.get(c2pa);
+                        if (src instanceof String && !((String) src).trim().isEmpty()) {
+                            Log.i(TAG, "[Hide AI-Generated Content] Match [C2PA.lastAigcSrc=" + src + "] on aid=" + aid);
+                            return true;
+                        }
+                    } catch (Throwable ignored) {}
+                }
+            }
+
+            // 4. Native AI Creation & Feature Structs
+            if (aiAliveInfoField != null && aiAliveInfoField.get(aweme) != null) {
+                Log.i(TAG, "[Hide AI-Generated Content] Match [aiAliveInfo] on aid=" + aid);
+                return true;
+            }
+            if (aiPortraitInfoField != null && aiPortraitInfoField.get(aweme) != null) {
+                Log.i(TAG, "[Hide AI-Generated Content] Match [aiPortraitInfo] on aid=" + aid);
+                return true;
+            }
+            if (aiRemixInfoField != null && aiRemixInfoField.get(aweme) != null) {
+                Log.i(TAG, "[Hide AI-Generated Content] Match [aiRemixInfo] on aid=" + aid);
+                return true;
+            }
+            if (aiTheaterInfoField != null && aiTheaterInfoField.get(aweme) != null) {
+                Log.i(TAG, "[Hide AI-Generated Content] Match [aiTheaterInfo] on aid=" + aid);
+                return true;
+            }
+            if (aiChatEditorInfoField != null && aiChatEditorInfoField.get(aweme) != null) {
+                Log.i(TAG, "[Hide AI-Generated Content] Match [aiChatEditorInfo] on aid=" + aid);
+                return true;
+            }
+
+            // 5. Banners containing AIGC tags/overlays
+            Object banners = null;
+            if (getBannersMethod != null) {
+                try { banners = getBannersMethod.invoke(aweme); } catch (Throwable ignored) {}
+            }
+            if (banners == null && bannersField != null) {
+                try { banners = bannersField.get(aweme); } catch (Throwable ignored) {}
+            }
+            if (banners instanceof List) {
+                List<?> bannerList = (List<?>) banners;
+                for (Object b : bannerList) {
+                    if (b != null) {
+                        String bStr = b.toString().toLowerCase();
+                        if (bStr.contains("aigc") || bStr.contains("ai_generated")) {
+                            Log.i(TAG, "[Hide AI-Generated Content] Match [Banner=" + bStr + "] on aid=" + aid);
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            // 6. Anchors containing AIGC tags
+            Object anchors = null;
+            if (getAnchorsMethod != null) {
+                try { anchors = getAnchorsMethod.invoke(aweme); } catch (Throwable ignored) {}
+            }
+            if (anchors == null && anchorsField != null) {
+                try { anchors = anchorsField.get(aweme); } catch (Throwable ignored) {}
+            }
+            if (anchors instanceof List) {
+                List<?> anchorList = (List<?>) anchors;
+                for (Object a : anchorList) {
+                    if (a != null) {
+                        String aStr = a.toString().toLowerCase();
+                        if (aStr.contains("aigc") || aStr.contains("anchor_aigc")) {
+                            Log.i(TAG, "[Hide AI-Generated Content] Match [Anchor=" + aStr + "] on aid=" + aid);
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            // 7. Caption & Description tags (#aigenerated, #aigc, etc.)
+            Object descObj = null;
+            if (getDescMethod != null) {
+                try { descObj = getDescMethod.invoke(aweme); } catch (Throwable ignored) {}
+            }
+            if (descObj == null && descField != null) {
+                try { descObj = descField.get(aweme); } catch (Throwable ignored) {}
+            }
+            if (descObj instanceof String && isAiDescription((String) descObj)) {
+                Log.i(TAG, "[Hide AI-Generated Content] Match [Desc=" + descObj + "] on aid=" + aid);
+                return true;
+            }
+
+            Object contentDescObj = null;
+            if (getContentDescMethod != null) {
+                try { contentDescObj = getContentDescMethod.invoke(aweme); } catch (Throwable ignored) {}
+            }
+            if (contentDescObj == null && contentDescField != null) {
+                try { contentDescObj = contentDescField.get(aweme); } catch (Throwable ignored) {}
+            }
+            if (contentDescObj instanceof String && isAiDescription((String) contentDescObj)) {
+                Log.i(TAG, "[Hide AI-Generated Content] Match [ContentDesc=" + contentDescObj + "] on aid=" + aid);
+                return true;
+            }
+
+        } catch (Throwable ignored) {}
+        return false;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static void filterAiContentInList(Object listObj) {
+        if (!(listObj instanceof List)) return;
+        List<Object> items = (List<Object>) listObj;
+        if (items.isEmpty()) return;
+
+        synchronized (items) {
+            try {
+                if (!initialized) {
+                    for (Object item : items) {
+                        if (item != null) {
+                            ensureInitialized(item.getClass().getClassLoader());
+                            break;
+                        }
+                    }
+                }
+
+                int removed = 0;
+                Iterator<Object> iterator = items.iterator();
+                while (iterator.hasNext()) {
+                    Object item = iterator.next();
+                    if (isAiContent(item)) {
+                        iterator.remove();
+                        removed++;
+                    }
+                }
+                if (removed > 0) {
+                    Log.i(TAG, "[Hide AI-Generated Content] Pruned " + removed + " AI-generated video(s) from feed.");
+                }
+            } catch (Throwable ignored) {}
+        }
+    }
+
+    public static void filterAiContentInFeedItemList(Object feedItemList) {
+        if (feedItemList == null) return;
+        try {
+            ensureInitialized(feedItemList.getClass().getClassLoader());
+            List<Object> items = extractFeedItems(feedItemList);
+            if (items != null) {
+                filterAiContentInList(items);
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    public static void filterAiContentInFollowFeedList(Object followFeedList) {
+        if (followFeedList == null) return;
+        try {
+            List<Object> items = extractFollowList(followFeedList);
+            if (items == null || items.isEmpty()) return;
+
+            synchronized (items) {
+                if (!initialized) {
+                    for (Object followItem : items) {
+                        if (followItem != null) {
+                            ensureInitialized(followItem.getClass().getClassLoader());
+                            break;
+                        }
+                    }
+                }
+
+                int removed = 0;
+                Iterator<Object> iterator = items.iterator();
+                while (iterator.hasNext()) {
+                    Object followItem = iterator.next();
+                    Object aweme = extractAwemeFromFollowItem(followItem);
+                    if (isAiContent(aweme)) {
+                        iterator.remove();
+                        removed++;
+                    }
+                }
+                if (removed > 0) {
+                    Log.i(TAG, "[Hide AI-Generated Content] Pruned " + removed + " AI-generated video(s) from Following feed.");
+                }
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    @SuppressWarnings("unchecked")
+    public static void filterAiContentInFriendsV3Feeds(Object listObj) {
+        if (!(listObj instanceof List)) return;
+        List<Object> items = (List<Object>) listObj;
+        if (items.isEmpty()) return;
+
+        synchronized (items) {
+            try {
+                if (!initialized) {
+                    for (Object item : items) {
+                        if (item != null) {
+                            ensureInitialized(item.getClass().getClassLoader());
+                            break;
+                        }
+                    }
+                }
+
+                int removed = 0;
+                Iterator<Object> iterator = items.iterator();
+                while (iterator.hasNext()) {
+                    Object item = iterator.next();
+                    Object aweme = extractAwemeFromFriendsV3FeedModel(item);
+                    if (isAiContent(aweme)) {
+                        iterator.remove();
+                        removed++;
+                    }
+                }
+                if (removed > 0) {
+                    Log.i(TAG, "[Hide AI-Generated Content] Pruned " + removed + " AI-generated video(s) from Friends V3 feed.");
+                }
+            } catch (Throwable ignored) {}
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static void filterAiContentInFriendsFeedData(Object listObj) {
+        if (!(listObj instanceof List)) return;
+        List<Object> items = (List<Object>) listObj;
+        if (items.isEmpty()) return;
+
+        synchronized (items) {
+            try {
+                if (!initialized) {
+                    for (Object item : items) {
+                        if (item != null) {
+                            ensureInitialized(item.getClass().getClassLoader());
+                            break;
+                        }
+                    }
+                }
+
+                int removed = 0;
+                Iterator<Object> iterator = items.iterator();
+                while (iterator.hasNext()) {
+                    Object item = iterator.next();
+                    Object aweme = extractAwemeFromFriendsFeed(item);
+                    if (isAiContent(aweme)) {
+                        iterator.remove();
+                        removed++;
+                    }
+                }
+                if (removed > 0) {
+                    Log.i(TAG, "[Hide AI-Generated Content] Pruned " + removed + " AI-generated video(s) from Friends feed.");
+                }
+            } catch (Throwable ignored) {}
+        }
     }
 
     // =========================================================================
