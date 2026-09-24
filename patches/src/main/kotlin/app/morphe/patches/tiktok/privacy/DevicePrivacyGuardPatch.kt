@@ -20,28 +20,6 @@ val devicePrivacyGuardPatch = bytecodePatch(
         // 1. RUNTIME PERMISSION DISPATCH & DEFENSE
         // ==========================================
 
-        // 1.1 Helios Central Activity.requestPermissions static dispatcher hook (LX/02z2;->LLJ)
-        try {
-            Fingerprint(
-                definingClass = "LX/02z2;",
-                name = "LLJ",
-                parameters = listOf("Landroid/app/Activity;", "[Ljava/lang/String;", "I", "LX/02yq;"),
-                returnType = "V",
-            ).method.addInstructions(
-                0,
-                """
-                    invoke-static {p0, p1, p2}, Lcom/kveld9/morphe/extension/tiktok/TikTokPrivacyHook;->interceptPermissionRequest(Landroid/app/Activity;[Ljava/lang/String;I)Z
-                    move-result v0
-                    if-eqz v0, :cond_proceed
-                    return-void
-                    :cond_proceed
-                """.trimIndent(),
-            )
-            println("[Device Privacy Guard] Neutralized LX/02z2.LLJ() (Helios requestPermissions dispatcher).")
-            patched++
-        } catch (e: Exception) {
-            println("[Device Privacy Guard] LX/02z2.LLJ note: ${e.message}")
-        }
 
         // 1.2 PowerPermissions FakeFragment dispatcher (FakeFragment;->jT)
         try {
@@ -53,7 +31,7 @@ val devicePrivacyGuardPatch = bytecodePatch(
             ).method.addInstructions(
                 0,
                 """
-                    invoke-static {p0, p1}, Lcom/kveld9/morphe/extension/tiktok/TikTokPrivacyHook;->interceptPowerPermissions(Ljava/lang/Object;Ljava/util/Set;)Z
+                    invoke-static/range {p0 .. p1}, Lcom/kveld9/morphe/extension/tiktok/TikTokPrivacyHook;->interceptPowerPermissions(Ljava/lang/Object;Ljava/util/Set;)Z
                     move-result v0
                     if-eqz v0, :cond_proceed
                     return-void
@@ -76,7 +54,7 @@ val devicePrivacyGuardPatch = bytecodePatch(
             ).method.addInstructions(
                 0,
                 """
-                    invoke-static {p0}, Lcom/kveld9/morphe/extension/tiktok/TikTokPrivacyHook;->isPermissionBlocked(Ljava/lang/String;)Z
+                    invoke-static/range {p0 .. p0}, Lcom/kveld9/morphe/extension/tiktok/TikTokPrivacyHook;->isPermissionBlocked(Ljava/lang/String;)Z
                     move-result v0
                     if-eqz v0, :cond_check
                     const/4 v0, 0x1
