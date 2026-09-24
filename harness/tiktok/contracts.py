@@ -448,6 +448,17 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
         required_strings=["yU"],
         criticality="HIGH",
     ),
+    PatchContract(
+        patch_id="hide_popular_lives_in_search",
+        name="Hide Popular Lives In Search",
+        target_type="bytecode",
+        description="Removes the 'LIVE populares' (Popular LIVEs) recommendation card and stream broadcasts from the search intermediate page.",
+        required_classes=[
+            "Lcom/ss/android/ugc/aweme/discover/model/suggest/RecomDataWrapper;",
+        ],
+        required_strings=[],
+        criticality="HIGH",
+    ),
 ]
 
 

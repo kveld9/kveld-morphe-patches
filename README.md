@@ -123,6 +123,7 @@
 | **Fix Google login** | Restores Google account sign-in after patching by forcing fallback to Web-based OAuth when Google Play Services rejects the modified APK signature. |  |
 | **Force auto-scroll** | Forces the activation of the native video auto-scroll experiment flag for accounts and regions that lack it due to A/B testing. |  |
 | **Hide Feed Search Bar** | Removes the search suggestion pill and trending bar ('Search · <keyword>') from the bottom of feed videos. |  |
+| **Hide Popular Lives In Search** | Removes the 'LIVE populares' (Popular LIVEs) recommendation card and stream broadcasts from the search intermediate page. |  |
 | **Hide Profile Photo Follow Button** | Hides the plus (+) follow badge on creator profile avatars in the feed and disables its touch interaction. |  |
 | **Hide STEM and Community Tabs** | Removes the STEM and Comunidad (Explore / Topics) tabs from the top navigation feed strip. |  |
 | **Hide Suggested Searches** | Removes the 'Podría interesarte' (You may like / Guess Search) suggested keywords section from the search intermediate page. |  |
