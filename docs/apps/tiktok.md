@@ -147,14 +147,14 @@ TH, TR, TW, UA, US, UY, VN, ZA
 
 ### 2. Video Quality Governor
 
-The **`Video Quality Governor`** patch enforces user-configured maximum resolution ceilings (`1080p`, `720p`, `540p`, `480p`, or unconstrained) across video feeds while allowing independent configuration of download quality. While standard TikTok features like "Data Saver" only compress network transfers under cellular conditions without capping hardware decoders, this governor caps the actual rendition ladder (`bitRateList` and `SimBitRate`) parsed by PlayerKit/TTPlayer, reducing hardware MediaCodec load, thermals, GraphicBuffers memory consumption, and frame drops on lower-spec or battery-sensitive devices.
+The **`Video Quality Governor`** patch enforces user-configured maximum resolution ceilings (`1080p`, `720p`, `540p`, `480p`, `360p`, or unconstrained) across video feeds while allowing independent configuration of download quality. While standard TikTok features like "Data Saver" only compress network transfers under cellular conditions without capping hardware decoders, this governor caps the actual rendition ladder (`bitRateList` and `SimBitRate`) parsed by PlayerKit/TTPlayer, reducing hardware MediaCodec load, thermals, GraphicBuffers memory consumption, and frame drops on lower-spec or battery-sensitive devices.
 
-Crucially, **playback quality and download quality are decoupled**: users can browse their feed in battery-efficient 480p while downloading clean videos in full 1080p.
+Crucially, **playback quality and download quality are decoupled**: users can browse their feed in battery-efficient 360p or 480p while downloading clean videos in full 1080p, or set a download ceiling (e.g. 720p or 480p) to conserve bandwidth and storage. Download capping directly hooks `Video.getDownloadNoWatermarkAddr()` and `Video.getDownloadAddr()` with dual H.264/ByteVC1 candidate resolution.
 
 | Option | Key | Type | Default | Supported Ceilings | Description |
 | :--- | :--- | :--- | :---: | :--- | :--- |
-| **Maximum Playback Resolution** | `maxQuality` | String | `480` | `1080`, `720`, `540`, `480`, `none` | Caps video playback height in vertical pixels. Discards higher rendition profiles in feed. |
-| **Maximum Download Resolution** | `maxDownloadQuality` | String | `1080` | `1080`, `720`, `540`, `480`, `none` | Sets download resolution ceiling independently of playback, allowing high-fidelity saving. |
+| **Maximum Playback Resolution** | `maxQuality` | String | `480` | `1080`, `720`, `540`, `480`, `360`, `none` | Caps video playback height in vertical pixels. Discards higher rendition profiles in feed. |
+| **Maximum Download Resolution** | `maxDownloadQuality` | String | `1080` | `1080`, `720`, `540`, `480`, `360`, `none` | Sets download resolution ceiling independently of playback, allowing high-fidelity saving. |
 
 #### Supported Resolution Ceilings
 
@@ -165,6 +165,7 @@ Crucially, **playback quality and download quality are decoupled**: users can br
 | `720` | 720p | ~1200–2000 kbps | **SuperHigh**: High-definition baseline balancing sharp visual fidelity with moderate GPU decoding. |
 | `540` | 540p | ~800–1200 kbps | **H_High**: Balanced midpoint optimizing fluid 60fps feed scrolling without thermal buildup. |
 | `480` *(Playback Default)* | 480p | ~500–800 kbps | **High**: Recommended sweet spot significantly reducing GraphicBuffers RAM allocation and decoding wattage. |
+| `360` | 360p | ~300–500 kbps | **Standard**: Ultra-low resource profile minimizing thermal output, battery drain, and cellular data consumption. |
 
 ---
 

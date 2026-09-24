@@ -181,23 +181,7 @@ public final class TikTokMediaHook {
 
     public static boolean isValidVideo(Object videoObj) {
         if (videoObj == null) return false;
-        try {
-            int h = -1;
-            int w = -1;
-            try {
-                Method mH = videoObj.getClass().getMethod("getHeight");
-                Object resH = mH.invoke(videoObj);
-                if (resH instanceof Integer) h = (Integer) resH;
-            } catch (Throwable ignored) {}
-            try {
-                Method mW = videoObj.getClass().getMethod("getWidth");
-                Object resW = mW.invoke(videoObj);
-                if (resW instanceof Integer) w = (Integer) resW;
-            } catch (Throwable ignored) {}
-
-            if (h == 0 || w == 0) return false;
-        } catch (Throwable ignored) {}
-        return true;
+        return videoObj.getClass().getName().contains("Video");
     }
 
     public static boolean isH264VideoUrlModel(Object model) {
@@ -261,10 +245,10 @@ public final class TikTokMediaHook {
     private static Object selectCleanFallback(Object videoObj) {
         if (videoObj == null || !isValidVideo(videoObj)) return null;
 
-        // 1. High-resolution stream preserved by Video Quality Governor (guaranteed H.264 video)
+        // 1. Stream preserved by Video Quality Governor (respects download cap)
         try {
             Object governorStream = TikTokVideoQualityHook.getBestDownloadPlayAddr(videoObj);
-            if (isH264VideoUrlModel(governorStream)) return governorStream;
+            if (governorStream != null && hasUsableUrl(governorStream)) return governorStream;
         } catch (Throwable ignored) {}
 
         // 2. Native H.264 streams (matches LX/0oMC.LIZ)
@@ -325,6 +309,22 @@ public final class TikTokMediaHook {
         try {
             ensureVideoReflection(videoObj.getClass().getClassLoader());
 
+            // Inject governor capped stream if available
+            Object governorStream = TikTokVideoQualityHook.getBestDownloadPlayAddr(videoObj);
+            if (governorStream != null && hasUsableUrl(governorStream)) {
+                boolean alreadySet = (downloadNoWatermarkAddrField != null && downloadNoWatermarkAddrField.get(videoObj) == governorStream);
+                if (!alreadySet) {
+                    if (downloadNoWatermarkAddrField != null) {
+                        downloadNoWatermarkAddrField.set(videoObj, governorStream);
+                    }
+                    if (downloadAddrField != null) {
+                        downloadAddrField.set(videoObj, governorStream);
+                    }
+                    Log.i(TAG, "[Watermark Free] Injected Quality Governor capped stream into video download fields.");
+                }
+                return;
+            }
+
             Object currentNoWatermark = null;
             if (downloadNoWatermarkAddrField != null) {
                 currentNoWatermark = downloadNoWatermarkAddrField.get(videoObj);
@@ -358,11 +358,11 @@ public final class TikTokMediaHook {
         try {
             ensureVideoReflection(videoObj.getClass().getClassLoader());
 
-            // 1. Prefer high-resolution uncapped stream preserved by Video Quality Governor
+            // 1. Prefer stream preserved by Video Quality Governor (respects user download resolution cap)
             try {
                 Object governorStream = TikTokVideoQualityHook.getBestDownloadPlayAddr(videoObj);
-                if (isH264VideoUrlModel(governorStream)) {
-                    Log.i(TAG, "[Watermark Free] Used high-resolution quality governor stream for download.");
+                if (governorStream != null && hasUsableUrl(governorStream)) {
+                    Log.i(TAG, "[Watermark Free] Used Quality Governor capped stream for download.");
                     return governorStream;
                 }
             } catch (Throwable ignored) {}

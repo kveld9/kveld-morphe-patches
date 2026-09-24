@@ -190,6 +190,68 @@ val videoQualityGovernorPatch = bytecodePatch(
             println("[Video Quality Governor] SimVideoUrlModel.getBitRate note: ${e.message}")
         }
 
+        // 6. Hook Video.getDownloadNoWatermarkAddr() to enforce download resolution ceiling
+        try {
+            val fp = Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Video;",
+                name = "getDownloadNoWatermarkAddr",
+                returnType = "Lcom/ss/android/ugc/aweme/base/model/UrlModel;",
+            )
+            val method = fp.method
+            val returnIndices = method.implementation?.instructions?.withIndex()
+                ?.filter { it.value.opcode == Opcode.RETURN_OBJECT }
+                ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
+                ?.toList() ?: emptyList()
+
+            returnIndices.asReversed().forEach { (returnIndex, reg) ->
+                method.addInstructions(
+                    returnIndex,
+                    """
+                        invoke-static {v$reg, p0}, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->enforceDownloadCap(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+                        move-result-object v$reg
+                        check-cast v$reg, Lcom/ss/android/ugc/aweme/base/model/UrlModel;
+                    """.trimIndent(),
+                )
+            }
+            if (returnIndices.isNotEmpty()) {
+                println("[Video Quality Governor] Hooked Video.getDownloadNoWatermarkAddr() (${returnIndices.size} return point(s)) -> Download cap active.")
+                patched++
+            }
+        } catch (e: Exception) {
+            println("[Video Quality Governor] Video.getDownloadNoWatermarkAddr note: ${e.message}")
+        }
+
+        // 7. Hook Video.getDownloadAddr() to enforce download resolution ceiling
+        try {
+            val fp = Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Video;",
+                name = "getDownloadAddr",
+                returnType = "Lcom/ss/android/ugc/aweme/base/model/UrlModel;",
+            )
+            val method = fp.method
+            val returnIndices = method.implementation?.instructions?.withIndex()
+                ?.filter { it.value.opcode == Opcode.RETURN_OBJECT }
+                ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
+                ?.toList() ?: emptyList()
+
+            returnIndices.asReversed().forEach { (returnIndex, reg) ->
+                method.addInstructions(
+                    returnIndex,
+                    """
+                        invoke-static {v$reg, p0}, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->enforceDownloadCap(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+                        move-result-object v$reg
+                        check-cast v$reg, Lcom/ss/android/ugc/aweme/base/model/UrlModel;
+                    """.trimIndent(),
+                )
+            }
+            if (returnIndices.isNotEmpty()) {
+                println("[Video Quality Governor] Hooked Video.getDownloadAddr() (${returnIndices.size} return point(s)) -> Download cap active.")
+                patched++
+            }
+        } catch (e: Exception) {
+            println("[Video Quality Governor] Video.getDownloadAddr note: ${e.message}")
+        }
+
         println("[Video Quality Governor] Applied $patched video resolution capping hook(s) (playback: ${chosenPlaybackRes}p, download: ${chosenDownloadRes}p).")
     }
 }
