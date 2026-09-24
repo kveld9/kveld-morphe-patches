@@ -392,6 +392,21 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
         required_strings=["getStoryStatus"],
         criticality="HIGH",
     ),
+    PatchContract(
+        patch_id="hide_feed_search_bar",
+        name="Hide Feed Search Bar",
+        target_type="bytecode",
+        description="Removes the search suggestion pill and trending bar ('Search · <keyword>') from the bottom of feed videos, providing a clean viewing area without search distractions.",
+        required_classes=[
+            "Lcom/ss/android/ugc/feed/platform/cell/interact/bottom/bar/FeedSearchBottomBarAssemTrigger;",
+            "Lcom/ss/android/ugc/feed/platform/cell/interact/bottom/bar/FeedSearchBottomBarAssemTriggerV2;",
+            "Lcom/ss/android/ugc/feed/platform/cell/interact/bottom/bar/TrendingBottomBarAssemTrigger;",
+            "Lcom/ss/android/ugc/feed/platform/cell/interact/bottom/bar/FeedSearchBottomBarAssem;",
+            "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
+        ],
+        required_strings=["isDisableSearchTrendingBar", "getTrendingBar"],
+        criticality="HIGH",
+    ),
 ]
 
 

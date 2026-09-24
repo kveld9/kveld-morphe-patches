@@ -39,6 +39,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Usability** | **Hide Profile Photo Follow Button** | `bytecodePatch` | Hides the plus (+) follow badge on creator profile avatars in the feed and disables its touch interaction. |
 | **Usability** | **Disable Profile Photo LIVE Status** | `bytecodePatch` | Removes pulsing LIVE ring/badge from creator avatars in feed and forces clicks directly to user profile. |
 | **Usability** | **Disable Story Feed Indicators** | `bytecodePatch` | Removes the top-center story drop-down indicator pill (e.g. '1 Story') and creator profile photo story rings from feed videos, ensuring avatar photos remain clean. |
+| **Usability** | **Hide Feed Search Bar** | `bytecodePatch` | Removes the search suggestion pill and trending bar ('Search · <keyword>') from the bottom of feed videos. |
 | **Usability** | **Auto-pause first video** | `bytecodePatch` | Automatically pauses the initial video on startup (frame 0) with center play icon; resumes instantly upon screen tap or feed scroll. |
 | **Privacy** | **Fix Google login** | `bytecodePatch` | Restores Google account sign-in via Web OAuth fallback when GMS rejects modified APK signature. |
 | **Privacy** | **Bypass Mandatory Login** | `bytecodePatch` | Neutralizes mandatory login walls, dynamic regional forced login gates, and guest browsing restrictions. |
@@ -280,4 +281,10 @@ The **`Custom Offline Videos Limit`** patch customizes the maximum video caching
 - **Social Publish Distributor**: Hooks `SocPubDistributeServiceImpl.LJII(User)Z` -> returns `false`.
 - **Feed Story Tag Trigger & Predicate Neutralization**: Dynamically locates and hooks the story tag visibility evaluator (`LX/0AZy;->LIZ(Context, Aweme, String)Z`) -> returns `false`, and forces `FeedStoryTagTrigger.Kr()Z` and `FeedStoryTagTriggerV2.Kr()Z` to return `false`.
 - **Story Tag Assem & Canvas Neutralization**: Stubs `FeedStoryTagAssem.Sr(VideoItemParams)V`, `FeedStoryTagAssem.onBind(Object)V`, `FeedStoryTagAssemV2.Sr(VideoItemParams)V`, `FeedStoryTagAssemV2.onBind(Object)V`, and `StoryTag.onDraw(Canvas)V` with `return-void`.
+
+### 11. Hide Feed Search Bar (`hideFeedSearchBarPatch`)
+- Removes the search suggestion pill and trending bar (e.g. "Search · <keyword> >") displayed directly above the bottom navigation bar on feed videos, eliminating search clutter and distraction.
+- **Trigger Component Suppression**: Hooks `Kr(VideoItemParams)Z` -> returns `false` across `FeedSearchBottomBarAssemTrigger`, `FeedSearchBottomBarAssemTriggerV2`, `TrendingBottomBarAssemTrigger`, `AdFeedSearchBottomBarAssemTrigger`, and `FeedEcSearchBottomBarAssemTrigger`, preventing the bottom bar from ever mounting into the feed cell.
+- **Assem Lifecycle Neutralization**: Stubs `onViewCreated(View)V` and `onBind(Object)V` across `FeedSearchBottomBarAssem`, `FeedSearchBottomBarAssemV2`, `TrendingBottomBarAssem`, `AdFeedSearchBottomBarAssem`, and `FeedEcSearchBottomBarAssem` with `return-void`. Also stubs `FeedSearchBottomBarAssem.Sr()V` to prevent layout inflation and view binding.
+- **Aweme Model Overrides**: Forces `Aweme.isDisableSearchTrendingBar()Z` to return `true`, `Aweme.hasTrendingBar()Z` and `Aweme.hasTrendingBarFYP()Z` to return `false`, and nulls out `getTrendingBar()`, `getTrendingBarFYP()`, and `getHotSearchInfo()`.
 
