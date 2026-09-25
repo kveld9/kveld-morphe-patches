@@ -1,3 +1,19 @@
+## [1.46.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.45.0...v1.46.0) (2026-09-25)
+
+### Bug Fixes
+
+* **brave:** neutralize ARM64 BTI flag to prevent startup crash on Android 16 ([f799f29](https://github.com/kveld9/kveld-morphe-patches/commit/f799f2927bccde164bc30ef04a7b0b9255f27ed7))
+* **ci:** prevent html tag truncation in telegram release notifications ([b758dd4](https://github.com/kveld9/kveld-morphe-patches/commit/b758dd46b1450105810f301801bed975590f593f))
+* **tiktok:** prevent false positives in ai remix detection ([45e4eb9](https://github.com/kveld9/kveld-morphe-patches/commit/45e4eb9457a397e73b1be584b516eb332d07baf5))
+
+### New Features
+
+* **tiktok:** add custom share sheet patch ([4a7e2b8](https://github.com/kveld9/kveld-morphe-patches/commit/4a7e2b8b5d2ce5603bcef744630dd193b30bafe6))
+
+### Code Refactoring
+
+* **tiktok:** tune default patch selection and standardize metadata ([d9a0538](https://github.com/kveld9/kveld-morphe-patches/commit/d9a05381cb53eee20cc00da086c4ea4c84eef13b))
+
 ## [1.45.0](https://github.com/kveld9/kveld-morphe-patches/compare/v1.44.0...v1.45.0) (2026-09-25)
 
 ### Bug Fixes
