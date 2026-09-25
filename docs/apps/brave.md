@@ -10,10 +10,10 @@ Comprehensive technical and configuration guide for **Brave Browser** (`com.brav
 | :--- | :--- |
 | **Target Application** | Brave Private Web Browser, VPN |
 | **Package Name** | `com.brave.browser` |
-| **Supported Target Version** | **`1.95.104`** |
+| **Supported Target Version** | **`1.96.59`** |
 | **Target File Format** | Standalone APK (`APK`) |
 | **Recommended Architecture** | `arm64-v8a` (or `armeabi-v7a` for 32-bit devices) |
-| **Official Download Source** | [GitHub: brave/brave-browser/releases](https://github.com/brave/brave-browser/releases/tag/v1.95.104) |
+| **Official Download Source** | [GitHub: brave/brave-browser/releases](https://github.com/brave/brave-browser/releases/tag/v1.96.59) |
 | **Recommended APK Assets** | `Bravemonoarm64.apk` (64-bit) or `BraveMonoarm.apk` (32-bit) |
 
 > [!IMPORTANT]

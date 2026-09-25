@@ -5,18 +5,18 @@ import app.morphe.patcher.patch.AppTarget
 import app.morphe.patcher.patch.Compatibility
 
 object Constants {
-    const val BRAVE_TARGET_VERSION = "1.95.104"
+    const val BRAVE_TARGET_VERSION = "1.96.59"
     const val BRAVE_PACKAGE_NAME = "com.brave.browser"
 
     val COMPATIBILITY_BRAVE = Compatibility(
         name = "Brave Private Web Browser, VPN",
         packageName = BRAVE_PACKAGE_NAME,
-        apkFileType = ApkFileType.APKM,
+        apkFileType = ApkFileType.APK,
         appIconColor = 0xFF4500,
         targets = listOf(
             AppTarget(
                 version = BRAVE_TARGET_VERSION,
-                description = "Download Bravemonoarm64.apk or BraveMonoarm.apk (v1.95.104) from github.com/brave/brave-browser/releases"
+                description = "Download Bravemonoarm64.apk or BraveMonoarm.apk (v1.96.59) from github.com/brave/brave-browser/releases"
             )
         )
     )

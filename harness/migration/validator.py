@@ -74,7 +74,7 @@ class AdversarialValidator:
                 name_id="origin_subscription_active",
                 return_type="Z",
                 parameters=["Lorg/chromium/chrome/browser/profiles/Profile;"],
-                strings=["getIsSubscriptionActive profile is null", "brave.origin.subscription_active_android"],
+                strings=["getIsSubscriptionActive prefs are unavailable", "brave.origin.subscription_active_android"],
             ),
             FingerprintQuery(
                 name_id="origin_subscription_tokens",
@@ -105,7 +105,7 @@ class AdversarialValidator:
                 name_id="origin_request_summary",
                 return_type="V",
                 parameters=["Lorg/chromium/chrome/browser/profiles/Profile;", "Lorg/chromium/base/Callback;"],
-                strings=["requestCredentialSummary profile is null", "SkusService is null, cannot request credential summary"],
+                strings=["SkusService is null, cannot request credential summary", "requestCredentialSummary profile is null or destroyed"],
             ),
             FingerprintQuery(
                 name_id="origin_on_pref_change",

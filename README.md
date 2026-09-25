@@ -38,7 +38,7 @@
 
 | Application | Package ID | Target Version | Architecture / Variant | Download Source | Complete Guide |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Brave Browser** | `com.brave.browser` | `1.95.104` | `arm64-v8a`<br>`armeabi-v7a` (Monolithic) | [ARM64](https://github.com/brave/brave-browser/releases/download/v1.95.104/Bravemonoarm64.apk) · [ARM32](https://github.com/brave/brave-browser/releases/download/v1.95.104/BraveMonoarm.apk) | [Brave Guide](docs/apps/brave.md) |
+| **Brave Browser** | `com.brave.browser` | `1.96.59` | `arm64-v8a`<br>`armeabi-v7a` (Monolithic) | [ARM64](https://github.com/brave/brave-browser/releases/download/v1.96.59/Bravemonoarm64.apk) · [ARM32](https://github.com/brave/brave-browser/releases/download/v1.96.59/BraveMonoarm.apk) | [Brave Guide](docs/apps/brave.md) |
 | **Gboard Lite** | `com.google.android.inputmethod.latin` | `18.2.4.969776716` | `arm64-v8a`<br>`armeabi-v7a` (nodpi) | [APKMirror](https://www.apkmirror.com/apk/google-inc/gboard/gboard-the-google-keyboard-18-2-4-969776716-release/) | [Gboard Lite Guide](docs/apps/gboard.md) |
 | **Hevy** | `com.hevy` | `3.1.14` | `arm64-v8a` (APKM Bundle) | [APKMirror](https://www.apkmirror.com/apk/hevy-gym-workout-tracker/hevy-gym-log-workout-tracker/hevy-gym-log-workout-tracker-3-1-14-release/) | [Hevy Guide](docs/apps/hevy.md) |
 | **NokoPrint** | `com.nokoprint` | `5.28.4` | Universal (nodpi) | [APKPure](https://d.apkpure.com/b/XAPK/com.nokoprint?versionCode=52804) | [NokoPrint Guide](docs/apps/nokoprint.md) |
@@ -158,7 +158,7 @@
 
 **Supported versions:**
 
-| 1.95.104 |
+| 1.96.59 |
 | :---: |
 
 | Patch | Description | Options |

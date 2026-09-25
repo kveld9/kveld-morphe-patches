@@ -10,7 +10,7 @@ Each application has an authoritative, all-in-one guide covering prerequisites, 
 
 | Application | Supported Version | Architectures | Target Format | Complete Documentation |
 | :--- | :--- | :--- | :--- | :--- |
-| **Brave Browser** | `1.95.104` | `arm64-v8a`, `armeabi-v7a` | Standalone APK (`Bravemonoarm64.apk` / `BraveMonoarm.apk`) | [Brave Guide](apps/brave.md) |
+| **Brave Browser** | `1.96.59` | `arm64-v8a`, `armeabi-v7a` | Standalone APK (`Bravemonoarm64.apk` / `BraveMonoarm.apk`) | [Brave Guide](apps/brave.md) |
 | **Gboard Lite** | `18.2.4.969776716` | `arm64-v8a`, `armeabi-v7a` | Standalone nodpi APK | [Gboard Lite Guide](apps/gboard.md) |
 | **Hevy** | `3.1.14` | `arm64-v8a` (64-bit only) | Split APK Bundle (`.apkm`) | [Hevy Guide](apps/hevy.md) |
 | **NokoPrint** | `5.28.4` | `arm64-v8a`, `armeabi-v7a`, `universal` | Standalone nodpi APK / Bundle | [NokoPrint Guide](apps/nokoprint.md) |
