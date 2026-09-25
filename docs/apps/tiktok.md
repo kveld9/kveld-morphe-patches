@@ -337,6 +337,7 @@ The **`Custom Share Sheet`** patch cleans and customizes TikTok's native sharing
 ### 16. Hide Popular Lives In Search (`hideSearchPopularLivesPatch`)
 - Removes the Popular LIVEs recommendation card and live stream broadcasts from the search discovery screen.
 - **Search Intermediate Raw Payload & Model Filtering**: Intercepts `RecomDataWrapper.<init>(String, SuggestWordResponse)` to filter out `"trending_rank_live"` and `"live_popular"` card items from the raw JSON payload and parsed response model before Lynx rendering.
+- **Lynx AB Parameters & Schema Sanitization**: Intercepts `SparkHostApiImpl.LJLJI` to sanitize Lynx `abParams` (`has_transfer_tab_live = 0`, clears `transfer_tab_live_url`, `intermediate_show_trending_billboard = 0`), and strips `intermediate_show_trending_billboard` from Lynx schema URLs in `LX/0HLB;->LIZ`.
 
 ### 17. Enable Voice Comments (`enableVoiceCommentsPatch`)
 - Forces the activation of TikTok's native voice comment recording button in comment input bars, bypassing regional rollout restrictions and remote server blocks.

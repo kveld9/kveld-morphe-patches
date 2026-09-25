@@ -36,9 +36,26 @@ public final class TikTokSearchHook {
         return false;
     }
 
-    private static boolean isPopularLive(String type) {
-        if (type == null) return false;
-        return "trending_rank_live".equals(type) || "live_popular".equals(type) || type.endsWith("rank_live");
+    private static boolean isPopularLive(String type, String source, String title) {
+        if (type != null) {
+            String t = type.toLowerCase();
+            if (t.contains("live") || t.contains("rank") || t.contains("billboard")) {
+                return true;
+            }
+        }
+        if (source != null) {
+            String s = source.toLowerCase();
+            if (s.contains("live") || s.contains("rank") || s.contains("billboard")) {
+                return true;
+            }
+        }
+        if (title != null) {
+            String ti = title.toLowerCase();
+            if (ti.contains("live") || ti.contains("en vivo") || ti.contains("populares")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static String filterGuessSearchRaw(String rawString) {
@@ -72,11 +89,34 @@ public final class TikTokSearchHook {
         }
     }
 
+    public static Map filterPopularLivesAbParams(Map map) {
+        if (map == null) return null;
+        try {
+            Map result = new HashMap(map);
+            result.put("has_transfer_tab_live", 0);
+            result.remove("transfer_tab_live_url");
+            result.put("transfer_tab_live_url", "");
+            result.put("intermediate_show_trending_billboard", 0);
+            Log.i(TAG, "[Search Filter] Filtered popular lives abParams");
+            return result;
+        } catch (Throwable t) {
+            Log.e(TAG, "[Search Filter] filterPopularLivesAbParams error: " + t.getMessage());
+            return map;
+        }
+    }
+
     public static String filterSuggestedSchema(String schema) {
         if (schema == null) return null;
         return schema.replace(",show_suggest_search_words", "")
                      .replace("show_suggest_search_words,", "")
                      .replace("show_suggest_search_words", "");
+    }
+
+    public static String filterPopularLivesSchema(String schema) {
+        if (schema == null) return null;
+        return schema.replace(",intermediate_show_trending_billboard", "")
+                     .replace("intermediate_show_trending_billboard,", "")
+                     .replace("intermediate_show_trending_billboard", "");
     }
 
     private static String filterRaw(String rawString, boolean isSuggestedSearchFilter) {
@@ -99,7 +139,7 @@ public final class TikTokSearchHook {
                         if (params != null) {
                             title = params.optString("title");
                         }
-                        boolean match = isSuggestedSearchFilter ? isSuggestedSearch(type, source, title) : isPopularLive(type);
+                        boolean match = isSuggestedSearchFilter ? isSuggestedSearch(type, source, title) : isPopularLive(type, source, title);
                         if (match) {
                             Log.i(TAG, "[Search Filter] Filtered card: type=" + type + ", source=" + source + ", title=" + title);
                             modified = true;
@@ -144,7 +184,7 @@ public final class TikTokSearchHook {
                             if (source instanceof String) sourceStr = (String) source;
                         } catch (Throwable ignored) {}
 
-                        boolean match = isSuggestedSearchFilter ? isSuggestedSearch(typeStr, sourceStr, null) : isPopularLive(typeStr);
+                        boolean match = isSuggestedSearchFilter ? isSuggestedSearch(typeStr, sourceStr, null) : isPopularLive(typeStr, sourceStr, null);
                         if (match) {
                             it.remove();
                             Log.i(TAG, "[Search Filter] Removed response item: type=" + typeStr + ", source=" + sourceStr);
