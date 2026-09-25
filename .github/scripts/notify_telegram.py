@@ -9,6 +9,7 @@ import os
 import re
 import subprocess
 import sys
+import urllib.error
 import urllib.parse
 import urllib.request
 from typing import Optional
@@ -39,6 +40,38 @@ def markdown_to_telegram_html(text: str) -> str:
     return text
 
 
+def truncate_telegram_html(body: str, max_len: int) -> str:
+    """Truncates HTML changelog by atomic lines ensuring valid HTML tags within budget."""
+    if len(body) <= max_len:
+        return body
+
+    notice = "\n\n<i>(Changelog truncated, see GitHub release)</i>"
+    budget = max_len - len(notice)
+    if budget <= 0:
+        return notice.strip()
+
+    lines = body.split("\n")
+    collected = []
+    current_len = 0
+
+    for line in lines:
+        needed = len(line) if not collected else len(line) + 1
+        if current_len + needed > budget:
+            break
+        collected.append(line)
+        current_len += needed
+
+    while collected:
+        last = collected[-1].strip()
+        if not last or (last.startswith("<b>") and last.endswith("</b>") and not last.startswith("•")):
+            collected.pop()
+        else:
+            break
+
+    truncated_body = "\n".join(collected).strip()
+    return f"{truncated_body}{notice}"
+
+
 def build_message(
     version: str,
     tag: str,
@@ -63,14 +96,11 @@ def build_message(
 
     footer = "\n\n" + "\n".join(links) if links else ""
 
-    # Ensure message does not exceed Telegram limits
     fixed_len = len(header) + len(footer)
-    max_body_len = TELEGRAM_MAX_MESSAGE_LENGTH - fixed_len - 100
+    max_body_len = TELEGRAM_MAX_MESSAGE_LENGTH - fixed_len
 
-    if len(body) > max_body_len:
-        body = body[:max_body_len] + "...\n\n<i>(Changelog truncated, see GitHub release)</i>"
-
-    return f"{header}{body}{footer}".strip()
+    truncated_body = truncate_telegram_html(body, max_body_len)
+    return f"{header}{truncated_body}{footer}".strip()
 
 
 def send_telegram_message(token: str, chat_id: str, text: str):
@@ -126,8 +156,7 @@ def get_repo_from_git() -> str:
     try:
         cmd = ["git", "remote", "get-url", "origin"]
         res = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        url = res.stdout.strip()
-        m = re.search(r"github\.com[:/]([^/]+/[^/.]+)(?:\.git)?", url)
+        m = re.search(r"github\.com(?::\d+)?[:/]([a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+?)(?:\.git)?$", url)
         if m:
             return m.group(1)
     except Exception:
@@ -180,8 +209,13 @@ def main():
         print("Sending Telegram release notification...")
         send_telegram_message(token, chat_id, message)
         print("Telegram notification sent successfully.")
+    except urllib.error.HTTPError as e:
+        error_body = e.read().decode("utf-8", errors="replace")
+        print(f"Error sending Telegram message: {e} - {error_body}", file=sys.stderr)
+        sys.exit(1)
     except Exception as e:
         print(f"Error sending Telegram message: {e}", file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == "__main__":
