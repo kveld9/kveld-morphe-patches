@@ -5,6 +5,7 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.replaceWithReturnBoolean
 import app.morphe.patches.shared.replaceWithReturnInt
+import app.morphe.patches.shared.replaceWithReturnNull
 import app.morphe.patches.shared.replaceWithReturnVoid
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 
@@ -18,7 +19,44 @@ val disableStoryFeedIndicatorsPatch = bytecodePatch(
     execute {
         var patched = 0
 
-        // 1. Hook User.getStoryStatus() -> return 0 (forces all users to report no active stories)
+        // 1. Neutralize Aweme story models at root data level
+        try {
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
+                name = "getUserStory",
+                returnType = "Lcom/ss/android/ugc/aweme/feed/model/story/UserStory;",
+            ).method.replaceWithReturnNull()
+            println("[Disable Story Feed Indicators] Hooked Aweme.getUserStory() -> null.")
+            patched++
+        } catch (e: Exception) {
+            println("[Disable Story Feed Indicators] Aweme.getUserStory note: ${e.message}")
+        }
+
+        try {
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
+                name = "getIsTikTokStory",
+                returnType = "Z",
+            ).method.replaceWithReturnBoolean(false)
+            println("[Disable Story Feed Indicators] Hooked Aweme.getIsTikTokStory() -> false.")
+            patched++
+        } catch (e: Exception) {
+            println("[Disable Story Feed Indicators] Aweme.getIsTikTokStory note: ${e.message}")
+        }
+
+        try {
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
+                name = "getStory",
+                returnType = "Lcom/ss/android/ugc/aweme/feed/model/story/Story;",
+            ).method.replaceWithReturnNull()
+            println("[Disable Story Feed Indicators] Hooked Aweme.getStory() -> null.")
+            patched++
+        } catch (e: Exception) {
+            println("[Disable Story Feed Indicators] Aweme.getStory note: ${e.message}")
+        }
+
+        // 2. Hook User.getStoryStatus() -> return 0 (forces all users to report no active stories)
         try {
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/profile/model/User;",

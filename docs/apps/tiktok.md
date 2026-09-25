@@ -38,7 +38,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Usability** | **[Custom Share Sheet](#5-custom-share-sheet)** | `bytecodePatch` | Simplifies the share menu to essential options (Copy link, More), suppresses the direct message friends row, and filters third-party social apps. |
 | **Usability** | **Auto-Translate Comments** | `bytecodePatch` | Automatically dispatches batch translations via TikTok's native engine. |
 | **Usability** | **Hide Top-Left LIVE Button** | `bytecodePatch` | Removes the top-left LIVE broadcast button and tab entry point from the top navigation bar. |
-| **Usability** | **Hide STEM and Community Tabs** | `bytecodePatch` | Removes the STEM and Topics (Community / Explore) tabs from the top navigation feed strip. |
+| **Usability** | **Hide Community Tab** | `bytecodePatch` | Removes the Community (Explore) tab from the top navigation feed strip. |
 | **Usability** | **Hide Profile Photo Follow Button** | `bytecodePatch` | Hides the plus (+) follow badge on creator profile avatars in the feed and disables its touch interaction. |
 | **Usability** | **Disable Profile Photo LIVE Status** | `bytecodePatch` | Removes pulsing LIVE ring/badge from creator avatars in feed and forces clicks directly to user profile. |
 | **Usability** | **Disable Story Feed Indicators** | `bytecodePatch` | Removes the top-center story drop-down indicator pill (e.g. '1 Story') and creator profile photo story rings from feed videos, ensuring avatar photos remain clean. |
@@ -300,6 +300,7 @@ The **`Custom Share Sheet`** patch cleans and customizes TikTok's native sharing
 
 ### 11. Disable Story Feed Indicators (`disableStoryFeedIndicatorsPatch`)
 - Removes the top-center story drop-down indicator pill (e.g. "1 Story ▼") and creator profile photo story rings from feed videos, ensuring avatar photos remain permanently clean.
+- **Root Aweme Story Model Neutralization**: Hooks `Aweme.getUserStory()Lcom/ss/android/ugc/aweme/feed/model/story/UserStory;` -> returns `null`, `Aweme.getIsTikTokStory()Z` -> returns `false`, and `Aweme.getStory()Lcom/ss/android/ugc/aweme/feed/model/story/Story;` -> returns `null`, stripping all story attributes at the feed video data root.
 - **User Story Status Neutralization**: Hooks `User.getStoryStatus()I` -> returns `0`, preventing feed wrappers from detecting active author stories.
 - **Feed Avatar Story Ring & Click Neutralization**: Stubs `FeedAvatarSocialPublishAssem.onViewCreated(View)V`, `FeedAvatarSocialPublishAssem.onBind(Object)V`, and `FeedAvatarSocialPublishAssem.tr(VideoItemParams)V` with `return-void` to prevent inflating/animating the cyan story ring and remove the `CLICK_TAG_FEED_AVATAR_SOCIAL` click interceptor, keeping the avatar clean and routing taps strictly to the creator profile.
 - **Social Publish Distributor**: Hooks `SocPubDistributeServiceImpl.LJII(User)Z` -> returns `false`.
