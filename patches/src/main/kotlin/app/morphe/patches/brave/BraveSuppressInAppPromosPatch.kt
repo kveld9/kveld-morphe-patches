@@ -30,31 +30,31 @@ val braveSuppressInAppPromosPatch = bytecodePatch(
         // 2. BraveRateDialogFragment: Neutralize show(FragmentManager, String)
         Fingerprint(
             definingClass = "Lorg/chromium/chrome/browser/rate/BraveRateDialogFragment;",
-            name = "c5",
+            strings = listOf("brave_rating_dialog_tag"),
             returnType = "V",
         ).method.apply {
             addInstructions(0, "return-void")
-            hookedMethods.add("BraveRateDialogFragment.c5")
+            hookedMethods.add("BraveRateDialogFragment.show")
         }
 
         // 3. BraveAskPlayStoreRatingDialog: Neutralize show(FragmentManager, String)
         Fingerprint(
             definingClass = "Lorg/chromium/chrome/browser/rate/BraveAskPlayStoreRatingDialog;",
-            name = "c5",
+            strings = listOf("brave_ask_play_store_rating_dialog_tag"),
             returnType = "V",
         ).method.apply {
             addInstructions(0, "return-void")
-            hookedMethods.add("BraveAskPlayStoreRatingDialog.c5")
+            hookedMethods.add("BraveAskPlayStoreRatingDialog.show")
         }
 
         // 4. BraveRateThanksFeedbackDialog: Neutralize show(FragmentManager, String)
         Fingerprint(
             definingClass = "Lorg/chromium/chrome/browser/rate/BraveRateThanksFeedbackDialog;",
-            name = "c5",
+            strings = listOf("brave_rate_thanks_feedback_dialog_tag"),
             returnType = "V",
         ).method.apply {
             addInstructions(0, "return-void")
-            hookedMethods.add("BraveRateThanksFeedbackDialog.c5")
+            hookedMethods.add("BraveRateThanksFeedbackDialog.show")
         }
 
         // 5. BraveAdsSignupDialog: Neutralize in-app signup prompt builder
@@ -82,8 +82,10 @@ val braveSuppressInAppPromosPatch = bytecodePatch(
         // 7. BraveDialogFragment: Drop promotional dialog tags before display
         Fingerprint(
             definingClass = "Lorg/chromium/chrome/browser/BraveDialogFragment;",
-            name = "c5",
             returnType = "V",
+            custom = { method, _ ->
+                method.parameterTypes.size == 2 && method.parameterTypes[1] == "Ljava/lang/String;"
+            },
         ).method.apply {
             addInstructionsWithLabels(
                 0,
@@ -91,19 +93,19 @@ val braveSuppressInAppPromosPatch = bytecodePatch(
                     const-string v0, "OpenYtInBraveDialogFragment"
                     invoke-virtual {v0, p2}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
                     move-result v0
-                    if-nez v0, :not_yt
+                    if-eqz v0, :not_yt
                     return-void
                     :not_yt
                     const-string v0, "BraveAdFreeCalloutDialogFragment"
                     invoke-virtual {v0, p2}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
                     move-result v0
-                    if-nez v0, :not_adfree
+                    if-eqz v0, :not_adfree
                     return-void
                     :not_adfree
                     nop
                 """.trimIndent(),
             )
-            hookedMethods.add("BraveDialogFragment.c5")
+            hookedMethods.add("BraveDialogFragment.show")
         }
 
         val targetClasses = hookedMethods.map { it.substringBefore('.') }.distinct()
