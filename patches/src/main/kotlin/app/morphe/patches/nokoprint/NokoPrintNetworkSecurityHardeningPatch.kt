@@ -5,8 +5,8 @@ import app.morphe.patches.shared.Constants
 
 @Suppress("unused")
 val nokoPrintNetworkSecurityHardeningPatch = resourcePatch(
-    name = "NokoPrint Network Security Hardening",
-    description = "Enforces HTTPS encryption for driver downloads and backend communications with nokoprint.com while preserving local cleartext traffic for LAN network printers.",
+    name = "Network Security Hardening",
+    description = "Enforces HTTPS encryption for nokoprint.com driver downloads while preserving LAN cleartext printer traffic.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_NOKOPRINT)
@@ -14,7 +14,7 @@ val nokoPrintNetworkSecurityHardeningPatch = resourcePatch(
     execute {
         val configFile = get("res/xml/network_security_config.xml")
         if (!configFile.exists()) {
-            println("[NokoPrint Network Security Hardening] network_security_config.xml not found - skipping.")
+            println("[Network Security Hardening] network_security_config.xml not found - skipping.")
             return@execute
         }
 
@@ -35,6 +35,6 @@ val nokoPrintNetworkSecurityHardeningPatch = resourcePatch(
 """.trimIndent()
 
         configFile.writeText(hardenedConfig)
-        println("[NokoPrint Network Security Hardening] Configured network security config: enforced HTTPS for nokoprint.com, preserved LAN printer cleartext traffic.")
+        println("[Network Security Hardening] Configured network security config: enforced HTTPS for nokoprint.com, preserved LAN printer cleartext traffic.")
     }
 }

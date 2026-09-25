@@ -10,8 +10,8 @@ private val EMPTY_BYTES = byteArrayOf()
 
 @Suppress("unused")
 val nokoPrintAssetDebloatPatch = rawResourcePatch(
-    name = "NokoPrint Asset De-bloat",
-    description = "Strips embedded secondary Meta Audience Network DEX, tracking scripts, ad-viewer HTML/JS templates, RuStore TLS certs, and third-party ad assets to save APK space.",
+    name = "Asset Debloat",
+    description = "Strips embedded ad DEX, tracking scripts, web templates, and ad drawables to reduce APK size.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_NOKOPRINT)
@@ -159,6 +159,6 @@ val nokoPrintAssetDebloatPatch = rawResourcePatch(
         }
 
         val savedMb = String.format(Locale.US, "%.2f", savedBytes.toDouble() / (1024 * 1024))
-        println("[NokoPrint Asset De-bloat] Cleaned $count files, saved $savedMb MB in assets.")
+        println("[Asset Debloat] Cleaned $count files, saved $savedMb MB in assets.")
     }
 }

@@ -51,6 +51,26 @@
 
 <!-- PATCHES_START -->
 <details>
+<summary>NokoPrint - WiFi, Bluetooth, USB&nbsp;&nbsp;•&nbsp;&nbsp;<b>6 patches</b></summary>
+<br>
+
+**Supported versions:**
+
+| 5.28.4 |
+| :---: |
+
+| Patch | Description | Options |
+|----------|----------------|-----------|
+| **Ad Dispatch Governor** | Neutralizes ad loaders, unlocks ad-free status, and strips mediation components & startup providers. |  |
+| **Asset Debloat** | Strips embedded ad DEX, tracking scripts, web templates, and ad drawables to reduce APK size. |  |
+| **Background Sync Optimizer** | Neutralizes background WorkManager constraint tasks and diagnostic wakelocks. |  |
+| **Block Telemetry & Trackers** | Neutralizes Firebase Analytics, Google Measurement, TikTok Business SDK, and crashlytics tracking. |  |
+| **Multi-Store Debridger** | Disables orphan billing activities, services, and permissions for alternative OEM stores (Huawei, Xiaomi, Samsung). |  |
+| **Network Security Hardening** | Enforces HTTPS encryption for nokoprint.com driver downloads while preserving LAN cleartext printer traffic. |  |
+
+</details>
+
+<details>
 <summary>Gboard Lite&nbsp;&nbsp;•&nbsp;&nbsp;<b>25 patches</b></summary>
 <br>
 
@@ -195,28 +215,6 @@
 | **Hevy Battery Optimization & Background Sync Killer** | Disables background WorkManager alarms, periodic job schedulers, Google Play Billing IPC (~89 MB RAM), and removes largeHeap to force aggressive Garbage Collection. |  |
 | **Hevy Resource Slimmer** | Strips embedded onboarding MP4 tutorial video, heavy IMG.LY photo editor stickers/textures, and compiler junk metadata. |  |
 | **Unlock Pro** | Unlocks local Hevy Pro capabilities (unlimited workout routines, routine folders, advanced graphs, and local analytics) by dynamically enabling Pro getters and suppressing grace period payment warnings in Hermes Bytecode (HBC96). |  |
-
-</details>
-
-<details>
-<summary>NokoPrint - WiFi, Bluetooth, USB&nbsp;&nbsp;•&nbsp;&nbsp;<b>8 patches</b></summary>
-<br>
-
-**Supported versions:**
-
-| 5.28.4 |
-| :---: |
-
-| Patch | Description | Options |
-|----------|----------------|-----------|
-| **NokoPrint Ad Activities Slimmer** | Disables over 100 third-party ad mediation activities, internal web browsers, and debuggers registered in AndroidManifest.xml. |  |
-| **NokoPrint Ad Dispatch Governor** | Neutralizes in-app banner, interstitial, and rewarded ad loaders, preloading schedulers, and refresh handlers. |  |
-| **NokoPrint Asset De-bloat** | Strips embedded secondary Meta Audience Network DEX, tracking scripts, ad-viewer HTML/JS templates, RuStore TLS certs, and third-party ad assets to save APK space. |  |
-| **NokoPrint Background Sync Optimizer** | Neutralizes background WorkManager constraint tasks and diagnostic wakelocks. |  |
-| **NokoPrint Block Telemetry & Trackers** | Neutralizes Firebase Analytics and Google Measurement tracking and event dispatching. |  |
-| **NokoPrint Multi-Store Debridger** | Disables orphan billing activities, background services, and permissions for alternative OEM stores (Huawei HMS, Xiaomi, Samsung, CafeBazaar, OneStore). |  |
-| **NokoPrint Network Security Hardening** | Enforces HTTPS encryption for driver downloads and backend communications with nokoprint.com while preserving local cleartext traffic for LAN network printers. |  |
-| **NokoPrint Startup Performance Optimizer** | Disables non-essential ad mediation and tracker ContentProviders that auto-initialize before Application.onCreate, accelerating cold startup. |  |
 
 </details>
 

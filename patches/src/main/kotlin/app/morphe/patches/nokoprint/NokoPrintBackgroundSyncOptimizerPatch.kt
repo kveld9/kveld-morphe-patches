@@ -8,7 +8,7 @@ import app.morphe.patches.shared.Constants
 import org.w3c.dom.Element
 
 private val nokoPrintBackgroundSyncResourcePatch = resourcePatch(
-    name = "NokoPrint Background Sync Manifest Hardening",
+    name = "Background Sync Manifest Hardening",
     description = "Disables WorkManager alarms, constraint proxies, diagnostic receivers, and non-essential background schedulers.",
     default = false,
 ) {
@@ -17,7 +17,7 @@ private val nokoPrintBackgroundSyncResourcePatch = resourcePatch(
     execute {
         val manifestFile = get("AndroidManifest.xml")
         if (!manifestFile.exists()) {
-            println("[NokoPrint Background Sync Hardening] AndroidManifest.xml not found - skipping.")
+            println("[Background Sync Optimizer] AndroidManifest.xml not found - skipping.")
             return@execute
         }
 
@@ -68,13 +68,13 @@ private val nokoPrintBackgroundSyncResourcePatch = resourcePatch(
             metaToRemove.forEach { it.parentNode?.removeChild(it) }
         }
 
-        println("[NokoPrint Background Sync Hardening] Neutralized $neutralizedCount background sync components.")
+        println("[Background Sync Optimizer] Neutralized $neutralizedCount background sync components.")
     }
 }
 
 @Suppress("unused")
 val nokoPrintBackgroundSyncOptimizerPatch = bytecodePatch(
-    name = "NokoPrint Background Sync Optimizer",
+    name = "Background Sync Optimizer",
     description = "Neutralizes background WorkManager constraint tasks and diagnostic wakelocks.",
     default = true,
 ) {
@@ -90,7 +90,7 @@ val nokoPrintBackgroundSyncOptimizerPatch = bytecodePatch(
             returnType = "Ljava/lang/Object;",
         ).method.apply {
             addInstructions(0, "const/4 v0, 0\nreturn-object v0")
-            println("[NokoPrint Background Sync Optimizer] Neutralized WorkManagerInitializer.create")
+            println("[Background Sync Optimizer] Neutralized WorkManagerInitializer.create")
         }
     }
 }
