@@ -53,7 +53,6 @@ val cleanShareUrlPatch = bytecodePatch(
         // 1. Hook ClipboardImpl.setPrimaryClip so all copied links, URLs, and text are sanitized
         try {
             val fpClipboard = Fingerprint(
-                returnType = "Z",
                 parameters = listOf("Landroid/content/ClipData;"),
                 strings = listOf("google"),
             )
