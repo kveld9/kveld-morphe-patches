@@ -22,7 +22,12 @@ public class BraveExtension extends ChromiumExtension {
     public static boolean filterNtpPref(String pref, boolean originalValue) {
         if (pref == null) return originalValue;
         switch (pref) {
+            case "brave.new_tab_page.show_background_image":
+            case "brave.new_tab_page.show_branded_background_image":
             case "brave.new_tab_page.show_sponsored_images":
+            case "brave.brave_ads.sponsored.enabled":
+            case "brave.new_tab_page.show_stats":
+            case "brave.new_tab_page.show_sponsored_sites":
             case "brave.today.enabled":
             case "brave.today.opted_in":
             case "brave.new_tab_page.show_brave_news":
