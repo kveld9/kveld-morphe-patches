@@ -8,6 +8,14 @@
     {
       "issue": 30,
       "reason": "Referred to external Morphe patch repository (d0nj/morphe-patches)"
+    },
+    {
+      "issue": 41,
+      "reason": "Settings panel UI injection rejected as out of scope (docs/out-of-scope.md)"
+    },
+    {
+      "issue": 44,
+      "reason": "Telemetry offset update already aligned on main branch"
     }
   ],
   "contributors": [
@@ -51,6 +59,10 @@
         {
           "title": "TikTok Always show publish date, Copy comments without username, Fix Google login, and Show seekbar",
           "issue": 35
+        },
+        {
+          "title": "TikTok Custom offline videos limit",
+          "issue": 40
         }
       ]
     },
@@ -78,6 +90,15 @@
         {
           "title": "Brave ARMv7a (32-bit) architecture support",
           "issue": 50
+        }
+      ]
+    },
+    {
+      "username": "marcoodhb",
+      "contributions": [
+        {
+          "title": "TikTok Disable double tap to like",
+          "issue": 55
         }
       ]
     }
