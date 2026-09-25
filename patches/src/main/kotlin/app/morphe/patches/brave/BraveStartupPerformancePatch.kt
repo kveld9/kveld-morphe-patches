@@ -107,42 +107,34 @@ private fun patchBtiInElf(raf: RandomAccessFile): Boolean {
     return clearBtiInGnuProperty(raf, gnuPropOffset)
 }
 
-internal val braveBtiCompatibilityPatch = rawResourcePatch(
-    name = "Brave ARM64 BTI Compatibility",
-    description = "Neutralizes GNU_PROPERTY_AARCH64_FEATURE_1_BTI in libchrome.so to prevent Branch Target Exception SIGILL crashes on ARMv8.5+ devices.",
-    default = false,
-) {
+internal val braveBtiCompatibilityPatch = rawResourcePatch {
     compatibleWith(Constants.COMPATIBILITY_BRAVE)
 
     execute {
         val soFile = get("lib/arm64-v8a/libchrome.so")
         if (!soFile.exists() || !soFile.isFile) {
-            println("[Startup Performance] Skipped BTI fix: lib/arm64-v8a/libchrome.so not found.")
+            println("[Brave Compatibility] Skipped BTI fix: lib/arm64-v8a/libchrome.so not found.")
             return@execute
         }
 
         RandomAccessFile(soFile, "rw").use { raf ->
             val modified = patchBtiInElf(raf)
             if (modified) {
-                println("[Startup Performance] Neutralized BTI flag in lib/arm64-v8a/libchrome.so -> Branch Target Exception SIGILL prevented.")
+                println("[Brave Compatibility] Neutralized BTI flag in lib/arm64-v8a/libchrome.so -> Branch Target Exception SIGILL prevented.")
             } else {
-                println("[Startup Performance] BTI flag in lib/arm64-v8a/libchrome.so is already clean or absent.")
+                println("[Brave Compatibility] BTI flag in lib/arm64-v8a/libchrome.so is already clean or absent.")
             }
         }
     }
 }
 
-internal val braveNativeExtractionPatch = resourcePatch(
-    name = "Brave Native Library Extraction Compatibility",
-    description = "Enforces native library extraction in AndroidManifest.xml to ensure 16 KB page and BTI compatibility across modern ARM64 devices.",
-    default = false,
-) {
+internal val braveNativeExtractionPatch = resourcePatch {
     compatibleWith(Constants.COMPATIBILITY_BRAVE)
 
     execute {
         val manifestFile = get("AndroidManifest.xml")
         if (!manifestFile.exists()) {
-            println("[Startup Performance] Skipped: AndroidManifest.xml not found.")
+            println("[Brave Compatibility] Skipped: AndroidManifest.xml not found.")
             return@execute
         }
 
@@ -153,7 +145,7 @@ internal val braveNativeExtractionPatch = resourcePatch(
                 app?.setAttribute("android:extractNativeLibs", "true")
             }
         }
-        println("[Startup Performance] Enforced android:extractNativeLibs=true in AndroidManifest.xml")
+        println("[Brave Compatibility] Enforced android:extractNativeLibs=true in AndroidManifest.xml")
     }
 }
 
