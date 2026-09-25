@@ -129,6 +129,17 @@ private val braveOriginResourcePatch = resourcePatch(
     compatibleWith(Constants.COMPATIBILITY_BRAVE)
 
     execute {
+        val manifestFile = get("AndroidManifest.xml")
+        if (manifestFile.exists()) {
+            document(manifestFile.absolutePath).use { doc ->
+                val appElements = doc.getElementsByTagName("application")
+                if (appElements.length > 0) {
+                    val app = appElements.item(0) as? Element
+                    app?.setAttribute("android:extractNativeLibs", "true")
+                }
+            }
+        }
+
         val targetFile = get("res").walkTopDown()
             .filter { it.isFile && it.extension == "xml" }
             .firstOrNull { file ->
@@ -187,7 +198,7 @@ val braveOriginPatch = bytecodePatch(
             returnType = "Z",
             parameters = listOf("Lorg/chromium/chrome/browser/profiles/Profile;"),
             strings = listOf(
-                "getIsSubscriptionActive profile is null",
+                "getIsSubscriptionActive prefs are unavailable",
                 "brave.origin.subscription_active_android",
             ),
         ).method.addInstructions(0, "const/4 v0, 0x1\nreturn v0")
@@ -239,8 +250,8 @@ val braveOriginPatch = bytecodePatch(
                 "Lorg/chromium/base/Callback;",
             ),
             strings = listOf(
-                "requestCredentialSummary profile is null",
                 "SkusService is null, cannot request credential summary",
+                "requestCredentialSummary profile is null or destroyed",
             ),
         ).method.addInstructions(
             0,
@@ -314,14 +325,14 @@ val braveOriginPatch = bytecodePatch(
                     return v0
                     :not_locked
                     iget-object v0, p1, Landroidx/preference/Preference;->$prefKeyField:Ljava/lang/String;
-                    invoke-static {v0}, Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;->j5(Ljava/lang/String;)Ljava/lang/String;
+                    invoke-static {v0}, Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;->k5(Ljava/lang/String;)Ljava/lang/String;
                     move-result-object v0
                     if-eqz v0, :no_key
                     check-cast p2, Ljava/lang/Boolean;
                     invoke-virtual {p2}, Ljava/lang/Boolean;->booleanValue()Z
                     move-result v1
                     xor-int/lit8 v1, v1, 0x1
-                    invoke-virtual {p0}, Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;->S3()Landroid/content/Context;
+                    invoke-virtual {p0}, Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;->T3()Landroid/content/Context;
                     move-result-object v2
                     invoke-virtual {v2}, Landroid/content/Context;->getApplicationContext()Landroid/content/Context;
                     move-result-object v2
@@ -341,7 +352,7 @@ val braveOriginPatch = bytecodePatch(
                     move-result-object v2
                     :write_done
                     invoke-interface {v2}, Landroid/content/SharedPreferences${'$'}Editor;->apply()V
-                    invoke-virtual {p0}, Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;->i5()V
+                    invoke-virtual {p0}, Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;->j5()V
                     :no_key
                     const/4 v0, 0x1
                     return v0
@@ -358,7 +369,7 @@ val braveOriginPatch = bytecodePatch(
         setupPrefFingerprint.method.addInstructionsWithLabels(
             0,
             """
-                invoke-virtual {p0, p1}, Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;->W4(Ljava/lang/CharSequence;)Landroidx/preference/Preference;
+                invoke-virtual {p0, p1}, Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;->X4(Ljava/lang/CharSequence;)Landroidx/preference/Preference;
                 move-result-object v0
                 if-eqz v0, :setup_done
                 move-object v3, p0
