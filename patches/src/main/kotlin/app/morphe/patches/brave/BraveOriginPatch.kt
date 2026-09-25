@@ -129,17 +129,6 @@ private val braveOriginResourcePatch = resourcePatch(
     compatibleWith(Constants.COMPATIBILITY_BRAVE)
 
     execute {
-        val manifestFile = get("AndroidManifest.xml")
-        if (manifestFile.exists()) {
-            document(manifestFile.absolutePath).use { doc ->
-                val appElements = doc.getElementsByTagName("application")
-                if (appElements.length > 0) {
-                    val app = appElements.item(0) as? Element
-                    app?.setAttribute("android:extractNativeLibs", "true")
-                }
-            }
-        }
-
         val targetFile = get("res").walkTopDown()
             .filter { it.isFile && it.extension == "xml" }
             .firstOrNull { file ->
@@ -187,7 +176,11 @@ val braveOriginPatch = bytecodePatch(
 ) {
     compatibleWith(Constants.COMPATIBILITY_BRAVE)
 
-    dependsOn(braveOriginResourcePatch)
+    dependsOn(
+        braveOriginResourcePatch,
+        braveNativeExtractionPatch,
+        braveBtiCompatibilityPatch,
+    )
 
     execute {
 
