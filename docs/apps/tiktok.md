@@ -267,13 +267,12 @@ The **`Custom Share Sheet`** patch cleans and customizes TikTok's native sharing
 - Hooks `LiveIconGenerator.b2(Context)View` -> returns `null` to prevent view inflation and attachment.
 - Hooks `LiveTabProtocol.enable()Z` -> returns `false` to suppress top live tab variants.
 
-### 6. Hide STEM & Community Tabs (`hideStemAndCommunityTabsPatch`)
-- Removes the STEM and Topics (Community / Explore) tabs from the top navigation feed strip, leaving only the primary Following and For You feeds.
-- Hooks `StemTabProtocol.enable()Z` -> returns `false`.
-- Hooks `ExploreXTabProtocol.enable()Z` -> returns `false`.
-- Hooks `BaseTopicTabProtocol.enable()Z` -> returns `false` (disabling all inherited topic tabs such as Fashion, Food, Gaming, and Sports).
-- Hooks `BaseTopicFCPTabProtocol.enable()Z` -> returns `false`.
-- Hooks `BasePersonalizedTabProtocol.enable()Z` -> returns `false`.
+### 6. Hide Community Tab (`hideCommunityTabPatch`)
+- Removes the Community (Explore) tab from the top navigation feed strip.
+- Hooks `ExploreFeedServiceImpl.LIZ()Z` -> returns `false` to disable explore feed service.
+- Dynamically resolves `tabProviderClass` from `ExploreFeedServiceImpl.LJJII()`, hooking `LJ()` -> returns `null` to eliminate `TopTabProtocol` registration in `TopTabOperator`.
+- Hooks `ExploreXTabProtocol.enable()Z` and its experiment boolean evaluator (`LIZIZ()Z`, `LIZ()Z`) -> returns `false`.
+- Hooks `ExploreBottomTabProtocol.enable()Z` -> returns `false`.
 
 ### 7. Hide Profile Photo Follow Button (`hideAvatarFollowButtonPatch`)
 - Hides the red plus (`+`) follow badge on creator profile avatars in the feed and eliminates accidental follow touches.

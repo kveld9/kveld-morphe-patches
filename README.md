@@ -130,7 +130,7 @@
 | **Hide Feed Search Bar** | Removes the search suggestion pill and trending bar ('Search · <keyword>') from the bottom of feed videos, providing a clean viewing area without search distractions. |  |
 | **Hide Popular Lives In Search** | Removes the Popular LIVEs recommendation card and live stream broadcasts from the search discovery page. |  |
 | **Hide Profile Photo Follow Button** | Hides the plus (+) follow badge on creator profile avatars in the feed and disables its touch interaction. |  |
-| **Hide STEM and Community Tabs** | Removes the STEM and Topics (Community / Explore) tabs from the top navigation feed strip. |  |
+| **Hide Community Tab** | Removes the Community (Explore) tab from the top navigation feed strip. |  |
 | **Hide Suggested Searches** | Removes the suggested search keywords section ('You may like' / 'Search suggestions') from the search discovery page. |  |
 | **Hide TikTok Shop & Mall** | Removes product showcase badges, shopping cart tags, and the TikTok Shop / Mall tab from navigation bars and video posts. |  |
 | **Hide Top-Left LIVE Button** | Removes the top-left LIVE broadcast button and tab entry point from the top navigation bar. |  |
