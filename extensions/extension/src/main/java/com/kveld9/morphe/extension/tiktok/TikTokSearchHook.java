@@ -4,17 +4,36 @@ import android.util.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 public final class TikTokSearchHook {
     private static final String TAG = "MorpheTikTok";
 
     private TikTokSearchHook() {}
 
-    private static boolean isSuggestedSearch(String type) {
-        if (type == null) return false;
-        return type.startsWith("recom_search") || "guess_search".equals(type);
+    private static boolean isSuggestedSearch(String type, String source, String title) {
+        if (type != null) {
+            String t = type.toLowerCase();
+            if (t.contains("recom") || t.contains("guess") || t.contains("suggest")) {
+                return true;
+            }
+        }
+        if (source != null) {
+            String s = source.toLowerCase();
+            if (s.contains("recom") || s.contains("guess") || s.contains("suggest")) {
+                return true;
+            }
+        }
+        if (title != null) {
+            String ti = title.toLowerCase();
+            if (ti.contains("suggest") || ti.contains("interesarte") || ti.contains("you may like")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean isPopularLive(String type) {
@@ -38,6 +57,28 @@ public final class TikTokSearchHook {
         filterResponse(responseObj, false);
     }
 
+    public static Map filterSuggestedAbParams(Map map) {
+        if (map == null) return null;
+        try {
+            Map result = new HashMap(map);
+            result.put("show_suggest_search_words", 0);
+            result.put("sbp_not_login_disable_guess_search", 1);
+            result.put("disable_suggest_guide", 1);
+            Log.i(TAG, "[Search Filter] Filtered suggested search abParams");
+            return result;
+        } catch (Throwable t) {
+            Log.e(TAG, "[Search Filter] filterSuggestedAbParams error: " + t.getMessage());
+            return map;
+        }
+    }
+
+    public static String filterSuggestedSchema(String schema) {
+        if (schema == null) return null;
+        return schema.replace(",show_suggest_search_words", "")
+                     .replace("show_suggest_search_words,", "")
+                     .replace("show_suggest_search_words", "");
+    }
+
     private static String filterRaw(String rawString, boolean isSuggestedSearchFilter) {
         if (rawString == null || rawString.isEmpty()) {
             return rawString;
@@ -52,9 +93,15 @@ public final class TikTokSearchHook {
                     JSONObject item = data.optJSONObject(i);
                     if (item != null) {
                         String type = item.optString("type");
-                        boolean match = isSuggestedSearchFilter ? isSuggestedSearch(type) : isPopularLive(type);
+                        String source = item.optString("source");
+                        String title = null;
+                        JSONObject params = item.optJSONObject("params");
+                        if (params != null) {
+                            title = params.optString("title");
+                        }
+                        boolean match = isSuggestedSearchFilter ? isSuggestedSearch(type, source, title) : isPopularLive(type);
                         if (match) {
-                            Log.i(TAG, "[Search Filter] Filtered card: " + type);
+                            Log.i(TAG, "[Search Filter] Filtered card: type=" + type + ", source=" + source + ", title=" + title);
                             modified = true;
                             continue;
                         }
@@ -83,15 +130,24 @@ public final class TikTokSearchHook {
                 while (it.hasNext()) {
                     Object item = it.next();
                     if (item != null) {
-                        Method getTypeMethod = item.getClass().getMethod("getType");
-                        Object type = getTypeMethod.invoke(item);
-                        if (type instanceof String) {
-                            String typeStr = (String) type;
-                            boolean match = isSuggestedSearchFilter ? isSuggestedSearch(typeStr) : isPopularLive(typeStr);
-                            if (match) {
-                                it.remove();
-                                Log.i(TAG, "[Search Filter] Removed response item: " + typeStr);
-                            }
+                        String typeStr = null;
+                        try {
+                            Method getTypeMethod = item.getClass().getMethod("getType");
+                            Object type = getTypeMethod.invoke(item);
+                            if (type instanceof String) typeStr = (String) type;
+                        } catch (Throwable ignored) {}
+
+                        String sourceStr = null;
+                        try {
+                            Method getSourceMethod = item.getClass().getMethod("getSource");
+                            Object source = getSourceMethod.invoke(item);
+                            if (source instanceof String) sourceStr = (String) source;
+                        } catch (Throwable ignored) {}
+
+                        boolean match = isSuggestedSearchFilter ? isSuggestedSearch(typeStr, sourceStr, null) : isPopularLive(typeStr);
+                        if (match) {
+                            it.remove();
+                            Log.i(TAG, "[Search Filter] Removed response item: type=" + typeStr + ", source=" + sourceStr);
                         }
                     }
                 }

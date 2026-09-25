@@ -332,6 +332,7 @@ The **`Custom Share Sheet`** patch cleans and customizes TikTok's native sharing
 - **Search Intermediate Raw Payload & Model Filtering**: Intercepts `RecomDataWrapper.<init>(String, SuggestWordResponse)` to filter out `"recom_search"`, `"recom_search_pic"`, `"recom_search_under_bar"`, and `"guess_search"` card items from the raw JSON payload and parsed response model before Lynx rendering.
 - **Cached Guess Search Preload Neutralization**: Hooks `LX/0HMZ;->LIZ()Lorg/json/JSONObject;` and `LX/0HMZ;->LIZIZ()Ljava/lang/String;` to return `null`, eliminating cached suggestion preloading on startup.
 - **Native Guess Search Fallback Override**: Forces `DynamicSingleIntermediateFragmentNew.yU()Z` -> returns `false` to disable native guess search fallback rendering.
+- **Lynx AB Parameters & Evaluator Suppression**: Overrides AB evaluator `LX/0HL2;->LIZ` -> returns `0` and stubs `LX/0HL2;<clinit>()` to disable `show_suggest_search_words`. Intercepts `SparkHostApiImpl.LJLJI` to sanitize Lynx `abParams` (`show_suggest_search_words = 0`, `sbp_not_login_disable_guess_search = 1`, `disable_suggest_guide = 1`), and sanitizes schema URLs in `LX/0HLB;->LIZ` to strip suggestion queries before template evaluation.
 
 ### 16. Hide Popular Lives In Search (`hideSearchPopularLivesPatch`)
 - Removes the Popular LIVEs recommendation card and live stream broadcasts from the search discovery screen.
