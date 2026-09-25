@@ -149,6 +149,7 @@ object Constants {
     const val TIKTOK_EXTENSION_OFFLINE_VIDEOS_HOOK = "Lcom/kveld9/morphe/extension/tiktok/TikTokOfflineVideosHook;"
     const val TIKTOK_EXTENSION_AUTOPAUSE_HOOK = "Lcom/kveld9/morphe/extension/tiktok/TikTokAutoPauseHook;"
     const val TIKTOK_EXTENSION_SEARCH_HOOK = "Lcom/kveld9/morphe/extension/tiktok/TikTokSearchHook;"
+    const val TIKTOK_EXTENSION_SHARE_HOOK = "Lcom/kveld9/morphe/extension/tiktok/TikTokShareHook;"
     const val TIKTOK_EXTENSION_LOGIN_HOOK = "Lcom/kveld9/morphe/extension/tiktok/TikTokLoginHook;"
     const val BRAVE_EXTENSION_CLASS = "Lcom/kveld9/morphe/extension/BraveExtension;"
     const val CHROMIUM_EXTENSION_CLASS = "Lcom/kveld9/morphe/extension/ChromiumExtension;"

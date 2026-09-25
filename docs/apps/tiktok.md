@@ -35,6 +35,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Usability** | **[Video Quality Governor](#2-video-quality-governor)** | `bytecodePatch` | Decoupled resolution ceilings for playback (e.g. 480p) and downloads (e.g. 1080p). |
 | **Usability** | **Skip First-Launch Onboarding** | `bytecodePatch` | Bypasses interest pickers, swipe-up tutorial, language prompts, and consent sheets directly to FYP. |
 | **Usability** | **[Custom Offline Videos Limit](#4-custom-offline-videos-limit)** | `bytecodePatch` | Customizes maximum offline videos download caching limit (~X mins, Y GB/MB). |
+| **Usability** | **[Custom Share Sheet](#5-custom-share-sheet)** | `bytecodePatch` | Simplifies the share menu to essential options (Copy link, More), suppresses the direct message friends row, and filters third-party social apps. |
 | **Usability** | **Auto-Translate Comments** | `bytecodePatch` | Automatically dispatches batch translations via TikTok's native engine. |
 | **Usability** | **Hide Top-Left LIVE Button** | `bytecodePatch` | Removes the top-left LIVE broadcast button and tab entry point from the top navigation bar. |
 | **Usability** | **Hide STEM and Community Tabs** | `bytecodePatch` | Removes the STEM and Topics (Community / Explore) tabs from the top navigation feed strip. |
@@ -193,6 +194,17 @@ The **`Custom Offline Videos Limit`** patch customizes the maximum video caching
 | Option | Key | Type | Default | Supported Values | Description |
 | :--- | :--- | :--- | :---: | :--- | :--- |
 | **Custom Offline Videos Limit** | `customLimit` | Integer | `200` | Any integer `1` to `50000` | Maximum number of offline videos that can be cached for offline playback. |
+
+### 5. Custom Share Sheet
+
+The **`Custom Share Sheet`** patch cleans and customizes TikTok's native sharing bottom sheet. By default, it simplifies the panel by pruning third-party apps (WhatsApp, Facebook, Messenger, Instagram, SMS, Twitter, Telegram, Reddit, etc.) leaving only essential channels (**Copy link** and **More** / system share). It can also suppress the direct message friend avatar row and hide individual app or action items.
+
+| Option | Key | Type | Default | Range / Format | Description |
+| :--- | :--- | :--- | :---: | :--- | :--- |
+| **Simplify Share Sheet** | `simplifyShareSheet` | Boolean | `true` | `true` / `false` | Automatically removes third-party social apps, retaining only Copy link and More/System share. |
+| **Hide Friends DM Row** | `hideFriendsRow` | Boolean | `false` | `true` / `false` | Suppresses the top suggested contacts/friends avatar row in the share dialog. |
+| **Hidden App Keys** | `hiddenApps` | String | `""` | Comma-separated | Comma-separated list of specific channel keys to hide (e.g. `whatsapp,facebook,instagram`). |
+| **Hidden Action Keys** | `hiddenActions` | String | `""` | Comma-separated | Comma-separated list of action keys to hide (e.g. `repost,duet,stitch`). |
 
 ---
 
