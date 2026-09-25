@@ -7,10 +7,10 @@ import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patches.shared.Constants
 import org.w3c.dom.Element
 
-val braveNativeExtractionPatch = resourcePatch(
+private val braveNativeExtractionPatch = resourcePatch(
     name = "Brave Native Library Extraction Compatibility",
     description = "Enforces native library extraction in AndroidManifest.xml to ensure 16 KB page and BTI compatibility across modern ARM64 devices.",
-    default = true,
+    default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_BRAVE)
 
