@@ -1418,9 +1418,33 @@ public final class TikTokFeedAdFilter {
                 Log.i(TAG, "[Hide AI-Generated Content] Match [aiPortraitInfo] on aid=" + aid);
                 return true;
             }
-            if (aiRemixInfoField != null && aiRemixInfoField.get(aweme) != null) {
-                Log.i(TAG, "[Hide AI-Generated Content] Match [aiRemixInfo] on aid=" + aid);
-                return true;
+            if (aiRemixInfoField != null) {
+                try {
+                    Object remix = aiRemixInfoField.get(aweme);
+                    if (remix != null) {
+                        boolean isRemix = false;
+                        try {
+                            Field taskIdField = remix.getClass().getDeclaredField("taskId");
+                            taskIdField.setAccessible(true);
+                            Object taskId = taskIdField.get(remix);
+                            if (taskId instanceof String && !((String) taskId).trim().isEmpty()) {
+                                isRemix = true;
+                            }
+                        } catch (Throwable ignored) {}
+                        try {
+                            Field promptIdField = remix.getClass().getDeclaredField("promptId");
+                            promptIdField.setAccessible(true);
+                            Object promptId = promptIdField.get(remix);
+                            if (promptId instanceof String && !((String) promptId).trim().isEmpty()) {
+                                isRemix = true;
+                            }
+                        } catch (Throwable ignored) {}
+                        if (isRemix) {
+                            Log.i(TAG, "[Hide AI-Generated Content] Match [aiRemixInfo] on aid=" + aid);
+                            return true;
+                        }
+                    }
+                } catch (Throwable ignored) {}
             }
             if (aiTheaterInfoField != null && aiTheaterInfoField.get(aweme) != null) {
                 Log.i(TAG, "[Hide AI-Generated Content] Match [aiTheaterInfo] on aid=" + aid);
