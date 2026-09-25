@@ -14,6 +14,10 @@
       "reason": "Settings panel UI injection rejected as out of scope (docs/out-of-scope.md)"
     },
     {
+      "issue": 20,
+      "reason": "Vivaldi Browser target dropped and deprecated"
+    },
+    {
       "issue": 44,
       "reason": "Telemetry offset update already aligned on main branch"
     }
@@ -29,10 +33,6 @@
         {
           "title": "DPI Resource Slimmer",
           "issue": 16
-        },
-        {
-          "title": "Vivaldi Browser Stable migration",
-          "issue": 20
         }
       ]
     },
