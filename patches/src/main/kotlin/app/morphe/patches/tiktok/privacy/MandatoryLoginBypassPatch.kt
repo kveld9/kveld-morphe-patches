@@ -28,10 +28,10 @@ val mandatoryLoginBypassPatch = bytecodePatch(
                 returnType = "Z",
                 parameters = listOf("Z"),
             ).method.replaceWithReturnBoolean(false)
-            println("[MandatoryLoginBypass] Neutralized MandatoryLoginService.shouldShowForcedLogin() -> Forced login suppressed.")
+            println("[Bypass Mandatory Login] Neutralized MandatoryLoginService.shouldShowForcedLogin() -> Forced login suppressed.")
             patched++
         } catch (e: Exception) {
-            println("[MandatoryLoginBypass] MandatoryLoginService.shouldShowForcedLogin note: ${e.message}")
+            println("[Bypass Mandatory Login] MandatoryLoginService.shouldShowForcedLogin note: ${e.message}")
         }
 
         // 2. MandatoryLoginService.enableForcedLogin(Z)Z -> return false
@@ -42,10 +42,10 @@ val mandatoryLoginBypassPatch = bytecodePatch(
                 returnType = "Z",
                 parameters = listOf("Z"),
             ).method.replaceWithReturnBoolean(false)
-            println("[MandatoryLoginBypass] Neutralized MandatoryLoginService.enableForcedLogin() -> Dynamic forced login suppressed.")
+            println("[Bypass Mandatory Login] Neutralized MandatoryLoginService.enableForcedLogin() -> Dynamic forced login suppressed.")
             patched++
         } catch (e: Exception) {
-            println("[MandatoryLoginBypass] MandatoryLoginService.enableForcedLogin note: ${e.message}")
+            println("[Bypass Mandatory Login] MandatoryLoginService.enableForcedLogin note: ${e.message}")
         }
 
         // 3. MandatoryLoginService.shouldShowLoginTabFirst()Z -> return false
@@ -55,10 +55,10 @@ val mandatoryLoginBypassPatch = bytecodePatch(
                 name = "shouldShowLoginTabFirst",
                 returnType = "Z",
             ).method.replaceWithReturnBoolean(false)
-            println("[MandatoryLoginBypass] Neutralized MandatoryLoginService.shouldShowLoginTabFirst() -> Feed tab prioritized.")
+            println("[Bypass Mandatory Login] Neutralized MandatoryLoginService.shouldShowLoginTabFirst() -> Feed tab prioritized.")
             patched++
         } catch (e: Exception) {
-            println("[MandatoryLoginBypass] MandatoryLoginService.shouldShowLoginTabFirst note: ${e.message}")
+            println("[Bypass Mandatory Login] MandatoryLoginService.shouldShowLoginTabFirst note: ${e.message}")
         }
 
         // 4. MandatoryLoginService.tryShowMandatoryLoginPage(...)V -> notify listener and return-void
@@ -84,14 +84,14 @@ val mandatoryLoginBypassPatch = bytecodePatch(
             method.addInstructions(
                 0,
                 """
-                    invoke-static {$listenerReg}, Lcom/kveld9/morphe/extension/tiktok/TikTokLoginHook;->notifyLoginResult(Ljava/lang/Object;)V
+                    invoke-static {$listenerReg}, ${Constants.TIKTOK_EXTENSION_LOGIN_HOOK}->notifyLoginResult(Ljava/lang/Object;)V
                     return-void
                 """.trimIndent(),
             )
-            println("[MandatoryLoginBypass] Hooked MandatoryLoginService.tryShowMandatoryLoginPage() -> Notified login completion and suppressed popup.")
+            println("[Bypass Mandatory Login] Hooked MandatoryLoginService.tryShowMandatoryLoginPage() -> Notified login completion and suppressed popup.")
             patched++
         } catch (e: Exception) {
-            println("[MandatoryLoginBypass] MandatoryLoginService.tryShowMandatoryLoginPage note: ${e.message}")
+            println("[Bypass Mandatory Login] MandatoryLoginService.tryShowMandatoryLoginPage note: ${e.message}")
         }
 
         // 5. GuestModeServiceImpl.isGuestMode()Z -> delegate to TikTokLoginHook.isGuestMode()
@@ -105,17 +105,17 @@ val mandatoryLoginBypassPatch = bytecodePatch(
             isGuestModeMethod.addInstructions(
                 0,
                 """
-                    invoke-static {}, Lcom/kveld9/morphe/extension/tiktok/TikTokLoginHook;->isGuestMode()Z
+                    invoke-static {}, ${Constants.TIKTOK_EXTENSION_LOGIN_HOOK}->isGuestMode()Z
                     move-result v0
                     return v0
                 """.trimIndent(),
             )
-            println("[MandatoryLoginBypass] Hooked GuestModeServiceImpl.isGuestMode() -> Active guest browsing mode enabled.")
+            println("[Bypass Mandatory Login] Hooked GuestModeServiceImpl.isGuestMode() -> Active guest browsing mode enabled.")
             patched++
         } catch (e: Exception) {
-            println("[MandatoryLoginBypass] GuestModeServiceImpl.isGuestMode note: ${e.message}")
+            println("[Bypass Mandatory Login] GuestModeServiceImpl.isGuestMode note: ${e.message}")
         }
 
-        println("[MandatoryLoginBypass] Applied $patched hooks -> Mandatory login wall bypassed.")
+        println("[Bypass Mandatory Login] Applied $patched hooks -> Mandatory login wall bypassed.")
     }
 }

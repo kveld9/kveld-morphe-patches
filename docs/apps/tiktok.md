@@ -25,28 +25,28 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | Category | Patch Name | Type | Key Target / Mechanism |
 | :--- | :--- | :--- | :--- |
 | **Usability** | **Media Usability & Watermark-Free Downloader** | `bytecodePatch` | Unblocks download button in Share panel, extracts clean original streams without watermark stamps. |
-| **Usability** | **Show seekbar** | `bytecodePatch` | Restores video seekbar and scrubbing controls where hidden or disabled. |
-| **Usability** | **Always show publish date** | `bytecodePatch` | Forces video publish and upload timestamps to remain permanently visible on feed cards. |
-| **Usability** | **Copy comments without username** | `bytecodePatch` | Sanitizes comment copy actions to exclude the prepended author username. |
+| **Usability** | **Show Seekbar** | `bytecodePatch` | Restores video seekbar and scrubbing controls where hidden or disabled. |
+| **Usability** | **Always Show Publish Date** | `bytecodePatch` | Forces video publish and upload timestamps to remain permanently visible on feed cards. |
+| **Usability** | **Copy Comments Without Username** | `bytecodePatch` | Sanitizes comment copy actions to exclude the prepended author username. |
 | **Usability** | **Disable Comment Suggested Emojis** | `bytecodePatch` | Removes the horizontal bar of suggested quick emojis displayed above the comment input box. |
 | **Usability** | **Enable Voice Comments** | `bytecodePatch` | Forces the native voice comment recording button in comment input bars, bypassing regional rollout restrictions and remote server blocks. |
-| **Usability** | **Disable double tap to like** | `bytecodePatch` | Disables the double tap gesture to like videos in the feed, preventing accidental likes while scrolling or pausing. Videos can still be liked using the like button. |
+| **Usability** | **Disable Double Tap to Like** | `bytecodePatch` | Disables the double tap gesture to like videos in the feed, preventing accidental likes while scrolling or pausing. Videos can still be liked using the like button. |
 | **Usability** | **Playback Speed Persistence** | `bytecodePatch` | Persists user-selected video speed across feed scrolling and restarts. |
 | **Usability** | **[Video Quality Governor](#2-video-quality-governor)** | `bytecodePatch` | Decoupled resolution ceilings for playback (e.g. 480p) and downloads (e.g. 1080p). |
 | **Usability** | **Skip First-Launch Onboarding** | `bytecodePatch` | Bypasses interest pickers, swipe-up tutorial, language prompts, and consent sheets directly to FYP. |
 | **Usability** | **[Custom Offline Videos Limit](#4-custom-offline-videos-limit)** | `bytecodePatch` | Customizes maximum offline videos download caching limit (~X mins, Y GB/MB). |
-| **Usability** | **Auto-translate comments** | `bytecodePatch` | Automatically dispatches batch translations via TikTok's native engine. |
+| **Usability** | **Auto-Translate Comments** | `bytecodePatch` | Automatically dispatches batch translations via TikTok's native engine. |
 | **Usability** | **Hide Top-Left LIVE Button** | `bytecodePatch` | Removes the top-left LIVE broadcast button and tab entry point from the top navigation bar. |
-| **Usability** | **Hide STEM and Community Tabs** | `bytecodePatch` | Removes STEM and Comunidad (Explore / Topics) tabs from the top navigation feed strip. |
+| **Usability** | **Hide STEM and Community Tabs** | `bytecodePatch` | Removes the STEM and Topics (Community / Explore) tabs from the top navigation feed strip. |
 | **Usability** | **Hide Profile Photo Follow Button** | `bytecodePatch` | Hides the plus (+) follow badge on creator profile avatars in the feed and disables its touch interaction. |
 | **Usability** | **Disable Profile Photo LIVE Status** | `bytecodePatch` | Removes pulsing LIVE ring/badge from creator avatars in feed and forces clicks directly to user profile. |
 | **Usability** | **Disable Story Feed Indicators** | `bytecodePatch` | Removes the top-center story drop-down indicator pill (e.g. '1 Story') and creator profile photo story rings from feed videos, ensuring avatar photos remain clean. |
-| **Usability** | **Force auto-scroll** | `bytecodePatch` | Forces the activation of the native video auto-scroll experiment flag for accounts and regions that lack it due to A/B testing. |
+| **Usability** | **Force Auto-Scroll** | `bytecodePatch` | Forces the activation of the native video auto-scroll experiment flag for accounts and regions that lack it due to A/B testing. |
 | **Usability** | **Hide Feed Search Bar** | `bytecodePatch` | Removes the search suggestion pill and trending bar ('Search · <keyword>') from the bottom of feed videos. |
-| **Usability** | **Hide Popular Lives In Search** | `bytecodePatch` | Removes the popular LIVE broadcasts section ('LIVE populares') and live stream recommendations from the search intermediate page. |
-| **Usability** | **Hide Suggested Searches** | `bytecodePatch` | Removes the suggested searches section ('Podría interesarte' / Guess Search) from the search intermediate page. |
-| **Usability** | **Auto-pause first video** | `bytecodePatch` | Automatically pauses the initial video on startup (frame 0) with center play icon; resumes instantly upon screen tap or feed scroll. |
-| **Privacy** | **Fix Google login** | `bytecodePatch` | Restores Google account sign-in via Web OAuth fallback when GMS rejects modified APK signature. |
+| **Usability** | **Hide Popular Lives In Search** | `bytecodePatch` | Removes the Popular LIVEs recommendation card and live stream broadcasts from the search discovery page. |
+| **Usability** | **Hide Suggested Searches** | `bytecodePatch` | Removes the suggested search keywords section ('You may like' / 'Search suggestions') from the search discovery page. |
+| **Usability** | **Auto-Pause First Video** | `bytecodePatch` | Automatically pauses the initial video on startup (frame 0) with center play icon; resumes upon screen tap or feed scroll. |
+| **Privacy** | **Fix Google Login** | `bytecodePatch` | Restores Google account sign-in via Web OAuth fallback when GMS rejects modified APK signature. |
 | **Privacy** | **Bypass Mandatory Login** | `bytecodePatch` | Neutralizes mandatory login walls, dynamic regional forced login gates, and guest browsing restrictions. |
 | **Privacy** | **Clean Share URL** | `bytecodePatch` | Strips tracking query parameters, user tokens, and campaign IDs from shared links. |
 | **Privacy** | **Device Privacy Guard** | `bytecodePatch` | Intercepts runtime permission prompts (contacts, location), suppresses in-app permission nag dialogs and background sync tasks, zeroes Advertising ID, blocks clipboard inspection, isolates package queries, silences HAR motion sensors, and clears `FLAG_SECURE`. |
@@ -63,7 +63,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Privacy** | **Disable Watch History Recording** | `bytecodePatch` | Prevents viewed videos from being recorded in account watch history, playback duration stores, and local history caches. |
 | **Privacy** | **Update Prompt Suppressor** | `bytecodePatch` | Neutralizes background update polling tasks and version enforcement dialogs. |
 | **Performance** | **[Display Refresh Rate Governor](#3-display-refresh-rate-governor)** | `bytecodePatch` | Locks window to peak hardware refresh rate (120Hz/90Hz) and neutralizes playback downclocking. |
-| **Performance** | **Instant Launch & Splash Blocker** | `bytecodePatch` | Eliminates cold start delays, splash ad tasks, and TopView preload waits (<0.4s). |
+| **Performance** | **Instant Launch & Splash Blocker** | `bytecodePatch` | Eliminates cold startup delays, real-time splash advertisements, and background TopView ad preloading. |
 | **Performance** | **Resource & Battery Governor** | `bytecodePatch` | Suppresses 3D shake ad sensors and video buffer preloading. |
 | **Performance** | **P2P Video Relay Blocker** | `rawResourcePatch` | Strips `libavmdlp2pv2.so` and `libp2plivevdp.so` to stop background P2P CDN seeding. |
 | **Performance** | **Disable Push Notifications** | `bytecodePatch` | Neutralizes background push socket polling and persistent wake locks. |
@@ -256,7 +256,7 @@ The **`Custom Offline Videos Limit`** patch customizes the maximum video caching
 - Hooks `LiveTabProtocol.enable()Z` -> returns `false` to suppress top live tab variants.
 
 ### 6. Hide STEM & Community Tabs (`hideStemAndCommunityTabsPatch`)
-- Removes the STEM and Comunidad (Explore / Topics) tabs from the top navigation feed strip, leaving only the primary Following and For You feeds.
+- Removes the STEM and Topics (Community / Explore) tabs from the top navigation feed strip, leaving only the primary Following and For You feeds.
 - Hooks `StemTabProtocol.enable()Z` -> returns `false`.
 - Hooks `ExploreXTabProtocol.enable()Z` -> returns `false`.
 - Hooks `BaseTopicTabProtocol.enable()Z` -> returns `false` (disabling all inherited topic tabs such as Fashion, Food, Gaming, and Sports).
@@ -297,7 +297,7 @@ The **`Custom Offline Videos Limit`** patch customizes the maximum video caching
 - **Assem Lifecycle Neutralization**: Stubs `onViewCreated(View)V` and `onBind(Object)V` across `FeedSearchBottomBarAssem`, `FeedSearchBottomBarAssemV2`, `TrendingBottomBarAssem`, `AdFeedSearchBottomBarAssem`, and `FeedEcSearchBottomBarAssem` with `return-void`. Also stubs `FeedSearchBottomBarAssem.Sr()V` to prevent layout inflation and view binding.
 - **Aweme Model Overrides**: Forces `Aweme.isDisableSearchTrendingBar()Z` to return `true`, `Aweme.hasTrendingBar()Z` and `Aweme.hasTrendingBarFYP()Z` to return `false`, and nulls out `getTrendingBar()`, `getTrendingBarFYP()`, and `getHotSearchInfo()`.
 
-### 12. Force auto-scroll (`forceAutoScrollPatch`)
+### 12. Force Auto-Scroll (`forceAutoScrollPatch`)
 - Forces the activation of TikTok's native video auto-scroll experiment flag for accounts and regions where it is withheld by server-side A/B testing experiments.
 - **Feed Auto-Scroll A/B Experiment Flag**: Hooks the core experiment evaluator referencing `"fyp_auto_scroll"` -> returns `true`.
 - **FypAutoScrollServiceImpl Capability Bridge**: Forces `FypAutoScrollServiceImpl.LJIILJJIL()` -> returns `true`, granting the feed panel full auto-scroll capabilities.
@@ -312,13 +312,13 @@ The **`Custom Offline Videos Limit`** patch customizes the maximum video caching
 - **Top History Recommendation Suppression**: Hooks `SuggestWordResponse.getTopHistoryWords()` -> returns `null` to neutralize server-pushed search history suggestions.
 
 ### 14. Hide Suggested Searches (`hideSuggestedSearchesPatch`)
-- Removes the 'Podría interesarte' (You may like / Guess Search) suggested keyword recommendation card from the search intermediate discovery screen.
+- Removes the suggested search keywords section ('You may like' / 'Search suggestions') from the search discovery screen.
 - **Search Intermediate Raw Payload & Model Filtering**: Intercepts `RecomDataWrapper.<init>(String, SuggestWordResponse)` to filter out `"guess_search"` card items from the raw JSON payload and parsed response model before Lynx rendering.
 - **Cached Guess Search Preload Neutralization**: Hooks `LX/0HMZ;->LIZ()Lorg/json/JSONObject;` and `LX/0HMZ;->LIZIZ()Ljava/lang/String;` to return `null`, eliminating cached suggestion preloading on startup.
 - **Native Guess Search Fallback Override**: Forces `DynamicSingleIntermediateFragmentNew.yU()Z` -> returns `false` to disable native guess search fallback rendering.
 
 ### 15. Hide Popular Lives In Search (`hideSearchPopularLivesPatch`)
-- Removes the 'LIVE populares' (Popular LIVEs) recommendation card and stream broadcasts from the search intermediate discovery screen.
+- Removes the Popular LIVEs recommendation card and live stream broadcasts from the search discovery screen.
 - **Search Intermediate Raw Payload & Model Filtering**: Intercepts `RecomDataWrapper.<init>(String, SuggestWordResponse)` to filter out `"live_popular"` card items from the raw JSON payload and parsed response model before Lynx rendering.
 
 ### 16. Enable Voice Comments (`enableVoiceCommentsPatch`)

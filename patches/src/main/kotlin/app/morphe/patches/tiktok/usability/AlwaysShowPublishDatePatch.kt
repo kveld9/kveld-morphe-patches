@@ -14,7 +14,7 @@ import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 
 val alwaysShowPublishDatePatch = bytecodePatch(
-    name = "Always show publish date",
+    name = "Always Show Publish Date",
     description = "Forces video publish/upload date to remain visible in video author information across all feed types.",
     default = true,
 ) {

@@ -9,7 +9,7 @@ import app.morphe.patches.shared.replaceWithReturnNull
 val hideTopLiveEntrancePatch = bytecodePatch(
     name = "Hide Top-Left LIVE Button",
     description = "Removes the top-left LIVE broadcast button and tab entry point from the top navigation bar.",
-    default = true,
+    default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
 

@@ -6,9 +6,9 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 
 val autoPauseFirstVideoPatch = bytecodePatch(
-    name = "Auto-pause first video",
+    name = "Auto-Pause First Video",
     description = "Automatically pauses the first video when opening TikTok, allowing the application to finish background initialization and preventing playback lag.",
-    default = true,
+    default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
     extendWith("extensions/extension.mpe")
@@ -37,7 +37,7 @@ val autoPauseFirstVideoPatch = bytecodePatch(
                     invoke-static/range {p0 .. p1}, ${Constants.TIKTOK_EXTENSION_AUTOPAUSE_HOOK}->onFirstVideoLoaded(Ljava/lang/Object;Ljava/lang/Object;)V
                 """.trimIndent(),
             )
-            println("[Auto-pause first video] Hooked PlayerController.d0 -> Post-load pause & play icon active.")
+            println("[Auto-Pause First Video] Hooked PlayerController.d0 -> Post-load pause & play icon active.")
             patched++
 
             // 2. Hook PlayerController.Q6 to block automatic playback resume by tryResumePlay
@@ -56,7 +56,7 @@ val autoPauseFirstVideoPatch = bytecodePatch(
                     :cond_proceed_q6
                 """.trimIndent(),
             )
-            println("[Auto-pause first video] Hooked PlayerController.Q6 -> Handover tryResumePlay suppressed.")
+            println("[Auto-Pause First Video] Hooked PlayerController.Q6 -> Handover tryResumePlay suppressed.")
             patched++
 
             // 3. Hook PlayerController.onResumePlay(String) to detect user tap and unlock playback
@@ -70,7 +70,7 @@ val autoPauseFirstVideoPatch = bytecodePatch(
                     invoke-static {}, ${Constants.TIKTOK_EXTENSION_AUTOPAUSE_HOOK}->onUserResumePlay()V
                 """.trimIndent(),
             )
-            println("[Auto-pause first video] Hooked PlayerController.onResumePlay -> User play detection active.")
+            println("[Auto-Pause First Video] Hooked PlayerController.onResumePlay -> User play detection active.")
             patched++
 
             // 4. Hook PlayerController.onPageScrollStateChanged(int) to unlock auto-play when user swipes feed
@@ -84,12 +84,12 @@ val autoPauseFirstVideoPatch = bytecodePatch(
                     invoke-static {p1}, ${Constants.TIKTOK_EXTENSION_AUTOPAUSE_HOOK}->onPageScroll(I)V
                 """.trimIndent(),
             )
-            println("[Auto-pause first video] Hooked PlayerController.onPageScrollStateChanged -> Feed scroll detection active.")
+            println("[Auto-Pause First Video] Hooked PlayerController.onPageScrollStateChanged -> Feed scroll detection active.")
             patched++
         } catch (e: Exception) {
-            println("[Auto-pause first video] PlayerController note: ${e.message}")
+            println("[Auto-Pause First Video] PlayerController note: ${e.message}")
         }
 
-        println("[Auto-pause first video] Applied $patched hook(s) -> First video auto-pause active.")
+        println("[Auto-Pause First Video] Applied $patched hook(s) -> First video auto-pause active.")
     }
 }

@@ -6,7 +6,7 @@ import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.replaceWithReturnBoolean
 
 val fixGoogleLoginPatch = bytecodePatch(
-    name = "Fix Google login",
+    name = "Fix Google Login",
     description = "Restores Google account sign-in after patching by forcing fallback to Web-based OAuth when Google Play Services rejects the modified APK signature.",
     default = true,
 ) {

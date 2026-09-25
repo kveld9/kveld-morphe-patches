@@ -9,7 +9,7 @@ import app.morphe.patches.shared.replaceWithReturnNull
 
 val hideSuggestedSearchesPatch = bytecodePatch(
     name = "Hide Suggested Searches",
-    description = "Removes the 'Podría interesarte' (You may like / Guess Search) suggested keywords section from the search intermediate page.",
+    description = "Removes the suggested search keywords section ('You may like' / 'Search suggestions') from the search discovery page.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)

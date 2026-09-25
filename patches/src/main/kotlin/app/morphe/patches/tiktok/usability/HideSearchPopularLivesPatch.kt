@@ -7,7 +7,7 @@ import app.morphe.patches.shared.Constants
 
 val hideSearchPopularLivesPatch = bytecodePatch(
     name = "Hide Popular Lives In Search",
-    description = "Removes the 'LIVE populares' (Popular LIVEs) recommendation card and stream broadcasts from the search intermediate page.",
+    description = "Removes the Popular LIVEs recommendation card and live stream broadcasts from the search discovery page.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)

@@ -9,7 +9,7 @@ import app.morphe.patches.shared.replaceWithReturnVoid
 val disableSearchHistoryRecordingPatch = bytecodePatch(
     name = "Disable Search History Recording",
     description = "Prevents search queries and keywords from being recorded in local history, databases, and analytics stores.",
-    default = true,
+    default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
 

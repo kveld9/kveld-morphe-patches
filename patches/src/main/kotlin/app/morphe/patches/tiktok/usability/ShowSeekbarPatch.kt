@@ -11,7 +11,7 @@ import com.android.tools.smali.dexlib2.AccessFlags
 private const val AWEME_CLASS = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;"
 
 val showSeekbarPatch = bytecodePatch(
-    name = "Show seekbar",
+    name = "Show Seekbar",
     description = "Restores TikTok's native video seekbar and scrubbing controls where normally hidden or disabled.",
     default = true,
 ) {

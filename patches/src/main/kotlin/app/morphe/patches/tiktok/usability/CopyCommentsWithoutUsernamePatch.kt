@@ -138,7 +138,7 @@ private fun MutableMethod.addCommentCopySanitizerInstructions(
 }
 
 val copyCommentsWithoutUsernamePatch = bytecodePatch(
-    name = "Copy comments without username",
+    name = "Copy Comments Without Username",
     description = "Copies only the comment text without prepending the author username.",
     default = true,
 ) {
@@ -226,7 +226,7 @@ val copyCommentsWithoutUsernamePatch = bytecodePatch(
                     val paramOffset = if (isStaticInvoke) 0 else 1
                     val copiedTextRegister = helperInstruction.argumentRegister(paramOffset + 1)
                         ?: throw PatchException(
-                            "Copy comments without username: clipboard helper call is not register-addressable in ${match.originalClassDef.type}->${method.name}.",
+                            "Copy Comments Without Username: clipboard helper call is not register-addressable in ${match.originalClassDef.type}->${method.name}.",
                         )
 
                     method.addCommentCopySanitizerInstructions(helperCallIndex, copiedTextRegister)

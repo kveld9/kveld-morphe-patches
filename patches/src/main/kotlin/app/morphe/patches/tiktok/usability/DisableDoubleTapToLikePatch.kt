@@ -6,9 +6,9 @@ import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.replaceWithReturnVoid
 
 val disableDoubleTapToLikePatch = bytecodePatch(
-    name = "Disable double tap to like",
+    name = "Disable Double Tap to Like",
     description = "Disables the double tap gesture to like videos in the feed, preventing accidental likes while scrolling or pausing. Videos can still be liked using the like button.",
-    default = true,
+    default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
 
@@ -23,10 +23,10 @@ val disableDoubleTapToLikePatch = bytecodePatch(
                 parameters = listOf("Landroid/view/MotionEvent;"),
                 returnType = "V",
             ).method.replaceWithReturnVoid()
-            println("[Disable double tap to like] Hooked DiggPanelComponent.handleDoubleClick -> Main feed double tap like neutralized.")
+            println("[Disable Double Tap to Like] Hooked DiggPanelComponent.handleDoubleClick -> Main feed double tap like neutralized.")
             patched++
         } catch (e: Exception) {
-            println("[Disable double tap to like] DiggPanelComponent note: ${e.message}")
+            println("[Disable Double Tap to Like] DiggPanelComponent note: ${e.message}")
         }
 
         // 2. Hook LandscapeFragmentPanel.handleDoubleClick(MotionEvent) in landscape feed
@@ -37,10 +37,10 @@ val disableDoubleTapToLikePatch = bytecodePatch(
                 parameters = listOf("Landroid/view/MotionEvent;"),
                 returnType = "V",
             ).method.replaceWithReturnVoid()
-            println("[Disable double tap to like] Hooked LandscapeFragmentPanel.handleDoubleClick -> Landscape feed double tap like neutralized.")
+            println("[Disable Double Tap to Like] Hooked LandscapeFragmentPanel.handleDoubleClick -> Landscape feed double tap like neutralized.")
             patched++
         } catch (e: Exception) {
-            println("[Disable double tap to like] LandscapeFragmentPanel note: ${e.message}")
+            println("[Disable Double Tap to Like] LandscapeFragmentPanel note: ${e.message}")
         }
 
         // 3. Hook FriendsV3GestureDetectorAssem.onDoubleTap(MotionEvent) in friends tab feed
@@ -51,12 +51,12 @@ val disableDoubleTapToLikePatch = bytecodePatch(
                 parameters = listOf("Landroid/view/MotionEvent;"),
                 returnType = "V",
             ).method.replaceWithReturnVoid()
-            println("[Disable double tap to like] Hooked FriendsV3GestureDetectorAssem.onDoubleTap -> Friends tab double tap like neutralized.")
+            println("[Disable Double Tap to Like] Hooked FriendsV3GestureDetectorAssem.onDoubleTap -> Friends tab double tap like neutralized.")
             patched++
         } catch (e: Exception) {
-            println("[Disable double tap to like] FriendsV3GestureDetectorAssem note: ${e.message}")
+            println("[Disable Double Tap to Like] FriendsV3GestureDetectorAssem note: ${e.message}")
         }
 
-        println("[Disable double tap to like] Applied $patched hook(s) -> Double tap to like disabled.")
+        println("[Disable Double Tap to Like] Applied $patched hook(s) -> Double tap to like disabled.")
     }
 }

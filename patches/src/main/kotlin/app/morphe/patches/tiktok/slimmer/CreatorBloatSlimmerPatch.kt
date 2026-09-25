@@ -9,7 +9,7 @@ private val EMPTY_BYTES = byteArrayOf()
 val creatorBloatSlimmerPatch = rawResourcePatch(
     name = "Studio & Creation De-bloat",
     description = "Strips heavy video creation plugins, CapCut NLE editor SDKs, effect plugins, and AR camera face models to significantly reduce APK size.",
-    default = true,
+    default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
 

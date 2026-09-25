@@ -31,7 +31,7 @@ val devicePrivacyGuardPatch = bytecodePatch(
             ).method.addInstructions(
                 0,
                 """
-                    invoke-static/range {p0 .. p1}, Lcom/kveld9/morphe/extension/tiktok/TikTokPrivacyHook;->interceptPowerPermissions(Ljava/lang/Object;Ljava/util/Set;)Z
+                    invoke-static/range {p0 .. p1}, ${Constants.TIKTOK_EXTENSION_PRIVACY_HOOK}->interceptPowerPermissions(Ljava/lang/Object;Ljava/util/Set;)Z
                     move-result v0
                     if-eqz v0, :cond_proceed
                     return-void
@@ -54,7 +54,7 @@ val devicePrivacyGuardPatch = bytecodePatch(
             ).method.addInstructions(
                 0,
                 """
-                    invoke-static/range {p0 .. p0}, Lcom/kveld9/morphe/extension/tiktok/TikTokPrivacyHook;->isPermissionBlocked(Ljava/lang/String;)Z
+                    invoke-static/range {p0 .. p0}, ${Constants.TIKTOK_EXTENSION_PRIVACY_HOOK}->isPermissionBlocked(Ljava/lang/String;)Z
                     move-result v0
                     if-eqz v0, :cond_check
                     const/4 v0, 0x1

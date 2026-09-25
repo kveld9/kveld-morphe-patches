@@ -11,7 +11,7 @@ import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 
 val forceAutoScrollPatch = bytecodePatch(
-    name = "Force auto-scroll",
+    name = "Force Auto-Scroll",
     description = "Forces the activation of the native video auto-scroll experiment flag for accounts and regions that lack it due to A/B testing.",
     default = true,
 ) {
@@ -36,7 +36,7 @@ val forceAutoScrollPatch = bytecodePatch(
             )
             patched++
         } catch (e: Exception) {
-            println("[Force auto-scroll] fyp_auto_scroll note: ${e.message}")
+            println("[Force Auto-Scroll] fyp_auto_scroll note: ${e.message}")
         }
 
         // 2. Force FypAutoScrollServiceImpl capability check (LJIILJJIL)
@@ -55,7 +55,7 @@ val forceAutoScrollPatch = bytecodePatch(
             )
             patched++
         } catch (e: Exception) {
-            println("[Force auto-scroll] FypAutoScrollServiceImpl.LJIILJJIL note: ${e.message}")
+            println("[Force Auto-Scroll] FypAutoScrollServiceImpl.LJIILJJIL note: ${e.message}")
         }
 
         // 3. Force tablet / foldable auto-scroll experiment flag (tablet_fyp_auto_scroll)
@@ -74,7 +74,7 @@ val forceAutoScrollPatch = bytecodePatch(
             )
             patched++
         } catch (e: Exception) {
-            println("[Force auto-scroll] tablet_fyp_auto_scroll note: ${e.message}")
+            println("[Force Auto-Scroll] tablet_fyp_auto_scroll note: ${e.message}")
         }
 
         // 4. Force search results feed auto-scroll experiment flag (search_auto_scroll)
@@ -93,7 +93,7 @@ val forceAutoScrollPatch = bytecodePatch(
             )
             patched++
         } catch (e: Exception) {
-            println("[Force auto-scroll] search_auto_scroll note: ${e.message}")
+            println("[Force Auto-Scroll] search_auto_scroll note: ${e.message}")
         }
 
         // 5. Force panel_auto_scroll check on FeedBottomBarFacadeImpl
@@ -112,7 +112,7 @@ val forceAutoScrollPatch = bytecodePatch(
             )
             patched++
         } catch (e: Exception) {
-            println("[Force auto-scroll] FeedBottomBarFacadeImpl.LJIJJLI note: ${e.message}")
+            println("[Force Auto-Scroll] FeedBottomBarFacadeImpl.LJIJJLI note: ${e.message}")
         }
 
         // 6. Ensure auto-scroll action item is created in the long-press / share menu
@@ -150,9 +150,9 @@ val forceAutoScrollPatch = bytecodePatch(
             }
             patched++
         } catch (e: Exception) {
-            println("[Force auto-scroll] createAutoScrollItem note: ${e.message}")
+            println("[Force Auto-Scroll] createAutoScrollItem note: ${e.message}")
         }
 
-        println("[Force auto-scroll] Applied $patched auto-scroll hook(s) -> Native auto-scroll permanently forced.")
+        println("[Force Auto-Scroll] Applied $patched auto-scroll hook(s) -> Native auto-scroll permanently forced.")
     }
 }

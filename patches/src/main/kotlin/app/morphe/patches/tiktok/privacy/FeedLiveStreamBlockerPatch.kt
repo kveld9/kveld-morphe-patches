@@ -10,7 +10,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 val feedLiveStreamBlockerPatch = bytecodePatch(
     name = "Feed Live Stream Blocker",
     description = "Removes live stream broadcast cards and live recommendations from the For You and Following feeds.",
-    default = true,
+    default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
     extendWith("extensions/extension.mpe")

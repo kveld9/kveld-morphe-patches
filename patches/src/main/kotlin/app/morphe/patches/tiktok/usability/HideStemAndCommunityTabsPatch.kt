@@ -7,7 +7,7 @@ import app.morphe.patches.shared.replaceWithReturnBoolean
 
 val hideStemAndCommunityTabsPatch = bytecodePatch(
     name = "Hide STEM and Community Tabs",
-    description = "Removes the STEM and Comunidad (Explore / Topics) tabs from the top navigation feed strip.",
+    description = "Removes the STEM and Topics (Community / Explore) tabs from the top navigation feed strip.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)

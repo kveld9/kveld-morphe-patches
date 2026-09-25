@@ -8,7 +8,7 @@ import app.morphe.patches.shared.replaceWithReturnVoid
 val disableWatchHistoryRecordingPatch = bytecodePatch(
     name = "Disable Watch History Recording",
     description = "Prevents viewed videos from being recorded in account watch history, playback duration stores, and local history caches.",
-    default = true,
+    default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
 

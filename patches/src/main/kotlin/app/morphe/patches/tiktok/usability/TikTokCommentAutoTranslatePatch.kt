@@ -52,9 +52,9 @@ private val commentListLoadedFingerprint = Fingerprint(
 )
 
 val commentAutoTranslatePatch = bytecodePatch(
-    name = "Auto-translate comments",
+    name = "Auto-Translate Comments",
     description = "Automatically translates comments into your preferred language using TikTok's native translation engine.",
-    default = true,
+    default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
     extendWith("extensions/extension.mpe")
@@ -115,10 +115,10 @@ val commentAutoTranslatePatch = bytecodePatch(
 
                 addInstructions(managerReadyIndex + 1, hookInstructions)
                 patched++
-                println("[Auto-translate comments] Hooked BaseCommentCell.bind -> cell registration active.")
+                println("[Auto-Translate Comments] Hooked BaseCommentCell.bind -> cell registration active.")
             }
         } catch (e: Exception) {
-            println("[Auto-translate comments] BaseCommentCell hook note: ${e.message}")
+            println("[Auto-Translate Comments] BaseCommentCell hook note: ${e.message}")
         }
 
         // 2. Hook CommentList.onLoaded to capture and queue incoming comment batches
@@ -150,12 +150,12 @@ val commentAutoTranslatePatch = bytecodePatch(
                     )
                 }
                 patched++
-                println("[Auto-translate comments] Hooked CommentList.onLoaded -> automatic batch translation active.")
+                println("[Auto-Translate Comments] Hooked CommentList.onLoaded -> automatic batch translation active.")
             }
         } catch (e: Exception) {
-            println("[Auto-translate comments] CommentList hook note: ${e.message}")
+            println("[Auto-Translate Comments] CommentList hook note: ${e.message}")
         }
 
-        println("[Auto-translate comments] Applied $patched comment translation hook(s).")
+        println("[Auto-Translate Comments] Applied $patched comment translation hook(s).")
     }
 }

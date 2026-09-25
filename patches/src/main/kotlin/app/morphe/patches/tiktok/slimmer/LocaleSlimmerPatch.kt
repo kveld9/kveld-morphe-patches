@@ -9,7 +9,7 @@ private val EMPTY_BYTES = byteArrayOf()
 val localeSlimmerPatch = rawResourcePatch(
     name = "Language Pack Purger",
     description = "Strips unselected language string bundles from assets/strings#lang_* to save APK space.",
-    default = true,
+    default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
 
