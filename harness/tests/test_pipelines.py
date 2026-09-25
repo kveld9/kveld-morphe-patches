@@ -15,7 +15,6 @@ from harness.core.pipeline import (
 from harness.migration.patch_migrator import MigrationPlan, PatchMigrator
 from harness.pipelines.brave import BravePipeline
 from harness.pipelines.gboard import GboardPipeline
-from harness.pipelines.vivaldi import VivaldiPipeline
 from harness.pipelines.xiaomi import XiaomiEarbudsPipeline
 
 
@@ -26,7 +25,6 @@ class TestPipelineRegistry(unittest.TestCase):
         self.assertEqual(PipelineRegistry.find_pipeline("com.brave.browser_nightly"), BravePipeline)
         self.assertEqual(PipelineRegistry.find_pipeline("com.google.android.inputmethod.latin"), GboardPipeline)
         self.assertEqual(PipelineRegistry.find_pipeline("com.google.android.apps.inputmethod.latin"), GboardPipeline)
-        self.assertEqual(PipelineRegistry.find_pipeline("com.vivaldi.browser.snapshot"), VivaldiPipeline)
         self.assertEqual(PipelineRegistry.find_pipeline("com.mi.earphone"), XiaomiEarbudsPipeline)
 
 

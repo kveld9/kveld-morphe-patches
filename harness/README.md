@@ -1,6 +1,6 @@
 # 🔮 Morphe Patches Automated Update & Reverse Engineering Harness
 
-Automated reverse-engineering and patch update harness for **Brave Browser** (`com.brave.browser`), **Vivaldi Browser** (`com.vivaldi.browser`), **Gboard Lite** (`com.google.android.inputmethod.latin`), **Hevy** (`com.hevy`), **TikTok** (`com.zhiliaoapp.musically`), **NokoPrint** (`com.nokoprint`), and **Xiaomi Earbuds** (`com.mi.earphone`).
+Automated reverse-engineering and patch update harness for **Brave Browser** (`com.brave.browser`), **Gboard Lite** (`com.google.android.inputmethod.latin`), **Hevy** (`com.hevy`), **TikTok** (`com.zhiliaoapp.musically`), **NokoPrint** (`com.nokoprint`), and **Xiaomi Earbuds** (`com.mi.earphone`).
 
 ---
 
@@ -9,7 +9,7 @@ Automated reverse-engineering and patch update harness for **Brave Browser** (`c
 The harness automates the reverse-engineering lifecycle when upstream releases new APKs:
 
 ```
-Target APK / APKM (Brave, Vivaldi, Gboard, Hevy, TikTok, NokoPrint, or Xiaomi Earbuds)
+Target APK / APKM (Brave, Gboard, Hevy, TikTok, NokoPrint, or Xiaomi Earbuds)
      ↓
 [harness/update.py]            ➜ Package Identification & Pipeline Dispatcher
      ↓
@@ -44,9 +44,6 @@ python harness/update.py <path-to-gboard.apk> --audit
 # For Brave
 python harness/update.py <path-to-brave.apk> --audit
 
-# For Vivaldi (APKM bundle required)
-python harness/update.py <path-to-vivaldi.apkm> --audit
-
 # For Hevy (APKM bundle required)
 python harness/update.py <path-to-hevy.apkm> --audit
 
@@ -63,9 +60,6 @@ python harness/update.py <path-to-gboard.apk> --update
 
 # For Brave
 python harness/update.py <path-to-brave.apk> --update
-
-# For Vivaldi (APKM bundle required)
-python harness/update.py <path-to-vivaldi.apkm> --update
 
 # For Hevy (APKM bundle required)
 python harness/update.py <path-to-hevy.apkm> --update
