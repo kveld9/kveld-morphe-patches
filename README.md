@@ -133,7 +133,7 @@
 | **Hide Profile Photo Follow Button** | Hides the plus (+) follow badge on creator profile avatars in the feed and disables its touch interaction. |  |
 | **Hide Community Tab** | Removes the Community (Explore) tab from the top navigation feed strip. |  |
 | **Hide Suggested Searches** | Removes the suggested search keywords section ('You may like' / 'Search suggestions') from the search discovery page. |  |
-| **Hide TikTok Shop & Mall** | Removes product showcase badges, shopping cart tags, and the TikTok Shop / Mall tab from navigation bars and video posts. |  |
+| **Hide TikTok Shop & Mall** | Removes product showcase badges, shopping cart tags, and the TikTok Shop / Mall tab from navigation bars and video posts. | • Hide Shop Navigation Tab<br>• Hide Video Product Anchors |
 | **Hide Top-Left LIVE Button** | Removes the top-left LIVE broadcast button and tab entry point from the top navigation bar. |  |
 | **In-App Browser Privacy Guard** | Redirects external and third-party web links to the default system browser and neutralizes inline JavaScript tracking, DOM monitoring, and AJAX hooking in residual in-app WebViews. |  |
 | **Instant Launch & Splash Blocker** | Eliminates cold startup delays, real-time splash advertisements, and background TopView ad preloading. |  |
