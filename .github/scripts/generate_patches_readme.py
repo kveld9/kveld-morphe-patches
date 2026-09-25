@@ -230,20 +230,6 @@ for entry in by_app.values():
                 readme,
                 count=1,
             )
-        elif any("vivaldi" in p for p in pkgs):
-            slug_ver = target_ver.replace(".", "-")
-            readme = re.sub(
-                r"(\|\s*\*\*Vivaldi Browser\*\*\s*\|\s*`com\.vivaldi\.browser`\s*\|\s*`)[^`]+(`\s*\|)",
-                rf"\g<1>{target_ver}\g<2>",
-                readme,
-                count=1,
-            )
-            readme = re.sub(
-                r"https://www\.apkmirror\.com/apk/vivaldi-technologies/(?:vivaldi-browser-beta|vivaldi-browser)/vivaldi-browser-fast-safe-[^/]+-release/",
-                f"https://www.apkmirror.com/apk/vivaldi-technologies/vivaldi-browser-beta/vivaldi-browser-fast-safe-{slug_ver}-release/",
-                readme,
-                count=1,
-            )
         elif any("brave" in p for p in pkgs):
             readme = re.sub(
                 r"(\|\s*\*\*Brave Browser\*\*\s*\|\s*`com\.brave\.browser`\s*\|\s*`)[^`]+(`\s*\|)",

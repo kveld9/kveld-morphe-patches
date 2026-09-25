@@ -12,7 +12,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Extension helper class for Chromium-based browsers (Brave, Vivaldi).
+ * Extension helper class for Chromium-based browsers (Brave).
  *
  * Architectural Note:
  * This sanitizer intercepts URLs at the boundary where links leave Chromium and are passed

@@ -21,9 +21,10 @@ body:
       options:
         - Brave Browser
         - Gboard Lite
-        - Vivaldi Browser
         - Hevy
         - TikTok (Global & Asia)
+        - NokoPrint
+        - Xiaomi Earbuds
         - Universal / Other
     validations:
       required: true

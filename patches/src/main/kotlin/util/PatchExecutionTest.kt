@@ -77,19 +77,7 @@ enum class TargetApp(
         filePattern = Regex("(?i).*brave.*\\.apk$"),
         patchDirectoryPart = "brave",
     ),
-    VIVALDI(
-        id = "vivaldi",
-        appName = "Vivaldi Browser",
-        packageName = Constants.VIVALDI_PACKAGE_NAME,
-        candidateFilenames = listOf(
-            "Vivaldi.${Constants.VIVALDI_TARGET_VERSION}_arm64-v8a.apkm",
-            "com.vivaldi.browser_${Constants.VIVALDI_TARGET_VERSION}-541470077_1feat_0705103ed141e76c0c95ecc38009481f_apkmirror.com.apkm",
-            "Vivaldi.${Constants.VIVALDI_TARGET_VERSION}_arm64-v8a.apk",
-            "Vivaldi.8.2.4147.58_arm64-v8a.apk",
-        ),
-        filePattern = Regex("(?i).*vivaldi.*\\.(?:apk|apkm)$"),
-        patchDirectoryPart = "vivaldi",
-    ),
+
     HEVY(
         id = "hevy",
         appName = "Hevy",
@@ -157,7 +145,6 @@ enum class TargetApp(
                 lower.contains("tiktok") -> TIKTOK
                 lower.contains("gboard") -> GBOARD
                 lower.contains("brave") -> BRAVE
-                lower.contains("vivaldi") -> VIVALDI
                 lower.contains("hevy") -> HEVY
                 lower.contains("nokoprint") -> NOKOPRINT
                 lower.contains("earphone") || lower.contains("earbuds") -> XIAOMI_EARBUDS

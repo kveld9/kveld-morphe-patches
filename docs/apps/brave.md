@@ -153,9 +153,9 @@ Comprehensive technical and configuration guide for **Brave Browser** (`com.brav
 
 ---
 
-## 📐 Architectural Rationale: Omission of Vivaldi Patches in Brave
+## 📐 Architectural Rationale: Omission of Additional Chromium Patches in Brave
 
-The following patches present in Vivaldi are intentionally omitted from Brave Browser due to upstream differences:
+The following patches present in other Chromium forks are intentionally omitted from Brave Browser due to upstream differences:
 
 1. **Google Privacy Sandbox Attestations Zeroing (`privacy-sandbox-attestations.dat`)**:
    - Brave removes and disables Google Privacy Sandbox APIs (Topics API, FLEDGE / Protected Audience, Attribution Reporting) at the C++ level in `brave-core`. The underlying APIs are completely uncallable by web content, making zeroing the `.dat` file redundant.

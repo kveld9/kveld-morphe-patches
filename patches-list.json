@@ -343,116 +343,9 @@
       "options": []
     },
     {
-      "name": "Block Vivaldi Sync",
-      "description": "Redirects bifrost.vivaldi.com to 0.0.0.0 in libchrome.so to completely disable Vivaldi account synchronization for an air-gapped experience.",
-      "default": false,
-      "dependencies": [],
-      "compatiblePackages": [
-        {
-          "packageName": "com.vivaldi.browser",
-          "name": "Vivaldi Browser - Fast & Safe",
-          "description": null,
-          "apkFileType": "APKM",
-          "appIconColor": "#EF3939",
-          "signatures": null,
-          "targets": [
-            {
-              "version": "8.2.4147.93",
-              "versionCodes": null,
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            }
-          ]
-        }
-      ],
-      "options": []
-    },
-    {
-      "name": "Block Vivaldi Telemetry",
-      "description": "Blocks Vivaldi usage statistics, crash reporting, Crashpad endpoints, DirectMatch suggestions, install referrer transmission, and background wallpaper polling.",
-      "default": true,
-      "dependencies": [
-        "RawResourcePatch",
-        "ResourcePatch"
-      ],
-      "compatiblePackages": [
-        {
-          "packageName": "com.vivaldi.browser",
-          "name": "Vivaldi Browser - Fast & Safe",
-          "description": null,
-          "apkFileType": "APKM",
-          "appIconColor": "#EF3939",
-          "signatures": null,
-          "targets": [
-            {
-              "version": "8.2.4147.93",
-              "versionCodes": null,
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            }
-          ]
-        }
-      ],
-      "options": []
-    },
-    {
-      "name": "Brave ARM64 BTI Compatibility",
-      "description": "Neutralizes GNU_PROPERTY_AARCH64_FEATURE_1_BTI in libchrome.so to prevent Branch Target Exception SIGILL crashes on ARMv8.5+ devices.",
-      "default": false,
-      "dependencies": [],
-      "compatiblePackages": [
-        {
-          "packageName": "com.brave.browser",
-          "name": "Brave Private Web Browser, VPN",
-          "description": null,
-          "apkFileType": "APK",
-          "appIconColor": "#FF4500",
-          "signatures": null,
-          "targets": [
-            {
-              "version": "1.96.59",
-              "versionCodes": null,
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            }
-          ]
-        }
-      ],
-      "options": []
-    },
-    {
       "name": "Brave In-Product & Commercial Notification Optimizer",
       "description": "Eliminates background wakeups and notifications from Chromium tips scheduler (Job ID 105), Brave Rewards onboarding promo, and retention marketing campaigns.",
       "default": true,
-      "dependencies": [],
-      "compatiblePackages": [
-        {
-          "packageName": "com.brave.browser",
-          "name": "Brave Private Web Browser, VPN",
-          "description": null,
-          "apkFileType": "APK",
-          "appIconColor": "#FF4500",
-          "signatures": null,
-          "targets": [
-            {
-              "version": "1.96.59",
-              "versionCodes": null,
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            }
-          ]
-        }
-      ],
-      "options": []
-    },
-    {
-      "name": "Brave Native Library Extraction Compatibility",
-      "description": "Enforces native library extraction in AndroidManifest.xml to ensure 16 KB page and BTI compatibility across modern ARM64 devices.",
-      "default": false,
       "dependencies": [],
       "compatiblePackages": [
         {
@@ -578,6 +471,49 @@
       "options": []
     },
     {
+      "name": "Bypass Screen Capture Detection",
+      "description": "Clears FLAG_SECURE on protected windows to allow screenshots and screen recording across restricted views, and neutralizes screenshot detection listeners and feedback prompts.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.zhiliaoapp.musically",
+          "name": "TikTok",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#FE2C55",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "47.0.3",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        },
+        {
+          "packageName": "com.ss.android.ugc.trill",
+          "name": "TikTok",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#FE2C55",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "47.0.3",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Clean New Tab Page",
       "description": "Removes sponsored wallpaper images, Brave News/Today feeds, marketing widgets, and promo cards from the New Tab Page.",
       "default": true,
@@ -637,23 +573,6 @@
               "description": null
             }
           ]
-        },
-        {
-          "packageName": "com.vivaldi.browser",
-          "name": "Vivaldi Browser - Fast & Safe",
-          "description": null,
-          "apkFileType": "APKM",
-          "appIconColor": "#EF3939",
-          "signatures": null,
-          "targets": [
-            {
-              "version": "8.2.4147.93",
-              "versionCodes": null,
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            }
-          ]
         }
       ],
       "options": []
@@ -691,34 +610,6 @@
           "targets": [
             {
               "version": "47.0.3",
-              "versionCodes": null,
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            }
-          ]
-        }
-      ],
-      "options": []
-    },
-    {
-      "name": "Clean Speed Dial Bookmarks",
-      "description": "Removes sponsored commercial affiliate bookmarks, hides the 3-dot customize button, and disables phantom touch actions on the blank Start Page.",
-      "default": true,
-      "dependencies": [
-        "RawResourcePatch"
-      ],
-      "compatiblePackages": [
-        {
-          "packageName": "com.vivaldi.browser",
-          "name": "Vivaldi Browser - Fast & Safe",
-          "description": null,
-          "apkFileType": "APKM",
-          "appIconColor": "#EF3939",
-          "signatures": null,
-          "targets": [
-            {
-              "version": "8.2.4147.93",
               "versionCodes": null,
               "isExperimental": false,
               "minSdk": null,
@@ -877,32 +768,6 @@
           "values": null
         }
       ]
-    },
-    {
-      "name": "Close Tabs on Exit",
-      "description": "Prevents tab restoration on startup, ensuring Vivaldi always opens with a clean Start Page session regardless of how the app was terminated.",
-      "default": false,
-      "dependencies": [],
-      "compatiblePackages": [
-        {
-          "packageName": "com.vivaldi.browser",
-          "name": "Vivaldi Browser - Fast & Safe",
-          "description": null,
-          "apkFileType": "APKM",
-          "appIconColor": "#EF3939",
-          "signatures": null,
-          "targets": [
-            {
-              "version": "8.2.4147.93",
-              "versionCodes": null,
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            }
-          ]
-        }
-      ],
-      "options": []
     },
     {
       "name": "Copy Comments Without Username",
@@ -1143,7 +1008,7 @@
     },
     {
       "name": "Device Privacy Guard",
-      "description": "Neutralizes invasive runtime permissions (contacts sync, location tracking, nearby devices), advertising ID profiling, background clipboard snooping routines, motion sensor profiling, and screenshot/recording detection to protect user data.",
+      "description": "Neutralizes invasive runtime permissions (contacts sync, location tracking, nearby devices), advertising ID profiling, background clipboard snooping routines, and motion sensor profiling to protect user data.",
       "default": true,
       "dependencies": [],
       "compatiblePackages": [
@@ -1211,32 +1076,6 @@
       "options": []
     },
     {
-      "name": "Disable Background Sync & Periodic Sync",
-      "description": "Prevents Web Background Sync and Periodic Sync APIs from scheduling wakeups and background tasks in Android JobScheduler.",
-      "default": true,
-      "dependencies": [],
-      "compatiblePackages": [
-        {
-          "packageName": "com.vivaldi.browser",
-          "name": "Vivaldi Browser - Fast & Safe",
-          "description": null,
-          "apkFileType": "APKM",
-          "appIconColor": "#EF3939",
-          "signatures": null,
-          "targets": [
-            {
-              "version": "8.2.4147.93",
-              "versionCodes": null,
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            }
-          ]
-        }
-      ],
-      "options": []
-    },
-    {
       "name": "Disable Battery Status API & OS Listener",
       "description": "Neutralizes the Battery Status API (navigator.getBattery) to prevent cross-site device fingerprinting and drops OS battery change broadcasts.",
       "default": true,
@@ -1252,49 +1091,6 @@
           "targets": [
             {
               "version": "1.96.59",
-              "versionCodes": null,
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            }
-          ]
-        },
-        {
-          "packageName": "com.vivaldi.browser",
-          "name": "Vivaldi Browser - Fast & Safe",
-          "description": null,
-          "apkFileType": "APKM",
-          "appIconColor": "#EF3939",
-          "signatures": null,
-          "targets": [
-            {
-              "version": "8.2.4147.93",
-              "versionCodes": null,
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            }
-          ]
-        }
-      ],
-      "options": []
-    },
-    {
-      "name": "Disable Chromium Tips & Notification Scheduler",
-      "description": "Eliminates periodic background wakeups, native library loading, and in-product promotional tips from Chromium tips scheduler.",
-      "default": true,
-      "dependencies": [],
-      "compatiblePackages": [
-        {
-          "packageName": "com.vivaldi.browser",
-          "name": "Vivaldi Browser - Fast & Safe",
-          "description": null,
-          "apkFileType": "APKM",
-          "appIconColor": "#EF3939",
-          "signatures": null,
-          "targets": [
-            {
-              "version": "8.2.4147.93",
               "versionCodes": null,
               "isExperimental": false,
               "minSdk": null,
@@ -1751,32 +1547,6 @@
             },
             {
               "version": "18.2.4.969776716-lite_beta-armeabi-v7a",
-              "versionCodes": null,
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            }
-          ]
-        }
-      ],
-      "options": []
-    },
-    {
-      "name": "Disable Vivaldi Prompts & In-App Popups",
-      "description": "Disables in-app donation prompts, search engine switch promos, rate-app popups, background privacy report alarms, default browser promo handlers, and hides the Vivaldia game from the main menu.",
-      "default": true,
-      "dependencies": [],
-      "compatiblePackages": [
-        {
-          "packageName": "com.vivaldi.browser",
-          "name": "Vivaldi Browser - Fast & Safe",
-          "description": null,
-          "apkFileType": "APKM",
-          "appIconColor": "#EF3939",
-          "signatures": null,
-          "targets": [
-            {
-              "version": "8.2.4147.93",
               "versionCodes": null,
               "isExperimental": false,
               "minSdk": null,
@@ -2579,6 +2349,49 @@
       "options": []
     },
     {
+      "name": "Hide Community Tab",
+      "description": "Removes the Community (Explore) tab from the top navigation feed strip.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.zhiliaoapp.musically",
+          "name": "TikTok",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#FE2C55",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "47.0.3",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        },
+        {
+          "packageName": "com.ss.android.ugc.trill",
+          "name": "TikTok",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#FE2C55",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "47.0.3",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Hide Feed Search Bar",
       "description": "Removes the search suggestion pill and trending bar ('Search · <keyword>') from the bottom of feed videos, providing a clean viewing area without search distractions.",
       "default": true,
@@ -2708,49 +2521,6 @@
       "options": []
     },
     {
-      "name": "Hide STEM and Community Tabs",
-      "description": "Removes the STEM and Topics (Community / Explore) tabs from the top navigation feed strip.",
-      "default": true,
-      "dependencies": [],
-      "compatiblePackages": [
-        {
-          "packageName": "com.zhiliaoapp.musically",
-          "name": "TikTok",
-          "description": null,
-          "apkFileType": "APK",
-          "appIconColor": "#FE2C55",
-          "signatures": null,
-          "targets": [
-            {
-              "version": "47.0.3",
-              "versionCodes": null,
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            }
-          ]
-        },
-        {
-          "packageName": "com.ss.android.ugc.trill",
-          "name": "TikTok",
-          "description": null,
-          "apkFileType": "APK",
-          "appIconColor": "#FE2C55",
-          "signatures": null,
-          "targets": [
-            {
-              "version": "47.0.3",
-              "versionCodes": null,
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            }
-          ]
-        }
-      ],
-      "options": []
-    },
-    {
       "name": "Hide Suggested Searches",
       "description": "Removes the suggested search keywords section ('You may like' / 'Search suggestions') from the search discovery page.",
       "default": true,
@@ -2834,7 +2604,26 @@
           ]
         }
       ],
-      "options": []
+      "options": [
+        {
+          "key": "hideShopTab",
+          "title": "Hide Shop Navigation Tab",
+          "description": "Removes the TikTok Shop / Mall navigation tab and indicator from navigation bars. Disable if you want to keep access to your purchases and orders while still hiding video product tags.",
+          "required": false,
+          "type": "kotlin.Boolean",
+          "default": true,
+          "values": null
+        },
+        {
+          "key": "hideVideoAnchors",
+          "title": "Hide Video Product Anchors",
+          "description": "Removes shopping cart tags, product showcase badges, and commercial anchors from FYP and Following feed videos.",
+          "required": false,
+          "type": "kotlin.Boolean",
+          "default": true,
+          "values": null
+        }
+      ]
     },
     {
       "name": "Hide Top-Left LIVE Button",
@@ -3120,23 +2909,6 @@
           "targets": [
             {
               "version": "1.96.59",
-              "versionCodes": null,
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            }
-          ]
-        },
-        {
-          "packageName": "com.vivaldi.browser",
-          "name": "Vivaldi Browser - Fast & Safe",
-          "description": null,
-          "apkFileType": "APKM",
-          "appIconColor": "#EF3939",
-          "signatures": null,
-          "targets": [
-            {
-              "version": "8.2.4147.93",
               "versionCodes": null,
               "isExperimental": false,
               "minSdk": null,
@@ -3705,32 +3477,6 @@
       "options": []
     },
     {
-      "name": "Resource Slimmer",
-      "description": "Strips bundled stock wallpapers, sponsored Speed Dial thumbnails, partner favicons, Privacy Sandbox attestations, and hardens declarative preference defaults.",
-      "default": true,
-      "dependencies": [],
-      "compatiblePackages": [
-        {
-          "packageName": "com.vivaldi.browser",
-          "name": "Vivaldi Browser - Fast & Safe",
-          "description": null,
-          "apkFileType": "APKM",
-          "appIconColor": "#EF3939",
-          "signatures": null,
-          "targets": [
-            {
-              "version": "8.2.4147.93",
-              "versionCodes": null,
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            }
-          ]
-        }
-      ],
-      "options": []
-    },
-    {
       "name": "SIM Region Selector",
       "description": "Spoofs the detected SIM and network country ISO code to bypass regional feed restrictions and catalog blocks.",
       "default": false,
@@ -3799,23 +3545,6 @@
           "targets": [
             {
               "version": "1.96.59",
-              "versionCodes": null,
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            }
-          ]
-        },
-        {
-          "packageName": "com.vivaldi.browser",
-          "name": "Vivaldi Browser - Fast & Safe",
-          "description": null,
-          "apkFileType": "APKM",
-          "appIconColor": "#EF3939",
-          "signatures": null,
-          "targets": [
-            {
-              "version": "8.2.4147.93",
               "versionCodes": null,
               "isExperimental": false,
               "minSdk": null,
@@ -3891,23 +3620,6 @@
               "description": null
             }
           ]
-        },
-        {
-          "packageName": "com.vivaldi.browser",
-          "name": "Vivaldi Browser - Fast & Safe",
-          "description": null,
-          "apkFileType": "APKM",
-          "appIconColor": "#EF3939",
-          "signatures": null,
-          "targets": [
-            {
-              "version": "8.2.4147.93",
-              "versionCodes": null,
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            }
-          ]
         }
       ],
       "options": []
@@ -3945,32 +3657,6 @@
           "targets": [
             {
               "version": "47.0.3",
-              "versionCodes": null,
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            }
-          ]
-        }
-      ],
-      "options": []
-    },
-    {
-      "name": "Split Bundle Compatibility",
-      "description": "Removes split APK constraints (isSplitRequired, isolatedSplits) and split metadata from AndroidManifest.xml for standalone APK installation.",
-      "default": true,
-      "dependencies": [],
-      "compatiblePackages": [
-        {
-          "packageName": "com.vivaldi.browser",
-          "name": "Vivaldi Browser - Fast & Safe",
-          "description": null,
-          "apkFileType": "APKM",
-          "appIconColor": "#EF3939",
-          "signatures": null,
-          "targets": [
-            {
-              "version": "8.2.4147.93",
               "versionCodes": null,
               "isExperimental": false,
               "minSdk": null,
@@ -4446,34 +4132,6 @@
           "values": null
         }
       ]
-    },
-    {
-      "name": "Vivaldi Startup Performance Optimization",
-      "description": "Guards against fatal CompositorView NullPointerException crashes on cold startup and bypasses carrier partner customizations.",
-      "default": true,
-      "dependencies": [
-        "ResourcePatch"
-      ],
-      "compatiblePackages": [
-        {
-          "packageName": "com.vivaldi.browser",
-          "name": "Vivaldi Browser - Fast & Safe",
-          "description": null,
-          "apkFileType": "APKM",
-          "appIconColor": "#EF3939",
-          "signatures": null,
-          "targets": [
-            {
-              "version": "8.2.4147.93",
-              "versionCodes": null,
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            }
-          ]
-        }
-      ],
-      "options": []
     },
     {
       "name": "Xiaomi Earbuds Anti-Tamper Bypass",

@@ -11,7 +11,7 @@ val skipFirstRunPatch = bytecodePatch(
     description = "Skips the welcome screen, search engine selection, and onboarding First Run Experience (FRE) on clean installs.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_BRAVE, Constants.COMPATIBILITY_VIVALDI)
+    compatibleWith(Constants.COMPATIBILITY_BRAVE)
 
     execute {
         // 1. Force FirstRunStatus.getFirstRunFlowComplete to return true so all app components (sync, promo, telemetry) know FRE is done

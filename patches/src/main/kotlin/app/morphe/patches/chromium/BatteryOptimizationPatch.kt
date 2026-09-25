@@ -11,7 +11,7 @@ val batteryOptimizationPatch = bytecodePatch(
     description = "Neutralizes the Battery Status API (navigator.getBattery) to prevent cross-site device fingerprinting and drops OS battery change broadcasts.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_BRAVE, Constants.COMPATIBILITY_VIVALDI)
+    compatibleWith(Constants.COMPATIBILITY_BRAVE)
 
     execute {
         val fp = Fingerprint(

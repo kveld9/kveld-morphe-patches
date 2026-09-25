@@ -87,18 +87,17 @@ In contrast to the browser implementation, the TikTok companion filter ([`TikTok
 ### Why Chromium Requires Specialized PAK Slimming
 Standard Android applications (such as Gboard Lite or Hevy) store localized strings, layouts, and XML assets inside the compiled Android resource table (`resources.arsc`) and directory hierarchy (`res/values-<locale>/`). When a locale qualifier directory is removed, Android's runtime `AssetManager` automatically resolves missing strings using the unquantified `res/values/` fallback directory.
 
-Chromium browsers (Brave, Vivaldi), however, bypass Android's resource pipeline for the browser UI, Omnibox, navigation, Shields, settings, and native rendering engine. Instead, they utilize Chromium's native **DataPack v5** binary format:
+Chromium browsers (such as Brave), however, bypass Android's resource pipeline for the browser UI, Omnibox, navigation, Shields, settings, and native rendering engine. Instead, they utilize Chromium's native **DataPack v5** binary format:
 1. **Binary DataPack v5 Structure**: Locales are stored as discrete binary files in `assets/locales/<locale>.pak`, consisting of a 12-byte header (`uint32 version`, `uint8 encoding`, `uint24 resource_count`, `uint16 alias_count`), followed by an index of resource IDs and offsets, and raw string payloads.
 2. **Native Loader Failure Modes**:
    - Deleting `<locale>.pak` from the APK causes Chromium's native C++ resource loader (`ui::ResourceBundle::LoadLocaleResources`) to fail startup initialization when the host device is set to that language.
    - Truncating `<locale>.pak` to an empty (0-byte) file causes Chromium to trigger an assertion crash (`Check failed: file_is_valid`).
 3. **Morphe's Safe Substitution Strategy**:
    - `BraveLocaleSlimmerPatch`: Copies `en-US.pak` byte payloads into all stripped locale paths, satisfying the C++ bundle loader with zero native crashes while freeing ~10.5 MB.
-   - `VivaldiLocaleSlimmerPatch`: Distinguishes base locales (substituted with `en-US.pak`) from grammatical gender variants (`*_FEMININE`, `*_MASCULINE`), which receive 18-byte minimal valid DataPack headers to avoid redundant byte duplication, freeing ~21.2 MB.
 4. **Separation of Concerns**:
    - `Locale Resource Slimmer` operates universally across all Android apps on `res/values-*`.
    - `Locale PAK Slimmer` operates specifically on Chromium's native `assets/locales/*.pak`.
-   - In Brave and Vivaldi, both patches can be combined to achieve complete language stripping at both the C++ native engine and Android wrapper layers.
+   - In Brave, both patches can be combined to achieve complete language stripping at both the C++ native engine and Android wrapper layers.
 
 ---
 

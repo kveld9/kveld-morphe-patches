@@ -26,7 +26,7 @@ val localePakSlimmerPatch = rawResourcePatch(
     description = "Strips unselected language resource PAKs from assets/locales/.",
     default = false,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_BRAVE, Constants.COMPATIBILITY_VIVALDI)
+    compatibleWith(Constants.COMPATIBILITY_BRAVE)
 
     val targetLocales by stringOption(
         key = "locales",
@@ -54,7 +54,7 @@ val localePakSlimmerPatch = rawResourcePatch(
                 if (nameWithoutExt !in baseLocales && baseName !in baseLocales) {
                     val originalSize = pakFile.length()
                     if (originalSize <= EMPTY_DATAPACK_V5.size) {
-                        return@forEach // Already a minimal empty stub (e.g. Vivaldi gender variants)
+                        return@forEach // Already a minimal empty stub (e.g. gender variants)
                     }
                     val isGenderVariant = nameWithoutExt.endsWith("_feminine") ||
                         nameWithoutExt.endsWith("_masculine") ||

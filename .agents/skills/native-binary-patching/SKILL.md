@@ -69,11 +69,11 @@ println("[Block Telemetry] Redirected $writtenHosts / ${hostEntries.size} endpoi
 
 When string table offsets shift slightly between release builds or regional variants, resolve the target offset dynamically from a candidate list rather than hardcoding a single fragile pointer.
 
-### Production Pattern (`VivaldiBlockTelemetryPatch.kt`)
+### Production Pattern (`libchrome.so` Multi-Candidate Resolution)
 ```kotlin
 val syncOffsets = listOf(0x0031b2b2L, 0x0031b2b5L, 0x0031b34fL)
-val syncUrl = "https://bifrost.vivaldi.com/vivid-sync"
-val expectedBytes = syncUrl.toByteArray(Charsets.US_ASCII)
+val targetUrl = "https://endpoint.example.com/v1/telemetry"
+val expectedBytes = targetUrl.toByteArray(Charsets.US_ASCII)
 val len = expectedBytes.size
 val redirectionIp = "0.0.0.0".toByteArray(Charsets.US_ASCII)
 
@@ -85,7 +85,7 @@ RandomAccessFile(soFile, "rw").use { raf ->
         raf.readFully(buf)
         buf.contentEquals(expectedBytes)
     } ?: throw PatchException(
-        "Sync fingerprint mismatch for $syncUrl in libchrome.so",
+        "Sync fingerprint mismatch for $targetUrl in libchrome.so",
     )
 
     val replacement = ByteArray(len)

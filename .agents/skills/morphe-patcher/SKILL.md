@@ -161,9 +161,10 @@ Every patch must reference the shared compatibility object defined centrally in 
 Active targets defined in `Constants.kt`:
 1. **Brave**: `Constants.COMPATIBILITY_BRAVE` (`com.brave.browser`)
 2. **Gboard Lite**: `Constants.COMPATIBILITY_GBOARD` (`com.google.android.inputmethod.latin`)
-3. **Vivaldi**: `Constants.COMPATIBILITY_VIVALDI` (`com.vivaldi.browser`)
-4. **Hevy**: `Constants.COMPATIBILITY_HEVY` (`com.hevy`)
-5. **TikTok**: `Constants.COMPATIBILITY_TIKTOK` (`com.zhiliaoapp.musically`) & `Constants.COMPATIBILITY_TIKTOK_ASIA` (`com.ss.android.ugc.trill`)
+3. **Hevy**: `Constants.COMPATIBILITY_HEVY` (`com.hevy`)
+4. **TikTok**: `Constants.COMPATIBILITY_TIKTOK` (`com.zhiliaoapp.musically`) & `Constants.COMPATIBILITY_TIKTOK_ASIA` (`com.ss.android.ugc.trill`)
+5. **NokoPrint**: `Constants.COMPATIBILITY_NOKOPRINT` (`com.nokoprint`)
+6. **Xiaomi Earbuds**: `Constants.COMPATIBILITY_XIAOMI_EARBUDS` (`com.mi.earphone`)
 
 **Single Target Version Invariant**: Every target app maintains strictly ONE active version (the latest supported release) in `targets = listOf(AppTarget(...))`. Never retain older versions or multi-version entries in `targets`.
 
@@ -206,7 +207,7 @@ After completing any change in any patch or adding a new patch:
    ```bash
    ./gradlew runPatchTest -Papp=<targetApp>
    ```
-   Targets: `gboard`, `tiktok`, `brave`, `vivaldi`, `hevy`.
+   Targets: `gboard`, `tiktok`, `brave`, `hevy`, `nokoprint`, `xiaomi_earbuds`.
    Or specify an explicit APK:
    ```bash
    ./gradlew runPatchTest -Papk=/path/to/app.apk

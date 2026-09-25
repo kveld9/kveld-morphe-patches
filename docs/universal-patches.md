@@ -1,6 +1,6 @@
 # 🌐 Universal Patch Reference & Configuration Guide
 
-Comprehensive reference for universal optimization and resource slimming patches provided by Morphe Patches. These patches operate without app-specific hardcoding and can be applied across any supported target APK (Brave, Vivaldi, Gboard Lite, Hevy, TikTok, NokoPrint, Xiaomi Earbuds) or custom Android applications.
+Comprehensive reference for universal optimization and resource slimming patches provided by Morphe Patches. These patches operate without app-specific hardcoding and can be applied across any supported target APK (Brave, Gboard Lite, Hevy, TikTok, NokoPrint, Xiaomi Earbuds) or custom Android applications.
 
 ---
 
@@ -8,7 +8,7 @@ Comprehensive reference for universal optimization and resource slimming patches
 
 | Patch | Type | Target Scope | Primary Mechanism | Space / Performance Impact |
 | :--- | :--- | :--- | :--- | :--- |
-| **[Locale PAK Slimmer](#1-locale-pak-slimmer-localepakslimmerpatch)** | `rawResourcePatch` | Chromium (`assets/locales/*.pak`) | Binary fallback substitution with `en-US` tables | **~10.5 MB** (Brave) / **~21.2 MB** (Vivaldi) saved |
+| **[Locale PAK Slimmer](#1-locale-pak-slimmer-localepakslimmerpatch)** | `rawResourcePatch` | Chromium (`assets/locales/*.pak`) | Binary fallback substitution with `en-US` tables | **~10.5 MB** (Brave) saved |
 | **[Locale Resource Slimmer](#2-locale-resource-slimmer-localeresourceslimmerpatch)** | `resourcePatch` | Android Resources (`res/values-*`) | Prunes unselected language directory trees bottom-up | **~5–25 MB** saved depending on target |
 | **[DPI Resource Slimmer](#3-dpi-resource-slimmer-dpiresourceslimmerpatch)** | `resourcePatch` | Android Drawables (`res/drawable-*`) | Retains target device screen density, safe orphan forward-copy | **~5–30 MB** saved, reduced bitmap memory footprint |
 | **[PNG Asset Optimizer](#4-png-asset-optimizer-pngassetoptimizerpatch)** | `rawResourcePatch` | PNG Assets (`res/**`, `assets/**`) | In-memory RGBA-verified level 9 zlib recompression + metadata strip | **~1–8 MB** saved, 0% visual degradation |
@@ -45,14 +45,14 @@ Applying both universal and app-specific patches simultaneously to the same targ
 | **APK Junk Cleaner** | ✅ Yes | Prunes compiler properties, Kotlin debug tables, and duplicate license files from the APK root. |
 | **DPI Resource Slimmer** | ✅ Yes | Safely retains target device screen density and preserves orphan resources. |
 | **Locale Resource Slimmer** | ✅ Yes | Prunes unselected translation folders from `res/values-*`. |
-| **Background Sync & JobScheduler Purge** | ⚠️ Safe by Default | Keep `stripWakeLock = false` (default) on web browsers (Brave, Vivaldi) to prevent suspending background file downloads when the screen turns off. |
-| **Universal Offline Mode** | ⚠️ Contextual | **Never apply to web browsers (Brave, Vivaldi) or streaming media apps (TikTok)**, as it halts socket creation at the OS kernel level (`AID_INET`). For Gboard Lite and Xiaomi Earbuds, pair with their companion app-specific offline patches for graceful timeout handling. |
+| **Background Sync & JobScheduler Purge** | ⚠️ Safe by Default | Keep `stripWakeLock = false` (default) on web browsers (Brave) to prevent suspending background file downloads when the screen turns off. |
+| **Universal Offline Mode** | ⚠️ Contextual | **Never apply to web browsers (Brave) or streaming media apps (TikTok)**, as it halts socket creation at the OS kernel level (`AID_INET`). For Gboard Lite and Xiaomi Earbuds, pair with their companion app-specific offline patches for graceful timeout handling. |
 
 ---
 
 ## 1. Locale PAK Slimmer (`localePakSlimmerPatch`)
 
-The **`Locale PAK Slimmer`** patch strips unneeded language resource PAKs from `assets/locales/` in Chromium-based browsers (Brave, Vivaldi) to reclaim substantial APK storage (**~10.5 MB in Brave** and **~21.2 MB in Vivaldi**).
+The **`Locale PAK Slimmer`** patch strips unneeded language resource PAKs from `assets/locales/` in Chromium-based browsers (Brave) to reclaim substantial APK storage (**~10.5 MB in Brave**).
 
 > [!NOTE]
 > ### Why Chromium Browsers Require a Dedicated PAK Slimmer
@@ -60,15 +60,14 @@ The **`Locale PAK Slimmer`** patch strips unneeded language resource PAKs from `
 >
 > In contrast, Chromium-based browsers compile over 95% of their browser UI strings, Omnibox text, Brave Shields, and core Chromium components into **Chromium DataPack v5 binary archives** located in `assets/locales/<locale>.pak`.
 > - **Native C++ Loader Invariant**: Chromium's native C++ resource loader (`ui::ResourceBundle`) expects a valid binary DataPack file for the active device locale. Deleting `<locale>.pak` or replacing it with an empty (0-byte) stub triggers a native segmentation fault or assertion failure on startup (`Check failed: file_is_valid`) whenever the device is set to an unselected language.
-> - **Zero-Crash Fallback Substitution**: Instead of deleting files, `Locale PAK Slimmer` safely replaces stripped `.pak` files with the binary table of `en-US.pak` (or 18-byte minimal valid DataPack headers for Vivaldi grammatical gender variants). This satisfies the native C++ loader while reclaiming 10 to 22 MB of storage.
-> - **Complementary Operation**: For maximum slimming in Brave and Vivaldi, both `Locale PAK Slimmer` (targeting native `assets/locales/*.pak`) and `Locale Resource Slimmer` (targeting Android wrapper `res/values-*`) can be applied together without conflict.
+> - **Zero-Crash Fallback Substitution**: Instead of deleting files, `Locale PAK Slimmer` safely replaces stripped `.pak` files with the binary table of `en-US.pak`. This satisfies the native C++ loader while reclaiming ~10.5 MB of storage.
+> - **Complementary Operation**: For maximum slimming in Brave, both `Locale PAK Slimmer` (targeting native `assets/locales/*.pak`) and `Locale Resource Slimmer` (targeting Android wrapper `res/values-*`) can be applied together without conflict.
 
 ### Configuration in Morphe Manager
 
 When configuring the **`Locales to keep`** option, specify a comma-separated list of locale codes (e.g. `es-419, es, en-US, pt-BR`).
 - English (`en-US`) is always preserved automatically as an essential Chromium fallback.
 - To prevent Chromium startup crashes on devices configured with unselected system languages, stripped language PAKs are safely populated with the base `en-US` resource table fallback rather than empty stubs.
-- In Vivaldi, corresponding grammatical gender variants (e.g. `es-419_FEMININE`) are preserved automatically.
 
 ### Popular Language Codes
 
@@ -86,7 +85,7 @@ When configuring the **`Locales to keep`** option, specify a comma-separated lis
 | **Arabic / Turkish / Hebrew** | `ar`, `tr`, `he` |
 
 <details>
-<summary><b>🔍 View all 81 available base locale codes in Brave & Vivaldi</b></summary>
+<summary><b>🔍 View all 81 available base locale codes in Brave</b></summary>
 <br>
 
 ```text
@@ -103,10 +102,10 @@ ur, uz, vi, zh-CN, zh-HK, zh-TW, zu
 
 ## 2. Locale Resource Slimmer (`localeResourceSlimmerPatch`)
 
-The **`Locale Resource Slimmer`** patch strips unselected language translation directories from `res/` (such as `values-*`, `raw-*`, `xml-*`) across any supported target APK (Gboard Lite, Hevy, Brave, Vivaldi, TikTok, NokoPrint, Xiaomi Earbuds) to reduce APK size.
+The **`Locale Resource Slimmer`** patch strips unselected language translation directories from `res/` (such as `values-*`, `raw-*`, `xml-*`) across any supported target APK (Gboard Lite, Hevy, Brave, TikTok, NokoPrint, Xiaomi Earbuds) to reduce APK size.
 
 > [!TIP]
-> **Chromium Browsers (Brave & Vivaldi)**: While `Locale Resource Slimmer` trims standard Android wrapper resources in `res/values-*`, Chromium browsers store over 95% of their strings (~10–22 MB) in native binary `.pak` files inside `assets/locales/`. For complete multilingual slimming in Brave and Vivaldi, combine this patch with the specialized **`Locale PAK Slimmer`**.
+> **Chromium Browsers (Brave)**: While `Locale Resource Slimmer` trims standard Android wrapper resources in `res/values-*`, Chromium browsers store over 95% of their strings (~10.5 MB) in native binary `.pak` files inside `assets/locales/`. For complete multilingual slimming in Brave, combine this patch with the specialized **`Locale PAK Slimmer`**.
 
 ### Configuration in Morphe Manager
 
@@ -216,7 +215,7 @@ The **`Universal Offline Mode`** patch isolates any application from the network
 
 > [!WARNING]
 > ### Do Not Apply to Browsers or Streaming Apps
-> Never enable **`Universal Offline Mode`** on applications that inherently require network access, such as web browsers (**Brave**, **Vivaldi**) or streaming platforms (**TikTok**). Revoking `android.permission.INTERNET` causes the Linux kernel to omit the `AID_INET` supplementary group at fork time, causing all web page navigation and video buffering to fail immediately at the OS level.
+> Never enable **`Universal Offline Mode`** on applications that inherently require network access, such as web browsers (**Brave**) or streaming platforms (**TikTok**). Revoking `android.permission.INTERNET` causes the Linux kernel to omit the `AID_INET` supplementary group at fork time, causing all web page navigation and video buffering to fail immediately at the OS level.
 
 ### Configuration in Morphe Manager
 
@@ -318,6 +317,6 @@ The **`Background Sync & JobScheduler Purge`** patch stops unneeded background w
 - **Strip RECEIVE_BOOT_COMPLETED Permission (`stripBootPermission`)**: Removes `android.permission.RECEIVE_BOOT_COMPLETED` and HTC/OEM quickboot permissions from `AndroidManifest.xml` (Toggle, default: `true`).
 - **Disable Boot & Package Receivers (`disableBootReceivers`)**: Disables broadcast receivers registered for device startup, reboot, and app replacement events (Toggle, default: `true`).
 - **Disable WorkManager & Job Schedulers (`disableWorkManager`)**: Disables WorkManager background services and constraint-checking broadcast receivers (Toggle, default: `true`).
-- **Strip WAKE_LOCK Permission (`stripWakeLock`)**: Removes `android.permission.WAKE_LOCK` from `AndroidManifest.xml` (Toggle, default: `false`). *Keep disabled if the target application requires wake locks for continuous audio playback, video recording, screen-off background downloads (Brave, Vivaldi), or foreground navigation.*
+- **Strip WAKE_LOCK Permission (`stripWakeLock`)**: Removes `android.permission.WAKE_LOCK` from `AndroidManifest.xml` (Toggle, default: `false`). *Keep disabled if the target application requires wake locks for continuous audio playback, video recording, screen-off background downloads (Brave), or foreground navigation.*
 
 
