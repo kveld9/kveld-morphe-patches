@@ -12,12 +12,67 @@ public final class TikTokSearchHook {
 
     private TikTokSearchHook() {}
 
+    private static boolean isSuggestedSearch(String type) {
+        if (type == null) return false;
+        return type.startsWith("recom_search") || "guess_search".equals(type);
+    }
+
     public static String filterGuessSearchRaw(String rawString) {
-        return filterRaw(rawString, "guess_search");
+        if (rawString == null || rawString.isEmpty()) {
+            return rawString;
+        }
+        try {
+            JSONObject root = new JSONObject(rawString);
+            JSONArray data = root.optJSONArray("data");
+            if (data != null && data.length() > 0) {
+                JSONArray filtered = new JSONArray();
+                boolean modified = false;
+                for (int i = 0; i < data.length(); i++) {
+                    JSONObject item = data.optJSONObject(i);
+                    if (item != null) {
+                        String type = item.optString("type");
+                        if (isSuggestedSearch(type)) {
+                            Log.i(TAG, "[Search Filter] Filtered card: " + type);
+                            modified = true;
+                            continue;
+                        }
+                    }
+                    filtered.put(data.get(i));
+                }
+                if (modified) {
+                    root.put("data", filtered);
+                    return root.toString();
+                }
+            }
+        } catch (Throwable t) {
+            Log.e(TAG, "[Search Filter] filterRaw error: " + t.getMessage());
+        }
+        return rawString;
     }
 
     public static void filterGuessSearchResponse(Object responseObj) {
-        filterResponse(responseObj, "guess_search");
+        if (responseObj == null) return;
+        try {
+            Method getDataMethod = responseObj.getClass().getMethod("getData");
+            Object dataList = getDataMethod.invoke(responseObj);
+            if (dataList instanceof List) {
+                List<?> list = (List<?>) dataList;
+                Iterator<?> it = list.iterator();
+                while (it.hasNext()) {
+                    Object item = it.next();
+                    if (item != null) {
+                        Method getTypeMethod = item.getClass().getMethod("getType");
+                        Object type = getTypeMethod.invoke(item);
+                        if (type instanceof String && isSuggestedSearch((String) type)) {
+                            it.remove();
+                            Log.i(TAG, "[Search Filter] Removed response item: " + type);
+                        }
+                    }
+                }
+            }
+        } catch (Throwable t) {
+            Log.e(TAG, "[Search Filter] filterResponse error: " + t.getMessage());
+        }
     }
 
     public static String filterPopularLivesRaw(String rawString) {
