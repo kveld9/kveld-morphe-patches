@@ -162,7 +162,12 @@ val braveBlockTelemetryPatch = bytecodePatch(
     compatibleWith(Constants.COMPATIBILITY_BRAVE)
     extendWith("extensions/extension.mpe")
 
-    dependsOn(braveTelemetryResourcePatch, braveHostsBlockerPatch)
+    dependsOn(
+        braveTelemetryResourcePatch,
+        braveHostsBlockerPatch,
+        braveNativeExtractionPatch,
+        braveBtiCompatibilityPatch,
+    )
 
     // Note: Google Privacy Sandbox APIs (Topics, Protected Audience) and upstream UKM metric
     // reporting to Google servers are already stripped/disabled by Brave at the C++ engine level

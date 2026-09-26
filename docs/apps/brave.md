@@ -25,15 +25,15 @@ Comprehensive technical and configuration guide for **Brave Browser** (`com.brav
 
 | Patch Name | Type | Category | Default | Primary Mechanism |
 | :--- | :--- | :--- | :---: | :--- |
-| **Brave Origin** | `bytecodePatch` + `resourcePatch` | Feature Unlock & UI | ✅ Yes | Unlocks Brave Origin preference screens and injects toggle switches for Origin policy gates. |
-| **Block Brave Telemetry** | `bytecodePatch` + `rawResourcePatch` | Privacy & Telemetry | ✅ Yes | Intercepts `PrefService.e` (P3A, stats, WDP), aborts variations seed HTTP connection, and redirects 12 native host endpoints to `0.0.0.0` in `libchrome.so`. |
+| **Brave Origin** | `bytecodePatch` + `resourcePatch` + `rawResourcePatch` | Feature Unlock & UI | ✅ Yes | Unlocks Brave Origin preference screens, injects toggle switches for Origin policy gates, and encapsulates native library extraction and ARM64 BTI neutralization across all bundled native binaries. |
+| **Block Brave Telemetry** | `bytecodePatch` + `resourcePatch` + `rawResourcePatch` | Privacy & Telemetry | ✅ Yes | Intercepts `PrefService.e` (P3A, stats, WDP), aborts variations seed HTTP connection, redirects 12 native host endpoints to `0.0.0.0` in `libchrome.so`, and encapsulates native library extraction and ARM64 BTI neutralization. |
 | **Clean New Tab Page** | `bytecodePatch` + `resourcePatch` | Debloat & UX | ✅ Yes | Neutralizes sponsored wallpaper loading via `PrefService.b` and `PrefService.e`, suppresses the Brave Shields stats card, and offers an opt-in toggle to hide top sites shortcuts. |
 | **Suppress In-App Promos & Surveys** | `bytecodePatch` | Debloat & UX | ✅ Yes | Forces `RateEligibilityGate.d -> false`, neutralizes rating survey bottom sheets (`BraveRateDialogFragment`), drops promotional dialogs (YouTube, ad-free callouts), and disables Brave Ads onboarding. |
 | **Brave In-Product & Commercial Notification Optimizer** | `bytecodePatch` | Debloat & Battery | ✅ Yes | Eliminates background wakeups and notifications from Chromium tips scheduler (Job ID 105), Brave Rewards onboarding promo, and retention marketing campaigns. |
 | **Clean Share URL** | `bytecodePatch` | Privacy & Anti-Tracking | ✅ Yes | Hooks Android share intent builder (`Lcch.a`) and clipboard copy (`Clipboard.setText`) to purge tracking parameters (`utm_*`, `fbclid`, `gclid`, etc.). |
 | **Disable Background Sync & Periodic Sync** | `bytecodePatch` | Battery & Performance | ✅ Yes | Eliminates background wakeups, radio modem activity, and battery drain by forcing `GooglePlayServicesChecker.shouldDisableBackgroundSync() -> true` and neutralizing sync tasks. |
 | **Disable Battery Status API & OS Listener** | `bytecodePatch` | Privacy & Anti-Fingerprinting | ✅ Yes | Neutralizes the Battery Status API (`navigator.getBattery`) to prevent cross-site device fingerprinting and drops OS `BATTERY_CHANGED` broadcast events. |
-| **Brave Startup Performance Optimization** | `bytecodePatch` | Performance & Startup | ✅ Yes | Optimizes startup time and eliminates background CPU/disk overhead by disabling unused OEM carrier partner customizations (`PartnerBrowserCustomizations`). |
+| **Brave Startup Performance Optimization** | `bytecodePatch` + `resourcePatch` + `rawResourcePatch` | Performance & Startup | ✅ Yes | Optimizes startup time and eliminates background CPU/disk overhead by disabling unused OEM carrier partner customizations (`PartnerBrowserCustomizations`). |
 | **Native Bloat Slimmer** | `rawResourcePatch` | Storage Reclamation | ✅ Yes | Strips 6 unused native companion binaries (Impress Vision AI, WireGuard VPN, and Android XR / ARCore) to reclaim **~22.35 MB** of APK space. |
 | **Locale PAK Slimmer** | `rawResourcePatch` | Storage Reclamation | ✅ Yes | Strips unselected language PAKs from `assets/locales/` (~9.64 MB saved) using zero-crash binary fallback substitution. |
 | **Sensor Privacy Guard** | `bytecodePatch` | Privacy & Anti-Fingerprinting | ✅ Yes | Forces `PlatformSensorProvider.hasSensorType -> false` and `PlatformSensor.create -> null`. Neutralizes W3C Generic Sensor APIs. |
@@ -50,6 +50,7 @@ Comprehensive technical and configuration guide for **Brave Browser** (`com.brav
   - Injects Origin preference switch items into settings layout XML (`xml_0x7f18001a.xml`).
   - Hooks `BraveOriginPreferences` methods (`k5`, `T3`, `j5`, `X4`) to persist toggles locally in `SharedPreferences`.
   - Stubs subscription check methods (`getIsSubscriptionActive`, `requestCredentialSummary`) to return active credentials.
+  - Enforces `android:extractNativeLibs="true"` in `AndroidManifest.xml` and neutralizes the ARM64 BTI flag across all bundled native binaries (`libchrome.so`, `libcrashpad_handler_trampoline.so`) to ensure seamless execution on 16 KB page and Android 16 devices.
 
 ### 2. Block Brave Telemetry (`braveBlockTelemetryPatch`)
 - **Objective**: Halt outbound telemetry pings, usage metrics, and variations seed fetching.
@@ -57,6 +58,7 @@ Comprehensive technical and configuration guide for **Brave Browser** (`com.brav
   - **Bytecode Neutralization**: Intercepts `PrefService.e` queries for P3A (*Privacy-Preserving Product Analytics*), Brave Stats, and WDP (*Web Discovery Project*).
   - **Variations Connection Abort**: Injects early returns into HTTP loaders fetching experimentation variations seeds.
   - **Native Socket Redirection**: In `libchrome.so`, redirects 12 native telemetry endpoints (`*.bsg.brave.com`, `*.wdp.brave.com`, `usage-ping.brave.com`, `crashpad.chromium.org`, `variations.brave.com`) to `0.0.0.0`.
+  - **Packaging Invariants**: Encapsulates `android:extractNativeLibs="true"` and multi-binary ARM64 BTI neutralization dependencies.
 
 ### 3. Clean New Tab Page (`braveCleanNewTabPagePatch`)
 - **Objective**: Completely eliminate sponsored advertising wallpapers, background campaign asset downloads, Brave News/Today promotional cards, and Brave Shields stats cards.
@@ -105,6 +107,7 @@ Comprehensive technical and configuration guide for **Brave Browser** (`com.brav
 - **Objective**: Accelerate cold launch times and reduce memory allocation on startup.
 - **Mechanisms**:
   - Neutralizes asynchronous partner carrier initialization in `PartnerBrowserCustomizations`.
+  - Encapsulates `android:extractNativeLibs="true"` and ARM64 BTI neutralization packaging invariants to ensure BTI and 16 KB page compatibility on modern Android versions (Android 15/16).
 
 ### 10. Native Bloat Slimmer (`nativeBloatSlimmerPatch`)
 - **Objective**: Strip unneeded bundled native libraries to reduce application size on disk and in memory.
