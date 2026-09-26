@@ -150,18 +150,21 @@ public final class TikTokAutoPauseHook {
 
     private static boolean invokeShowIvPlay(Object controller) {
         try {
-            Method getPanelMethod = controller.getClass().getMethod("LJJLI");
-            getPanelMethod.setAccessible(true);
-            Object panel = getPanelMethod.invoke(controller);
-            if (panel != null) {
-                Method showIvPlayMethod = panel.getClass().getMethod("showIvPlay");
-                showIvPlayMethod.setAccessible(true);
-                showIvPlayMethod.invoke(panel);
-                return true;
+            for (Method m : controller.getClass().getMethods()) {
+                if (m.getParameterTypes().length == 0 && m.getReturnType() != null) {
+                    if ("com.ss.android.ugc.aweme.feed.panel.BaseListFragmentPanel".equals(m.getReturnType().getName())) {
+                        m.setAccessible(true);
+                        Object panel = m.invoke(controller);
+                        if (panel != null) {
+                            Method showIvPlayMethod = panel.getClass().getMethod("showIvPlay");
+                            showIvPlayMethod.setAccessible(true);
+                            showIvPlayMethod.invoke(panel);
+                            return true;
+                        }
+                    }
+                }
             }
-        } catch (Throwable t) {
-            Log.w(TAG, "[AutoPauseFirstVideo] Failed to show play icon: " + t.getMessage());
-        }
+        } catch (Throwable ignored) {}
         return false;
     }
 
