@@ -176,11 +176,7 @@ val braveOriginPatch = bytecodePatch(
 ) {
     compatibleWith(Constants.COMPATIBILITY_BRAVE)
 
-    dependsOn(
-        braveOriginResourcePatch,
-        braveNativeExtractionPatch,
-        braveBtiCompatibilityPatch,
-    )
+    dependsOn(braveOriginResourcePatch)
 
     execute {
 
