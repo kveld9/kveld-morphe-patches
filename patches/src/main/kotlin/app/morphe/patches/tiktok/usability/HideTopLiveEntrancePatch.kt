@@ -17,64 +17,44 @@ val hideTopLiveEntrancePatch = bytecodePatch(
         var patched = 0
 
         // 1. Hook LiveIconGenerator in top toolbar
-        try {
-            val liveGenClass = "Lcom/bytedance/tiktok/homepage/mainfragment/toolbar/LiveIconGenerator;"
+        val liveGenClass = "Lcom/bytedance/tiktok/homepage/mainfragment/toolbar/LiveIconGenerator;"
 
-            try {
-                Fingerprint(
-                    definingClass = liveGenClass,
-                    name = "enabled",
-                    returnType = "Z",
-                    parameters = emptyList(),
-                ).method.replaceWithReturnBoolean(false)
-                println("[Hide Top-Left LIVE Button] Hooked LiveIconGenerator.enabled() -> false")
-                patched++
-            } catch (e: Exception) {
-                println("[Hide Top-Left LIVE Button] LiveIconGenerator.enabled note: ${e.message}")
-            }
+        Fingerprint(
+            definingClass = liveGenClass,
+            name = "enabled",
+            returnType = "Z",
+            parameters = emptyList(),
+        ).method.replaceWithReturnBoolean(false)
+        println("[Hide Top-Left LIVE Button] Hooked LiveIconGenerator.enabled() -> false")
+        patched++
 
-            try {
-                Fingerprint(
-                    definingClass = liveGenClass,
-                    name = "LIZLLL",
-                    returnType = "Z",
-                    parameters = emptyList(),
-                ).method.replaceWithReturnBoolean(false)
-                println("[Hide Top-Left LIVE Button] Hooked LiveIconGenerator.LIZLLL() -> false")
-                patched++
-            } catch (e: Exception) {
-                println("[Hide Top-Left LIVE Button] LiveIconGenerator.LIZLLL note: ${e.message}")
-            }
+        Fingerprint(
+            definingClass = liveGenClass,
+            name = "LIZLLL",
+            returnType = "Z",
+            parameters = emptyList(),
+        ).method.replaceWithReturnBoolean(false)
+        println("[Hide Top-Left LIVE Button] Hooked LiveIconGenerator.LIZLLL() -> false")
+        patched++
 
-            try {
-                Fingerprint(
-                    definingClass = liveGenClass,
-                    name = "b2",
-                    returnType = "Landroid/view/View;",
-                    parameters = listOf("Landroid/content/Context;"),
-                ).method.replaceWithReturnNull()
-                println("[Hide Top-Left LIVE Button] Hooked LiveIconGenerator.b2() -> null")
-                patched++
-            } catch (e: Exception) {
-                println("[Hide Top-Left LIVE Button] LiveIconGenerator.b2 note: ${e.message}")
-            }
-        } catch (e: Exception) {
-            println("[Hide Top-Left LIVE Button] LiveIconGenerator note: ${e.message}")
-        }
+        val viewMethod = Fingerprint(
+            definingClass = liveGenClass,
+            returnType = "Landroid/view/View;",
+            parameters = listOf("Landroid/content/Context;"),
+        ).method
+        viewMethod.replaceWithReturnNull()
+        println("[Hide Top-Left LIVE Button] Hooked LiveIconGenerator.${viewMethod.name}() -> null")
+        patched++
 
         // 2. Hook LiveTabProtocol (top tab variant)
-        try {
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/toptab/LiveTabProtocol;",
-                name = "enable",
-                returnType = "Z",
-                parameters = emptyList(),
-            ).method.replaceWithReturnBoolean(false)
-            println("[Hide Top-Left LIVE Button] Hooked LiveTabProtocol.enable() -> false")
-            patched++
-        } catch (e: Exception) {
-            println("[Hide Top-Left LIVE Button] LiveTabProtocol.enable note: ${e.message}")
-        }
+        Fingerprint(
+            definingClass = "Lcom/ss/android/ugc/aweme/toptab/LiveTabProtocol;",
+            name = "enable",
+            returnType = "Z",
+            parameters = emptyList(),
+        ).method.replaceWithReturnBoolean(false)
+        println("[Hide Top-Left LIVE Button] Hooked LiveTabProtocol.enable() -> false")
+        patched++
 
         println("[Hide Top-Left LIVE Button] Successfully applied $patched hook(s).")
     }
