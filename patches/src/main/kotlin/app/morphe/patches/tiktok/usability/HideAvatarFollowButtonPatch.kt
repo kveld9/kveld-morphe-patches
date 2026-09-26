@@ -16,73 +16,60 @@ val hideAvatarFollowButtonPatch = bytecodePatch(
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
+    extendWith("extensions/extension.mpe")
 
     execute {
         var patched = 0
         val targetClass = "Lcom/ss/android/ugc/aweme/feed/assem/avatar/FeedAvatarDefaultAssem;"
 
-        // 1. Hook cs(ViewGroup, int, Object) to permanently force GONE visibility and non-clickable
-        try {
-            val csMethod = Fingerprint(
-                definingClass = targetClass,
-                name = "cs",
-                returnType = "V",
-            ).method
+        // 1. Hook Qr(ViewGroup, int, Object) to permanently force GONE visibility and non-clickable
+        val qrMethod = Fingerprint(
+            definingClass = targetClass,
+            custom = { m, _ ->
+                m.parameterTypes.size == 3 &&
+                    m.parameterTypes[0] == "Landroid/view/ViewGroup;" &&
+                    m.parameterTypes[1] == "I" &&
+                    m.returnType == "V"
+            },
+        ).method
 
-            csMethod.clearTryBlocks()
-            csMethod.ensureRegisterCount(5)
-            val count = csMethod.implementation!!.instructions.count()
-            csMethod.removeInstructions(0, count)
-            csMethod.addInstructions(
-                0,
-                """
-                    if-eqz p1, :cond_skip
-                    const/16 v0, 0x8
-                    invoke-virtual {p1, v0}, Landroid/view/View;->setVisibility(I)V
-                    const/4 v0, 0x0
-                    invoke-virtual {p1, v0}, Landroid/view/View;->setClickable(Z)V
-                    :cond_skip
-                    return-void
-                """.trimIndent(),
-            )
-            println("[Hide Profile Photo Follow Button] Hooked FeedAvatarDefaultAssem.cs() -> Permanently GONE (0x8) and non-clickable.")
-            patched++
-        } catch (e: Exception) {
-            println("[Hide Profile Photo Follow Button] cs note: ${e.message}")
-        }
+        qrMethod.clearTryBlocks()
+        val count = qrMethod.implementation!!.instructions.count()
+        qrMethod.removeInstructions(0, count)
+        qrMethod.addInstructions(
+            0,
+            """
+                invoke-static {p1}, ${Constants.TIKTOK_EXTENSION_MEDIA_HOOK}->hideFollowButton(Landroid/view/View;)V
+                return-void
+            """.trimIndent(),
+        )
+        println("[Hide Profile Photo Follow Button] Hooked FeedAvatarDefaultAssem.${qrMethod.name}() -> Permanently GONE (0x8) and non-clickable.")
+        patched++
 
         // 2. Hook onViewCreated to initialize follow_view_container as GONE immediately after view binding
-        try {
-            val onViewCreatedMethod = Fingerprint(
-                definingClass = targetClass,
-                name = "onViewCreated",
-                returnType = "V",
-                parameters = listOf("Landroid/view/View;"),
-            ).method
+        val onViewCreatedMethod = Fingerprint(
+            definingClass = targetClass,
+            name = "onViewCreated",
+            returnType = "V",
+            parameters = listOf("Landroid/view/View;"),
+        ).method
 
-            val instructions = onViewCreatedMethod.implementation!!.instructions
-            val iputIndex = instructions.indexOfFirst {
-                (it as? ReferenceInstruction)?.reference?.toString()?.contains("FeedAvatarDefaultAssem;->LLLIILIL:Landroid/view/ViewGroup;") == true
-            }
+        val instructions = onViewCreatedMethod.implementation!!.instructions
+        val iputIndex = instructions.indexOfFirst {
+            val refStr = (it as? ReferenceInstruction)?.reference?.toString() ?: ""
+            refStr.contains("FeedAvatarDefaultAssem;->") && refStr.contains(":Landroid/view/ViewGroup;")
+        }
 
-            if (iputIndex != -1) {
-                val regA = (instructions[iputIndex] as TwoRegisterInstruction).registerA
-                onViewCreatedMethod.addInstructions(
-                    iputIndex + 1,
-                    """
-                        if-eqz v$regA, :cond_skip_init
-                        const/16 v0, 0x8
-                        invoke-virtual {v$regA, v0}, Landroid/view/View;->setVisibility(I)V
-                        const/4 v0, 0x0
-                        invoke-virtual {v$regA, v0}, Landroid/view/View;->setClickable(Z)V
-                        :cond_skip_init
-                    """.trimIndent(),
-                )
-                println("[Hide Profile Photo Follow Button] Hooked FeedAvatarDefaultAssem.onViewCreated() -> Immediate GONE initialization on v$regA.")
-                patched++
-            }
-        } catch (e: Exception) {
-            println("[Hide Profile Photo Follow Button] onViewCreated note: ${e.message}")
+        if (iputIndex != -1) {
+            val regA = (instructions[iputIndex] as TwoRegisterInstruction).registerA
+            onViewCreatedMethod.addInstructions(
+                iputIndex + 1,
+                """
+                    invoke-static {v$regA}, ${Constants.TIKTOK_EXTENSION_MEDIA_HOOK}->hideFollowButton(Landroid/view/View;)V
+                """.trimIndent(),
+            )
+            println("[Hide Profile Photo Follow Button] Hooked FeedAvatarDefaultAssem.onViewCreated() -> Immediate GONE initialization on v$regA.")
+            patched++
         }
 
         println("[Hide Profile Photo Follow Button] Successfully applied $patched hook(s).")

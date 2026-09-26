@@ -462,4 +462,11 @@ public final class TikTokMediaHook {
             out.flush();
         }
     }
+
+    public static void hideFollowButton(android.view.View view) {
+        if (view != null) {
+            view.setVisibility(android.view.View.GONE);
+            view.setClickable(false);
+        }
+    }
 }
