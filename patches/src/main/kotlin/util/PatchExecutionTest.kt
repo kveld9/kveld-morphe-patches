@@ -211,6 +211,89 @@ private fun detectTargetFromGit(): TargetApp? {
     }
 }
 
+private fun findAndroidBuildTool(toolName: String): File? {
+    System.getenv("PATH")?.split(File.pathSeparator)?.forEach { dir ->
+        val file = File(dir, toolName)
+        if (file.isFile && file.canExecute()) return file
+    }
+    val userHome = System.getProperty("user.home") ?: "."
+    val sdkRoots = listOfNotNull(
+        System.getenv("ANDROID_HOME"),
+        System.getenv("ANDROID_SDK_ROOT"),
+        File(userHome, "Android/Sdk").takeIf { it.exists() }?.absolutePath,
+        File(userHome, "Library/Android/sdk").takeIf { it.exists() }?.absolutePath,
+    )
+    for (sdk in sdkRoots) {
+        val buildToolsDir = File(sdk, "build-tools")
+        if (buildToolsDir.isDirectory) {
+            val latestTools = buildToolsDir.listFiles()?.filter { it.isDirectory }?.maxByOrNull { dir ->
+                val parts = dir.name.split('.').mapNotNull { it.toIntOrNull() }
+                parts.getOrElse(0) { 0 } * 10000 + parts.getOrElse(1) { 0 } * 100 + parts.getOrElse(2) { 0 }
+            }
+            if (latestTools != null) {
+                val tool = File(latestTools, toolName)
+                if (tool.isFile && tool.canExecute()) return tool
+            }
+        }
+    }
+    return null
+}
+
+private fun setBinaryXmlVersionCode(data: ByteArray, newVersionCode: Int): ByteArray {
+    val bb = java.nio.ByteBuffer.wrap(data).order(java.nio.ByteOrder.LITTLE_ENDIAN)
+    var pos = 8
+    while (pos + 36 <= data.size) {
+        val chunkType = bb.getInt(pos)
+        val chunkSize = bb.getInt(pos + 4)
+        if (chunkType == 0x00100102) { // START_TAG
+            val attrStart = bb.getShort(pos + 24).toInt() and 0xFFFF
+            val attrSize = (bb.getShort(pos + 26).toInt() and 0xFFFF).coerceAtLeast(20)
+            val attrCount = bb.getShort(pos + 28).toInt() and 0xFFFF
+            var attrOffset = pos + 16 + attrStart
+            for (i in 0 until attrCount) {
+                if (attrOffset + 20 > data.size) break
+                val aType = bb.getInt(attrOffset + 12)
+                if (aType == 0x10000008) { // TYPE_INT_DEC (versionCode)
+                    bb.putInt(attrOffset + 16, newVersionCode)
+                    return data
+                }
+                attrOffset += attrSize
+            }
+            break
+        }
+        if (chunkSize <= 0) break
+        pos += chunkSize
+    }
+    return data
+}
+
+private fun ensurePkcs12KeyStore(keystoreFile: File) {
+    if (keystoreFile.exists() && keystoreFile.length() > 0L) return
+    keystoreFile.parentFile?.mkdirs()
+    val keytoolBin = File(System.getProperty("java.home"), "bin/keytool").takeIf { it.canExecute() }
+        ?: System.getenv("PATH")?.split(File.pathSeparator)?.map { File(it, "keytool") }?.firstOrNull { it.canExecute() }
+        ?: File("/usr/bin/keytool").takeIf { it.canExecute() }
+    if (keytoolBin != null) {
+        val proc = ProcessBuilder(
+            keytoolBin.absolutePath,
+            "-genkeypair",
+            "-keystore", keystoreFile.absolutePath,
+            "-storetype", "PKCS12",
+            "-alias", "morphe",
+            "-keyalg", "RSA",
+            "-keysize", "2048",
+            "-validity", "10000",
+            "-storepass", "morphepassword",
+            "-keypass", "morphepassword",
+            "-dname", "CN=Morphe",
+        ).start()
+        val exit = proc.waitFor()
+        if (exit != 0) {
+            println("[WARN] keytool failed with exit code $exit; keystore may not be valid.")
+        }
+    }
+}
+
 fun main(args: Array<String>) {
     val userHome = System.getProperty("user.home") ?: "."
     val searchDirs = getSearchDirectories(userHome)
@@ -495,9 +578,16 @@ fun main(args: Array<String>) {
 
             val outPath = System.getProperty("outputApk")
             if (outPath != null) {
-                val outFile = File(outPath).absoluteFile
+                val directFile = File(outPath)
+                val outFile = if (directFile.isAbsolute) {
+                    directFile
+                } else {
+                    val fromParent = File("..", outPath)
+                    if (fromParent.parentFile?.isDirectory == true) fromParent.canonicalFile
+                    else directFile.absoluteFile
+                }
                 outFile.parentFile?.mkdirs()
-                val unsignedApk = File(outFile.parentFile, "unsigned-work.apk")
+                val unsignedApk = File(tempDir, "unsigned-work.apk")
                 actualApkFile.copyTo(unsignedApk, overwrite = true)
                 println("\n[PACK] Applying patcher result to APK (source: ${unsignedApk.length()} bytes)...")
                 patcherResult.applyTo(unsignedApk)
@@ -516,23 +606,79 @@ fun main(args: Array<String>) {
                         }
                     }
                 }
+                val maxVersionCode = System.getProperty("maxVersionCode") == "true" || System.getenv("MAX_VERSION_CODE") == "true"
+                if (maxVersionCode) {
+                    val uri = java.net.URI.create("jar:" + unsignedApk.toURI())
+                    val env = mapOf("create" to "false")
+                    java.nio.file.FileSystems.newFileSystem(uri, env).use { fs ->
+                        val targetManifest = fs.getPath("AndroidManifest.xml")
+                        if (java.nio.file.Files.exists(targetManifest)) {
+                            val rawBytes = java.nio.file.Files.readAllBytes(targetManifest)
+                            val patchedBytes = setBinaryXmlVersionCode(rawBytes, Int.MAX_VALUE)
+                            java.nio.file.Files.write(targetManifest, patchedBytes)
+                            println("[PACK] Overrode AndroidManifest.xml versionCode -> 2147483647 (Int.MAX_VALUE)")
+                        }
+                    }
+                }
                 println("[PACK] After applyTo: unsignedApk exists=${unsignedApk.exists()}, size=${unsignedApk.length()} bytes")
-                val keystoreFile = File("build/morphe-debug.keystore").absoluteFile
-                val ksDetails = ApkUtils.KeyStoreDetails(
-                    keyStore = keystoreFile,
-                    alias = "morphe",
-                    password = "morphepassword",
-                )
-                try {
-                    ApkUtils.signApk(
-                        inputApkFile = unsignedApk,
-                        outputApkFile = outFile,
-                        signer = "Morphe",
-                        keyStoreDetails = ksDetails,
+                val zipalignBin = findAndroidBuildTool("zipalign")
+                val apksignerBin = findAndroidBuildTool("apksigner")
+                val keystoreFile = File("build/morphe-device.p12").takeIf { it.exists() && it.length() > 0L }
+                    ?: File("build/morphe-debug.p12").absoluteFile
+                ensurePkcs12KeyStore(keystoreFile)
+
+                if (zipalignBin != null && apksignerBin != null && keystoreFile.exists() && keystoreFile.length() > 0L) {
+                    try {
+                        println("\n[ALIGN] Running 16 KB page alignment via zipalign -f -P 16 4...")
+                        val alignProc = ProcessBuilder(
+                            zipalignBin.absolutePath,
+                            "-f", "-P", "16", "4",
+                            unsignedApk.absolutePath,
+                            outFile.absolutePath,
+                        ).inheritIO().start()
+                        val alignExit = alignProc.waitFor()
+                        if (alignExit != 0) {
+                            error("zipalign failed with exit code $alignExit")
+                        }
+
+                        println("[SIGN] Signing 16 KB page-aligned APK via apksigner (--alignment-preserved)...")
+                        val signProc = ProcessBuilder(
+                            apksignerBin.absolutePath,
+                            "sign",
+                            "--ks", keystoreFile.absolutePath,
+                            "--ks-type", "PKCS12",
+                            "--ks-pass", "pass:morphepassword",
+                            "--alignment-preserved",
+                            outFile.absolutePath,
+                        ).inheritIO().start()
+                        val signExit = signProc.waitFor()
+                        if (signExit != 0) {
+                            error("apksigner failed with exit code $signExit")
+                        }
+                        println("[DONE] Patched, 16 KB page-aligned & signed APK saved at: ${outFile.absolutePath}")
+                    } finally {
+                        unsignedApk.delete()
+                    }
+                } else {
+                    println("\n[WARN] Android SDK zipalign/apksigner not found; falling back to ApkUtils.signApk...")
+                    val fallbackKs = File("build/morphe-device.p12").takeIf { it.exists() && it.length() > 0L }
+                        ?: File("build/morphe-debug.keystore").absoluteFile
+                    val ksDetails = ApkUtils.KeyStoreDetails(
+                        keyStore = fallbackKs,
+                        alias = "morphe",
+                        password = "morphepassword",
                     )
-                    println("[DONE] Patched & signed APK saved at: ${outFile.absolutePath}")
-                } finally {
-                    unsignedApk.delete()
+                    try {
+                        ApkUtils.signApk(
+                            inputApkFile = unsignedApk,
+                            outputApkFile = outFile,
+                            signer = "Morphe",
+                            keyStoreDetails = ksDetails,
+                        )
+                        println("[DONE] Patched & signed APK saved at: ${outFile.absolutePath}")
+                    } finally {
+                        unsignedApk.delete()
+                    }
                 }
 
                 if (effectiveApkFile.name.endsWith(".apkm", ignoreCase = true) || effectiveApkFile.name.endsWith(".xapk", ignoreCase = true)) {
@@ -550,12 +696,44 @@ fun main(args: Array<String>) {
                             }
                             val signedSplitFile = File(outFile.parentFile, splitEntry.name)
                             println("[SIGN] Signing companion split -> ${signedSplitFile.name}...")
-                            ApkUtils.signApk(
-                                inputApkFile = rawSplitFile,
-                                outputApkFile = signedSplitFile,
-                                signer = "Morphe",
-                                keyStoreDetails = ksDetails,
-                            )
+                            if (zipalignBin != null && apksignerBin != null && keystoreFile.exists() && keystoreFile.length() > 0L) {
+                                val splitAlignProc = ProcessBuilder(
+                                    zipalignBin.absolutePath,
+                                    "-f", "-P", "16", "4",
+                                    rawSplitFile.absolutePath,
+                                    signedSplitFile.absolutePath,
+                                ).inheritIO().start()
+                                val splitAlignExit = splitAlignProc.waitFor()
+                                if (splitAlignExit != 0) {
+                                    error("zipalign failed for split ${splitEntry.name} with exit code $splitAlignExit")
+                                }
+                                val splitSignProc = ProcessBuilder(
+                                    apksignerBin.absolutePath,
+                                    "sign",
+                                    "--ks", keystoreFile.absolutePath,
+                                    "--ks-type", "PKCS12",
+                                    "--ks-pass", "pass:morphepassword",
+                                    "--alignment-preserved",
+                                    signedSplitFile.absolutePath,
+                                ).inheritIO().start()
+                                val splitSignExit = splitSignProc.waitFor()
+                                if (splitSignExit != 0) {
+                                    error("apksigner failed for split ${splitEntry.name} with exit code $splitSignExit")
+                                }
+                            } else {
+                                val fallbackKs = File("build/morphe-debug.keystore").absoluteFile
+                                val ksDetails = ApkUtils.KeyStoreDetails(
+                                    keyStore = fallbackKs,
+                                    alias = "morphe",
+                                    password = "morphepassword",
+                                )
+                                ApkUtils.signApk(
+                                    inputApkFile = rawSplitFile,
+                                    outputApkFile = signedSplitFile,
+                                    signer = "Morphe",
+                                    keyStoreDetails = ksDetails,
+                                )
+                            }
                             println("[DONE] Signed companion split saved at: ${signedSplitFile.absolutePath}")
                         }
                     }
