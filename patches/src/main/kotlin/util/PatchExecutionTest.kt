@@ -240,8 +240,77 @@ private fun findAndroidBuildTool(toolName: String): File? {
 }
 
 private fun setBinaryXmlVersionCode(data: ByteArray, newVersionCode: Int): ByteArray {
+    if (data.size < 40) return data
     val bb = java.nio.ByteBuffer.wrap(data).order(java.nio.ByteOrder.LITTLE_ENDIAN)
+
+    // 1. Parse string pool to find the string pool index of "versionCode"
     var pos = 8
+    val spType = bb.getInt(pos)
+    val spSize = bb.getInt(pos + 4)
+    if (spType != 0x001c0001 || spSize <= 0 || pos + spSize > data.size) return data
+
+    val stringCount = bb.getInt(pos + 8)
+    val flags = bb.getInt(pos + 16)
+    val stringsStart = pos + bb.getInt(pos + 20)
+    val isUtf8 = (flags and (1 shl 8)) != 0
+
+    var versionCodeStringIdx = -1
+    for (i in 0 until stringCount) {
+        if (pos + 28 + (i + 1) * 4 > data.size) break
+        val strOff = bb.getInt(pos + 28 + i * 4)
+        val sAddr = stringsStart + strOff
+        if (sAddr < 0 || sAddr >= data.size) continue
+
+        val str = if (isUtf8) {
+            var p = sAddr
+            if (p >= data.size) "" else {
+                val len1 = data[p].toInt() and 0xFF
+                p += if (len1 and 0x80 != 0) 2 else 1
+                if (p >= data.size) "" else {
+                    val len2 = data[p].toInt() and 0xFF
+                    p += if (len2 and 0x80 != 0) 2 else 1
+                    var end = p
+                    while (end < data.size && data[end] != 0.toByte()) end++
+                    String(data, p, (end - p).coerceAtLeast(0), Charsets.UTF_8)
+                }
+            }
+        } else {
+            if (sAddr + 2 > data.size) "" else {
+                val u16len = bb.getShort(sAddr).toInt() and 0xFFFF
+                val p = if (u16len and 0x8000 != 0) sAddr + 4 else sAddr + 2
+                val byteLen = (u16len and 0x7FFF) * 2
+                if (p + byteLen <= data.size && byteLen >= 0) {
+                    String(data, p, byteLen, Charsets.UTF_16LE)
+                } else ""
+            }
+        }
+
+        if (str == "versionCode") {
+            versionCodeStringIdx = i
+            break
+        }
+    }
+
+    // Check optional resource map chunk (0x00080180) following string pool
+    pos += spSize
+    var versionCodeResIdx = -1
+    if (pos + 8 <= data.size) {
+        val resMapType = bb.getInt(pos)
+        val resMapSize = bb.getInt(pos + 4)
+        if (resMapType == 0x00080180 && resMapSize > 8) {
+            val resCount = (resMapSize - 8) / 4
+            for (i in 0 until resCount) {
+                if (pos + 8 + i * 4 + 4 > data.size) break
+                if (bb.getInt(pos + 8 + i * 4) == 0x0101021b) { // android.R.attr.versionCode
+                    versionCodeResIdx = i
+                    break
+                }
+            }
+            pos += resMapSize
+        }
+    }
+
+    // 2. Scan START_TAG chunks for <manifest> and update the matching attribute
     while (pos + 36 <= data.size) {
         val chunkType = bb.getInt(pos)
         val chunkSize = bb.getInt(pos + 4)
@@ -252,8 +321,13 @@ private fun setBinaryXmlVersionCode(data: ByteArray, newVersionCode: Int): ByteA
             var attrOffset = pos + 16 + attrStart
             for (i in 0 until attrCount) {
                 if (attrOffset + 20 > data.size) break
+                val nameIdx = bb.getInt(attrOffset + 4)
+                val matchesName = (versionCodeStringIdx != -1 && nameIdx == versionCodeStringIdx) ||
+                        (versionCodeResIdx != -1 && nameIdx == versionCodeResIdx)
                 val aType = bb.getInt(attrOffset + 12)
-                if (aType == 0x10000008) { // TYPE_INT_DEC (versionCode)
+                val isIntType = (aType and 0x10000000) != 0 || aType == 0x10000008
+
+                if (matchesName || (versionCodeStringIdx == -1 && versionCodeResIdx == -1 && isIntType)) {
                     bb.putInt(attrOffset + 16, newVersionCode)
                     return data
                 }
@@ -623,48 +697,54 @@ fun main(args: Array<String>) {
                 println("[PACK] After applyTo: unsignedApk exists=${unsignedApk.exists()}, size=${unsignedApk.length()} bytes")
                 val zipalignBin = findAndroidBuildTool("zipalign")
                 val apksignerBin = findAndroidBuildTool("apksigner")
+                val buildToolsMajor = zipalignBin?.parentFile?.name?.split('.')?.firstOrNull()?.toIntOrNull() ?: 0
+                val supports16k = buildToolsMajor >= 35
+
                 val keystoreFile = File("build/morphe-device.p12").takeIf { it.exists() && it.length() > 0L }
                     ?: File("build/morphe-debug.p12").absoluteFile
                 ensurePkcs12KeyStore(keystoreFile)
 
                 if (zipalignBin != null && apksignerBin != null && keystoreFile.exists() && keystoreFile.length() > 0L) {
                     try {
-                        println("\n[ALIGN] Running 16 KB page alignment via zipalign -f -P 16 4...")
-                        val alignProc = ProcessBuilder(
-                            zipalignBin.absolutePath,
-                            "-f", "-P", "16", "4",
-                            unsignedApk.absolutePath,
-                            outFile.absolutePath,
-                        ).inheritIO().start()
+                        val alignMode = if (supports16k) "16 KB page alignment (-P 16 4)" else "4-byte alignment"
+                        println("\n[ALIGN] Running $alignMode via zipalign...")
+                        val alignArgs = if (supports16k) {
+                            listOf(zipalignBin.absolutePath, "-f", "-P", "16", "4", unsignedApk.absolutePath, outFile.absolutePath)
+                        } else {
+                            listOf(zipalignBin.absolutePath, "-f", "4", unsignedApk.absolutePath, outFile.absolutePath)
+                        }
+                        val alignProc = ProcessBuilder(alignArgs).inheritIO().start()
                         val alignExit = alignProc.waitFor()
                         if (alignExit != 0) {
                             error("zipalign failed with exit code $alignExit")
                         }
 
-                        println("[SIGN] Signing 16 KB page-aligned APK via apksigner (--alignment-preserved)...")
-                        val signProc = ProcessBuilder(
+                        println("[SIGN] Signing APK via apksigner...")
+                        val signArgs = mutableListOf(
                             apksignerBin.absolutePath,
                             "sign",
                             "--ks", keystoreFile.absolutePath,
                             "--ks-type", "PKCS12",
                             "--ks-pass", "pass:morphepassword",
-                            "--alignment-preserved",
-                            outFile.absolutePath,
-                        ).inheritIO().start()
+                        )
+                        if (supports16k) {
+                            signArgs.add("--alignment-preserved")
+                        }
+                        signArgs.add(outFile.absolutePath)
+
+                        val signProc = ProcessBuilder(signArgs).inheritIO().start()
                         val signExit = signProc.waitFor()
                         if (signExit != 0) {
                             error("apksigner failed with exit code $signExit")
                         }
-                        println("[DONE] Patched, 16 KB page-aligned & signed APK saved at: ${outFile.absolutePath}")
+                        println("[DONE] Patched, aligned & signed APK saved at: ${outFile.absolutePath}")
                     } finally {
                         unsignedApk.delete()
                     }
                 } else {
                     println("\n[WARN] Android SDK zipalign/apksigner not found; falling back to ApkUtils.signApk...")
-                    val fallbackKs = File("build/morphe-device.p12").takeIf { it.exists() && it.length() > 0L }
-                        ?: File("build/morphe-debug.keystore").absoluteFile
                     val ksDetails = ApkUtils.KeyStoreDetails(
-                        keyStore = fallbackKs,
+                        keyStore = keystoreFile,
                         alias = "morphe",
                         password = "morphepassword",
                     )
@@ -694,36 +774,58 @@ fun main(args: Array<String>) {
                             apkmZip.getInputStream(splitEntry).use { input ->
                                 rawSplitFile.outputStream().buffered().use { output -> input.copyTo(output) }
                             }
+
+                            if (maxVersionCode) {
+                                try {
+                                    val uri = java.net.URI.create("jar:" + rawSplitFile.toURI())
+                                    java.nio.file.FileSystems.newFileSystem(uri, emptyMap<String, Any>()).use { fs ->
+                                        val splitManifest = fs.getPath("AndroidManifest.xml")
+                                        if (java.nio.file.Files.exists(splitManifest)) {
+                                            val rawBytes = java.nio.file.Files.readAllBytes(splitManifest)
+                                            val patchedBytes = setBinaryXmlVersionCode(rawBytes, Int.MAX_VALUE)
+                                            java.nio.file.Files.write(splitManifest, patchedBytes)
+                                            println("[PACK] Overrode companion split ${splitEntry.name} versionCode -> 2147483647 (Int.MAX_VALUE)")
+                                        }
+                                    }
+                                } catch (e: Exception) {
+                                    println("[WARN] Could not override split ${splitEntry.name} versionCode: ${e.message}")
+                                }
+                            }
+
                             val signedSplitFile = File(outFile.parentFile, splitEntry.name)
                             println("[SIGN] Signing companion split -> ${signedSplitFile.name}...")
                             if (zipalignBin != null && apksignerBin != null && keystoreFile.exists() && keystoreFile.length() > 0L) {
-                                val splitAlignProc = ProcessBuilder(
-                                    zipalignBin.absolutePath,
-                                    "-f", "-P", "16", "4",
-                                    rawSplitFile.absolutePath,
-                                    signedSplitFile.absolutePath,
-                                ).inheritIO().start()
+                                val splitAlignArgs = if (supports16k) {
+                                    listOf(zipalignBin.absolutePath, "-f", "-P", "16", "4", rawSplitFile.absolutePath, signedSplitFile.absolutePath)
+                                } else {
+                                    listOf(zipalignBin.absolutePath, "-f", "4", rawSplitFile.absolutePath, signedSplitFile.absolutePath)
+                                }
+                                val splitAlignProc = ProcessBuilder(splitAlignArgs).inheritIO().start()
                                 val splitAlignExit = splitAlignProc.waitFor()
                                 if (splitAlignExit != 0) {
                                     error("zipalign failed for split ${splitEntry.name} with exit code $splitAlignExit")
                                 }
-                                val splitSignProc = ProcessBuilder(
+
+                                val splitSignArgs = mutableListOf(
                                     apksignerBin.absolutePath,
                                     "sign",
                                     "--ks", keystoreFile.absolutePath,
                                     "--ks-type", "PKCS12",
                                     "--ks-pass", "pass:morphepassword",
-                                    "--alignment-preserved",
-                                    signedSplitFile.absolutePath,
-                                ).inheritIO().start()
+                                )
+                                if (supports16k) {
+                                    splitSignArgs.add("--alignment-preserved")
+                                }
+                                splitSignArgs.add(signedSplitFile.absolutePath)
+
+                                val splitSignProc = ProcessBuilder(splitSignArgs).inheritIO().start()
                                 val splitSignExit = splitSignProc.waitFor()
                                 if (splitSignExit != 0) {
                                     error("apksigner failed for split ${splitEntry.name} with exit code $splitSignExit")
                                 }
                             } else {
-                                val fallbackKs = File("build/morphe-debug.keystore").absoluteFile
                                 val ksDetails = ApkUtils.KeyStoreDetails(
-                                    keyStore = fallbackKs,
+                                    keyStore = keystoreFile,
                                     alias = "morphe",
                                     password = "morphepassword",
                                 )
