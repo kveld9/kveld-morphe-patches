@@ -17,7 +17,7 @@ val hideFeedSearchBarPatch = bytecodePatch(
     execute {
         var patched = 0
 
-        // 1. Neutralize Search & Trending Bar Trigger Predicates (Kr -> return false)
+        // 1. Neutralize Search & Trending Bar Trigger Predicates (return false)
         val triggerClasses = listOf(
             "Lcom/ss/android/ugc/feed/platform/cell/interact/bottom/bar/FeedSearchBottomBarAssemTrigger;",
             "Lcom/ss/android/ugc/feed/platform/cell/interact/bottom/bar/FeedSearchBottomBarAssemTriggerV2;",
@@ -27,17 +27,12 @@ val hideFeedSearchBarPatch = bytecodePatch(
         )
 
         for (triggerClass in triggerClasses) {
-            try {
-                Fingerprint(
-                    definingClass = triggerClass,
-                    name = "Kr",
-                    returnType = "Z",
-                    parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"),
-                ).method.replaceWithReturnBoolean(false)
-                patched++
-            } catch (e: Exception) {
-                println("[Hide Feed Search Bar] $triggerClass.Kr note: ${e.message}")
-            }
+            Fingerprint(
+                definingClass = triggerClass,
+                returnType = "Z",
+                parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"),
+            ).method.replaceWithReturnBoolean(false)
+            patched++
         }
 
         // 2. Neutralize Search & Trending Bar Assem Lifecycle Routines
@@ -50,109 +45,64 @@ val hideFeedSearchBarPatch = bytecodePatch(
         )
 
         for (assemClass in assemClasses) {
-            try {
-                Fingerprint(
-                    definingClass = assemClass,
-                    name = "onViewCreated",
-                    returnType = "V",
-                    parameters = listOf("Landroid/view/View;"),
-                ).method.replaceWithReturnVoid()
-                patched++
-            } catch (e: Exception) {
-                println("[Hide Feed Search Bar] $assemClass.onViewCreated note: ${e.message}")
-            }
-
-            try {
-                Fingerprint(
-                    definingClass = assemClass,
-                    name = "onBind",
-                    returnType = "V",
-                    parameters = listOf("Ljava/lang/Object;"),
-                ).method.replaceWithReturnVoid()
-                patched++
-            } catch (e: Exception) {
-                println("[Hide Feed Search Bar] $assemClass.onBind note: ${e.message}")
-            }
-        }
-
-        // 3. Neutralize FeedSearchBottomBarAssem.Sr() binding subroutine
-        try {
             Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/feed/platform/cell/interact/bottom/bar/FeedSearchBottomBarAssem;",
-                name = "Sr",
+                definingClass = assemClass,
+                name = "onViewCreated",
                 returnType = "V",
+                parameters = listOf("Landroid/view/View;"),
             ).method.replaceWithReturnVoid()
             patched++
-        } catch (e: Exception) {
-            println("[Hide Feed Search Bar] FeedSearchBottomBarAssem.Sr note: ${e.message}")
+
+            Fingerprint(
+                definingClass = assemClass,
+                returnType = "V",
+                parameters = listOf("Ljava/lang/Object;"),
+            ).method.replaceWithReturnVoid()
+            patched++
         }
 
-        // 4. Override Aweme Data Model Trending & Search Bar Flags
-        try {
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
-                name = "isDisableSearchTrendingBar",
-                returnType = "Z",
-            ).method.replaceWithReturnBoolean(true)
-            patched++
-        } catch (e: Exception) {
-            println("[Hide Feed Search Bar] Aweme.isDisableSearchTrendingBar note: ${e.message}")
-        }
+        // 3. Override Aweme Data Model Trending & Search Bar Flags
+        Fingerprint(
+            definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
+            name = "isDisableSearchTrendingBar",
+            returnType = "Z",
+        ).method.replaceWithReturnBoolean(true)
+        patched++
 
-        try {
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
-                name = "hasTrendingBar",
-                returnType = "Z",
-            ).method.replaceWithReturnBoolean(false)
-            patched++
-        } catch (e: Exception) {
-            println("[Hide Feed Search Bar] Aweme.hasTrendingBar note: ${e.message}")
-        }
+        Fingerprint(
+            definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
+            name = "hasTrendingBar",
+            returnType = "Z",
+        ).method.replaceWithReturnBoolean(false)
+        patched++
 
-        try {
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
-                name = "hasTrendingBarFYP",
-                returnType = "Z",
-            ).method.replaceWithReturnBoolean(false)
-            patched++
-        } catch (e: Exception) {
-            println("[Hide Feed Search Bar] Aweme.hasTrendingBarFYP note: ${e.message}")
-        }
+        Fingerprint(
+            definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
+            name = "hasTrendingBarFYP",
+            returnType = "Z",
+        ).method.replaceWithReturnBoolean(false)
+        patched++
 
-        try {
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
-                name = "getTrendingBar",
-                returnType = "Lcom/ss/android/ugc/aweme/feed/model/AwemeTrendingBar;",
-            ).method.replaceWithReturnNull()
-            patched++
-        } catch (e: Exception) {
-            println("[Hide Feed Search Bar] Aweme.getTrendingBar note: ${e.message}")
-        }
+        Fingerprint(
+            definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
+            name = "getTrendingBar",
+            returnType = "Lcom/ss/android/ugc/aweme/feed/model/AwemeTrendingBar;",
+        ).method.replaceWithReturnNull()
+        patched++
 
-        try {
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
-                name = "getTrendingBarFYP",
-                returnType = "Lcom/ss/android/ugc/aweme/feed/model/AwemeTrendingBar;",
-            ).method.replaceWithReturnNull()
-            patched++
-        } catch (e: Exception) {
-            println("[Hide Feed Search Bar] Aweme.getTrendingBarFYP note: ${e.message}")
-        }
+        Fingerprint(
+            definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
+            name = "getTrendingBarFYP",
+            returnType = "Lcom/ss/android/ugc/aweme/feed/model/AwemeTrendingBar;",
+        ).method.replaceWithReturnNull()
+        patched++
 
-        try {
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
-                name = "getHotSearchInfo",
-                returnType = "Lcom/ss/android/ugc/aweme/feed/model/HotSearchInfo;",
-            ).method.replaceWithReturnNull()
-            patched++
-        } catch (e: Exception) {
-            println("[Hide Feed Search Bar] Aweme.getHotSearchInfo note: ${e.message}")
-        }
+        Fingerprint(
+            definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
+            name = "getHotSearchInfo",
+            returnType = "Lcom/ss/android/ugc/aweme/feed/model/HotSearchInfo;",
+        ).method.replaceWithReturnNull()
+        patched++
 
         println("[Hide Feed Search Bar] Applied $patched feed search and trending bar hook(s) -> Bottom search bar neutralized.")
     }
