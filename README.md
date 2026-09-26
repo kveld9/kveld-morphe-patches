@@ -133,7 +133,7 @@
 | **Disable Profile Photo LIVE Status** | Removes the pulsing LIVE ring and badge from creator avatars in the feed and ensures clicking navigates strictly to the user profile instead of launching the live stream. |  |
 | **Disable Push Notifications** | Neutralizes background push notification tasks and persistent socket wake locks to eliminate background battery drain. |  |
 | **Disable Search History Recording** | Prevents search queries and keywords from being recorded in local history, databases, and analytics stores. |  |
-| **Disable Story Feed Indicators** | Removes the top-center story drop-down indicator pill (e.g. '1 Story') and creator profile photo story rings from feed videos, ensuring avatar photos remain clean. |  |
+| **Disable Story Feed Indicators** | Removes creator profile photo story rings from feed videos, ensuring avatar photos remain clean without blue story rings. |  |
 | **Disable Watch History Recording** | Prevents viewed videos from being recorded in account watch history, playback duration stores, and local history caches. |  |
 | **Display Refresh Rate Governor** | Forces TikTok to run at peak display refresh rate (120Hz/90Hz/60Hz) and neutralizes video playback framerate downclocking routines. | • Target Refresh Rate |
 | **Enable Voice Comments** | Forces the native voice comment recording button in comment input bars, bypassing regional rollout restrictions and remote server blocks. |  |
