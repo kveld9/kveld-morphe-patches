@@ -24,14 +24,14 @@ val customOfflineVideosLimitPatch = bytecodePatch(
     val customLimit by intOption(
         key = "customLimit",
         title = "Custom Offline Videos Limit",
-        description = "Maximum number of offline videos that can be cached for offline playback (default: 200).",
-        default = 200,
+        description = "Maximum number of offline videos that can be cached for offline playback (default: 1000).",
+        default = 1000,
         required = false,
     )
 
     execute {
         var patched = 0
-        val chosenLimit = customLimit?.takeIf { it in 1..50000 } ?: 200
+        val chosenLimit = customLimit?.takeIf { it in 1..50000 } ?: 1000
 
         // 1. Initialize targetLimit in TikTokOfflineVideosHook.<clinit>
         try {

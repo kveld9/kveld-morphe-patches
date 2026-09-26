@@ -19,10 +19,10 @@ import java.util.TreeSet;
 @SuppressLint("ResourceType")
 public final class TikTokOfflineVideosHook {
 
-    public static int targetLimit = 200;
+    public static int targetLimit = 1000;
 
     static {
-        targetLimit = 200;
+        targetLimit = 1000;
     }
 
     private TikTokOfflineVideosHook() {}

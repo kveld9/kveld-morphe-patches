@@ -194,7 +194,7 @@ The **`Custom Offline Videos Limit`** patch customizes the maximum video caching
 
 | Option | Key | Type | Default | Supported Values | Description |
 | :--- | :--- | :--- | :---: | :--- | :--- |
-| **Custom Offline Videos Limit** | `customLimit` | Integer | `200` | Any integer `1` to `50000` | Maximum number of offline videos that can be cached for offline playback. |
+| **Custom Offline Videos Limit** | `customLimit` | Integer | `1000` | Any integer `1` to `50000` | Maximum number of offline videos that can be cached for offline playback. |
 
 ### 5. Custom Share Sheet
 
