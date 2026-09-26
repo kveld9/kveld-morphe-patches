@@ -4,10 +4,11 @@ import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.LocaleUtils
 
-val gboardDisableWorkManagerPatch = bytecodePatch(
-    name = "Disable WorkManager",
-    description = "Neutralizes background WorkManager initialization, database creation, and periodic maintenance workers.",
+val gboardDisableBackgroundSyncPatch = bytecodePatch(
+    name = "Disable Background Sync",
+    description = "Neutralizes AndroidX WorkManager schedulers, MDD (Mobile Data Download) periodic sync, and Superpacks eager asset synchronization (opt-in to preserve initial dictionary downloads).",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
@@ -15,6 +16,7 @@ val gboardDisableWorkManagerPatch = bytecodePatch(
     execute {
         val hookedMethods = mutableListOf<String>()
 
+        // 1. AndroidX WorkManager Schedulers & Sinks
         Fingerprint(
             definingClass = "Landroidx/work/WorkManagerInitializer;",
             name = "a",
@@ -169,7 +171,129 @@ val gboardDisableWorkManagerPatch = bytecodePatch(
             hookedMethods.add("DiagnosticsReceiver.onReceive")
         }
 
+        // 2. MDD (Mobile Data Download) Workers & Listeners
+        val fpMdd1 = Fingerprint(
+            definingClass = "Laaxi;",
+            name = "a",
+            parameters = listOf("Lvja;", "Laaxm;"),
+            returnType = "V",
+        )
+        fpMdd1.method.addInstructions(0, "return-void")
+        val cMdd1 = LocaleUtils.cleanClassName(fpMdd1.originalClassDef.type)
+        hookedMethods.add("$cMdd1.a")
+
+        val fpMdd2 = Fingerprint(
+            definingClass = "Lvie;",
+            name = "t",
+            parameters = listOf("Lvid;"),
+            returnType = "V",
+        )
+        fpMdd2.method.addInstructions(0, "return-void")
+        val cMdd2 = LocaleUtils.cleanClassName(fpMdd2.originalClassDef.type)
+        hookedMethods.add("$cMdd2.t")
+
+        val fpMdd3 = Fingerprint(
+            definingClass = "Lvie;",
+            name = "l",
+            parameters = emptyList(),
+            returnType = "V",
+        )
+        fpMdd3.method.addInstructions(0, "return-void")
+        hookedMethods.add("$cMdd2.l")
+
+        val fpMdd4 = Fingerprint(
+            definingClass = "Lvie;",
+            name = "g",
+            parameters = listOf("Lvig;"),
+            returnType = "Lagtn;",
+        )
+        fpMdd4.method.addInstructions(
+            0,
+            """
+                const/4 v0, 0x1
+                invoke-static {v0}, Ljava/lang/Boolean;->valueOf(Z)Ljava/lang/Boolean;
+                move-result-object v0
+                invoke-static {v0}, Lagsw;->i(Ljava/lang/Object;)Lagtn;
+                move-result-object v0
+                return-object v0
+            """.trimIndent(),
+        )
+        hookedMethods.add("$cMdd2.g")
+
+        val fpMdd5 = Fingerprint(
+            definingClass = "Lcom/google/android/libraries/inputmethod/mdd/MDDTaskScheduler${'$'}Worker;",
+            name = "c",
+            parameters = emptyList(),
+            returnType = "Lagtn;",
+        )
+        fpMdd5.method.addInstructions(
+            0,
+            """
+                new-instance v0, Lcja;
+                invoke-direct {v0}, Lcja;-><init>()V
+                invoke-static {v0}, Lagsw;->i(Ljava/lang/Object;)Lagtn;
+                move-result-object v0
+                return-object v0
+            """.trimIndent(),
+        )
+        hookedMethods.add("MDDTaskSchedulerWorker.c")
+
+        val fpMdd6 = Fingerprint(
+            definingClass = "Lcom/google/android/libraries/inputmethod/mdd/cleanup/MddMetadataCleanupWorker;",
+            name = "k",
+            parameters = emptyList(),
+            returnType = "Lcjb;",
+        )
+        fpMdd6.method.addInstructions(
+            0,
+            """
+                new-instance v0, Lcja;
+                invoke-direct {v0}, Lcja;-><init>()V
+                return-object v0
+            """.trimIndent(),
+        )
+        hookedMethods.add("MddMetadataCleanupWorker.k")
+
+        val fpMdd7 = Fingerprint(
+            definingClass = "Lcom/google/android/libraries/inputmethod/mdd/ForegroundDownloadTaskWorker;",
+            name = "c",
+            parameters = emptyList(),
+            returnType = "Lagtn;",
+        )
+        fpMdd7.method.addInstructions(
+            0,
+            """
+                new-instance v0, Lcja;
+                invoke-direct {v0}, Lcja;-><init>()V
+                invoke-static {v0}, Lagsw;->i(Ljava/lang/Object;)Lagtn;
+                move-result-object v0
+                return-object v0
+            """.trimIndent(),
+        )
+        hookedMethods.add("ForegroundDownloadTaskWorker.c")
+
+        // 3. Superpacks Eager Startup Synchronization
+        val fpSp1 = Fingerprint(
+            definingClass = "Lgwi;",
+            name = "n",
+            parameters = emptyList(),
+            returnType = "V",
+        )
+        fpSp1.method.addInstructions(0, "return-void")
+        val cSp1 = LocaleUtils.cleanClassName(fpSp1.originalClassDef.type)
+        hookedMethods.add("$cSp1.n")
+
+        val fpSp2 = Fingerprint(
+            definingClass = "Lgsn;",
+            name = "n",
+            parameters = emptyList(),
+            returnType = "V",
+        )
+        fpSp2.method.addInstructions(0, "return-void")
+        val cSp2 = LocaleUtils.cleanClassName(fpSp2.originalClassDef.type)
+        hookedMethods.add("$cSp2.n")
+
         val targetClasses = hookedMethods.map { it.substringBefore('.') }.distinct()
-        println("[Disable WorkManager] Neutralized ${hookedMethods.size} WorkManager methods across ${targetClasses.size} classes (${targetClasses.joinToString(", ")})")
+        println("[Disable Background Sync] Neutralized ${hookedMethods.size} background sync methods across ${targetClasses.size} classes (${targetClasses.joinToString(", ")})")
     }
 }

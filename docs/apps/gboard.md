@@ -55,10 +55,8 @@ If you perform a clean install of Gboard Lite with background sync debloat patch
 | **Block Telemetry** | `bytecodePatch` | Privacy & Security | ✅ Yes | Disables background metrics dispatch, event logging, daily pings, Google Primes profiling, crash reporting, AppDoctor diagnostics, and Tenor share tracking. |
 | **Clipboard Enhancements** | `bytecodePatch` | Usability & Storage | ✅ Yes | Removes hardcoded 1-hour TTL and 5-clip UI throttling, extending retention up to user-configured hours/items. |
 | **Clone Gboard** | `bytecodePatch` + `resourcePatch` | Utility & Modding | ✅ Yes | Appends a custom suffix to the package name to allow installing Gboard alongside the original application. |
-| **Disable MDD Background Sync** | `bytecodePatch` + `resourcePatch` | Battery & Debloat | ❌ No | Neutralizes Mobile Data Download (MDD) periodic background sync and prefetch tasks (opt-in to preserve initial dictionary downloads). |
+| **Disable Background Sync** | `bytecodePatch` | Battery & Debloat | ❌ No | Neutralizes AndroidX WorkManager schedulers, MDD (Mobile Data Download) periodic sync, and Superpacks eager asset synchronization (opt-in to preserve initial dictionary downloads). |
 | **Disable Remote Configuration** | `bytecodePatch` | Privacy & Stability | ✅ Yes | Disables periodic remote experiment flag synchronization and background updates. |
-| **Disable Superpacks Eager Sync** | `bytecodePatch` | Battery & Debloat | ❌ No | Neutralizes eager background Superpacks synchronization during application startup (opt-in to preserve initial dictionary downloads). |
-| **Disable WorkManager** | `resourcePatch` | Battery & Optimization | ❌ No | Neutralizes AndroidX WorkManager background schedulers in `AndroidManifest.xml` (opt-in to preserve initial dictionary downloads). |
 | **Enable Access Points Menu Redesign** | `bytecodePatch` | UI & Appearance | ✅ Yes | Enables the redesigned access points menu bar and customization panel (Panel V2). |
 | **Enable Bluetooth Microphone** | `bytecodePatch` | Usability & Audio | ✅ Yes | Unlocks Bluetooth microphone recording toggle under Voice typing settings. |
 | **Enable Cursor Trackpad** | `bytecodePatch` | Navigation & Control | ✅ Yes | Enables 2D trackpad cursor navigation and cursor lock mode by holding the spacebar, neutralizing Phenotype flag reset conflicts. |
