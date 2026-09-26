@@ -74,6 +74,7 @@ If you perform a clean install of Gboard Lite with background sync debloat patch
 | **Offline Only** | `bytecodePatch` + `resourcePatch` | Privacy & Security | ❌ No | Completely isolates Gboard from network access by purging manifest permissions, disabling foreground sync services, neutralizing HTTP clients (Cronet, OkHttp, Superpacks), and spoofing offline status. |
 | **Phenotype Flag Resilience** | `bytecodePatch` | Stability & Resilience | ✅ Yes | Neutralizes Phenotype flag registration conflicts to allow runtime flag overrides without crashes. |
 | **Resource Slimmer** | `bytecodePatch` | Optimization | ✅ Yes | Strips embedded third-party license text, onboarding tutorial Lottie animations, promotional GIFs, and APK root metadata/junk files. |
+| **Strip Permissions** | `resourcePatch` | Privacy & Security | ❌ No | Selectively revokes sensitive hardware, privacy, and system permissions from AndroidManifest.xml. |
 | **Top Toolbar Item Count** | `bytecodePatch` | UI & Customization | ✅ Yes | Expands and customizes the maximum number of access point icons displayed directly on the top toolbar (default: 5, range: 4..8). |
 | **Universal Slimmers** | `resourcePatch` + `rawResourcePatch` | Optimization | ✅ Yes | `Locale Resource Slimmer`, `DPI Resource Slimmer`, `PNG Asset Optimizer`, and `APK Junk Cleaner`. |
 
@@ -86,6 +87,20 @@ The **`Offline Only`** patch provides complete network isolation for privacy-foc
 ### Technical Architecture:
 1. **Manifest Purge**: Strips 8 network/tracking permissions (`INTERNET`, `ACCESS_WIFI_STATE`, `GET_ACCOUNTS`, `READ_GSERVICES`, `GET_PACKAGE_SIZE`, `FOREGROUND_SERVICE`, `WAKE_LOCK`, `RECEIVE_BOOT_COMPLETED`), retains `ACCESS_NETWORK_STATE` to prevent GMS Cronet runtime `SecurityException` crashes while blocking actual network traffic at the socket/HTTP layer, sets `android:usesCleartextTraffic="false"`, and disables network foreground services (`SuperpacksForegroundTaskService`, `SystemForegroundService`).
 2. **Bytecode Neutralization**: Spoofs `DeviceStatusMonitor` to `NO_CONNECTION`, mocks `NetworkInfoNotification` offline predicates, redirects central HTTP clients (Cronet, OkHttp, Superpacks) to immediate `IOException("Offline mode")` exceptions, neutralizes language download queues, and disconnects Glide/WorkManager connectivity listeners.
+
+---
+
+## 🛡️ Configurable Options: Strip Permissions
+
+The **`Strip Permissions`** patch provides granular control over sensitive hardware, privacy, and system permissions declared in `AndroidManifest.xml`:
+
+| Option | Key | Type | Default | Description |
+| :--- | :--- | :--- | :---: | :--- |
+| **Strip Contacts Permission** | `stripContacts` | Boolean | `false` | Revokes `android.permission.READ_CONTACTS` from `AndroidManifest.xml` (disables contact name suggestions). |
+| **Strip Microphone Permission** | `stripAudio` | Boolean | `false` | Revokes `android.permission.RECORD_AUDIO` from `AndroidManifest.xml` (disables voice dictation). |
+| **Strip Media & Storage Permissions** | `stripMedia` | Boolean | `false` | Revokes `READ_MEDIA_IMAGES`, `READ_MEDIA_VISUAL_USER_SELECTED`, and `READ_EXTERNAL_STORAGE` from `AndroidManifest.xml` (disables custom image background themes). |
+| **Strip System Dictionary Permissions** | `stripUserDictionary` | Boolean | `false` | Revokes `READ_USER_DICTIONARY` and `WRITE_USER_DICTIONARY` from `AndroidManifest.xml`. |
+| **Strip Cross-Profile Permission** | `stripCrossProfile` | Boolean | `false` | Revokes `INTERACT_ACROSS_PROFILES` from `AndroidManifest.xml` to isolate work and personal profiles. |
 
 ---
 

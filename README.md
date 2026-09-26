@@ -71,7 +71,7 @@
 </details>
 
 <details>
-<summary>Gboard Lite&nbsp;&nbsp;•&nbsp;&nbsp;<b>25 patches</b></summary>
+<summary>Gboard Lite&nbsp;&nbsp;•&nbsp;&nbsp;<b>26 patches</b></summary>
 <br>
 
 **Supported versions:**
@@ -105,6 +105,7 @@
 | **Offline Only** | Completely isolates Gboard from the network by revoking network permissions, neutralizing HTTP clients (Cronet, OkHttp, Superpacks), and spoofing offline status. |  |
 | **Phenotype Flag Resilience** | Neutralizes Phenotype flag registration conflicts to allow runtime flag overrides without crashes. |  |
 | **Resource Slimmer** | Strips embedded third-party license text, onboarding tutorial Lottie animations, promotional GIFs, and APK root metadata/junk files. |  |
+| **Strip Permissions** | Selectively revokes sensitive hardware, privacy, and system permissions from AndroidManifest.xml. | • Strip Contacts Permission<br>• Strip Microphone Permission<br>• Strip Media & Storage Permissions<br>• Strip System Dictionary Permissions<br>• Strip Cross-Profile Permission |
 | **Top Toolbar Item Count** | Customizes the maximum number of access point icons displayed on the top toolbar. | • Toolbar item count |
 
 </details>
