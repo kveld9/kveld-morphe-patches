@@ -52,15 +52,12 @@ If you perform a clean install of Gboard Lite with background sync debloat patch
 | :--- | :--- | :--- | :---: | :--- |
 | **Add AMOLED Theme** | `bytecodePatch` + `resourcePatch` | UI & Appearance | ✅ Yes | Adds a selectable Pure Black AMOLED theme using Gboard's native color_black theme package, without replacing standard themes. |
 | **Allow Modified APK** | `bytecodePatch` | Security & Integrity | ✅ Yes | Bypasses internal signature check to allow custom APK execution. |
-| **Block Telemetry** | `bytecodePatch` | Privacy & Security | ✅ Yes | Disables background metrics dispatch, event logging, daily pings, and crash reporting. |
+| **Block Telemetry** | `bytecodePatch` | Privacy & Security | ✅ Yes | Disables background metrics dispatch, event logging, daily pings, Google Primes profiling, crash reporting, AppDoctor diagnostics, and Tenor share tracking. |
 | **Clipboard Enhancements** | `bytecodePatch` | Usability & Storage | ✅ Yes | Removes hardcoded 1-hour TTL and 5-clip UI throttling, extending retention up to user-configured hours/items. |
 | **Clone Gboard** | `bytecodePatch` + `resourcePatch` | Utility & Modding | ✅ Yes | Appends a custom suffix to the package name to allow installing Gboard alongside the original application. |
-| **Disable Diagnostics** | `bytecodePatch` | Privacy & Telemetry | ✅ Yes | Disables Google AppDoctor diagnostic and recovery telemetry. |
-| **Disable Google Primes** | `bytecodePatch` | Battery & Debloat | ✅ Yes | Neutralizes Google Primes performance profiling, jank monitoring, native crash sidecars, and background telemetry threads. |
 | **Disable MDD Background Sync** | `bytecodePatch` + `resourcePatch` | Battery & Debloat | ❌ No | Neutralizes Mobile Data Download (MDD) periodic background sync and prefetch tasks (opt-in to preserve initial dictionary downloads). |
 | **Disable Remote Configuration** | `bytecodePatch` | Privacy & Stability | ✅ Yes | Disables periodic remote experiment flag synchronization and background updates. |
 | **Disable Superpacks Eager Sync** | `bytecodePatch` | Battery & Debloat | ❌ No | Neutralizes eager background Superpacks synchronization during application startup (opt-in to preserve initial dictionary downloads). |
-| **Disable Tenor Share Tracking** | `bytecodePatch` | Privacy & Telemetry | ✅ Yes | Disables Tenor GIF selection and share tracking telemetry. |
 | **Disable WorkManager** | `resourcePatch` | Battery & Optimization | ❌ No | Neutralizes AndroidX WorkManager background schedulers in `AndroidManifest.xml` (opt-in to preserve initial dictionary downloads). |
 | **Enable Access Points Menu Redesign** | `bytecodePatch` | UI & Appearance | ✅ Yes | Enables the redesigned access points menu bar and customization panel (Panel V2). |
 | **Enable Bluetooth Microphone** | `bytecodePatch` | Usability & Audio | ✅ Yes | Unlocks Bluetooth microphone recording toggle under Voice typing settings. |
