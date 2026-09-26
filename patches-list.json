@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.46.0",
+  "version": "2.0.0",
   "patches": [
     {
       "name": "APK Junk Cleaner",
@@ -393,7 +393,7 @@
     },
     {
       "name": "Block Telemetry",
-      "description": "Disables background metrics dispatch, event logging, daily pings, and crash reporting.",
+      "description": "Disables background metrics dispatch, event logging, daily pings, Google Primes profiling, crash reporting, AppDoctor diagnostics, and Tenor share tracking.",
       "default": true,
       "dependencies": [],
       "compatiblePackages": [
@@ -483,9 +483,7 @@
       "description": "Unlocks Brave Origin and enables local feature toggle controls.",
       "default": true,
       "dependencies": [
-        "ResourcePatch",
-        "ResourcePatch",
-        "RawResourcePatch"
+        "ResourcePatch"
       ],
       "compatiblePackages": [
         {
@@ -512,10 +510,7 @@
       "name": "Brave Startup Performance Optimization",
       "description": "Optimizes startup time and eliminates background CPU/disk overhead by disabling unused OEM carrier partner customizations.",
       "default": true,
-      "dependencies": [
-        "ResourcePatch",
-        "RawResourcePatch"
-      ],
+      "dependencies": [],
       "compatiblePackages": [
         {
           "packageName": "com.brave.browser",
@@ -1160,6 +1155,39 @@
       "options": []
     },
     {
+      "name": "Disable Background Sync",
+      "description": "Neutralizes AndroidX WorkManager schedulers, MDD (Mobile Data Download) periodic sync, and Superpacks eager asset synchronization (opt-in to preserve initial dictionary downloads).",
+      "default": false,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.google.android.inputmethod.latin",
+          "name": "Gboard Lite",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#4285F4",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "18.2.4.969776716-lite_beta-arm64-v8a",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            },
+            {
+              "version": "18.2.4.969776716-lite_beta-armeabi-v7a",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Disable Background Sync & Periodic Sync",
       "description": "Eliminates background wakeups, radio modem activity, and battery drain by forcing GooglePlayServicesChecker.shouldDisableBackgroundSync() -> true and neutralizing wakeup tasks.",
       "default": true,
@@ -1255,39 +1283,6 @@
       "options": []
     },
     {
-      "name": "Disable Diagnostics",
-      "description": "Disables Google's diagnostic and recovery telemetry.",
-      "default": true,
-      "dependencies": [],
-      "compatiblePackages": [
-        {
-          "packageName": "com.google.android.inputmethod.latin",
-          "name": "Gboard Lite",
-          "description": null,
-          "apkFileType": "APK",
-          "appIconColor": "#4285F4",
-          "signatures": null,
-          "targets": [
-            {
-              "version": "18.2.4.969776716-lite_beta-arm64-v8a",
-              "versionCodes": null,
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            },
-            {
-              "version": "18.2.4.969776716-lite_beta-armeabi-v7a",
-              "versionCodes": null,
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            }
-          ]
-        }
-      ],
-      "options": []
-    },
-    {
       "name": "Disable Double Tap to Like",
       "description": "Disables the double tap gesture to like videos in the feed, preventing accidental likes while scrolling or pausing. Videos can still be liked using the like button.",
       "default": false,
@@ -1320,72 +1315,6 @@
           "targets": [
             {
               "version": "47.0.3",
-              "versionCodes": null,
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            }
-          ]
-        }
-      ],
-      "options": []
-    },
-    {
-      "name": "Disable Google Primes",
-      "description": "Neutralizes Google Primes performance profiling, jank monitoring, native crash sidecars, and background telemetry threads.",
-      "default": true,
-      "dependencies": [],
-      "compatiblePackages": [
-        {
-          "packageName": "com.google.android.inputmethod.latin",
-          "name": "Gboard Lite",
-          "description": null,
-          "apkFileType": "APK",
-          "appIconColor": "#4285F4",
-          "signatures": null,
-          "targets": [
-            {
-              "version": "18.2.4.969776716-lite_beta-arm64-v8a",
-              "versionCodes": null,
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            },
-            {
-              "version": "18.2.4.969776716-lite_beta-armeabi-v7a",
-              "versionCodes": null,
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            }
-          ]
-        }
-      ],
-      "options": []
-    },
-    {
-      "name": "Disable MDD Background Sync",
-      "description": "Neutralizes Mobile Data Download (MDD) periodic background synchronization, automated polling, and prefetch worker tasks while preserving on-demand and user-requested downloads.",
-      "default": false,
-      "dependencies": [],
-      "compatiblePackages": [
-        {
-          "packageName": "com.google.android.inputmethod.latin",
-          "name": "Gboard Lite",
-          "description": null,
-          "apkFileType": "APK",
-          "appIconColor": "#4285F4",
-          "signatures": null,
-          "targets": [
-            {
-              "version": "18.2.4.969776716-lite_beta-arm64-v8a",
-              "versionCodes": null,
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            },
-            {
-              "version": "18.2.4.969776716-lite_beta-armeabi-v7a",
               "versionCodes": null,
               "isExperimental": false,
               "minSdk": null,
@@ -1602,72 +1531,6 @@
       "options": []
     },
     {
-      "name": "Disable Superpacks Eager Sync",
-      "description": "Neutralizes eager background Superpacks synchronization during application startup, eliminating unnecessary disk sweeps and network polling while preserving on-demand pack downloads.",
-      "default": false,
-      "dependencies": [],
-      "compatiblePackages": [
-        {
-          "packageName": "com.google.android.inputmethod.latin",
-          "name": "Gboard Lite",
-          "description": null,
-          "apkFileType": "APK",
-          "appIconColor": "#4285F4",
-          "signatures": null,
-          "targets": [
-            {
-              "version": "18.2.4.969776716-lite_beta-arm64-v8a",
-              "versionCodes": null,
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            },
-            {
-              "version": "18.2.4.969776716-lite_beta-armeabi-v7a",
-              "versionCodes": null,
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            }
-          ]
-        }
-      ],
-      "options": []
-    },
-    {
-      "name": "Disable Tenor Share Tracking",
-      "description": "Disables Tenor GIF selection and share tracking telemetry.",
-      "default": true,
-      "dependencies": [],
-      "compatiblePackages": [
-        {
-          "packageName": "com.google.android.inputmethod.latin",
-          "name": "Gboard Lite",
-          "description": null,
-          "apkFileType": "APK",
-          "appIconColor": "#4285F4",
-          "signatures": null,
-          "targets": [
-            {
-              "version": "18.2.4.969776716-lite_beta-arm64-v8a",
-              "versionCodes": null,
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            },
-            {
-              "version": "18.2.4.969776716-lite_beta-armeabi-v7a",
-              "versionCodes": null,
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            }
-          ]
-        }
-      ],
-      "options": []
-    },
-    {
       "name": "Disable Watch History Recording",
       "description": "Prevents viewed videos from being recorded in account watch history, playback duration stores, and local history caches.",
       "default": false,
@@ -1700,39 +1563,6 @@
           "targets": [
             {
               "version": "47.0.3",
-              "versionCodes": null,
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            }
-          ]
-        }
-      ],
-      "options": []
-    },
-    {
-      "name": "Disable WorkManager",
-      "description": "Neutralizes background WorkManager initialization, database creation, and periodic maintenance workers.",
-      "default": false,
-      "dependencies": [],
-      "compatiblePackages": [
-        {
-          "packageName": "com.google.android.inputmethod.latin",
-          "name": "Gboard Lite",
-          "description": null,
-          "apkFileType": "APK",
-          "appIconColor": "#4285F4",
-          "signatures": null,
-          "targets": [
-            {
-              "version": "18.2.4.969776716-lite_beta-arm64-v8a",
-              "versionCodes": null,
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            },
-            {
-              "version": "18.2.4.969776716-lite_beta-armeabi-v7a",
               "versionCodes": null,
               "isExperimental": false,
               "minSdk": null,
@@ -3154,7 +2984,7 @@
     },
     {
       "name": "Network Security Hardening",
-      "description": "Enforces HTTPS encryption for nokoprint.com driver downloads while preserving LAN cleartext printer traffic.",
+      "description": "Enforces user trust anchors while preserving HTTP cleartext traffic for driver downloads and LAN printers.",
       "default": true,
       "dependencies": [],
       "compatiblePackages": [
@@ -3211,17 +3041,7 @@
           ]
         }
       ],
-      "options": [
-        {
-          "key": "stripContacts",
-          "title": "Strip Contacts Permission",
-          "description": "Revokes READ_CONTACTS permission from AndroidManifest.xml for maximum isolation.",
-          "required": false,
-          "type": "kotlin.Boolean",
-          "default": false,
-          "values": null
-        }
-      ]
+      "options": []
     },
     {
       "name": "P2P Video Relay & Mesh CDN Blocker",
@@ -3616,6 +3436,85 @@
         }
       ],
       "options": []
+    },
+    {
+      "name": "Strip Permissions",
+      "description": "Selectively revokes sensitive hardware, privacy, and system permissions from AndroidManifest.xml.",
+      "default": false,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.google.android.inputmethod.latin",
+          "name": "Gboard Lite",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#4285F4",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "18.2.4.969776716-lite_beta-arm64-v8a",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            },
+            {
+              "version": "18.2.4.969776716-lite_beta-armeabi-v7a",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": [
+        {
+          "key": "stripContacts",
+          "title": "Strip Contacts Permission",
+          "description": "Revokes READ_CONTACTS permission from AndroidManifest.xml (disables contact name suggestions).",
+          "required": false,
+          "type": "kotlin.Boolean",
+          "default": false,
+          "values": null
+        },
+        {
+          "key": "stripAudio",
+          "title": "Strip Microphone Permission",
+          "description": "Revokes RECORD_AUDIO permission from AndroidManifest.xml (disables voice dictation).",
+          "required": false,
+          "type": "kotlin.Boolean",
+          "default": false,
+          "values": null
+        },
+        {
+          "key": "stripMedia",
+          "title": "Strip Media & Storage Permissions",
+          "description": "Revokes photo and media permissions (READ_MEDIA_IMAGES, READ_MEDIA_VISUAL_USER_SELECTED, READ_EXTERNAL_STORAGE) from AndroidManifest.xml (disables custom image background themes).",
+          "required": false,
+          "type": "kotlin.Boolean",
+          "default": false,
+          "values": null
+        },
+        {
+          "key": "stripUserDictionary",
+          "title": "Strip System Dictionary Permissions",
+          "description": "Revokes system personal dictionary sync permissions (READ_USER_DICTIONARY, WRITE_USER_DICTIONARY) from AndroidManifest.xml.",
+          "required": false,
+          "type": "kotlin.Boolean",
+          "default": false,
+          "values": null
+        },
+        {
+          "key": "stripCrossProfile",
+          "title": "Strip Cross-Profile Permission",
+          "description": "Revokes INTERACT_ACROSS_PROFILES permission from AndroidManifest.xml to isolate work and personal profiles.",
+          "required": false,
+          "type": "kotlin.Boolean",
+          "default": false,
+          "values": null
+        }
+      ]
     },
     {
       "name": "Studio & Creation De-bloat",
