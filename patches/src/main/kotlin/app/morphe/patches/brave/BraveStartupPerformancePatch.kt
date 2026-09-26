@@ -6,8 +6,9 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.rawResourcePatch
 import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patches.shared.Constants
-import org.w3c.dom.Element
+import java.io.File
 import java.io.RandomAccessFile
+import org.w3c.dom.Element
 
 private const val PT_GNU_PROPERTY = 0x6474e553
 private const val NT_GNU_PROPERTY_TYPE_0 = 5
@@ -125,13 +126,83 @@ private fun patchBtiInElf(raf: RandomAccessFile): Boolean {
     return clearBtiInGnuProperty(raf, gnuPropOffset)
 }
 
+private data class NativeTrapHook(
+    val offset: Long,
+    val expected: ByteArray,
+    val replacement: ByteArray,
+    val description: String,
+)
+
+private val ARM64_RET = byteArrayOf(0xc0.toByte(), 0x03, 0x5f.toByte(), 0xd6.toByte())
+
+private val LIBCHROME_TRAP_HOOKS = listOf(
+    // Constructor 0: __init_cpu_features_constructor detecting LSE atomics. Neutralizing to RET prevents
+    // illegal opcode execution on ARMv8.0 cores (e.g. Kryo 240 / Cortex-A73) and forces safe baseline LDXR/STLXR.
+    NativeTrapHook(
+        offset = 0x029779b4L,
+        expected = byteArrayOf(0x3f, 0x23, 0x03, 0xd5.toByte()),
+        replacement = ARM64_RET,
+        description = "LSE atomics feature constructor",
+    ),
+    // Constructor 1: __init_cpu_features detecting ARMv8.1+ extensions. Neutralizing to RET enforces baseline
+    // ARMv8.0 dispatch, preventing illegal instruction faults on legacy ARM64 cores.
+    NativeTrapHook(
+        offset = 0x02977cacL,
+        expected = byteArrayOf(0x5f, 0x24, 0x03, 0xd5.toByte()),
+        replacement = ARM64_RET,
+        description = "CPU extensions feature constructor",
+    ),
+    // Constructor 2: Brave Promo banner & histogram static initialization calling atomic helpers via range extension thunks.
+    // Neutralizing to RET bypasses the thunk pool (0x0a6a00f0 -> __aarch64_ldadd4_acq_rel), eliminating startup SIGILL.
+    NativeTrapHook(
+        offset = 0x08aca770L,
+        expected = byteArrayOf(0x3f, 0x23, 0x03, 0xd5.toByte()),
+        replacement = ARM64_RET,
+        description = "Promo banner static initialization constructor",
+    ),
+    // Constructor 10: Brave wallet/rewards fee static initialization calling atomic helpers via range extension thunks.
+    // Neutralizing to RET bypasses the thunk pool (0x0a6a0100 -> __aarch64_cas4_acq_rel), eliminating startup SIGILL.
+    NativeTrapHook(
+        offset = 0x0ab908d4L,
+        expected = byteArrayOf(0x3f, 0x23, 0x03, 0xd5.toByte()),
+        replacement = ARM64_RET,
+        description = "Brave wallet fee static initialization constructor",
+    ),
+)
+
+private fun applyTrapHook(raf: RandomAccessFile, hook: NativeTrapHook): Boolean {
+    val len = hook.expected.size
+    if (hook.offset + len > raf.length()) return false
+    val buf = ByteArray(len)
+    raf.seek(hook.offset)
+    raf.readFully(buf)
+    if (buf.contentEquals(hook.replacement)) return true
+    if (!buf.contentEquals(hook.expected)) return false
+    raf.seek(hook.offset)
+    raf.write(hook.replacement)
+    return true
+}
+
+private fun patchNativeTrapHooks(soFile: File): Int {
+    if (!soFile.exists() || !soFile.isFile) return 0
+    var patched = 0
+    RandomAccessFile(soFile, "rw").use { raf ->
+        for (hook in LIBCHROME_TRAP_HOOKS) {
+            if (applyTrapHook(raf, hook)) {
+                patched++
+            }
+        }
+    }
+    return patched
+}
+
 internal val braveBtiCompatibilityPatch = rawResourcePatch {
     compatibleWith(Constants.COMPATIBILITY_BRAVE)
 
     execute {
         val libDir = get("lib/arm64-v8a")
         if (!libDir.exists() || !libDir.isDirectory) {
-            println("[Brave Compatibility] Skipped BTI fix: lib/arm64-v8a not found.")
+            println("[Brave Compatibility] Skipped: lib/arm64-v8a not found.")
             return@execute
         }
 
@@ -149,6 +220,12 @@ internal val braveBtiCompatibilityPatch = rawResourcePatch {
             println("[Brave Compatibility] Neutralized BTI flag across $neutralizedCount ARM64 native binaries -> Branch Target Exception SIGILL prevented.")
         } else {
             println("[Brave Compatibility] BTI flags in ARM64 native binaries are already clean or absent.")
+        }
+
+        val chromeSo = File(libDir, "libchrome.so")
+        val hooksPatched = patchNativeTrapHooks(chromeSo)
+        if (hooksPatched > 0) {
+            println("[Brave Compatibility] Neutralized $hooksPatched ARMv8.0/GSI illegal opcode trap(s) in libchrome.so -> SIGILL prevented.")
         }
     }
 }

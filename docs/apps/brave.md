@@ -50,7 +50,7 @@ Comprehensive technical and configuration guide for **Brave Browser** (`com.brav
   - Injects Origin preference switch items into settings layout XML (`xml_0x7f18001a.xml`).
   - Hooks `BraveOriginPreferences` methods (`k5`, `T3`, `j5`, `X4`) to persist toggles locally in `SharedPreferences`.
   - Stubs subscription check methods (`getIsSubscriptionActive`, `requestCredentialSummary`) to return active credentials.
-  - Enforces `android:extractNativeLibs="true"` in `AndroidManifest.xml` and neutralizes the ARM64 BTI flag across all bundled native binaries (`libchrome.so`, `libcrashpad_handler_trampoline.so`) to ensure seamless execution on 16 KB page and Android 16 devices.
+  - Neutralizes the ARM64 BTI flag across bundled native binaries (`libchrome.so`, `libcrashpad_handler_trampoline.so`) and patches illegal instruction traps in `libchrome.so` to ensure seamless execution on ARMv8.0 and Android 16 devices.
 
 ### 2. Block Brave Telemetry (`braveBlockTelemetryPatch`)
 - **Objective**: Halt outbound telemetry pings, usage metrics, and variations seed fetching.
@@ -58,7 +58,7 @@ Comprehensive technical and configuration guide for **Brave Browser** (`com.brav
   - **Bytecode Neutralization**: Intercepts `PrefService.e` queries for P3A (*Privacy-Preserving Product Analytics*), Brave Stats, and WDP (*Web Discovery Project*).
   - **Variations Connection Abort**: Injects early returns into HTTP loaders fetching experimentation variations seeds.
   - **Native Socket Redirection**: In `libchrome.so`, redirects 12 native telemetry endpoints (`*.bsg.brave.com`, `*.wdp.brave.com`, `usage-ping.brave.com`, `crashpad.chromium.org`, `variations.brave.com`) to `0.0.0.0`.
-  - **Packaging Invariants**: Encapsulates `android:extractNativeLibs="true"` and multi-binary ARM64 BTI neutralization dependencies.
+  - **Packaging Invariants**: Encapsulates multi-binary ARM64 BTI neutralization and trap patching dependencies.
 
 ### 3. Clean New Tab Page (`braveCleanNewTabPagePatch`)
 - **Objective**: Completely eliminate sponsored advertising wallpapers, background campaign asset downloads, Brave News/Today promotional cards, and Brave Shields stats cards.
@@ -107,7 +107,7 @@ Comprehensive technical and configuration guide for **Brave Browser** (`com.brav
 - **Objective**: Accelerate cold launch times and reduce memory allocation on startup.
 - **Mechanisms**:
   - Neutralizes asynchronous partner carrier initialization in `PartnerBrowserCustomizations`.
-  - Encapsulates `android:extractNativeLibs="true"` and ARM64 BTI neutralization packaging invariants to ensure BTI and 16 KB page compatibility on modern Android versions (Android 15/16).
+  - Encapsulates ARM64 BTI neutralization and trap patching packaging invariants to ensure BTI and ARMv8.0 compatibility on modern Android versions (Android 15/16).
 
 ### 10. Native Bloat Slimmer (`nativeBloatSlimmerPatch`)
 - **Objective**: Strip unneeded bundled native libraries to reduce application size on disk and in memory.
