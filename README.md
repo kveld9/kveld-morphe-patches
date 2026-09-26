@@ -42,7 +42,7 @@
 | **Gboard Lite** | `com.google.android.inputmethod.latin` | `18.2.4.969776716` | `arm64-v8a`<br>`armeabi-v7a` (nodpi) | [APKMirror](https://www.apkmirror.com/apk/google-inc/gboard/gboard-the-google-keyboard-18-2-4-969776716-release/) | [Gboard Lite Guide](docs/apps/gboard.md) |
 | **Hevy** | `com.hevy` | `3.1.14` | `arm64-v8a` (APKM Bundle) | [APKMirror](https://www.apkmirror.com/apk/hevy-gym-workout-tracker/hevy-gym-log-workout-tracker/hevy-gym-log-workout-tracker-3-1-14-release/) | [Hevy Guide](docs/apps/hevy.md) |
 | **NokoPrint** | `com.nokoprint` | `5.28.4` | Universal (nodpi) | [APKPure](https://d.apkpure.com/b/XAPK/com.nokoprint?versionCode=52804) | [NokoPrint Guide](docs/apps/nokoprint.md) |
-| **TikTok** | `com.zhiliaoapp.musically`<br>`com.ss.android.ugc.trill` | `47.0.3` | `arm64-v8a` (nodpi) | [Global](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-47-0-3-release/) · [Asia](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok/tiktok-47-0-3-2-release/) | [TikTok Guide](docs/apps/tiktok.md) |
+| **TikTok** | `com.zhiliaoapp.musically`<br>`com.ss.android.ugc.trill` | `47.1.3` | `arm64-v8a` (nodpi) | [Global](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-47-1-3-release/) · [Asia](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok/tiktok-47-1-3-2-release/) | [TikTok Guide](docs/apps/tiktok.md) |
 | **Xiaomi Earbuds** | `com.mi.earphone` | `1.38.0i` | Universal (XAPK Bundle) | [APKPure](https://d.apkpure.com/b/XAPK/com.mi.earphone?versionCode=138000) | [Xiaomi Earbuds Guide](docs/apps/xiaomi-earbuds.md) |
 
 ---
@@ -111,7 +111,7 @@
 
 **Supported versions:**
 
-| 47.0.3 |
+| 47.1.3 |
 | :---: |
 
 | Patch | Description | Options |
