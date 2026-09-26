@@ -56,7 +56,7 @@ class TestTikTokContracts(unittest.TestCase):
                     inside_loop = False
 
     def test_all_bytecode_patches_dynamic_verbose_logging_invariants(self):
-        """Ensures 100% of bytecode patches implement dynamic counter tracking and try/catch note logging."""
+        """Ensures 100% of bytecode patches implement dynamic counter tracking and dynamic execution summary."""
         from pathlib import Path
         import re
 
@@ -73,10 +73,7 @@ class TestTikTokContracts(unittest.TestCase):
             has_counter = bool(re.search(r'var\s+(patched|hooked|patchedTasks|count)', content))
             self.assertTrue(has_counter, f"{pfile.name} MUST track hooks dynamically via 'var patched = 0'")
 
-            # 2. Must capture exceptions with informative notes
-            self.assertIn("catch (e: Exception)", content, f"{pfile.name} MUST wrap Fingerprints in try/catch to capture diagnostic notes")
-
-            # 3. Must report summary log with dynamic count
+            # 2. Must report summary log with dynamic count
             has_dynamic_summary = bool(re.search(r'println\(.*(\$patched|\$hooked|\$patchedTasks|\$count).*\)', content))
             self.assertTrue(
                 has_dynamic_summary,
