@@ -159,18 +159,60 @@ val nokoPrintAdDispatchGovernorPatch = bytecodePatch(
             hookedMethods.add("ActivityRoot.s(appLovinAdCallback)")
         }
 
-        // 5. Stub com.nokoprint.f4.b (interstitial ad preloading for AdMob / AppLovin)
+        // 5. Bypass interstitial ad loader in f4.b and invoke target callback immediately
         Fingerprint(
             definingClass = "Lcom/nokoprint/f4;",
             name = "b",
             parameters = listOf("Lcom/google/android/material/carousel/d;", "Lcom/nokoprint/ActivityRoot;", "Ljava/util/Hashtable;"),
             returnType = "V",
         ).method.apply {
-            addInstructions(0, "return-void")
-            hookedMethods.add("f4.b(preloadInterstitial)")
+            val count = implementation?.instructions?.count() ?: 0
+            if (count > 0) {
+                removeInstructions(0, count)
+            }
+            addInstructionsWithLabels(
+                0,
+                """
+                if-eqz p1, :cond_skip_h
+                invoke-virtual {p1}, Lcom/nokoprint/ActivityRoot;->h()V
+                :cond_skip_h
+                if-eqz p0, :cond_skip_cb
+                const/4 v0, 0x0
+                invoke-virtual {p0, v0}, Lcom/google/android/material/carousel/d;->a(Lcom/nokoprint/f4;)V
+                :cond_skip_cb
+                return-void
+                """.trimIndent(),
+            )
+            hookedMethods.add("f4.b(bypassInterstitial)")
         }
 
-        // 6. Bypass rewarded ad loader in j4.b and execute target callback immediately
+        // 6. Bypass interstitial ad display in f4.c and execute completion callback immediately
+        Fingerprint(
+            definingClass = "Lcom/nokoprint/f4;",
+            name = "c",
+            parameters = listOf("Lcom/nokoprint/ActivityRoot;", "Lcom/nokoprint/a;"),
+            returnType = "V",
+        ).method.apply {
+            val count = implementation?.instructions?.count() ?: 0
+            if (count > 0) {
+                removeInstructions(0, count)
+            }
+            addInstructionsWithLabels(
+                0,
+                """
+                if-eqz p1, :cond_skip_h
+                invoke-virtual {p1}, Lcom/nokoprint/ActivityRoot;->h()V
+                :cond_skip_h
+                if-eqz p2, :cond_skip_run
+                invoke-virtual {p2}, Lcom/nokoprint/a;->run()V
+                :cond_skip_run
+                return-void
+                """.trimIndent(),
+            )
+            hookedMethods.add("f4.c(bypassInterstitialDisplay)")
+        }
+
+        // 7. Bypass rewarded ad loader in j4.b and execute target callback immediately
         Fingerprint(
             definingClass = "Lcom/nokoprint/j4;",
             name = "b",
@@ -199,7 +241,7 @@ val nokoPrintAdDispatchGovernorPatch = bytecodePatch(
             hookedMethods.add("j4.b(bypassRewardedAd)")
         }
 
-        // 7. Stub com.pairip.licensecheck.LicenseClient.checkLicense to bypass Google Play anti-tamper exit
+        // 8. Stub com.pairip.licensecheck.LicenseClient.checkLicense to bypass Google Play anti-tamper exit
         Fingerprint(
             definingClass = "Lcom/pairip/licensecheck/LicenseClient;",
             name = "checkLicense",
@@ -210,7 +252,7 @@ val nokoPrintAdDispatchGovernorPatch = bytecodePatch(
             hookedMethods.add("LicenseClient.checkLicense")
         }
 
-        // 8. Stub ActivityRoot.i()Z (MobileAds.initialize) to return false
+        // 9. Stub ActivityRoot.i()Z (MobileAds.initialize) to return false
         Fingerprint(
             definingClass = "Lcom/nokoprint/ActivityRoot;",
             name = "i",
@@ -221,7 +263,7 @@ val nokoPrintAdDispatchGovernorPatch = bytecodePatch(
             hookedMethods.add("ActivityRoot.i(initMobileAds)")
         }
 
-        // 9. Stub ActivityRoot.k()Z (AppLovinSdk.initialize) to return false
+        // 10. Stub ActivityRoot.k()Z (AppLovinSdk.initialize) to return false
         Fingerprint(
             definingClass = "Lcom/nokoprint/ActivityRoot;",
             name = "k",
@@ -232,7 +274,7 @@ val nokoPrintAdDispatchGovernorPatch = bytecodePatch(
             hookedMethods.add("ActivityRoot.k(initAppLovinSdk)")
         }
 
-        // 10. Stub ActivityRoot.a(J, Z, String)V (ad revenue tracking to Facebook & TikTok)
+        // 11. Stub ActivityRoot.a(J, Z, String)V (ad revenue tracking to Facebook & TikTok)
         Fingerprint(
             definingClass = "Lcom/nokoprint/ActivityRoot;",
             name = "a",

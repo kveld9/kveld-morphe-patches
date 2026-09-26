@@ -46,7 +46,7 @@ Comprehensive technical, architecture, and patch guide for **NokoPrint - WiFi, B
   - **MobileAds Initialization Neutralization**: Stubs `ActivityRoot.i()Z` to return `false` (`const/4 v0, 0x0; return v0`), preventing Google Mobile Ads SDK initialization.
   - **AppLovin SDK Initialization Neutralization**: Stubs `ActivityRoot.k()Z` to return `false` (`const/4 v0, 0x0; return v0`), preventing AppLovin MAX SDK bootstrap.
   - **Ad Revenue Tracking Neutralization**: Stubs `ActivityRoot.a(J, Z, String)V` with immediate `return-void`, blocking ad revenue telemetry to Facebook and TikTok.
-  - **Interstitial Preload Neutralization**: Stubs `f4.b(carousel.d, ActivityRoot, Hashtable)V` with immediate `return-void`.
+  - **Interstitial Ad Bypass**: Bypasses `com.nokoprint.f4.b` and `f4.c` by dismissing active progress dialogs and invoking completion callbacks immediately (`carousel.d.a(null)` and `a.run()`), eliminating infinite progress hangs when adding printers.
   - **Anti-Tamper & License Check Bypass**: Stubs Google Play Protect / Pairip license check in `com.pairip.licensecheck.LicenseClient.checkLicense(Context)V` with immediate `return-void`, preventing forced application shutdown.
   - **Rewarded Ad Bypass**: Stubs `com.nokoprint.j4.b` to dismiss the progress dialog and invoke the target driver download callback immediately, avoiding hangs and ad gates.
 
