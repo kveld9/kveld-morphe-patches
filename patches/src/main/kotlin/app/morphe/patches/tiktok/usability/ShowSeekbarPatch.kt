@@ -34,7 +34,7 @@ val showSeekbarPatch = bytecodePatch(
                 0,
                 """
                     iget-object v0, p0, Lcom/ss/android/ugc/aweme/feed/model/Aweme;->videoControl:Lcom/ss/android/ugc/aweme/feed/model/VideoControl;
-                    if-eqz v0, :show_seekbar_init
+                    if-nez v0, :show_seekbar_init
                     new-instance v0, Lcom/ss/android/ugc/aweme/feed/model/VideoControl;
                     invoke-direct {v0}, Lcom/ss/android/ugc/aweme/feed/model/VideoControl;-><init>()V
                     iput-object v0, p0, Lcom/ss/android/ugc/aweme/feed/model/Aweme;->videoControl:Lcom/ss/android/ugc/aweme/feed/model/VideoControl;
