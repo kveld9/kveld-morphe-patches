@@ -54,8 +54,20 @@ public final class TikTokLoginHook {
                 Class<?> accServiceClass = Class.forName("com.ss.android.ugc.aweme.IAccountService");
                 Object accService = smClass.getMethod("getService", Class.class).invoke(sm, accServiceClass);
                 if (accService != null) {
-                    Method getAccountUserService = accService.getClass().getMethod("LJIIJJI");
-                    Object accUser = getAccountUserService.invoke(accService);
+                    Object accUser = null;
+                    for (String methodName : new String[]{"LJIIJ", "LJIIJJI"}) {
+                        try {
+                            Method m = accService.getClass().getMethod(methodName);
+                            Object candidate = m.invoke(accService);
+                            if (candidate != null) {
+                                try {
+                                    candidate.getClass().getMethod("isLogin");
+                                    accUser = candidate;
+                                    break;
+                                } catch (NoSuchMethodException ignored) {}
+                            }
+                        } catch (Throwable ignored) {}
+                    }
                     if (accUser != null) {
                         Method isLoginMethod = accUser.getClass().getMethod("isLogin");
                         boolean loggedIn = (Boolean) isLoginMethod.invoke(accUser);
