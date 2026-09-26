@@ -2,14 +2,11 @@ package app.morphe.patches.nokoprint
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patches.shared.Constants
-import com.android.tools.smali.dexlib2.Opcode
-import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
-import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
-import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import org.w3c.dom.Element
 
 private val nokoPrintAdManifestResourcePatch = resourcePatch(
@@ -41,7 +38,6 @@ private val nokoPrintAdManifestResourcePatch = resourcePatch(
             "com.appbrain.",
             "net.pubnative.lite.",
             "com.smaato.sdk.",
-            "com.google.android.gms.ads.",
             "com.bytedance.sdk.",
             "sg.bigo.ads.",
             "com.ogury.",
@@ -52,7 +48,6 @@ private val nokoPrintAdManifestResourcePatch = resourcePatch(
 
         val providersToDisable = setOf(
             "com.applovin.sdk.AppLovinInitProvider",
-            "com.google.android.gms.ads.MobileAdsInitProvider",
             "com.facebook.ads.AudienceNetworkContentProvider",
             "com.facebook.internal.FacebookInitProvider",
             "com.ironsource.lifecycle.IronsourceLifecycleProvider",
@@ -175,29 +170,33 @@ val nokoPrintAdDispatchGovernorPatch = bytecodePatch(
             hookedMethods.add("f4.b(preloadInterstitial)")
         }
 
-        // 6. Rewrite printer driver download protocol in ActivityCore.J to HTTPS
+        // 6. Bypass rewarded ad loader in j4.b and execute target callback immediately
         Fingerprint(
-            definingClass = "Lcom/nokoprint/ActivityCore;",
-            name = "J",
-            parameters = listOf("Ljava/lang/String;", "Ljava/lang/String;", "Z", "Z"),
-            returnType = "Z",
+            definingClass = "Lcom/nokoprint/j4;",
+            name = "b",
+            parameters = listOf("Lcom/nokoprint/ActivityRoot;", "Ljava/util/Hashtable;", "Landroidx/compose/runtime/b1;"),
+            returnType = "V",
         ).method.apply {
-            val instructions = implementation?.instructions?.toList() ?: emptyList()
-            val urlIdx = instructions.indexOfFirst { ins ->
-                (ins.opcode == Opcode.CONST_STRING || ins.opcode == Opcode.CONST_STRING_JUMBO) &&
-                    ((ins as? ReferenceInstruction)?.reference as? StringReference)?.string == "://www.nokoprint.com/android_packs/"
+            val count = implementation?.instructions?.count() ?: 0
+            if (count > 0) {
+                removeInstructions(0, count)
             }
-            check(urlIdx >= 0) { "Target URL ://www.nokoprint.com/android_packs/ not found in ActivityCore.J" }
-
-            val httpIdx = instructions.subList(0, urlIdx).indexOfLast { ins ->
-                (ins.opcode == Opcode.CONST_STRING || ins.opcode == Opcode.CONST_STRING_JUMBO) &&
-                    ((ins as? ReferenceInstruction)?.reference as? StringReference)?.string == "http"
-            }
-            check(httpIdx >= 0) { "Target protocol 'http' not found before driver URL in ActivityCore.J" }
-
-            val reg = (instructions[httpIdx] as OneRegisterInstruction).registerA
-            replaceInstruction(httpIdx, "const-string v$reg, \"https\"")
-            hookedMethods.add("ActivityCore.J(rewriteDriverUrlToHttps)")
+            addInstructionsWithLabels(
+                0,
+                """
+                if-eqz p0, :cond_skip_h
+                invoke-virtual {p0}, Lcom/nokoprint/ActivityRoot;->h()V
+                :cond_skip_h
+                if-eqz p2, :cond_skip_run
+                iget-object v0, p2, Landroidx/compose/runtime/b1;->d:Ljava/lang/Object;
+                check-cast v0, Ljava/lang/Runnable;
+                if-eqz v0, :cond_skip_run
+                invoke-interface {v0}, Ljava/lang/Runnable;->run()V
+                :cond_skip_run
+                return-void
+                """.trimIndent(),
+            )
+            hookedMethods.add("j4.b(bypassRewardedAd)")
         }
 
         // 7. Stub com.pairip.licensecheck.LicenseClient.checkLicense to bypass Google Play anti-tamper exit

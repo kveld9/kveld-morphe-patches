@@ -66,7 +66,7 @@
 | **Background Sync Optimizer** | Neutralizes background WorkManager constraint tasks and diagnostic wakelocks. |  |
 | **Block Telemetry & Trackers** | Neutralizes Firebase Analytics, Google Measurement, TikTok Business SDK, and crashlytics tracking. |  |
 | **Multi-Store Debridger** | Disables orphan billing activities, services, and permissions for alternative OEM stores (Huawei, Xiaomi, Samsung). |  |
-| **Network Security Hardening** | Enforces HTTPS encryption for nokoprint.com driver downloads while preserving LAN cleartext printer traffic. |  |
+| **Network Security Hardening** | Enforces user trust anchors while preserving HTTP cleartext traffic for driver downloads and LAN printers. |  |
 
 </details>
 

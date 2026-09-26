@@ -31,9 +31,7 @@ private val nokoPrintTelemetryResourcePatch = resourcePatch(
             "com.google.android.gms.measurement.AppMeasurementService",
             "com.google.android.gms.measurement.AppMeasurementJobService",
             "com.google.android.gms.measurement.AppMeasurementReceiver",
-            "com.google.firebase.provider.FirebaseInitProvider",
             "com.google.firebase.sessions.SessionLifecycleService",
-            "com.google.firebase.components.ComponentDiscoveryService",
         )
 
         var removedPermissions = 0

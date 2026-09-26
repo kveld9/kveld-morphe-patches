@@ -6,7 +6,7 @@ import app.morphe.patches.shared.Constants
 @Suppress("unused")
 val nokoPrintNetworkSecurityHardeningPatch = resourcePatch(
     name = "Network Security Hardening",
-    description = "Enforces HTTPS encryption for nokoprint.com driver downloads while preserving LAN cleartext printer traffic.",
+    description = "Enforces user trust anchors while preserving HTTP cleartext traffic for driver downloads and LAN printers.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_NOKOPRINT)
@@ -23,18 +23,13 @@ val nokoPrintNetworkSecurityHardeningPatch = resourcePatch(
     <base-config cleartextTrafficPermitted="true">
         <trust-anchors>
             <certificates src="system" />
+            <certificates src="user" />
         </trust-anchors>
     </base-config>
-    <domain-config cleartextTrafficPermitted="false">
-        <domain includeSubdomains="true">nokoprint.com</domain>
-        <trust-anchors>
-            <certificates src="system" />
-        </trust-anchors>
-    </domain-config>
 </network-security-config>
 """.trimIndent()
 
         configFile.writeText(hardenedConfig)
-        println("[Network Security Hardening] Configured network security config: enforced HTTPS for nokoprint.com, preserved LAN printer cleartext traffic.")
+        println("[Network Security Hardening] Configured network security config: enabled user certs, preserved cleartext traffic.")
     }
 }
