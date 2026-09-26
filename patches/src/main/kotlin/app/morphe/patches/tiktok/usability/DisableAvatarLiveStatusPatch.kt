@@ -20,108 +20,83 @@ val disableAvatarLiveStatusPatch = bytecodePatch(
         val liveAssemClass = "Lcom/ss/android/ugc/aweme/feed/assem/avatar/FeedAvatarLiveAssem;"
 
         // 1. Discover and hook the author LIVE status validator (e.g. X.09A7.LIZIZ(Aweme, User)Z)
-        try {
-            var liveCheckClass = "LX/09A7;"
-            var liveCheckMethod = "LIZIZ"
+        var liveCheckClass = "LX/09A7;"
+        var liveCheckMethod = "LIZIZ"
 
-            try {
-                val wrapFp = Fingerprint(definingClass = wrapClass)
-                for (m in wrapFp.classDef.methods) {
-                    val insns = m.implementation?.instructions ?: continue
-                    for (insn in insns) {
-                        val ref = (insn as? ReferenceInstruction)?.reference?.toString() ?: continue
-                        if (ref.contains("(Lcom/ss/android/ugc/aweme/feed/model/Aweme;Lcom/ss/android/ugc/aweme/profile/model/User;)Z")) {
-                            val parts = ref.split("->")
-                            if (parts.size == 2) {
-                                liveCheckClass = parts[0]
-                                liveCheckMethod = parts[1].substringBefore("(")
-                                break
-                            }
-                        }
+        val wrapFp = Fingerprint(definingClass = wrapClass)
+        for (m in wrapFp.classDef.methods) {
+            val insns = m.implementation?.instructions ?: continue
+            for (insn in insns) {
+                val ref = (insn as? ReferenceInstruction)?.reference?.toString() ?: continue
+                if (ref.contains("(Lcom/ss/android/ugc/aweme/feed/model/Aweme;Lcom/ss/android/ugc/aweme/profile/model/User;)Z")) {
+                    val parts = ref.split("->")
+                    if (parts.size == 2) {
+                        liveCheckClass = parts[0]
+                        liveCheckMethod = parts[1].substringBefore("(")
+                        break
                     }
-                    if (liveCheckClass != "LX/09A7;") break
                 }
-            } catch (e: Exception) {
-                println("[Disable Profile Photo LIVE Status] Discovery note: ${e.message}")
             }
-
-            Fingerprint(
-                definingClass = liveCheckClass,
-                name = liveCheckMethod,
-                returnType = "Z",
-                parameters = listOf(
-                    "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
-                    "Lcom/ss/android/ugc/aweme/profile/model/User;",
-                ),
-            ).method.replaceWithReturnBoolean(false)
-            println("[Disable Profile Photo LIVE Status] Hooked $liveCheckClass->$liveCheckMethod() -> false (all authors treated as non-live).")
-            patched++
-        } catch (e: Exception) {
-            println("[Disable Profile Photo LIVE Status] Live status validator note: ${e.message}")
+            if (liveCheckClass != "LX/09A7;") break
         }
+
+        Fingerprint(
+            definingClass = liveCheckClass,
+            name = liveCheckMethod,
+            returnType = "Z",
+            parameters = listOf(
+                "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
+                "Lcom/ss/android/ugc/aweme/profile/model/User;",
+            ),
+        ).method.replaceWithReturnBoolean(false)
+        println("[Disable Profile Photo LIVE Status] Hooked $liveCheckClass->$liveCheckMethod() -> false (all authors treated as non-live).")
+        patched++
 
         // 2. Hook FeedAvatarAssemWrap.Yr()Z -> return false (prevents attaching FeedAvatarLiveAssem)
-        try {
-            Fingerprint(
-                definingClass = wrapClass,
-                returnType = "Z",
-                parameters = emptyList(),
-                custom = { m, _ ->
-                    m.implementation?.instructions?.any {
-                        (it as? ReferenceInstruction)?.reference?.toString()?.contains("getCurrentProfileUserRoomId") == true
-                    } ?: false
-                },
-            ).method.replaceWithReturnBoolean(false)
-            println("[Disable Profile Photo LIVE Status] Hooked FeedAvatarAssemWrap room check -> false.")
-            patched++
-        } catch (e: Exception) {
-            println("[Disable Profile Photo LIVE Status] FeedAvatarAssemWrap note: ${e.message}")
-        }
+        Fingerprint(
+            definingClass = wrapClass,
+            returnType = "Z",
+            parameters = emptyList(),
+            custom = { m, _ ->
+                m.implementation?.instructions?.any {
+                    (it as? ReferenceInstruction)?.reference?.toString()?.contains("getCurrentProfileUserRoomId") == true
+                } ?: false
+            },
+        ).method.replaceWithReturnBoolean(false)
+        println("[Disable Profile Photo LIVE Status] Hooked FeedAvatarAssemWrap room check -> false.")
+        patched++
 
         // 3. Hook FeedAvatarLiveAssem.ur()Z -> return false
-        try {
-            Fingerprint(
-                definingClass = liveAssemClass,
-                returnType = "Z",
-                parameters = emptyList(),
-                custom = { m, _ ->
-                    m.implementation?.instructions?.any {
-                        (it as? ReferenceInstruction)?.reference?.toString()?.contains("getCurrentProfileUserRoomId") == true
-                    } ?: false
-                },
-            ).method.replaceWithReturnBoolean(false)
-            println("[Disable Profile Photo LIVE Status] Hooked FeedAvatarLiveAssem.ur() -> false.")
-            patched++
-        } catch (e: Exception) {
-            println("[Disable Profile Photo LIVE Status] FeedAvatarLiveAssem.ur note: ${e.message}")
-        }
+        Fingerprint(
+            definingClass = liveAssemClass,
+            returnType = "Z",
+            parameters = emptyList(),
+            custom = { m, _ ->
+                m.implementation?.instructions?.any {
+                    (it as? ReferenceInstruction)?.reference?.toString()?.contains("getCurrentProfileUserRoomId") == true
+                } ?: false
+            },
+        ).method.replaceWithReturnBoolean(false)
+        println("[Disable Profile Photo LIVE Status] Hooked FeedAvatarLiveAssem.ur() -> false.")
+        patched++
 
         // 4. Hook FeedAvatarLiveAssem.Ar(ZZ)V -> return-void (suppresses live entrance animations)
-        try {
-            Fingerprint(
-                definingClass = liveAssemClass,
-                returnType = "V",
-                parameters = listOf("Z", "Z"),
-            ).method.replaceWithReturnVoid()
-            println("[Disable Profile Photo LIVE Status] Hooked FeedAvatarLiveAssem.Ar(ZZ) -> return-void.")
-            patched++
-        } catch (e: Exception) {
-            println("[Disable Profile Photo LIVE Status] FeedAvatarLiveAssem.Ar note: ${e.message}")
-        }
+        Fingerprint(
+            definingClass = liveAssemClass,
+            returnType = "V",
+            parameters = listOf("Z", "Z"),
+        ).method.replaceWithReturnVoid()
+        println("[Disable Profile Photo LIVE Status] Hooked FeedAvatarLiveAssem.Ar(ZZ) -> return-void.")
+        patched++
 
-        // 5. Hook FeedAvatarLiveAssem.onBind(Object)V -> return-void (suppresses live UI binding and click redirection)
-        try {
-            Fingerprint(
-                definingClass = liveAssemClass,
-                name = "onBind",
-                returnType = "V",
-                parameters = listOf("Ljava/lang/Object;"),
-            ).method.replaceWithReturnVoid()
-            println("[Disable Profile Photo LIVE Status] Hooked FeedAvatarLiveAssem.onBind(Object) -> return-void.")
-            patched++
-        } catch (e: Exception) {
-            println("[Disable Profile Photo LIVE Status] FeedAvatarLiveAssem.onBind note: ${e.message}")
-        }
+        // 5. Hook FeedAvatarLiveAssem.onBind/z4(Object)V -> return-void (suppresses live UI binding and click redirection)
+        Fingerprint(
+            definingClass = liveAssemClass,
+            returnType = "V",
+            parameters = listOf("Ljava/lang/Object;"),
+        ).method.replaceWithReturnVoid()
+        println("[Disable Profile Photo LIVE Status] Hooked FeedAvatarLiveAssem.(Object)V -> return-void.")
+        patched++
 
         println("[Disable Profile Photo LIVE Status] Successfully applied $patched hook(s).")
     }
