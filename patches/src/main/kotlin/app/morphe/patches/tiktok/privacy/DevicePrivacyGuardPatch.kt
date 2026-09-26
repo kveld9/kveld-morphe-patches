@@ -21,155 +21,124 @@ val devicePrivacyGuardPatch = bytecodePatch(
         // ==========================================
 
 
-        // 1.2 PowerPermissions FakeFragment dispatcher (FakeFragment;->jT)
-        try {
-            Fingerprint(
-                definingClass = "Lcom/bytedance/ies/powerpermissions/FakeFragment;",
-                name = "jT",
-                parameters = listOf("Ljava/util/HashSet;"),
-                returnType = "V",
-            ).method.addInstructions(
-                0,
-                """
-                    invoke-static/range {p0 .. p1}, ${Constants.TIKTOK_EXTENSION_PRIVACY_HOOK}->interceptPowerPermissions(Ljava/lang/Object;Ljava/util/Set;)Z
-                    move-result v0
-                    if-eqz v0, :cond_proceed
-                    return-void
-                    :cond_proceed
-                """.trimIndent(),
-            )
-            println("[Device Privacy Guard] Neutralized FakeFragment.jT() (PowerPermissions request dispatcher).")
-            patched++
-        } catch (e: Exception) {
-            println("[Device Privacy Guard] FakeFragment.jT note: ${e.message}")
-        }
+        // 1.2 PowerPermissions FakeFragment dispatcher (FakeFragment;->cY/jT)
+        val fakeFragmentFp = Fingerprint(
+            definingClass = "Lcom/bytedance/ies/powerpermissions/FakeFragment;",
+            parameters = listOf("Ljava/util/HashSet;"),
+            returnType = "V",
+        )
+        fakeFragmentFp.method.addInstructions(
+            0,
+            """
+                invoke-static/range {p0 .. p1}, ${Constants.TIKTOK_EXTENSION_PRIVACY_HOOK}->interceptPowerPermissions(Ljava/lang/Object;Ljava/util/Set;)Z
+                move-result v0
+                if-eqz v0, :cond_proceed
+                return-void
+                :cond_proceed
+            """.trimIndent(),
+        )
+        println("[Device Privacy Guard] Neutralized FakeFragment.${fakeFragmentFp.method.name}() (PowerPermissions request dispatcher).")
+        patched++
 
-        // 1.3 Permission denial cache checker (LX/04DS;->LIZ)
-        try {
-            Fingerprint(
-                definingClass = "LX/04DS;",
-                name = "LIZ",
-                parameters = listOf("Ljava/lang/String;"),
-                returnType = "Z",
-            ).method.addInstructions(
-                0,
-                """
-                    invoke-static/range {p0 .. p0}, ${Constants.TIKTOK_EXTENSION_PRIVACY_HOOK}->isPermissionBlocked(Ljava/lang/String;)Z
-                    move-result v0
-                    if-eqz v0, :cond_check
-                    const/4 v0, 0x1
-                    return v0
-                    :cond_check
-                """.trimIndent(),
-            )
-            println("[Device Privacy Guard] Intercepted LX/04DS.LIZ() -> permanently denied for blocked permissions.")
-            patched++
-        } catch (e: Exception) {
-            println("[Device Privacy Guard] LX/04DS.LIZ note: ${e.message}")
-        }
+        // 1.3 Permission denial cache checker (LX/04CN;->LIZ)
+        Fingerprint(
+            definingClass = "LX/04CN;",
+            name = "LIZ",
+            parameters = listOf("Ljava/lang/String;"),
+            returnType = "Z",
+        ).method.addInstructions(
+            0,
+            """
+                invoke-static/range {p0 .. p0}, ${Constants.TIKTOK_EXTENSION_PRIVACY_HOOK}->isPermissionBlocked(Ljava/lang/String;)Z
+                move-result v0
+                if-eqz v0, :cond_check
+                const/4 v0, 0x1
+                return v0
+                :cond_check
+            """.trimIndent(),
+        )
+        println("[Device Privacy Guard] Intercepted LX/04CN.LIZ() -> permanently denied for blocked permissions.")
+        patched++
 
         // ==========================================
         // 2. LOCATION TRACKING & POPUP NEUTRALIZATION
         // ==========================================
 
-        // 2.1 Disable all scene permission apply (LX/0BK7;->LJI -> false)
-        try {
-            Fingerprint(
-                definingClass = "LX/0BK7;",
-                name = "LJI",
-                parameters = listOf("Ljava/lang/String;", "Ljava/lang/String;"),
-                returnType = "Z",
-            ).method.addInstructions(
-                0,
-                """
-                    const/4 v0, 0x0
-                    return v0
-                """.trimIndent(),
-            )
-            println("[Device Privacy Guard] Neutralized LX/0BK7.LJI() -> location scene permission application disabled.")
-            patched++
-        } catch (e: Exception) {
-            println("[Device Privacy Guard] LX/0BK7.LJI note: ${e.message}")
-        }
+        // 2.1 Disable all scene permission apply (LX/0AwT;->LJI -> false)
+        Fingerprint(
+            definingClass = "LX/0AwT;",
+            name = "LJI",
+            returnType = "Z",
+        ).method.addInstructions(
+            0,
+            """
+                const/4 v0, 0x0
+                return v0
+            """.trimIndent(),
+        )
+        println("[Device Privacy Guard] Neutralized LX/0AwT.LJI() -> location scene permission application disabled.")
+        patched++
 
-        // 2.2 Disable pre-instruction location popups (LX/0BK7;->LJII -> false)
-        try {
-            Fingerprint(
-                definingClass = "LX/0BK7;",
-                name = "LJII",
-                parameters = listOf("Ljava/lang/String;", "Ljava/lang/String;"),
-                returnType = "Z",
-            ).method.addInstructions(
-                0,
-                """
-                    const/4 v0, 0x0
-                    return v0
-                """.trimIndent(),
-            )
-            println("[Device Privacy Guard] Neutralized LX/0BK7.LJII() -> pre-instruction location popup disabled.")
-            patched++
-        } catch (e: Exception) {
-            println("[Device Privacy Guard] LX/0BK7.LJII note: ${e.message}")
-        }
+        // 2.2 Disable pre-instruction location popups (LX/0AwT;->LJII -> false)
+        Fingerprint(
+            definingClass = "LX/0AwT;",
+            name = "LJII",
+            returnType = "Z",
+        ).method.addInstructions(
+            0,
+            """
+                const/4 v0, 0x0
+                return v0
+            """.trimIndent(),
+        )
+        println("[Device Privacy Guard] Neutralized LX/0AwT.LJII() -> pre-instruction location popup disabled.")
+        patched++
 
-        // 2.3 Disable popup scenes (LX/0BK7;->LJIIIIZZ -> false)
-        try {
-            Fingerprint(
-                definingClass = "LX/0BK7;",
-                name = "LJIIIIZZ",
-                parameters = listOf("Ljava/lang/String;", "Ljava/lang/String;"),
-                returnType = "Z",
-            ).method.addInstructions(
-                0,
-                """
-                    const/4 v0, 0x0
-                    return v0
-                """.trimIndent(),
-            )
-            println("[Device Privacy Guard] Neutralized LX/0BK7.LJIIIIZZ() -> location popup scenes disabled.")
-            patched++
-        } catch (e: Exception) {
-            println("[Device Privacy Guard] LX/0BK7.LJIIIIZZ note: ${e.message}")
-        }
+        // 2.3 Disable popup scenes (LX/0AwT;->LJIIIIZZ -> false)
+        Fingerprint(
+            definingClass = "LX/0AwT;",
+            name = "LJIIIIZZ",
+            returnType = "Z",
+        ).method.addInstructions(
+            0,
+            """
+                const/4 v0, 0x0
+                return v0
+            """.trimIndent(),
+        )
+        println("[Device Privacy Guard] Neutralized LX/0AwT.LJIIIIZZ() -> location popup scenes disabled.")
+        patched++
 
-        // 2.4 Force location scenes empty (LX/0BK7;->LJIIL -> true)
-        try {
-            Fingerprint(
-                definingClass = "LX/0BK7;",
-                name = "LJIIL",
-                returnType = "Z",
-            ).method.addInstructions(
-                0,
-                """
-                    const/4 v0, 0x1
-                    return v0
-                """.trimIndent(),
-            )
-            println("[Device Privacy Guard] Neutralized LX/0BK7.LJIIL() -> location scenes declared empty.")
-            patched++
-        } catch (e: Exception) {
-            println("[Device Privacy Guard] LX/0BK7.LJIIL note: ${e.message}")
-        }
+        // 2.4 Force location scenes empty (LX/0AwT;->LJIIL -> true)
+        Fingerprint(
+            definingClass = "LX/0AwT;",
+            name = "LJIIL",
+            returnType = "Z",
+        ).method.addInstructions(
+            0,
+            """
+                const/4 v0, 0x1
+                return v0
+            """.trimIndent(),
+        )
+        println("[Device Privacy Guard] Neutralized LX/0AwT.LJIIL() -> location scenes declared empty.")
+        patched++
 
         // 2.5 Neutralize LocationServiceImpl precise and coarse optimization flags
         listOf("LJIIZILJ", "LJIJ").forEach { methodName ->
-            try {
-                Fingerprint(
-                    definingClass = "Lcom/ss/android/ugc/tiktok/location/serviceimpl/LocationServiceImpl;",
-                    name = methodName,
-                    returnType = "Z",
-                ).method.addInstructions(
-                    0,
-                    """
-                        const/4 v0, 0x0
-                        return v0
-                    """.trimIndent(),
-                )
-                println("[Device Privacy Guard] Neutralized LocationServiceImpl.$methodName() -> false.")
-                patched++
-            } catch (e: Exception) {
-                println("[Device Privacy Guard] LocationServiceImpl.$methodName note: ${e.message}")
-            }
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/tiktok/location/serviceimpl/LocationServiceImpl;",
+                name = methodName,
+                returnType = "Z",
+            ).method.addInstructions(
+                0,
+                """
+                    const/4 v0, 0x0
+                    return v0
+                """.trimIndent(),
+            )
+            println("[Device Privacy Guard] Neutralized LocationServiceImpl.$methodName() -> false.")
+            patched++
         }
 
         // 2.6 Neutralize location startup Lego tasks
@@ -179,23 +148,19 @@ val devicePrivacyGuardPatch = bytecodePatch(
             "Lcom/ss/android/ugc/tiktok/location/task/InitLocationTaskHolder\$Main;",
         )
         locationTasks.forEach { taskClass ->
-            try {
-                Fingerprint(
-                    definingClass = taskClass,
-                    name = "run",
-                    parameters = listOf("Landroid/content/Context;"),
-                    returnType = "V",
-                ).method.addInstructions(
-                    0,
-                    """
-                        return-void
-                    """.trimIndent(),
-                )
-                println("[Device Privacy Guard] Neutralized $taskClass.run(Context).")
-                patched++
-            } catch (e: Exception) {
-                println("[Device Privacy Guard] Location task $taskClass note: ${e.message}")
-            }
+            Fingerprint(
+                definingClass = taskClass,
+                name = "run",
+                parameters = listOf("Landroid/content/Context;"),
+                returnType = "V",
+            ).method.addInstructions(
+                0,
+                """
+                    return-void
+                """.trimIndent(),
+            )
+            println("[Device Privacy Guard] Neutralized $taskClass.run(Context).")
+            patched++
         }
 
         // ==========================================
@@ -203,44 +168,32 @@ val devicePrivacyGuardPatch = bytecodePatch(
         // ==========================================
 
         // 3.1 Neutralize RelationAuthDialogControl.LJIIIIZZ (in-app Contacts sync popup dialog)
-        try {
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/relation/auth/pipeline/common/RelationAuthDialogControl;",
-                name = "LJIIIIZZ",
-                parameters = listOf("Landroid/content/Context;", "LX/0Heg;", "Ljava/lang/String;", "Landroid/os/Bundle;", "LX/03Vs;"),
-                returnType = "Ljava/lang/Object;",
-            ).method.addInstructions(
-                0,
-                """
-                    sget-object v0, Ljava/lang/Boolean;->FALSE:Ljava/lang/Boolean;
-                    return-object v0
-                """.trimIndent(),
-            )
-            println("[Device Privacy Guard] Neutralized RelationAuthDialogControl.LJIIIIZZ() -> suppressed Contacts sync dialog.")
-            patched++
-        } catch (e: Exception) {
-            println("[Device Privacy Guard] RelationAuthDialogControl.LJIIIIZZ note: ${e.message}")
-        }
+        Fingerprint(
+            definingClass = "Lcom/ss/android/ugc/aweme/relation/auth/pipeline/common/RelationAuthDialogControl;",
+            name = "LJIIIIZZ",
+        ).method.addInstructions(
+            0,
+            """
+                sget-object v0, Ljava/lang/Boolean;->FALSE:Ljava/lang/Boolean;
+                return-object v0
+            """.trimIndent(),
+        )
+        println("[Device Privacy Guard] Neutralized RelationAuthDialogControl.LJIIIIZZ() -> suppressed Contacts sync dialog.")
+        patched++
 
         // 3.2 Neutralize RelationAuthDialogControl.LJI (in-app Facebook relation auth dialog)
-        try {
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/relation/auth/pipeline/common/RelationAuthDialogControl;",
-                name = "LJI",
-                parameters = listOf("LX/02HM;", "LX/0N7F;", "LX/0N7k;"),
-                returnType = "Ljava/lang/Object;",
-            ).method.addInstructions(
-                0,
-                """
-                    sget-object v0, Ljava/lang/Boolean;->FALSE:Ljava/lang/Boolean;
-                    return-object v0
-                """.trimIndent(),
-            )
-            println("[Device Privacy Guard] Neutralized RelationAuthDialogControl.LJI() -> suppressed Facebook sync dialog.")
-            patched++
-        } catch (e: Exception) {
-            println("[Device Privacy Guard] RelationAuthDialogControl.LJI note: ${e.message}")
-        }
+        Fingerprint(
+            definingClass = "Lcom/ss/android/ugc/aweme/relation/auth/pipeline/common/RelationAuthDialogControl;",
+            name = "LJI",
+        ).method.addInstructions(
+            0,
+            """
+                sget-object v0, Ljava/lang/Boolean;->FALSE:Ljava/lang/Boolean;
+                return-object v0
+            """.trimIndent(),
+        )
+        println("[Device Privacy Guard] Neutralized RelationAuthDialogControl.LJI() -> suppressed Facebook sync dialog.")
+        patched++
 
         // 3.3 Neutralize contacts upload and background sync Lego tasks
         val contactTasks = listOf(
@@ -250,135 +203,23 @@ val devicePrivacyGuardPatch = bytecodePatch(
             "Lcom/ss/android/ugc/aweme/friends/lego/MafFollowBackBootRequest;",
         )
         contactTasks.forEach { taskClass ->
-            try {
-                Fingerprint(
-                    definingClass = taskClass,
-                    name = "run",
-                    parameters = listOf("Landroid/content/Context;"),
-                    returnType = "V",
-                ).method.addInstructions(
-                    0,
-                    """
-                        return-void
-                    """.trimIndent(),
-                )
-                println("[Device Privacy Guard] Neutralized $taskClass.run(Context).")
-                patched++
-            } catch (e: Exception) {
-                println("[Device Privacy Guard] Contact task $taskClass.run note: ${e.message}")
-            }
-
-            try {
-                Fingerprint(
-                    definingClass = taskClass,
-                    name = "meetTrigger",
-                    returnType = "Z",
-                ).method.addInstructions(
-                    0,
-                    """
-                        const/4 v0, 0x0
-                        return v0
-                    """.trimIndent(),
-                )
-                println("[Device Privacy Guard] Neutralized $taskClass.meetTrigger() -> false.")
-                patched++
-            } catch (e: Exception) {
-                println("[Device Privacy Guard] Contact task $taskClass.meetTrigger note: ${e.message}")
-            }
-        }
-
-        // ==========================================
-        // 4. ADVERTISING ID (AD_ID) PROFILING BLOCK
-        // ==========================================
-
-        try {
             Fingerprint(
-                definingClass = "LX/02z2;",
-                name = "LLLLIIL",
-                parameters = listOf("Landroid/content/Context;", "LX/02yq;"),
-                returnType = "Lcom/google/android/gms/ads/identifier/AdvertisingIdClient${'$'}Info;",
-            ).method.addInstructions(
-                0,
-                """
-                    const/4 v0, 0x0
-                    return-object v0
-                """.trimIndent(),
-            )
-            println("[Device Privacy Guard] Neutralized AdvertisingIdClient.getInfo() -> null.")
-            patched++
-        } catch (e: Exception) {
-            println("[Device Privacy Guard] AdvertisingIdClient.getInfo note: ${e.message}")
-        }
-
-        try {
-            Fingerprint(
-                definingClass = "LX/02z2;",
-                name = "LLLLIIIILLL",
-                parameters = listOf("Lcom/google/android/gms/ads/identifier/AdvertisingIdClient${'$'}Info;", "LX/02yq;"),
-                returnType = "Ljava/lang/String;",
-            ).method.addInstructions(
-                0,
-                """
-                    const-string v0, "00000000-0000-0000-0000-000000000000"
-                    return-object v0
-                """.trimIndent(),
-            )
-            println("[Device Privacy Guard] Neutralized AdvertisingIdClient.getId() -> zeroed UUID.")
-            patched++
-        } catch (e: Exception) {
-            println("[Device Privacy Guard] AdvertisingIdClient.getId note: ${e.message}")
-        }
-
-        // ==========================================
-        // 5. CLIPBOARD PRIVACY PROTECTION
-        // ==========================================
-
-        // 5.1 Hook IMMessageListClipboardServiceImpl (messenger clipboard integration)
-        try {
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/im/messagelist/impl/IMMessageListClipboardServiceImpl;",
-                name = "LIZ",
+                definingClass = taskClass,
+                name = "run",
+                parameters = listOf("Landroid/content/Context;"),
+                returnType = "V",
             ).method.addInstructions(
                 0,
                 """
                     return-void
                 """.trimIndent(),
             )
-            println("[Device Privacy Guard] Neutralized IMMessageListClipboardServiceImpl.LIZ().")
+            println("[Device Privacy Guard] Neutralized $taskClass.run(Context).")
             patched++
-        } catch (e: Exception) {
-            println("[Device Privacy Guard] IMMessageListClipboardServiceImpl note: ${e.message}")
-        }
 
-        // 5.2 Intercept BPEA clipboard reading (LX/1KAa;->LIZIZ)
-        try {
             Fingerprint(
-                definingClass = "LX/1KAa;",
-                name = "LIZIZ",
-                parameters = listOf("Landroid/content/ClipboardManager;", "Lcom/bytedance/bpea/basics/Cert;"),
-                returnType = "Landroid/content/ClipData;",
-            ).method.addInstructions(
-                0,
-                """
-                    const/4 v0, 0x0
-                    return-object v0
-                """.trimIndent(),
-            )
-            println("[Device Privacy Guard] Neutralized LX/1KAa.LIZIZ() (BPEA clipboard read) -> forced null.")
-            patched++
-        } catch (e: Exception) {
-            println("[Device Privacy Guard] LX/1KAa.LIZIZ note: ${e.message}")
-        }
-
-        // ==========================================
-        // 6. SENSOR HAR (HUMAN ACTIVITY RECOGNITION) ISOLATION
-        // ==========================================
-
-        // 6.1 Intercept SmartHARServiceImpl.enable() -> false
-        try {
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/ml/impl/har/SmartHARServiceImpl;",
-                name = "enable",
+                definingClass = taskClass,
+                name = "meetTrigger",
                 returnType = "Z",
             ).method.addInstructions(
                 0,
@@ -387,29 +228,107 @@ val devicePrivacyGuardPatch = bytecodePatch(
                     return v0
                 """.trimIndent(),
             )
-            println("[Device Privacy Guard] Neutralized SmartHARServiceImpl.enable() -> forced false.")
+            println("[Device Privacy Guard] Neutralized $taskClass.meetTrigger() -> false.")
             patched++
-        } catch (e: Exception) {
-            println("[Device Privacy Guard] SmartHARServiceImpl.enable note: ${e.message}")
         }
 
+        // ==========================================
+        // 4. ADVERTISING ID (AD_ID) PROFILING BLOCK
+        // ==========================================
+
+        Fingerprint(
+            definingClass = "LX/02z9;",
+            name = "LLLLIILL",
+            returnType = "Lcom/google/android/gms/ads/identifier/AdvertisingIdClient${'$'}Info;",
+        ).method.addInstructions(
+            0,
+            """
+                const/4 v0, 0x0
+                return-object v0
+            """.trimIndent(),
+        )
+        println("[Device Privacy Guard] Neutralized AdvertisingIdClient.getInfo() -> null.")
+        patched++
+
+        Fingerprint(
+            definingClass = "LX/02z9;",
+            name = "LLLLIIL",
+            returnType = "Ljava/lang/String;",
+        ).method.addInstructions(
+            0,
+            """
+                const-string v0, "00000000-0000-0000-0000-000000000000"
+                return-object v0
+            """.trimIndent(),
+        )
+        println("[Device Privacy Guard] Neutralized AdvertisingIdClient.getId() -> zeroed UUID.")
+        patched++
+
+        // ==========================================
+        // 5. CLIPBOARD PRIVACY PROTECTION
+        // ==========================================
+
+        // 5.1 Hook IMMessageListClipboardServiceImpl (messenger clipboard integration)
+        Fingerprint(
+            definingClass = "Lcom/ss/android/ugc/aweme/im/messagelist/impl/IMMessageListClipboardServiceImpl;",
+            name = "LIZ",
+        ).method.addInstructions(
+            0,
+            """
+                return-void
+            """.trimIndent(),
+        )
+        println("[Device Privacy Guard] Neutralized IMMessageListClipboardServiceImpl.LIZ().")
+        patched++
+
+        // 5.2 Intercept BPEA clipboard reading (LX/1PwP;->LIZIZ)
+        Fingerprint(
+            definingClass = "LX/1PwP;",
+            name = "LIZIZ",
+            parameters = listOf("Landroid/content/ClipboardManager;", "Lcom/bytedance/bpea/basics/Cert;"),
+            returnType = "Landroid/content/ClipData;",
+        ).method.addInstructions(
+            0,
+            """
+                const/4 v0, 0x0
+                return-object v0
+            """.trimIndent(),
+        )
+        println("[Device Privacy Guard] Neutralized LX/1PwP.LIZIZ() (BPEA clipboard read) -> forced null.")
+        patched++
+
+        // ==========================================
+        // 6. SENSOR HAR (HUMAN ACTIVITY RECOGNITION) ISOLATION
+        // ==========================================
+
+        // 6.1 Intercept SmartHARServiceImpl.enable() -> false
+        Fingerprint(
+            definingClass = "Lcom/ss/android/ugc/aweme/ml/impl/har/SmartHARServiceImpl;",
+            name = "enable",
+            returnType = "Z",
+        ).method.addInstructions(
+            0,
+            """
+                const/4 v0, 0x0
+                return v0
+            """.trimIndent(),
+        )
+        println("[Device Privacy Guard] Neutralized SmartHARServiceImpl.enable() -> forced false.")
+        patched++
+
         // 6.2 Intercept SmartHARServiceImpl.checkAndInit() -> return-void
-        try {
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/ml/impl/har/SmartHARServiceImpl;",
-                name = "checkAndInit",
-                returnType = "V",
-            ).method.addInstructions(
-                0,
-                """
-                    return-void
-                """.trimIndent(),
-            )
-            println("[Device Privacy Guard] Neutralized SmartHARServiceImpl.checkAndInit() -> return-void.")
-            patched++
-        } catch (e: Exception) {
-            println("[Device Privacy Guard] SmartHARServiceImpl.checkAndInit note: ${e.message}")
-        }
+        Fingerprint(
+            definingClass = "Lcom/ss/android/ugc/aweme/ml/impl/har/SmartHARServiceImpl;",
+            name = "checkAndInit",
+            returnType = "V",
+        ).method.addInstructions(
+            0,
+            """
+                return-void
+            """.trimIndent(),
+        )
+        println("[Device Privacy Guard] Neutralized SmartHARServiceImpl.checkAndInit() -> return-void.")
+        patched++
 
         println("[Device Privacy Guard] Applied $patched device privacy protection hook(s).")
     }
