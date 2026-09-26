@@ -16,133 +16,92 @@ val instantColdStartPatch = bytecodePatch(
         var patched = 0
 
         // 1. Neutralize SplashAdManagerPreloadTask.run()
-        try {
-            Fingerprint(
-                definingClass = "Lcom/bytedance/ies/ugc/aweme/commercialize/splash/SplashAdManagerPreloadTask;",
-                name = "run",
-                returnType = "V",
-            ).method.addInstructions(
-                0,
-                """
-                    return-void
-                """,
-            )
-            println("[InstantColdStart] Neutralized SplashAdManagerPreloadTask.run() -> Splash preloading delay removed.")
-            patched++
-        } catch (e: Exception) {
-            println("[InstantColdStart] SplashAdManagerPreloadTask note: ${e.message}")
-        }
+        Fingerprint(
+            definingClass = "Lcom/bytedance/ies/ugc/aweme/commercialize/splash/SplashAdManagerPreloadTask;",
+            name = "run",
+            returnType = "V",
+        ).method.addInstructions(
+            0,
+            """
+                return-void
+            """,
+        )
+        println("[InstantColdStart] Neutralized SplashAdManagerPreloadTask.run() -> Splash preloading delay removed.")
+        patched++
 
         // 2. Neutralize SplashAdManagerPreloadTaskEntry
-        try {
-            Fingerprint(
-                definingClass = "Lcom/bytedance/ies/ugc/aweme/commercialize/splash/SplashAdManagerPreloadTaskEntry;",
-                name = "run",
-                returnType = "V",
-            ).method.addInstructions(
-                0,
-                """
-                    return-void
-                """,
-            )
-            println("[InstantColdStart] Neutralized SplashAdManagerPreloadTaskEntry.run().")
-            patched++
-        } catch (e: Exception) {
-            println("[InstantColdStart] SplashAdManagerPreloadTaskEntry note: ${e.message}")
-        }
+        Fingerprint(
+            definingClass = "Lcom/bytedance/ies/ugc/aweme/commercialize/splash/SplashAdManagerPreloadTaskEntry;",
+            name = "run",
+            returnType = "V",
+        ).method.addInstructions(
+            0,
+            """
+                return-void
+            """,
+        )
+        println("[InstantColdStart] Neutralized SplashAdManagerPreloadTaskEntry.run().")
+        patched++
 
         // 3. Disable SplashSettingServiceImpl.LIZ() & LIZIZ()
-        try {
+        Fingerprint(
+            definingClass = "Lcom/bytedance/ies/ugc/aweme/commercialize/splash/core/SplashSettingServiceImpl;",
+            name = "LIZ",
+            returnType = "Z",
+        ).method.addInstructions(
+            0,
+            """
+                const/4 v0, 0x0
+                return v0
+            """,
+        )
+        println("[InstantColdStart] Disabled SplashSettingServiceImpl.LIZ() -> Splash settings neutralized.")
+        patched++
+
+        Fingerprint(
+            definingClass = "Lcom/bytedance/ies/ugc/aweme/commercialize/splash/core/SplashSettingServiceImpl;",
+            name = "LIZIZ",
+            returnType = "Z",
+        ).method.addInstructions(
+            0,
+            """
+                const/4 v0, 0x0
+                return v0
+            """,
+        )
+        println("[InstantColdStart] Disabled SplashSettingServiceImpl.LIZIZ() -> TopView settings neutralized.")
+        patched++
+
+        // 4. Disable RealTimeSplashManagerImpl real-time splash gate (LIZLLL in v47.1.3)
+        Fingerprint(
+            definingClass = "Lcom/bytedance/ies/ugc/aweme/commercialize/splash/realtimesplash/RealTimeSplashManagerImpl;",
+            name = "LIZLLL",
+            returnType = "Z",
+        ).method.addInstructions(
+            0,
+            """
+                const/4 v0, 0x0
+                return v0
+            """.trimIndent(),
+        )
+        println("[InstantColdStart] Disabled RealTimeSplashManagerImpl splash gate -> Real-time splash execution disabled.")
+        patched++
+
+        // 5. Disable SplashAdServiceImpl methods (LJ, LJIILIIL, LJJIJIIJIL in v47.1.3)
+        for (mName in listOf("LJ", "LJIILIIL", "LJJIJIIJIL")) {
             Fingerprint(
-                definingClass = "Lcom/bytedance/ies/ugc/aweme/commercialize/splash/core/SplashSettingServiceImpl;",
-                name = "LIZ",
+                definingClass = "Lcom/bytedance/ies/ugc/aweme/commercialize/splash/core/SplashAdServiceImpl;",
+                name = mName,
                 returnType = "Z",
             ).method.addInstructions(
-                0,
-                """
-                    const/4 v0, 0x0
-                    return v0
-                """,
-            )
-            println("[InstantColdStart] Disabled SplashSettingServiceImpl.LIZ() -> Splash settings neutralized.")
-            patched++
-        } catch (e: Exception) {
-            println("[InstantColdStart] SplashSettingServiceImpl.LIZ() note: ${e.message}")
-        }
-
-        try {
-            Fingerprint(
-                definingClass = "Lcom/bytedance/ies/ugc/aweme/commercialize/splash/core/SplashSettingServiceImpl;",
-                name = "LIZIZ",
-                returnType = "Z",
-            ).method.addInstructions(
-                0,
-                """
-                    const/4 v0, 0x0
-                    return v0
-                """,
-            )
-            println("[InstantColdStart] Disabled SplashSettingServiceImpl.LIZIZ() -> TopView settings neutralized.")
-            patched++
-        } catch (e: Exception) {
-            println("[InstantColdStart] SplashSettingServiceImpl.LIZIZ() note: ${e.message}")
-        }
-
-        // 4. Disable RealTimeSplashManagerImpl real-time splash gate (LIZLLL in v47.0.3 / LIZJ in v46.9.3)
-        try {
-            val fp = try {
-                Fingerprint(
-                    definingClass = "Lcom/bytedance/ies/ugc/aweme/commercialize/splash/realtimesplash/RealTimeSplashManagerImpl;",
-                    name = "LIZLLL",
-                    returnType = "Z",
-                )
-            } catch (_: Exception) {
-                Fingerprint(
-                    definingClass = "Lcom/bytedance/ies/ugc/aweme/commercialize/splash/realtimesplash/RealTimeSplashManagerImpl;",
-                    name = "LIZJ",
-                    returnType = "Z",
-                )
-            }
-            fp.method.addInstructions(
                 0,
                 """
                     const/4 v0, 0x0
                     return v0
                 """.trimIndent(),
             )
-            println("[InstantColdStart] Disabled RealTimeSplashManagerImpl splash gate -> Real-time splash execution disabled.")
+            println("[InstantColdStart] Disabled SplashAdServiceImpl.$mName() -> Splash ad service disabled.")
             patched++
-        } catch (e: Exception) {
-            println("[InstantColdStart] RealTimeSplashManagerImpl note: ${e.message}")
-        }
-
-        // 5. Disable SplashAdServiceImpl methods (LJFF, LJIILIIL, LJJIJIL in v47.0.3; LJ, LJIILJJIL, LJJIJIIJIL in v46.9.3)
-        val splashAdServiceMethods = listOf(
-            listOf("LJFF", "LJ"),
-            listOf("LJIILIIL", "LJIILJJIL"),
-            listOf("LJJIJIL", "LJJIJIIJIL"),
-        )
-        for (candidateNames in splashAdServiceMethods) {
-            for (mName in candidateNames) {
-                try {
-                    Fingerprint(
-                        definingClass = "Lcom/bytedance/ies/ugc/aweme/commercialize/splash/core/SplashAdServiceImpl;",
-                        name = mName,
-                        returnType = "Z",
-                    ).method.addInstructions(
-                        0,
-                        """
-                            const/4 v0, 0x0
-                            return v0
-                        """.trimIndent(),
-                    )
-                    println("[InstantColdStart] Disabled SplashAdServiceImpl.$mName() -> Splash ad service disabled.")
-                    patched++
-                    break
-                } catch (_: Exception) {
-                    // Try next candidate name
-                }
-            }
         }
 
         println("[InstantColdStart] Applied $patched startup optimizations -> Instant cold start and zero splash ads achieved.")
