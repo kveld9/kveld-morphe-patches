@@ -8,7 +8,7 @@ import app.morphe.patches.shared.Constants
 import org.w3c.dom.Element
 
 private val xiaomiEarbudsOfflineManifestResourcePatch = resourcePatch(
-    name = "Xiaomi Earbuds Offline Manifest Purge",
+    name = "Offline Manifest Purge",
     description = "Removes INTERNET and ACCESS_NETWORK_STATE permissions from AndroidManifest.xml.",
     default = false,
 ) {
@@ -17,7 +17,7 @@ private val xiaomiEarbudsOfflineManifestResourcePatch = resourcePatch(
     execute {
         val manifestFile = get("AndroidManifest.xml")
         if (!manifestFile.exists()) {
-            println("[Xiaomi Earbuds Offline Manifest Purge] AndroidManifest.xml not found - skipping manifest purge.")
+            println("[Offline Only] AndroidManifest.xml not found - skipping manifest purge.")
             return@execute
         }
 
@@ -43,14 +43,14 @@ private val xiaomiEarbudsOfflineManifestResourcePatch = resourcePatch(
             }
         }
 
-        println("[Xiaomi Earbuds Offline Manifest Purge] Stripped $removedPermissions network permissions from AndroidManifest.xml.")
+        println("[Offline Only] Stripped $removedPermissions network permissions from AndroidManifest.xml.")
     }
 }
 
 @Suppress("unused")
 val xiaomiEarbudsOfflineOnlyPatch = bytecodePatch(
-    name = "Xiaomi Earbuds Offline Only",
-    description = "Completely isolates the app from the network by revoking internet permissions and spoofing offline status to prevent background socket failures.",
+    name = "Offline Only",
+    description = "Completely isolates the app from the network by revoking internet permissions and spoofing offline status. Note: do not activate on first launch; pair your earbuds once before enabling.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_XIAOMI_EARBUDS)
@@ -308,6 +308,6 @@ val xiaomiEarbudsOfflineOnlyPatch = bytecodePatch(
             hookedMethods.add("DnsSystem.lookup")
         }
 
-        println("[Xiaomi Earbuds Offline Only] Spoofed offline network state across ${hookedMethods.size} targets.")
+        println("[Offline Only] Spoofed offline network state across ${hookedMethods.size} targets.")
     }
 }

@@ -7,7 +7,7 @@ import app.morphe.patches.shared.Constants
 
 @Suppress("unused")
 val xiaomiEarbudsSoundFeaturesUnlockPatch = bytecodePatch(
-    name = "Xiaomi Earbuds Sound Features Unlock",
+    name = "Sound Features Unlock",
     description = "Unblocks Spatial Audio, hearing enhancement, and voice wake-up restrictions, unbans Spatial Audio on 96kHz aptX Adaptive connections, and bypasses XPAN requirements.",
     default = true,
 ) {
@@ -67,6 +67,6 @@ val xiaomiEarbudsSoundFeaturesUnlockPatch = bytecodePatch(
             hookedMethods.add("SoundEffectVM.isEnableSpatialAudio")
         }
 
-        println("[Xiaomi Earbuds Sound Features Unlock] Unlocked sound features and bypassed restrictions across ${hookedMethods.size} targets.")
+        println("[Sound Features Unlock] Unlocked sound features and bypassed restrictions across ${hookedMethods.size} targets.")
     }
 }

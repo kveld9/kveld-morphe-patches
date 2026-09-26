@@ -17,7 +17,7 @@ private val xiaomiEarbudsTelemetryResourcePatch = resourcePatch(
     execute {
         val manifestFile = get("AndroidManifest.xml")
         if (!manifestFile.exists()) {
-            println("[Xiaomi Earbuds Telemetry Manifest Purge] AndroidManifest.xml not found - skipping.")
+            println("[Block Telemetry & Trackers] AndroidManifest.xml not found - skipping.")
             return@execute
         }
 
@@ -70,13 +70,13 @@ private val xiaomiEarbudsTelemetryResourcePatch = resourcePatch(
             }
         }
 
-        println("[Xiaomi Earbuds Telemetry Manifest Purge] Stripped $removedPermissions permissions, disabled $disabledComponents analytics/logging components.")
+        println("[Block Telemetry & Trackers] Stripped $removedPermissions permissions, disabled $disabledComponents analytics/logging components.")
     }
 }
 
 @Suppress("unused")
 val xiaomiEarbudsBlockTelemetryPatch = bytecodePatch(
-    name = "Xiaomi Earbuds Block Telemetry & Trackers",
+    name = "Block Telemetry & Trackers",
     description = "Neutralizes Firebase Analytics, Xiaomi OneTrack, AutoReportHelper, and GlobalReport telemetry and event dispatching.",
     default = true,
 ) {
@@ -174,6 +174,6 @@ val xiaomiEarbudsBlockTelemetryPatch = bytecodePatch(
             hookedMethods.add("Analytics.track")
         }
 
-        println("[Xiaomi Earbuds Block Telemetry] Neutralized ${hookedMethods.size} telemetry, event tracking, and auto-report hooks.")
+        println("[Block Telemetry & Trackers] Neutralized ${hookedMethods.size} telemetry, event tracking, and auto-report hooks.")
     }
 }

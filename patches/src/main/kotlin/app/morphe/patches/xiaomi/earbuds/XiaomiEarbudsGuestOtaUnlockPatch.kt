@@ -10,7 +10,7 @@ import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 @Suppress("unused")
 val xiaomiEarbudsGuestOtaUnlockPatch = bytecodePatch(
-    name = "Xiaomi Earbuds Guest OTA Unlock",
+    name = "Guest OTA Unlock",
     description = "Bypasses mandatory Xiaomi account login checks for firmware update queries, allowing guest users to check and perform device OTA updates.",
     default = true,
 ) {
@@ -82,6 +82,6 @@ val xiaomiEarbudsGuestOtaUnlockPatch = bytecodePatch(
             hookedMethods.add("DeviceSettingsFragment.initFunctionListener\$lambda\$30")
         }
 
-        println("[Xiaomi Earbuds Guest OTA Unlock] Unlocked guest firmware update checks across ${hookedMethods.size} targets.")
+        println("[Guest OTA Unlock] Unlocked guest firmware update checks across ${hookedMethods.size} targets.")
     }
 }

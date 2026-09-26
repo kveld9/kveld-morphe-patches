@@ -17,7 +17,7 @@ private val xiaomiEarbudsDevicePrivacyGuardResourcePatch = resourcePatch(
     execute {
         val manifestFile = get("AndroidManifest.xml")
         if (!manifestFile.exists()) {
-            println("[Xiaomi Earbuds Device Privacy Guard Manifest Purge] AndroidManifest.xml not found - skipping.")
+            println("[Device Privacy Guard] AndroidManifest.xml not found - skipping.")
             return@execute
         }
 
@@ -43,13 +43,13 @@ private val xiaomiEarbudsDevicePrivacyGuardResourcePatch = resourcePatch(
             }
         }
 
-        println("[Xiaomi Earbuds Device Privacy Guard Manifest Purge] Stripped $removedPermissions location permissions from AndroidManifest.xml.")
+        println("[Device Privacy Guard] Stripped $removedPermissions location permissions from AndroidManifest.xml.")
     }
 }
 
 @Suppress("unused")
 val xiaomiEarbudsDevicePrivacyGuardPatch = bytecodePatch(
-    name = "Xiaomi Earbuds Device Privacy Guard",
+    name = "Device Privacy Guard",
     description = "Blinds hardware device IDs, anonymizes device identifiers, neutralizes environment info leakage, and bypasses location checks for Bluetooth scanning.",
     default = true,
 ) {
@@ -295,6 +295,6 @@ val xiaomiEarbudsDevicePrivacyGuardPatch = bytecodePatch(
             hookedMethods.add("AddDeviceFragment.hasScanCondition")
         }
 
-        println("[Xiaomi Earbuds Device Privacy Guard] Anonymized device identifiers and blinded hardware privacy getters across ${hookedMethods.size} targets.")
+        println("[Device Privacy Guard] Anonymized device identifiers and blinded hardware privacy getters across ${hookedMethods.size} targets.")
     }
 }

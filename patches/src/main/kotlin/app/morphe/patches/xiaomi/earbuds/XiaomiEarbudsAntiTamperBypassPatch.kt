@@ -7,7 +7,7 @@ import app.morphe.patches.shared.Constants
 
 @Suppress("unused")
 val xiaomiEarbudsAntiTamperBypassPatch = bytecodePatch(
-    name = "Xiaomi Earbuds Anti-Tamper Bypass",
+    name = "Anti-Tamper Bypass",
     description = "Bypasses Xposed and hook detection, neutralizes VPN and ADB security checks, bypasses root and emulator detection, and hardens WebView JavaScript bridges.",
     default = true,
 ) {
@@ -342,6 +342,6 @@ val xiaomiEarbudsAntiTamperBypassPatch = bytecodePatch(
             }
         }
 
-        println("[Xiaomi Earbuds Anti-Tamper Bypass] Neutralized anti-tamper, root/emulator checks, and JS bridges across ${hookedMethods.size} targets.")
+        println("[Anti-Tamper Bypass] Neutralized anti-tamper, root/emulator checks, and JS bridges across ${hookedMethods.size} targets.")
     }
 }

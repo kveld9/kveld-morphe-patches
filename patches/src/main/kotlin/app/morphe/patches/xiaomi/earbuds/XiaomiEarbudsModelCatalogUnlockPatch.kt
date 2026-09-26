@@ -7,7 +7,7 @@ import app.morphe.patches.shared.Constants
 
 @Suppress("unused")
 val xiaomiEarbudsModelCatalogUnlockPatch = bytecodePatch(
-    name = "Xiaomi Earbuds Model Catalog Unlock",
+    name = "Model Catalog Unlock",
     description = "Forces DeviceInfoListCache.isShowProduct to return true, bypassing version-gating and distribution restrictions so that all device models are always displayed and discoverable.",
     default = true,
 ) {
@@ -29,6 +29,6 @@ val xiaomiEarbudsModelCatalogUnlockPatch = bytecodePatch(
             )
         }
 
-        println("[Xiaomi Earbuds Model Catalog Unlock] Unlocked full device model catalog (isShowProduct -> true).")
+        println("[Model Catalog Unlock] Unlocked full device model catalog (isShowProduct -> true).")
     }
 }

@@ -8,7 +8,7 @@ import app.morphe.patches.shared.Constants
 import org.w3c.dom.Element
 
 private val xiaomiEarbudsNetworkSecurityConfigResourcePatch = resourcePatch(
-    name = "Xiaomi Earbuds Network Security Config",
+    name = "Network Security Config",
     description = "Configures network_security_config.xml to disable cleartext traffic and trust user-installed CA certificates.",
     default = false,
 ) {
@@ -17,7 +17,7 @@ private val xiaomiEarbudsNetworkSecurityConfigResourcePatch = resourcePatch(
     execute {
         val configFile = get("res/xml/network_security_config.xml")
         if (!configFile.exists()) {
-            println("[Xiaomi Earbuds Network Security Config] res/xml/network_security_config.xml not found - skipping config patch.")
+            println("[Network Security Config] res/xml/network_security_config.xml not found - skipping config patch.")
             return@execute
         }
 
@@ -57,13 +57,13 @@ private val xiaomiEarbudsNetworkSecurityConfigResourcePatch = resourcePatch(
             }
         }
 
-        println("[Xiaomi Earbuds Network Security Config] Configured network_security_config.xml: cleartextTrafficPermitted=false, user CA certificates trusted.")
+        println("[Network Security Config] Configured network_security_config.xml: cleartextTrafficPermitted=false, user CA certificates trusted.")
     }
 }
 
 @Suppress("unused")
 val xiaomiEarbudsNetworkSecurityPatch = bytecodePatch(
-    name = "Xiaomi Earbuds Network Security & TLS Inspection",
+    name = "Network Security & TLS Inspection",
     description = "Disables cleartext traffic, trusts user-installed certificates, and bypasses OkHttp certificate pinning.",
     default = true,
 ) {
@@ -104,6 +104,6 @@ val xiaomiEarbudsNetworkSecurityPatch = bytecodePatch(
             hookedMethods.add("CertificatePinner.check\$okhttp(String, Function0)")
         }
 
-        println("[Xiaomi Earbuds Network Security] Neutralized OkHttp CertificatePinner across ${hookedMethods.size} targets.")
+        println("[Network Security & TLS Inspection] Neutralized OkHttp CertificatePinner across ${hookedMethods.size} targets.")
     }
 }

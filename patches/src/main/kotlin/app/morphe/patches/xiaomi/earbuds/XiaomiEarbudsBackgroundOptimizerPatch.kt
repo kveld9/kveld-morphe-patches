@@ -17,7 +17,7 @@ private val xiaomiEarbudsBackgroundResourcePatch = resourcePatch(
     execute {
         val manifestFile = get("AndroidManifest.xml")
         if (!manifestFile.exists()) {
-            println("[Xiaomi Earbuds Background Optimizer] AndroidManifest.xml not found - skipping manifest purge.")
+            println("[Background Optimizer] AndroidManifest.xml not found - skipping manifest purge.")
             return@execute
         }
 
@@ -67,13 +67,13 @@ private val xiaomiEarbudsBackgroundResourcePatch = resourcePatch(
             }
         }
 
-        println("[Xiaomi Earbuds Background Optimizer] Stripped $removedPermissions permissions, disabled $disabledComponents keepalive components in manifest.")
+        println("[Background Optimizer] Stripped $removedPermissions permissions, disabled $disabledComponents keepalive components in manifest.")
     }
 }
 
 @Suppress("unused")
 val xiaomiEarbudsBackgroundOptimizerPatch = bytecodePatch(
-    name = "Xiaomi Earbuds Background Optimizer",
+    name = "Background Optimizer",
     description = "Neutralizes KeepAliveForegroundService, background BLE observation, companion device manager, and MIUI Nearby discovery to eliminate persistent notifications, wakelocks, and background battery drain.",
     default = true,
 ) {
@@ -216,6 +216,6 @@ val xiaomiEarbudsBackgroundOptimizerPatch = bytecodePatch(
             hookedMethods.add("ConnectivityCompanionDeviceService.onDeviceAppeared(AssociationInfo)")
         }
 
-        println("[Xiaomi Earbuds Background Optimizer] Neutralized ${hookedMethods.size} background keep-alive, foreground service, and BLE discovery hooks.")
+        println("[Background Optimizer] Neutralized ${hookedMethods.size} background keep-alive, foreground service, and BLE discovery hooks.")
     }
 }

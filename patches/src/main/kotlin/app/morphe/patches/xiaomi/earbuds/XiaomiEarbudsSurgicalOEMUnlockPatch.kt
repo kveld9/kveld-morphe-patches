@@ -11,8 +11,8 @@ import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 @Suppress("unused")
 val xiaomiEarbudsSurgicalOEMUnlockPatch = bytecodePatch(
-    name = "Xiaomi Earbuds Surgical OEM Unlock",
-    description = "Bypasses Xiaomi OEM hardware gating for SuperAivs (function 5009) and suppresses MIUI-specific spatial audio system dialog nags.",
+    name = "Surgical OEM Unlock",
+    description = "Bypasses Xiaomi OEM gating to enable full feature parity (voice assistant & spatial audio dialogs) on non-Xiaomi devices (Samsung, Pixel, etc.).",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_XIAOMI_EARBUDS)
@@ -79,6 +79,6 @@ val xiaomiEarbudsSurgicalOEMUnlockPatch = bytecodePatch(
             hookedMethods.add("DeviceSettingsFragment.initFunctionListener\$lambda\$24(SuperAivs)")
         }
 
-        println("[Xiaomi Earbuds Surgical OEM Unlock] Neutralized Xiaomi OEM restrictions across ${hookedMethods.size} targets (SuperAivs 5009 item, voice settings, and SpatialAudio dialog).")
+        println("[Surgical OEM Unlock] Neutralized Xiaomi OEM restrictions across ${hookedMethods.size} targets (SuperAivs 5009 item, voice settings, and SpatialAudio dialog).")
     }
 }

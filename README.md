@@ -225,17 +225,17 @@
 
 | Patch | Description | Options |
 |----------|----------------|-----------|
-| **Xiaomi Earbuds Anti-Tamper Bypass** | Bypasses Xposed and hook detection, neutralizes VPN and ADB security checks, bypasses root and emulator detection, and hardens WebView JavaScript bridges. |  |
-| **Xiaomi Earbuds Background Optimizer** | Neutralizes KeepAliveForegroundService, background BLE observation, companion device manager, and MIUI Nearby discovery to eliminate persistent notifications, wakelocks, and background battery drain. |  |
-| **Xiaomi Earbuds Block Telemetry & Trackers** | Neutralizes Firebase Analytics, Xiaomi OneTrack, AutoReportHelper, and GlobalReport telemetry and event dispatching. |  |
-| **Xiaomi Earbuds Device Privacy Guard** | Blinds hardware device IDs, anonymizes device identifiers, neutralizes environment info leakage, and bypasses location checks for Bluetooth scanning. |  |
-| **Xiaomi Earbuds Disable Promos & Nags** | Bypasses startup privacy agreements, onboarding guides, region selector prompts, and Bluetooth permission nags, and disables in-app promotional banners, marketing activities, and store review nag dialogs. |  |
-| **Xiaomi Earbuds Guest OTA Unlock** | Bypasses mandatory Xiaomi account login checks for firmware update queries, allowing guest users to check and perform device OTA updates. |  |
-| **Xiaomi Earbuds Model Catalog Unlock** | Forces DeviceInfoListCache.isShowProduct to return true, bypassing version-gating and distribution restrictions so that all device models are always displayed and discoverable. |  |
-| **Xiaomi Earbuds Network Security & TLS Inspection** | Disables cleartext traffic, trusts user-installed certificates, and bypasses OkHttp certificate pinning. |  |
-| **Xiaomi Earbuds Offline Only** | Completely isolates the app from the network by revoking internet permissions and spoofing offline status to prevent background socket failures. |  |
-| **Xiaomi Earbuds Sound Features Unlock** | Unblocks Spatial Audio, hearing enhancement, and voice wake-up restrictions, unbans Spatial Audio on 96kHz aptX Adaptive connections, and bypasses XPAN requirements. |  |
-| **Xiaomi Earbuds Surgical OEM Unlock** | Bypasses Xiaomi OEM hardware gating for SuperAivs (function 5009) and suppresses MIUI-specific spatial audio system dialog nags. |  |
+| **Anti-Tamper Bypass** | Bypasses Xposed and hook detection, neutralizes VPN and ADB security checks, bypasses root and emulator detection, and hardens WebView JavaScript bridges. |  |
+| **Background Optimizer** | Neutralizes KeepAliveForegroundService, background BLE observation, companion device manager, and MIUI Nearby discovery to eliminate persistent notifications, wakelocks, and background battery drain. |  |
+| **Block Telemetry & Trackers** | Neutralizes Firebase Analytics, Xiaomi OneTrack, AutoReportHelper, and GlobalReport telemetry and event dispatching. |  |
+| **Device Privacy Guard** | Blinds hardware device IDs, anonymizes device identifiers, neutralizes environment info leakage, and bypasses location checks for Bluetooth scanning. |  |
+| **Disable Promos & Nags** | Bypasses startup privacy agreements, onboarding guides, region selector prompts, and Bluetooth permission nags, and disables in-app promotional banners, marketing activities, and store review nag dialogs. |  |
+| **Guest OTA Unlock** | Bypasses mandatory Xiaomi account login checks for firmware update queries, allowing guest users to check and perform device OTA updates. |  |
+| **Model Catalog Unlock** | Forces DeviceInfoListCache.isShowProduct to return true, bypassing version-gating and distribution restrictions so that all device models are always displayed and discoverable. |  |
+| **Network Security & TLS Inspection** | Disables cleartext traffic, trusts user-installed certificates, and bypasses OkHttp certificate pinning. |  |
+| **Offline Only** | Completely isolates the app from the network by revoking internet permissions and spoofing offline status. Note: do not activate on first launch; pair your earbuds once before enabling. |  |
+| **Sound Features Unlock** | Unblocks Spatial Audio, hearing enhancement, and voice wake-up restrictions, unbans Spatial Audio on 96kHz aptX Adaptive connections, and bypasses XPAN requirements. |  |
+| **Surgical OEM Unlock** | Bypasses Xiaomi OEM gating to enable full feature parity (voice assistant & spatial audio dialogs) on non-Xiaomi devices (Samsung, Pixel, etc.). |  |
 
 </details>
 
