@@ -24,7 +24,7 @@ private val EMPTY_MP4_HEADER by lazy {
 
 @Suppress("unused")
 val hevyResourceSlimmerPatch = resourcePatch(
-    name = "Hevy Resource Slimmer",
+    name = "Resource Slimmer",
     description = "Strips embedded onboarding MP4 tutorial video, heavy IMG.LY photo editor stickers/textures, and compiler junk metadata.",
     default = true,
 ) {
@@ -109,6 +109,6 @@ val hevyResourceSlimmerPatch = resourcePatch(
         }
 
         val savedFormatted = app.morphe.patches.shared.LocaleUtils.formatBytes(totalSavedBytes)
-        println("[Hevy Resource Slimmer] Pruned $junkFilesCount build junk files, stubbed $stubbedMediaCount media assets -> Saved $savedFormatted")
+        println("[Resource Slimmer] Pruned $junkFilesCount build junk files, stubbed $stubbedMediaCount media assets -> Saved $savedFormatted")
     }
 }
