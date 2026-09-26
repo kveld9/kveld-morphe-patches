@@ -85,7 +85,7 @@ Comprehensive technical and configuration guide for **Brave Browser** (`com.brav
 - **Objective**: Strip invasive analytics and tracking tokens when copying or sharing links from the browser.
 - **Mechanisms**:
   - Intercepts link sharing via `Lcch.a` and clipboard copy via `Clipboard.setText` and `ClipboardImpl.setPrimaryClip`.
-  - Routes URLs through companion extension logic [`BraveExtension`](file:///home/kveld/Documentos/repos/brave-origin-patches/extensions/extension/src/main/java/com/kveld9/morphe/extension/BraveExtension.java).
+  - Routes URLs through companion extension logic [`BraveExtension`](../../extensions/extension/src/main/java/com/kveld9/morphe/extension/BraveExtension.java).
   - Strips query parameters: `utm_*`, `fbclid`, `gclid`, `igshid`, `si`, `msclkid`, `mc_eid`, `vero_id`, etc.
   - Preserves legitimate functional parameters (`id`, `v`, `q`, `t`, `list`).
 
@@ -101,7 +101,7 @@ Comprehensive technical and configuration guide for **Brave Browser** (`com.brav
   - Hooks `onReceive` in `Lwi1` to drop `ACTION_BATTERY_CHANGED` broadcast intents.
   - Prevents fingerprinters from querying battery charging status and remaining percentage.
 
-### 9. Brave Startup Performance Optimization (`braveStartupPerformancePatch`)
+### 9. Brave Startup Performance Optimization (`bravePerformanceOptimizationPatch`)
 - **Objective**: Accelerate cold launch times and reduce memory allocation on startup.
 - **Mechanisms**:
   - Neutralizes asynchronous partner carrier initialization in `PartnerBrowserCustomizations`.
