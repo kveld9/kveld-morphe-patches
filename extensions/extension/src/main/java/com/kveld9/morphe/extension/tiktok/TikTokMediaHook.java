@@ -289,6 +289,20 @@ public final class TikTokMediaHook {
             } catch (Throwable ignored) {}
         }
 
+        // 5. Ultimate fallback to ByteVC1 or standard playAddr if no H.264 stream exists
+        if (playAddrBytevc1ValueField != null) {
+            try {
+                Object model = playAddrBytevc1ValueField.get(videoObj);
+                if (hasUsableUrl(model)) return model;
+            } catch (Throwable ignored) {}
+        }
+        if (playAddrValueField != null) {
+            try {
+                Object model = playAddrValueField.get(videoObj);
+                if (hasUsableUrl(model)) return model;
+            } catch (Throwable ignored) {}
+        }
+
         return null;
     }
 
@@ -308,6 +322,9 @@ public final class TikTokMediaHook {
         }
         try {
             ensureVideoReflection(videoObj.getClass().getClassLoader());
+
+            // First ensure Video Quality Governor has processed this videoObj with its Aweme context
+            TikTokVideoQualityHook.capVideoObject(videoObj, awemeObj);
 
             // Inject governor capped stream if available
             Object governorStream = TikTokVideoQualityHook.getBestDownloadPlayAddr(videoObj);

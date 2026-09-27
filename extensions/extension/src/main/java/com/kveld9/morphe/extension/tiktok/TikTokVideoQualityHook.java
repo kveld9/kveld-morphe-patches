@@ -12,6 +12,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 
 /**
@@ -42,6 +43,12 @@ public final class TikTokVideoQualityHook {
                 return size() > 100;
             }
         });
+
+    private static final Map<Object, String> videoToAwemeId =
+        Collections.synchronizedMap(new WeakHashMap<Object, String>());
+
+    private static final Set<Object> cappedVideos =
+        Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<Object, Boolean>()));
 
     private static final Map<Object, Boolean> playAddrIsBytevc =
         Collections.synchronizedMap(new WeakHashMap<Object, Boolean>());
@@ -137,26 +144,63 @@ public final class TikTokVideoQualityHook {
         }
     }
 
+    public static boolean isValidVideoId(String id) {
+        if (id == null) return false;
+        String trimmed = id.trim();
+        if (trimmed.isEmpty()) return false;
+        if ("null".equalsIgnoreCase(trimmed)) return false;
+        if ("null_aweme_id".equalsIgnoreCase(trimmed)) return false;
+        if ("null_video_id".equalsIgnoreCase(trimmed)) return false;
+        if ("none".equalsIgnoreCase(trimmed)) return false;
+        if ("undefined".equalsIgnoreCase(trimmed)) return false;
+        if ("0".equals(trimmed)) return false;
+        if ("-1".equals(trimmed)) return false;
+        return true;
+    }
+
+    public static String getAwemeId(Object awemeObj) {
+        if (awemeObj == null) return null;
+        try {
+            Method m = awemeObj.getClass().getMethod("getAid");
+            Object aid = m.invoke(awemeObj);
+            if (aid instanceof String && isValidVideoId((String) aid)) {
+                return ((String) aid).trim();
+            }
+        } catch (Throwable ignored) {}
+        return null;
+    }
+
     private static String getVideoId(Object videoObj) {
         if (videoObj == null) return null;
+        String mapped = videoToAwemeId.get(videoObj);
+        if (isValidVideoId(mapped)) return mapped;
+
         try {
             if (videoGetVideoIdMethod != null) {
                 Object id = videoGetVideoIdMethod.invoke(videoObj);
-                if (id instanceof String && !((String) id).isEmpty()) return (String) id;
+                if (id instanceof String && isValidVideoId((String) id)) {
+                    return ((String) id).trim();
+                }
             } else {
                 Method m = videoObj.getClass().getMethod("getVideoId");
                 Object id = m.invoke(videoObj);
-                if (id instanceof String && !((String) id).isEmpty()) return (String) id;
+                if (id instanceof String && isValidVideoId((String) id)) {
+                    return ((String) id).trim();
+                }
             }
         } catch (Throwable ignored) {}
         try {
             if (videoGetAidMethod != null) {
                 Object aid = videoGetAidMethod.invoke(videoObj);
-                if (aid instanceof String && !((String) aid).isEmpty()) return (String) aid;
+                if (aid instanceof String && isValidVideoId((String) aid)) {
+                    return ((String) aid).trim();
+                }
             } else {
                 Method m = videoObj.getClass().getMethod("getAid");
                 Object aid = m.invoke(videoObj);
-                if (aid instanceof String && !((String) aid).isEmpty()) return (String) aid;
+                if (aid instanceof String && isValidVideoId((String) aid)) {
+                    return ((String) aid).trim();
+                }
             }
         } catch (Throwable ignored) {}
         return null;
@@ -168,7 +212,7 @@ public final class TikTokVideoQualityHook {
         if (cached != null) return cached;
 
         String vid = getVideoId(videoObj);
-        if (vid != null) {
+        if (isValidVideoId(vid)) {
             cached = videoIdToCappedPlayAddr.get(vid);
             if (cached != null) {
                 uncappedDownloadAddrs.put(videoObj, cached);
@@ -187,7 +231,7 @@ public final class TikTokVideoQualityHook {
                         Object playAddr = extractPlayAddrFromBitrate(bestBitrate);
                         if (playAddr != null) {
                             uncappedDownloadAddrs.put(videoObj, playAddr);
-                            if (vid != null) videoIdToCappedPlayAddr.put(vid, playAddr);
+                            if (isValidVideoId(vid)) videoIdToCappedPlayAddr.put(vid, playAddr);
                             return playAddr;
                         }
                     }
@@ -201,6 +245,7 @@ public final class TikTokVideoQualityHook {
             if (videoDownloadNoWatermarkAddrField != null) {
                 Object cur = videoDownloadNoWatermarkAddrField.get(videoObj);
                 if (cur != null) {
+                    uncappedDownloadAddrs.put(videoObj, cur);
                     return cur;
                 }
             }
@@ -697,7 +742,7 @@ public final class TikTokVideoQualityHook {
     }
 
     private static void syncUrlModel(Object targetModel, Object sourceModel) {
-        if (targetModel == null || sourceModel == null) return;
+        if (targetModel == null || sourceModel == null || targetModel == sourceModel) return;
         try {
             Method getUrlList = sourceModel.getClass().getMethod("getUrlList");
             Method setUrlList = targetModel.getClass().getMethod("setUrlList", List.class);
@@ -712,6 +757,24 @@ public final class TikTokVideoQualityHook {
             if (uri instanceof String) {
                 setUri.invoke(targetModel, uri);
             }
+
+            try {
+                Method getUrlKey = sourceModel.getClass().getMethod("getUrlKey");
+                Method setUrlKey = targetModel.getClass().getMethod("setUrlKey", String.class);
+                Object key = getUrlKey.invoke(sourceModel);
+                if (key instanceof String) {
+                    setUrlKey.invoke(targetModel, key);
+                }
+            } catch (Throwable ignored) {}
+
+            try {
+                Method getFileHash = sourceModel.getClass().getMethod("getFileHash");
+                Method setFileHash = targetModel.getClass().getMethod("setFileHash", String.class);
+                Object hash = getFileHash.invoke(sourceModel);
+                if (hash instanceof String) {
+                    setFileHash.invoke(targetModel, hash);
+                }
+            } catch (Throwable ignored) {}
         } catch (Throwable ignored) {}
     }
 
@@ -804,18 +867,37 @@ public final class TikTokVideoQualityHook {
      * the default play addresses (playAddrValue, playAddrBytevc1Value) obey the resolution cap,
      * while preserving the highest-quality stream matching download resolution ceiling for downloads.
      */
-    @SuppressWarnings({"rawtypes", "unchecked"})
     public static void capVideoObject(Object videoObj) {
+        capVideoObject(videoObj, null);
+    }
+
+    /**
+     * Intercepts Video objects before playback to ensure both bitRateList and
+     * the default play addresses (playAddrValue, playAddrBytevc1Value) obey the resolution cap,
+     * while preserving the highest-quality stream matching download resolution ceiling for downloads.
+     */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static void capVideoObject(Object videoObj, Object awemeObj) {
         if (videoObj == null || !isValidVideo(videoObj)) return;
         try {
-            ensureReflection(videoObj.getClass().getClassLoader());
-            String vid = getVideoId(videoObj);
-            if (vid != null && videoIdToCappedPlayAddr.containsKey(vid)) {
-                return;
+            if (awemeObj != null) {
+                String aid = getAwemeId(awemeObj);
+                if (isValidVideoId(aid)) {
+                    videoToAwemeId.put(videoObj, aid);
+                    Object existingPlayAddr = uncappedDownloadAddrs.get(videoObj);
+                    if (existingPlayAddr != null) {
+                        videoIdToCappedPlayAddr.put(aid, existingPlayAddr);
+                    }
+                }
             }
+
+            if (cappedVideos.contains(videoObj)) return;
+            ensureReflection(videoObj.getClass().getClassLoader());
 
             int cap = getMaxResolution();
             if (cap <= 0) return;
+
+            String vid = getVideoId(videoObj);
 
             if (videoBitRateListField != null) {
                 Object listObj = videoBitRateListField.get(videoObj);
@@ -854,7 +936,7 @@ public final class TikTokVideoQualityHook {
                         Object bestDownloadPlayAddr = extractPlayAddrFromBitrate(bestDownloadBitrate);
                         if (bestDownloadPlayAddr != null) {
                             uncappedDownloadAddrs.put(videoObj, bestDownloadPlayAddr);
-                            if (vid != null) {
+                            if (isValidVideoId(vid)) {
                                 videoIdToCappedPlayAddr.put(vid, bestDownloadPlayAddr);
                             }
 
@@ -884,6 +966,7 @@ public final class TikTokVideoQualityHook {
 
                     List cappedList = filterBitrates(originalList);
                     videoBitRateListField.set(videoObj, cappedList);
+                    cappedVideos.add(videoObj);
                     Log.i(TAG, "[Video Quality Governor] Capped video " + vid + ": playback " + originalList.size() + " -> " + cappedList.size() + " streams (cap " + cap + "p), download cap " + getDownloadResolution() + "p.");
 
                     // Sync default play addresses strictly to the capped video streams without cross-codec contamination
