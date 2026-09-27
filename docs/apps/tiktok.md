@@ -35,7 +35,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Usability** | **[Video Quality Governor](#2-video-quality-governor)** | `bytecodePatch` | Decoupled resolution ceilings for playback (e.g. 480p) and downloads (e.g. 1080p). |
 | **Usability** | **Skip First-Launch Onboarding** | `bytecodePatch` | Bypasses interest pickers, swipe-up tutorial, language prompts, and consent sheets directly to FYP. |
 | **Usability** | **[Custom Offline Videos Limit](#4-custom-offline-videos-limit)** | `bytecodePatch` | Customizes maximum offline videos download caching limit (~X mins, Y GB/MB). |
-| **Usability** | **[Custom Share Sheet](#5-custom-share-sheet)** | `bytecodePatch` | Simplifies the share menu to essential options (Copy link, More), suppresses the direct message friends row, and filters third-party social apps. |
+| **Usability** | **[Custom Share Sheet](#5-custom-share-sheet)** | `bytecodePatch` | Customizes and cleans the share menu via individual boolean toggles for third-party apps, essential actions, and direct message friend rows. |
 | **Usability** | **Auto-Translate Comments** | `bytecodePatch` | Automatically dispatches batch translations via TikTok's native engine. |
 | **Usability** | **Hide Top-Left LIVE Button** | `bytecodePatch` | Removes the top-left LIVE broadcast button and tab entry point from the top navigation bar. |
 | **Usability** | **Hide Community Tab** | `bytecodePatch` | Removes the Community (Explore) tab from the top navigation feed strip. |
@@ -195,17 +195,39 @@ The **`Custom Offline Videos Limit`** patch customizes the maximum video caching
 | Option | Key | Type | Default | Supported Values | Description |
 | :--- | :--- | :--- | :---: | :--- | :--- |
 | **Custom Offline Videos Limit** | `customLimit` | Integer | `1000` | Any integer `1` to `50000` | Maximum number of offline videos that can be cached for offline playback. |
-
 ### 5. Custom Share Sheet
 
-The **`Custom Share Sheet`** patch cleans and customizes TikTok's native sharing bottom sheet. By default, it simplifies the panel by pruning third-party apps (WhatsApp, Facebook, Messenger, Instagram, SMS, Twitter, Telegram, Reddit, etc.) leaving only essential channels (**Repost**, **Copy link**, and **More** / system share). It can also suppress the direct message friend avatar row and hide individual app or action items.
+The **`Custom Share Sheet`** patch cleans and customizes TikTok's native sharing bottom sheet via granular boolean toggles. It allows disabling third-party apps (WhatsApp, Facebook, Messenger, Instagram, SMS, Twitter, Telegram, Reddit, etc.), suppressing the direct message friends row, protecting or toggling native sharing capabilities (Repost, QR code, Copy link, System share), and hiding individual utility actions (Promote, Why this video, Duet, Stitch, PiP, etc.).
 
-| Option | Key | Type | Default | Range / Format | Description |
-| :--- | :--- | :--- | :---: | :--- | :--- |
-| **Simplify Share Sheet** | `simplifyShareSheet` | Boolean | `true` | `true` / `false` | Automatically removes third-party social apps, retaining essentials (Repost, Copy link, and More/System share). |
-| **Hide Friends DM Row** | `hideFriendsRow` | Boolean | `false` | `true` / `false` | Suppresses the top suggested contacts/friends avatar row in the share dialog. |
-| **Hidden App Keys** | `hiddenApps` | String | `""` | Comma-separated | Comma-separated list of specific channel keys to hide (e.g. `whatsapp,facebook,instagram`). |
-| **Hidden Action Keys** | `hiddenActions` | String | `""` | Comma-separated | Comma-separated list of action keys to hide (e.g. `repost,duet,stitch`). |
+| Toggle Option | Key | Type | Default | Description |
+| :--- | :--- | :---: | :---: | :--- |
+| **Hide WhatsApp** | `hideWhatsApp` | Boolean | `true` | Hides WhatsApp and WhatsApp Status from the share sheet. |
+| **Hide Instagram** | `hideInstagram` | Boolean | `true` | Hides Instagram and Instagram Stories from the share sheet. |
+| **Hide Facebook & Messenger** | `hideFacebook` | Boolean | `true` | Hides Facebook, Facebook Stories, and Messenger from the share sheet. |
+| **Hide Telegram** | `hideTelegram` | Boolean | `true` | Hides Telegram from the share sheet. |
+| **Hide X / Twitter** | `hideTwitter` | Boolean | `true` | Hides X (Twitter) from the share sheet. |
+| **Hide Snapchat** | `hideSnapchat` | Boolean | `true` | Hides Snapchat from the share sheet. |
+| **Hide Reddit & Discord** | `hideReddit` | Boolean | `true` | Hides Reddit and Discord from the share sheet. |
+| **Hide SMS & Messages** | `hideSms` | Boolean | `true` | Hides SMS and Google Messages from the share sheet. |
+| **Hide Secondary Networks** | `hideSecondaryApps` | Boolean | `true` | Hides secondary social apps (Line, Kakao, Viber, VK, Lemon8, etc.). |
+| **Hide 'Repost' Button** | `hideRepost` | Boolean | `false` | Hides the native Repost button. Note: also disables the long-press to repost gesture. |
+| **Hide QR Code** | `hideQrCode` | Boolean | `false` | Hides the QR code sharing button from the share sheet. |
+| **Hide 'Copy Link'** | `hideCopyLink` | Boolean | `false` | Hides the Copy link button from the share sheet. |
+| **Hide System Share ('More')** | `hideSystemShare` | Boolean | `false` | Hides the system share dialog ('More') button. |
+| **Hide Friends DM Row** | `hideFriendsRow` | Boolean | `false` | Suppresses the top suggested contacts/friends avatar row in the share dialog. |
+| **Hide 'Promote' Action** | `hidePromote` | Boolean | `true` | Hides the commercial Promote action from the bottom utilities row. |
+| **Hide 'Why This Video'** | `hideWhyThisVideo` | Boolean | `true` | Hides the recommendation explanation action from the bottom utilities row. |
+| **Hide 'Create Sticker'** | `hideCreateSticker` | Boolean | `false` | Hides the sticker creation tool from the bottom utilities row. |
+| **Hide 'Duet' Action** | `hideDuet` | Boolean | `false` | Hides the Duet action from the bottom utilities row. |
+| **Hide 'Stitch' Action** | `hideStitch` | Boolean | `false` | Hides the Stitch action from the bottom utilities row. |
+| **Hide 'Picture-in-Picture'** | `hidePip` | Boolean | `false` | Hides the Picture-in-Picture floating player action. |
+| **Hide 'Clear Display'** | `hideClearDisplay` | Boolean | `false` | Hides the Clear display mode action. |
+| **Hide 'Background Audio'** | `hideListenAudio` | Boolean | `false` | Hides background audio playback action. |
+| **Hide Live Wallpaper & GIF** | `hideWallpaperAndGif` | Boolean | `false` | Hides Live wallpaper and GIF creation actions. |
+| **Hide 'Not Interested'** | `hideNotInterested` | Boolean | `false` | Hides the 'Not interested' action. |
+| **Hide 'Report'** | `hideReport` | Boolean | `false` | Hides the Report action. |
+| **Custom Hidden Apps** | `hiddenApps` | String | `""` | Optional comma-separated list of additional app channel keys to hide. |
+| **Custom Hidden Actions** | `hiddenActions` | String | `""` | Optional comma-separated list of additional action keys to hide. |
 
 ---
 

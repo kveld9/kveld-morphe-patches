@@ -13,41 +13,230 @@ import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 
 val customShareSheetPatch = bytecodePatch(
     name = "Custom Share Sheet",
-    description = "Customizes and simplifies the native TikTok share sheet by removing third-party app bloat, hiding specified apps or actions, and optionally suppressing the friends/contacts direct message row.",
+    description = "Customizes and cleans the native TikTok share sheet via individual toggle switches for third-party apps, essential sharing features, and secondary utility actions.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
     extendWith("extensions/extension.mpe")
 
-    val simplifyShareSheet by booleanOption(
-        key = "simplifyShareSheet",
+    // 1. Third-party social apps
+    val hideWhatsApp by booleanOption(
+        key = "hideWhatsApp",
         default = true,
-        title = "Simplify Share Sheet",
-        description = "Trims third-party app channels down to essentials (Repost, Copy link, and System share / More).",
+        title = "Hide WhatsApp",
+        description = "Hides WhatsApp and WhatsApp Status from the share sheet.",
         required = false,
     )
 
+    val hideInstagram by booleanOption(
+        key = "hideInstagram",
+        default = true,
+        title = "Hide Instagram",
+        description = "Hides Instagram and Instagram Stories from the share sheet.",
+        required = false,
+    )
+
+    val hideFacebook by booleanOption(
+        key = "hideFacebook",
+        default = true,
+        title = "Hide Facebook & Messenger",
+        description = "Hides Facebook, Facebook Stories, and Messenger from the share sheet.",
+        required = false,
+    )
+
+    val hideTelegram by booleanOption(
+        key = "hideTelegram",
+        default = true,
+        title = "Hide Telegram",
+        description = "Hides Telegram from the share sheet.",
+        required = false,
+    )
+
+    val hideTwitter by booleanOption(
+        key = "hideTwitter",
+        default = true,
+        title = "Hide X / Twitter",
+        description = "Hides X (Twitter) from the share sheet.",
+        required = false,
+    )
+
+    val hideSnapchat by booleanOption(
+        key = "hideSnapchat",
+        default = true,
+        title = "Hide Snapchat",
+        description = "Hides Snapchat from the share sheet.",
+        required = false,
+    )
+
+    val hideReddit by booleanOption(
+        key = "hideReddit",
+        default = true,
+        title = "Hide Reddit & Discord",
+        description = "Hides Reddit and Discord from the share sheet.",
+        required = false,
+    )
+
+    val hideSms by booleanOption(
+        key = "hideSms",
+        default = true,
+        title = "Hide SMS & Messages",
+        description = "Hides SMS and Google Messages from the share sheet.",
+        required = false,
+    )
+
+    val hideSecondaryApps by booleanOption(
+        key = "hideSecondaryApps",
+        default = true,
+        title = "Hide Secondary Networks",
+        description = "Hides regional and secondary third-party social apps (Line, Kakao, Viber, VK, Lemon8, etc.).",
+        required = false,
+    )
+
+    // 2. Native sharing & links
+    val hideRepost by booleanOption(
+        key = "hideRepost",
+        default = false,
+        title = "Hide 'Repost' Button",
+        description = "Hides the native Repost button from the share sheet. Note: disabling this also disables the long-press to repost gesture.",
+        required = false,
+    )
+
+    val hideQrCode by booleanOption(
+        key = "hideQrCode",
+        default = false,
+        title = "Hide QR Code",
+        description = "Hides the QR code sharing button from the share sheet.",
+        required = false,
+    )
+
+    val hideCopyLink by booleanOption(
+        key = "hideCopyLink",
+        default = false,
+        title = "Hide 'Copy Link'",
+        description = "Hides the Copy link button from the share sheet.",
+        required = false,
+    )
+
+    val hideSystemShare by booleanOption(
+        key = "hideSystemShare",
+        default = false,
+        title = "Hide System Share ('More')",
+        description = "Hides the system share dialog ('More') button from the share sheet.",
+        required = false,
+    )
+
+    // 3. Contacts / DM row
     val hideFriendsRow by booleanOption(
         key = "hideFriendsRow",
         default = false,
-        title = "Hide Friends Suggestion Row",
-        description = "Hides the top row of direct message friend/contact avatars ('Send to') in the share sheet.",
+        title = "Hide Friends / Direct Messages Row",
+        description = "Hides the top row of direct message friend and contact avatars ('Send to') in the share sheet.",
         required = false,
     )
 
+    // 4. Utility actions
+    val hidePromote by booleanOption(
+        key = "hidePromote",
+        default = true,
+        title = "Hide 'Promote' Action",
+        description = "Hides the commercial Promote action from the bottom utilities row.",
+        required = false,
+    )
+
+    val hideWhyThisVideo by booleanOption(
+        key = "hideWhyThisVideo",
+        default = true,
+        title = "Hide 'Why This Video'",
+        description = "Hides the recommendation explanation action from the bottom utilities row.",
+        required = false,
+    )
+
+    val hideCreateSticker by booleanOption(
+        key = "hideCreateSticker",
+        default = false,
+        title = "Hide 'Create Sticker'",
+        description = "Hides the sticker creation tool from the bottom utilities row.",
+        required = false,
+    )
+
+    val hideDuet by booleanOption(
+        key = "hideDuet",
+        default = false,
+        title = "Hide 'Duet' Action",
+        description = "Hides the Duet action from the bottom utilities row.",
+        required = false,
+    )
+
+    val hideStitch by booleanOption(
+        key = "hideStitch",
+        default = false,
+        title = "Hide 'Stitch' Action",
+        description = "Hides the Stitch action from the bottom utilities row.",
+        required = false,
+    )
+
+    val hidePip by booleanOption(
+        key = "hidePip",
+        default = false,
+        title = "Hide 'Picture-in-Picture' (PiP)",
+        description = "Hides the Picture-in-Picture floating player action from the bottom utilities row.",
+        required = false,
+    )
+
+    val hideClearDisplay by booleanOption(
+        key = "hideClearDisplay",
+        default = false,
+        title = "Hide 'Clear Display'",
+        description = "Hides the Clear display mode action from the bottom utilities row.",
+        required = false,
+    )
+
+    val hideListenAudio by booleanOption(
+        key = "hideListenAudio",
+        default = false,
+        title = "Hide 'Background Audio'",
+        description = "Hides the background audio playback action from the bottom utilities row.",
+        required = false,
+    )
+
+    val hideWallpaperAndGif by booleanOption(
+        key = "hideWallpaperAndGif",
+        default = false,
+        title = "Hide Live Wallpaper & GIF",
+        description = "Hides Live wallpaper and GIF creation actions from the bottom utilities row.",
+        required = false,
+    )
+
+    val hideNotInterested by booleanOption(
+        key = "hideNotInterested",
+        default = false,
+        title = "Hide 'Not Interested'",
+        description = "Hides the 'Not interested' action from the bottom utilities row.",
+        required = false,
+    )
+
+    val hideReport by booleanOption(
+        key = "hideReport",
+        default = false,
+        title = "Hide 'Report'",
+        description = "Hides the Report action from the bottom utilities row.",
+        required = false,
+    )
+
+    // Optional advanced custom keys
     val hiddenApps by stringOption(
         key = "hiddenApps",
         default = "",
-        title = "Hide Specific Apps",
-        description = "Comma-separated list of app channel keys to hide (e.g. facebook,instagram,snapchat,messenger,twitter). Active when Simplify Share Sheet is disabled.",
+        title = "Custom Hidden Apps",
+        description = "Optional comma-separated list of additional app channel keys to hide.",
         required = false,
     )
 
     val hiddenActions by stringOption(
         key = "hiddenActions",
         default = "",
-        title = "Hide Specific Actions",
-        description = "Comma-separated list of share sheet action keys to hide (e.g. promote,qr_code,pip_switch,why_this_video).",
+        title = "Custom Hidden Actions",
+        description = "Optional comma-separated list of additional action keys to hide.",
         required = false,
     )
 
@@ -100,29 +289,55 @@ val customShareSheetPatch = bytecodePatch(
         val returnIdx = clinitInstructions.indexOfLast { it.opcode == Opcode.RETURN_VOID }
         val insertIdx = if (returnIdx != -1) returnIdx else 0
 
-        val simplifyVal = if (simplifyShareSheet != false) 1 else 0
-        val hideFriendsVal = if (hideFriendsRow == true) 1 else 0
+        val booleanSettings = listOf(
+            "hideWhatsApp" to (hideWhatsApp == true),
+            "hideInstagram" to (hideInstagram == true),
+            "hideFacebook" to (hideFacebook == true),
+            "hideTelegram" to (hideTelegram == true),
+            "hideTwitter" to (hideTwitter == true),
+            "hideSnapchat" to (hideSnapchat == true),
+            "hideReddit" to (hideReddit == true),
+            "hideSms" to (hideSms == true),
+            "hideSecondaryApps" to (hideSecondaryApps == true),
+            "hideFriendsRow" to (hideFriendsRow == true),
+            "hideRepost" to (hideRepost == true),
+            "hideQrCode" to (hideQrCode == true),
+            "hideCopyLink" to (hideCopyLink == true),
+            "hideSystemShare" to (hideSystemShare == true),
+            "hidePromote" to (hidePromote == true),
+            "hideWhyThisVideo" to (hideWhyThisVideo == true),
+            "hideCreateSticker" to (hideCreateSticker == true),
+            "hideDuet" to (hideDuet == true),
+            "hideStitch" to (hideStitch == true),
+            "hidePip" to (hidePip == true),
+            "hideClearDisplay" to (hideClearDisplay == true),
+            "hideListenAudio" to (hideListenAudio == true),
+            "hideWallpaperAndGif" to (hideWallpaperAndGif == true),
+            "hideNotInterested" to (hideNotInterested == true),
+            "hideReport" to (hideReport == true),
+        )
+
+        val smaliBuilder = StringBuilder()
+        for ((field, value) in booleanSettings) {
+            val v = if (value) 1 else 0
+            smaliBuilder.append("const v0, $v\n")
+            smaliBuilder.append("sput-boolean v0, ${Constants.TIKTOK_EXTENSION_SHARE_HOOK}->$field:Z\n")
+        }
+
         val appsVal = hiddenApps?.trim() ?: ""
         val actionsVal = hiddenActions?.trim() ?: ""
 
-        hookClinit.addInstructions(
-            insertIdx,
-            """
-                const v0, $simplifyVal
-                sput-boolean v0, ${Constants.TIKTOK_EXTENSION_SHARE_HOOK}->simplifyShareSheet:Z
-                const v0, $hideFriendsVal
-                sput-boolean v0, ${Constants.TIKTOK_EXTENSION_SHARE_HOOK}->hideFriendsRow:Z
-                const-string v0, "$appsVal"
-                sput-object v0, ${Constants.TIKTOK_EXTENSION_SHARE_HOOK}->hiddenApps:Ljava/lang/String;
-                const-string v0, "$actionsVal"
-                sput-object v0, ${Constants.TIKTOK_EXTENSION_SHARE_HOOK}->hiddenActions:Ljava/lang/String;
-                const-string v0, "$isImOffField"
-                sput-object v0, ${Constants.TIKTOK_EXTENSION_SHARE_HOOK}->isImFunctionOffFieldName:Ljava/lang/String;
-                const-string v0, "$supportImField"
-                sput-object v0, ${Constants.TIKTOK_EXTENSION_SHARE_HOOK}->supportIMFieldName:Ljava/lang/String;
-            """.trimIndent(),
-        )
-        println("[Custom Share Sheet] Configured runtime hook settings (simplify=$simplifyShareSheet, hideFriends=$hideFriendsRow).")
+        smaliBuilder.append("const-string v0, \"$appsVal\"\n")
+        smaliBuilder.append("sput-object v0, ${Constants.TIKTOK_EXTENSION_SHARE_HOOK}->hiddenApps:Ljava/lang/String;\n")
+        smaliBuilder.append("const-string v0, \"$actionsVal\"\n")
+        smaliBuilder.append("sput-object v0, ${Constants.TIKTOK_EXTENSION_SHARE_HOOK}->hiddenActions:Ljava/lang/String;\n")
+        smaliBuilder.append("const-string v0, \"$isImOffField\"\n")
+        smaliBuilder.append("sput-object v0, ${Constants.TIKTOK_EXTENSION_SHARE_HOOK}->isImFunctionOffFieldName:Ljava/lang/String;\n")
+        smaliBuilder.append("const-string v0, \"$supportImField\"\n")
+        smaliBuilder.append("sput-object v0, ${Constants.TIKTOK_EXTENSION_SHARE_HOOK}->supportIMFieldName:Ljava/lang/String;\n")
+
+        hookClinit.addInstructions(insertIdx, smaliBuilder.toString().trimIndent())
+        println("[Custom Share Sheet] Configured runtime hook settings via ${booleanSettings.size} individual toggles.")
         patched++
 
         // 4. Inject hook call into panel constructor right before RETURN_VOID
