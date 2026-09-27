@@ -161,10 +161,7 @@ public final class TikTokShareHook {
                 List<?> list = (List<?>) val;
                 if (list.isEmpty()) continue;
 
-                Method keyMethod = findKeyMethod(list);
-                if (keyMethod == null) continue;
-
-                removedCount += filterList(list, keyMethod);
+                removedCount += filterList(list);
             }
             Log.i(TAG, "[Custom Share Sheet] Pruned " + removedCount + " item(s) from share sheet.");
         } catch (Throwable t) {
@@ -172,13 +169,13 @@ public final class TikTokShareHook {
         }
     }
 
-    private static int filterList(List<?> list, Method keyMethod) {
+    private static int filterList(List<?> list) {
         int removed = 0;
         Iterator<?> iterator = list.iterator();
         while (iterator.hasNext()) {
             Object item = iterator.next();
             if (item == null) continue;
-            String key = getKey(item, keyMethod);
+            String key = getKey(item);
             if (key == null) continue;
             if (shouldHide(key)) {
                 iterator.remove();
@@ -205,28 +202,44 @@ public final class TikTokShareHook {
         }
     }
 
-    private static Method findKeyMethod(List<?> list) {
-        for (Object item : list) {
-            if (item == null) continue;
-            Class<?> itemClass = item.getClass();
-            try {
-                return itemClass.getMethod("key");
-            } catch (NoSuchMethodException ignored) {
-                for (Method m : itemClass.getMethods()) {
-                    if ("key".equals(m.getName()) && m.getParameterTypes().length == 0 && m.getReturnType() == String.class) {
-                        return m;
-                    }
-                }
+    private static Method findDeclaredKeyMethod(Class<?> target) {
+        if (target == null || target == Object.class) return null;
+        try {
+            Method m = target.getDeclaredMethod("key");
+            if (m.getParameterTypes().length == 0 && m.getReturnType() == String.class) {
+                m.setAccessible(true);
+                return m;
             }
+        } catch (Throwable ignored) {}
+        for (Class<?> iface : target.getInterfaces()) {
+            try {
+                Method m = iface.getDeclaredMethod("key");
+                if (m.getParameterTypes().length == 0 && m.getReturnType() == String.class) {
+                    m.setAccessible(true);
+                    return m;
+                }
+            } catch (Throwable ignored) {}
         }
         return null;
     }
 
-    private static String getKey(Object item, Method keyMethod) {
+    private static String getKey(Object item) {
+        if (item == null) return null;
+        Class<?> clazz = item.getClass();
         try {
-            return (String) keyMethod.invoke(item);
-        } catch (Throwable ignored) {
-            return null;
+            Method m = clazz.getMethod("key");
+            m.setAccessible(true);
+            return (String) m.invoke(item);
+        } catch (Throwable ignored) {}
+
+        for (Class<?> c = clazz; c != null && c != Object.class; c = c.getSuperclass()) {
+            Method m = findDeclaredKeyMethod(c);
+            if (m != null) {
+                try {
+                    return (String) m.invoke(item);
+                } catch (Throwable ignored) {}
+            }
         }
+        return null;
     }
 }
