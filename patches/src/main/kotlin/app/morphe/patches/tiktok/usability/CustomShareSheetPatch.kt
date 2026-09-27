@@ -23,7 +23,7 @@ val customShareSheetPatch = bytecodePatch(
         key = "simplifyShareSheet",
         default = true,
         title = "Simplify Share Sheet",
-        description = "Trims third-party app channels down to essentials (Copy link and System share / More).",
+        description = "Trims third-party app channels down to essentials (Repost, Copy link, and System share / More).",
         required = false,
     )
 

@@ -198,11 +198,11 @@ The **`Custom Offline Videos Limit`** patch customizes the maximum video caching
 
 ### 5. Custom Share Sheet
 
-The **`Custom Share Sheet`** patch cleans and customizes TikTok's native sharing bottom sheet. By default, it simplifies the panel by pruning third-party apps (WhatsApp, Facebook, Messenger, Instagram, SMS, Twitter, Telegram, Reddit, etc.) leaving only essential channels (**Copy link** and **More** / system share). It can also suppress the direct message friend avatar row and hide individual app or action items.
+The **`Custom Share Sheet`** patch cleans and customizes TikTok's native sharing bottom sheet. By default, it simplifies the panel by pruning third-party apps (WhatsApp, Facebook, Messenger, Instagram, SMS, Twitter, Telegram, Reddit, etc.) leaving only essential channels (**Repost**, **Copy link**, and **More** / system share). It can also suppress the direct message friend avatar row and hide individual app or action items.
 
 | Option | Key | Type | Default | Range / Format | Description |
 | :--- | :--- | :--- | :---: | :--- | :--- |
-| **Simplify Share Sheet** | `simplifyShareSheet` | Boolean | `true` | `true` / `false` | Automatically removes third-party social apps, retaining only Copy link and More/System share. |
+| **Simplify Share Sheet** | `simplifyShareSheet` | Boolean | `true` | `true` / `false` | Automatically removes third-party social apps, retaining essentials (Repost, Copy link, and More/System share). |
 | **Hide Friends DM Row** | `hideFriendsRow` | Boolean | `false` | `true` / `false` | Suppresses the top suggested contacts/friends avatar row in the share dialog. |
 | **Hidden App Keys** | `hiddenApps` | String | `""` | Comma-separated | Comma-separated list of specific channel keys to hide (e.g. `whatsapp,facebook,instagram`). |
 | **Hidden Action Keys** | `hiddenActions` | String | `""` | Comma-separated | Comma-separated list of action keys to hide (e.g. `repost,duet,stitch`). |

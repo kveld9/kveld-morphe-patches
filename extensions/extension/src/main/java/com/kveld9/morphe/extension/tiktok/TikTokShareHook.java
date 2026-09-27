@@ -31,7 +31,9 @@ public final class TikTokShareHook {
         "copy",
         "copy_link",
         "more",
-        "system"
+        "system",
+        "repost",
+        "upvote"
     ));
 
     private static final Set<String> KNOWN_CHANNEL_KEYS = new HashSet<>(Arrays.asList(
@@ -42,7 +44,7 @@ public final class TikTokShareHook {
         "snapchat", "sms", "twitter", "telegram", "reddit", "discord",
         "viber", "vk", "line", "band", "email", "imgur",
         "kakao_story", "kakaotalk", "zalo", "google_messages", "lemon8",
-        "copy", "copy_link", "more", "system", "chat_merge", "qr_code", "repost"
+        "copy", "copy_link", "more", "system", "chat_merge", "qr_code", "repost", "upvote"
     ));
 
     private static Set<String> parsedHiddenApps = null;
@@ -170,31 +172,32 @@ public final class TikTokShareHook {
         return false;
     }
 
+    private static boolean shouldRemoveChannel(String lowerKey, Set<String> toHideApps, Set<String> toHideActions) {
+        if (hideFriendsRow && "chat_merge".equals(lowerKey)) {
+            return true;
+        }
+        if (toHideApps.contains(lowerKey) || toHideActions.contains(lowerKey)) {
+            return true;
+        }
+        if (simplifyShareSheet) {
+            boolean isEssential = ESSENTIAL_CHANNELS.contains(lowerKey);
+            boolean isFriendChat = !hideFriendsRow && "chat_merge".equals(lowerKey);
+            return !isEssential && !isFriendChat;
+        }
+        return false;
+    }
+
     private static int filterChannels(List<?> list, Method keyMethod) {
         int removed = 0;
-        Set<String> toHide = getParsedHiddenApps();
+        Set<String> toHideApps = getParsedHiddenApps();
+        Set<String> toHideActions = getParsedHiddenActions();
         Iterator<?> iterator = list.iterator();
         while (iterator.hasNext()) {
             Object item = iterator.next();
             if (item == null) continue;
             String key = getKey(item, keyMethod);
             if (key == null) continue;
-            String lowerKey = key.toLowerCase(Locale.ROOT);
-
-            if (hideFriendsRow && "chat_merge".equals(lowerKey)) {
-                iterator.remove();
-                removed++;
-                continue;
-            }
-
-            if (simplifyShareSheet) {
-                boolean isEssential = ESSENTIAL_CHANNELS.contains(lowerKey);
-                boolean isFriendChat = !hideFriendsRow && "chat_merge".equals(lowerKey);
-                if (!isEssential && !isFriendChat) {
-                    iterator.remove();
-                    removed++;
-                }
-            } else if (toHide.contains(lowerKey)) {
+            if (shouldRemoveChannel(key.toLowerCase(Locale.ROOT), toHideApps, toHideActions)) {
                 iterator.remove();
                 removed++;
             }
@@ -203,8 +206,9 @@ public final class TikTokShareHook {
     }
 
     private static int filterActions(List<?> list, Method keyMethod) {
-        Set<String> toHide = getParsedHiddenActions();
-        if (toHide.isEmpty()) return 0;
+        Set<String> toHideApps = getParsedHiddenApps();
+        Set<String> toHideActions = getParsedHiddenActions();
+        if (toHideApps.isEmpty() && toHideActions.isEmpty()) return 0;
 
         int removed = 0;
         Iterator<?> iterator = list.iterator();
@@ -214,7 +218,7 @@ public final class TikTokShareHook {
             String key = getKey(item, keyMethod);
             if (key == null) continue;
             String lowerKey = key.toLowerCase(Locale.ROOT);
-            if (toHide.contains(lowerKey)) {
+            if (toHideActions.contains(lowerKey) || toHideApps.contains(lowerKey)) {
                 iterator.remove();
                 removed++;
             }
