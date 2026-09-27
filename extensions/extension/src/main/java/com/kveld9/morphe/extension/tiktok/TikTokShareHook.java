@@ -68,7 +68,12 @@ public final class TikTokShareHook {
         if (activeHiddenKeys == null) {
             Set<String> set = new HashSet<>();
             if (hideFriendsRow) set.add("chat_merge");
-            if (hideRepost) { set.add("repost"); set.add("upvote"); }
+            if (hideRepost) {
+                set.add("repost");
+                set.add("upvote");
+                set.add("live_repost");
+                set.add("live_repost_note");
+            }
             if (hideQrCode) set.add("qr_code");
             if (hideCopyLink) { set.add("copy"); set.add("copy_link"); }
             if (hideSystemShare) { set.add("more"); set.add("system"); }
