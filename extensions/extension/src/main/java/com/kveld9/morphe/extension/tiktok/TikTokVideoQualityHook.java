@@ -30,6 +30,7 @@ public final class TikTokVideoQualityHook {
     private static final String KEY_MAX_QUALITY = "max_video_quality";
     private static final String KEY_DOWNLOAD_QUALITY = "download_video_quality";
 
+    public static volatile boolean isGovernorEnabled = false;
     public static volatile int maxAllowedResolution = 480;
     public static volatile int downloadAllowedResolution = 1080;
 
@@ -93,6 +94,7 @@ public final class TikTokVideoQualityHook {
     }
 
     public static int getMaxResolution() {
+        if (!isGovernorEnabled) return 0;
         SharedPreferences sp = getPrefs();
         if (sp != null) {
             int saved = sp.getInt(KEY_MAX_QUALITY, maxAllowedResolution);
@@ -119,6 +121,7 @@ public final class TikTokVideoQualityHook {
     }
 
     public static int getDownloadResolution() {
+        if (!isGovernorEnabled) return 0;
         SharedPreferences sp = getPrefs();
         if (sp != null) {
             int saved = sp.getInt(KEY_DOWNLOAD_QUALITY, downloadAllowedResolution);
@@ -207,7 +210,7 @@ public final class TikTokVideoQualityHook {
     }
 
     public static Object getBestDownloadPlayAddr(Object videoObj) {
-        if (videoObj == null) return null;
+        if (!isGovernorEnabled || videoObj == null || getDownloadResolution() <= 0) return null;
         Object cached = uncappedDownloadAddrs.get(videoObj);
         if (cached != null) return cached;
 
@@ -255,7 +258,7 @@ public final class TikTokVideoQualityHook {
     }
 
     public static Object enforceDownloadCap(Object currentUrl, Object videoObj) {
-        if (videoObj == null) return currentUrl;
+        if (!isGovernorEnabled || videoObj == null || getDownloadResolution() <= 0) return currentUrl;
         try {
             Object capped = getBestDownloadPlayAddr(videoObj);
             if (capped != null) {
@@ -267,7 +270,7 @@ public final class TikTokVideoQualityHook {
     }
 
     public static boolean isValidResolution(int res) {
-        return res == 360 || res == 480 || res == 540 || res == 720 || res == 1080;
+        return res == 0 || res == 360 || res == 480 || res == 540 || res == 720 || res == 1080;
     }
 
     private static void ensureReflection(ClassLoader classLoader) {
@@ -705,9 +708,10 @@ public final class TikTokVideoQualityHook {
         // Failsafe: if all video renditions exceeded the cap, keep the lowest available video stream
         if (!hasVideoInFiltered && lowestVideoStream != null) {
             filtered.add(lowestVideoStream);
+            hasVideoInFiltered = true;
         }
 
-        if (filtered.isEmpty()) {
+        if (filtered.isEmpty() || !hasVideoInFiltered) {
             return originalList;
         }
 
@@ -822,6 +826,7 @@ public final class TikTokVideoQualityHook {
     @SuppressWarnings("rawtypes")
     private static Object resolveBestBitrate(List bitrates, int cap) {
         if (bitrates == null || bitrates.isEmpty()) return null;
+        if (cap <= 0) cap = Integer.MAX_VALUE;
 
         List h264Streams = new ArrayList();
         List bytevcStreams = new ArrayList();
@@ -891,11 +896,14 @@ public final class TikTokVideoQualityHook {
                 }
             }
 
+            if (!isGovernorEnabled) return;
+
             if (cappedVideos.contains(videoObj)) return;
             ensureReflection(videoObj.getClass().getClassLoader());
 
             int cap = getMaxResolution();
-            if (cap <= 0) return;
+            int downloadCap = getDownloadResolution();
+            if (cap <= 0 && downloadCap <= 0) return;
 
             String vid = getVideoId(videoObj);
 
@@ -931,98 +939,104 @@ public final class TikTokVideoQualityHook {
                     }
 
                     // Preserve H.264 stream matching download resolution ceiling for downloads
-                    Object bestDownloadBitrate = resolveBestBitrate(originalList, getDownloadResolution());
-                    if (bestDownloadBitrate != null) {
-                        Object bestDownloadPlayAddr = extractPlayAddrFromBitrate(bestDownloadBitrate);
-                        if (bestDownloadPlayAddr != null) {
-                            uncappedDownloadAddrs.put(videoObj, bestDownloadPlayAddr);
-                            if (isValidVideoId(vid)) {
-                                videoIdToCappedPlayAddr.put(vid, bestDownloadPlayAddr);
-                            }
-
-                            // Directly sync Video's download stream fields so all downloaders receive the capped stream
-                            Field[] downloadFields = {
-                                videoDownloadNoWatermarkAddrField,
-                                videoDownloadAddrField,
-                                videoNewDownloadAddrField,
-                                videoUiAlikeAddrField
-                            };
-                            for (Field f : downloadFields) {
-                                if (f != null) {
-                                    try {
-                                        Object cur = f.get(videoObj);
-                                        if (cur != null) {
-                                            syncUrlModel(cur, bestDownloadPlayAddr);
-                                        } else if (f.getType().isInstance(bestDownloadPlayAddr)) {
-                                            f.set(videoObj, bestDownloadPlayAddr);
-                                        }
-                                    } catch (Throwable ignored) {}
+                    if (downloadCap > 0) {
+                        Object bestDownloadBitrate = resolveBestBitrate(originalList, downloadCap);
+                        if (bestDownloadBitrate != null) {
+                            Object bestDownloadPlayAddr = extractPlayAddrFromBitrate(bestDownloadBitrate);
+                            if (bestDownloadPlayAddr != null) {
+                                uncappedDownloadAddrs.put(videoObj, bestDownloadPlayAddr);
+                                if (isValidVideoId(vid)) {
+                                    videoIdToCappedPlayAddr.put(vid, bestDownloadPlayAddr);
                                 }
-                            }
 
-                            Log.i(TAG, "[Video Quality Governor] Saved capped download stream (" + resolveBitrateHeight(bestDownloadBitrate) + "p) for video " + vid + ".");
+                                // Directly sync Video's download stream fields so all downloaders receive the capped stream
+                                Field[] downloadFields = {
+                                    videoDownloadNoWatermarkAddrField,
+                                    videoDownloadAddrField,
+                                    videoNewDownloadAddrField,
+                                    videoUiAlikeAddrField
+                                };
+                                for (Field f : downloadFields) {
+                                    if (f != null) {
+                                        try {
+                                            Object cur = f.get(videoObj);
+                                            if (cur != null) {
+                                                syncUrlModel(cur, bestDownloadPlayAddr);
+                                            } else if (f.getType().isInstance(bestDownloadPlayAddr)) {
+                                                f.set(videoObj, bestDownloadPlayAddr);
+                                            }
+                                        } catch (Throwable ignored) {}
+                                    }
+                                }
+
+                                Log.i(TAG, "[Video Quality Governor] Saved capped download stream (" + resolveBitrateHeight(bestDownloadBitrate) + "p) for video " + vid + ".");
+                            }
                         }
                     }
 
-                    List cappedList = filterBitrates(originalList);
-                    videoBitRateListField.set(videoObj, cappedList);
-                    cappedVideos.add(videoObj);
-                    Log.i(TAG, "[Video Quality Governor] Capped video " + vid + ": playback " + originalList.size() + " -> " + cappedList.size() + " streams (cap " + cap + "p), download cap " + getDownloadResolution() + "p.");
+                    if (cap > 0) {
+                        List cappedList = filterBitrates(originalList);
+                        videoBitRateListField.set(videoObj, cappedList);
+                        cappedVideos.add(videoObj);
+                        Log.i(TAG, "[Video Quality Governor] Capped video " + vid + ": playback " + originalList.size() + " -> " + cappedList.size() + " streams (cap " + cap + "p), download cap " + downloadCap + "p.");
 
-                    // Sync default play addresses strictly to the capped video streams without cross-codec contamination
-                    if (!cappedList.isEmpty()) {
-                        Object bestAllowedH264 = null;
-                        Object bestAllowedBytevc1 = null;
+                        // Sync default play addresses strictly to the capped video streams without cross-codec contamination
+                        if (!cappedList.isEmpty()) {
+                            Object bestAllowedH264 = null;
+                            Object bestAllowedBytevc1 = null;
 
-                        for (Object item : cappedList) {
-                            if (isAudioBitrate(item) || resolveBitrateHeight(item) <= 0) continue;
-                            if (isBytevc1(item)) {
-                                if (bestAllowedBytevc1 == null) {
-                                    bestAllowedBytevc1 = item;
-                                }
-                            } else {
-                                if (bestAllowedH264 == null) {
-                                    bestAllowedH264 = item;
-                                }
-                            }
-                            if (bestAllowedH264 != null && bestAllowedBytevc1 != null) break;
-                        }
-
-                        // Sync H.264 stream strictly to playAddrValue and h264PlayAddrValue
-                        if (bestAllowedH264 != null) {
-                            Object cappedH264PlayAddr = extractPlayAddrFromBitrate(bestAllowedH264);
-                            if (cappedH264PlayAddr != null) {
-                                if (videoPlayAddrValueField != null) {
-                                    Object currentPlay = videoPlayAddrValueField.get(videoObj);
-                                    if (currentPlay != null) {
-                                        syncUrlModel(currentPlay, cappedH264PlayAddr);
-                                    } else if (videoPlayAddrValueField.getType().isInstance(cappedH264PlayAddr)) {
-                                        videoPlayAddrValueField.set(videoObj, cappedH264PlayAddr);
+                            for (Object item : cappedList) {
+                                if (isAudioBitrate(item) || resolveBitrateHeight(item) <= 0) continue;
+                                if (isBytevc1(item)) {
+                                    if (bestAllowedBytevc1 == null) {
+                                        bestAllowedBytevc1 = item;
+                                    }
+                                } else {
+                                    if (bestAllowedH264 == null) {
+                                        bestAllowedH264 = item;
                                     }
                                 }
-                                if (videoH264PlayAddrValueField != null) {
-                                    Object currentH264 = videoH264PlayAddrValueField.get(videoObj);
-                                    if (currentH264 != null) {
-                                        syncUrlModel(currentH264, cappedH264PlayAddr);
-                                    } else if (videoH264PlayAddrValueField.getType().isInstance(cappedH264PlayAddr)) {
-                                        videoH264PlayAddrValueField.set(videoObj, cappedH264PlayAddr);
+                                if (bestAllowedH264 != null && bestAllowedBytevc1 != null) break;
+                            }
+
+                            // Sync H.264 stream strictly to playAddrValue and h264PlayAddrValue
+                            if (bestAllowedH264 != null) {
+                                Object cappedH264PlayAddr = extractPlayAddrFromBitrate(bestAllowedH264);
+                                if (cappedH264PlayAddr != null) {
+                                    if (videoPlayAddrValueField != null) {
+                                        Object currentPlay = videoPlayAddrValueField.get(videoObj);
+                                        if (currentPlay != null) {
+                                            syncUrlModel(currentPlay, cappedH264PlayAddr);
+                                        } else if (videoPlayAddrValueField.getType().isInstance(cappedH264PlayAddr)) {
+                                            videoPlayAddrValueField.set(videoObj, cappedH264PlayAddr);
+                                        }
+                                    }
+                                    if (videoH264PlayAddrValueField != null) {
+                                        Object currentH264 = videoH264PlayAddrValueField.get(videoObj);
+                                        if (currentH264 != null) {
+                                            syncUrlModel(currentH264, cappedH264PlayAddr);
+                                        } else if (videoH264PlayAddrValueField.getType().isInstance(cappedH264PlayAddr)) {
+                                            videoH264PlayAddrValueField.set(videoObj, cappedH264PlayAddr);
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Sync ByteVC1 stream to playAddrBytevc1Value
+                            if (bestAllowedBytevc1 != null) {
+                                Object cappedBytevc1PlayAddr = extractPlayAddrFromBitrate(bestAllowedBytevc1);
+                                if (cappedBytevc1PlayAddr != null && videoPlayAddrBytevc1ValueField != null) {
+                                    Object currentBytevc1 = videoPlayAddrBytevc1ValueField.get(videoObj);
+                                    if (currentBytevc1 != null) {
+                                        syncUrlModel(currentBytevc1, cappedBytevc1PlayAddr);
+                                    } else if (videoPlayAddrBytevc1ValueField.getType().isInstance(cappedBytevc1PlayAddr)) {
+                                        videoPlayAddrBytevc1ValueField.set(videoObj, cappedBytevc1PlayAddr);
                                     }
                                 }
                             }
                         }
-
-                        // Sync ByteVC1 stream to playAddrBytevc1Value
-                        if (bestAllowedBytevc1 != null) {
-                            Object cappedBytevc1PlayAddr = extractPlayAddrFromBitrate(bestAllowedBytevc1);
-                            if (cappedBytevc1PlayAddr != null && videoPlayAddrBytevc1ValueField != null) {
-                                Object currentBytevc1 = videoPlayAddrBytevc1ValueField.get(videoObj);
-                                if (currentBytevc1 != null) {
-                                    syncUrlModel(currentBytevc1, cappedBytevc1PlayAddr);
-                                } else if (videoPlayAddrBytevc1ValueField.getType().isInstance(cappedBytevc1PlayAddr)) {
-                                    videoPlayAddrBytevc1ValueField.set(videoObj, cappedBytevc1PlayAddr);
-                                }
-                            }
-                        }
+                    } else {
+                        cappedVideos.add(videoObj);
                     }
                 }
             }

@@ -5,6 +5,7 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.stringOption
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.ensureRegisterCount
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
@@ -36,6 +37,7 @@ val videoQualityGovernorPatch = bytecodePatch(
         fun parseResolution(raw: String?, defaultRes: Int): Int {
             val q = raw?.trim()?.lowercase() ?: return defaultRes
             return when {
+                q.contains("none") || q.contains("unconstrained") || q == "0" -> 0
                 q.contains("1080") -> 1080
                 q.contains("720") -> 720
                 q.contains("540") -> 540
@@ -56,9 +58,17 @@ val videoQualityGovernorPatch = bytecodePatch(
                 definingClass = Constants.TIKTOK_EXTENSION_QUALITY_HOOK,
                 name = "<clinit>",
             )
-            hookClinitFp.method.addInstructions(
-                0,
+            val hookClinit = hookClinitFp.method
+            hookClinit.ensureRegisterCount(2)
+            val clinitInstructions = hookClinit.implementation!!.instructions
+            val returnIdx = clinitInstructions.indexOfLast { it.opcode == Opcode.RETURN_VOID }
+            val insertIdx = if (returnIdx != -1) returnIdx else 0
+
+            hookClinit.addInstructions(
+                insertIdx,
                 """
+                    const/4 v0, 1
+                    sput-boolean v0, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->isGovernorEnabled:Z
                     const/16 v0, $chosenPlaybackRes
                     sput v0, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->maxAllowedResolution:I
                     const/16 v0, $chosenDownloadRes
