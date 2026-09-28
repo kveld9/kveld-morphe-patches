@@ -3,6 +3,7 @@ package com.kveld9.morphe.extension.tiktok;
 import android.util.Log;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -59,8 +60,8 @@ public final class TikTokShareHook {
     public static String isImFunctionOffFieldName = "LJJIJIL";
     public static String supportIMFieldName = "LJIJJLI";
 
-    private static Set<String> activeHiddenKeys = null;
-    private static Set<String> parsedCustomKeys = null;
+    private static volatile Set<String> activeHiddenKeys = null;
+    private static volatile Set<String> parsedCustomKeys = null;
 
     private TikTokShareHook() {}
 
@@ -155,13 +156,26 @@ public final class TikTokShareHook {
             Field[] fields = clazz.getDeclaredFields();
             for (Field field : fields) {
                 if (!List.class.isAssignableFrom(field.getType())) continue;
-                field.setAccessible(true);
-                Object val = field.get(panel);
-                if (!(val instanceof List)) continue;
-                List<?> list = (List<?>) val;
-                if (list.isEmpty()) continue;
+                try {
+                    field.setAccessible(true);
+                    Object val = field.get(panel);
+                    if (!(val instanceof List)) continue;
+                    List<?> list = (List<?>) val;
+                    if (list.isEmpty()) continue;
 
-                removedCount += filterList(list);
+                    try {
+                        removedCount += filterList(list);
+                    } catch (UnsupportedOperationException e) {
+                        List<Object> copy = new ArrayList<>(list);
+                        int removedInCopy = filterList(copy);
+                        if (removedInCopy > 0) {
+                            field.set(panel, copy);
+                            removedCount += removedInCopy;
+                        }
+                    }
+                } catch (Throwable fieldErr) {
+                    Log.w(TAG, "[Custom Share Sheet] Error filtering field " + field.getName() + ": " + fieldErr.getMessage());
+                }
             }
             Log.i(TAG, "[Custom Share Sheet] Pruned " + removedCount + " item(s) from share sheet.");
         } catch (Throwable t) {
@@ -185,19 +199,35 @@ public final class TikTokShareHook {
         return removed;
     }
 
+    private static Field findFieldInHierarchy(Class<?> clazz, String fieldName) {
+        Class<?> current = clazz;
+        while (current != null && current != Object.class) {
+            try {
+                Field f = current.getDeclaredField(fieldName);
+                f.setAccessible(true);
+                return f;
+            } catch (NoSuchFieldException e) {
+                current = current.getSuperclass();
+            }
+        }
+        return null;
+    }
+
     private static void applyFriendRowSuppression(Object panel, Class<?> clazz) {
         if (isImFunctionOffFieldName != null && !isImFunctionOffFieldName.isEmpty()) {
             try {
-                Field f = clazz.getDeclaredField(isImFunctionOffFieldName);
-                f.setAccessible(true);
-                f.setBoolean(panel, true);
+                Field f = findFieldInHierarchy(clazz, isImFunctionOffFieldName);
+                if (f != null) {
+                    f.setBoolean(panel, true);
+                }
             } catch (Throwable ignored) {}
         }
         if (supportIMFieldName != null && !supportIMFieldName.isEmpty()) {
             try {
-                Field f = clazz.getDeclaredField(supportIMFieldName);
-                f.setAccessible(true);
-                f.setBoolean(panel, false);
+                Field f = findFieldInHierarchy(clazz, supportIMFieldName);
+                if (f != null) {
+                    f.setBoolean(panel, false);
+                }
             } catch (Throwable ignored) {}
         }
     }

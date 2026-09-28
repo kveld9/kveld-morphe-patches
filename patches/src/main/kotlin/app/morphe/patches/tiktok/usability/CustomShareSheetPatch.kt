@@ -324,8 +324,8 @@ val customShareSheetPatch = bytecodePatch(
             smaliBuilder.append("sput-boolean v0, ${Constants.TIKTOK_EXTENSION_SHARE_HOOK}->$field:Z\n")
         }
 
-        val appsVal = hiddenApps?.trim() ?: ""
-        val actionsVal = hiddenActions?.trim() ?: ""
+        val appsVal = (hiddenApps?.trim() ?: "").replace("\\", "\\\\").replace("\"", "\\\"")
+        val actionsVal = (hiddenActions?.trim() ?: "").replace("\\", "\\\\").replace("\"", "\\\"")
 
         smaliBuilder.append("const-string v0, \"$appsVal\"\n")
         smaliBuilder.append("sput-object v0, ${Constants.TIKTOK_EXTENSION_SHARE_HOOK}->hiddenApps:Ljava/lang/String;\n")
