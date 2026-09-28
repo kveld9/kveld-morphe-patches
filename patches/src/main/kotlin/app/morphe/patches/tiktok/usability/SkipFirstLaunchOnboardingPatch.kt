@@ -5,7 +5,6 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.replaceWithReturnBoolean
 import app.morphe.patches.shared.replaceWithReturnVoid
-import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 
 private const val NEW_USER_JOURNEY_SERVICE = "Lcom/ss/android/ugc/aweme/NewUserJourneyService;"
 
@@ -19,38 +18,7 @@ val skipFirstLaunchOnboardingPatch = bytecodePatch(
     execute {
         var patched = 0
 
-        // 1. MainPageFragment.JS()Z -> return false
-        // Ensures MainPageFragment directly mounts feed, player, and tabs without waiting for NUJ
-        try {
-            val method = try {
-                Fingerprint(
-                    definingClass = "Lcom/ss/android/ugc/aweme/main/MainPageFragment;",
-                    name = "JS",
-                    returnType = "Z",
-                    parameters = emptyList(),
-                ).method
-            } catch (_: Exception) {
-                // Obfuscation fallback: disambiguate sole ()Z method calling Boolean.booleanValue()
-                Fingerprint(
-                    definingClass = "Lcom/ss/android/ugc/aweme/main/MainPageFragment;",
-                    returnType = "Z",
-                    parameters = emptyList(),
-                    custom = { m, _ ->
-                        val instructions = m.implementation?.instructions ?: return@Fingerprint false
-                        instructions.any { ins ->
-                            (ins as? ReferenceInstruction)?.reference?.toString()?.contains("booleanValue") == true
-                        }
-                    },
-                ).method
-            }
-            method.replaceWithReturnBoolean(false)
-            println("[SkipFirstLaunchOnboarding] Hooked MainPageFragment.JS() -> Direct feed and page assembly enabled.")
-            patched++
-        } catch (e: Exception) {
-            println("[SkipFirstLaunchOnboarding] MainPageFragment.JS note: ${e.message}")
-        }
-
-        // 2. NewUserJourneyService.LIZJ()Z -> return true (reports did_finish_nuj = true)
+        // 1. NewUserJourneyService.LIZJ()Z -> return true (reports did_finish_nuj = true)
         try {
             Fingerprint(
                 definingClass = NEW_USER_JOURNEY_SERVICE,
@@ -63,7 +31,7 @@ val skipFirstLaunchOnboardingPatch = bytecodePatch(
             println("[SkipFirstLaunchOnboarding] NewUserJourneyService.LIZJ note: ${e.message}")
         }
 
-        // 3. NewUserJourneyService.LJJJI(Landroid/app/Activity;)Z -> return false (never show NUJ)
+        // 2. NewUserJourneyService.LJJJI(Landroid/app/Activity;)Z -> return false (never show NUJ)
         try {
             Fingerprint(
                 definingClass = NEW_USER_JOURNEY_SERVICE,
@@ -77,7 +45,7 @@ val skipFirstLaunchOnboardingPatch = bytecodePatch(
             println("[SkipFirstLaunchOnboarding] NewUserJourneyService.LJJJI note: ${e.message}")
         }
 
-        // 4. NewUserJourneyService.LJIJI(...)V -> return-void (suppress launching NUJ Activity)
+        // 3. NewUserJourneyService.LJIJI(...)V -> return-void (suppress launching NUJ Activity)
         try {
             Fingerprint(
                 definingClass = NEW_USER_JOURNEY_SERVICE,
@@ -90,7 +58,7 @@ val skipFirstLaunchOnboardingPatch = bytecodePatch(
             println("[SkipFirstLaunchOnboarding] NewUserJourneyService.LJIJI note: ${e.message}")
         }
 
-        // 5. NewUserJourneyService.LJJJ(Landroid/app/Activity;, Landroid/content/Intent;)V -> return-void
+        // 4. NewUserJourneyService.LJJJ(Landroid/app/Activity;, Landroid/content/Intent;)V -> return-void
         try {
             Fingerprint(
                 definingClass = NEW_USER_JOURNEY_SERVICE,
@@ -104,7 +72,7 @@ val skipFirstLaunchOnboardingPatch = bytecodePatch(
             println("[SkipFirstLaunchOnboarding] NewUserJourneyService.LJJJ note: ${e.message}")
         }
 
-        // 6. NewUserJourneyService.LJIJJLI(Lcom/bytedance/ies/foundation/activity/BaseActivity;)Z -> return false
+        // 5. NewUserJourneyService.LJIJJLI(Lcom/bytedance/ies/foundation/activity/BaseActivity;)Z -> return false
         try {
             val method = try {
                 Fingerprint(
