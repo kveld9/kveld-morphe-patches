@@ -4,6 +4,10 @@ import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.ensureRegisterCount
+import app.morphe.patches.shared.replaceWithReturnBoolean
+import app.morphe.patches.shared.replaceWithReturnNull
+import app.morphe.patches.shared.replaceWithReturnVoid
 
 val instantColdStartPatch = bytecodePatch(
     name = "Instant Launch & Splash Blocker",
@@ -20,12 +24,7 @@ val instantColdStartPatch = bytecodePatch(
             definingClass = "Lcom/bytedance/ies/ugc/aweme/commercialize/splash/SplashAdManagerPreloadTask;",
             name = "run",
             returnType = "V",
-        ).method.addInstructions(
-            0,
-            """
-                return-void
-            """,
-        )
+        ).method.replaceWithReturnVoid()
         println("[InstantColdStart] Neutralized SplashAdManagerPreloadTask.run() -> Splash preloading delay removed.")
         patched++
 
@@ -34,12 +33,7 @@ val instantColdStartPatch = bytecodePatch(
             definingClass = "Lcom/bytedance/ies/ugc/aweme/commercialize/splash/SplashAdManagerPreloadTaskEntry;",
             name = "run",
             returnType = "V",
-        ).method.addInstructions(
-            0,
-            """
-                return-void
-            """,
-        )
+        ).method.replaceWithReturnVoid()
         println("[InstantColdStart] Neutralized SplashAdManagerPreloadTaskEntry.run().")
         patched++
 
@@ -48,12 +42,7 @@ val instantColdStartPatch = bytecodePatch(
             definingClass = "Lcom/bytedance/ies/ugc/aweme/commercialize/splash/topview/TopViewPreloadTask;",
             name = "run",
             returnType = "V",
-        ).method.addInstructions(
-            0,
-            """
-                return-void
-            """,
-        )
+        ).method.replaceWithReturnVoid()
         println("[InstantColdStart] Neutralized TopViewPreloadTask.run() -> Background TopView video caching disabled.")
         patched++
 
@@ -62,12 +51,7 @@ val instantColdStartPatch = bytecodePatch(
             definingClass = "Lcom/bytedance/ies/ugc/aweme/commercialize/splash/topview/TopViewPreloadJsonTask;",
             name = "run",
             returnType = "V",
-        ).method.addInstructions(
-            0,
-            """
-                return-void
-            """,
-        )
+        ).method.replaceWithReturnVoid()
         println("[InstantColdStart] Neutralized TopViewPreloadJsonTask.run() -> TopView JSON preloading disabled.")
         patched++
 
@@ -76,12 +60,7 @@ val instantColdStartPatch = bytecodePatch(
             definingClass = "Lcom/bytedance/ies/ugc/aweme/commercialize/splash/topview/RealTimeSplashTask;",
             name = "run",
             returnType = "V",
-        ).method.addInstructions(
-            0,
-            """
-                return-void
-            """,
-        )
+        ).method.replaceWithReturnVoid()
         println("[InstantColdStart] Neutralized RealTimeSplashTask.run() -> Real-time splash background tasks disabled.")
         patched++
 
@@ -90,13 +69,7 @@ val instantColdStartPatch = bytecodePatch(
             definingClass = "Lcom/bytedance/ies/ugc/aweme/commercialize/splash/core/SplashSettingServiceImpl;",
             name = "LIZ",
             returnType = "Z",
-        ).method.addInstructions(
-            0,
-            """
-                const/4 v0, 0x1
-                return v0
-            """,
-        )
+        ).method.replaceWithReturnBoolean(true)
         println("[InstantColdStart] Forced SplashSettingServiceImpl.LIZ() -> Force skip TopView enabled.")
         patched++
 
@@ -105,13 +78,7 @@ val instantColdStartPatch = bytecodePatch(
             definingClass = "Lcom/bytedance/ies/ugc/aweme/commercialize/splash/realtimesplash/RealTimeSplashManagerImpl;",
             name = "LIZLLL",
             returnType = "Z",
-        ).method.addInstructions(
-            0,
-            """
-                const/4 v0, 0x0
-                return v0
-            """.trimIndent(),
-        )
+        ).method.replaceWithReturnBoolean(false)
         println("[InstantColdStart] Disabled RealTimeSplashManagerImpl splash gate -> Real-time splash execution disabled.")
         patched++
 
@@ -121,13 +88,7 @@ val instantColdStartPatch = bytecodePatch(
                 definingClass = "Lcom/bytedance/ies/ugc/aweme/commercialize/splash/core/SplashAdServiceImpl;",
                 name = mName,
                 returnType = "Z",
-            ).method.addInstructions(
-                0,
-                """
-                    const/4 v0, 0x0
-                    return v0
-                """.trimIndent(),
-            )
+            ).method.replaceWithReturnBoolean(false)
             println("[InstantColdStart] Disabled SplashAdServiceImpl.$mName() -> Splash ad service disabled.")
             patched++
         }
@@ -137,13 +98,7 @@ val instantColdStartPatch = bytecodePatch(
             definingClass = "Lcom/bytedance/ies/ugc/aweme/commercialize/splash/core/SplashAdServiceImpl;",
             name = "LJIILJJIL",
             returnType = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
-        ).method.addInstructions(
-            0,
-            """
-                const/4 v0, 0x0
-                return-object v0
-            """.trimIndent(),
-        )
+        ).method.replaceWithReturnNull()
         println("[InstantColdStart] Neutralized SplashAdServiceImpl.LJIILJJIL() -> TopView Aweme retrieval returns null.")
         patched++
 
@@ -152,13 +107,7 @@ val instantColdStartPatch = bytecodePatch(
             definingClass = "Lcom/bytedance/ies/ugc/aweme/commercialize/splash/topview/TopViewJsonManager;",
             name = "LIZIZ",
             returnType = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
-        ).method.addInstructions(
-            0,
-            """
-                const/4 v0, 0x0
-                return-object v0
-            """.trimIndent(),
-        )
+        ).method.replaceWithReturnNull()
         println("[InstantColdStart] Neutralized TopViewJsonManager.LIZIZ() -> TopView cache parsed Aweme returns null.")
         patched++
 
@@ -167,13 +116,7 @@ val instantColdStartPatch = bytecodePatch(
             definingClass = "LX/03fN;",
             name = "LJFF",
             returnType = "Z",
-        ).method.addInstructions(
-            0,
-            """
-                const/4 v0, 0x0
-                return v0
-            """.trimIndent(),
-        )
+        ).method.replaceWithReturnBoolean(false)
         println("[InstantColdStart] Disabled LX/03fN.LJFF() -> Global splash enable flag neutralized.")
         patched++
 
@@ -182,13 +125,7 @@ val instantColdStartPatch = bytecodePatch(
             definingClass = "LX/05W1;",
             name = "LJI",
             returnType = "Z",
-        ).method.addInstructions(
-            0,
-            """
-                const/4 v0, 0x0
-                return v0
-            """.trimIndent(),
-        )
+        ).method.replaceWithReturnBoolean(false)
         println("[InstantColdStart] Disabled LX/05W1.LJI() -> Cold and warm background resume splash show blocked.")
         patched++
 
@@ -197,13 +134,7 @@ val instantColdStartPatch = bytecodePatch(
             definingClass = "LX/03nI;",
             name = "LJFF",
             returnType = "Z",
-        ).method.addInstructions(
-            0,
-            """
-                const/4 v0, 0x0
-                return v0
-            """.trimIndent(),
-        )
+        ).method.replaceWithReturnBoolean(false)
         println("[InstantColdStart] Disabled LX/03nI.LJFF() -> Resume activity splash trigger neutralized.")
         patched++
 
@@ -212,22 +143,18 @@ val instantColdStartPatch = bytecodePatch(
             definingClass = "LX/07nN;",
             name = "LJIJJ",
             returnType = "Z",
-        ).method.addInstructions(
-            0,
-            """
-                const/4 v0, 0x0
-                return v0
-            """.trimIndent(),
-        )
+        ).method.replaceWithReturnBoolean(false)
         println("[InstantColdStart] Disabled LX/07nN.LJIJJ() -> FeedRecommendFragment TopView insertion blocked.")
         patched++
 
         // 15. Fail-safe instant finish for NormalSplashAdActivity
-        Fingerprint(
+        val normalSplashOnCreate = Fingerprint(
             definingClass = "Lcom/bytedance/ies/ugc/aweme/commercialize/splash/show/NormalSplashAdActivity;",
             name = "onCreate",
             returnType = "V",
-        ).method.addInstructions(
+        ).method
+        normalSplashOnCreate.ensureRegisterCount(2)
+        normalSplashOnCreate.addInstructions(
             0,
             """
                 invoke-super {p0, p1}, Lcom/bytedance/ies/foundation/activity/BaseActivity;->onCreate(Landroid/os/Bundle;)V
