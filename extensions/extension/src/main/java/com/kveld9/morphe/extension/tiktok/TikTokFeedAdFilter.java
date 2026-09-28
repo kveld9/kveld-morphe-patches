@@ -45,6 +45,10 @@ public final class TikTokFeedAdFilter {
     private static Field authorLiveField;
     private static Method setAnchorsMethod;
     private static Method setAnchorInfoMethod;
+    private static Method getLiveAwesomeSplashInfoMethod;
+    private static Field liveAwesomeSplashInfoField;
+    private static Method getAdAwemeSourceMethod;
+    private static Field adAwemeSourceField;
 
     private static Method isFriendsTabFakeAwemeMethod;
     private static Method getRecommendCardTypeMethod;
@@ -183,6 +187,10 @@ public final class TikTokFeedAdFilter {
                     }
                 }
             } catch (Throwable ignored) {}
+            try { getLiveAwesomeSplashInfoMethod = awemeClass.getMethod("getLiveAwesomeSplashInfo"); getLiveAwesomeSplashInfoMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { liveAwesomeSplashInfoField = awemeClass.getDeclaredField("mLiveAwesomeSplashInfo"); liveAwesomeSplashInfoField.setAccessible(true); } catch (Throwable ignored) {}
+            try { getAdAwemeSourceMethod = awemeClass.getMethod("getAdAwemeSource"); getAdAwemeSourceMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { adAwemeSourceField = awemeClass.getDeclaredField("adAwemeSource"); adAwemeSourceField.setAccessible(true); } catch (Throwable ignored) {}
             try { isFriendsTabFakeAwemeMethod = awemeClass.getMethod("isFriendsTabFakeAweme"); isFriendsTabFakeAwemeMethod.setAccessible(true); } catch (Throwable ignored) {}
             try { getRecommendCardTypeMethod = awemeClass.getMethod("getRecommendCardType"); getRecommendCardTypeMethod.setAccessible(true); } catch (Throwable ignored) {}
             try { getCardInsertInfoMethod = awemeClass.getMethod("getCardInsertInfo"); getCardInsertInfoMethod.setAccessible(true); } catch (Throwable ignored) {}
@@ -382,6 +390,24 @@ public final class TikTokFeedAdFilter {
             }
             if (isWithPromotionalMusicMethod != null && Boolean.TRUE.equals(isWithPromotionalMusicMethod.invoke(aweme))) {
                 return true;
+            }
+            if (getLiveAwesomeSplashInfoMethod != null && getLiveAwesomeSplashInfoMethod.invoke(aweme) != null) {
+                return true;
+            }
+            if (liveAwesomeSplashInfoField != null && liveAwesomeSplashInfoField.get(aweme) != null) {
+                return true;
+            }
+            if (getAdAwemeSourceMethod != null) {
+                Object src = getAdAwemeSourceMethod.invoke(aweme);
+                if (src instanceof Number && ((Number) src).intValue() > 0) {
+                    return true;
+                }
+            }
+            if (adAwemeSourceField != null) {
+                int src = adAwemeSourceField.getInt(aweme);
+                if (src > 0) {
+                    return true;
+                }
             }
             if (getShareUrlMethod != null) {
                 Object url = getShareUrlMethod.invoke(aweme);
