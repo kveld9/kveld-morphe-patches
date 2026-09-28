@@ -19,82 +19,62 @@ val skipFirstLaunchOnboardingPatch = bytecodePatch(
         var patched = 0
 
         // 1. NewUserJourneyService.LIZJ()Z -> return true (reports did_finish_nuj = true)
-        try {
-            Fingerprint(
-                definingClass = NEW_USER_JOURNEY_SERVICE,
-                returnType = "Z",
-                strings = listOf("did_finish_nuj"),
-            ).method.replaceWithReturnBoolean(true)
-            println("[SkipFirstLaunchOnboarding] Forced NewUserJourneyService.LIZJ() -> Reported did_finish_nuj = true.")
-            patched++
-        } catch (e: Exception) {
-            println("[SkipFirstLaunchOnboarding] NewUserJourneyService.LIZJ note: ${e.message}")
-        }
+        Fingerprint(
+            definingClass = NEW_USER_JOURNEY_SERVICE,
+            returnType = "Z",
+            strings = listOf("did_finish_nuj"),
+        ).method.replaceWithReturnBoolean(true)
+        println("[SkipFirstLaunchOnboarding] Forced NewUserJourneyService.LIZJ() -> Reported did_finish_nuj = true.")
+        patched++
 
         // 2. NewUserJourneyService.LJJJI(Landroid/app/Activity;)Z -> return false (never show NUJ)
-        try {
+        Fingerprint(
+            definingClass = NEW_USER_JOURNEY_SERVICE,
+            returnType = "Z",
+            parameters = listOf("Landroid/app/Activity;"),
+            strings = listOf("new_user_journey"),
+        ).method.replaceWithReturnBoolean(false)
+        println("[SkipFirstLaunchOnboarding] Neutralized NewUserJourneyService.LJJJI() -> Should show NUJ suppressed.")
+        patched++
+
+        // 3. NewUserJourneyService.LJIJI(...)V -> return-void (suppress launching NUJ Activity)
+        Fingerprint(
+            definingClass = NEW_USER_JOURNEY_SERVICE,
+            returnType = "V",
+            strings = listOf("deeplink_intent_about_welcome_screen"),
+        ).method.replaceWithReturnVoid()
+        println("[SkipFirstLaunchOnboarding] Neutralized NewUserJourneyService.LJIJI() -> Launch activity intent suppressed.")
+        patched++
+
+        // 4. NewUserJourneyService.LJJJ(Landroid/app/Activity;, Landroid/content/Intent;)V -> return-void
+        Fingerprint(
+            definingClass = NEW_USER_JOURNEY_SERVICE,
+            returnType = "V",
+            parameters = listOf("Landroid/app/Activity;", "Landroid/content/Intent;"),
+            strings = listOf("reorder_new_journey_front"),
+        ).method.replaceWithReturnVoid()
+        println("[SkipFirstLaunchOnboarding] Neutralized NewUserJourneyService.LJJJ() -> Reorder NUJ suppressed.")
+        patched++
+
+        // 5. NewUserJourneyService.LJIJJLI(Lcom/bytedance/ies/foundation/activity/BaseActivity;)Z -> return false
+        val method = try {
+            Fingerprint(
+                definingClass = NEW_USER_JOURNEY_SERVICE,
+                name = "LJIJJLI",
+                returnType = "Z",
+                parameters = listOf("Lcom/bytedance/ies/foundation/activity/BaseActivity;"),
+            ).method
+        } catch (_: Exception) {
+            // Obfuscation fallback for variants
             Fingerprint(
                 definingClass = NEW_USER_JOURNEY_SERVICE,
                 returnType = "Z",
-                parameters = listOf("Landroid/app/Activity;"),
-                strings = listOf("new_user_journey"),
-            ).method.replaceWithReturnBoolean(false)
-            println("[SkipFirstLaunchOnboarding] Neutralized NewUserJourneyService.LJJJI() -> Should show NUJ suppressed.")
-            patched++
-        } catch (e: Exception) {
-            println("[SkipFirstLaunchOnboarding] NewUserJourneyService.LJJJI note: ${e.message}")
+                parameters = listOf("Lcom/bytedance/ies/foundation/activity/BaseActivity;"),
+            ).method
         }
-
-        // 3. NewUserJourneyService.LJIJI(...)V -> return-void (suppress launching NUJ Activity)
-        try {
-            Fingerprint(
-                definingClass = NEW_USER_JOURNEY_SERVICE,
-                returnType = "V",
-                strings = listOf("deeplink_intent_about_welcome_screen"),
-            ).method.replaceWithReturnVoid()
-            println("[SkipFirstLaunchOnboarding] Neutralized NewUserJourneyService.LJIJI() -> Launch activity intent suppressed.")
-            patched++
-        } catch (e: Exception) {
-            println("[SkipFirstLaunchOnboarding] NewUserJourneyService.LJIJI note: ${e.message}")
-        }
-
-        // 4. NewUserJourneyService.LJJJ(Landroid/app/Activity;, Landroid/content/Intent;)V -> return-void
-        try {
-            Fingerprint(
-                definingClass = NEW_USER_JOURNEY_SERVICE,
-                returnType = "V",
-                parameters = listOf("Landroid/app/Activity;", "Landroid/content/Intent;"),
-                strings = listOf("reorder_new_journey_front"),
-            ).method.replaceWithReturnVoid()
-            println("[SkipFirstLaunchOnboarding] Neutralized NewUserJourneyService.LJJJ() -> Reorder NUJ suppressed.")
-            patched++
-        } catch (e: Exception) {
-            println("[SkipFirstLaunchOnboarding] NewUserJourneyService.LJJJ note: ${e.message}")
-        }
-
-        // 5. NewUserJourneyService.LJIJJLI(Lcom/bytedance/ies/foundation/activity/BaseActivity;)Z -> return false
-        try {
-            val method = try {
-                Fingerprint(
-                    definingClass = NEW_USER_JOURNEY_SERVICE,
-                    name = "LJIJJLI",
-                    returnType = "Z",
-                    parameters = listOf("Lcom/bytedance/ies/foundation/activity/BaseActivity;"),
-                ).method
-            } catch (_: Exception) {
-                // Obfuscation fallback for variants
-                Fingerprint(
-                    definingClass = NEW_USER_JOURNEY_SERVICE,
-                    returnType = "Z",
-                    parameters = listOf("Lcom/bytedance/ies/foundation/activity/BaseActivity;"),
-                ).method
-            }
-            method.replaceWithReturnBoolean(false)
-            println("[SkipFirstLaunchOnboarding] Neutralized NewUserJourneyService.LJIJJLI() -> Container activity launch suppressed.")
-            patched++
-        } catch (e: Exception) {
-            println("[SkipFirstLaunchOnboarding] NewUserJourneyService.LJIJJLI note: ${e.message}")
-        }
+        method.replaceWithReturnBoolean(false)
+        println("[SkipFirstLaunchOnboarding] Neutralized NewUserJourneyService.LJIJJLI() -> Container activity launch suppressed.")
+        patched++
 
         println("[SkipFirstLaunchOnboarding] Applied $patched hooks -> Direct feed launch achieved.")
     }
