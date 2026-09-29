@@ -106,7 +106,7 @@
 </details>
 
 <details>
-<summary>TikTok&nbsp;&nbsp;•&nbsp;&nbsp;<b>51 patches</b></summary>
+<summary>TikTok&nbsp;&nbsp;•&nbsp;&nbsp;<b>52 patches</b></summary>
 <br>
 
 **Supported versions:**
@@ -123,6 +123,7 @@
 | **Bypass Screen Capture Detection** | Clears FLAG_SECURE on protected windows to allow screenshots and screen recording across restricted views, and neutralizes screenshot detection listeners and feedback prompts. |  |
 | **Clean Share URL** | Strips tracking parameters, user IDs, device fingerprints, and marketing tokens from shared TikTok links. |  |
 | **Client-Side AI & Behavioral Profiling Governor** | Neutralizes on-device machine learning inference (Pitaya), Tako AI chatbot entry points and icons, and AI smart search suggestion clutter. |  |
+| **Comment Sort Controls** | Unlocks native comment sort controls (Newest, Most Relevant) across video posts. |  |
 | **Copy Comments Without Username** | Copies only the comment text without prepending the author username. |  |
 | **Core Asset De-bloat** | Strips embedded Microblink/FinTech card scanner models, Pitaya AI & ByteNN LLM engines, C2PA origin verification, DLNA cast scanners, and redundant non-Latin fonts to save APK space. |  |
 | **Custom Offline Videos Limit** | Customizes the maximum number of videos available for offline download caching. | • Custom Offline Videos Limit |

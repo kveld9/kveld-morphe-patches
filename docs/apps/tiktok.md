@@ -48,6 +48,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Usability** | **Hide Suggested Searches** | `bytecodePatch` | Removes the suggested search keywords section ('You may like' / 'Search suggestions') from the search discovery page. |
 | **Usability** | **Disable Search Video Autoplay** | `bytecodePatch` | Disables automatic video playback in search results. Videos only play when tapped to view in detail. |
 | **Usability** | **Auto-Pause First Video** | `bytecodePatch` | Automatically pauses the initial video on startup (frame 0) with center play icon; resumes upon screen tap or feed scroll. |
+| **Usability** | **Comment Sort Controls** | `bytecodePatch` | Unlocks native comment sort controls (Newest, Most Relevant) across video posts. |
 | **Privacy** | **Fix Google Login** | `bytecodePatch` | Restores Google account sign-in via Web OAuth fallback when GMS rejects modified APK signature. |
 | **Privacy** | **Bypass Mandatory Login** | `bytecodePatch` | Neutralizes mandatory login walls, dynamic regional forced login gates, and guest browsing restrictions. |
 | **Privacy** | **Bypass Screen Capture Detection** | `bytecodePatch` | Clears `FLAG_SECURE` on protected windows to allow screenshots and screen recording across restricted views, and neutralizes screenshot detection listeners and feedback prompts. |
@@ -385,3 +386,8 @@ The **`Custom Share Sheet`** patch cleans and customizes TikTok's native sharing
 - **Search List Autoplay Calculation Loop Suppression**: Injects `return-void` at index 0 of `SearchListAutoplayHelper.LIZIZ(Z LX/0JHH;)V` (fingerprinted by string `"checkLogic() is not called on main thread"`), halting the recurring scroll and idle candidate evaluation cycle.
 - **Card AutoPlay Ability Inactivation**: Injects `const/4 v0, 0` / `return v0` into `SearchCardVideoPlayerAssem$autoPlayAbility$2$1.l2()Z`, `SearchVideoForLynx$ability$1.l2()Z`, and `SearchCardPhotoPlayerAssem$autoPlayAbility$2$1.l2()Z`, asserting `false` for card autoplay eligibility.
 - **Playback Execution Guard**: Injects `return-void` into `r()V` on all search card `AutoPlayAbility` implementations, preventing any direct invocation from triggering video playback or hiding cover thumbnails. Detail view playback when opening a video remains fully functional via `PlayerController`.
+
+### 20. Comment Sort Controls (`commentSortControlsPatch`)
+- Unlocks TikTok's internal native comment sorting controls sheet across all videos.
+- **Sort Style Override**: Hooks the `comment_sort_opt_style` configuration getter, returning `2` (`FULL_SORT_SHEET_STYLE`) to activate the complete bottom sheet menu options (Most Relevant, Newest, Creator Only, Media Only).
+- **Post Eligibility Override**: Hooks the Aweme-level comment sort eligibility evaluator to return `true`, making the sorting header available across all feed and profile comments.
