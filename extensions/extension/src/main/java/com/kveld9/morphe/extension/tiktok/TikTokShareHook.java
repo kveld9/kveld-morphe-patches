@@ -43,6 +43,8 @@ public final class TikTokShareHook {
     // 4. Actions & utilities
     public static boolean hidePromote = true;
     public static boolean hideWhyThisVideo = true;
+    public static boolean hideCreateGroup = false;
+    public static boolean hideAddToStory = false;
     public static boolean hideCreateSticker = false;
     public static boolean hideDuet = false;
     public static boolean hideStitch = false;
@@ -97,13 +99,31 @@ public final class TikTokShareHook {
                 ));
             }
 
-            if (hidePromote) set.add("promote");
-            if (hideWhyThisVideo) set.add("why_this_video");
+            if (hidePromote) {
+                set.add("promote");
+                set.add("promote_for_others");
+                set.add("promote_for_others_fyp");
+            }
+            if (hideWhyThisVideo) {
+                set.add("why_this_video");
+                set.add("why_this_live");
+            }
+            if (hideCreateGroup) {
+                set.add("im_create_group");
+                set.add("create_group");
+                set.add("create_group_chat");
+            }
+            if (hideAddToStory) {
+                set.add("share_to_story");
+                set.add("add_to_story");
+                set.add("live_add_to_story");
+                set.add("story_to_post");
+            }
             if (hideCreateSticker) { set.add("create_sticker"); set.add("create_stickers"); }
             if (hideDuet) set.add("duet");
             if (hideStitch) set.add("stitch");
             if (hidePip) { set.add("pip_switch"); set.add("pip"); }
-            if (hideClearDisplay) set.add("clear_display");
+            if (hideClearDisplay) { set.add("clear_display"); set.add("clear_screen"); }
             if (hideListenAudio) { set.add("listen_audio"); set.add("background_play"); }
             if (hideWallpaperAndGif) { set.add("wallpaper"); set.add("live_photo"); set.add("gif"); }
             if (hideNotInterested) { set.add("dislike"); set.add("not_interested"); }

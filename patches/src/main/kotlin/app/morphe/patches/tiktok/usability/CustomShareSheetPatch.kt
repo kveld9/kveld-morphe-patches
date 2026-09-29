@@ -151,6 +151,22 @@ val customShareSheetPatch = bytecodePatch(
         required = false,
     )
 
+    val hideCreateGroup by booleanOption(
+        key = "hideCreateGroup",
+        default = false,
+        title = "Hide 'Create Group' Action",
+        description = "Hides the Create group action from the bottom utilities row.",
+        required = false,
+    )
+
+    val hideAddToStory by booleanOption(
+        key = "hideAddToStory",
+        default = false,
+        title = "Hide 'Add to Story'",
+        description = "Hides the Add to Story action from the bottom utilities row.",
+        required = false,
+    )
+
     val hideCreateSticker by booleanOption(
         key = "hideCreateSticker",
         default = false,
@@ -306,6 +322,8 @@ val customShareSheetPatch = bytecodePatch(
             "hideSystemShare" to (hideSystemShare == true),
             "hidePromote" to (hidePromote == true),
             "hideWhyThisVideo" to (hideWhyThisVideo == true),
+            "hideCreateGroup" to (hideCreateGroup == true),
+            "hideAddToStory" to (hideAddToStory == true),
             "hideCreateSticker" to (hideCreateSticker == true),
             "hideDuet" to (hideDuet == true),
             "hideStitch" to (hideStitch == true),

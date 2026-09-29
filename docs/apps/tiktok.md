@@ -223,6 +223,8 @@ The **`Custom Share Sheet`** patch cleans and customizes TikTok's native sharing
 | **Hide Friends DM Row** | `hideFriendsRow` | Boolean | `false` | Suppresses the top suggested contacts/friends avatar row in the share dialog. |
 | **Hide 'Promote' Action** | `hidePromote` | Boolean | `true` | Hides the commercial Promote action from the bottom utilities row. |
 | **Hide 'Why This Video'** | `hideWhyThisVideo` | Boolean | `true` | Hides the recommendation explanation action from the bottom utilities row. |
+| **Hide 'Create Group' Action** | `hideCreateGroup` | Boolean | `false` | Hides the Create group action from the bottom utilities row. |
+| **Hide 'Add to Story'** | `hideAddToStory` | Boolean | `false` | Hides the Add to Story action from the bottom utilities row. |
 | **Hide 'Create Sticker'** | `hideCreateSticker` | Boolean | `false` | Hides the sticker creation tool from the bottom utilities row. |
 | **Hide 'Duet' Action** | `hideDuet` | Boolean | `false` | Hides the Duet action from the bottom utilities row. |
 | **Hide 'Stitch' Action** | `hideStitch` | Boolean | `false` | Hides the Stitch action from the bottom utilities row. |
