@@ -185,6 +185,12 @@ For non-trivial logic, Smali hooks, native ARM64 patching (`libchrome.so`), or s
     - When an implementation unit is complete and verified, simply present the technical outcome, validation evidence, and conclude.
 16. **Prohibition of Multi-Version Target Retentions**:
     - Under no circumstances should any target application declare multiple supported versions in `Constants.kt` or `README.md`. Always target strictly the latest supported version (`targets = listOf(AppTarget(version = ..., ...))`). Any residual compatibility blocks, fallbacks, or documentation references to older target versions must be completely eliminated upon updating.
+17. **Strict Prohibition of In-App Settings Screens & Dynamic UI Panels**:
+    - Never propose or implement in-app settings activities, preference menus, or overlay panels to toggle patches dynamically at runtime. Dynamic toggles introduce extreme ProGuard/DexGuard fragility across weekly upstream bumps and disk I/O overhead on performance-critical paths. All configurable parameters must be compile/patch-time options via Morphe Manager / CLI (`stringOption`). Authoritative boundary: `docs/out-of-scope.md`.
+18. **Strict Prohibition of Server-Side Bypasses, DRM, and Account Exploits**:
+    - Never attempt to bypass server-side subscription paywalls, unlock cloud-restricted content, access private accounts, or defeat DRM protections. Patches operate strictly on client-side bytecode and local application assets. Authoritative boundary: `docs/out-of-scope.md`.
+19. **Strict Prohibition of Embedded Download Managers & Feature Bloat**:
+    - Never embed third-party media download engines, torrent clients, or custom UI skins inside host applications. Patches strictly unlock native capabilities (e.g. watermark-free saves) and debloat assets without bloating target APKs with complex third-party subsystems. Authoritative boundary: `docs/out-of-scope.md`.
 
 ---
 
