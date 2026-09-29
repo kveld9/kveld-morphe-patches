@@ -106,7 +106,7 @@
 </details>
 
 <details>
-<summary>TikTok&nbsp;&nbsp;•&nbsp;&nbsp;<b>52 patches</b></summary>
+<summary>TikTok&nbsp;&nbsp;•&nbsp;&nbsp;<b>53 patches</b></summary>
 <br>
 
 **Supported versions:**
@@ -161,6 +161,7 @@
 | **P2P Video Relay & Mesh CDN Blocker** | Strips background Peer-to-Peer CDN distribution binaries (libavmdlp2pv2.so and libp2plivevdp.so) to prevent battery drain, background data upload, and mesh relay. |  |
 | **Playback Speed Persistence** | Persists selected video playback speed across all feed videos and application restarts. |  |
 | **Resource & Battery Governor** | Throttles background sensor polling (gyroscope/accelerometer 3D ads) and prevents aggressive video buffer preloading to conserve battery and CPU resources. |  |
+| **Resume Video After Scroll** | Resumes video playback from previous playback position when returning to a video in the feed. |  |
 | **SIM Region Selector** | Spoofs the detected SIM and network country ISO code to bypass regional feed restrictions and catalog blocks. | • Spoofed Region ISO Code |
 | **Show Seekbar** | Restores TikTok's native video seekbar and scrubbing controls where normally hidden or disabled. |  |
 | **Skip First-Launch Onboarding** | Bypasses the entire first-run introduction funnel (interest pickers, swipe tutorials, language prompts, and consent sheets) directly to the feed. |  |

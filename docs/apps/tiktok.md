@@ -49,6 +49,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Usability** | **Disable Search Video Autoplay** | `bytecodePatch` | Disables automatic video playback in search results. Videos only play when tapped to view in detail. |
 | **Usability** | **Auto-Pause First Video** | `bytecodePatch` | Automatically pauses the initial video on startup (frame 0) with center play icon; resumes upon screen tap or feed scroll. |
 | **Usability** | **Comment Sort Controls** | `bytecodePatch` | Unlocks native comment sort controls (Newest, Most Relevant) across video posts. |
+| **Usability** | **Resume Video After Scroll** | `bytecodePatch` | Resumes video playback from previous playback position when returning to a video in the feed. |
 | **Privacy** | **Fix Google Login** | `bytecodePatch` | Restores Google account sign-in via Web OAuth fallback when GMS rejects modified APK signature. |
 | **Privacy** | **Bypass Mandatory Login** | `bytecodePatch` | Neutralizes mandatory login walls, dynamic regional forced login gates, and guest browsing restrictions. |
 | **Privacy** | **Bypass Screen Capture Detection** | `bytecodePatch` | Clears `FLAG_SECURE` on protected windows to allow screenshots and screen recording across restricted views, and neutralizes screenshot detection listeners and feedback prompts. |
@@ -391,3 +392,8 @@ The **`Custom Share Sheet`** patch cleans and customizes TikTok's native sharing
 - Unlocks TikTok's internal native comment sorting controls sheet across all videos.
 - **Sort Style Override**: Hooks the `comment_sort_opt_style` configuration getter, returning `2` (`FULL_SORT_SHEET_STYLE`) to activate the complete bottom sheet menu options (Most Relevant, Newest, Creator Only, Media Only).
 - **Post Eligibility Override**: Hooks the Aweme-level comment sort eligibility evaluator to return `true`, making the sorting header available across all feed and profile comments.
+
+### 21. Resume Video After Scroll (`resumeVideoAfterScrollPatch`)
+- Persists and restores playback timestamp when scrolling away and returning to feed videos.
+- **Configuration Gate Activation**: Hooks `FeedPlayProgressContinueConfig` gate (`invoke()`), forcing `enable = true`.
+- **Feed Type Restriction Bypass**: Intercepts the event type check matching `landscape_change_keep_tag`, replacing the `MOVE_RESULT` register with `1` to allow timestamp restoration across standard vertical portrait feeds.
