@@ -50,6 +50,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Usability** | **Auto-Pause First Video** | `bytecodePatch` | Automatically pauses the initial video on startup (frame 0) with center play icon; resumes upon screen tap or feed scroll. |
 | **Usability** | **Comment Sort Controls** | `bytecodePatch` | Unlocks native comment sort controls (Newest, Most Relevant) across video posts. |
 | **Usability** | **Resume Video After Scroll** | `bytecodePatch` | Resumes video playback from previous playback position when returning to a video in the feed. |
+| **Usability** | **Stop Video Looping** | `bytecodePatch` | Prevents videos from looping continuously on playback completion. |
 | **Privacy** | **Fix Google Login** | `bytecodePatch` | Restores Google account sign-in via Web OAuth fallback when GMS rejects modified APK signature. |
 | **Privacy** | **Bypass Mandatory Login** | `bytecodePatch` | Neutralizes mandatory login walls, dynamic regional forced login gates, and guest browsing restrictions. |
 | **Privacy** | **Bypass Screen Capture Detection** | `bytecodePatch` | Clears `FLAG_SECURE` on protected windows to allow screenshots and screen recording across restricted views, and neutralizes screenshot detection listeners and feedback prompts. |
@@ -397,3 +398,7 @@ The **`Custom Share Sheet`** patch cleans and customizes TikTok's native sharing
 - Persists and restores playback timestamp when scrolling away and returning to feed videos.
 - **Configuration Gate Activation**: Hooks `FeedPlayProgressContinueConfig` gate (`invoke()`), forcing `enable = true`.
 - **Feed Type Restriction Bypass**: Intercepts the event type check matching `landscape_change_keep_tag`, replacing the `MOVE_RESULT` register with `1` to allow timestamp restoration across standard vertical portrait feeds.
+
+### 22. Stop Video Looping (`stopVideoLoopingPatch`)
+- Prevents videos from repeating in an infinite loop upon playback completion.
+- **Native Player Looping Suppression**: Injects `const/4 p1, 0x0` at instruction offset 0 of `Lcom/ss/ttvideoengine/TTVideoEngine;->setLooping(Z)V`, ensuring `isLooping` remains disabled for the underlying media session.
