@@ -22,8 +22,11 @@ public final class TikTokPrivacyHook {
         "android.permission.ACCESS_LOCAL_NETWORK",
         "android.permission.BLUETOOTH_SCAN",
         "android.permission.BLUETOOTH_ADVERTISE",
+        "android.permission.BLUETOOTH_CONNECT",
         "android.permission.ACTIVITY_RECOGNITION",
-        "com.google.android.gms.permission.AD_ID"
+        "com.google.android.gms.permission.AD_ID",
+        "android.permission.ACCESS_ADSERVICES_AD_ID",
+        "android.permission.ACCESS_ADSERVICES_ATTRIBUTION"
     ));
 
     private TikTokPrivacyHook() {}
@@ -113,14 +116,14 @@ public final class TikTokPrivacyHook {
             Object friendsRepo = getRepo.invoke(null, "FriendsSharePreferences");
             if (friendsRepo != null) {
                 Method storeBoolean = friendsRepo.getClass().getMethod("storeBoolean", String.class, boolean.class);
-                storeBoolean.invoke(friendsRepo, "read_contact_denied", true);
+                storeBoolean.invoke(friendsRepo, "read_contact_denied", false);
             }
 
             Object permRepo = getRepo.invoke(null, "permission_store");
             if (permRepo != null) {
                 Method storeBoolean = permRepo.getClass().getMethod("storeBoolean", String.class, boolean.class);
                 for (String perm : permissions) {
-                    storeBoolean.invoke(permRepo, perm, true);
+                    storeBoolean.invoke(permRepo, perm, false);
                 }
             }
         } catch (Throwable ignored) {}

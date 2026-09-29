@@ -52,12 +52,32 @@ val devicePrivacyGuardPatch = bytecodePatch(
                 invoke-static/range {p0 .. p0}, ${Constants.TIKTOK_EXTENSION_PRIVACY_HOOK}->isPermissionBlocked(Ljava/lang/String;)Z
                 move-result v0
                 if-eqz v0, :cond_check
-                const/4 v0, 0x1
+                const/4 v0, 0
                 return v0
                 :cond_check
             """.trimIndent(),
         )
-        println("[Device Privacy Guard] Intercepted LX/04CN.LIZ() -> permanently denied for blocked permissions.")
+        println("[Device Privacy Guard] Intercepted LX/04CN.LIZ() -> suppressed denial flag for blocked permissions.")
+        patched++
+
+        // 1.4 Suppress permanently denied / open settings prompt redirector (LX/06WV;->LJI)
+        Fingerprint(
+            definingClass = "LX/06WV;",
+            name = "LJI",
+            parameters = listOf("Landroid/app/Activity;", "Ljava/lang/String;", "Z"),
+            returnType = "Z",
+        ).method.addInstructions(
+            0,
+            """
+                invoke-static/range {p1 .. p1}, ${Constants.TIKTOK_EXTENSION_PRIVACY_HOOK}->isPermissionBlocked(Ljava/lang/String;)Z
+                move-result v0
+                if-eqz v0, :cond_proceed
+                const/4 v0, 0
+                return v0
+                :cond_proceed
+            """.trimIndent(),
+        )
+        println("[Device Privacy Guard] Neutralized LX/06WV.LJI() -> permanently denied settings redirects suppressed for blocked permissions.")
         patched++
 
         // ==========================================
@@ -231,6 +251,49 @@ val devicePrivacyGuardPatch = bytecodePatch(
             println("[Device Privacy Guard] Neutralized $taskClass.meetTrigger() -> false.")
             patched++
         }
+
+        // 3.4 Neutralize relation onboarding and popup triggers (LX/16rQ, LX/16rP, LX/16rO)
+        Fingerprint(
+            definingClass = "LX/16rQ;",
+            name = "LIZJ",
+            returnType = "Z",
+        ).method.addInstructions(
+            0,
+            """
+                const/4 v0, 0x0
+                return v0
+            """.trimIndent(),
+        )
+        println("[Device Privacy Guard] Neutralized LX/16rQ.LIZJ() -> contacts relation auth trigger suppressed.")
+        patched++
+
+        Fingerprint(
+            definingClass = "LX/16rP;",
+            name = "LIZJ",
+            returnType = "Z",
+        ).method.addInstructions(
+            0,
+            """
+                const/4 v0, 0x0
+                return v0
+            """.trimIndent(),
+        )
+        println("[Device Privacy Guard] Neutralized LX/16rP.LIZJ() -> Facebook relation auth trigger suppressed.")
+        patched++
+
+        Fingerprint(
+            definingClass = "LX/16rO;",
+            name = "LIZIZ",
+            returnType = "Z",
+        ).method.addInstructions(
+            0,
+            """
+                const/4 v0, 0x0
+                return v0
+            """.trimIndent(),
+        )
+        println("[Device Privacy Guard] Neutralized LX/16rO.LIZIZ() -> enablePermissionPopup forced false.")
+        patched++
 
         // ==========================================
         // 4. ADVERTISING ID (AD_ID) PROFILING BLOCK

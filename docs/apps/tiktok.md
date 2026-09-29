@@ -52,7 +52,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Privacy** | **Bypass Mandatory Login** | `bytecodePatch` | Neutralizes mandatory login walls, dynamic regional forced login gates, and guest browsing restrictions. |
 | **Privacy** | **Bypass Screen Capture Detection** | `bytecodePatch` | Clears `FLAG_SECURE` on protected windows to allow screenshots and screen recording across restricted views, and neutralizes screenshot detection listeners and feedback prompts. |
 | **Privacy** | **Clean Share URL** | `bytecodePatch` | Strips tracking query parameters, user tokens, and campaign IDs from shared links. |
-| **Privacy** | **Device Privacy Guard** | `bytecodePatch` | Intercepts runtime permission prompts (contacts, location), suppresses in-app permission nag dialogs and background sync tasks, zeroes Advertising ID, blocks clipboard inspection, isolates package queries, and silences HAR motion sensors. |
+| **Privacy** | **Device Privacy Guard** | `bytecodePatch` | Intercepts runtime permission prompts (contacts, location, nearby devices, AdServices), suppresses in-app permission nag dialogs, settings redirect prompts, and background sync tasks, zeroes Advertising ID, blocks clipboard inspection, isolates package queries, and silences HAR motion sensors. |
 | **Privacy** | **In-App Browser Privacy Guard** | `bytecodePatch` | Redirects external links to default system browser, neutralizes WebView JS tracking injection and AJAX hookers. |
 | **Privacy** | **Client-Side AI & Behavioral Profiling Governor** | `bytecodePatch` | Neutralizes Pitaya on-device ML, Tako AI chatbot entries, and AI search clutter. |
 | **Privacy** | **[SIM Region Selector](#1-sim-region-selector)** | `bytecodePatch` | Spoofs SIM and network country ISO codes to bypass regional restrictions. |
@@ -259,12 +259,14 @@ The **`Custom Share Sheet`** patch cleans and customizes TikTok's native sharing
 > **Bytecode-Only Privacy Architecture (`ResourceMode.RAW`)**:
 > Unlike apps with standard resource structures, TikTok's entire patch suite strictly avoids resource decoding (`resourcePatch`). Re-encoding TikTok's obfuscated resource tree via `arsclib` drops launcher icon drawables (`res/a/aq2.xml`, `res/a/aq3.xml`). Privacy is enforced at the Dalvik bytecode execution layer via runtime permission interception, in-app nag suppression, sensor silencing, and telemetry neutralization while keeping APK resources intact.
 
-- **Runtime Permission Interception & Denial Caching**:
+- **Runtime Permission Interception & Denial Handling**:
   - Intercepts ByteDance Helios static dispatcher (`LX/02z2;->LLJ`) for `Activity.requestPermissions`.
-  - Intercepts PowerPermissions headless engine (`FakeFragment;->jT`) to immediately dispatch permanent denials (`PackageManager.PERMISSION_DENIED`) for invasive permissions (`READ_CONTACTS`, `ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION`, `ACCESS_BACKGROUND_LOCATION`, `ACCESS_LOCAL_NETWORK`).
-  - Records permanent user denials into Keva stores (`FriendsSharePreferences -> read_contact_denied = true`, `permission_store -> <perm> = true`) so the app treats permissions as permanently denied and suppresses repeated prompts.
-  - Hooks permission cache check (`LX/04DS;->LIZ`) to report blocked permissions as permanently denied.
-- **In-App Permission Dialog & Location Popup Suppression**:
+  - Intercepts PowerPermissions headless engine (`FakeFragment;->cY` / `jT`) to immediately dispatch denials (`PackageManager.PERMISSION_DENIED`) for invasive permissions (`READ_CONTACTS`, `ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION`, `ACCESS_BACKGROUND_LOCATION`, `ACCESS_LOCAL_NETWORK`, `BLUETOOTH_SCAN`, `BLUETOOTH_ADVERTISE`, `BLUETOOTH_CONNECT`, `ACTIVITY_RECOGNITION`, `AD_ID`, `ACCESS_ADSERVICES_AD_ID`, `ACCESS_ADSERVICES_ATTRIBUTION`).
+  - Resets permanent denial flags in Keva stores (`FriendsSharePreferences -> read_contact_denied = false`, `permission_store -> <perm> = false`) to prevent persistent denial profiling.
+  - Hooks permission cache check (`LX/04CN;->LIZ`) returning `false` for blocked permissions to suppress permanently-denied flags.
+- **In-App Permission Dialog, Settings Redirect & Location Popup Suppression**:
+  - Neutralizes permanently denied system settings redirect dialogs (`LX/06WV;->LJI(Activity, String, boolean)Z` -> returns `false` for blocked permissions), eliminating persistent in-app prompts nudging users to open device Application Details Settings.
+  - Suppresses relation onboarding and permission dialog triggers (`LX/16rQ.LIZJ` -> `false` for contacts, `LX/16rP.LIZJ` -> `false` for Facebook, and `LX/16rO.LIZIZ` -> `false` for permission popups).
   - Suppresses relation/contacts synchronization auth dialogs (`RelationAuthDialogControl.LJIIIIZZ` -> `false`, `RelationAuthDialogControl.LJI` -> `false`).
   - Suppresses location popups and scenes (`LX/0BK7` popup checks and `LocationServiceImpl.LJIIZILJ`, `LJIJ`).
 - **Background Sync Lego Task Neutralization**:
