@@ -132,7 +132,8 @@ public final class TikTokFeedAdFilter {
         "is_from_webapp", "sender_device", "_r", "checksum", "sec_user_id",
         "ug_source", "share_app_id", "share_item_id", "share_link_id",
         "source", "timestamp", "user_id", "u_code", "tt_from",
-        "utm_source", "utm_campaign", "utm_medium"
+        "utm_source", "utm_campaign", "utm_medium",
+        "share_iid", "sharer_id", "ugbiz_name"
     ));
 
     private TikTokFeedAdFilter() {}
