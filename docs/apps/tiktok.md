@@ -47,6 +47,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Usability** | **Hide Popular Lives In Search** | `bytecodePatch` | Removes the Popular LIVEs recommendation card and live stream broadcasts from the search discovery page. |
 | **Usability** | **Hide Suggested Searches** | `bytecodePatch` | Removes the suggested search keywords section ('You may like' / 'Search suggestions') from the search discovery page. |
 | **Usability** | **Disable Search Video Autoplay** | `bytecodePatch` | Disables automatic video playback in search results. Videos only play when tapped to view in detail. |
+| **Usability** | **Hide Nearby Feed Tab** | `bytecodePatch` | Removes the Nearby (local city or region) feed tab from the top navigation feed strip. |
 | **Usability** | **Auto-Pause First Video** | `bytecodePatch` | Automatically pauses the initial video on startup (frame 0) with center play icon; resumes upon screen tap or feed scroll. |
 | **Usability** | **Comment Sort Controls** | `bytecodePatch` | Unlocks native comment sort controls (Newest, Most Relevant) across video posts. |
 | **Usability** | **Hide Seen Videos** | `bytecodePatch` | Filters previously watched videos from incoming For You feed batches based on playback progress. |
@@ -384,6 +385,7 @@ The **`Custom Share Sheet`** patch cleans and customizes TikTok's native sharing
   - Specific AI sub-structures (`aiAliveInfo`, `aiPortraitInfo`, `aiRemixInfo`, `aiTheaterInfo`, `aiChatEditorInfo`).
   - Native AI banners and anchors (`ANCHOR_AIGC`, Lynx AI disclosure templates).
   - Video description and tag regex matching for creator-disclosed AI markers (`#aigenerated`, `#ai`, `#generadoporIA`, etc.).
+
 ### 19. Disable Search Video Autoplay (`disableSearchVideoAutoplayPatch`)
 - Disables automatic video and media playback in TikTok search results, preserving bandwidth and preventing unwanted audio or distraction while browsing search cards.
 - **Search List Autoplay Calculation Loop Suppression**: Injects `return-void` at index 0 of `SearchListAutoplayHelper.LIZIZ(Z LX/0JHH;)V` (fingerprinted by string `"checkLogic() is not called on main thread"`), halting the recurring scroll and idle candidate evaluation cycle.
@@ -408,3 +410,9 @@ The **`Custom Share Sheet`** patch cleans and customizes TikTok's native sharing
 - Automatically filters previously watched videos from incoming For You feed batches, preventing repeat content during the session while preserving active viewing history.
 - **Playback Tracking**: Hooks `PlayerController.onPlayProgressChange(String, long, long)` (recording videos viewed for >= 5s or >= 70% duration) and `PlayerController.onPlayCompleted(String)`.
 - **Network Ingestion Filtering**: Hooks `FeedApiService.fetchFeedList()` return points, pruning seen video entries directly from deserialized `FeedItemList` payloads before they are delivered to the UI layer, preventing adapter desynchronization and frame drops.
+
+### 24. Hide Nearby Feed Tab (`hideNearbyTabPatch`)
+- Removes the Nearby (local city or region) feed tab from the top navigation feed strip.
+- **Top Tab Provider Interception**: Resolves `NearbyTabProvider` from `NearbyServiceImpl.LJIIZILJ()`, hooking `LJ()` -> returns `null` to eliminate `TopTabProtocol` registration in `TopTabOperator`.
+- **A/B Experiment Gate Neutralization**: Hooks the experiment evaluator method in `NearbyTabProtocol.enable()` (`LIZIZ()Z`) -> returns `false`.
+- **Protocol & Service Gates**: Hooks `NearbyTabProtocol.enable()Z` -> returns `false`, and neutralizes `NearbyServiceImpl.LJIIIIZZ()Z` and `LJIIL()Z`.
