@@ -18,6 +18,7 @@ Comprehensive reference for universal optimization and resource slimming patches
 | **[Universal Native Binary Trimmer](#8-universal-native-binary-trimmer-universalnativebinarytrimmerpatch)** | `rawResourcePatch` | Native Libraries (`lib/**`) | In-situ byte-level zeroing of non-essential tracking & debug `.so` files | **~1–15 MB** saved, removes resident native crash sidecars |
 | **[Universal WebP Asset Optimizer](#9-universal-webp-asset-optimizer-universalwebpoptimizerpatch)** | `rawResourcePatch` | WebP Assets (`res/**`, `assets/**`) | Lossless chunk stripping (`EXIF`, `XMP`, `ICCP`) + VP8X header recalculation | **~0.5–5 MB** saved, 0% visual degradation |
 | **[Background Sync & JobScheduler Purge](#10-background-sync--jobscheduler-purge-backgroundsyncpurgepatch)** | `resourcePatch` | Manifest (`AndroidManifest.xml`) | Strips boot permissions and disables boot receivers & WorkManager schedulers | Eliminates background wakeups, radio alarms, and standby battery drain |
+| **[Universal Privacy Permissions Stripper](#11-universal-privacy-permissions-stripper-universalprivacypermissionspatch)** | `resourcePatch` | Manifest (`AndroidManifest.xml`) | Selectively revokes sensitive hardware, privacy, and sensor permissions | Eliminates OS permission grants and runtime capability access |
 
 ---
 
@@ -46,6 +47,7 @@ Applying both universal and app-specific patches simultaneously to the same targ
 | **DPI Resource Slimmer** | ✅ Yes | Safely retains target device screen density and preserves orphan resources. |
 | **Locale Resource Slimmer** | ✅ Yes | Prunes unselected translation folders from `res/values-*`. |
 | **Background Sync & JobScheduler Purge** | ⚠️ Safe by Default | Keep `stripWakeLock = false` (default) on web browsers (Brave) to prevent suspending background file downloads when the screen turns off. |
+| **Universal Privacy Permissions Stripper** | ⚠️ Safe by Default | All toggles are opt-in (default: `false`). Revoke only permissions you wish to strip for your target application to prevent runtime `SecurityException` crashes in apps that lack error handling. |
 | **Universal Offline Mode** | ⚠️ Contextual | **Never apply to web browsers (Brave) or streaming media apps (TikTok)**, as it halts socket creation at the OS kernel level (`AID_INET`). For Gboard Lite and Xiaomi Earbuds, pair with their companion app-specific offline patches for graceful timeout handling. |
 
 ---
@@ -318,5 +320,48 @@ The **`Background Sync & JobScheduler Purge`** patch stops unneeded background w
 - **Disable Boot & Package Receivers (`disableBootReceivers`)**: Disables broadcast receivers registered for device startup, reboot, and app replacement events (Toggle, default: `true`).
 - **Disable WorkManager & Job Schedulers (`disableWorkManager`)**: Disables WorkManager background services and constraint-checking broadcast receivers (Toggle, default: `true`).
 - **Strip WAKE_LOCK Permission (`stripWakeLock`)**: Removes `android.permission.WAKE_LOCK` from `AndroidManifest.xml` (Toggle, default: `false`). *Keep disabled if the target application requires wake locks for continuous audio playback, video recording, screen-off background downloads (Brave), or foreground navigation.*
+
+---
+
+## 11. Universal Privacy Permissions Stripper (`universalPrivacyPermissionsPatch`)
+
+The **`Universal Privacy Permissions Stripper`** patch selectively strips sensitive privacy, sensor, and hardware permissions from `AndroidManifest.xml` via modular boolean toggles. It enables strict isolation of host applications by removing permissions at the Android packaging level.
+
+> [!NOTE]
+> ### Packaging-Tier vs. Runtime Revocation
+> In the Android platform architecture, revoking a permission in system settings causes `checkSelfPermission()` to return `PERMISSION_DENIED`. In contrast, completely stripping the `<uses-permission>` and `<uses-permission-sdk-23>` nodes from `AndroidManifest.xml` causes the Android OS to treat the permission as never requested.
+> - **Silent Permission Denial**: When an application calls `requestPermissions()` for an unmanifested permission, Android automatically denies it without displaying the runtime permission request dialog.
+> - **Zero Attack Surface**: Applications cannot be granted unmanifested permissions via ADB, device owner MDM profiles, or accessibility automation.
+
+> [!IMPORTANT]
+> ### Safety & Runtime Assumptions
+> To prevent runtime `SecurityException` crashes in applications that invoke hardware APIs without error-handling wrappers, all toggles in `Universal Privacy Permissions Stripper` are **disabled (`false`) by default**. Enable only the specific permission groups you wish to isolate for your target application.
+
+### Targeted Permission Groups
+
+| Toggle (`booleanOption`) | Revoked Manifest Permissions |
+| :--- | :--- |
+| **Strip Notification Permission** | `android.permission.POST_NOTIFICATIONS` |
+| **Strip Camera Permission** | `android.permission.CAMERA` |
+| **Strip Microphone Permissions** | `android.permission.RECORD_AUDIO`, `android.permission.CAPTURE_AUDIO_OUTPUT` |
+| **Strip Storage & Media Permissions** | `android.permission.READ_EXTERNAL_STORAGE`, `android.permission.WRITE_EXTERNAL_STORAGE`, `android.permission.MANAGE_EXTERNAL_STORAGE`, `android.permission.READ_MEDIA_IMAGES`, `android.permission.READ_MEDIA_VIDEO`, `android.permission.READ_MEDIA_AUDIO`, `android.permission.READ_MEDIA_VISUAL_USER_SELECTED`, `android.permission.ACCESS_MEDIA_LOCATION` |
+| **Strip Location Permissions** | `android.permission.ACCESS_FINE_LOCATION`, `android.permission.ACCESS_COARSE_LOCATION`, `android.permission.ACCESS_BACKGROUND_LOCATION` |
+| **Strip Contacts & Accounts Permissions** | `android.permission.READ_CONTACTS`, `android.permission.WRITE_CONTACTS`, `android.permission.GET_ACCOUNTS` |
+| **Strip Calendar Permissions** | `android.permission.READ_CALENDAR`, `android.permission.WRITE_CALENDAR` |
+| **Strip Nearby Devices Permissions** | `android.permission.BLUETOOTH_SCAN`, `android.permission.BLUETOOTH_CONNECT`, `android.permission.BLUETOOTH_ADVERTISE`, `android.permission.NEARBY_WIFI_DEVICES`, `android.permission.UWB_RANGING` |
+| **Strip Body Sensors Permissions** | `android.permission.BODY_SENSORS`, `android.permission.BODY_SENSORS_BACKGROUND`, `android.permission.ACTIVITY_RECOGNITION` |
+
+### Configuration in Morphe Manager
+
+- **Strip Notification Permission (`stripNotifications`)**: Removes `POST_NOTIFICATIONS` (Android 13+) from `AndroidManifest.xml` (Toggle, default: `false`).
+- **Strip Camera Permission (`stripCamera`)**: Removes `CAMERA` from `AndroidManifest.xml` (Toggle, default: `false`).
+- **Strip Microphone Permissions (`stripMicrophone`)**: Removes `RECORD_AUDIO` and audio capture permissions from `AndroidManifest.xml` (Toggle, default: `false`).
+- **Strip Storage & Media Permissions (`stripMediaAndStorage`)**: Removes legacy external storage and Android 13+ granular media permissions from `AndroidManifest.xml` (Toggle, default: `false`).
+- **Strip Location Permissions (`stripLocation`)**: Removes `ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION`, and `ACCESS_BACKGROUND_LOCATION` from `AndroidManifest.xml` (Toggle, default: `false`).
+- **Strip Contacts & Accounts Permissions (`stripContacts`)**: Removes `READ_CONTACTS`, `WRITE_CONTACTS`, and `GET_ACCOUNTS` from `AndroidManifest.xml` (Toggle, default: `false`).
+- **Strip Calendar Permissions (`stripCalendar`)**: Removes `READ_CALENDAR` and `WRITE_CALENDAR` from `AndroidManifest.xml` (Toggle, default: `false`).
+- **Strip Nearby Devices Permissions (`stripNearbyDevices`)**: Removes Bluetooth scan/connect/advertise and nearby Wi-Fi device permissions from `AndroidManifest.xml` (Toggle, default: `false`).
+- **Strip Body Sensors Permissions (`stripSensors`)**: Removes `BODY_SENSORS`, `BODY_SENSORS_BACKGROUND`, and `ACTIVITY_RECOGNITION` from `AndroidManifest.xml` (Toggle, default: `false`).
+
 
 
