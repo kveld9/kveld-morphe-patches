@@ -105,7 +105,7 @@
 </details>
 
 <details>
-<summary>TikTok&nbsp;&nbsp;•&nbsp;&nbsp;<b>57 patches</b></summary>
+<summary>TikTok&nbsp;&nbsp;•&nbsp;&nbsp;<b>58 patches</b></summary>
 <br>
 
 **Supported versions:**
@@ -147,6 +147,7 @@
 | **Hide AI-Generated Content** | Filters and skips videos tagged with native AI-generated metadata, C2PA content credentials, or creator AI disclosure tags across the For You, Following, and Friends feeds. |  |
 | **Hide Community Tab** | Removes the Community (Explore) tab from the top navigation feed strip. |  |
 | **Hide Feed Search Bar** | Removes the search suggestion pill and trending bar ('Search · <keyword>') from the bottom of feed videos, providing a clean viewing area without search distractions. |  |
+| **Hide Inbox Story & Status Tray** | Removes the horizontal story, notes, and status tray (Skylight) from the top of the direct messages inbox. |  |
 | **Hide Nearby Feed Tab** | Removes the Nearby (local city or region) feed tab from the top navigation feed strip. |  |
 | **Hide Popular Lives In Search** | Removes the Popular LIVEs recommendation card and live stream broadcasts from the search discovery page. |  |
 | **Hide Profile Photo Follow Button** | Hides the plus (+) follow badge on creator profile avatars in the feed and disables its touch interaction. |  |

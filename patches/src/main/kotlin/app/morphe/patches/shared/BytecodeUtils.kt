@@ -137,6 +137,22 @@ fun MutableMethod.replaceWithReturnBooleanObject(value: Boolean) {
     """.trimIndent())
 }
 
+/**
+ * Safely purges try-catch ranges and replaces the entire method body with an empty List return.
+ */
+fun MutableMethod.replaceWithReturnEmptyList() {
+    val impl = implementation ?: return
+    clearTryBlocks()
+    ensureRegisterCount(1)
+    removeInstructions(0, impl.instructions.count())
+    addInstructions(0, """
+        invoke-static {}, Ljava/util/Collections;->emptyList()Ljava/util/List;
+        move-result-object v0
+        return-object v0
+    """.trimIndent())
+}
+
+
 
 inline fun <reified T : Reference> Instruction.getReference(): T? =
     (this as? ReferenceInstruction)?.reference as? T
