@@ -1,3 +1,16 @@
+## [2.2.0](https://github.com/kveld9/kveld-morphe-patches/compare/v2.1.0...v2.2.0) (2026-09-30)
+
+### New Features
+
+* **gboard:** add hide incognito icon toggle to force incognito mode patch ([f81f9ac](https://github.com/kveld9/kveld-morphe-patches/commit/f81f9acc4c5d5eff33c04d608283db65abe970cc))
+* **gboard:** update target to 18.3.2.977415014 and align obfuscated targets ([191cfcc](https://github.com/kveld9/kveld-morphe-patches/commit/191cfcce7d411be9e3b998d49f9b9dd714b310b3))
+* **tiktok:** add create group and story toggles and fix promote filter in custom share sheet ([940d66f](https://github.com/kveld9/kveld-morphe-patches/commit/940d66f48bd932e949f1c4641fa7d1ddd941b919))
+* **tiktok:** update target to 47.1.4 and align obfuscated targets ([de5b141](https://github.com/kveld9/kveld-morphe-patches/commit/de5b1418eb2223e6f069528a79fe8a54bc3840b1))
+
+### Code Refactoring
+
+* **tiktok:** remove redundant custom hidden keys from share sheet patch ([a971ae8](https://github.com/kveld9/kveld-morphe-patches/commit/a971ae8cf83a58664d5265feb47542c43be5ff9a))
+
 ## [2.1.0](https://github.com/kveld9/kveld-morphe-patches/compare/v2.0.0...v2.1.0) (2026-09-29)
 
 ### Bug Fixes
