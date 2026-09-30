@@ -71,7 +71,7 @@
 </details>
 
 <details>
-<summary>Gboard Lite&nbsp;&nbsp;•&nbsp;&nbsp;<b>20 patches</b></summary>
+<summary>Gboard Lite&nbsp;&nbsp;•&nbsp;&nbsp;<b>21 patches</b></summary>
 <br>
 
 **Supported versions:**
@@ -101,6 +101,7 @@
 | **Resource Slimmer** | Strips embedded third-party license text, onboarding tutorial Lottie animations, promotional GIFs, and APK root metadata/junk files. |  |
 | **Strip Permissions** | Selectively revokes sensitive hardware, privacy, and system permissions from AndroidManifest.xml. | • Strip Contacts Permission<br>• Strip Microphone Permission<br>• Strip Media & Storage Permissions<br>• Strip System Dictionary Permissions<br>• Strip Cross-Profile Permission |
 | **Top Toolbar Item Count** | Customizes the maximum number of access point icons displayed on the top toolbar. | • Toolbar item count |
+| **Zero Bottom Inset** | Eliminates or customizes the navigation bar bottom inset padding (bottom chin/blank space) under the keyboard in gesture navigation mode. | • Bottom padding (px) |
 
 </details>
 

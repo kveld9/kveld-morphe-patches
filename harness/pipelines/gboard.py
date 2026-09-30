@@ -38,7 +38,7 @@ class GboardPipeline(BaseTargetPipeline):
             print("[WARN] APK does not appear to be ARM (arm64-v8a or armeabi-v7a) architecture.\n")
 
     def execute_audit_and_validation(self) -> Tuple[Dict[str, Any], Any]:
-        print("[AUDIT] Running adversarial validation across all 18 Gboard patch contracts...")
+        print("[AUDIT] Running adversarial validation across all Gboard patch contracts...")
         validator = GboardAdversarialValidator(
             self.repo_root,
             self.meta,

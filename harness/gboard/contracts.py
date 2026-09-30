@@ -24,7 +24,7 @@ class GboardPatchContract:
 
 
 def get_all_gboard_contracts() -> List[GboardPatchContract]:
-    """Returns the formal contract list for all 19 Gboard patches."""
+    """Returns the formal contract list for all active Gboard patch contracts."""
     return [
         GboardPatchContract(
             patch_id="gboard_amoled",
@@ -475,6 +475,39 @@ def get_all_gboard_contracts() -> List[GboardPatchContract]:
             forbidden_regressions=[
                 "Modifying pinned clips retention invariants",
                 "Throwing IllegalStateException or ArithmeticException on invalid column or limit values",
+            ],
+        ),
+        GboardPatchContract(
+            patch_id="gboard_zero_bottom_inset",
+            name="Zero Bottom Inset",
+            description="Eliminates or customizes the navigation bar bottom inset padding under the keyboard in gesture navigation mode.",
+            source_file="patches/src/main/kotlin/app/morphe/patches/gboard/GboardZeroBottomInsetPatch.kt",
+            queries=[
+                FingerprintQuery(
+                    name_id="window_metrics_on_layout_change",
+                    method_name="onLayoutChange",
+                    return_type="V",
+                    parameters=[
+                        "Landroid/view/View;",
+                        "I",
+                        "I",
+                        "I",
+                        "I",
+                        "I",
+                        "I",
+                        "I",
+                        "I",
+                    ],
+                    strings=["WindowMetricsNotification.java", "notifyWithWindow"],
+                ),
+            ],
+            semantic_invariants=[
+                "Overrides insets Rect.bottom assignments in WindowMetricsHelper.onLayoutChange",
+                "Neutralizes navigation bar bottom padding addition to keyboard display frame",
+            ],
+            forbidden_regressions=[
+                "Corrupting left/top/right display insets calculations",
+                "Causing NPE or IndexOutOfBoundsException during WindowMetricsNotification dispatch",
             ],
         ),
     ]

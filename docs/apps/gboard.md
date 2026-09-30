@@ -69,6 +69,7 @@ If you perform a clean install of Gboard Lite with background sync debloat patch
 | **Strip Permissions** | `resourcePatch` | Privacy & Security | ❌ No | Selectively revokes sensitive hardware, privacy, and system permissions from AndroidManifest.xml. |
 | **Top Toolbar Item Count** | `bytecodePatch` | UI & Customization | ✅ Yes | Expands and customizes the maximum number of access point icons displayed directly on the top toolbar (default: 5, range: 4..8). |
 | **Universal Slimmers** | `resourcePatch` + `rawResourcePatch` | Optimization | ✅ Yes | `Locale Resource Slimmer`, `DPI Resource Slimmer`, `PNG Asset Optimizer`, and `APK Junk Cleaner`. |
+| **Zero Bottom Inset** | `bytecodePatch` | UI & Ergonomics | ✅ Yes | Eliminates or customizes the navigation bar bottom inset padding (bottom chin/blank space) under the keyboard in gesture navigation mode. |
 
 ---
 
@@ -139,6 +140,21 @@ The **`Force Incognito Mode`** patch includes an opt-in toggle to hide the incog
 | Option | Key | Type | Default | Description |
 | :--- | :--- | :--- | :---: | :--- |
 | **Hide Incognito Icon** | `hideIncognitoIcon` | Boolean | `false` | Hides the incognito mask icon on the toolbar by replacing it with the standard access points grid icon (`res/6qJ.xml` -> `res/BVL.xml`). |
+
+---
+
+## 📐 Configurable Options: Zero Bottom Inset
+
+The **`Zero Bottom Inset`** patch eliminates the forced empty navigation bar spacer (bottom chin) introduced by gesture navigation in Android 10+:
+
+| Option | Key | Type | Default | Range / Format | Description |
+| :--- | :--- | :--- | :---: | :--- | :--- |
+| **Bottom padding (px)** | `bottomPadding` | String | `0` | `0` to `150` | Forced bottom margin padding in pixels (`0` for completely flush with the bottom edge of the display, or custom value for edge curvature). |
+
+### Technical Architecture:
+- Hooks `WindowMetricsHelper.onLayoutChange` (`(Landroid/view/View;IIIIIIII)V`), where Gboard computes display insets and keyboard container positioning from `WindowInsets.Type.navigationBars()`.
+- Overwrites the navigation bar bottom inset store instructions targeting `Landroid/graphics/Rect;->bottom:I` with the configured pixel value (`0` by default).
+- Prevents expanding the keyboard display frame downward, eliminating the blank bottom bar on gesture navigation without root or system overlays.
 
 ---
 
