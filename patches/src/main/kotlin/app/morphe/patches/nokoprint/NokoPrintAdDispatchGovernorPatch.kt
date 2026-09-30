@@ -115,55 +115,55 @@ val nokoPrintAdDispatchGovernorPatch = bytecodePatch(
     execute {
         val hookedMethods = mutableListOf<String>()
 
-        // 1. Force ActivityRoot.g(Z)Z to return true (is_no_ads active across entire activity hierarchy)
+        // 1. Force m4.g(Z)Z to return true (is_no_ads active across entire activity hierarchy)
         Fingerprint(
-            definingClass = "Lcom/nokoprint/ActivityRoot;",
+            definingClass = "Lcom/nokoprint/m4;",
             name = "g",
             parameters = listOf("Z"),
             returnType = "Z",
         ).method.apply {
             addInstructions(0, "const/4 v0, 0x1\nreturn v0")
-            hookedMethods.add("ActivityRoot.g(isNoAds)")
+            hookedMethods.add("m4.g(isNoAds)")
         }
 
-        // 2. Stub ActivityRoot.w(Z)V (banner container initialization & ad dispatching)
+        // 2. Stub m4.w(Z)V (banner container initialization & ad dispatching)
         Fingerprint(
-            definingClass = "Lcom/nokoprint/ActivityRoot;",
+            definingClass = "Lcom/nokoprint/m4;",
             name = "w",
             parameters = listOf("Z"),
             returnType = "V",
         ).method.apply {
             addInstructions(0, "return-void")
-            hookedMethods.add("ActivityRoot.w(bannerDispatcher)")
+            hookedMethods.add("m4.w(bannerDispatcher)")
         }
 
-        // 3. Stub ActivityRoot.r (AdMob ad revenue & impression callback)
+        // 3. Stub m4.r (AdMob ad revenue & impression callback)
         Fingerprint(
-            definingClass = "Lcom/nokoprint/ActivityRoot;",
+            definingClass = "Lcom/nokoprint/m4;",
             name = "r",
             parameters = listOf("Ljava/lang/String;", "Lcom/google/android/gms/ads/AdValue;"),
             returnType = "V",
         ).method.apply {
             addInstructions(0, "return-void")
-            hookedMethods.add("ActivityRoot.r(adMobRevenue)")
+            hookedMethods.add("m4.r(adMobRevenue)")
         }
 
-        // 4. Stub ActivityRoot.s (AppLovin MAX ad revenue & attribution callback)
+        // 4. Stub m4.s (AppLovin MAX ad revenue & attribution callback)
         Fingerprint(
-            definingClass = "Lcom/nokoprint/ActivityRoot;",
+            definingClass = "Lcom/nokoprint/m4;",
             name = "s",
             parameters = listOf("Ljava/lang/String;", "Ljava/lang/String;", "Lcom/applovin/mediation/MaxAd;"),
             returnType = "V",
         ).method.apply {
             addInstructions(0, "return-void")
-            hookedMethods.add("ActivityRoot.s(appLovinAdCallback)")
+            hookedMethods.add("m4.s(appLovinAdCallback)")
         }
 
-        // 5. Bypass interstitial ad loader in f4.b and invoke target callback immediately
+        // 5. Bypass interstitial ad loader in h4.b and invoke target callback immediately
         Fingerprint(
-            definingClass = "Lcom/nokoprint/f4;",
+            definingClass = "Lcom/nokoprint/h4;",
             name = "b",
-            parameters = listOf("Lcom/google/android/material/carousel/d;", "Lcom/nokoprint/ActivityRoot;", "Ljava/util/Hashtable;"),
+            parameters = listOf("Lcom/google/android/material/carousel/d;", "Lcom/nokoprint/m4;", "Ljava/util/Hashtable;"),
             returnType = "V",
         ).method.apply {
             val count = implementation?.instructions?.count() ?: 0
@@ -174,23 +174,23 @@ val nokoPrintAdDispatchGovernorPatch = bytecodePatch(
                 0,
                 """
                 if-eqz p1, :cond_skip_h
-                invoke-virtual {p1}, Lcom/nokoprint/ActivityRoot;->h()V
+                invoke-virtual {p1}, Lcom/nokoprint/m4;->h()V
                 :cond_skip_h
                 if-eqz p0, :cond_skip_cb
                 const/4 v0, 0x0
-                invoke-virtual {p0, v0}, Lcom/google/android/material/carousel/d;->a(Lcom/nokoprint/f4;)V
+                invoke-virtual {p0, v0}, Lcom/google/android/material/carousel/d;->a(Lcom/nokoprint/h4;)V
                 :cond_skip_cb
                 return-void
                 """.trimIndent(),
             )
-            hookedMethods.add("f4.b(bypassInterstitial)")
+            hookedMethods.add("h4.b(bypassInterstitial)")
         }
 
-        // 6. Bypass interstitial ad display in f4.c and execute completion callback immediately
+        // 6. Bypass interstitial ad display in h4.c and execute completion callback immediately
         Fingerprint(
-            definingClass = "Lcom/nokoprint/f4;",
+            definingClass = "Lcom/nokoprint/h4;",
             name = "c",
-            parameters = listOf("Lcom/nokoprint/ActivityRoot;", "Lcom/nokoprint/a;"),
+            parameters = listOf("Lcom/nokoprint/m4;", "Lcom/nokoprint/m;"),
             returnType = "V",
         ).method.apply {
             val count = implementation?.instructions?.count() ?: 0
@@ -201,22 +201,22 @@ val nokoPrintAdDispatchGovernorPatch = bytecodePatch(
                 0,
                 """
                 if-eqz p1, :cond_skip_h
-                invoke-virtual {p1}, Lcom/nokoprint/ActivityRoot;->h()V
+                invoke-virtual {p1}, Lcom/nokoprint/m4;->h()V
                 :cond_skip_h
                 if-eqz p2, :cond_skip_run
-                invoke-virtual {p2}, Lcom/nokoprint/a;->run()V
+                invoke-virtual {p2}, Lcom/nokoprint/m;->run()V
                 :cond_skip_run
                 return-void
                 """.trimIndent(),
             )
-            hookedMethods.add("f4.c(bypassInterstitialDisplay)")
+            hookedMethods.add("h4.c(bypassInterstitialDisplay)")
         }
 
-        // 7. Bypass rewarded ad loader in j4.b and execute target callback immediately
+        // 7. Bypass rewarded ad loader in l4.b and execute target callback immediately
         Fingerprint(
-            definingClass = "Lcom/nokoprint/j4;",
+            definingClass = "Lcom/nokoprint/l4;",
             name = "b",
-            parameters = listOf("Lcom/nokoprint/ActivityRoot;", "Ljava/util/Hashtable;", "Landroidx/compose/runtime/b1;"),
+            parameters = listOf("Lcom/nokoprint/m4;", "Ljava/util/Hashtable;", "Landroidx/compose/runtime/b1;"),
             returnType = "V",
         ).method.apply {
             val count = implementation?.instructions?.count() ?: 0
@@ -227,7 +227,7 @@ val nokoPrintAdDispatchGovernorPatch = bytecodePatch(
                 0,
                 """
                 if-eqz p0, :cond_skip_h
-                invoke-virtual {p0}, Lcom/nokoprint/ActivityRoot;->h()V
+                invoke-virtual {p0}, Lcom/nokoprint/m4;->h()V
                 :cond_skip_h
                 if-eqz p2, :cond_skip_run
                 iget-object v0, p2, Landroidx/compose/runtime/b1;->d:Ljava/lang/Object;
@@ -238,7 +238,7 @@ val nokoPrintAdDispatchGovernorPatch = bytecodePatch(
                 return-void
                 """.trimIndent(),
             )
-            hookedMethods.add("j4.b(bypassRewardedAd)")
+            hookedMethods.add("l4.b(bypassRewardedAd)")
         }
 
         // 8. Stub com.pairip.licensecheck.LicenseClient.checkLicense to bypass Google Play anti-tamper exit
@@ -252,37 +252,37 @@ val nokoPrintAdDispatchGovernorPatch = bytecodePatch(
             hookedMethods.add("LicenseClient.checkLicense")
         }
 
-        // 9. Stub ActivityRoot.i()Z (MobileAds.initialize) to return false
+        // 9. Stub m4.i()Z (MobileAds.initialize) to return false
         Fingerprint(
-            definingClass = "Lcom/nokoprint/ActivityRoot;",
+            definingClass = "Lcom/nokoprint/m4;",
             name = "i",
             parameters = emptyList(),
             returnType = "Z",
         ).method.apply {
             addInstructions(0, "const/4 v0, 0x0\nreturn v0")
-            hookedMethods.add("ActivityRoot.i(initMobileAds)")
+            hookedMethods.add("m4.i(initMobileAds)")
         }
 
-        // 10. Stub ActivityRoot.k()Z (AppLovinSdk.initialize) to return false
+        // 10. Stub m4.k()Z (AppLovinSdk.initialize) to return false
         Fingerprint(
-            definingClass = "Lcom/nokoprint/ActivityRoot;",
+            definingClass = "Lcom/nokoprint/m4;",
             name = "k",
             parameters = emptyList(),
             returnType = "Z",
         ).method.apply {
             addInstructions(0, "const/4 v0, 0x0\nreturn v0")
-            hookedMethods.add("ActivityRoot.k(initAppLovinSdk)")
+            hookedMethods.add("m4.k(initAppLovinSdk)")
         }
 
-        // 11. Stub ActivityRoot.a(J, Z, String)V (ad revenue tracking to Facebook & TikTok)
+        // 11. Stub m4.a(J, Z, String)V (ad revenue tracking to Facebook & TikTok)
         Fingerprint(
-            definingClass = "Lcom/nokoprint/ActivityRoot;",
+            definingClass = "Lcom/nokoprint/m4;",
             name = "a",
             parameters = listOf("J", "Z", "Ljava/lang/String;"),
             returnType = "V",
         ).method.apply {
             addInstructions(0, "return-void")
-            hookedMethods.add("ActivityRoot.a(trackAdRevenue)")
+            hookedMethods.add("m4.a(trackAdRevenue)")
         }
 
         println("[Ad Dispatch Governor] Neutralized ${hookedMethods.size} ad dispatch, promo, and telemetry hooks.")

@@ -10,10 +10,10 @@ Comprehensive technical, architecture, and patch guide for **NokoPrint - WiFi, B
 | :--- | :--- |
 | **Target Application** | NokoPrint - WiFi, Bluetooth, USB |
 | **Package Name** | `com.nokoprint` |
-| **Supported Target Version** | **`5.28.4`** |
+| **Supported Target Version** | **`5.28.6`** |
 | **Target File Format** | Standalone APK (`APK`) or Bundle (`XAPK`) |
 | **Screen Density** | `nodpi` / universal |
-| **Official Download Source** | [APKPure](https://d.apkpure.com/b/XAPK/com.nokoprint?versionCode=52804) |
+| **Official Download Source** | [APKPure](https://d.apkpure.com/b/XAPK/com.nokoprint?versionCode=52806) |
 
 ---
 
@@ -40,15 +40,15 @@ Comprehensive technical, architecture, and patch guide for **NokoPrint - WiFi, B
   - **Startup ContentProviders**: Strips ad mediation and tracker `ContentProvider` declarations (`AppLovinInitProvider`, `AudienceNetworkContentProvider`, `FacebookInitProvider`, `IronsourceLifecycleProvider`, `ProcessLifecycleOwnerInitializer`, `AppBrainInitProvider`, `AGConnectInitializeProvider`, `BigoAdsProvider`, `VungleProvider`, `MBComponentLifecycleProvider`, `LevelPlayActivityLifecycleProvider`).
   - **Initializer Removal**: Removes `AdsSdkInitializer` meta-data from `androidx.startup.InitializationProvider`.
 - **Bytecode Hooks**:
-  - **No-Ads Status Enforcement**: Forces `com.nokoprint.ActivityRoot.g(Z)Z` (`is_no_ads`) to return `true` (`const/4 v0, 0x1; return v0`), bypassing all client-side ad gates.
-  - **Ad Container & Dispatcher Neutralization**: Stubs `ActivityRoot.w(Z)V` (banner container setup and dispatch) with immediate `return-void`.
-  - **Ad Callback Neutralization**: Stubs `ActivityRoot.r(String, AdValue)V` and `ActivityRoot.s(String, String, MaxAd)V` with immediate `return-void`.
-  - **MobileAds Initialization Neutralization**: Stubs `ActivityRoot.i()Z` to return `false` (`const/4 v0, 0x0; return v0`), preventing Google Mobile Ads SDK initialization.
-  - **AppLovin SDK Initialization Neutralization**: Stubs `ActivityRoot.k()Z` to return `false` (`const/4 v0, 0x0; return v0`), preventing AppLovin MAX SDK bootstrap.
-  - **Ad Revenue Tracking Neutralization**: Stubs `ActivityRoot.a(J, Z, String)V` with immediate `return-void`, blocking ad revenue telemetry to Facebook and TikTok.
-  - **Interstitial Ad Bypass**: Bypasses `com.nokoprint.f4.b` and `f4.c` by dismissing active progress dialogs and invoking completion callbacks immediately (`carousel.d.a(null)` and `a.run()`), eliminating infinite progress hangs when adding printers.
+  - **No-Ads Status Enforcement**: Forces `com.nokoprint.m4.g(Z)Z` (`is_no_ads`) to return `true` (`const/4 v0, 0x1; return v0`), bypassing all client-side ad gates.
+  - **Ad Container & Dispatcher Neutralization**: Stubs `m4.w(Z)V` (banner container setup and dispatch) with immediate `return-void`.
+  - **Ad Callback Neutralization**: Stubs `m4.r(String, AdValue)V` and `m4.s(String, String, MaxAd)V` with immediate `return-void`.
+  - **MobileAds Initialization Neutralization**: Stubs `m4.i()Z` to return `false` (`const/4 v0, 0x0; return v0`), preventing Google Mobile Ads SDK initialization.
+  - **AppLovin SDK Initialization Neutralization**: Stubs `m4.k()Z` to return `false` (`const/4 v0, 0x0; return v0`), preventing AppLovin MAX SDK bootstrap.
+  - **Ad Revenue Tracking Neutralization**: Stubs `m4.a(J, Z, String)V` with immediate `return-void`, blocking ad revenue telemetry to Facebook and TikTok.
+  - **Interstitial Ad Bypass**: Bypasses `com.nokoprint.h4.b` and `h4.c` by dismissing active progress dialogs and invoking completion callbacks immediately (`carousel.d.a(null)` and `m.run()`), eliminating infinite progress hangs when adding printers.
   - **Anti-Tamper & License Check Bypass**: Stubs Google Play Protect / Pairip license check in `com.pairip.licensecheck.LicenseClient.checkLicense(Context)V` with immediate `return-void`, preventing forced application shutdown.
-  - **Rewarded Ad Bypass**: Stubs `com.nokoprint.j4.b` to dismiss the progress dialog and invoke the target driver download callback immediately, avoiding hangs and ad gates.
+  - **Rewarded Ad Bypass**: Stubs `com.nokoprint.l4.b` to dismiss the progress dialog and invoke the target driver download callback immediately, avoiding hangs and ad gates.
 
 ### 2. Asset Debloat (`nokoPrintAssetDebloatPatch`)
 - **Objective**: Reclaim APK storage by zeroing obsolete ad web assets, secondary DEX containers, tracking scripts, and RuStore certificates.

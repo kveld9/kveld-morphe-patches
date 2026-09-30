@@ -13,7 +13,7 @@ Each application has an authoritative, all-in-one guide covering prerequisites, 
 | **Brave Browser** | `1.96.59` | `arm64-v8a`, `armeabi-v7a` | Standalone APK (`Bravemonoarm64.apk` / `BraveMonoarm.apk`) | [Brave Guide](apps/brave.md) |
 | **Gboard Lite** | `18.4.1.985164140` | `arm64-v8a`, `armeabi-v7a` | Standalone nodpi APK | [Gboard Lite Guide](apps/gboard.md) |
 | **Hevy** | `3.1.14` | `arm64-v8a` (64-bit only) | Split APK Bundle (`.apkm`) | [Hevy Guide](apps/hevy.md) |
-| **NokoPrint** | `5.28.4` | `arm64-v8a`, `armeabi-v7a`, `universal` | Standalone nodpi APK / Bundle | [NokoPrint Guide](apps/nokoprint.md) |
+| **NokoPrint** | `5.28.6` | `arm64-v8a`, `armeabi-v7a`, `universal` | Standalone nodpi APK / Bundle | [NokoPrint Guide](apps/nokoprint.md) |
 | **TikTok** | `47.1.4` | `arm64-v8a` | Standalone nodpi APK | [TikTok Guide](apps/tiktok.md) |
 | **Xiaomi Earbuds** | `1.38.0i` | `arm64-v8a`, `armeabi-v7a`, `universal` | Split Bundle (`.xapk` / `.apkm`) | [Xiaomi Earbuds Guide](apps/xiaomi-earbuds.md) |
 | **Universal Optimizations** | *Universal* | All Architectures | Any Android APK | [Universal Patches Guide](universal-patches.md) |
@@ -56,8 +56,8 @@ Download the official `arm64-v8a` bundle release from [APKMirror](https://www.ap
 - **Bundle Format**: Distributed as an APKM / split APK set. Morphe fuses split modules into a unified APK. Details in [Hevy Guide](apps/hevy.md).
 
 ### 🖨️ NokoPrint: WiFi, Bluetooth, USB (`com.nokoprint`)
-Download the official release from [APKPure](https://d.apkpure.com/b/XAPK/com.nokoprint?versionCode=52804).
-- **Current Target**: `5.28.4` (`com.nokoprint`, standalone nodpi APK or bundle). Details in [NokoPrint Guide](apps/nokoprint.md).
+Download the official release from [APKPure](https://d.apkpure.com/b/XAPK/com.nokoprint?versionCode=52806).
+- **Current Target**: `5.28.6` (`com.nokoprint`, standalone nodpi APK or bundle). Details in [NokoPrint Guide](apps/nokoprint.md).
 
 ### 🎵 TikTok (`com.zhiliaoapp.musically`)
 Download the official standalone APK release from [APKMirror (TikTok)](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/).
