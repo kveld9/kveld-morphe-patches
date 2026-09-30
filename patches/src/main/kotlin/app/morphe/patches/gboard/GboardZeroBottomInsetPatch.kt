@@ -5,10 +5,6 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.stringOption
 import app.morphe.patches.shared.Constants
-import com.android.tools.smali.dexlib2.Opcode
-import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
-import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
-import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 
 val gboardZeroBottomInsetPatch = bytecodePatch(
     name = "Zero Bottom Inset",
@@ -29,36 +25,30 @@ val gboardZeroBottomInsetPatch = bytecodePatch(
 
     execute {
         val parsedPadding = bottomPadding?.let { Regex("""\d+""").find(it)?.value?.toIntOrNull() }?.coerceIn(0, 150) ?: 0
+        val constInsn = if (parsedPadding == 0) "const/4 v0, 0" else "const/16 v0, $parsedPadding"
+        val returnInsn = "return v0"
+        var patchedCount = 0
 
-        val fpWindowMetrics = Fingerprint(
-            strings = listOf("WindowMetricsNotification.java", "notifyWithWindow"),
-            returnType = "V",
-            parameters = listOf("Landroid/view/View;", "I", "I", "I", "I", "I", "I", "I", "I"),
+        // 1. KeyboardModeUtils.getKeyboardBottomOffset(Context, int, int, boolean) -> force parsedPadding
+        val fpKeyboardModeUtils = Fingerprint(
+            strings = listOf("KeyboardModeUtils.java", "getKeyboardBottomOffset"),
+            returnType = "I",
+            parameters = listOf("Landroid/content/Context;", "I", "I", "Z"),
         )
+        val methodKeyboardMode = fpKeyboardModeUtils.method
+        methodKeyboardMode.addInstructions(0, "$constInsn\n$returnInsn")
+        patchedCount++
 
-        val method = fpWindowMetrics.method
-        val instructions = method.implementation?.instructions?.toList() ?: emptyList()
-
-        // Find iput stores into Rect.bottom within insets computation (first two occurrences: API 30+ and legacy)
-        val iputIndices = instructions.withIndex().filter {
-            it.value.opcode == Opcode.IPUT &&
-                ((it.value as? ReferenceInstruction)?.reference as? FieldReference)?.let { field ->
-                    field.definingClass == "Landroid/graphics/Rect;" && field.name == "bottom" && field.type == "I"
-                } == true
-        }.map { it.index }
-
-        val targetIndices = iputIndices.take(2)
-        require(targetIndices.size == 2) {
-            "Expected 2 insets Rect.bottom iput sites in WindowMetricsHelper.onLayoutChange, found ${targetIndices.size}"
+        // 2. WindowMetricsNotification.getNavigationBarBottomInset() -> force parsedPadding
+        val fpWindowMetricsClass = Fingerprint(
+            strings = listOf("WindowMetricsNotification.java", "No window/display metrics has been notified."),
+        )
+        val methodWindowMetrics = fpWindowMetricsClass.classDef.methods.first { method ->
+            method.returnType == "I" && method.parameters.isEmpty() && (method.accessFlags and 0x8) != 0
         }
+        methodWindowMetrics.addInstructions(0, "$constInsn\n$returnInsn")
+        patchedCount++
 
-        for (idx in targetIndices.asReversed()) {
-            val insn = instructions[idx] as TwoRegisterInstruction
-            val regA = insn.registerA
-            val constInsn = if (parsedPadding == 0) "const/4 v$regA, 0" else "const/16 v$regA, $parsedPadding"
-            method.addInstructions(idx, constInsn)
-        }
-
-        println("[Zero Bottom Inset] Overrode navigation bar bottom inset ($parsedPadding px) across ${targetIndices.size} opcode site(s) in WindowMetricsHelper.onLayoutChange.")
+        println("[Zero Bottom Inset] Overrode bottom offsets ($parsedPadding px) across $patchedCount methods (KeyboardModeUtils, WindowMetricsNotification).")
     }
 }

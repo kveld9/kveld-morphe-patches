@@ -152,9 +152,9 @@ The **`Zero Bottom Inset`** patch eliminates the forced empty navigation bar spa
 | **Bottom padding (px)** | `bottomPadding` | String | `0` | `0` to `150` | Forced bottom margin padding in pixels (`0` for completely flush with the bottom edge of the display, or custom value for edge curvature). |
 
 ### Technical Architecture:
-- Hooks `WindowMetricsHelper.onLayoutChange` (`(Landroid/view/View;IIIIIIII)V`), where Gboard computes display insets and keyboard container positioning from `WindowInsets.Type.navigationBars()`.
-- Overwrites the navigation bar bottom inset store instructions targeting `Landroid/graphics/Rect;->bottom:I` with the configured pixel value (`0` by default).
-- Prevents expanding the keyboard display frame downward, eliminating the blank bottom bar on gesture navigation without root or system overlays.
+- Intercepts `KeyboardModeUtils.getKeyboardBottomOffset(Context, int, int, boolean)` (`Lves;->d`) to neutralize Google's internal physical ergonomic margin (`inch * ydpi`), forcing it directly to the configured padding (`0` px by default).
+- Intercepts `WindowMetricsNotification.getNavigationBarBottomInset()` (`Laatt;->a`), collapsing the calculated navigation bar bottom offset to the configured pixel value across `KeyboardModeManager`, layout controllers, and touchable regions.
+- Eliminates the blank chin space under the spacebar in gesture navigation mode without root, Magisk, or system overlays.
 
 ---
 
