@@ -333,6 +333,7 @@ Need assistance, have questions regarding patch configurations, or want to follo
 | Contributor | Role & Contributions |
 | :--- | :--- |
 | <a href="https://github.com/Lxchoooo"><img src="https://github.com/Lxchoooo.png" width="48" height="48" style="border-radius: 50%;" /><br><b>@Lxchoooo</b></a> | 🧪 Daily patch testing, runtime APK validation, and bug diagnostics. |
+| <a href="https://github.com/Diego694"><img src="https://github.com/Diego694.png" width="48" height="48" style="border-radius: 50%;" /><br><b>@Diego694</b></a> | 🧪 Daily patch testing, runtime APK validation, and bug diagnostics. |
 | <a href="https://github.com/ll0r3nt3"><img src="https://github.com/ll0r3nt3.png" width="48" height="48" style="border-radius: 50%;" /><br><b>@ll0r3nt3</b></a> | 💡 Proposed DPI Resource Slimmer feature request ([#16](https://github.com/kveld9/kveld-morphe-patches/issues/16)). |
 | <a href="https://github.com/aidenking2102-dotcom"><img src="https://github.com/aidenking2102-dotcom.png" width="48" height="48" style="border-radius: 50%;" /><br><b>@aidenking2102-dotcom</b></a> | 💡 Proposed TikTok Feed Ad Blocker ([#23](https://github.com/kveld9/kveld-morphe-patches/issues/23)), Playback Speed Setter ([#25](https://github.com/kveld9/kveld-morphe-patches/issues/25)), and Floating Ad Pendant / Sticker Blocker ([#33](https://github.com/kveld9/kveld-morphe-patches/issues/33)) feature requests. |
 | <a href="https://github.com/mparvezalam808"><img src="https://github.com/mparvezalam808.png" width="48" height="48" style="border-radius: 50%;" /><br><b>@mparvezalam808</b></a> | 💡 Proposed TikTok Always show publish date, Copy comments without username, Fix Google login, and Show seekbar ([#35](https://github.com/kveld9/kveld-morphe-patches/issues/35)) and TikTok Custom offline videos limit ([#40](https://github.com/kveld9/kveld-morphe-patches/issues/40)) feature requests. |
@@ -340,6 +341,7 @@ Need assistance, have questions regarding patch configurations, or want to follo
 | <a href="https://github.com/rafipasya"><img src="https://github.com/rafipasya.png" width="48" height="48" style="border-radius: 50%;" /><br><b>@rafipasya</b></a> | 💡 Proposed TikTok Auto-translate comments feature request ([#48](https://github.com/kveld9/kveld-morphe-patches/issues/48)). |
 | <a href="https://github.com/Fahry-a"><img src="https://github.com/Fahry-a.png" width="48" height="48" style="border-radius: 50%;" /><br><b>@Fahry-a</b></a> | 💡 Proposed Brave ARMv7a (32-bit) architecture support feature request ([#50](https://github.com/kveld9/kveld-morphe-patches/issues/50)). |
 | <a href="https://github.com/marcoodhb"><img src="https://github.com/marcoodhb.png" width="48" height="48" style="border-radius: 50%;" /><br><b>@marcoodhb</b></a> | 💡 Proposed TikTok Disable double tap to like feature request ([#55](https://github.com/kveld9/kveld-morphe-patches/issues/55)). |
+| <a href="https://github.com/miyqwx-dev"><img src="https://github.com/miyqwx-dev.png" width="48" height="48" style="border-radius: 50%;" /><br><b>@miyqwx-dev</b></a> | 💡 Proposed Gboard Lite Hide Incognito Icon toggle feature request. |
 <!-- CONTRIBUTORS_END -->
 
 ---
