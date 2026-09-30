@@ -12,7 +12,7 @@ val gboardClonePatch = resourcePatch(
 ) {
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
 
-    dependsOn(gboardSignatureBypassPatch)
+    dependsOn(gboardCoreIntegrityPatch)
 
     val packageSuffix by stringOption(
         key = "packageSuffix",

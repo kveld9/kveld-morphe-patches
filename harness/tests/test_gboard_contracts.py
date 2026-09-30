@@ -14,18 +14,24 @@ from harness.core.dex import DexIndex, IndexedClass
 
 class TestGboardContracts(unittest.TestCase):
 
-    def test_all_18_contracts_present(self):
+    def test_all_contracts_present(self):
         contracts = get_all_gboard_contracts()
         self.assertEqual(len(contracts), 18)
         patch_ids = {c.patch_id for c in contracts}
         self.assertIn("gboard_amoled", patch_ids)
-        self.assertIn("gboard_signature_bypass", patch_ids)
+        self.assertIn("gboard_core_integrity", patch_ids)
         self.assertIn("gboard_block_telemetry", patch_ids)
         self.assertIn("gboard_disable_workmanager", patch_ids)
         self.assertIn("gboard_force_incognito", patch_ids)
         self.assertIn("gboard_clone", patch_ids)
         self.assertIn("gboard_resource_slimmer", patch_ids)
         self.assertIn("gboard_clipboard_enhancements", patch_ids)
+
+        core_integrity = next(c for c in contracts if c.patch_id == "gboard_core_integrity")
+        query_ids = {q.name_id for q in core_integrity.queries}
+        self.assertIn("signature_check_method", query_ids)
+        self.assertIn("launcher_activity_on_resume", query_ids)
+        self.assertIn("phenotype_reset_check_method", query_ids)
 
     def test_invariants_package_mismatch_blocks(self):
         meta = ApkMetadata(

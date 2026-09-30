@@ -18,7 +18,7 @@ val gboardEnableGrammarCheckerPatch = bytecodePatch(
 ) {
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
 
-    dependsOn(gboardPhenotypeResiliencePatch)
+    dependsOn(gboardCoreIntegrityPatch)
 
     execute {
         var patched = 0

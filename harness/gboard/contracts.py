@@ -54,22 +54,41 @@ def get_all_gboard_contracts() -> List[GboardPatchContract]:
             ],
         ),
         GboardPatchContract(
-            patch_id="gboard_signature_bypass",
-            name="Allow Modified APK",
-            description="Bypasses internal signature check to allow custom APK execution.",
-            source_file="patches/src/main/kotlin/app/morphe/patches/gboard/GboardSignatureBypassPatch.kt",
+            patch_id="gboard_core_integrity",
+            name="Core Integrity",
+            description="Applies essential runtime stability and integrity fixes for modified APKs: signature check bypass, instant launcher opening, and flag resilience.",
+            source_file="patches/src/main/kotlin/app/morphe/patches/gboard/GboardCoreIntegrityPatch.kt",
             queries=[
                 FingerprintQuery(
                     name_id="signature_check_method",
                     return_type="V",
                     strings=["APK is signed by unrecognized certificates: "],
                 ),
+                FingerprintQuery(
+                    name_id="launcher_activity_on_resume",
+                    defining_class="Lcom/google/android/libraries/inputmethod/launcher/LauncherActivity;",
+                    method_name="onResume",
+                    return_type="V",
+                    parameters=[],
+                ),
+                FingerprintQuery(
+                    name_id="phenotype_reset_check_method",
+                    return_type="Z",
+                    parameters=["Ljava/lang/Object;", "Z"],
+                    strings=["Resetting default value is disallowed ["],
+                ),
             ],
             semantic_invariants=[
-                "Returns immediately (return-void) before throwing SecurityException",
+                "Returns immediately (return-void) before throwing SecurityException in signature check",
+                "Replaces LauncherActivity onResume instructions to directly launch SettingsActivity",
+                "Invokes Activity.finish() to dismiss trampoline without purging from recents",
+                "Neutralizes flag reset assertion jump following Objects.deepEquals",
             ],
             forbidden_regressions=[
                 "Altering signature validation on unrelated package verification routines",
+                "Calling finishAndRemoveTask which purges task from recent apps overview",
+                "Omitting super.onResume call causing SuperNotCalledException",
+                "Throwing IllegalStateException or ArithmeticException on flag reset conflict",
             ],
         ),
         GboardPatchContract(

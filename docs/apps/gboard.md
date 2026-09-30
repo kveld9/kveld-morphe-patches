@@ -32,17 +32,15 @@ If you perform a clean install of Gboard Lite with background sync debloat patch
 ### Setup Procedure:
 
 1. **When patching for a clean install (or when adding new languages):**
-   - **Temporarily uncheck:**
-     - ❌ `Disable MDD Background Sync`
-     - ❌ `Disable Superpacks Eager Sync`
-     - ❌ `Disable WorkManager`
+   - **Leave unchecked (default):**
+     - ❌ `Disable Background Sync`
    - *(Also ensure `Force Incognito Mode` is unchecked if you want personalized learning and history).*
 
 2. **Open Gboard once with an active Internet connection:**
    - Type a few words, test a swipe gesture, or navigate to *Gboard Settings > Languages* so it downloads your language dictionary and gesture pack into local storage (`/data/data/com.google.android.inputmethod.latin/...`).
 
 3. **Re-apply debloat patches (Optional):**
-   - Once your language packs are cached locally on device, you can re-patch with `Disable MDD Background Sync`, `Disable Superpacks Eager Sync`, and `Disable WorkManager` to freeze background network traffic and disk polling permanently.
+   - Once your language packs are cached locally on device, you can optionally re-patch with `Disable Background Sync` enabled to freeze background network traffic, WorkManager schedulers, MDD, and Superpacks polling permanently.
 
 ---
 
@@ -51,15 +49,15 @@ If you perform a clean install of Gboard Lite with background sync debloat patch
 | Patch Name | Type | Category | Default | Primary Mechanism |
 | :--- | :--- | :--- | :---: | :--- |
 | **Add AMOLED Theme** | `bytecodePatch` + `resourcePatch` | UI & Appearance | ✅ Yes | Adds a selectable Pure Black AMOLED theme using Gboard's native color_black theme package, without replacing standard themes. |
-| **Allow Modified APK** | `bytecodePatch` | Security & Integrity | ✅ Yes | Bypasses internal signature check to allow custom APK execution. |
 | **Block Telemetry** | `bytecodePatch` | Privacy & Security | ✅ Yes | Disables background metrics dispatch, event logging, daily pings, Google Primes profiling, crash reporting, AppDoctor diagnostics, and Tenor share tracking. |
 | **Clipboard Enhancements** | `bytecodePatch` | Usability & Storage | ✅ Yes | Removes hardcoded 1-hour TTL and 5-clip UI throttling, extending retention up to user-configured hours/items. |
 | **Clone Gboard** | `bytecodePatch` + `resourcePatch` | Utility & Modding | ✅ Yes | Appends a custom suffix to the package name to allow installing Gboard alongside the original application. |
+| **Core Integrity** | `bytecodePatch` | Security & Stability | ✅ Yes | Applies essential runtime stability and integrity fixes for modified APKs: signature check bypass, instant launcher opening, and flag resilience. |
 | **Disable Background Sync** | `bytecodePatch` | Battery & Debloat | ❌ No | Neutralizes AndroidX WorkManager schedulers, MDD (Mobile Data Download) periodic sync, and Superpacks eager asset synchronization (opt-in to preserve initial dictionary downloads). |
 | **Disable Remote Configuration** | `bytecodePatch` | Privacy & Stability | ✅ Yes | Disables periodic remote experiment flag synchronization and background updates. |
 | **Enable Access Points Menu Redesign** | `bytecodePatch` | UI & Appearance | ✅ Yes | Enables the redesigned access points menu bar and customization panel (Panel V2). |
 | **Enable Bluetooth Microphone** | `bytecodePatch` | Usability & Audio | ✅ Yes | Unlocks Bluetooth microphone recording toggle under Voice typing settings. |
-| **Enable Cursor Trackpad** | `bytecodePatch` | Navigation & Control | ✅ Yes | Enables 2D trackpad cursor navigation and cursor lock mode by holding the spacebar, neutralizing Phenotype flag reset conflicts. |
+| **Enable Cursor Trackpad** | `bytecodePatch` | Navigation & Control | ✅ Yes | Enables 2D trackpad cursor navigation and cursor lock mode by holding the spacebar. |
 | **Enable Dismiss Suggestions Button** | `bytecodePatch` | UI & Usability | ✅ Yes | Adds a close button (X) to dismiss proactive suggestions on the suggestion bar. |
 | **Enable Emoji Scale Setting** | `bytecodePatch` | UI & Appearance | ✅ Yes | Unlocks the emoji size scaling setting in Gboard appearance preferences. |
 | **Enable Grammar Checker** | `bytecodePatch` | Usability & Typing | ✅ Yes | Unlocks Grammar check and Smart Compose / inline suggestions under Text correction preferences. |
@@ -67,7 +65,6 @@ If you perform a clean install of Gboard Lite with background sync debloat patch
 | **Force Incognito Mode** | `bytecodePatch` | Privacy & Security | ❌ No | Forces Gboard to always operate in incognito mode (disabling personalized learning and persistent input logging). |
 | **Hardened Intent Security** | `bytecodePatch` | Security & Integrity | ✅ Yes | Enables Gboard internal external intent protection against unauthorized intent hijacking. |
 | **Offline Only** | `bytecodePatch` + `resourcePatch` | Privacy & Security | ❌ No | Completely isolates Gboard from network access by purging manifest permissions, disabling foreground sync services, neutralizing HTTP clients (Cronet, OkHttp, Superpacks), and spoofing offline status. |
-| **Phenotype Flag Resilience** | `bytecodePatch` | Stability & Resilience | ✅ Yes | Neutralizes Phenotype flag registration conflicts to allow runtime flag overrides without crashes. |
 | **Resource Slimmer** | `bytecodePatch` | Optimization | ✅ Yes | Strips embedded third-party license text, onboarding tutorial Lottie animations, promotional GIFs, and APK root metadata/junk files. |
 | **Strip Permissions** | `resourcePatch` | Privacy & Security | ❌ No | Selectively revokes sensitive hardware, privacy, and system permissions from AndroidManifest.xml. |
 | **Top Toolbar Item Count** | `bytecodePatch` | UI & Customization | ✅ Yes | Expands and customizes the maximum number of access point icons displayed directly on the top toolbar (default: 5, range: 4..8). |
@@ -149,7 +146,7 @@ The **`Force Incognito Mode`** patch includes an opt-in toggle to hide the incog
 
 ### 1. Cursor Trackpad Mode (`Enable Cursor Trackpad`)
 - **Behavior**: Long-pressing and swiping across the spacebar enters full 2D cursor navigation mode (moving horizontally and vertically) with haptic feedback. Holding until locked enters sticky cursor mode.
-- **Phenotype Resilience**: Neutralizes internal Google Phenotype flag assertions (`svl.n`) that previously triggered `IllegalStateException: Resetting default value is disallowed` when XML resource defaults conflicted with patched compile-time defaults.
+- **Phenotype Resilience**: Handled automatically via dependency on **Core Integrity**, neutralizing internal Google Phenotype flag assertions that previously triggered `IllegalStateException: Resetting default value is disallowed` when XML resource defaults conflicted with patched compile-time defaults.
 
 ### 2. Bluetooth Microphone (`Enable Bluetooth Microphone`)
 - **Behavior**: Unlocks the dedicated "Usar micrófono Bluetooth" (Use Bluetooth microphone) toggle under *Gboard Settings > Dictado por voz* (Voice typing).

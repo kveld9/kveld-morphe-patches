@@ -18,7 +18,7 @@ val gboardEnableBluetoothMicrophonePatch = bytecodePatch(
 ) {
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
 
-    dependsOn(gboardPhenotypeResiliencePatch)
+    dependsOn(gboardCoreIntegrityPatch)
 
     execute {
         val fingerprint = Fingerprint(
