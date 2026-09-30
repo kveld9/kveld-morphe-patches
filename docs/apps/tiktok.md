@@ -37,6 +37,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Usability** | **Skip First-Launch Onboarding** | `bytecodePatch` | Bypasses interest pickers, swipe-up tutorial, language prompts, and consent sheets directly to FYP. |
 | **Usability** | **[Custom Offline Videos Limit](#4-custom-offline-videos-limit)** | `bytecodePatch` | Customizes maximum offline videos download caching limit (~X mins, Y GB/MB). |
 | **Usability** | **[Custom Share Sheet](#5-custom-share-sheet)** | `bytecodePatch` | Customizes and cleans the share menu via individual boolean toggles for third-party apps, essential actions, and direct message friend rows. |
+| **Usability** | **[Clean Share Panel](#6-clean-share-panel)** | `bytecodePatch` | Removes suggested quick emojis and the 'Send to new group' button from the direct share dialog. |
 | **Usability** | **Auto-Translate Comments** | `bytecodePatch` | Automatically dispatches batch translations via TikTok's native engine. |
 | **Usability** | **Hide Top-Left LIVE Button** | `bytecodePatch` | Removes the top-left LIVE broadcast button and tab entry point from the top navigation bar. |
 | **Usability** | **Hide Community Tab** | `bytecodePatch` | Removes the Community (Explore) tab from the top navigation feed strip. |
@@ -235,6 +236,15 @@ The **`Custom Share Sheet`** patch cleans and customizes TikTok's native sharing
 | **Hide Live Wallpaper & GIF** | `hideWallpaperAndGif` | Boolean | `false` | Hides Live wallpaper and GIF creation actions. |
 | **Hide 'Not Interested'** | `hideNotInterested` | Boolean | `false` | Hides the 'Not interested' action. |
 | **Hide 'Report'** | `hideReport` | Boolean | `false` | Hides the Report action. |
+
+### 6. Clean Share Panel
+
+The **`Clean Share Panel`** patch removes clutter from the direct message sharing bottom sheet when selecting contacts or composing a message to friends. Governed by two independent toggle switches, it eliminates the suggested horizontal quick emoji bar and the persistent "Send to new group" button.
+
+| Toggle Option | Key | Type | Default | Description |
+| :--- | :--- | :---: | :---: | :--- |
+| **Hide Quick Emojis** | `hideQuickEmojis` | Boolean | `true` | Removes the horizontal row of suggested quick emojis (🥰, 👍, 😂, etc.) from the direct share panel. |
+| **Hide 'Send to New Group'** | `hideSendToNewGroup` | Boolean | `true` | Removes the 'Send to new group' button and hint from the direct share panel. |
 
 ---
 
