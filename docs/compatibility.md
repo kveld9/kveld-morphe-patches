@@ -11,7 +11,7 @@ Each application has an authoritative, all-in-one guide covering prerequisites, 
 | Application | Supported Version | Architectures | Target Format | Complete Documentation |
 | :--- | :--- | :--- | :--- | :--- |
 | **Brave Browser** | `1.96.59` | `arm64-v8a`, `armeabi-v7a` | Standalone APK (`Bravemonoarm64.apk` / `BraveMonoarm.apk`) | [Brave Guide](apps/brave.md) |
-| **Gboard Lite** | `18.3.2.977415014` | `arm64-v8a`, `armeabi-v7a` | Standalone nodpi APK | [Gboard Lite Guide](apps/gboard.md) |
+| **Gboard Lite** | `18.4.1.985164140` | `arm64-v8a`, `armeabi-v7a` | Standalone nodpi APK | [Gboard Lite Guide](apps/gboard.md) |
 | **Hevy** | `3.1.14` | `arm64-v8a` (64-bit only) | Split APK Bundle (`.apkm`) | [Hevy Guide](apps/hevy.md) |
 | **NokoPrint** | `5.28.4` | `arm64-v8a`, `armeabi-v7a`, `universal` | Standalone nodpi APK / Bundle | [NokoPrint Guide](apps/nokoprint.md) |
 | **TikTok** | `47.1.4` | `arm64-v8a` | Standalone nodpi APK (Global & Asia) | [TikTok Guide](apps/tiktok.md) |
@@ -48,7 +48,7 @@ All patches for Xiaomi Earbuds and NokoPrint operate strictly on Dalvik/ART Mult
 Download `Bravemonoarm64.apk` (for 64-bit ARM devices) or `BraveMonoarm.apk` (for 32-bit ARM devices) from [Brave GitHub Releases](https://github.com/brave/brave-browser/releases). Do **NOT** use `Bravearm64Universal.apk`, `Bravearm64.apk`, or x86 builds. Details in [Brave Guide](apps/brave.md).
 
 ### ⌨️ Gboard Lite: Standalone nodpi APK
-Download the standalone `lite` or `lite_beta` APK (nodpi) from [APKMirror](https://www.apkmirror.com/apk/google-inc/gboard/gboard-the-google-keyboard-18-3-2-977415014-release/). Do **NOT** download split packages or bundle formats. Details in [Gboard Lite Guide](apps/gboard.md).
+Download the standalone `lite` or `lite_beta` APK (nodpi) from [APKMirror](https://www.apkmirror.com/apk/google-inc/gboard/gboard-the-google-keyboard-18-4-1-985164140-release/). Do **NOT** download split packages or bundle formats. Details in [Gboard Lite Guide](apps/gboard.md).
 
 ### 🏋️ Hevy: Gym Log Workout Tracker (`com.hevy`)
 Download the official `arm64-v8a` bundle release from [APKMirror](https://www.apkmirror.com/apk/hevy/hevy-gym-log-workout-tracker/).

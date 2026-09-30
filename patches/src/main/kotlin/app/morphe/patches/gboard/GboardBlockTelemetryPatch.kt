@@ -16,12 +16,12 @@ val gboardBlockTelemetryPatch = bytecodePatch(
     execute {
         val hookedMethods = mutableListOf<String>()
 
-        // 1. Clearcut & Event Telemetry (lhj, hcg, jga)
+        // 1. Clearcut & Event Telemetry (vze, olo, shc)
         listOf("n", "p", "s").forEach { methodName ->
             val fp = Fingerprint(
-                definingClass = "Llhj;",
+                definingClass = "Lvze;",
                 name = methodName,
-                parameters = if (methodName == "n") listOf("Llhf;") else emptyList(),
+                parameters = if (methodName == "n") listOf("Lvyz;") else emptyList(),
                 returnType = "V",
             )
             fp.method.addInstructions(0, "return-void")
@@ -30,9 +30,9 @@ val gboardBlockTelemetryPatch = bytecodePatch(
         }
 
         val fpHcg = Fingerprint(
-            definingClass = "Lhcg;",
+            definingClass = "Lolo;",
             name = "b",
-            parameters = listOf("Lhdy;"),
+            parameters = listOf("Looe;"),
             returnType = "V",
         )
         fpHcg.method.addInstructions(0, "return-void")
@@ -40,14 +40,14 @@ val gboardBlockTelemetryPatch = bytecodePatch(
         hookedMethods.add("$cHcg.b")
 
         val fpJga = Fingerprint(
-            definingClass = "Ljga;",
-            name = "lR",
-            parameters = listOf("Landroid/content/Context;", "Llja;"),
+            definingClass = "Lshc;",
+            name = "dD",
+            parameters = listOf("Landroid/content/Context;", "Lwbw;"),
             returnType = "V",
         )
         fpJga.method.addInstructions(0, "return-void")
         val cJga = LocaleUtils.cleanClassName(fpJga.originalClassDef.type)
-        hookedMethods.add("$cJga.lR")
+        hookedMethods.add("$cJga.dD")
 
         // 2. Daily Ping Worker (DailyPingWorker.c)
         val fpDailyPing = Fingerprint(
@@ -58,16 +58,16 @@ val gboardBlockTelemetryPatch = bytecodePatch(
         fpDailyPing.method.addInstructions(
             0,
             """
-                new-instance v0, Lbek;
-                invoke-direct {v0}, Lbek;-><init>()V
-                invoke-static {v0}, Luxc;->fH(Ljava/lang/Object;)Lrhq;
+                new-instance v0, Lcim;
+                invoke-direct {v0}, Lcim;-><init>()V
+                invoke-static {v0}, Lahce;->i(Ljava/lang/Object;)Lahcv;
                 move-result-object v0
                 return-object v0
             """.trimIndent(),
         )
         hookedMethods.add("DailyPingWorker.c")
 
-        // 3. Google Primes & Crash Diagnostics (LifeboatReceiver, lxd, orc, NativeCrashHandlerImpl, njv)
+        // 3. Google Primes & Crash Diagnostics (LifeboatReceiver, xam, acud, NativeCrashHandlerImpl, aabu)
         val fpLifeboat = Fingerprint(
             definingClass = "Lcom/google/android/libraries/performance/primes/transmitter/LifeboatReceiver;",
             name = "onReceive",
@@ -78,19 +78,19 @@ val gboardBlockTelemetryPatch = bytecodePatch(
         hookedMethods.add("LifeboatReceiver.onReceive")
 
         val fpLxd = Fingerprint(
-            definingClass = "Llxd;",
-            name = "lR",
-            parameters = listOf("Landroid/content/Context;", "Llja;"),
+            definingClass = "Lxam;",
+            name = "dD",
+            parameters = listOf("Landroid/content/Context;", "Lwbw;"),
             returnType = "V",
         )
         fpLxd.method.addInstructions(0, "return-void")
         val cLxd = LocaleUtils.cleanClassName(fpLxd.originalClassDef.type)
-        hookedMethods.add("$cLxd.lR")
+        hookedMethods.add("$cLxd.dD")
 
         val fpOrc = Fingerprint(
-            definingClass = "Lorc;",
+            definingClass = "Lacud;",
             name = "b",
-            parameters = listOf("Lorc;"),
+            parameters = listOf("Lacud;"),
             returnType = "V",
         )
         fpOrc.method.addInstructions(0, "return-void")
@@ -100,14 +100,14 @@ val gboardBlockTelemetryPatch = bytecodePatch(
         val fpCrash = Fingerprint(
             definingClass = "Lcom/google/android/libraries/performance/primes/metrics/crash/NativeCrashHandlerImpl;",
             name = "a",
-            parameters = listOf("Lovv;"),
+            parameters = listOf("Lades;"),
             returnType = "V",
         )
         fpCrash.method.addInstructions(0, "return-void")
         hookedMethods.add("NativeCrashHandlerImpl.a")
 
         val fpNjv = Fingerprint(
-            definingClass = "Lnjv;",
+            definingClass = "Laabu;",
             name = "get",
             parameters = emptyList(),
             returnType = "Ljava/lang/Object;",
@@ -135,11 +135,11 @@ val gboardBlockTelemetryPatch = bytecodePatch(
         fpAppDoctorRecv.method.addInstructions(0, "return-void")
         hookedMethods.add("AppDoctorReceiver.onReceive")
 
-        // 5. Tenor Share Tracking (eid.F)
+        // 5. Tenor Share Tracking (ioe.F)
         val fpTenor = Fingerprint(
-            definingClass = "Leid;",
+            definingClass = "Lioe;",
             name = "F",
-            parameters = listOf("Lqym;", "Leck;"),
+            parameters = listOf("Laglm;"),
             returnType = "V",
         )
         fpTenor.method.addInstructions(0, "return-void")

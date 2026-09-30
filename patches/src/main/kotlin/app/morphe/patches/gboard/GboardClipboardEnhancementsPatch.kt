@@ -51,82 +51,70 @@ val gboardClipboardEnhancementsPatch = bytecodePatch(
         val retentionMillis = parsedHours * 3600L * 1000L
 
         // 1. Extend SQLite retention TTL & UI query cutoff window
-        try {
-            val fpTtl = Fingerprint(
-                strings = listOf("getUnpinnedItemTimeLimitInMilliSeconds"),
-                returnType = "J",
-                parameters = listOf("Landroid/content/Context;"),
+        val fpTtl = Fingerprint(
+            strings = listOf("getUnpinnedItemTimeLimitInMilliSeconds"),
+            returnType = "J",
+            parameters = listOf("Landroid/content/Context;"),
+        )
+        fpTtl.method.apply {
+            clearTryBlocks()
+            removeInstructions(0, implementation!!.instructions.count())
+            addInstructions(
+                0,
+                """
+                    const-wide v0, $retentionMillis
+                    return-wide v0
+                """.trimIndent(),
             )
-            fpTtl.method.apply {
-                clearTryBlocks()
-                removeInstructions(0, implementation!!.instructions.count())
-                addInstructions(
-                    0,
-                    """
-                        const-wide v0, $retentionMillis
-                        return-wide v0
-                    """.trimIndent(),
-                )
-            }
-            println("[Clipboard Enhancements] Overrode retention limit -> $parsedHours hour(s) ($retentionMillis ms).")
-            patched++
-        } catch (e: Exception) {
-            println("[Clipboard Enhancements] Retention TTL note: ${e.message}")
         }
+        println("[Clipboard Enhancements] Overrode retention limit -> $parsedHours hour(s) ($retentionMillis ms).")
+        patched++
 
         // 2. Raise UI unpinned clips throttle from 5 to parsedLimit
-        try {
-            val fpLoader = Fingerprint(
-                strings = listOf("timestamp DESC limit %d", "(%s & %d) = 0 AND (%s & %d) = 0 AND %s >= ?"),
-                returnType = "Ljava/lang/Object;",
-                parameters = emptyList(),
-            )
-            val method = fpLoader.method
-            val targetIndices = method.implementation?.instructions?.withIndex()
-                ?.filter {
-                    it.value.opcode == Opcode.CONST_4 &&
-                        (it.value as? NarrowLiteralInstruction)?.narrowLiteral == 5
-                }
-                ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
-                ?.toList() ?: emptyList()
+        val fpLoader = Fingerprint(
+            strings = listOf("timestamp DESC limit %d", "(%s & %d) = 0 AND (%s & %d) = 0 AND %s >= ?"),
+            returnType = "Ljava/lang/Object;",
+            parameters = emptyList(),
+        )
+        val method = fpLoader.method
+        val targetIndices = method.implementation?.instructions?.withIndex()
+            ?.filter {
+                it.value.opcode == Opcode.CONST_4 &&
+                    (it.value as? NarrowLiteralInstruction)?.narrowLiteral == 5
+            }
+            ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
+            ?.toList() ?: emptyList()
 
-            targetIndices.asReversed().forEach { (idx, reg) ->
-                method.replaceInstruction(
-                    idx,
-                    "const/16 v$reg, $parsedLimit",
-                )
-            }
-            if (targetIndices.isNotEmpty()) {
-                println("[Clipboard Enhancements] Injected unpinned clips limit ($parsedLimit items) across ${targetIndices.size} opcode site(s).")
-                patched++
-            }
-        } catch (e: Exception) {
-            println("[Clipboard Enhancements] UI Loader limit note: ${e.message}")
+        targetIndices.asReversed().forEach { (idx, reg) ->
+            method.replaceInstruction(
+                idx,
+                "const/16 v$reg, $parsedLimit",
+            )
+        }
+        if (targetIndices.isNotEmpty()) {
+            println("[Clipboard Enhancements] Injected unpinned clips limit ($parsedLimit items) across ${targetIndices.size} opcode site(s).")
+            patched++
         }
 
         // 3. Customize clipboard grid columns
-        try {
-            val fpKeyboard = Fingerprint(
-                definingClass = "Lcom/google/android/apps/inputmethod/libs/clipboard/ClipboardKeyboard;",
-                returnType = "I",
-                parameters = emptyList(),
+        val fpKeyboard = Fingerprint(
+            definingClass = "Lcom/google/android/apps/inputmethod/libs/clipboard/ClipboardKeyboard;",
+            returnType = "I",
+            parameters = emptyList(),
+        )
+        fpKeyboard.method.apply {
+            clearTryBlocks()
+            removeInstructions(0, implementation!!.instructions.count())
+            addInstructions(
+                0,
+                """
+                    const/4 v0, $parsedColumns
+                    return v0
+                """.trimIndent(),
             )
-            fpKeyboard.method.apply {
-                clearTryBlocks()
-                removeInstructions(0, implementation!!.instructions.count())
-                addInstructions(
-                    0,
-                    """
-                        const/4 v0, $parsedColumns
-                        return v0
-                    """.trimIndent(),
-                )
-            }
-            println("[Clipboard Enhancements] Overrode clipboard grid columns -> $parsedColumns column(s).")
-            patched++
-        } catch (e: Exception) {
-            println("[Clipboard Enhancements] Grid columns note: ${e.message}")
         }
+        println("[Clipboard Enhancements] Overrode clipboard grid columns -> $parsedColumns column(s).")
+        patched++
 
         println("[Clipboard Enhancements] Applied $patched clipboard enhancement hook(s) (limit: $parsedLimit clips, retention: $parsedHours hours, columns: $parsedColumns).")
     }
