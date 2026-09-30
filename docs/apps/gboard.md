@@ -158,6 +158,21 @@ The **`Zero Bottom Inset`** patch eliminates the forced empty navigation bar spa
 
 ---
 
+## ✍️ Configurable Options: Unlock Writing Tools & Proofread AI
+
+The **`Unlock Writing Tools & Proofread AI`** patch activates Google's generative AI writing suite (Writing Helper, Proofread, Rewrite & Tone stylization) in Gboard's suggestion strip, toolbar shortcuts, and Text correction settings:
+
+| Option | Key | Type | Default | Range / Format | Description |
+| :--- | :--- | :--- | :---: | :--- | :--- |
+| **Supported Language Tags** | `supportedLanguages` | String | `*` | `*` or BCP-47 tags | Language filter for Writing Tools and Proofread (`*` allows all languages universally, or comma-separated tags like `en-US,es-ES,pt-BR`). |
+
+### Technical Architecture:
+- **Phenotype Flag Overrides**: Modifies `<clinit>()` in core flag definitions (`Ljlw`, `Lkrg`, `Lveo`, `Lxjj`) to force `writing_helper`, `config_proofread`, `writing_tools`, `writing_tools_enable_stable_entrance`, `enable_writing_tools_replace_button`, `enable_writing_tools_suggest_style`, `enable_on_device_proofread`, `debug_service_enable_on_device_gen_ai`, `enable_ai_core_llm`, `enable_writing_tools_v2_on_toolbar`, and `writing_helper_chip_in_spellchecker` to `0x1` (`true`).
+- **Language Restriction Bypass**: Overrides `writing_helper_supported_language_tags` from the stock `"en-US"` restriction to `*`, activating universal wildcard matching in `FlagRestrictionManager` for all languages.
+- **App Blacklist Removal**: Overrides `proofread_supported_apps` to `*`, neutralizing the negative package blacklist that prevented Proofread from activating inside Gmail, Chrome, Google Docs, ChatGPT, and office applications.
+
+---
+
 ## 🚀 Productivity & Usability Unlocks
 
 ### 1. Cursor Trackpad Mode (`Enable Cursor Trackpad`)
