@@ -9,10 +9,10 @@ import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
 val feedBloatBlockerPatch = bytecodePatch(
     name = "Feed Bloat & Distraction Blocker",
-    description = "Removes non-video clutter and floating ad widgets from the For You, Following, and Friends feeds, including Touchpoint Rewards pendants, floating ad stickers, suggested friend cards, mini-games, CapCut/template creation prompts, memories ('On This Day'), surveys, and mini-drama paywalls.",
+    description = "Removes non-video clutter and floating ad widgets from the For You, Following, and Friends feeds, including Touchpoint Rewards pendants, floating ad stickers, suggested friend cards, mini-games, CapCut/template creation prompts, memories ('On This Day'), surveys, mini-drama paywalls, and in-feed search recommendations/interest cards.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
     extendWith("extensions/extension.mpe")
 
     execute {
@@ -439,6 +439,26 @@ val feedBloatBlockerPatch = bytecodePatch(
             patched++
         } catch (e: Exception) {
             println("[Feed Bloat Blocker] FriendsV3BottomRecUserListCell note: ${e.message}")
+        }
+
+        // 8. Neutralize In-Feed Search Recommendations & Trending Search Cards
+        try {
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/search/common/communicate/AbsSearchService;",
+                name = "u",
+                returnType = "Ljava/util/List;",
+            ).method.addInstructions(
+                0,
+                """
+                    invoke-static {}, Ljava/util/Collections;->emptyList()Ljava/util/List;
+                    move-result-object v0
+                    return-object v0
+                """.trimIndent(),
+            )
+            println("[Feed Bloat Blocker] Neutralized AbsSearchService.u() -> In-feed search recommendation and trending card insertions disabled.")
+            patched++
+        } catch (e: Exception) {
+            println("[Feed Bloat Blocker] AbsSearchService.u note: ${e.message}")
         }
 
         println("[Feed Bloat Blocker] Applied $patched feed bloat blocker hook(s) -> Non-video distractions neutralized.")
