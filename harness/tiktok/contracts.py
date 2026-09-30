@@ -221,6 +221,17 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
         criticality="HIGH",
     ),
     PatchContract(
+        patch_id="disable_post_download_dialog",
+        name="Disable Post-Download Share Dialog",
+        target_type="bytecode",
+        description="Suppresses the automatic 'Share to' and friend suggestions bottom sheet that pops up after finishing a download.",
+        required_classes=[
+            "Lcom/ss/android/ugc/aweme/internalshare/impl/fragment/DownloadAndShareFragment;",
+        ],
+        required_strings=["after_video_saved_share_to_nscreen"],
+        criticality="HIGH",
+    ),
+    PatchContract(
         patch_id="playback_speed_persistence",
         name="Playback Speed Persistence",
         target_type="bytecode",
