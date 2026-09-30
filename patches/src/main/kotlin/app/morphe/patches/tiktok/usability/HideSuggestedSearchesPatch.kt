@@ -15,7 +15,7 @@ val hideSuggestedSearchesPatch = bytecodePatch(
     description = "Removes the suggested search keywords section ('You may like' / 'Search suggestions') from the search discovery page.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
     extendWith("extensions/extension.mpe")
 
     execute {

@@ -10,7 +10,7 @@ val liveGiftEffectOptimizerPatch = bytecodePatch(
     description = "Disables Live 3D gift particle effect engine and widget rendering lifecycle to eliminate frame drops during live streams.",
     default = false,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
 
     execute {
         var patched = 0

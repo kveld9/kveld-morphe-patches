@@ -12,7 +12,7 @@ val feedLiveStreamBlockerPatch = bytecodePatch(
     description = "Removes live stream broadcast cards and live recommendations from the For You and Following feeds.",
     default = false,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
     extendWith("extensions/extension.mpe")
 
     execute {

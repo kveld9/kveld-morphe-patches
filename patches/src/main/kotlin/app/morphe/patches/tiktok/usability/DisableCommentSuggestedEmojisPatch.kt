@@ -12,7 +12,7 @@ val disableCommentSuggestedEmojisPatch = bytecodePatch(
     description = "Removes the horizontal bar of suggested quick emojis displayed above the comment input box.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
 
     execute {
         var patched = 0

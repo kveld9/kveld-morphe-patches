@@ -15,7 +15,7 @@ val customShareSheetPatch = bytecodePatch(
     description = "Customizes and cleans the native TikTok share sheet via individual toggle switches for third-party apps, essential sharing features, and secondary utility actions.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
     extendWith("extensions/extension.mpe")
 
     // 1. Third-party social apps

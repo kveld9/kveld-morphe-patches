@@ -25,8 +25,8 @@ enum class TargetApp(
 ) {
     TIKTOK(
         id = "tiktok",
-        appName = "TikTok Global",
-        packageName = Constants.TIKTOK_GLOBAL_PACKAGE_NAME,
+        appName = "TikTok",
+        packageName = Constants.TIKTOK_PACKAGE_NAME,
         candidateFilenames = listOf(
             "tiktok_${Constants.TIKTOK_TARGET_VERSION}_orig.apk",
             "tiktok_global_${Constants.TIKTOK_TARGET_VERSION}.apk",
@@ -36,19 +36,6 @@ enum class TargetApp(
             "tiktok.apk",
         ),
         filePattern = Regex("(?i).*tiktok.*\\.apk$"),
-        patchDirectoryPart = "tiktok",
-    ),
-    TIKTOK_ASIA(
-        id = "tiktok_asia",
-        appName = "TikTok Asia",
-        packageName = Constants.TIKTOK_ASIA_PACKAGE_NAME,
-        candidateFilenames = listOf(
-            "com.ss.android.ugc.trill_${Constants.TIKTOK_TARGET_VERSION}.apk",
-            "trill_${Constants.TIKTOK_TARGET_VERSION}_orig.apk",
-            "trill_${Constants.TIKTOK_TARGET_VERSION}.apk",
-            "trill.apk",
-        ),
-        filePattern = Regex("(?i).*trill.*\\.apk$"),
         patchDirectoryPart = "tiktok",
     ),
     GBOARD(
@@ -131,7 +118,6 @@ enum class TargetApp(
             val normalized = raw.trim().lowercase().replace("-", "_")
             return entries.firstOrNull { it.id == normalized }
                 ?: when (normalized) {
-                    "trill" -> TIKTOK_ASIA
                     "gboard_lite" -> GBOARD
                     "earbuds", "earphone", "xiaomi" -> XIAOMI_EARBUDS
                     else -> null
@@ -141,7 +127,6 @@ enum class TargetApp(
         fun fromFileName(fileName: String): TargetApp? {
             val lower = fileName.lowercase()
             return when {
-                lower.contains("trill") -> TIKTOK_ASIA
                 lower.contains("tiktok") -> TIKTOK
                 lower.contains("gboard") -> GBOARD
                 lower.contains("brave") -> BRAVE

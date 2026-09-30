@@ -142,7 +142,7 @@ val copyCommentsWithoutUsernamePatch = bytecodePatch(
     description = "Copies only the comment text without prepending the author username.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
     extendWith("extensions/extension.mpe")
 
     execute {

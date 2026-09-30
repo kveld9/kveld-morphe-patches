@@ -11,7 +11,7 @@ val creatorBloatSlimmerPatch = rawResourcePatch(
     description = "Strips heavy video creation plugins, CapCut NLE editor SDKs, effect plugins, and AR camera face models to significantly reduce APK size.",
     default = false,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
 
     execute {
         val abis = listOf("lib/arm64-v8a", "lib/armeabi-v7a")

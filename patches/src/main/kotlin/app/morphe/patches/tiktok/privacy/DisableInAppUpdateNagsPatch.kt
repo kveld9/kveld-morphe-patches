@@ -10,7 +10,7 @@ val disableInAppUpdateNagsPatch = bytecodePatch(
     description = "Neutralizes background update polling tasks and device ID check routines to prevent forced update popups.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
 
     execute {
         var patched = 0

@@ -14,7 +14,7 @@ val mandatoryLoginBypassPatch = bytecodePatch(
     description = "Neutralizes mandatory login walls, dynamic regional forced login gates, and guest browsing restrictions.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
     extendWith("extensions/extension.mpe")
 
     execute {

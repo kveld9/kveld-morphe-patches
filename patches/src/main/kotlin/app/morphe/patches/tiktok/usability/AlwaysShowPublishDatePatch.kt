@@ -18,7 +18,7 @@ val alwaysShowPublishDatePatch = bytecodePatch(
     description = "Forces video publish/upload date to remain visible in video author information across all feed types.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
 
     execute {
         var patched = 0

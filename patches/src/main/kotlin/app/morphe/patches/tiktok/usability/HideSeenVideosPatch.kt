@@ -12,7 +12,7 @@ val hideSeenVideosPatch = bytecodePatch(
     description = "Filters previously watched videos from incoming For You feed batches.",
     default = false,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
     extendWith("extensions/extension.mpe")
 
     execute {

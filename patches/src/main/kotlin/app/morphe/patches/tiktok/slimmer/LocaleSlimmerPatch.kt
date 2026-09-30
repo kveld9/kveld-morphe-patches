@@ -11,7 +11,7 @@ val localeSlimmerPatch = rawResourcePatch(
     description = "Strips unselected language string bundles from assets/strings#lang_* to save APK space.",
     default = false,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
 
     val targetLocales by stringOption(
         key = "locales",

@@ -18,7 +18,7 @@ val customOfflineVideosLimitPatch = bytecodePatch(
     description = "Customizes the maximum number of videos available for offline download caching.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
     extendWith("extensions/extension.mpe")
 
     val customLimit by intOption(

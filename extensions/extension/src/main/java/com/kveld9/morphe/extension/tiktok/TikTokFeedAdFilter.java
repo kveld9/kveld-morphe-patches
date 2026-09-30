@@ -12,7 +12,7 @@ import java.util.Locale;
 import java.util.Set;
 
 /**
- * High-performance, crash-safe feed ad filter for TikTok (com.zhiliaoapp.musically / com.ss.android.ugc.trill).
+ * High-performance, crash-safe feed ad filter for TikTok (com.zhiliaoapp.musically).
  * Neutralizes sponsored cards, brand promotions, affiliate videos, promotional audio, and shop anchors.
  */
 @SuppressWarnings("unused")

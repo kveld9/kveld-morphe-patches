@@ -10,7 +10,7 @@ val autoPauseFirstVideoPatch = bytecodePatch(
     description = "Automatically pauses the first video when opening TikTok, allowing the application to finish background initialization and preventing playback lag.",
     default = false,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
     extendWith("extensions/extension.mpe")
 
     execute {

@@ -13,7 +13,7 @@ val playbackSpeedPatch = bytecodePatch(
     description = "Persists selected video playback speed across all feed videos and application restarts.",
     default = false,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
     extendWith("extensions/extension.mpe")
 
     execute {

@@ -14,7 +14,7 @@ val instantColdStartPatch = bytecodePatch(
     description = "Eliminates cold startup delays, background resume splash advertisements, real-time splash requests, and TopView ad preloading.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
 
     execute {
         var patched = 0

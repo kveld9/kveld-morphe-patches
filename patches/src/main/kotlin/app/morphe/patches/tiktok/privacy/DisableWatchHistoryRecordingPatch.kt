@@ -10,7 +10,7 @@ val disableWatchHistoryRecordingPatch = bytecodePatch(
     description = "Prevents viewed videos from being recorded in account watch history, playback duration stores, and local history caches.",
     default = false,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
 
     execute {
         var patched = 0

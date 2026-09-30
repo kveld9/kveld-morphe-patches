@@ -59,38 +59,24 @@ object Constants {
         )
     )
 
-    const val TIKTOK_GLOBAL_PACKAGE_NAME = "com.zhiliaoapp.musically"
-    const val TIKTOK_ASIA_PACKAGE_NAME = "com.ss.android.ugc.trill"
+    const val TIKTOK_PACKAGE_NAME = "com.zhiliaoapp.musically"
     const val TIKTOK_TARGET_VERSION = "47.1.4"
 
     val COMPATIBILITY_TIKTOK = Compatibility(
         name = "TikTok",
-        packageName = TIKTOK_GLOBAL_PACKAGE_NAME,
+        packageName = TIKTOK_PACKAGE_NAME,
         apkFileType = ApkFileType.APK,
         appIconColor = 0xFE2C55,
         targets = listOf(
             AppTarget(
                 version = TIKTOK_TARGET_VERSION,
-                description = "Download TikTok Global v$TIKTOK_TARGET_VERSION (nodpi APK) from APKMirror"
-            )
-        )
-    )
-
-    val COMPATIBILITY_TIKTOK_ASIA = Compatibility(
-        name = "TikTok",
-        packageName = TIKTOK_ASIA_PACKAGE_NAME,
-        apkFileType = ApkFileType.APK,
-        appIconColor = 0xFE2C55,
-        targets = listOf(
-            AppTarget(
-                version = TIKTOK_TARGET_VERSION,
-                description = "Download TikTok Asia (trill) v$TIKTOK_TARGET_VERSION (nodpi APK) from APKMirror"
+                description = "Download TikTok v$TIKTOK_TARGET_VERSION (nodpi APK) from APKMirror"
             )
         )
     )
 
     const val NOKOPRINT_PACKAGE_NAME = "com.nokoprint"
-    const val NOKOPRINT_TARGET_VERSION = "5.28.4"
+    const val NOKOPRINT_TARGET_VERSION = "5.28.6"
 
     val COMPATIBILITY_NOKOPRINT = Compatibility(
         name = "NokoPrint - WiFi, Bluetooth, USB",

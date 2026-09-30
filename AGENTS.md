@@ -50,12 +50,12 @@ morphe-patches/
 ### Core Architectural Contracts
 
 1. **Declarative Metadata & Single Source of Truth**:
-   - `app.morphe.patches.shared.Constants`: Every patch must strictly consume centralized constants (`Constants.COMPATIBILITY_BRAVE`, `Constants.COMPATIBILITY_GBOARD`, `Constants.COMPATIBILITY_HEVY`, `Constants.COMPATIBILITY_TIKTOK`, `Constants.COMPATIBILITY_TIKTOK_ASIA`, `Constants.COMPATIBILITY_NOKOPRINT`, `Constants.COMPATIBILITY_XIAOMI_EARBUDS`) instead of instantiating redundant inline `Compatibility(...)` objects.
-   - Target versions, app colors, package names, and download source hints for all 6 active targets are maintained exclusively in `Constants.kt`.
+   - `app.morphe.patches.shared.Constants`: Every patch must strictly consume centralized constants (`Constants.COMPATIBILITY_BRAVE`, `Constants.COMPATIBILITY_GBOARD`, `Constants.COMPATIBILITY_HEVY`, `Constants.COMPATIBILITY_TIKTOK`, `Constants.COMPATIBILITY_NOKOPRINT`, `Constants.COMPATIBILITY_XIAOMI_EARBUDS`) instead of instantiating redundant inline `Compatibility(...)` objects.
+   - Target versions, app colors, package names, and download source hints for all active targets are maintained exclusively in `Constants.kt`.
 
    - **Single Target Version Invariant**: Every supported application MUST target strictly ONE version (the latest supported release) in `targets = listOf(AppTarget(...))`. Never retain multiple version targets or legacy fallback code for older versions. When bumping an application target, completely replace previous version targets and synchronize all documentation references.
    - **Universal Patches**: Omitting `compatibleWith(...)` produces a universal patch applicable across any target APK in Morphe Manager / CLI (e.g. `LocaleResourceSlimmerPatch`, `DpiResourceSlimmerPatch`).
-   - **Multi-Target Varargs**: Patches targeting multiple package variants (e.g. TikTok Global and Asia) declare them via `compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)`.
+   - **Multi-Target Varargs**: Patches targeting multiple package variants declare them via varargs, e.g. `compatibleWith(targetA, targetB)`.
 
 2. **Patch Typology & Delegation**:
    - **`bytecodePatch`**: High-level Dalvik AST manipulation using `dexlib2` fingerprints, instruction registers extraction (`OneRegisterInstruction`, `TwoRegisterInstruction`), and inline Smali injection.

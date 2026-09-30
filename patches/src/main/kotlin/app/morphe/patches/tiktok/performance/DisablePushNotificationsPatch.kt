@@ -10,7 +10,7 @@ val disablePushNotificationsPatch = bytecodePatch(
     description = "Neutralizes background push notification tasks and persistent socket wake locks to eliminate background battery drain.",
     default = false,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
 
     execute {
         var patched = 0

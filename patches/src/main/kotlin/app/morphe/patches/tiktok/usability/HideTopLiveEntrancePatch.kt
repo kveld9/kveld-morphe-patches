@@ -11,7 +11,7 @@ val hideTopLiveEntrancePatch = bytecodePatch(
     description = "Removes the top-left LIVE broadcast button and tab entry point from the top navigation bar.",
     default = false,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
 
     execute {
         var patched = 0

@@ -10,7 +10,7 @@ val stopVideoLoopingPatch = bytecodePatch(
     description = "Stops videos at the end instead of replaying them in an infinite loop.",
     default = false,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
 
     execute {
         var patched = 0

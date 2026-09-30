@@ -1,6 +1,6 @@
 # 🎵 TikTok: Complete Patch, Architecture & Configuration Guide
 
-Comprehensive technical, architectural, and configuration guide for **TikTok** (supporting both Global `com.zhiliaoapp.musically` and Asia `com.ss.android.ugc.trill`), pinned to target version **`47.1.4`**.
+Comprehensive technical, architectural, and configuration guide for **TikTok** (`com.zhiliaoapp.musically`), pinned to target version **`47.1.4`**.
 
 ---
 
@@ -9,11 +9,11 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | Property | Value |
 | :--- | :--- |
 | **Target Application** | TikTok |
-| **Package Names** | `com.zhiliaoapp.musically` (Global) · `com.ss.android.ugc.trill` (Asia) |
+| **Package Name** | `com.zhiliaoapp.musically` |
 | **Supported Target Version** | **`47.1.4`** |
 | **Target File Format** | Standalone APK (`APK` - **nodpi**) |
 | **Recommended Architecture** | `arm64-v8a` |
-| **Official Download Source** | [APKMirror: Global (musical.ly)](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-47-1-4-release/) · [APKMirror: Asia (trill)](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok/tiktok-47-1-4-release/) |
+| **Official Download Source** | [APKMirror: TikTok (nodpi)](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-47-1-4-release/) |
 
 > [!IMPORTANT]
 > Always download the standalone `nodpi` APK variant for `arm64-v8a`. Do not use split APK bundles (`bundle` / `apkm`).

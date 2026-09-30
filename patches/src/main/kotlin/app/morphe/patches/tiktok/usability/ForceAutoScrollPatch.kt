@@ -15,7 +15,7 @@ val forceAutoScrollPatch = bytecodePatch(
     description = "Forces the activation of the native video auto-scroll experiment flag for accounts and regions that lack it due to A/B testing.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
 
     execute {
         var patched = 0

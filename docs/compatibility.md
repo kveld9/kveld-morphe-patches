@@ -14,7 +14,7 @@ Each application has an authoritative, all-in-one guide covering prerequisites, 
 | **Gboard Lite** | `18.4.1.985164140` | `arm64-v8a`, `armeabi-v7a` | Standalone nodpi APK | [Gboard Lite Guide](apps/gboard.md) |
 | **Hevy** | `3.1.14` | `arm64-v8a` (64-bit only) | Split APK Bundle (`.apkm`) | [Hevy Guide](apps/hevy.md) |
 | **NokoPrint** | `5.28.4` | `arm64-v8a`, `armeabi-v7a`, `universal` | Standalone nodpi APK / Bundle | [NokoPrint Guide](apps/nokoprint.md) |
-| **TikTok** | `47.1.4` | `arm64-v8a` | Standalone nodpi APK (Global & Asia) | [TikTok Guide](apps/tiktok.md) |
+| **TikTok** | `47.1.4` | `arm64-v8a` | Standalone nodpi APK | [TikTok Guide](apps/tiktok.md) |
 | **Xiaomi Earbuds** | `1.38.0i` | `arm64-v8a`, `armeabi-v7a`, `universal` | Split Bundle (`.xapk` / `.apkm`) | [Xiaomi Earbuds Guide](apps/xiaomi-earbuds.md) |
 | **Universal Optimizations** | *Universal* | All Architectures | Any Android APK | [Universal Patches Guide](universal-patches.md) |
 
@@ -25,7 +25,7 @@ Each application has an authoritative, all-in-one guide covering prerequisites, 
 > [!NOTE]
 > **Architecture Matrix Summary:**
 > - **Gboard Lite, Brave Browser, NokoPrint & Xiaomi Earbuds**: Officially support both **`arm64-v8a` (64-bit)** and **`armeabi-v7a` (32-bit)**.
-> - **TikTok**: Officially supports **`arm64-v8a`** (Global and Asia APK nodpi). Legacy `armeabi-v7a` libraries in dual-ABI APKs can be purged via debloat patches.
+> - **TikTok**: Officially supports **`arm64-v8a`** (Global APK nodpi). Legacy `armeabi-v7a` libraries in dual-ABI APKs can be purged via debloat patches.
 > - **Hevy**: **`arm64-v8a` (64-bit only)**.
 
 ### Why Gboard Lite supports 32-bit:
@@ -59,8 +59,8 @@ Download the official `arm64-v8a` bundle release from [APKMirror](https://www.ap
 Download the official release from [APKPure](https://d.apkpure.com/b/XAPK/com.nokoprint?versionCode=52804).
 - **Current Target**: `5.28.4` (`com.nokoprint`, standalone nodpi APK or bundle). Details in [NokoPrint Guide](apps/nokoprint.md).
 
-### 🎵 TikTok: Global & Asia (`com.zhiliaoapp.musically` / `com.ss.android.ugc.trill`)
-Download the official standalone APK release from [APKMirror (TikTok)](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/) or [APKMirror (TikTok Asia)](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok/).
+### 🎵 TikTok (`com.zhiliaoapp.musically`)
+Download the official standalone APK release from [APKMirror (TikTok)](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/).
 - **Current Target**: `47.1.4` (nodpi APK, `arm64-v8a`). Details in [TikTok Guide](apps/tiktok.md).
 
 ### 🎧 Xiaomi Earbuds (`com.mi.earphone`)

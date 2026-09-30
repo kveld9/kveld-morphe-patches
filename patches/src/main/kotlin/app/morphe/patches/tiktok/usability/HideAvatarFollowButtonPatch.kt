@@ -15,7 +15,7 @@ val hideAvatarFollowButtonPatch = bytecodePatch(
     description = "Hides the plus (+) follow badge on creator profile avatars in the feed and disables its touch interaction.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
     extendWith("extensions/extension.mpe")
 
     execute {

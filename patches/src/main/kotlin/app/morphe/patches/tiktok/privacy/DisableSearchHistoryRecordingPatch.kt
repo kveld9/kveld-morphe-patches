@@ -11,7 +11,7 @@ val disableSearchHistoryRecordingPatch = bytecodePatch(
     description = "Prevents search queries and keywords from being recorded in local history, databases, and analytics stores.",
     default = false,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
 
     execute {
         var patched = 0

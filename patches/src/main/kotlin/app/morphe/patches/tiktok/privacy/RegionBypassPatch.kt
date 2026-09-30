@@ -11,7 +11,7 @@ val regionBypassPatch = bytecodePatch(
     description = "Spoofs the detected SIM and network country ISO code to bypass regional feed restrictions and catalog blocks.",
     default = false,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
 
     val targetRegion by stringOption(
         key = "region",

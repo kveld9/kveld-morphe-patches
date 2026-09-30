@@ -14,7 +14,7 @@ val hideCommunityTabPatch = bytecodePatch(
     description = "Removes the Community (Explore) tab from the top navigation feed strip.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
 
     execute {
         var patched = 0

@@ -20,7 +20,7 @@ val cleanSharePanelPatch = bytecodePatch(
     description = "Removes clutter from the share panel and direct message dialog, including suggested quick emojis and the 'Send to new group' button.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
 
     val hideQuickEmojis by booleanOption(
         key = "hideQuickEmojis",

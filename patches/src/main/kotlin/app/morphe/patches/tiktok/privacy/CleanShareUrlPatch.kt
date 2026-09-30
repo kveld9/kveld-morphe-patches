@@ -12,7 +12,7 @@ val cleanShareUrlPatch = bytecodePatch(
     description = "Strips tracking parameters, user IDs, device fingerprints, and marketing tokens from shared TikTok links.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
     extendWith("extensions/extension.mpe")
 
     execute {

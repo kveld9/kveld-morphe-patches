@@ -12,7 +12,7 @@ val tikTokFeedAdBlockerPatch = bytecodePatch(
     description = "Removes sponsored advertisements, brand promotions, and promotional audio from the For You, Following, and Search feeds.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
     extendWith("extensions/extension.mpe")
 
     execute {

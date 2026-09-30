@@ -12,7 +12,7 @@ val hideSearchPopularLivesPatch = bytecodePatch(
     description = "Removes the Popular LIVEs recommendation card and live stream broadcasts from the search discovery page.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
     extendWith("extensions/extension.mpe")
 
     execute {

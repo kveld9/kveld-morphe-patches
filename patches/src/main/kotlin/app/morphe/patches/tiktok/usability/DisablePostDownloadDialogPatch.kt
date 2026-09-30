@@ -10,7 +10,7 @@ val disablePostDownloadDialogPatch = bytecodePatch(
     description = "Suppresses the automatic 'Share to' and friend suggestions bottom sheet that pops up after finishing a download.",
     default = false,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
 
     execute {
         var patched = 0

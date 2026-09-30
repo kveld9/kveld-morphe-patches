@@ -13,7 +13,7 @@ val enableVoiceCommentsPatch = bytecodePatch(
     description = "Forces the native voice comment recording button in comment input bars, bypassing regional rollout restrictions and remote server blocks.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
 
     execute {
         var patched = 0

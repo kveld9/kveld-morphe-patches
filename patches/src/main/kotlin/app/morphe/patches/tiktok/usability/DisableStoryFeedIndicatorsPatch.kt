@@ -12,7 +12,7 @@ val disableStoryFeedIndicatorsPatch = bytecodePatch(
     description = "Removes creator profile photo story rings from feed videos, ensuring avatar photos remain clean without blue story rings.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
 
     execute {
         var patched = 0

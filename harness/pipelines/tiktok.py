@@ -1,5 +1,5 @@
 """
-Target Pipeline for TikTok (com.zhiliaoapp.musically / com.ss.android.ugc.trill).
+Target Pipeline for TikTok (com.zhiliaoapp.musically).
 """
 
 from __future__ import annotations
@@ -19,7 +19,7 @@ class TikTokPipeline(BaseTargetPipeline):
     @classmethod
     def matches_package(cls, package_name: str) -> bool:
         pkg = package_name.lower()
-        return "musically" in pkg or "trill" in pkg or "tiktok" in pkg
+        return "musically" in pkg or "tiktok" in pkg
 
     def validate_apk_sanity(self):
         print("[AUDIT] Validating TikTok APK architecture and packaging...")

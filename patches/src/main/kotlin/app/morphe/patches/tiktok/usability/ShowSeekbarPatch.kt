@@ -15,7 +15,7 @@ val showSeekbarPatch = bytecodePatch(
     description = "Restores TikTok's native video seekbar and scrubbing controls where normally hidden or disabled.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
     extendWith("extensions/extension.mpe")
 
     execute {

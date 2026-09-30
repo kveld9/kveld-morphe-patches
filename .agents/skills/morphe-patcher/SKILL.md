@@ -83,9 +83,9 @@ Compatibility is configured via `compatibleWith(...)`:
   compatibleWith(Constants.COMPATIBILITY_BRAVE)
   ```
 - **Multi-Compatibility Varargs**:
-  Accepts multiple `Compatibility` contracts for cross-target or dual-package applications (e.g. TikTok Global + TikTok Asia):
+  Accepts multiple `Compatibility` contracts for cross-target or dual-package applications:
   ```kotlin
-  compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
+  compatibleWith(targetA, targetB)
   ```
 - **Universal Patches**:
   **Omitting `compatibleWith(...)`** entirely produces a universal patch (e.g. `LocaleResourceSlimmerPatch`, `DpiResourceSlimmerPatch`). Universal patches are offered across all target applications in Morphe Manager and the CLI patcher.
@@ -162,7 +162,7 @@ Active targets defined in `Constants.kt`:
 1. **Brave**: `Constants.COMPATIBILITY_BRAVE` (`com.brave.browser`)
 2. **Gboard Lite**: `Constants.COMPATIBILITY_GBOARD` (`com.google.android.inputmethod.latin`)
 3. **Hevy**: `Constants.COMPATIBILITY_HEVY` (`com.hevy`)
-4. **TikTok**: `Constants.COMPATIBILITY_TIKTOK` (`com.zhiliaoapp.musically`) & `Constants.COMPATIBILITY_TIKTOK_ASIA` (`com.ss.android.ugc.trill`)
+4. **TikTok**: `Constants.COMPATIBILITY_TIKTOK` (`com.zhiliaoapp.musically`)
 5. **NokoPrint**: `Constants.COMPATIBILITY_NOKOPRINT` (`com.nokoprint`)
 6. **Xiaomi Earbuds**: `Constants.COMPATIBILITY_XIAOMI_EARBUDS` (`com.mi.earphone`)
 

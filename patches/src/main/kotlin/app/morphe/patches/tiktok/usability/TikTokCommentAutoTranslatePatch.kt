@@ -56,7 +56,7 @@ val commentAutoTranslatePatch = bytecodePatch(
     description = "Automatically translates comments into your preferred language using TikTok's native translation engine.",
     default = false,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
     extendWith("extensions/extension.mpe")
 
     execute {

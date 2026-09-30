@@ -10,7 +10,7 @@ val disableSearchVideoAutoplayPatch = bytecodePatch(
     description = "Disables automatic video playback in search results. Videos only play when tapped to view in detail.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
 
     execute {
         var patched = 0
