@@ -132,6 +132,16 @@ The **`Top Toolbar Item Count`** patch allows customizing the maximum number of 
 | Option | Key | Type | Default | Range / Format | Description |
 | :--- | :--- | :--- | :---: | :--- | :--- |
 | **Toolbar item count** | `itemCount` | String | `5` | `4` to `8` | Maximum number of access point icons displayed on the top toolbar without collapsing into the overflow menu. |
+ 
+---
+
+## 🎛️ Configurable Options: Force Incognito Mode
+
+The **`Force Incognito Mode`** patch includes an opt-in toggle to hide the incognito mask icon from the keyboard toolbar:
+
+| Option | Key | Type | Default | Description |
+| :--- | :--- | :--- | :---: | :--- |
+| **Hide Incognito Icon** | `hideIncognitoIcon` | Boolean | `false` | Hides the incognito mask icon on the toolbar by replacing it with the standard access points grid icon (`res/6qJ.xml` -> `res/BVL.xml`). |
 
 ---
 
