@@ -510,33 +510,4 @@ def get_all_gboard_contracts() -> List[GboardPatchContract]:
                 "Causing NPE or IndexOutOfBoundsException during WindowMetricsNotification dispatch",
             ],
         ),
-        GboardPatchContract(
-            patch_id="gboard_unlock_writing_tools",
-            name="Unlock Writing Tools & Proofread AI",
-            description="Unlocks the full Writing Tools and Proofread AI suite in the suggestion strip, toolbar shortcuts, and Text correction settings across all languages.",
-            source_file="patches/src/main/kotlin/app/morphe/patches/gboard/GboardUnlockWritingToolsPatch.kt",
-            queries=[
-                FingerprintQuery(
-                    name_id="writing_helper_clinit",
-                    method_name="<clinit>",
-                    return_type="V",
-                    strings=["writing_helper", "writing_tools"],
-                ),
-                FingerprintQuery(
-                    name_id="on_device_proofread_clinit",
-                    method_name="<clinit>",
-                    return_type="V",
-                    strings=["enable_on_device_proofread"],
-                ),
-            ],
-            semantic_invariants=[
-                "Overrides Writing Helper and Proofread Phenotype flags to true",
-                "Expands language tags to wildcard '*' or configured BCP-47 list",
-                "Eliminates client-side app blacklists for Proofread triggers",
-            ],
-            forbidden_regressions=[
-                "Corrupting static initialization of Phenotype flag container classes",
-                "Crashing during toolbar AccessPoint notification dispatch",
-            ],
-        ),
     ]
