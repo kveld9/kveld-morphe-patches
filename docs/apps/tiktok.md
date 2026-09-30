@@ -234,8 +234,6 @@ The **`Custom Share Sheet`** patch cleans and customizes TikTok's native sharing
 | **Hide Live Wallpaper & GIF** | `hideWallpaperAndGif` | Boolean | `false` | Hides Live wallpaper and GIF creation actions. |
 | **Hide 'Not Interested'** | `hideNotInterested` | Boolean | `false` | Hides the 'Not interested' action. |
 | **Hide 'Report'** | `hideReport` | Boolean | `false` | Hides the Report action. |
-| **Custom Hidden Apps** | `hiddenApps` | String | `""` | Optional comma-separated list of additional app channel keys to hide. |
-| **Custom Hidden Actions** | `hiddenActions` | String | `""` | Optional comma-separated list of additional action keys to hide. |
 
 ---
 

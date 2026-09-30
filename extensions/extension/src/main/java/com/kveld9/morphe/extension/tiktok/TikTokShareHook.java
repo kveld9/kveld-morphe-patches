@@ -55,15 +55,10 @@ public final class TikTokShareHook {
     public static boolean hideNotInterested = false;
     public static boolean hideReport = false;
 
-    // Optional advanced custom keys
-    public static String hiddenApps = "";
-    public static String hiddenActions = "";
-
     public static String isImFunctionOffFieldName = "LJJIJIL";
     public static String supportIMFieldName = "LJIJJLI";
 
     private static volatile Set<String> activeHiddenKeys = null;
-    private static volatile Set<String> parsedCustomKeys = null;
 
     private TikTokShareHook() {}
 
@@ -134,30 +129,10 @@ public final class TikTokShareHook {
         return activeHiddenKeys;
     }
 
-    private static Set<String> getParsedCustomKeys() {
-        if (parsedCustomKeys == null) {
-            Set<String> set = new HashSet<>();
-            parseCommaKeys(hiddenApps, set);
-            parseCommaKeys(hiddenActions, set);
-            parsedCustomKeys = set;
-        }
-        return parsedCustomKeys;
-    }
-
-    private static void parseCommaKeys(String input, Set<String> out) {
-        if (input == null || input.trim().isEmpty()) return;
-        for (String part : input.split(",")) {
-            String clean = part.trim().toLowerCase(Locale.ROOT);
-            if (!clean.isEmpty()) {
-                out.add(clean);
-            }
-        }
-    }
-
     public static boolean shouldHide(String key) {
         if (key == null) return false;
         String lowerKey = key.toLowerCase(Locale.ROOT);
-        return getActiveHiddenKeys().contains(lowerKey) || getParsedCustomKeys().contains(lowerKey);
+        return getActiveHiddenKeys().contains(lowerKey);
     }
 
     /**
