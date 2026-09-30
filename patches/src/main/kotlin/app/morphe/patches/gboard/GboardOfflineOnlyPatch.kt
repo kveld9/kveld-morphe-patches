@@ -108,17 +108,17 @@ val gboardOfflineOnlyPatch: BytecodePatch = bytecodePatch(
     execute {
         var hookedMethods = 0
 
-        // 1. DeviceStatusMonitor (Lxeg): force NO_CONNECTION
+        // 1. DeviceStatusMonitor (Lmcz): force NO_CONNECTION
         Fingerprint(
-            definingClass = "Lxeg;",
+            definingClass = "Lmcz;",
             name = "a",
             parameters = listOf("Landroid/content/Intent;"),
-            returnType = "Lxei;",
+            returnType = "Lmdd;",
         ).method.apply {
             addInstructions(
                 0,
                 """
-                    sget-object v0, Lxei;->b:Lxei;
+                    sget-object v0, Lmdd;->b:Lmdd;
                     return-object v0
                 """.trimIndent(),
             )
@@ -126,24 +126,24 @@ val gboardOfflineOnlyPatch: BytecodePatch = bytecodePatch(
         }
 
         Fingerprint(
-            definingClass = "Lxeg;",
+            definingClass = "Lmcz;",
             name = "g",
             parameters = listOf("Landroid/net/Network;"),
-            returnType = "Lxei;",
+            returnType = "Lmdd;",
         ).method.apply {
             addInstructions(
                 0,
                 """
-                    sget-object v0, Lxei;->b:Lxei;
+                    sget-object v0, Lmdd;->b:Lmdd;
                     return-object v0
                 """.trimIndent(),
             )
             hookedMethods++
         }
 
-        // 2. NetworkInfoNotification (Lxej): spoof offline
+        // 2. NetworkInfoNotification (Lmde): spoof offline
         Fingerprint(
-            definingClass = "Lxej;",
+            definingClass = "Lmde;",
             name = "a",
             parameters = emptyList(),
             returnType = "Z",
@@ -159,9 +159,9 @@ val gboardOfflineOnlyPatch: BytecodePatch = bytecodePatch(
         }
 
         Fingerprint(
-            definingClass = "Lxej;",
+            definingClass = "Lmde;",
             name = "c",
-            parameters = listOf("Lxej;"),
+            parameters = listOf("Lmde;"),
             returnType = "Z",
         ).method.apply {
             addInstructions(
@@ -174,33 +174,33 @@ val gboardOfflineOnlyPatch: BytecodePatch = bytecodePatch(
             hookedMethods++
         }
 
-        // 3. Central HTTP Clients: Cronet (Lwcf), OkHttp3 (Lwcz), TrafficStats Wrapper (Lwam), and Lwbe
+        // 3. Central HTTP Clients: Cronet (Llmf), OkHttp3 (Llms), TrafficStats Wrapper (Lllh), and Lllr
         val httpMethodSnippet = """
             new-instance v0, Ljava/io/IOException;
             const-string v1, "Offline mode"
             invoke-direct {v0, v1}, Ljava/io/IOException;-><init>(Ljava/lang/String;)V
-            invoke-static {v0}, Lagsw;->h(Ljava/lang/Throwable;)Lagtn;
+            invoke-static {v0}, Luxc;->fG(Ljava/lang/Throwable;)Lrhq;
             move-result-object v0
             return-object v0
         """.trimIndent()
 
-        listOf("Lwcf;", "Lwcz;", "Lwam;", "Lwbe;").forEach { clientClass ->
+        listOf("Llmf;", "Llms;", "Lllh;", "Lllr;").forEach { clientClass ->
             Fingerprint(
                 definingClass = clientClass,
                 name = "c",
-                parameters = listOf("Lwbq;"),
-                returnType = "Lagtn;",
+                parameters = listOf("Llly;"),
+                returnType = "Lrhq;",
             ).method.apply {
                 addInstructions(0, httpMethodSnippet)
                 hookedMethods++
             }
         }
 
-        // 4. Superpacks HTTP Downloader (Lacjw): force connectivity false and throw on socket open
+        // 4. Superpacks HTTP Downloader (Loqn): force connectivity false and throw on socket open
         Fingerprint(
-            definingClass = "Lacjw;",
+            definingClass = "Loqn;",
             name = "k",
-            parameters = listOf("Lacjk;"),
+            parameters = listOf("Loqd;"),
             returnType = "Z",
         ).method.apply {
             addInstructions(
@@ -214,7 +214,7 @@ val gboardOfflineOnlyPatch: BytecodePatch = bytecodePatch(
         }
 
         Fingerprint(
-            definingClass = "Lacjw;",
+            definingClass = "Loqn;",
             name = "b",
             parameters = listOf("Ljava/lang/String;", "Ljava/lang/String;"),
             returnType = "Ljava/net/HttpURLConnection;",
@@ -231,22 +231,22 @@ val gboardOfflineOnlyPatch: BytecodePatch = bytecodePatch(
             hookedMethods++
         }
 
-        // 5. LanguageDownloadQueue (Lzie): neutralize download queueing
+        // 5. LanguageDownloadQueue (Lnfj): neutralize download queueing
         Fingerprint(
-            definingClass = "Lzie;",
+            definingClass = "Lnfj;",
             name = "c",
-            parameters = listOf("Ljava/lang/String;", "Lzjj;", "Ljava/util/function/Consumer;"),
+            parameters = listOf("Ljava/lang/String;", "Lngb;", "Ljava/util/function/Consumer;"),
             returnType = "V",
         ).method.apply {
             addInstructions(0, "return-void")
             hookedMethods++
         }
 
-        // 6. Glide ConnectivityMonitor (Ldxd): neutralize callback registration
+        // 6. Glide ConnectivityMonitor (Lcgv): neutralize callback registration
         Fingerprint(
-            definingClass = "Ldxd;",
+            definingClass = "Lcgv;",
             name = "b",
-            parameters = listOf("Ldwd;"),
+            parameters = listOf("Lcfy;"),
             returnType = "V",
         ).method.apply {
             addInstructions(0, "return-void")
@@ -254,32 +254,32 @@ val gboardOfflineOnlyPatch: BytecodePatch = bytecodePatch(
         }
 
         Fingerprint(
-            definingClass = "Ldxd;",
+            definingClass = "Lcgv;",
             name = "c",
-            parameters = listOf("Ldwd;"),
+            parameters = listOf("Lcfy;"),
             returnType = "V",
         ).method.apply {
             addInstructions(0, "return-void")
             hookedMethods++
         }
 
-        // 7. WorkManager NetworkStateTracker (Lcps & Lcpu): return offline state and prevent callbacks
+        // 7. WorkManager NetworkStateTracker (Lbiw & Lbiy): return offline state and prevent callbacks
         Fingerprint(
-            definingClass = "Lcps;",
+            definingClass = "Lbiw;",
             name = "a",
             parameters = listOf("Landroid/net/ConnectivityManager;", "Z"),
-            returnType = "Lcoj;",
+            returnType = "Lbhw;",
         ).method.apply {
             addInstructions(
                 0,
                 """
-                    new-instance v0, Lcoj;
+                    new-instance v0, Lbhw;
                     const/4 v1, 0x0
                     const/4 v2, 0x0
                     const/4 v3, 0x0
                     const/4 v4, 0x1
                     const/4 v5, 0x0
-                    invoke-direct/range {v0 .. v5}, Lcoj;-><init>(ZZZZZ)V
+                    invoke-direct/range {v0 .. v5}, Lbhw;-><init>(ZZZZZ)V
                     return-object v0
                 """.trimIndent(),
             )
@@ -287,7 +287,7 @@ val gboardOfflineOnlyPatch: BytecodePatch = bytecodePatch(
         }
 
         Fingerprint(
-            definingClass = "Lcpu;",
+            definingClass = "Lbiy;",
             name = "d",
             parameters = emptyList(),
             returnType = "V",
@@ -297,7 +297,7 @@ val gboardOfflineOnlyPatch: BytecodePatch = bytecodePatch(
         }
 
         Fingerprint(
-            definingClass = "Lcpu;",
+            definingClass = "Lbiy;",
             name = "e",
             parameters = emptyList(),
             returnType = "V",

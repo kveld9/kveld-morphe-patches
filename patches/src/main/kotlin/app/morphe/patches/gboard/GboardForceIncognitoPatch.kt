@@ -17,7 +17,7 @@ val gboardForceIncognitoPatch = bytecodePatch(
 
     execute {
         val fp1 = Fingerprint(
-            definingClass = "Lshz;",
+            definingClass = "Ljjb;",
             name = "z",
             parameters = listOf("Landroid/view/inputmethod/EditorInfo;"),
             returnType = "Z",
@@ -31,8 +31,8 @@ val gboardForceIncognitoPatch = bytecodePatch(
         )
 
         val fp2 = Fingerprint(
-            definingClass = "Lfoz;",
-            name = "F",
+            definingClass = "Lcun;",
+            name = "G",
             parameters = emptyList(),
             returnType = "Z",
         )

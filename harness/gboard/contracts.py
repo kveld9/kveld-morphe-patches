@@ -89,7 +89,7 @@ def get_all_gboard_contracts() -> List[GboardPatchContract]:
                     name_id="daily_ping_worker",
                     defining_class="Lcom/google/android/libraries/inputmethod/dailyping/DailyPingWorker;",
                     method_name="c",
-                    return_type="Lagtn;",
+                    return_type="Lrhq;",
                     parameters=[],
                 ),
             ],
@@ -107,13 +107,6 @@ def get_all_gboard_contracts() -> List[GboardPatchContract]:
             description="Disables Google's diagnostic and recovery telemetry.",
             source_file="patches/src/main/kotlin/app/morphe/patches/gboard/GboardDisableAppDoctorPatch.kt",
             queries=[
-                FingerprintQuery(
-                    name_id="app_doctor_init",
-                    defining_class="Lcom/google/android/libraries/inputmethod/appdoctor/initializer/AppDoctorInitializer;",
-                    method_name="a",
-                    return_type="Ljava/lang/Object;",
-                    parameters=["Landroid/content/Context;"],
-                ),
                 FingerprintQuery(
                     name_id="app_doctor_receiver",
                     defining_class="Lcom/google/android/libraries/appdoctor/AppDoctorReceiver;",
@@ -167,21 +160,21 @@ def get_all_gboard_contracts() -> List[GboardPatchContract]:
                     name_id="mdd_task_scheduler_worker",
                     defining_class="Lcom/google/android/libraries/inputmethod/mdd/MDDTaskScheduler$Worker;",
                     method_name="c",
-                    return_type="Lagtn;",
+                    return_type="Lrhq;",
                     parameters=[],
                 ),
                 FingerprintQuery(
                     name_id="mdd_metadata_cleanup_worker",
                     defining_class="Lcom/google/android/libraries/inputmethod/mdd/cleanup/MddMetadataCleanupWorker;",
                     method_name="k",
-                    return_type="Lcjb;",
+                    return_type="Labc;",
                     parameters=[],
                 ),
                 FingerprintQuery(
                     name_id="mdd_foreground_download_worker",
                     defining_class="Lcom/google/android/libraries/inputmethod/mdd/ForegroundDownloadTaskWorker;",
                     method_name="c",
-                    return_type="Lagtn;",
+                    return_type="Lrhq;",
                     parameters=[],
                 ),
             ],
@@ -228,14 +221,14 @@ def get_all_gboard_contracts() -> List[GboardPatchContract]:
             queries=[
                 FingerprintQuery(
                     name_id="superpacks_sync_task_1",
-                    defining_class="Lgwi;",
+                    defining_class="Ldli;",
                     method_name="n",
                     return_type="V",
                     parameters=[],
                 ),
                 FingerprintQuery(
                     name_id="superpacks_sync_task_2",
-                    defining_class="Lgsn;",
+                    defining_class="Ldkt;",
                     method_name="n",
                     return_type="V",
                     parameters=[],
@@ -256,9 +249,9 @@ def get_all_gboard_contracts() -> List[GboardPatchContract]:
             queries=[
                 FingerprintQuery(
                     name_id="tenor_share_tracker",
-                    defining_class="Linr;",
-                    method_name="K",
-                    parameters=["Lagca;", "Lien;"],
+                    defining_class="Leid;",
+                    method_name="F",
+                    parameters=["Lqym;", "Leck;"],
                     return_type="V",
                 ),
             ],
@@ -276,13 +269,6 @@ def get_all_gboard_contracts() -> List[GboardPatchContract]:
             source_file="patches/src/main/kotlin/app/morphe/patches/gboard/GboardDisableWorkManagerPatch.kt",
             queries=[
                 FingerprintQuery(
-                    name_id="workmanager_initializer",
-                    defining_class="Landroidx/work/WorkManagerInitializer;",
-                    method_name="a",
-                    return_type="Ljava/lang/Object;",
-                    parameters=["Landroid/content/Context;"],
-                ),
-                FingerprintQuery(
                     name_id="workmanager_system_job_service_onstart",
                     defining_class="Landroidx/work/impl/background/systemjob/SystemJobService;",
                     method_name="onStartJob",
@@ -298,7 +284,6 @@ def get_all_gboard_contracts() -> List[GboardPatchContract]:
                 ),
             ],
             semantic_invariants=[
-                "WorkManagerInitializer returns input without building SQLite DB",
                 "SystemJobService returns false (job finished immediately)",
             ],
             forbidden_regressions=[
@@ -333,7 +318,7 @@ def get_all_gboard_contracts() -> List[GboardPatchContract]:
             queries=[
                 FingerprintQuery(
                     name_id="key_shape_predicate",
-                    defining_class="Lxlh;",
+                    defining_class="Lmgu;",
                     method_name="i",
                     return_type="Z",
                     parameters=["Landroid/content/Context;"],
@@ -354,15 +339,15 @@ def get_all_gboard_contracts() -> List[GboardPatchContract]:
             queries=[
                 FingerprintQuery(
                     name_id="incognito_editor_check",
-                    defining_class="Lshz;",
+                    defining_class="Ljjb;",
                     method_name="z",
                     return_type="Z",
                     parameters=["Landroid/view/inputmethod/EditorInfo;"],
                 ),
                 FingerprintQuery(
                     name_id="incognito_flag_check",
-                    defining_class="Lfoz;",
-                    method_name="F",
+                    defining_class="Lcun;",
+                    method_name="G",
                     return_type="Z",
                     parameters=[],
                 ),

@@ -61,7 +61,7 @@ val gboardAmoledPatch = bytecodePatch(
             returnType = "V",
             filters = listOf(
                 methodCall(
-                    definingClass = "Lxlh;",
+                    definingClass = "Lmgu;",
                     name = "e",
                     returnType = "Z",
                 ),
@@ -72,15 +72,15 @@ val gboardAmoledPatch = bytecodePatch(
         themeListingFragmentFingerprint.method.addInstructions(
             matchIndex,
             """
-                const-string v6, "assets:theme_package_metadata_color_black.binarypb"
-                new-instance v7, Lxlq;
-                invoke-direct {v7, v6}, Lxlq;-><init>(Ljava/lang/String;)V
-                invoke-static {p1, v7}, Lmza;->e(Landroid/content/Context;Lxlq;)Lmza;
-                move-result-object v6
-                new-instance v7, Lmxz;
-                const-string v8, "AMOLED"
-                invoke-direct {v7, v8, v6, v8}, Lmxz;-><init>(Ljava/lang/String;Lmza;Ljava/lang/String;)V
-                invoke-interface {v5, v7}, Ljava/util/List;->add(Ljava/lang/Object;)Z
+                const-string v7, "assets:theme_package_metadata_color_black.binarypb"
+                new-instance v8, Lmhb;
+                invoke-direct {v8, v7}, Lmhb;-><init>(Ljava/lang/String;)V
+                invoke-static {v14, v8}, Lgjs;->e(Landroid/content/Context;Lmhb;)Lgjs;
+                move-result-object v7
+                new-instance v8, Lgjb;
+                const-string v9, "AMOLED"
+                invoke-direct {v8, v9, v7, v9}, Lgjb;-><init>(Ljava/lang/String;Lgjs;Ljava/lang/String;)V
+                invoke-interface {v6, v8}, Ljava/util/List;->add(Ljava/lang/Object;)Z
             """.trimIndent(),
         )
 
