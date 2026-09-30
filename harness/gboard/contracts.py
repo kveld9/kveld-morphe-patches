@@ -484,30 +484,28 @@ def get_all_gboard_contracts() -> List[GboardPatchContract]:
             source_file="patches/src/main/kotlin/app/morphe/patches/gboard/GboardZeroBottomInsetPatch.kt",
             queries=[
                 FingerprintQuery(
-                    name_id="window_metrics_on_layout_change",
-                    method_name="onLayoutChange",
-                    return_type="V",
+                    name_id="keyboard_mode_utils_get_bottom_offset",
+                    return_type="I",
                     parameters=[
-                        "Landroid/view/View;",
+                        "Landroid/content/Context;",
                         "I",
                         "I",
-                        "I",
-                        "I",
-                        "I",
-                        "I",
-                        "I",
-                        "I",
+                        "Z",
                     ],
-                    strings=["WindowMetricsNotification.java", "notifyWithWindow"],
+                    strings=["KeyboardModeUtils.java", "getKeyboardBottomOffset"],
+                ),
+                FingerprintQuery(
+                    name_id="window_metrics_notification_class",
+                    strings=["WindowMetricsNotification.java", "No window/display metrics has been notified."],
                 ),
             ],
             semantic_invariants=[
-                "Overrides insets Rect.bottom assignments in WindowMetricsHelper.onLayoutChange",
-                "Neutralizes navigation bar bottom padding addition to keyboard display frame",
+                "Overrides KeyboardModeUtils.getKeyboardBottomOffset to neutralize ergonomic margin",
+                "Overrides WindowMetricsNotification navigation bar bottom inset to collapse chin padding",
             ],
             forbidden_regressions=[
-                "Corrupting left/top/right display insets calculations",
-                "Causing NPE or IndexOutOfBoundsException during WindowMetricsNotification dispatch",
+                "Causing crash or NPE in KeyboardModeManager or WindowMetricsNotification dispatch",
+                "Breaking layout positioning in floating or split keyboard modes",
             ],
         ),
     ]
