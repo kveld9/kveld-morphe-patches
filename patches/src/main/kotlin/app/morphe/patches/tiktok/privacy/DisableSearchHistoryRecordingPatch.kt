@@ -16,9 +16,9 @@ val disableSearchHistoryRecordingPatch = bytecodePatch(
     execute {
         var patched = 0
 
-        // 1. Neutralize Search History Manager recordSearchHistory routine
+        // 1. Neutralize Search History Manager recordSearchHistory routine (LX/0D1m; in v47.1.4, was LX/0D1i;)
         Fingerprint(
-            definingClass = "LX/0D1i;",
+            definingClass = "LX/0D1m;",
             name = "LIZ",
             returnType = "V",
             parameters = listOf(

@@ -13,6 +13,7 @@ val stopVideoLoopingPatch = bytecodePatch(
     compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
 
     execute {
+        var patched = 0
         val fp = Fingerprint(
             definingClass = "Lcom/ss/ttvideoengine/TTVideoEngine;",
             name = "setLooping",
@@ -27,6 +28,7 @@ val stopVideoLoopingPatch = bytecodePatch(
             """.trimIndent(),
         )
         println("[Stop Video Looping] Hooked TTVideoEngine.setLooping(Z)V -> Forced isLooping=false.")
-        println("[Stop Video Looping] Applied 1 video loop suppression hook(s).")
+        patched++
+        println("[Stop Video Looping] Applied $patched video loop suppression hook(s).")
     }
 }

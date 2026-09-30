@@ -441,8 +441,8 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
         description="Prevents viewed videos from being recorded in account watch history, playback duration stores, and local history caches.",
         required_classes=[
             "Lcom/ss/android/ugc/aweme/feed/api/AwemeStatsApi;",
-            "LX/03kz;",
-            "LX/0a8D;",
+            "LX/03l3;",
+            "LX/0aZr;",
         ],
         required_strings=["/aweme/v1/aweme/stats/"],
         criticality="HIGH",

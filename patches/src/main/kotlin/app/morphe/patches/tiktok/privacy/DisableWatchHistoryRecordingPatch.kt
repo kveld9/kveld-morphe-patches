@@ -32,25 +32,25 @@ val disableWatchHistoryRecordingPatch = bytecodePatch(
         ).method.replaceWithReturnVoid()
         patched++
 
-        // 3. Neutralize PlaybackHistoryManager recordVideoPlayback routine (LX/03kz;->LIZ)
+        // 3. Neutralize PlaybackHistoryManager recordVideoPlayback routine (LX/03l3;->LIZ in v47.1.4, was LX/03kz;)
         Fingerprint(
-            definingClass = "LX/03kz;",
+            definingClass = "LX/03l3;",
             name = "LIZ",
             returnType = "V",
         ).method.replaceWithReturnVoid()
         patched++
 
-        // 4. Neutralize PlaybackHistoryManager recordWatchDuration routine (LX/03kz;->LIZIZ)
+        // 4. Neutralize PlaybackHistoryManager recordWatchDuration routine (LX/03l3;->LIZIZ in v47.1.4, was LX/03kz;)
         Fingerprint(
-            definingClass = "LX/03kz;",
+            definingClass = "LX/03l3;",
             name = "LIZIZ",
             returnType = "V",
         ).method.replaceWithReturnVoid()
         patched++
 
-        // 5. Neutralize fast stats report routine (LX/0a8D;->subscribe)
+        // 5. Neutralize fast stats report routine (LX/0aZr;->subscribe in v47.1.4, was LX/0a8D;)
         Fingerprint(
-            definingClass = "LX/0a8D;",
+            definingClass = "LX/0aZr;",
             name = "subscribe",
             returnType = "V",
         ).method.replaceWithReturnVoid()

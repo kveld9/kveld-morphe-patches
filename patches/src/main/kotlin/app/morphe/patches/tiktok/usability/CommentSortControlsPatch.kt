@@ -17,6 +17,8 @@ val commentSortControlsPatch = bytecodePatch(
     compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_ASIA)
 
     execute {
+        var patched = 0
+
         // 1. Force option style to 2 (FULL_SORT_SHEET_STYLE)
         val optionStyleFp = Fingerprint(
             returnType = "L",
@@ -28,6 +30,7 @@ val commentSortControlsPatch = bytecodePatch(
         val method = optionStyleFp.method
         method.replaceWithReturnIntegerObject(2)
         println("[Comment Sort Controls] Hooked comment_sort_opt_style getter (${method.definingClass}->${method.name}) -> Forced style=2 (Full Sheet).")
+        patched++
 
         // 2. Force Aweme eligibility check to true
         val styleClassType = optionStyleFp.classDef.type
@@ -46,7 +49,8 @@ val commentSortControlsPatch = bytecodePatch(
         val eligibilityMethod = eligibilityFp.method
         eligibilityMethod.replaceWithReturnBoolean(true)
         println("[Comment Sort Controls] Hooked Aweme comment sort eligibility (${eligibilityMethod.definingClass}->${eligibilityMethod.name}) -> Forced eligible=true.")
+        patched++
 
-        println("[Comment Sort Controls] Applied 2 comment sort control hook(s).")
+        println("[Comment Sort Controls] Applied $patched comment sort control hook(s).")
     }
 }

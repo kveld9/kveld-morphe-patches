@@ -7,7 +7,6 @@ import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.replaceWithReturnBoolean
 import app.morphe.patches.shared.replaceWithReturnInt
 import app.morphe.patches.shared.replaceWithReturnNull
-import app.morphe.patches.shared.replaceWithReturnVoid
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
@@ -42,17 +41,17 @@ val hideSuggestedSearchesPatch = bytecodePatch(
         )
         patched++
 
-        // 2. Suppress cached preloaded guess search data (JSONObject)
+        // 2. Suppress cached preloaded guess search data (JSONObject) (LX/0HC2; in v47.1.4, was LX/0HBy;)
         Fingerprint(
-            definingClass = "LX/0HBy;",
+            definingClass = "LX/0HC2;",
             name = "LIZ",
             returnType = "Lorg/json/JSONObject;",
         ).method.replaceWithReturnNull()
         patched++
 
-        // 3. Suppress cached preloaded guess search data (String)
+        // 3. Suppress cached preloaded guess search data (String) (LX/0HC2; in v47.1.4, was LX/0HBy;)
         Fingerprint(
-            definingClass = "LX/0HBy;",
+            definingClass = "LX/0HC2;",
             name = "LIZIZ",
             returnType = "Ljava/lang/String;",
         ).method.replaceWithReturnNull()
@@ -66,9 +65,9 @@ val hideSuggestedSearchesPatch = bytecodePatch(
         ).method.replaceWithReturnBoolean(false)
         patched++
 
-        // 5. Force disable show_suggest_search_words in AB evaluator method
+        // 5. Force disable show_suggest_search_words in AB evaluator method (LX/0HAX; in v47.1.4, was LX/0HAT;)
         Fingerprint(
-            definingClass = "LX/0HAT;",
+            definingClass = "LX/0HAX;",
             name = "LIZ",
             returnType = "I",
             parameters = listOf(
@@ -78,9 +77,9 @@ val hideSuggestedSearchesPatch = bytecodePatch(
         ).method.replaceWithReturnInt(0)
         patched++
 
-        // 6. Reset static field in <clinit> to prevent observer initialization
+        // 6. Reset static field in <clinit> to prevent observer initialization (LX/0HAX; in v47.1.4, was LX/0HAT;)
         val hatClinitFp = Fingerprint(
-            definingClass = "LX/0HAT;",
+            definingClass = "LX/0HAX;",
             name = "<clinit>",
             returnType = "V",
         )
@@ -95,7 +94,7 @@ val hideSuggestedSearchesPatch = bytecodePatch(
                 returnIndex,
                 """
                     const/4 v0, 0x0
-                    sput-boolean v0, LX/0HAT;->LIZ:Z
+                    sput-boolean v0, ${hatMethod.definingClass}->LIZ:Z
                 """.trimIndent(),
             )
         }
@@ -124,9 +123,9 @@ val hideSuggestedSearchesPatch = bytecodePatch(
         }
         patched++
 
-        // 8. Sanitize Lynx schema URL to strip show_suggest_search_words
+        // 8. Sanitize Lynx schema URL to strip show_suggest_search_words (LX/0HAc; in v47.1.4, was LX/0HAY;)
         val schemaFp = Fingerprint(
-            definingClass = "LX/0HAY;",
+            definingClass = "LX/0HAc;",
             name = "LIZ",
             returnType = "Ljava/lang/String;",
         )

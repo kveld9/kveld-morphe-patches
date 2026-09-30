@@ -61,9 +61,9 @@ val hideSearchPopularLivesPatch = bytecodePatch(
         }
         patched++
 
-        // 3. Sanitize Lynx schema URL to strip intermediate_show_trending_billboard
+        // 3. Sanitize Lynx schema URL to strip intermediate_show_trending_billboard (LX/0HAc; in v47.1.4, was LX/0HAY;)
         val schemaFp = Fingerprint(
-            definingClass = "LX/0HAY;",
+            definingClass = "LX/0HAc;",
             name = "LIZ",
             returnType = "Ljava/lang/String;",
         )
