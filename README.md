@@ -71,7 +71,7 @@
 </details>
 
 <details>
-<summary>Gboard Lite&nbsp;&nbsp;•&nbsp;&nbsp;<b>21 patches</b></summary>
+<summary>Gboard Lite&nbsp;&nbsp;•&nbsp;&nbsp;<b>15 patches</b></summary>
 <br>
 
 **Supported versions:**
@@ -88,13 +88,7 @@
 | **Core Integrity** | Applies essential runtime stability and integrity fixes for modified APKs: signature check bypass, instant launcher opening, and flag resilience. |  |
 | **Disable Background Sync** | Neutralizes AndroidX WorkManager schedulers, MDD (Mobile Data Download) periodic sync, and Superpacks eager asset synchronization (opt-in to preserve initial dictionary downloads). |  |
 | **Disable Remote Configuration** | Disables periodic remote experiment flag synchronization and background updates. |  |
-| **Enable Access Points Menu Redesign** | Enables the redesigned access points menu bar and customization panel (Panel V2). |  |
-| **Enable Bluetooth Microphone** | Unlocks the 'Use Bluetooth microphone' setting under Voice typing preferences. |  |
-| **Enable Cursor Trackpad** | Enables 2D trackpad cursor navigation and cursor lock mode by holding the spacebar. |  |
-| **Enable Dismiss Suggestions Button** | Adds a close button (X) to dismiss proactive suggestions on the suggestion bar. |  |
-| **Enable Emoji Scale Setting** | Unlocks the emoji size scaling setting in Gboard preferences. |  |
-| **Enable Grammar Checker** | Unlocks Grammar check and Smart Compose / inline suggestions settings under Text correction preferences. |  |
-| **Enable Key Shape Selection** | Enables the key border shape selection UI (Default, Semi-rounded, Round) in theme customization. |  |
+| **Feature Flags** | Unlocks hidden Google feature flags and UI customization experiments: redesigned access points menu, key border shape selector, cursor trackpad mode, grammar checker & Smart Compose, proactive suggestions dismiss button, emoji size scale, and Bluetooth microphone. | • Access Points Menu Redesign<br>• Key Shape Selection<br>• Cursor Trackpad<br>• Grammar Checker & Smart Compose<br>• Dismiss Suggestions Button<br>• Emoji Scale Setting<br>• Bluetooth Microphone |
 | **Force Incognito Mode** | Forces Gboard to always operate in incognito mode (disabling personalized learning and persistent input logging) while keeping clipboard functionality enabled. | • Hide Incognito Icon |
 | **Hardened Intent Security** | Enables Gboard internal external intent protection against unauthorized intent hijacking. |  |
 | **Offline Only** | Completely isolates Gboard from the network by revoking network permissions, neutralizing HTTP clients (Cronet, OkHttp, Superpacks), and spoofing offline status. |  |
