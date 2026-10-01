@@ -218,6 +218,7 @@ for entry in by_app.values():
         if any("latin" in p for p in pkgs):
             base_ver = target_ver.split("-")[0]
             slug_ver = base_ver.replace(".", "-")
+            channel = "beta" if "beta" in target_ver else "release"
             readme = re.sub(
                 r"(\|\s*\*\*Gboard Lite\*\*\s*\|\s*`com\.google\.android\.inputmethod\.latin`\s*\|\s*`)[^`]+(`\s*\|)",
                 rf"\g<1>{base_ver}\g<2>",
@@ -225,8 +226,8 @@ for entry in by_app.values():
                 count=1,
             )
             readme = re.sub(
-                r"https://www\.apkmirror\.com/apk/google-inc/gboard/(?:gboard|gboard-the-google-keyboard)-[^/]+-release/",
-                f"https://www.apkmirror.com/apk/google-inc/gboard/gboard-the-google-keyboard-{slug_ver}-release/",
+                r"https://www\.apkmirror\.com/apk/google-inc/gboard/(?:gboard|gboard-the-google-keyboard)-[^/]+-(?:release|beta)/",
+                f"https://www.apkmirror.com/apk/google-inc/gboard/gboard-the-google-keyboard-{slug_ver}-{channel}/",
                 readme,
                 count=1,
             )
