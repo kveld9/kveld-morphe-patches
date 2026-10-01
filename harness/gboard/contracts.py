@@ -310,10 +310,10 @@ def get_all_gboard_contracts() -> List[GboardPatchContract]:
             ],
         ),
         GboardPatchContract(
-            patch_id="gboard_access_points_redesign",
-            name="Enable Access Points Menu Redesign",
-            description="Enables the redesigned access points menu bar and customization panel.",
-            source_file="patches/src/main/kotlin/app/morphe/patches/gboard/GboardEnableAccessPointsMenuRedesignPatch.kt",
+            patch_id="gboard_feature_flags",
+            name="Feature Flags",
+            description="Unlocks hidden Google feature flags and UI customization experiments.",
+            source_file="patches/src/main/kotlin/app/morphe/patches/gboard/GboardFeatureFlagsPatch.kt",
             queries=[
                 FingerprintQuery(
                     name_id="access_points_flag_clinit",
@@ -321,20 +321,6 @@ def get_all_gboard_contracts() -> List[GboardPatchContract]:
                     return_type="V",
                     strings=["enable_access_points_menu_redesign"],
                 ),
-            ],
-            semantic_invariants=[
-                "Forces enable_access_points_menu_redesign flag to true",
-            ],
-            forbidden_regressions=[
-                "Hiding access points bar completely",
-            ],
-        ),
-        GboardPatchContract(
-            patch_id="gboard_key_shape_selection",
-            name="Enable Key Shape Selection",
-            description="Enables key border shape selection UI in theme customization.",
-            source_file="patches/src/main/kotlin/app/morphe/patches/gboard/GboardEnableKeyShapeSelectionPatch.kt",
-            queries=[
                 FingerprintQuery(
                     name_id="key_shape_predicate",
                     defining_class="Lxsj;",
@@ -344,9 +330,11 @@ def get_all_gboard_contracts() -> List[GboardPatchContract]:
                 ),
             ],
             semantic_invariants=[
+                "Forces enable_access_points_menu_redesign flag to true",
                 "Returns true for key shape border capability check",
             ],
             forbidden_regressions=[
+                "Hiding access points bar completely",
                 "Crashing theme selector activity",
             ],
         ),

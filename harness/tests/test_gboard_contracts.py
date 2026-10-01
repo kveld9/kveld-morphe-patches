@@ -16,9 +16,10 @@ class TestGboardContracts(unittest.TestCase):
 
     def test_all_contracts_present(self):
         contracts = get_all_gboard_contracts()
-        self.assertEqual(len(contracts), 19)
+        self.assertEqual(len(contracts), 18)
         patch_ids = {c.patch_id for c in contracts}
         self.assertIn("gboard_amoled", patch_ids)
+        self.assertIn("gboard_feature_flags", patch_ids)
         self.assertIn("gboard_core_integrity", patch_ids)
         self.assertIn("gboard_block_telemetry", patch_ids)
         self.assertIn("gboard_zero_bottom_inset", patch_ids)

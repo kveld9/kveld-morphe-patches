@@ -55,13 +55,7 @@ If you perform a clean install of Gboard Lite with background sync debloat patch
 | **Core Integrity** | `bytecodePatch` | Security & Stability | ✅ Yes | Applies essential runtime stability and integrity fixes for modified APKs: signature check bypass, instant launcher opening, and flag resilience. |
 | **Disable Background Sync** | `bytecodePatch` | Battery & Debloat | ❌ No | Neutralizes AndroidX WorkManager schedulers, MDD (Mobile Data Download) periodic sync, and Superpacks eager asset synchronization (opt-in to preserve initial dictionary downloads). |
 | **Disable Remote Configuration** | `bytecodePatch` | Privacy & Stability | ✅ Yes | Disables periodic remote experiment flag synchronization and background updates. |
-| **Enable Access Points Menu Redesign** | `bytecodePatch` | UI & Appearance | ✅ Yes | Enables the redesigned access points menu bar and customization panel (Panel V2). |
-| **Enable Bluetooth Microphone** | `bytecodePatch` | Usability & Audio | ✅ Yes | Unlocks Bluetooth microphone recording toggle under Voice typing settings. |
-| **Enable Cursor Trackpad** | `bytecodePatch` | Navigation & Control | ✅ Yes | Enables 2D trackpad cursor navigation and cursor lock mode by holding the spacebar. |
-| **Enable Dismiss Suggestions Button** | `bytecodePatch` | UI & Usability | ✅ Yes | Adds a close button (X) to dismiss proactive suggestions on the suggestion bar. |
-| **Enable Emoji Scale Setting** | `bytecodePatch` | UI & Appearance | ✅ Yes | Unlocks the emoji size scaling setting in Gboard appearance preferences. |
-| **Enable Grammar Checker** | `bytecodePatch` | Usability & Typing | ✅ Yes | Unlocks Grammar check and Smart Compose / inline suggestions under Text correction preferences. |
-| **Enable Key Shape Selection** | `bytecodePatch` | UI & Appearance | ✅ Yes | Enables the key border shape selection UI (Default, Semi-rounded, Round) in theme customization. |
+| **Feature Flags** | `bytecodePatch` | Customization & Features | ✅ Yes | Unlocks hidden Google feature flags and UI customization experiments via configurable toggles (Access Points redesign, key border shapes, cursor trackpad, grammar checker, dismiss suggestions button, emoji scaling, and Bluetooth mic). |
 | **Force Incognito Mode** | `bytecodePatch` | Privacy & Security | ❌ No | Forces Gboard to always operate in incognito mode (disabling personalized learning and persistent input logging). |
 | **Hardened Intent Security** | `bytecodePatch` | Security & Integrity | ✅ Yes | Enables Gboard internal external intent protection against unauthorized intent hijacking. |
 | **Offline Only** | `bytecodePatch` + `resourcePatch` | Privacy & Security | ❌ No | Completely isolates Gboard from network access by purging manifest permissions, disabling foreground sync services, neutralizing HTTP clients (Cronet, OkHttp, Superpacks), and spoofing offline status. |
@@ -158,21 +152,25 @@ The **`Zero Bottom Inset`** patch eliminates the forced empty navigation bar spa
 
 ---
 
-## 🚀 Productivity & Usability Unlocks
+## 🎛️ Configurable Options: Feature Flags
 
-### 1. Cursor Trackpad Mode (`Enable Cursor Trackpad`)
-- **Behavior**: Long-pressing and swiping across the spacebar enters full 2D cursor navigation mode (moving horizontally and vertically) with haptic feedback. Holding until locked enters sticky cursor mode.
-- **Phenotype Resilience**: Handled automatically via dependency on **Core Integrity**, neutralizing internal Google Phenotype flag assertions that previously triggered `IllegalStateException: Resetting default value is disallowed` when XML resource defaults conflicted with patched compile-time defaults.
+The **`Feature Flags`** patch unlocks hidden Google feature flags and experimental UI capabilities via compile/patch-time toggles:
 
-### 2. Bluetooth Microphone (`Enable Bluetooth Microphone`)
-- **Behavior**: Unlocks the dedicated "Usar micrófono Bluetooth" (Use Bluetooth microphone) toggle under *Gboard Settings > Dictado por voz* (Voice typing).
-- **Function**: Enables audio capture directly from connected Bluetooth headsets and external wireless microphones during voice input.
+| Option | Key | Type | Default | Description |
+| :--- | :--- | :--- | :---: | :--- |
+| **Access Points Menu Redesign** | `enableAccessPointsRedesign` | Boolean | `true` | Enables the redesigned access points menu bar and customization panel (Panel V2). |
+| **Key Shape Selection** | `enableKeyShapeSelection` | Boolean | `true` | Enables key border shape selection UI (Default, Semi-rounded, Round) in theme customization. |
+| **Cursor Trackpad** | `enableCursorTrackpad` | Boolean | `true` | Enables 2D trackpad cursor navigation and cursor lock mode by holding the spacebar. |
+| **Grammar Checker & Smart Compose** | `enableGrammarChecker` | Boolean | `true` | Unlocks Grammar check and Smart Compose / inline suggestions under Text correction preferences. |
+| **Dismiss Suggestions Button** | `enableDismissSuggestionsButton` | Boolean | `true` | Adds a close button (X) to dismiss proactive suggestions on the suggestion bar. |
+| **Emoji Scale Setting** | `enableEmojiScale` | Boolean | `true` | Unlocks the emoji size scaling setting in Gboard appearance preferences. |
+| **Bluetooth Microphone** | `enableBluetoothMicrophone` | Boolean | `true` | Unlocks the 'Use Bluetooth microphone' setting under Voice typing preferences. |
 
-### 3. Grammar Checker & Smart Compose (`Enable Grammar Checker`)
-- **Behavior**: Unlocks "Revisión gramatical" (Grammar check with blue squiggly underlines) and client-side inline smart suggestions under *Gboard Settings > Correcciones y sugerencias*.
-
-### 4. Emoji Scale Setting (`Enable Emoji Scale Setting`)
-- **Behavior**: Unlocks the "Tamaño de los emojis" (Emoji size) slider under *Gboard Settings > Preferencias > Apariencia*, enabling granular scaling of emoji keys independently of system font sizing.
-
-### 5. Dismiss Suggestions Button (`Enable Dismiss Suggestions Button`)
-- **Behavior**: Renders a dedicated dismiss button (`X`) on the proactive suggestion bar, allowing quick hiding of proactive recommendations without opening menus.
+### Technical Architecture & Unlocks:
+1. **Cursor Trackpad Mode**: Long-pressing and swiping across the spacebar enters full 2D cursor navigation mode (moving horizontally and vertically) with haptic feedback. Holding until locked enters sticky cursor mode. Phenotype resilience is handled automatically via dependency on **Core Integrity**.
+2. **Bluetooth Microphone**: Unlocks the dedicated "Usar micrófono Bluetooth" (Use Bluetooth microphone) toggle under *Gboard Settings > Dictado por voz* (Voice typing).
+3. **Grammar Checker & Smart Compose**: Unlocks "Revisión gramatical" (Grammar check with blue squiggly underlines) and client-side inline smart suggestions under *Gboard Settings > Correcciones y sugerencias*.
+4. **Emoji Scale Setting**: Unlocks the "Tamaño de los emojis" (Emoji size) slider under *Gboard Settings > Preferencias > Apariencia*.
+5. **Dismiss Suggestions Button**: Renders a dedicated dismiss button (`X`) on the proactive suggestion bar, allowing quick hiding of proactive recommendations.
+6. **Key Shape Selection**: Forces `xsj.i()` to return true, unblocking the key shape border radius selector in custom themes.
+7. **Access Points Menu Redesign**: Forces `enable_access_points_menu_redesign` to true, activating Panel V2 toolbar customization.
