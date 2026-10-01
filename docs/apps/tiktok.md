@@ -39,17 +39,14 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Usability** | **[Custom Share Sheet](#5-custom-share-sheet)** | `bytecodePatch` | Customizes and cleans the share menu via individual boolean toggles for third-party apps, essential actions, and direct message friend rows. |
 | **Usability** | **[Clean Share Panel](#6-clean-share-panel)** | `bytecodePatch` | Removes suggested quick emojis and the 'Send to new group' button from the direct share dialog. |
 | **Usability** | **Auto-Translate Comments** | `bytecodePatch` | Automatically dispatches batch translations via TikTok's native engine. |
-| **Usability** | **Hide Top-Left LIVE Button** | `bytecodePatch` | Removes the top-left LIVE broadcast button and tab entry point from the top navigation bar. |
-| **Usability** | **Hide Community Tab** | `bytecodePatch` | Removes the Community (Explore) tab from the top navigation feed strip. |
+| **Usability** | **Navigation & Header Declutter** | `bytecodePatch` | Removes clutter from the feed navigation and top header bar, including Nearby and Community tabs, top-left LIVE button, and in-video bottom search bar. |
 | **Usability** | **Hide Profile Photo Follow Button** | `bytecodePatch` | Hides the plus (+) follow badge on creator profile avatars in the feed and disables its touch interaction. |
 | **Usability** | **Disable Profile Photo LIVE Status** | `bytecodePatch` | Removes pulsing LIVE ring/badge from creator avatars in feed and forces clicks directly to user profile. |
 | **Usability** | **Disable Story Feed Indicators** | `bytecodePatch` | Removes creator profile photo story rings from feed videos, ensuring avatar photos remain clean without blue story rings. |
 | **Usability** | **Force Auto-Scroll** | `bytecodePatch` | Forces the activation of the native video auto-scroll experiment flag for accounts and regions that lack it due to A/B testing. |
-| **Usability** | **Hide Feed Search Bar** | `bytecodePatch` | Removes the search suggestion pill and trending bar ('Search · <keyword>') from the bottom of feed videos. |
 | **Usability** | **Hide Popular Lives In Search** | `bytecodePatch` | Removes the Popular LIVEs recommendation card and live stream broadcasts from the search discovery page. |
 | **Usability** | **Hide Suggested Searches** | `bytecodePatch` | Removes the suggested search keywords section ('You may like' / 'Search suggestions') from the search discovery page. |
 | **Usability** | **Disable Search Video Autoplay** | `bytecodePatch` | Disables automatic video playback in search results. Videos only play when tapped to view in detail. |
-| **Usability** | **Hide Nearby Feed Tab** | `bytecodePatch` | Removes the Nearby (local city or region) feed tab from the top navigation feed strip. |
 | **Usability** | **Auto-Pause First Video** | `bytecodePatch` | Automatically pauses the initial video on startup (frame 0) with center play icon; resumes upon screen tap or feed scroll. |
 | **Usability** | **Comment Sort Controls** | `bytecodePatch` | Unlocks native comment sort controls (Newest, Most Relevant) across video posts. |
 | **Usability** | **Hide Seen Videos** | `bytecodePatch` | Filters previously watched videos from incoming For You feed batches based on playback progress. |
@@ -318,19 +315,12 @@ The **`Disable Feed Long-Press Actions`** patch neutralizes long-press gesture d
 - **Search Recommendation Request Neutralization**: Stubs `AbsSearchService.u()Ljava/util/List;` to return an empty list (`Collections.emptyList()`), preventing the search module from registering card insert request generators into the feed pipeline.
 - **Friends Feed Rec User Cards & Bloat Neutralization**: Injects `p1 = false, p2 = false` into `FriendsV3RecUserConfig.<init>(ZZ)V` to prevent `FriendsV3FeedListViewModel` from instantiating suggested friend cards (`FriendsV3RecUserItem`) or bottom recommendation lists (`FriendsV3BottomRecListItem`). Intercepts `FriendsV3FeedResponse.<init>` to filter in-feed bloat and nullify suggested friends (`newlyShownMafIds = null`), and hooks `FriendsFeedResponse.<init>` (V2) to prune inserted card results (`cardInsertResults = null`, `insertedResults = null`). Injects immediate `View.GONE` and dimensions contraction (`0x0`) into `FriendsV3HorizontalRecUserCardCell.onItemViewCreated` and `FriendsV3BottomRecUserListCell.onItemViewCreated` as a fallback UI defense.
 
-### 6. Hide Top-Left LIVE Button (`hideTopLiveEntrancePatch`)
-- Removes the top-left LIVE broadcast button and tab entry point from the top navigation toolbar.
-- Hooks `LiveIconGenerator.enabled()Z` -> returns `false`.
-- Hooks `LiveIconGenerator.LIZLLL()Z` -> returns `false`.
-- Hooks `LiveIconGenerator.b2(Context)View` -> returns `null` to prevent view inflation and attachment.
-- Hooks `LiveTabProtocol.enable()Z` -> returns `false` to suppress top live tab variants.
-
-### 7. Hide Community Tab (`hideCommunityTabPatch`)
-- Removes the Community (Explore) tab from the top navigation feed strip.
-- Hooks `ExploreFeedServiceImpl.LIZ()Z` -> returns `false` to disable explore feed service.
-- Dynamically resolves `tabProviderClass` from `ExploreFeedServiceImpl.LJJII()`, hooking `LJ()` -> returns `null` to eliminate `TopTabProtocol` registration in `TopTabOperator`.
-- Hooks `ExploreXTabProtocol.enable()Z` and its experiment boolean evaluator (`LIZIZ()Z`, `LIZ()Z`) -> returns `false`.
-- Hooks `ExploreBottomTabProtocol.enable()Z` -> returns `false`.
+### 6. Navigation & Header Declutter (`feedNavigationDeclutterPatch`)
+- Consolidates clutter removal across the feed navigation strip, top toolbar, and video bottom bars via compile/patch-time toggles:
+  - **`hideNearbyTab` (default: true)**: Removes the Nearby (local city or region) feed tab from the top navigation strip. Hooks `NearbyServiceImpl.LJIIZILJ()` tab provider `LJ()` -> `null`, `NearbyTabProtocol.enable()` -> `false`, and service boolean gates.
+  - **`hideCommunityTab` (default: true)**: Removes the Community (Explore) feed tab from the top navigation strip and bottom navigation bar. Hooks `ExploreFeedServiceImpl.LIZ()` -> `false`, tab provider `LJ()` / `LIZ()` -> `null`, and `ExploreBottomTabProtocol.enable()` -> `false`.
+  - **`hideTopLiveEntrance` (default: false)**: Removes the top-left LIVE broadcast button and tab entry point from the top navigation bar. Hooks `LiveIconGenerator.enabled()` -> `false`, view method -> `null`, and `LiveTabProtocol.enable()` -> `false`.
+  - **`hideFeedSearchBar` (default: true)**: Removes search suggestion pills and trending bars ('Search · <keyword>') from feed videos. Neutralizes `FeedSearchBottomBarAssemTrigger`, `TrendingBottomBarAssemTrigger`, Assem lifecycle methods, and overrides Aweme model trending flags.
 
 ### 8. Hide Profile Photo Follow Button (`hideAvatarFollowButtonPatch`)
 - Hides the red plus (`+`) follow badge on creator profile avatars in the feed and eliminates accidental follow touches.
@@ -357,12 +347,6 @@ The **`Disable Feed Long-Press Actions`** patch neutralizes long-press gesture d
 - **User Story Status Neutralization**: Hooks `User.getStoryStatus()I` -> returns `0`, preventing feed wrappers from detecting active author stories.
 - **Feed Avatar Story Ring & Click Neutralization**: Stubs `FeedAvatarSocialPublishAssem.onViewCreated(View)V`, `FeedAvatarSocialPublishAssem.onBind(Object)V`, and `FeedAvatarSocialPublishAssem.tr(VideoItemParams)V` with `return-void` to prevent inflating/animating the cyan story ring and remove the `CLICK_TAG_FEED_AVATAR_SOCIAL` click interceptor, keeping the avatar clean and routing taps strictly to the creator profile.
 - **Social Publish Distributor**: Hooks `SocPubDistributeServiceImpl.LJII(User)Z` -> returns `false`.
-
-### 12. Hide Feed Search Bar (`hideFeedSearchBarPatch`)
-- Removes the search suggestion pill and trending bar (e.g. "Search · <keyword> >") displayed directly above the bottom navigation bar on feed videos, eliminating search clutter and distraction.
-- **Trigger Component Suppression**: Hooks `Kr(VideoItemParams)Z` -> returns `false` across `FeedSearchBottomBarAssemTrigger`, `FeedSearchBottomBarAssemTriggerV2`, `TrendingBottomBarAssemTrigger`, `AdFeedSearchBottomBarAssemTrigger`, and `FeedEcSearchBottomBarAssemTrigger`, preventing the bottom bar from ever mounting into the feed cell.
-- **Assem Lifecycle Neutralization**: Stubs `onViewCreated(View)V` and `onBind(Object)V` across `FeedSearchBottomBarAssem`, `FeedSearchBottomBarAssemV2`, `TrendingBottomBarAssem`, `AdFeedSearchBottomBarAssem`, and `FeedEcSearchBottomBarAssem` with `return-void`. Also stubs `FeedSearchBottomBarAssem.Sr()V` to prevent layout inflation and view binding.
-- **Aweme Model Overrides**: Forces `Aweme.isDisableSearchTrendingBar()Z` to return `true`, `Aweme.hasTrendingBar()Z` and `Aweme.hasTrendingBarFYP()Z` to return `false`, and nulls out `getTrendingBar()`, `getTrendingBarFYP()`, and `getHotSearchInfo()`.
 
 ### 13. Force Auto-Scroll (`forceAutoScrollPatch`)
 - Forces the activation of TikTok's native video auto-scroll experiment flag for accounts and regions where it is withheld by server-side A/B testing experiments.
@@ -434,12 +418,6 @@ The **`Disable Feed Long-Press Actions`** patch neutralizes long-press gesture d
 - Automatically filters previously watched videos from incoming For You feed batches, preventing repeat content during the session while preserving active viewing history.
 - **Playback Tracking**: Hooks `PlayerController.onPlayProgressChange(String, long, long)` (recording videos viewed for >= 5s or >= 70% duration) and `PlayerController.onPlayCompleted(String)`.
 - **Network Ingestion Filtering**: Hooks `FeedApiService.fetchFeedList()` return points, pruning seen video entries directly from deserialized `FeedItemList` payloads before they are delivered to the UI layer, preventing adapter desynchronization and frame drops.
-
-### 24. Hide Nearby Feed Tab (`hideNearbyTabPatch`)
-- Removes the Nearby (local city or region) feed tab from the top navigation feed strip.
-- **Top Tab Provider Interception**: Resolves `NearbyTabProvider` from `NearbyServiceImpl.LJIIZILJ()`, hooking `LJ()` -> returns `null` to eliminate `TopTabProtocol` registration in `TopTabOperator`.
-- **A/B Experiment Gate Neutralization**: Hooks the experiment evaluator method in `NearbyTabProtocol.enable()` (`LIZIZ()Z`) -> returns `false`.
-- **Protocol & Service Gates**: Hooks `NearbyTabProtocol.enable()Z` -> returns `false`, and neutralizes `NearbyServiceImpl.LJIIIIZZ()Z` and `LJIIL()Z`.
 
 ### 25. Disable Post-Download Share Dialog (`disablePostDownloadDialogPatch`)
 - Suppresses the automatic 'Share to' and friend suggestions bottom sheet that pops up after finishing a video or media download.
