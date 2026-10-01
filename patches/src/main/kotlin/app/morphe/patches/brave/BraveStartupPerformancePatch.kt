@@ -139,7 +139,7 @@ private val LIBCHROME_TRAP_HOOKS = listOf(
     // Constructor 0: __init_cpu_features_constructor detecting LSE atomics. Neutralizing to RET prevents
     // illegal opcode execution on ARMv8.0 cores (e.g. Kryo 240 / Cortex-A73) and forces safe baseline LDXR/STLXR.
     NativeTrapHook(
-        offset = 0x029779b4L,
+        offset = 0x0297b9b4L,
         expected = byteArrayOf(0x3f, 0x23, 0x03, 0xd5.toByte()),
         replacement = ARM64_RET,
         description = "LSE atomics feature constructor",
@@ -147,7 +147,7 @@ private val LIBCHROME_TRAP_HOOKS = listOf(
     // Constructor 1: __init_cpu_features detecting ARMv8.1+ extensions. Neutralizing to RET enforces baseline
     // ARMv8.0 dispatch, preventing illegal instruction faults on legacy ARM64 cores.
     NativeTrapHook(
-        offset = 0x02977cacL,
+        offset = 0x0297bcacL,
         expected = byteArrayOf(0x5f, 0x24, 0x03, 0xd5.toByte()),
         replacement = ARM64_RET,
         description = "CPU extensions feature constructor",
@@ -155,7 +155,7 @@ private val LIBCHROME_TRAP_HOOKS = listOf(
     // Constructor 2: Brave Promo banner & histogram static initialization calling atomic helpers via range extension thunks.
     // Neutralizing to RET bypasses the thunk pool (0x0a6a00f0 -> __aarch64_ldadd4_acq_rel), eliminating startup SIGILL.
     NativeTrapHook(
-        offset = 0x08aca770L,
+        offset = 0x08ad47a0L,
         expected = byteArrayOf(0x3f, 0x23, 0x03, 0xd5.toByte()),
         replacement = ARM64_RET,
         description = "Promo banner static initialization constructor",
@@ -163,7 +163,7 @@ private val LIBCHROME_TRAP_HOOKS = listOf(
     // Constructor 10: Brave wallet/rewards fee static initialization calling atomic helpers via range extension thunks.
     // Neutralizing to RET bypasses the thunk pool (0x0a6a0100 -> __aarch64_cas4_acq_rel), eliminating startup SIGILL.
     NativeTrapHook(
-        offset = 0x0ab908d4L,
+        offset = 0x0ab72bf8L,
         expected = byteArrayOf(0x3f, 0x23, 0x03, 0xd5.toByte()),
         replacement = ARM64_RET,
         description = "Brave wallet fee static initialization constructor",
