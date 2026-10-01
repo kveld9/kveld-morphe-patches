@@ -3,9 +3,11 @@ package app.morphe.patches.tiktok.usability
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.ensureRegisterCount
+import app.morphe.patches.shared.replaceWithReturnIntegerObject
 import com.android.tools.smali.dexlib2.AccessFlags
 
 private const val AWEME_CLASS = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;"
@@ -17,6 +19,13 @@ val showSeekbarPatch = bytecodePatch(
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
     extendWith("extensions/extension.mpe")
+
+    val showThumbnailOption = booleanOption(
+        key = "showThumbnail",
+        default = true,
+        title = "Show Dragging Thumbnail Preview",
+        description = "Displays real-time video frame thumbnail previews while dragging the seekbar thumb.",
+    )
 
     execute {
         var patched = 0
@@ -76,6 +85,23 @@ val showSeekbarPatch = bytecodePatch(
             println("[Show Seekbar] SetSeekBarShowType note: ${e.message}")
         }
 
-        println("[Show Seekbar] Applied $patched seekbar scrubbing hook(s).")
+        // 3. Seekbar Thumbnail Preview AB experiment -> force seekbar_show_thumbnail_when_drag = 1
+        if (showThumbnailOption?.value != false) {
+            try {
+                val fp = Fingerprint(
+                    returnType = "Ljava/lang/Object;",
+                    parameters = emptyList(),
+                    strings = listOf("seekbar_show_thumbnail_when_drag"),
+                )
+                val method = fp.method
+                method.replaceWithReturnIntegerObject(1)
+                println("[Show Seekbar] Hooked seekbar_show_thumbnail_when_drag -> Forced dragging thumbnail preview enabled.")
+                patched++
+            } catch (e: Exception) {
+                println("[Show Seekbar] Seekbar thumbnail preview note: ${e.message}")
+            }
+        }
+
+        println("[Show Seekbar] Applied $patched seekbar hook(s).")
     }
 }

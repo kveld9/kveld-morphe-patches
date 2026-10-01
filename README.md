@@ -163,7 +163,7 @@
 | **Resource & Battery Governor** | Throttles background sensor polling (gyroscope/accelerometer 3D ads) and prevents aggressive video buffer preloading to conserve battery and CPU resources. |  |
 | **Resume Video After Scroll** | Remembers playback timestamp when scrolling away and resumes from where playback stopped upon returning. |  |
 | **SIM Region Selector** | Spoofs the detected SIM and network country ISO code to bypass regional feed restrictions and catalog blocks. | • Spoofed Region ISO Code |
-| **Show Seekbar** | Restores TikTok's native video seekbar and scrubbing controls where normally hidden or disabled. |  |
+| **Show Seekbar** | Restores TikTok's native video seekbar and scrubbing controls where normally hidden or disabled, with real-time frame thumbnail previews when dragging. | • Show Dragging Thumbnail Preview |
 | **Skip First-Launch Onboarding** | Bypasses the entire first-run introduction funnel (interest pickers, swipe tutorials, language prompts, and consent sheets) directly to the feed. |  |
 | **Stop Video Looping** | Stops videos at the end instead of replaying them in an infinite loop. |  |
 | **Studio & Creation De-bloat** | Strips heavy video creation plugins, CapCut NLE editor SDKs, effect plugins, and AR camera face models to significantly reduce APK size. |  |
