@@ -39,9 +39,9 @@ val gboardFeatureFlagsPatch = bytecodePatch(
 
     val enableCursorTrackpad by booleanOption(
         key = "enableCursorTrackpad",
-        default = true,
+        default = false,
         title = "Cursor Trackpad",
-        description = "Enables 2D trackpad cursor navigation and cursor lock mode by holding the spacebar.",
+        description = "Enables 2D trackpad cursor navigation and cursor lock mode by holding the spacebar (experimental).",
         required = false,
     )
 

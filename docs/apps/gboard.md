@@ -160,14 +160,14 @@ The **`Feature Flags`** patch unlocks hidden Google feature flags and experiment
 | :--- | :--- | :--- | :---: | :--- |
 | **Access Points Menu Redesign** | `enableAccessPointsRedesign` | Boolean | `true` | Enables the redesigned access points menu bar and customization panel (Panel V2). |
 | **Key Shape Selection** | `enableKeyShapeSelection` | Boolean | `true` | Enables key border shape selection UI (Default, Semi-rounded, Round) in theme customization. |
-| **Cursor Trackpad** | `enableCursorTrackpad` | Boolean | `true` | Enables 2D trackpad cursor navigation and cursor lock mode by holding the spacebar. |
+| **Cursor Trackpad** | `enableCursorTrackpad` | Boolean | `false` | Enables 2D trackpad cursor navigation and cursor lock mode by holding the spacebar (experimental). |
 | **Grammar Checker & Smart Compose** | `enableGrammarChecker` | Boolean | `true` | Unlocks Grammar check and Smart Compose / inline suggestions under Text correction preferences. |
 | **Dismiss Suggestions Button** | `enableDismissSuggestionsButton` | Boolean | `true` | Adds a close button (X) to dismiss proactive suggestions on the suggestion bar. |
 | **Emoji Scale Setting** | `enableEmojiScale` | Boolean | `true` | Unlocks the emoji size scaling setting in Gboard appearance preferences. |
 | **Bluetooth Microphone** | `enableBluetoothMicrophone` | Boolean | `true` | Unlocks the 'Use Bluetooth microphone' setting under Voice typing preferences. |
 
 ### Technical Architecture & Unlocks:
-1. **Cursor Trackpad Mode**: Long-pressing and swiping across the spacebar enters full 2D cursor navigation mode (moving horizontally and vertically) with haptic feedback. Holding until locked enters sticky cursor mode. Phenotype resilience is handled automatically via dependency on **Core Integrity**.
+1. **Cursor Trackpad Mode** (Disabled by default): Long-pressing and swiping across the spacebar enters full 2D cursor navigation mode (moving horizontally and vertically) with haptic feedback. Holding until locked enters sticky cursor mode. Disabled by default due to input connection flickering in web views (such as Firefox/GeckoView). Phenotype resilience is handled automatically via dependency on **Core Integrity**.
 2. **Bluetooth Microphone**: Unlocks the dedicated "Usar micrófono Bluetooth" (Use Bluetooth microphone) toggle under *Gboard Settings > Dictado por voz* (Voice typing).
 3. **Grammar Checker & Smart Compose**: Unlocks "Revisión gramatical" (Grammar check with blue squiggly underlines) and client-side inline smart suggestions under *Gboard Settings > Correcciones y sugerencias*.
 4. **Emoji Scale Setting**: Unlocks the "Tamaño de los emojis" (Emoji size) slider under *Gboard Settings > Preferencias > Apariencia*.
