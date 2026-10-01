@@ -28,9 +28,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Usability** | **Disable Post-Download Share Dialog** | `bytecodePatch` | Suppresses the automatic 'Share to' and friend suggestions bottom sheet that pops up after finishing a download. |
 | **Usability** | **Show Seekbar** | `bytecodePatch` | Restores video seekbar and scrubbing controls where hidden or disabled. |
 | **Usability** | **Always Show Publish Date** | `bytecodePatch` | Forces video publish and upload timestamps to remain permanently visible on feed cards. |
-| **Usability** | **Copy Comments Without Username** | `bytecodePatch` | Sanitizes comment copy actions to exclude the prepended author username. |
-| **Usability** | **Disable Comment Suggested Emojis** | `bytecodePatch` | Removes the horizontal bar of suggested quick emojis displayed above the comment input box. |
-| **Usability** | **Enable Voice Comments** | `bytecodePatch` | Forces the native voice comment recording button in comment input bars, bypassing regional rollout restrictions and remote server blocks. |
+| **Usability** | **[Comment Customizer](#2-comment-customizer)** | `bytecodePatch` | Customizes comment section: native sort controls, clean text copying, disabling suggested emojis bar, voice comments, and automatic translation. |
 | **Usability** | **Disable Double Tap to Like** | `bytecodePatch` | Disables the double tap gesture to like videos in the feed, preventing accidental likes while scrolling or pausing. Videos can still be liked using the like button. |
 | **Usability** | **Playback Speed Persistence** | `bytecodePatch` | Persists user-selected video speed across feed scrolling and restarts. |
 | **Usability** | **[Video Quality Governor](#2-video-quality-governor)** | `bytecodePatch` | Decoupled resolution ceilings for playback (e.g. 480p) and downloads (e.g. 1080p). |
@@ -38,7 +36,6 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Usability** | **[Custom Offline Videos Limit](#4-custom-offline-videos-limit)** | `bytecodePatch` | Customizes maximum offline videos download caching limit (~X mins, Y GB/MB). |
 | **Usability** | **[Custom Share Sheet](#5-custom-share-sheet)** | `bytecodePatch` | Customizes and cleans the share menu via individual boolean toggles for third-party apps, essential actions, and direct message friend rows. |
 | **Usability** | **[Clean Share Panel](#6-clean-share-panel)** | `bytecodePatch` | Removes suggested quick emojis and the 'Send to new group' button from the direct share dialog. |
-| **Usability** | **Auto-Translate Comments** | `bytecodePatch` | Automatically dispatches batch translations via TikTok's native engine. |
 | **Usability** | **Navigation & Header Declutter** | `bytecodePatch` | Removes clutter from the feed navigation and top header bar, including Nearby and Community tabs, top-left LIVE button, and in-video bottom search bar. |
 | **Usability** | **Hide Profile Photo Follow Button** | `bytecodePatch` | Hides the plus (+) follow badge on creator profile avatars in the feed and disables its touch interaction. |
 | **Usability** | **Disable Profile Photo LIVE Status** | `bytecodePatch` | Removes pulsing LIVE ring/badge from creator avatars in feed and forces clicks directly to user profile. |
@@ -48,7 +45,6 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Usability** | **Hide Suggested Searches** | `bytecodePatch` | Removes the suggested search keywords section ('You may like' / 'Search suggestions') from the search discovery page. |
 | **Usability** | **Disable Search Video Autoplay** | `bytecodePatch` | Disables automatic video playback in search results. Videos only play when tapped to view in detail. |
 | **Usability** | **Auto-Pause First Video** | `bytecodePatch` | Automatically pauses the initial video on startup (frame 0) with center play icon; resumes upon screen tap or feed scroll. |
-| **Usability** | **Comment Sort Controls** | `bytecodePatch` | Unlocks native comment sort controls (Newest, Most Relevant) across video posts. |
 | **Usability** | **Hide Seen Videos** | `bytecodePatch` | Filters previously watched videos from incoming For You feed batches based on playback progress. |
 | **Usability** | **Resume Video After Scroll** | `bytecodePatch` | Resumes video playback from previous playback position when returning to a video in the feed. |
 | **Usability** | **Stop Video Looping** | `bytecodePatch` | Prevents videos from looping continuously on playback completion. |
@@ -272,12 +268,13 @@ The **`Disable Feed Long-Press Actions`** patch neutralizes long-press gesture d
 - **Client-Side Watermark Neutralization**:
   - Stubs `WaterMarkServiceImpl.waterMark()` with `return-void` to prevent client-rendered overlay compositing.
 
-### 2. Auto-Translate Comments (`commentAutoTranslatePatch`)
-- Automatically translates incoming comments using TikTok's native translation engine.
-- Targets `BaseCommentCell` and injects `TikTokCommentTranslateHook.registerCommentCell`.
-- Captures deserialized comment lists (`commentListLoadedFingerprint`) and queues comments for batch translation.
-- Deduplicates translation requests using composite keys (`requestKey + ":lang:" + currentLanguagePolicyKey`).
-- Respects native "Do not translate" language preferences from `TranslationLangKevaServiceImpl`.
+### 2. Comment Customizer (`commentCustomizerPatch`)
+- Consolidates comment section usability enhancements and decluttering options via compile/patch-time toggles:
+  - **`commentSortControls` (default: true)**: Unlocks TikTok's internal native comment sorting controls sheet (Most Relevant, Newest, Creator Only, Media Only) by overriding `comment_sort_opt_style` configuration getter (`2`) and Aweme comment sort eligibility checks.
+  - **`copyWithoutUsername` (default: true)**: Copies clean comment text without prepending the author username (`@username: `). Hooks `ClipData` builder `LIZ(String, String, List)` and BPEA clipboard helper callers.
+  - **`disableSuggestedEmojis` (default: true)**: Removes the horizontal bar of suggested quick emojis above the comment input box across active keyboard and passive comment views (`ExposedEmojiPanelTrigger`, `CommentPanelFakeInput`, `CommentKeyboardModel`, `PersonalizedEmojiExperiment`).
+  - **`enableVoiceComments` (default: true)**: Forces native voice comment recording buttons in comment input bars, bypassing regional rollout restrictions and remote server blocks (`audio_comment_publish`, `comment_audio_publish_entry_forbidden`, `VEAudioRecorder`).
+  - **`autoTranslate` (default: false)**: Automatically dispatches batch translations for incoming comments via TikTok's native engine (`BaseCommentCell`, `CommentList.onLoaded`).
 
 ### 3. Device Privacy Guard (`devicePrivacyGuardPatch`)
 > [!NOTE]
@@ -335,13 +332,6 @@ The **`Disable Feed Long-Press Actions`** patch neutralizes long-press gesture d
 - Stubs `FeedAvatarLiveAssem.Ar(ZZ)V` and `FeedAvatarLiveAssem.onBind(Object)V` with `return-void` to eliminate live streaming UI bindings and animations.
 - Preserves `FeedAvatarDefaultAssem`'s default avatar click handler (`LX/0BIx`), routing taps directly to `//user/profile`.
 
-### 10. Disable Comment Suggested Emojis (`disableCommentSuggestedEmojisPatch`)
-- Removes the horizontal bar of suggested quick emojis displayed above the comment input box in active keyboard mode and passive comment views.
-- **Active Keyboard Trigger Neutralization**: Hooks `ExposedEmojiPanelTrigger.wr(CommentContextSource, ...)Z` -> returns `false`, preventing the trigger manager from mounting `HorizontalEmojiMiniPanelAssemForKeyboard` into the active comment keyboard view hierarchy.
-- **Passive Feed Input Trigger Neutralization**: Hooks `CommentPanelFakeInput.Gt()Z` -> returns `false`, preventing `HorizontalEmojiMiniPanelAssem` from attaching to the passive/feed comment bar prior to keyboard expansion.
-- **ViewModel Model Flag Enforcement**: Hooks `CommentKeyboardModel.getForceDisableExposedEmoji()Z` -> returns `true`, enforcing TikTok's native internal model flag across comment view models and cells.
-- **Internal Experiment Flag Enforcement**: Hooks `PersonalizedEmojiExperiment.LIZ()Z` -> returns `true` (`hideExposeEmoji`), suppressing emoji resource preloading, layout spacing allocation, and telemetry events.
-
 ### 11. Disable Story Feed Indicators (`disableStoryFeedIndicatorsPatch`)
 - Removes creator profile photo story rings from feed videos, ensuring avatar photos remain permanently clean without blue story rings while preserving the top story indicator pill.
 - **User Story Status Neutralization**: Hooks `User.getStoryStatus()I` -> returns `0`, preventing feed wrappers from detecting active author stories.
@@ -374,14 +364,6 @@ The **`Disable Feed Long-Press Actions`** patch neutralizes long-press gesture d
 - **Search Intermediate Raw Payload & Model Filtering**: Intercepts `RecomDataWrapper.<init>(String, SuggestWordResponse)` to filter out `"trending_rank_live"` and `"live_popular"` card items from the raw JSON payload and parsed response model before Lynx rendering.
 - **Lynx AB Parameters & Schema Sanitization**: Intercepts `SparkHostApiImpl.LJLJI` to sanitize Lynx `abParams` (`has_transfer_tab_live = 0`, clears `transfer_tab_live_url`, `intermediate_show_trending_billboard = 0`), and strips `intermediate_show_trending_billboard` from Lynx schema URLs in `LX/0HLB;->LIZ`.
 
-### 17. Enable Voice Comments (`enableVoiceCommentsPatch`)
-- Forces the activation of TikTok's native voice comment recording button in comment input bars, bypassing regional rollout restrictions and remote server blocks.
-- **Audio Comment Publish Experiment Flag**: Hooks the core experiment evaluator referencing `"audio_comment_publish"` -> returns `Integer(1)`.
-- **Comment Audio Publish Entry Gate**: Forces the gate method referencing `"comment_audio_publish_entry_forbidden"` -> returns `true`.
-- **Model Force-Disable Flag**: Hooks `CommentKeyboardModel.getForceDisableCommentAudio()` -> returns `false`.
-- **VEAudioRecorder Ready Check**: Bypasses `CreativeToolsPluginService` availability check to ensure `VEAudioRecorder` initializes cleanly.
-- **Speech-To-Text / ASR Translation**: Forces `"comment_audio_asr_translate_enable"` -> returns `Boolean.TRUE`.
-
 ### 18. Hide AI-Generated Content (`hideAiTaggedContentPatch`)
 - Filters and skips videos tagged with native AI-generated metadata, C2PA content credentials, or creator AI disclosure tags across the For You, Following, and Friends feeds.
 - **Feed API Response Interception**: Hooks `FeedApiService.fetchFeedList` to filter incoming items at the network response boundary before model mapping.
@@ -399,11 +381,6 @@ The **`Disable Feed Long-Press Actions`** patch neutralizes long-press gesture d
 - **Search List Autoplay Calculation Loop Suppression**: Injects `return-void` at index 0 of `SearchListAutoplayHelper.LIZIZ(Z LX/0JHH;)V` (fingerprinted by string `"checkLogic() is not called on main thread"`), halting the recurring scroll and idle candidate evaluation cycle.
 - **Card AutoPlay Ability Inactivation**: Injects `const/4 v0, 0` / `return v0` into `SearchCardVideoPlayerAssem$autoPlayAbility$2$1.l2()Z`, `SearchVideoForLynx$ability$1.l2()Z`, and `SearchCardPhotoPlayerAssem$autoPlayAbility$2$1.l2()Z`, asserting `false` for card autoplay eligibility.
 - **Playback Execution Guard**: Injects `return-void` into `r()V` on all search card `AutoPlayAbility` implementations, preventing any direct invocation from triggering video playback or hiding cover thumbnails. Detail view playback when opening a video remains fully functional via `PlayerController`.
-
-### 20. Comment Sort Controls (`commentSortControlsPatch`)
-- Unlocks TikTok's internal native comment sorting controls sheet across all videos.
-- **Sort Style Override**: Hooks the `comment_sort_opt_style` configuration getter, returning `2` (`FULL_SORT_SHEET_STYLE`) to activate the complete bottom sheet menu options (Most Relevant, Newest, Creator Only, Media Only).
-- **Post Eligibility Override**: Hooks the Aweme-level comment sort eligibility evaluator to return `true`, making the sorting header available across all feed and profile comments.
 
 ### 21. Resume Video After Scroll (`resumeVideoAfterScrollPatch`)
 - Persists and restores playback timestamp when scrolling away and returning to feed videos.

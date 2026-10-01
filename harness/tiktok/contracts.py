@@ -331,14 +331,16 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
         criticality="HIGH",
     ),
     PatchContract(
-        patch_id="copy_comments_without_username",
-        name="Copy comments without username",
+        patch_id="comment_customizer",
+        name="Comment Customizer",
         target_type="bytecode",
-        description="Copies only the comment text without prepending the author username.",
+        description="Customizes TikTok's comment section, including native sort controls, clean text copying, disabling suggested emojis bar, enabling voice comments, and automatic comment translation.",
         required_classes=[
             "Lcom/ss/android/ugc/aweme/comment/model/Comment;",
+            "Lcom/ss/android/ugc/aweme/comment/model/CommentKeyboardModel;",
+            "Lcom/ss/android/ugc/aweme/commentv2/commentlist/powercell/BaseCommentCell;",
         ],
-        required_strings=["getText"],
+        required_strings=["getText", "comment_sort_opt_style"],
         criticality="HIGH",
     ),
     PatchContract(
@@ -363,31 +365,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
         required_strings=["onAssemPostCreate"],
         criticality="HIGH",
     ),
-    PatchContract(
-        patch_id="comment_auto_translate",
-        name="Auto-translate comments",
-        target_type="bytecode",
-        description="Automatically translates comments into your preferred language using TikTok's native translation engine.",
-        required_classes=[
-            "Lcom/ss/android/ugc/aweme/commentv2/commentlist/powercell/BaseCommentCell;",
-        ],
-        required_strings=["comment_panel", "lazySplitItemsParseTask"],
-        criticality="HIGH",
-    ),
-    PatchContract(
-        patch_id="disable_comment_suggested_emojis",
-        name="Disable Comment Suggested Emojis",
-        target_type="bytecode",
-        description="Removes the horizontal bar of suggested quick emojis displayed above the comment input box.",
-        required_classes=[
-            "Lcom/ss/android/ugc/aweme/comment/keyboard/keyboardv2/refactor/ExposedEmojiPanelTrigger;",
-            "Lcom/ss/android/ugc/aweme/comment/keyboard/keyboardv2/refactor/CommentPanelFakeInput;",
-            "Lcom/ss/android/ugc/aweme/comment/model/CommentKeyboardModel;",
-            "Lcom/ss/android/ugc/aweme/comment/experiment/PersonalizedEmojiExperiment;",
-        ],
-        required_strings=["getForceDisableExposedEmoji"],
-        criticality="HIGH",
-    ),
+
     PatchContract(
         patch_id="disable_story_feed_indicators",
         name="Disable Story Feed Indicators",
@@ -491,21 +469,6 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
             "Lcom/ss/android/ugc/aweme/discover/model/suggest/RecomDataWrapper;",
         ],
         required_strings=[],
-        criticality="HIGH",
-    ),
-    PatchContract(
-        patch_id="enable_voice_comments",
-        name="Enable Voice Comments",
-        target_type="bytecode",
-        description="Forces the native voice comment recording button in comment input bars, bypassing regional rollout restrictions and remote server blocks.",
-        required_classes=[
-            "Lcom/ss/android/ugc/aweme/comment/model/CommentKeyboardModel;",
-        ],
-        required_strings=[
-            "audio_comment_publish",
-            "comment_audio_publish_entry_forbidden",
-            "comment_audio_asr_translate_enable",
-        ],
         criticality="HIGH",
     ),
     PatchContract(
