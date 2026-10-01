@@ -100,7 +100,7 @@
 </details>
 
 <details>
-<summary>TikTok&nbsp;&nbsp;•&nbsp;&nbsp;<b>53 patches</b></summary>
+<summary>TikTok&nbsp;&nbsp;•&nbsp;&nbsp;<b>54 patches</b></summary>
 <br>
 
 **Supported versions:**
@@ -114,6 +114,7 @@
 | **Auto-Pause First Video** | Automatically pauses the first video when opening TikTok, allowing the application to finish background initialization and preventing playback lag. |  |
 | **Bypass Mandatory Login** | Neutralizes mandatory login walls, dynamic regional forced login gates, and guest browsing restrictions. |  |
 | **Bypass Screen Capture Detection** | Clears FLAG_SECURE on protected windows to allow screenshots and screen recording across restricted views, and neutralizes screenshot detection listeners and feedback prompts. |  |
+| **Clean Share Panel** | Removes clutter from the share panel and direct message dialog, including suggested quick emojis and the 'Send to new group' button. | • Hide Quick Emojis<br>• Hide 'Send to New Group' |
 | **Clean Share URL** | Strips tracking parameters, user IDs, device fingerprints, and marketing tokens from shared TikTok links. |  |
 | **Client-Side AI & Behavioral Profiling Governor** | Neutralizes on-device machine learning inference (Pitaya), Tako AI chatbot entry points and icons, and AI smart search suggestion clutter. |  |
 | **Comment Customizer** | Customizes TikTok's comment section, including native sort controls, clean text copying, disabling suggested emojis bar, enabling voice comments, and automatic comment translation. | • Comment Sort Controls<br>• Copy Comments Without Username<br>• Disable Suggested Emojis<br>• Enable Voice Comments<br>• Auto-Translate Comments |
@@ -138,7 +139,7 @@
 | **Force Auto-Scroll** | Forces the activation of the native video auto-scroll experiment flag for accounts and regions that lack it due to A/B testing. |  |
 | **Hide AI-Generated Content** | Filters and skips videos tagged with native AI-generated metadata, C2PA content credentials, or creator AI disclosure tags across the For You, Following, and Friends feeds. |  |
 | **Hide Inbox Promos & Alerts** | Hides promotional banners, streak mascot cards, contact sync suggestions, friend recommendations, and migration guide tooltips in the inbox and direct messages. | • Hide Top Promotional Banners<br>• Hide Contact & Friend Recommendations<br>• Hide Navigation Notices & Tooltips |
-| **Hide Inbox Story & Status Tray** | Removes the horizontal story, notes, and status tray (Skylight) from the top of the direct messages inbox. |  |
+| **Hide Inbox Story & Status Tray** | Hides the horizontal story, notes, and status tray (Skylight) displayed at the top of direct messages and the inbox. |  |
 | **Hide Popular Lives In Search** | Removes the Popular LIVEs recommendation card and live stream broadcasts from the search discovery page. |  |
 | **Hide Profile Photo Follow Button** | Hides the plus (+) follow badge on creator profile avatars in the feed and disables its touch interaction. |  |
 | **Hide Seen Videos** | Filters previously watched videos from incoming For You feed batches. |  |
@@ -150,13 +151,13 @@
 | **Live Stream 3D Gift Optimizer** | Disables Live 3D gift particle effect engine and widget rendering lifecycle to eliminate frame drops during live streams. |  |
 | **Live Stream SDK & Minigame De-bloat** | Strips Live link mic SDK (liblink_mic_sdk.so), Lyrax RTC broadcasting engines (liblyrax.so), and live stream interactive minigames to reduce APK size and memory footprint. |  |
 | **Media Usability & Watermark-Free Downloader** | Unblocks the download button on creator-restricted videos inside the Share panel, and routes downloads to clean unwatermarked media streams. |  |
-| **Navigation & Header Declutter** | Removes clutter from the feed navigation and top header bar, including Nearby and Community tabs, top-left LIVE button, and in-video bottom search bar. | • Hide Nearby Feed Tab<br>• Hide Community Tab<br>• Hide Top-Left LIVE Button<br>• Hide Feed Search Bar |
+| **Navigation & Header Declutter** | Removes clutter from the feed navigation and top header bar, including the Nearby feed tab, Community (Explore) tab, top-left LIVE broadcast button, and in-video bottom search suggestion bar. | • Hide Nearby Feed Tab<br>• Hide Community Tab<br>• Hide Top-Left LIVE Button<br>• Hide Feed Search Bar |
 | **P2P Video Relay & Mesh CDN Blocker** | Strips background Peer-to-Peer CDN distribution binaries (libavmdlp2pv2.so and libp2plivevdp.so) to prevent battery drain, background data upload, and mesh relay. |  |
 | **Playback Speed Persistence** | Persists selected video playback speed across all feed videos and application restarts. |  |
 | **Resource & Battery Governor** | Throttles background sensor polling (gyroscope/accelerometer 3D ads) and prevents aggressive video buffer preloading to conserve battery and CPU resources. |  |
 | **Resume Video After Scroll** | Remembers playback timestamp when scrolling away and resumes from where playback stopped upon returning. |  |
 | **SIM Region Selector** | Spoofs the detected SIM and network country ISO code to bypass regional feed restrictions and catalog blocks. | • Spoofed Region ISO Code |
-| **Show Seekbar** | Restores TikTok's native video seekbar and scrubbing controls where normally hidden or disabled, with real-time frame thumbnail previews when dragging. | • Show Dragging Thumbnail Preview |
+| **Show Seekbar** | Restores TikTok's native video seekbar and scrubbing controls where normally hidden or disabled. | • Show Dragging Thumbnail Preview |
 | **Skip First-Launch Onboarding** | Bypasses the entire first-run introduction funnel (interest pickers, swipe tutorials, language prompts, and consent sheets) directly to the feed. |  |
 | **Stop Video Looping** | Stops videos at the end instead of replaying them in an infinite loop. |  |
 | **Studio & Creation De-bloat** | Strips heavy video creation plugins, CapCut NLE editor SDKs, effect plugins, and AR camera face models to significantly reduce APK size. |  |
