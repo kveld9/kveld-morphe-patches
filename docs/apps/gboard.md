@@ -14,7 +14,7 @@ Comprehensive technical, setup, and configuration guide for **Gboard Lite** (`co
 | **Supported Target Version (ARMv7a)** | **`18.4.1.985164140-lite_beta-armeabi-v7a`** |
 | **Target File Format** | Standalone APK (`APK` - **Do NOT download split bundles**) |
 | **Screen Density** | `nodpi` |
-| **Official Download Source** | [APKMirror: Gboard - the Google Keyboard](https://www.apkmirror.com/apk/google-inc/gboard/gboard-the-google-keyboard-18-4-1-985164140-release/) |
+| **Official Download Source** | [APKMirror: Gboard - the Google Keyboard](https://www.apkmirror.com/apk/google-inc/gboard/gboard-the-google-keyboard-18-4-1-985164140-beta/) |
 
 > [!IMPORTANT]
 > Always download the standalone `lite` / `lite_beta` APK (nodpi). Do not download multi-split APKM / APK bundles.

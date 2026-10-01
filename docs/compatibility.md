@@ -48,7 +48,7 @@ All patches for Xiaomi Earbuds and NokoPrint operate strictly on Dalvik/ART Mult
 Download `Bravemonoarm64.apk` (for 64-bit ARM devices) or `BraveMonoarm.apk` (for 32-bit ARM devices) from [Brave GitHub Releases](https://github.com/brave/brave-browser/releases). Do **NOT** use `Bravearm64Universal.apk`, `Bravearm64.apk`, or x86 builds. Details in [Brave Guide](apps/brave.md).
 
 ### ⌨️ Gboard Lite: Standalone nodpi APK
-Download the standalone `lite` or `lite_beta` APK (nodpi) from [APKMirror](https://www.apkmirror.com/apk/google-inc/gboard/gboard-the-google-keyboard-18-4-1-985164140-release/). Do **NOT** download split packages or bundle formats. Details in [Gboard Lite Guide](apps/gboard.md).
+Download the standalone `lite` or `lite_beta` APK (nodpi) from [APKMirror](https://www.apkmirror.com/apk/google-inc/gboard/gboard-the-google-keyboard-18-4-1-985164140-beta/). Do **NOT** download split packages or bundle formats. Details in [Gboard Lite Guide](apps/gboard.md).
 
 ### 🏋️ Hevy: Gym Log Workout Tracker (`com.hevy`)
 Download the official `arm64-v8a` bundle release from [APKMirror](https://www.apkmirror.com/apk/hevy/hevy-gym-log-workout-tracker/).
