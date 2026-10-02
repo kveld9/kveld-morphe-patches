@@ -89,7 +89,7 @@ val cleanSharePanelPatch = bytecodePatch(
             val createGroupImpl = createGroupMethod.implementation
             if (createGroupImpl != null) {
                 createGroupMethod.clearTryBlocks()
-                createGroupMethod.ensureRegisterCount(2)
+                createGroupMethod.ensureRegisterCount(6)
                 createGroupMethod.removeInstructions(0, createGroupImpl.instructions.count())
                 createGroupMethod.addInstructions(
                     0,
@@ -97,10 +97,33 @@ val cleanSharePanelPatch = bytecodePatch(
                         move-object/from16 v0, p1
                         const/16 v1, 0x8
                         invoke-virtual {v0, v1}, Landroid/view/View;->setVisibility(I)V
+                        invoke-virtual {v0}, Landroid/view/View;->getLayoutParams()Landroid/view/ViewGroup${'$'}LayoutParams;
+                        move-result-object v1
+                        if-eqz v1, :cond_skip_lp
+                        const/4 v2, 0x0
+                        iput v2, v1, Landroid/view/ViewGroup${'$'}LayoutParams;->height:I
+                        instance-of v3, v1, Landroid/view/ViewGroup${'$'}MarginLayoutParams;
+                        if-eqz v3, :cond_apply_lp
+                        move-object v3, v1
+                        check-cast v3, Landroid/view/ViewGroup${'$'}MarginLayoutParams;
+                        iput v2, v3, Landroid/view/ViewGroup${'$'}MarginLayoutParams;->topMargin:I
+                        iput v2, v3, Landroid/view/ViewGroup${'$'}MarginLayoutParams;->bottomMargin:I
+                        iput v2, v3, Landroid/view/ViewGroup${'$'}MarginLayoutParams;->leftMargin:I
+                        iput v2, v3, Landroid/view/ViewGroup${'$'}MarginLayoutParams;->rightMargin:I
+                        :cond_apply_lp
+                        invoke-virtual {v0, v1}, Landroid/view/View;->setLayoutParams(Landroid/view/ViewGroup${'$'}LayoutParams;)V
+                        :cond_skip_lp
+                        invoke-virtual {v0}, Landroid/view/View;->getParent()Landroid/view/ViewParent;
+                        move-result-object v1
+                        instance-of v2, v1, Landroid/view/ViewGroup;
+                        if-eqz v2, :cond_skip_parent
+                        check-cast v1, Landroid/view/ViewGroup;
+                        invoke-virtual {v1, v0}, Landroid/view/ViewGroup;->removeView(Landroid/view/View;)V
+                        :cond_skip_parent
                         return-void
                     """.trimIndent(),
                 )
-                println("[Clean Share Panel] Hooked SharePanelCreateGroupButtonAssem.onViewCreated -> View.GONE.")
+                println("[Clean Share Panel] Hooked SharePanelCreateGroupButtonAssem.onViewCreated -> collapse & removeView.")
                 patched++
             }
 
@@ -124,7 +147,7 @@ val cleanSharePanelPatch = bytecodePatch(
             val hintImpl = groupChatHintMethod.implementation
             if (hintImpl != null) {
                 groupChatHintMethod.clearTryBlocks()
-                groupChatHintMethod.ensureRegisterCount(2)
+                groupChatHintMethod.ensureRegisterCount(6)
                 groupChatHintMethod.removeInstructions(0, hintImpl.instructions.count())
                 groupChatHintMethod.addInstructions(
                     0,
@@ -132,10 +155,33 @@ val cleanSharePanelPatch = bytecodePatch(
                         move-object/from16 v0, p1
                         const/16 v1, 0x8
                         invoke-virtual {v0, v1}, Landroid/view/View;->setVisibility(I)V
+                        invoke-virtual {v0}, Landroid/view/View;->getLayoutParams()Landroid/view/ViewGroup${'$'}LayoutParams;
+                        move-result-object v1
+                        if-eqz v1, :cond_skip_lp
+                        const/4 v2, 0x0
+                        iput v2, v1, Landroid/view/ViewGroup${'$'}LayoutParams;->height:I
+                        instance-of v3, v1, Landroid/view/ViewGroup${'$'}MarginLayoutParams;
+                        if-eqz v3, :cond_apply_lp
+                        move-object v3, v1
+                        check-cast v3, Landroid/view/ViewGroup${'$'}MarginLayoutParams;
+                        iput v2, v3, Landroid/view/ViewGroup${'$'}MarginLayoutParams;->topMargin:I
+                        iput v2, v3, Landroid/view/ViewGroup${'$'}MarginLayoutParams;->bottomMargin:I
+                        iput v2, v3, Landroid/view/ViewGroup${'$'}MarginLayoutParams;->leftMargin:I
+                        iput v2, v3, Landroid/view/ViewGroup${'$'}MarginLayoutParams;->rightMargin:I
+                        :cond_apply_lp
+                        invoke-virtual {v0, v1}, Landroid/view/View;->setLayoutParams(Landroid/view/ViewGroup${'$'}LayoutParams;)V
+                        :cond_skip_lp
+                        invoke-virtual {v0}, Landroid/view/View;->getParent()Landroid/view/ViewParent;
+                        move-result-object v1
+                        instance-of v2, v1, Landroid/view/ViewGroup;
+                        if-eqz v2, :cond_skip_parent
+                        check-cast v1, Landroid/view/ViewGroup;
+                        invoke-virtual {v1, v0}, Landroid/view/ViewGroup;->removeView(Landroid/view/View;)V
+                        :cond_skip_parent
                         return-void
                     """.trimIndent(),
                 )
-                println("[Clean Share Panel] Hooked SharePanelGroupChatHintAssem.onViewCreated -> View.GONE.")
+                println("[Clean Share Panel] Hooked SharePanelGroupChatHintAssem.onViewCreated -> collapse & removeView.")
                 patched++
             }
 
@@ -146,6 +192,18 @@ val cleanSharePanelPatch = bytecodePatch(
                 parameters = listOf("Z"),
             ).method.replaceWithReturnVoid()
             println("[Clean Share Panel] Hooked SharePanelGroupChatHintAssem.ce -> return-void.")
+            patched++
+
+            // 2c. Neutralize presenter visibility toggle & dynamic bottom margin expansion (CreateGroupChatWidget)
+            val groupChatPresenterFp = Fingerprint(
+                strings = listOf("CreateGroupChatWidget", "group chat not supported"),
+            )
+            val groupChatPresenterClass = groupChatPresenterFp.classDef
+            val updateGroupButtonVisibilityMethod = groupChatPresenterClass.methods.first {
+                it.parameters.map { p -> p.type } == listOf("Z") && it.returnType == "V"
+            }
+            updateGroupButtonVisibilityMethod.replaceWithReturnVoid()
+            println("[Clean Share Panel] Hooked ${groupChatPresenterClass.type}.${updateGroupButtonVisibilityMethod.name} -> return-void.")
             patched++
         }
 
