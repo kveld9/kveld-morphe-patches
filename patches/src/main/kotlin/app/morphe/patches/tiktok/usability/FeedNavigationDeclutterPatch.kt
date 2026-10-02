@@ -3,17 +3,20 @@ package app.morphe.patches.tiktok.usability
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.replaceWithReturnBoolean
 import app.morphe.patches.shared.replaceWithReturnNull
 import app.morphe.patches.shared.replaceWithReturnVoid
+import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 
 val feedNavigationDeclutterPatch = bytecodePatch(
     name = "Navigation & Header Declutter",
-    description = "Removes clutter from the feed navigation and top header bar, including the Nearby feed tab, Community (Explore) tab, top-left LIVE broadcast button, and in-video bottom search suggestion bar.",
+    description = "Removes clutter from the feed navigation and top header bar, including the Nearby feed tab, Community (Explore) tab, top-left LIVE broadcast button, central '+' create content button, and in-video bottom search suggestion bar.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -50,11 +53,20 @@ val feedNavigationDeclutterPatch = bytecodePatch(
         required = false,
     )
 
+    val hidePublishTab by booleanOption(
+        key = "hidePublishTab",
+        default = true,
+        title = "Hide Create / Publish Button",
+        description = "Removes the central '+' create / publish content button from the bottom navigation bar.",
+        required = false,
+    )
+
     execute {
         if (hideNearbyTab != true &&
             hideCommunityTab != true &&
             hideTopLiveEntrance != true &&
-            hideFeedSearchBar != true
+            hideFeedSearchBar != true &&
+            hidePublishTab != true
         ) {
             println("[Navigation & Header Declutter] Skipped: All declutter options are disabled.")
             return@execute
@@ -353,6 +365,35 @@ val feedNavigationDeclutterPatch = bytecodePatch(
             patched++
 
             println("[Navigation & Header Declutter] Feed search suggestion and trending bars neutralized.")
+        }
+
+        // 5. Feature: Hide Create / Publish Button
+        if (hidePublishTab == true) {
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/homepage/ui/view/tab/bottom/publishtab/PublishTabProtocol;",
+                name = "enable",
+                returnType = "Z",
+                parameters = emptyList(),
+            ).method.replaceWithReturnBoolean(false)
+            patched++
+
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/homepage/ui/view/tab/bottom/publishtab/PublishBottomTabViewFactory;",
+                name = "LIZ",
+                returnType = "Landroid/view/View;",
+            ).method.apply {
+                val viewReg = getInstruction<OneRegisterInstruction>(1).registerA
+                addInstructions(
+                    2,
+                    """
+                    const/16 v0, 0x8
+                    invoke-virtual {v$viewReg, v0}, Landroid/view/View;->setVisibility(I)V
+                    """,
+                )
+            }
+            patched++
+
+            println("[Navigation & Header Declutter] Bottom publish (+) button eliminated.")
         }
 
         println("[Navigation & Header Declutter] Applied $patched navigation & header declutter hook(s).")
