@@ -17,7 +17,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 
 val feedInterfaceDeclutterPatch = bytecodePatch(
     name = "Feed Interface Declutter",
-    description = "Customizes and cleans feed video overlay elements, including the repost pill, video descriptions, profile photo follow badges, story rings, playlist bottom bars, and save buttons.",
+    description = "Customizes and cleans feed video overlay elements, including the repost pill, video descriptions, profile photo follow badges, story rings, playlist bottom bars, save buttons, and music discs.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -71,13 +71,22 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
         required = false,
     )
 
+    val hideMusicCover by booleanOption(
+        key = "hideMusicCover",
+        default = false,
+        title = "Hide Music Cover Disc",
+        description = "Hides the rotating vinyl music album cover disc at the bottom right corner of feed videos.",
+        required = false,
+    )
+
     execute {
         if (hideRepostBadge != true &&
             hideVideoDescriptions != true &&
             hideAvatarFollowButton != true &&
             disableStoryRings != true &&
             hidePlaylistBar != true &&
-            hideSaveButton != true
+            hideSaveButton != true &&
+            hideMusicCover != true
         ) {
             println("[Feed Interface Declutter] Skipped: All declutter options are disabled.")
             return@execute
@@ -469,6 +478,60 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
                 parameters = listOf("Ljava/lang/Object;"),
             ).method.replaceWithReturnVoid()
             println("[Feed Interface Declutter] Hooked VideoFavoriteAssem.z4() -> return-void.")
+            patched++
+        }
+
+        // 7. Hide Music Cover Disc
+        if (hideMusicCover == true) {
+            val musicCoverClass = "Lcom/ss/android/ugc/aweme/feed/assem/music/VideoMusicCoverAssem;"
+
+            val coverOnViewCreated = Fingerprint(
+                definingClass = musicCoverClass,
+                name = "onViewCreated",
+                returnType = "V",
+                parameters = listOf("Landroid/view/View;"),
+            ).method
+            coverOnViewCreated.clearTryBlocks()
+            coverOnViewCreated.ensureRegisterCount(2)
+            val count = coverOnViewCreated.implementation!!.instructions.count()
+            coverOnViewCreated.removeInstructions(0, count)
+            coverOnViewCreated.addInstructions(
+                0,
+                """
+                    invoke-super {p0, p1}, Lcom/ss/android/ugc/feed/platform/cell/BaseCellSlotComponent;->onViewCreated(Landroid/view/View;)V
+                    const/16 v0, 0x8
+                    invoke-virtual {p1, v0}, Landroid/view/View;->setVisibility(I)V
+                    return-void
+                """.trimIndent(),
+            )
+            println("[Feed Interface Declutter] Hooked VideoMusicCoverAssem.onViewCreated() -> setVisibility(GONE).")
+            patched++
+
+            Fingerprint(
+                definingClass = musicCoverClass,
+                name = "z4",
+                returnType = "V",
+                parameters = listOf("Ljava/lang/Object;"),
+            ).method.replaceWithReturnVoid()
+            println("[Feed Interface Declutter] Hooked VideoMusicCoverAssem.z4() -> return-void.")
+            patched++
+
+            Fingerprint(
+                definingClass = musicCoverClass,
+                name = "Tr",
+                returnType = "V",
+                parameters = emptyList(),
+            ).method.replaceWithReturnVoid()
+            println("[Feed Interface Declutter] Hooked VideoMusicCoverAssem.Tr() -> return-void.")
+            patched++
+
+            Fingerprint(
+                definingClass = musicCoverClass,
+                name = "Wr",
+                returnType = "V",
+                parameters = emptyList(),
+            ).method.replaceWithReturnVoid()
+            println("[Feed Interface Declutter] Hooked VideoMusicCoverAssem.Wr() -> return-void.")
             patched++
         }
 
