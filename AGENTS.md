@@ -168,11 +168,12 @@ For non-trivial logic, Smali hooks, native ARM64 patching (`libchrome.so`), or s
     - Under no circumstances should emojis or unicode pictographs be used anywhere in codebase source files, including Kotlin, Java, Python, Smali, Bash/Shell scripts, Gradle build files, configuration files, test files, diagnostic telemetry, or CLI/runtime logs.
     - All code, logs, comments, and console outputs MUST strictly use clean, standard ASCII / plain-text formatting (e.g. `[INFO]`, `[WARN]`, `[PASS]`, `[FAIL]`, `[AUDIT]`, `[BUILD]`). Emojis are tolerated exclusively in end-user documentation (such as `README.md`) if already present, but are strictly prohibited in codebase implementation files and tooling.
 14. **Mandatory Atomic Commits Policy**:
-    - Every new patch or patch update MUST be contained within a single atomic commit (`feat(<target>): ...` or `fix(<target>): ...`). That single commit MUST encapsulate both the patch implementation code (Kotlin, Smali, resources, ELF) AND its accompanying documentation entries (such as in `README.md` or app-specific docs).
-    - **Strict Prohibition of Multi-Patch Grouping & Documentation Batching**:
-      a) Never separate patch implementation and patch documentation into separate commits during patch creation or updates.
-      b) Never bundle multiple patches together into a single commit.
-      c) Under NO circumstances should documentation for multiple distinct patches be grouped or batched into a collective `docs:` commit. Each patch is an autonomous unit: 1 patch = 1 single commit.
+    - Every new patch, distinct patch option/toggle, patch update, or bugfix MUST be contained within its own dedicated atomic commit (`feat(<target>): ...` or `fix(<target>): ...`). That single commit MUST encapsulate both the patch implementation code (Kotlin, Smali, resources, ELF) AND its accompanying documentation entries (such as in `README.md` or app-specific docs).
+    - **Strict Prohibition of Multi-Patch & Multi-Feature Grouping & Documentation Batching**:
+      a) Never separate patch implementation and patch documentation into separate commits during patch creation, option addition, or updates.
+      b) Never bundle multiple independent patches or distinct toggle features together into a single commit. When adding multiple features/toggles to a composite patch, commit each feature/toggle independently along with its documentation to guarantee clean git bisectability and issue tracking.
+      c) Any bugfix or behavioral correction targeting a patch MUST be committed in its own standalone `fix(<target>): ...` commit rather than bundled into feature or documentation commits.
+      d) Under NO circumstances should documentation for multiple distinct patches or options be grouped or batched into a collective `docs:` commit. Each patch or feature is an autonomous unit: 1 patch / 1 feature toggle / 1 fix = 1 single commit.
     - **Standalone Commits Scope**:
       a) **Tooling & Test Harness** (`test(harness): ...` or `refactor(harness): ...`): Must be isolated from patch logic.
       b) **Cross-Compatibility & Shared Contracts** (`feat(patches): ...` or `feat(shared): ...`): Isolated when bridging shared features across apps outside an individual patch unit.
