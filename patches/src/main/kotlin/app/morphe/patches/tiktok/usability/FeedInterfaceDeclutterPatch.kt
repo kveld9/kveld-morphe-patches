@@ -292,6 +292,44 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
             ).method.replaceWithReturnVoid()
             println("[Feed Interface Declutter] Hooked FriendsV3DescAssem.js() -> return-void.")
             patched++
+
+            val translationClasses = listOf(
+                "Lcom/ss/android/ugc/aweme/translation/ui/TranslationControlsAssem;",
+                "Lcom/ss/android/ugc/aweme/translation/ui/TranslationStatusAssem;",
+            )
+
+            for (transClass in translationClasses) {
+                val transOnViewCreated = Fingerprint(
+                    definingClass = transClass,
+                    name = "onViewCreated",
+                    returnType = "V",
+                    parameters = listOf("Landroid/view/View;"),
+                ).method
+                transOnViewCreated.clearTryBlocks()
+                transOnViewCreated.ensureRegisterCount(2)
+                val count = transOnViewCreated.implementation!!.instructions.count()
+                transOnViewCreated.removeInstructions(0, count)
+                transOnViewCreated.addInstructions(
+                    0,
+                    """
+                        invoke-super {p0, p1}, Lcom/ss/android/ugc/feed/platform/cell/BaseCellSlotComponent;->onViewCreated(Landroid/view/View;)V
+                        const/16 v0, 0x8
+                        invoke-virtual {p1, v0}, Landroid/view/View;->setVisibility(I)V
+                        return-void
+                    """.trimIndent(),
+                )
+                println("[Feed Interface Declutter] Hooked $transClass onViewCreated() -> setVisibility(GONE).")
+                patched++
+
+                Fingerprint(
+                    definingClass = transClass,
+                    name = "z4",
+                    returnType = "V",
+                    parameters = listOf("Ljava/lang/Object;"),
+                ).method.replaceWithReturnVoid()
+                println("[Feed Interface Declutter] Hooked $transClass z4() -> return-void.")
+                patched++
+            }
         }
 
         // 3. Hide Profile Photo Follow Button
