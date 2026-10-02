@@ -10,13 +10,14 @@ import app.morphe.patches.shared.clearTryBlocks
 import app.morphe.patches.shared.ensureRegisterCount
 import app.morphe.patches.shared.replaceWithReturnBoolean
 import app.morphe.patches.shared.replaceWithReturnInt
+import app.morphe.patches.shared.replaceWithReturnNull
 import app.morphe.patches.shared.replaceWithReturnVoid
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 
 val feedInterfaceDeclutterPatch = bytecodePatch(
     name = "Feed Interface Declutter",
-    description = "Customizes and cleans feed video overlay elements, including the repost pill, video descriptions, profile photo follow badges, and story rings.",
+    description = "Customizes and cleans feed video overlay elements, including the repost pill, video descriptions, profile photo follow badges, story rings, and playlist bottom bars.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -54,11 +55,20 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
         required = false,
     )
 
+    val hidePlaylistBar by booleanOption(
+        key = "hidePlaylistBar",
+        default = true,
+        title = "Hide Playlist Bottom Bar",
+        description = "Hides the playlist indicator bar displayed above the bottom navigation when a video is part of a playlist.",
+        required = false,
+    )
+
     execute {
         if (hideRepostBadge != true &&
             hideVideoDescriptions != true &&
             hideAvatarFollowButton != true &&
-            disableStoryRings != true
+            disableStoryRings != true &&
+            hidePlaylistBar != true
         ) {
             println("[Feed Interface Declutter] Skipped: All declutter options are disabled.")
             return@execute
@@ -361,6 +371,59 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
                 parameters = listOf("Lcom/ss/android/ugc/aweme/profile/model/User;"),
             ).method.replaceWithReturnBoolean(false)
             println("[Feed Interface Declutter] Hooked SocPubDistributeServiceImpl.(User)Z -> false.")
+            patched++
+        }
+
+        // 5. Hide Playlist Bottom Bar
+        if (hidePlaylistBar == true) {
+            val triggerClass = "Lcom/ss/android/ugc/feed/platform/cell/interact/bottom/bar/PlayListBottomBarAssemTrigger;"
+            Fingerprint(
+                definingClass = triggerClass,
+                name = "yr",
+                returnType = "Z",
+                parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"),
+            ).method.replaceWithReturnBoolean(false)
+            println("[Feed Interface Declutter] Hooked PlayListBottomBarAssemTrigger.yr() -> return false.")
+            patched++
+
+            val bottomBarClass = "Lcom/ss/android/ugc/feed/platform/cell/interact/bottom/bar/InteractPlayListBottomBarAssem;"
+            val bottomBarOnViewCreated = Fingerprint(
+                definingClass = bottomBarClass,
+                name = "onViewCreated",
+                returnType = "V",
+                parameters = listOf("Landroid/view/View;"),
+            ).method
+            bottomBarOnViewCreated.clearTryBlocks()
+            bottomBarOnViewCreated.ensureRegisterCount(2)
+            val count = bottomBarOnViewCreated.implementation!!.instructions.count()
+            bottomBarOnViewCreated.removeInstructions(0, count)
+            bottomBarOnViewCreated.addInstructions(
+                0,
+                """
+                    invoke-super {p0, p1}, Lcom/ss/android/ugc/feed/platform/cell/interact/bottom/banner/InteractBottomBannerAssem;->onViewCreated(Landroid/view/View;)V
+                    const/16 v0, 0x8
+                    invoke-virtual {p1, v0}, Landroid/view/View;->setVisibility(I)V
+                    return-void
+                """.trimIndent(),
+            )
+            println("[Feed Interface Declutter] Hooked InteractPlayListBottomBarAssem.onViewCreated() -> setVisibility(GONE).")
+            patched++
+
+            Fingerprint(
+                definingClass = bottomBarClass,
+                name = "z4",
+                returnType = "V",
+                parameters = listOf("Ljava/lang/Object;"),
+            ).method.replaceWithReturnVoid()
+            println("[Feed Interface Declutter] Hooked InteractPlayListBottomBarAssem.z4() -> return-void.")
+            patched++
+
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
+                name = "getPlaylist_info",
+                returnType = "Lcom/ss/android/ugc/aweme/feed/model/PlayListInfo;",
+            ).method.replaceWithReturnNull()
+            println("[Feed Interface Declutter] Hooked Aweme.getPlaylist_info() -> return null.")
             patched++
         }
 
