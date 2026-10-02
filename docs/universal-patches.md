@@ -20,6 +20,7 @@ Comprehensive reference for universal optimization and resource slimming patches
 | **[Background Sync & JobScheduler Purge](#10-background-sync--jobscheduler-purge-backgroundsyncpurgepatch)** | `resourcePatch` | Manifest (`AndroidManifest.xml`) | Strips boot permissions and disables boot receivers & WorkManager schedulers | Eliminates background wakeups, radio alarms, and standby battery drain |
 | **[Universal Privacy Permissions Stripper](#11-universal-privacy-permissions-stripper-universalprivacypermissionspatch)** | `resourcePatch` | Manifest (`AndroidManifest.xml`) | Selectively revokes sensitive hardware, privacy, and sensor permissions | Eliminates OS permission grants and runtime capability access |
 | **[Universal Screenshot Protection Bypass](#12-universal-screenshot-protection-bypass-universalscreenshotprotectionbypasspatch)** | `bytecodePatch` | Dalvik Bytecode & Manifest | Neutralizes `FLAG_SECURE`, unlocks audio playback capture, and suppresses Android 14+ screenshot detection | Allows screenshots, screen recordings, and internal audio capture across protected views |
+| **[Universal Screen Timeout Enforcer](#13-universal-screen-timeout-enforcer-universalscreentimeoutenforcerpatch)** | `bytecodePatch` | Dalvik Bytecode & Windows | Neutralizes `keepScreenOn(Z)V` view calls and strips `FLAG_KEEP_SCREEN_ON` (`0x80`) | Enforces OS screen timeout and sleep timer during video playback |
 
 ---
 
@@ -389,3 +390,21 @@ The patch operates without any manual configuration or boolean options. When ena
 - Unlocks internal audio playback capture in `AndroidManifest.xml` and Dalvik audio policies (`ALLOW_CAPTURE_BY_ALL`).
 - Silences `Activity.registerScreenCaptureCallback` / `unregisterScreenCaptureCallback` (Android 14) and `WindowManager.addScreenRecordingCallback` (Android 15).
 - Forces `Activity.setRecentsScreenshotEnabled(true)` to preserve app switcher visibility.
+
+---
+
+## 13. Universal Screen Timeout Enforcer (`universalScreenTimeoutEnforcerPatch`)
+
+The **`Universal Screen Timeout Enforcer`** patch forces the host application to respect the operating system's configured screen timeout (`SCREEN_OFF_TIMEOUT`) and sleep timers by neutralizing keepScreenOn view calls and stripping `FLAG_KEEP_SCREEN_ON` from windows and layout parameters.
+
+### 🛡️ Low-Level Bytecode & Window Enforcement
+
+1. **Bitwise Flag Masking**: For any call to `Window.addFlags(flags)`, `Window.setFlags(flags, mask)`, or direct write to `WindowManager.LayoutParams.flags`, the patch injects in-place bitwise masking (`and-int/lit16 vReg, vReg, -0x81`) immediately prior to execution. The mask `-0x81` (`0xffffff7f` sign-extended) deterministically clears bit 7 (`0x00000080` / `FLAG_KEEP_SCREEN_ON`) while preserving all other layout and window flags (`FLAG_FULLSCREEN`, `FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS`, `FLAG_TRANSLUCENT_STATUS`, etc.) intact without modifying register allocations.
+2. **View & SurfaceHolder Neutralization**: Invocations to `View.setKeepScreenOn(Z)V`, `SurfaceView.setKeepScreenOn(Z)V`, `TextureView.setKeepScreenOn(Z)V`, and `SurfaceHolder.setKeepScreenOn(Z)V` are cleanly replaced with `nop`. This ensures views retain their default Android state (`mKeepScreenOn = false`) and never inhibit the OS sleep timer.
+
+### 🛡️ Plug & Play Operation
+
+The patch operates without any manual configuration or boolean options (`default = false`). When enabled, it automatically executes the complete screen timeout enforcement pipeline across all bytecode components:
+- Clears `FLAG_KEEP_SCREEN_ON` (`0x80`) on `Window.setFlags`, `Window.addFlags`, and `WindowManager.LayoutParams.flags`.
+- Neutralizes `setKeepScreenOn(Z)V` calls across all UI views and surface holders.
+
