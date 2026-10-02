@@ -37,9 +37,8 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Usability** | **[Custom Share Sheet](#5-custom-share-sheet)** | `bytecodePatch` | Customizes and cleans the share menu via individual boolean toggles for third-party apps, essential actions, and direct message friend rows. |
 | **Usability** | **[Clean Share Panel](#6-clean-share-panel)** | `bytecodePatch` | Removes suggested quick emojis and the 'Send to new group' button from the direct share dialog. |
 | **Usability** | **Navigation & Header Declutter** | `bytecodePatch` | Removes clutter from the feed navigation and top header bar, including Nearby and Community tabs, top-left LIVE button, and in-video bottom search bar. |
-| **Usability** | **Hide Profile Photo Follow Button** | `bytecodePatch` | Hides the plus (+) follow badge on creator profile avatars in the feed and disables its touch interaction. |
+| **Usability** | **[Feed Interface Declutter](#8-feed-interface-declutter)** | `bytecodePatch` | Customizes and cleans feed video overlay elements via individual toggles for repost pill, video descriptions, profile photo follow badges, and story rings. |
 | **Usability** | **Disable Profile Photo LIVE Status** | `bytecodePatch` | Removes pulsing LIVE ring/badge from creator avatars in feed and forces clicks directly to user profile. |
-| **Usability** | **Disable Story Feed Indicators** | `bytecodePatch` | Removes creator profile photo story rings from feed videos, ensuring avatar photos remain clean without blue story rings. |
 | **Usability** | **Force Auto-Scroll** | `bytecodePatch` | Forces the activation of the native video auto-scroll experiment flag for accounts and regions that lack it due to A/B testing. |
 | **Usability** | **Hide Popular Lives In Search** | `bytecodePatch` | Removes the Popular LIVEs recommendation card and live stream broadcasts from the search discovery page. |
 | **Usability** | **Hide Suggested Searches** | `bytecodePatch` | Removes the suggested search keywords section ('You may like' / 'Search suggestions') from the search discovery page. |
@@ -317,12 +316,12 @@ The **`Disable Feed Long-Press Actions`** patch neutralizes long-press gesture d
   - **`hideNearbyTab` (default: true)**: Removes the Nearby (local city or region) feed tab from the top navigation strip. Hooks `NearbyServiceImpl.LJIIZILJ()` tab provider `LJ()` -> `null`, `NearbyTabProtocol.enable()` -> `false`, and service boolean gates.
   - **`hideCommunityTab` (default: true)**: Removes the Community (Explore) feed tab from the top navigation strip and bottom navigation bar. Hooks `ExploreFeedServiceImpl.LIZ()` -> `false`, tab provider `LJ()` / `LIZ()` -> `null`, and `ExploreBottomTabProtocol.enable()` -> `false`.
   - **`hideTopLiveEntrance` (default: false)**: Removes the top-left LIVE broadcast button and tab entry point from the top navigation bar. Hooks `LiveIconGenerator.enabled()` -> `false`, view method -> `null`, and `LiveTabProtocol.enable()` -> `false`.
-  - **`hideFeedSearchBar` (default: true)**: Removes search suggestion pills and trending bars ('Search · <keyword>') from feed videos. Neutralizes `FeedSearchBottomBarAssemTrigger`, `TrendingBottomBarAssemTrigger`, Assem lifecycle methods, and overrides Aweme model trending flags.
-
-### 8. Hide Profile Photo Follow Button (`hideAvatarFollowButtonPatch`)
-- Hides the red plus (`+`) follow badge on creator profile avatars in the feed and eliminates accidental follow touches.
-- Hooks `FeedAvatarDefaultAssem.cs(ViewGroup, int, Object)` -> permanently sets visibility to `View.GONE` (`0x8`) and disables clickability.
-- Injects immediate `View.GONE` (`0x8`) and `setClickable(false)` into `FeedAvatarDefaultAssem.onViewCreated` right after `LLLIILIL` (`follow_view_container`) is assigned, preventing view flash on cell recycling.
+### 8. Feed Interface Declutter (`feedInterfaceDeclutterPatch`)
+- Consolidates clutter removal across feed video cell overlay elements via compile/patch-time toggles:
+  - **`hideRepostBadge` (default: true)**: Hides the repost and shared-by pill badge ('Compartido por') above creator details on feed videos. Hooks `UpvoteVideoTrigger.yr(VideoItemParams)Z` -> returns `false`, preventing `UpvoteVideoAssemNew` from being attached or activated. Stubs `UpvoteVideoAssemNew` methods (`tr`/`hb` -> `false`, `LLLLIILL`/`LLILZ`/`z4` -> `return-void`, `onViewCreated` -> `View.GONE`).
+  - **`hideVideoDescriptions` (default: true)**: Hides video descriptions, captions, hashtags, and "more" expansion buttons across feed videos while keeping creator and author info intact. Enforces `View.GONE` (`0x8`) in `VideoDescAssem.onViewCreated`, stubs `z4`/`js` to prevent text binding, and neutralizes `FriendsV3DescAssem` for both FYP and Friends feeds.
+  - **`hideAvatarFollowButton` (default: true)**: Hides the red plus (`+`) follow badge on creator profile avatars in the feed and eliminates accidental follow touches. Hooks `FeedAvatarDefaultAssem.Qr(ViewGroup, int, Object)` -> permanently sets visibility to `View.GONE` (`0x8`) and disables clickability via `TikTokMediaHook.hideFollowButton`. Injects immediate `View.GONE` into `FeedAvatarDefaultAssem.onViewCreated` right after `LLLIILIL` (`follow_view_container`) is assigned.
+  - **`disableStoryRings` (default: true)**: Removes creator profile photo story rings from feed videos, ensuring avatar photos remain clean without blue story rings. Hooks `User.getStoryStatus()I` -> `0`, stubs `FeedAvatarSocialPublishAssem` lifecycle methods (`onViewCreated`, `onBind`, `tr`) with `return-void` to remove story indicators and click interceptors, and hooks `SocPubDistributeServiceImpl` -> `false`.
 
 ### 9. Disable Profile Photo LIVE Status (`disableAvatarLiveStatusPatch`)
 - Removes the pulsing LIVE ring animation and LIVE badge from creator avatars in the feed and ensures avatar taps route strictly to the creator's user profile instead of launching the live stream broadcast.
@@ -331,12 +330,6 @@ The **`Disable Feed Long-Press Actions`** patch neutralizes long-press gesture d
 - Hooks `FeedAvatarLiveAssem.ur()Z` -> returns `false`.
 - Stubs `FeedAvatarLiveAssem.Ar(ZZ)V` and `FeedAvatarLiveAssem.onBind(Object)V` with `return-void` to eliminate live streaming UI bindings and animations.
 - Preserves `FeedAvatarDefaultAssem`'s default avatar click handler (`LX/0BIx`), routing taps directly to `//user/profile`.
-
-### 11. Disable Story Feed Indicators (`disableStoryFeedIndicatorsPatch`)
-- Removes creator profile photo story rings from feed videos, ensuring avatar photos remain permanently clean without blue story rings while preserving the top story indicator pill.
-- **User Story Status Neutralization**: Hooks `User.getStoryStatus()I` -> returns `0`, preventing feed wrappers from detecting active author stories.
-- **Feed Avatar Story Ring & Click Neutralization**: Stubs `FeedAvatarSocialPublishAssem.onViewCreated(View)V`, `FeedAvatarSocialPublishAssem.onBind(Object)V`, and `FeedAvatarSocialPublishAssem.tr(VideoItemParams)V` with `return-void` to prevent inflating/animating the cyan story ring and remove the `CLICK_TAG_FEED_AVATAR_SOCIAL` click interceptor, keeping the avatar clean and routing taps strictly to the creator profile.
-- **Social Publish Distributor**: Hooks `SocPubDistributeServiceImpl.LJII(User)Z` -> returns `false`.
 
 ### 13. Force Auto-Scroll (`forceAutoScrollPatch`)
 - Forces the activation of TikTok's native video auto-scroll experiment flag for accounts and regions where it is withheld by server-side A/B testing experiments.

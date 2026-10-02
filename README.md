@@ -100,7 +100,7 @@
 </details>
 
 <details>
-<summary>TikTok&nbsp;&nbsp;•&nbsp;&nbsp;<b>54 patches</b></summary>
+<summary>TikTok&nbsp;&nbsp;•&nbsp;&nbsp;<b>53 patches</b></summary>
 <br>
 
 **Supported versions:**
@@ -129,11 +129,11 @@
 | **Disable Push Notifications** | Neutralizes background push notification tasks and persistent socket wake locks to eliminate background battery drain. |  |
 | **Disable Search History Recording** | Prevents search queries and keywords from being recorded in local history, databases, and analytics stores. |  |
 | **Disable Search Video Autoplay** | Disables automatic video playback in search results. Videos only play when tapped to view in detail. |  |
-| **Disable Story Feed Indicators** | Removes creator profile photo story rings from feed videos, ensuring avatar photos remain clean without blue story rings. |  |
 | **Disable Watch History Recording** | Prevents viewed videos from being recorded in account watch history, playback duration stores, and local history caches. |  |
 | **Display Refresh Rate Governor** | Forces TikTok to run at peak display refresh rate (120Hz/90Hz/60Hz) and neutralizes video playback framerate downclocking routines. | • Target Refresh Rate |
 | **Feed Ad Blocker** | Removes sponsored advertisements, brand promotions, and promotional audio from the For You, Following, and Search feeds. |  |
 | **Feed Bloat & Distraction Blocker** | Removes non-video clutter and floating ad widgets from the For You, Following, and Friends feeds, including Touchpoint Rewards pendants, floating ad stickers, suggested friend cards, mini-games, CapCut/template creation prompts, memories ('On This Day'), surveys, mini-drama paywalls, and in-feed search recommendations/interest cards. |  |
+| **Feed Interface Declutter** | Customizes and cleans feed video overlay elements, including the repost pill, video descriptions, profile photo follow badges, and story rings. | • Hide Repost Badge<br>• Hide Video Descriptions<br>• Hide Profile Photo Follow Button<br>• Disable Story Feed Indicators |
 | **Feed Live Stream Blocker** | Removes live stream broadcast cards and live recommendations from the For You and Following feeds. |  |
 | **Fix Google Login** | Restores Google account sign-in after patching by forcing fallback to Web-based OAuth when Google Play Services rejects the modified APK signature. |  |
 | **Force Auto-Scroll** | Forces the activation of the native video auto-scroll experiment flag for accounts and regions that lack it due to A/B testing. |  |
@@ -141,7 +141,6 @@
 | **Hide Inbox Promos & Alerts** | Hides promotional banners, streak mascot cards, contact sync suggestions, friend recommendations, and migration guide tooltips in the inbox and direct messages. | • Hide Top Promotional Banners<br>• Hide Contact & Friend Recommendations<br>• Hide Navigation Notices & Tooltips |
 | **Hide Inbox Story & Status Tray** | Hides the horizontal story, notes, and status tray (Skylight) displayed at the top of direct messages and the inbox. |  |
 | **Hide Popular Lives In Search** | Removes the Popular LIVEs recommendation card and live stream broadcasts from the search discovery page. |  |
-| **Hide Profile Photo Follow Button** | Hides the plus (+) follow badge on creator profile avatars in the feed and disables its touch interaction. |  |
 | **Hide Seen Videos** | Filters previously watched videos from incoming For You feed batches. |  |
 | **Hide Suggested Searches** | Removes the suggested search keywords section ('You may like' / 'Search suggestions') from the search discovery page. |  |
 | **Hide TikTok Shop & Mall** | Removes product showcase badges, shopping cart tags, and the TikTok Shop / Mall tab from navigation bars and video posts. | • Hide Shop Navigation Tab<br>• Hide Video Product Anchors |
