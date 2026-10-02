@@ -19,6 +19,7 @@ Comprehensive reference for universal optimization and resource slimming patches
 | **[Universal WebP Asset Optimizer](#9-universal-webp-asset-optimizer-universalwebpoptimizerpatch)** | `rawResourcePatch` | WebP Assets (`res/**`, `assets/**`) | Lossless chunk stripping (`EXIF`, `XMP`, `ICCP`) + VP8X header recalculation | **~0.5–5 MB** saved, 0% visual degradation |
 | **[Background Sync & JobScheduler Purge](#10-background-sync--jobscheduler-purge-backgroundsyncpurgepatch)** | `resourcePatch` | Manifest (`AndroidManifest.xml`) | Strips boot permissions and disables boot receivers & WorkManager schedulers | Eliminates background wakeups, radio alarms, and standby battery drain |
 | **[Universal Privacy Permissions Stripper](#11-universal-privacy-permissions-stripper-universalprivacypermissionspatch)** | `resourcePatch` | Manifest (`AndroidManifest.xml`) | Selectively revokes sensitive hardware, privacy, and sensor permissions | Eliminates OS permission grants and runtime capability access |
+| **[Universal Screenshot Protection Bypass](#12-universal-screenshot-protection-bypass-universalscreenshotprotectionbypasspatch)** | `bytecodePatch` | Dalvik Bytecode & Manifest | Neutralizes `FLAG_SECURE`, unlocks audio playback capture, and suppresses Android 14+ screenshot detection | Allows screenshots, screen recordings, and internal audio capture across protected views |
 
 ---
 
@@ -48,6 +49,7 @@ Applying both universal and app-specific patches simultaneously to the same targ
 | **Locale Resource Slimmer** | ✅ Yes | Prunes unselected translation folders from `res/values-*`. |
 | **Background Sync & JobScheduler Purge** | ⚠️ Safe by Default | Keep `stripWakeLock = false` (default) on web browsers (Brave) to prevent suspending background file downloads when the screen turns off. |
 | **Universal Privacy Permissions Stripper** | ⚠️ Safe by Default | All toggles are opt-in (default: `false`). Revoke only permissions you wish to strip for your target application to prevent runtime `SecurityException` crashes in apps that lack error handling. |
+| **Universal Screenshot Protection Bypass** | ✅ Yes | Safely neutralizes `FLAG_SECURE` bitwise and silences screenshot/screen recording callbacks across any application. |
 | **Universal Offline Mode** | ⚠️ Contextual | **Never apply to web browsers (Brave) or streaming media apps (TikTok)**, as it halts socket creation at the OS kernel level (`AID_INET`). For Gboard Lite and Xiaomi Earbuds, pair with their companion app-specific offline patches for graceful timeout handling. |
 
 ---
@@ -363,5 +365,27 @@ The **`Universal Privacy Permissions Stripper`** patch selectively strips sensit
 - **Strip Nearby Devices Permissions (`stripNearbyDevices`)**: Removes Bluetooth scan/connect/advertise and nearby Wi-Fi device permissions from `AndroidManifest.xml` (Toggle, default: `false`).
 - **Strip Body Sensors Permissions (`stripSensors`)**: Removes `BODY_SENSORS`, `BODY_SENSORS_BACKGROUND`, and `ACTIVITY_RECOGNITION` from `AndroidManifest.xml` (Toggle, default: `false`).
 
+---
 
+## 12. Universal Screenshot Protection Bypass (`universalScreenshotProtectionBypassPatch`)
 
+The **`Universal Screenshot Protection Bypass`** patch neutralizes `WindowManager.LayoutParams.FLAG_SECURE` (`0x2000`) across all windows, layout parameters, and `SurfaceView` instances, unlocks internal audio playback capture for screen recording on Android 10+, and suppresses native Android 14+ screenshot and screen recording detection callbacks.
+
+### 🛡️ Low-Level Bytecode & Manifest Enforcement
+
+1. **Bitwise Flag Masking**: For any call to `Window.addFlags(flags)`, `Window.setFlags(flags, mask)`, or direct write to `WindowManager.LayoutParams.flags`, the patch injects in-place bitwise masking (`and-int/lit16 vReg, vReg, -0x2001`) immediately prior to execution. The mask `-0x2001` (`0xffffdfff`) deterministically clears bit 13 (`0x2000` / `FLAG_SECURE`) while keeping all other layout flags (`FLAG_FULLSCREEN`, `FLAG_KEEP_SCREEN_ON`, etc.) intact without modifying register allocations.
+2. **SurfaceView Unrestricting**: Invocations to `SurfaceView.setSecure(boolean)` (used by DRM players and protected views) are forced to `isSecure = false` (`const/4 vReg, 0x0`).
+3. **Audio Playback Capture Unlocking**:
+   - Injects `android:allowAudioPlaybackCapture="true"` into `<application>` in `AndroidManifest.xml` (Android 10 / API 29+).
+   - Incepts calls to `AudioAttributes.Builder.setAllowedCapturePolicy(int)` and `AudioManager.setAllowedCapturePolicy(int)` to force `AudioAttributes.ALLOW_CAPTURE_BY_ALL` (`0x1`), allowing screen recorders to record crisp internal audio.
+4. **Android 14+ Detection Suppression**: Invocations to `Activity.registerScreenCaptureCallback(...)`, `Activity.unregisterScreenCaptureCallback(...)` (Android 14 / API 34), and `WindowManager.removeScreenRecordingCallback(...)` (Android 15 / API 35) are replaced with `nop`. Calls to `WindowManager.addScreenRecordingCallback(...)` are intercepted to immediately return `SCREEN_RECORDING_STATE_NOT_RECORDING` (`0`), preventing apps from detecting screen captures or recording sessions.
+5. **Recents Preview Protection**: Enforces `Activity.setRecentsScreenshotEnabled(true)` to prevent apps from obscuring previews in the system app switcher.
+
+### 🛡️ Plug & Play Operation
+
+The patch operates without any manual configuration or boolean options. When enabled, it automatically executes the complete bypass pipeline across all bytecode and manifest components:
+- Clears `FLAG_SECURE` (`0x2000`) on `Window.setFlags`, `Window.addFlags`, and `WindowManager.LayoutParams.flags`.
+- Forces `SurfaceView.setSecure(false)` on secure surfaces.
+- Unlocks internal audio playback capture in `AndroidManifest.xml` and Dalvik audio policies (`ALLOW_CAPTURE_BY_ALL`).
+- Silences `Activity.registerScreenCaptureCallback` / `unregisterScreenCaptureCallback` (Android 14) and `WindowManager.addScreenRecordingCallback` (Android 15).
+- Forces `Activity.setRecentsScreenshotEnabled(true)` to preserve app switcher visibility.
