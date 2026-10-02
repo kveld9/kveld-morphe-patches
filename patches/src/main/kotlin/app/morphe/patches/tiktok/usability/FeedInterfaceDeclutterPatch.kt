@@ -17,7 +17,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 
 val feedInterfaceDeclutterPatch = bytecodePatch(
     name = "Feed Interface Declutter",
-    description = "Customizes and cleans feed video overlay elements, including the repost pill, video descriptions, profile photo follow badges, story rings, and playlist bottom bars.",
+    description = "Customizes and cleans feed video overlay elements, including the repost pill, video descriptions, profile photo follow badges, story rings, playlist bottom bars, and save buttons.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -63,12 +63,21 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
         required = false,
     )
 
+    val hideSaveButton by booleanOption(
+        key = "hideSaveButton",
+        default = false,
+        title = "Hide Save Button",
+        description = "Hides the bookmark/favorite save button on the right-side action rail of feed videos.",
+        required = false,
+    )
+
     execute {
         if (hideRepostBadge != true &&
             hideVideoDescriptions != true &&
             hideAvatarFollowButton != true &&
             disableStoryRings != true &&
-            hidePlaylistBar != true
+            hidePlaylistBar != true &&
+            hideSaveButton != true
         ) {
             println("[Feed Interface Declutter] Skipped: All declutter options are disabled.")
             return@execute
@@ -424,6 +433,42 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
                 returnType = "Lcom/ss/android/ugc/aweme/feed/model/PlayListInfo;",
             ).method.replaceWithReturnNull()
             println("[Feed Interface Declutter] Hooked Aweme.getPlaylist_info() -> return null.")
+            patched++
+        }
+
+        // 6. Hide Save Button (Favorite/Bookmark)
+        if (hideSaveButton == true) {
+            val favClass = "Lcom/ss/android/ugc/aweme/feed/favorite/VideoFavoriteAssem;"
+
+            val favOnViewCreated = Fingerprint(
+                definingClass = favClass,
+                name = "onViewCreated",
+                returnType = "V",
+                parameters = listOf("Landroid/view/View;"),
+            ).method
+            favOnViewCreated.clearTryBlocks()
+            favOnViewCreated.ensureRegisterCount(2)
+            val count = favOnViewCreated.implementation!!.instructions.count()
+            favOnViewCreated.removeInstructions(0, count)
+            favOnViewCreated.addInstructions(
+                0,
+                """
+                    invoke-super {p0, p1}, Lcom/ss/android/ugc/feed/platform/cell/BaseCellSlotComponent;->onViewCreated(Landroid/view/View;)V
+                    const/16 v0, 0x8
+                    invoke-virtual {p1, v0}, Landroid/view/View;->setVisibility(I)V
+                    return-void
+                """.trimIndent(),
+            )
+            println("[Feed Interface Declutter] Hooked VideoFavoriteAssem.onViewCreated() -> setVisibility(GONE).")
+            patched++
+
+            Fingerprint(
+                definingClass = favClass,
+                name = "z4",
+                returnType = "V",
+                parameters = listOf("Ljava/lang/Object;"),
+            ).method.replaceWithReturnVoid()
+            println("[Feed Interface Declutter] Hooked VideoFavoriteAssem.z4() -> return-void.")
             patched++
         }
 
