@@ -9,6 +9,7 @@ import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.replaceWithReturnBoolean
 import app.morphe.patches.shared.replaceWithReturnNull
 import app.morphe.patches.shared.replaceWithReturnVoid
+import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
@@ -382,16 +383,22 @@ val feedNavigationDeclutterPatch = bytecodePatch(
                 name = "LIZ",
                 returnType = "Landroid/view/View;",
             ).method.apply {
-                val viewReg = getInstruction<OneRegisterInstruction>(1).registerA
-                addInstructions(
-                    2,
-                    """
-                    const/16 v0, 0x8
-                    invoke-virtual {v$viewReg, v0}, Landroid/view/View;->setVisibility(I)V
-                    """,
-                )
+                val moveResultIdx = implementation?.instructions?.indexOfFirst {
+                    it.opcode == Opcode.MOVE_RESULT_OBJECT
+                } ?: -1
+                if (moveResultIdx != -1) {
+                    val viewReg = (getInstruction<OneRegisterInstruction>(moveResultIdx)).registerA
+                    val constReg = if (viewReg == 0) 1 else 0
+                    addInstructions(
+                        moveResultIdx + 1,
+                        """
+                        const/16 v$constReg, 0x8
+                        invoke-virtual {v$viewReg, v$constReg}, Landroid/view/View;->setVisibility(I)V
+                        """,
+                    )
+                    patched++
+                }
             }
-            patched++
 
             println("[Navigation & Header Declutter] Bottom publish (+) button eliminated.")
         }
