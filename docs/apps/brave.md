@@ -37,6 +37,7 @@ Comprehensive technical and configuration guide for **Brave Browser** (`com.brav
 | **Native Bloat Slimmer** | `rawResourcePatch` | Storage Reclamation | ✅ Yes | Strips 6 unused native companion binaries (Impress Vision AI, WireGuard VPN, and Android XR / ARCore) to reclaim **~22.35 MB** of APK space. |
 | **Locale PAK Slimmer** | `rawResourcePatch` | Storage Reclamation | ✅ Yes | Strips unselected language PAKs from `assets/locales/` (~9.64 MB saved) using zero-crash binary fallback substitution. |
 | **Sensor Privacy Guard** | `bytecodePatch` | Privacy & Anti-Fingerprinting | ✅ Yes | Forces `PlatformSensorProvider.hasSensorType -> false` and `PlatformSensor.create -> null`. Neutralizes W3C Generic Sensor APIs. |
+| **Disable Tab Auto-Minimization** | `bytecodePatch` | Debloat & UX | ✅ Yes | Forces `ChromeTabbedActivity.k6 ()Z -> false`, preventing Brave from minimizing active tabs to the background and opening a New Tab Page on resume. |
 | **Skip First Run** | `bytecodePatch` | Usability & UX | ✅ Yes | Skips the welcome screen, search engine selection, and onboarding First Run Experience (FRE) on clean installs. |
 | **Universal Patches Suite** | Multiple | Optimization & Privacy | Contextual | Compatible with universal slimmers and privacy patches (Telemetry Neutralizer, Native Binary Trimmer, WebP/PNG Optimizers, DPI/Locale Slimmers). See [Universal Patch Reference](../universal-patches.md). |
 
@@ -136,6 +137,13 @@ Comprehensive technical and configuration guide for **Brave Browser** (`com.brav
 - **Objective**: Bypass the first-run experience wizard, search engine selector, and onboarding prompts on fresh installations.
 - **Mechanisms**:
   - Forces completion in `Lem7` and bypasses onboarding sequencer in `Lam7`.
+
+### 14. Disable Tab Auto-Minimization (`braveDisableTabMinimizationPatch`)
+- **Objective**: Prevent Brave from automatically minimizing open tabs to the background and opening a New Tab Page when returning to the browser after inactivity or backgrounding.
+- **Mechanisms**:
+  - Stubs `ChromeTabbedActivity.k6 ()Z` with `const/4 v0, 0x0; return v0`.
+  - Bypasses opening screen checks, inactivity timer evaluations, and session-end triggers.
+  - Ensures the user's active foreground tab remains immediately active and displayed whenever the browser is launched or resumed.
 
 ---
 
