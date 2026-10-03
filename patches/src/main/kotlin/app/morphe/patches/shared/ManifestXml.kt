@@ -1,0 +1,89 @@
+package app.morphe.patches.shared
+
+import org.w3c.dom.Element
+import org.w3c.dom.Node
+
+/**
+ * Shared DOM ([org.w3c.dom.Element]) helpers for editing AndroidManifest.xml from
+ * resource patches without boilerplate NodeList iteration.
+ */
+
+internal fun Element.childrenNamed(name: String): List<Element> {
+    val nodes = childNodes
+    return buildList {
+        for (i in 0 until nodes.length) {
+            val node = nodes.item(i)
+            if (node is Element && node.nodeName == name) add(node)
+        }
+    }
+}
+
+internal fun Element.childrenNamed(vararg names: String): List<Element> {
+    val acceptedNames = names.toSet()
+    val nodes = childNodes
+    return buildList {
+        for (i in 0 until nodes.length) {
+            val node = nodes.item(i)
+            if (node is Element && node.nodeName in acceptedNames) add(node)
+        }
+    }
+}
+
+internal fun Element.removeChildren(nodes: List<Node>) {
+    nodes.forEach(::removeChild)
+}
+
+internal fun Element.getOrCreateApplicationMetaData(name: String): Element {
+    childrenNamed("meta-data")
+        .firstOrNull { it.getAttribute("android:name") == name }
+        ?.let { return it }
+
+    val metaData = ownerDocument.createElement("meta-data")
+    metaData.setAttribute("android:name", name)
+    appendChild(metaData)
+    return metaData
+}
+
+internal fun Element.setApplicationMetaData(name: String, value: String) {
+    getOrCreateApplicationMetaData(name).setAttribute("android:value", value)
+}
+
+internal fun Element.disableComponentsWhere(predicate: (String) -> Boolean): Int {
+    var disabled = 0
+
+    childrenNamed("activity", "provider", "service", "receiver")
+        .filter { component -> predicate(component.getAttribute("android:name")) }
+        .forEach { component ->
+            component.setAttribute("android:enabled", "false")
+            component.setAttribute("android:exported", "false")
+            disabled++
+        }
+
+    return disabled
+}
+
+internal fun Element.disableComponentsByName(vararg names: String): Int {
+    val namesSet = names.toSet()
+    return disableComponentsWhere { it in namesSet }
+}
+
+internal fun Element.disableComponentsByPrefix(vararg prefixes: String): Int =
+    disableComponentsWhere { name -> prefixes.any { prefix -> name.startsWith(prefix) } }
+
+internal fun Element.removeComponentDiscoveryRegistrarsWhere(predicate: (String) -> Boolean): Int {
+    var removed = 0
+
+    childrenNamed("service")
+        .filter { it.getAttribute("android:name") == "com.google.firebase.components.ComponentDiscoveryService" }
+        .forEach { discoveryService ->
+            val matches = discoveryService.childrenNamed("meta-data")
+                .filter { metaData ->
+                    val name = metaData.getAttribute("android:name")
+                    name.startsWith("com.google.firebase.components:") && predicate(name)
+                }
+            discoveryService.removeChildren(matches)
+            removed += matches.size
+        }
+
+    return removed
+}
