@@ -49,7 +49,7 @@ If you perform a clean install of Gboard Lite with background sync debloat patch
 | Patch Name | Type | Category | Default | Primary Mechanism |
 | :--- | :--- | :--- | :---: | :--- |
 | **AAPT Resource Workaround** | `resourcePatch` | Stability & Tooling | ✅ Yes | Removes unsupported Android 15 DP2+ attributes (`android:supportsConnectionlessStylusHandwriting`) from input method XML resources to prevent AAPT linking failures. |
-| **Gboard Enhancements** | `resourcePatch` + `bytecodePatch` | Customization & Suite | ✅ Yes | Master customization suite bundling in-app toggleable features (Pure AMOLED Theme, Zero Bottom Inset, Force Incognito, Clipboard Enhancements, Toolbar Item Count, Feature Flags, Onboarding status, and Core Integrity) managed directly from *Ajustes > Morphe Patches*. |
+| **Gboard Enhancements** | `resourcePatch` + `bytecodePatch` | Customization & Suite | ✅ Yes | Master customization suite bundling in-app toggleable features (Pure AMOLED Theme, Zero Bottom Inset, Independent Keyboard Vibration, Force Incognito, Clipboard Enhancements, Toolbar Item Count, Feature Flags, Onboarding status, and Core Integrity) managed directly from *Ajustes > Morphe Patches*. |
 | **Block Telemetry** | `bytecodePatch` | Privacy & Security | ✅ Yes | Disables background metrics dispatch, event logging, daily pings, Google Primes profiling, crash reporting, AppDoctor diagnostics, and Tenor share tracking. |
 | **Clone Gboard** | `bytecodePatch` + `resourcePatch` | Utility & Modding | ✅ Yes | Appends a custom suffix to the package name to allow installing Gboard alongside the original application. |
 | **Disable Background Sync** | `bytecodePatch` | Battery & Debloat | ❌ No | Neutralizes AndroidX WorkManager schedulers, MDD (Mobile Data Download) periodic sync, and Superpacks eager asset synchronization (opt-in to preserve initial dictionary downloads). |
@@ -58,6 +58,7 @@ If you perform a clean install of Gboard Lite with background sync debloat patch
 | **Offline Only** | `bytecodePatch` + `resourcePatch` | Privacy & Security | ❌ No | Completely isolates Gboard from network access by purging manifest permissions, disabling foreground sync services, neutralizing HTTP clients (Cronet, OkHttp, Superpacks), and spoofing offline status. |
 | **Resource Slimmer** | `bytecodePatch` | Optimization | ✅ Yes | Strips embedded third-party license text, onboarding tutorial Lottie animations, promotional GIFs, and APK root metadata/junk files. |
 | **Strip Permissions** | `resourcePatch` | Privacy & Security | ❌ No | Selectively revokes sensitive hardware, privacy, and system permissions from AndroidManifest.xml. |
+| **Voice Typing in Incognito** | `bytecodePatch` | Privacy & Voice | ✅ Yes | Enables voice typing and speech dictation even when Gboard is operating in incognito mode. |
 | **Universal Slimmers** | `resourcePatch` + `rawResourcePatch` | Optimization | ✅ Yes | `Locale Resource Slimmer`, `DPI Resource Slimmer`, `PNG Asset Optimizer`, and `APK Junk Cleaner`. |
 
 ---
@@ -91,11 +92,14 @@ The **`Gboard Enhancements`** patch injects a top-level **Morphe Patches** categ
 - **Clipboard Grid Layout**: Enables multi-column layout for clipboard clips.
 - **Clipboard Grid Columns**: Live slider (1, 2, or 3 columns, default: `2`) controlling clipboard grid columns across phones, foldables, and tablets.
 
-### 5. Smart Features & Voice
+### 5. Haptics & Vibration
+- **Independent Keyboard Vibration**: Decouples Gboard keypress vibration from Android's system-wide Touch feedback and gesture navigation haptics setting. When enabled (default: on), Gboard maintains its own vibration response even if system-wide touch feedback is disabled in Android settings, preventing unwanted gesture haptics elsewhere in the OS.
+
+### 6. Smart Features & Voice
 - **Grammar Checker & Smart Compose**: Unlocks inline grammar review and Smart Compose predictions under *Correcciones y sugerencias*.
 - **Bluetooth Microphone**: Unlocks Bluetooth microphone audio input for voice typing under *Dictado por voz*.
 
-### 6. Privacy & Security
+### 7. Privacy & Security
 - **Force Incognito Mode**: Always operates in incognito mode (disables personalized learning and persistent input logging) while preserving clipboard functionality.
 - **Hide Incognito Icon**: Hides the incognito mask icon on the top toolbar when Force Incognito is active.
 
