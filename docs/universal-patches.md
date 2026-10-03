@@ -158,11 +158,15 @@ The **`DPI Resource Slimmer`** patch strips unselected screen density asset dire
 
 ### Configuration in Morphe Manager
 
-Specify a comma-separated list of densities to retain:
-- **Default value**: `xxhdpi` (corresponds to standard 1080p displays, ~480 dpi, the most common modern smartphone resolution).
-- **Single density (maximum space savings)**: e.g. `xxhdpi` for 1080p devices, or `xxxhdpi` for 1440p / 2K devices.
-- **Multiple densities (broad device compatibility)**: e.g. `xhdpi, xxhdpi`.
-- **Friendly aliases**: Resolution aliases such as `1080p` (`xxhdpi`), `720p` (`xhdpi`), or `1440p` / `2k` (`xxxhdpi`) are supported.
+- **`DPI densities to keep` (`dpis`)**: Specify a comma-separated list of densities to retain:
+  - **Default value**: `xxhdpi` (corresponds to standard 1080p displays, ~480 dpi, the most common modern smartphone resolution).
+  - **Single density (maximum space savings)**: e.g. `xxhdpi` for 1080p devices, or `xxxhdpi` for 1440p / 2K devices.
+  - **Multiple densities (broad device compatibility)**: e.g. `xhdpi, xxhdpi`.
+  - **Friendly aliases**: Resolution aliases such as `1080p` (`xxhdpi`), `720p` (`xhdpi`), or `1440p` / `2k` (`xxxhdpi`) are supported.
+- **`Remove smartwatch (Wear OS) resources` (`stripSmartwatch`)**: Boolean toggle (`false` by default). Safely purges non-values resources qualified for Wear OS smartwatches (`watch`).
+- **`Remove Android TV resources` (`stripTelevision`)**: Boolean toggle (`false` by default). Safely purges non-values resources qualified for Android TV / Leanback (`television`).
+- **`Remove automotive, dock, and VR resources` (`stripOtherFormFactors`)**: Boolean toggle (`false` by default). Safely purges non-values resources qualified for car head units, desk docks, appliances, or VR headsets (`car`, `desk`, `appliance`, `vrheadset`).
+- **Multi-Package ARSC Traversal**: Scans across all decoded package resource directories (`resources/<package>/res`) to deduplicate densities and purge device bloat across primary and modularized packages.
 
 ### Screen Density Reference Guide
 
