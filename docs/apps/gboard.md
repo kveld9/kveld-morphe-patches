@@ -48,6 +48,7 @@ If you perform a clean install of Gboard Lite with background sync debloat patch
 
 | Patch Name | Type | Category | Default | Primary Mechanism |
 | :--- | :--- | :--- | :---: | :--- |
+| **AAPT Resource Workaround** | `resourcePatch` | Stability & Tooling | ✅ Yes | Removes unsupported Android 15 DP2+ attributes (`android:supportsConnectionlessStylusHandwriting`) from input method XML resources to prevent AAPT linking failures. |
 | **Gboard Enhancements** | `resourcePatch` + `bytecodePatch` | Customization & Suite | ✅ Yes | Master customization suite bundling in-app toggleable features (Pure AMOLED Theme, Zero Bottom Inset, Force Incognito, Clipboard Enhancements, Toolbar Item Count, Feature Flags, Onboarding status, and Core Integrity) managed directly from *Ajustes > Morphe Patches*. |
 | **Block Telemetry** | `bytecodePatch` | Privacy & Security | ✅ Yes | Disables background metrics dispatch, event logging, daily pings, Google Primes profiling, crash reporting, AppDoctor diagnostics, and Tenor share tracking. |
 | **Clone Gboard** | `bytecodePatch` + `resourcePatch` | Utility & Modding | ✅ Yes | Appends a custom suffix to the package name to allow installing Gboard alongside the original application. |

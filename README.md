@@ -71,7 +71,7 @@
 </details>
 
 <details>
-<summary>Gboard Lite&nbsp;&nbsp;•&nbsp;&nbsp;<b>9 patches</b></summary>
+<summary>Gboard Lite&nbsp;&nbsp;•&nbsp;&nbsp;<b>10 patches</b></summary>
 <br>
 
 **Supported versions:**
@@ -81,6 +81,7 @@
 
 | Patch | Description | Options |
 |----------|----------------|-----------|
+| **AAPT Resource Workaround** | Removes unsupported Android 15 DP2+ attributes (android:supportsConnectionlessStylusHandwriting) from input method XML resources to prevent AAPT linking failures. |  |
 | **Block Telemetry** | Disables background metrics dispatch, event logging, daily pings, Google Primes profiling, crash reporting, AppDoctor diagnostics, and Tenor share tracking. |  |
 | **Clone Gboard** | Changes the package name by appending a dot and custom suffix (defaults to 'clone') to allow installing Gboard alongside the original application. | • Package name suffix |
 | **Disable Background Sync** | Neutralizes AndroidX WorkManager schedulers, MDD (Mobile Data Download) periodic sync, and Superpacks eager asset synchronization (opt-in to preserve initial dictionary downloads). |  |

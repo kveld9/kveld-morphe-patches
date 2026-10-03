@@ -19,6 +19,8 @@ val gboardCoreIntegrityPatch = bytecodePatch(
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
     extendWith("extensions/extension.mpe")
 
+    dependsOn(gboardAaptWorkaroundPatch)
+
     execute {
         patchSignatureBypass()
         patchLauncherTrampoline()
