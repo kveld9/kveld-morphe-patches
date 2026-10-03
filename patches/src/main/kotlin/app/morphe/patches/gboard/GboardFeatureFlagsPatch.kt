@@ -95,24 +95,29 @@ val gboardFeatureFlagsPatch = bytecodePatch(
             patched++
         }
 
-        // 2. Key Shape Selection UI (checked dynamically via Morphe Patches preference)
+        // 2. Key Shape Selection UI (more_pill_keys Phenotype flag -> dynamic Morphe preference)
         if (enableKeyShapeSelection == true) {
             val fp = Fingerprint(
-                definingClass = "Lxsj;",
-                name = "i",
-                parameters = listOf("Landroid/content/Context;"),
-                returnType = "Z",
+                name = "<clinit>",
+                returnType = "V",
+                filters = listOf(string("more_pill_keys")),
             )
+            val matchIndex = fp.instructionMatches.first().index
+            val nextInsn = fp.method.getInstruction<Instruction>(matchIndex + 1)
+            val reg = when (nextInsn) {
+                is FiveRegisterInstruction -> nextInsn.registerD
+                is OneRegisterInstruction -> nextInsn.registerA
+                else -> 2
+            }
             fp.method.addInstructions(
-                0,
+                matchIndex + 1,
                 """
                     invoke-static {}, ${Constants.GBOARD_EXTENSION_CLASS}->isKeyShapeSelectionEnabled()Z
-                    move-result v0
-                    return v0
+                    move-result v$reg
                 """.trimIndent(),
             )
             val targetClass = LocaleUtils.cleanClassName(fp.originalClassDef.type)
-            println("[Feature Flags] Key Shape Selection: Hooked $targetClass.i() to check Morphe Patches preference.")
+            println("[Feature Flags] Key Shape Selection: Injected dynamic flag hook for more_pill_keys into $targetClass.<clinit>() at opcode index ${matchIndex + 1}")
             patched++
         }
 
