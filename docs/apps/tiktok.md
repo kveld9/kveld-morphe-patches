@@ -413,4 +413,8 @@ The **`Disable Feed Long-Press Actions`** patch neutralizes long-press gesture d
   - `disableShareQuickDms` (default: `true`): Prevents holding the Share button from launching the quick-share recent contacts tray. Overrides the `im_long_press_share_button_to_quick_share` configuration lambda to return `0` (`Integer.valueOf(0)`) and neutralizes the `ShareUnreadVideoQuickDMTrigger` eligibility check -> returns `false`. Single tap to open the full share sheet remains fully functional.
   - `disableCommentReactions` (default: `true`): Prevents long-pressing the Comment button from opening the quick emoji reaction picker. Overrides the `long_press_quick_comment` configuration lambda to return `0` (`Integer.valueOf(0)`), causing `VideoCommentAssem.Kr()` and `Lr()` to attach only the native single-tap `OnClickListener` without long-press touch listeners. Single tap to open comments remains fully functional.
 
+### 28. Enable Profile Banner (`profileBannerPatch`)
+- Unlocks the custom profile banner (background header cover) feature on user profiles and enables the banner selection, cropping, and editing tools in Edit Profile.
+- **ProfileBackgroundExp Gate Activation**: Hooks the main feature evaluation gate in `ProfileBackgroundExp` (`(Z)Z`) -> returns `true`, allowing `MusProfileEditFragment` to attach `ProfileBgEditHelper` (`LX/0axG`) and `ProfileRootBaseComponent` to assemble the `ProfileBackgroundComponent`.
+
 
