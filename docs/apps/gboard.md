@@ -204,14 +204,13 @@ The **`Feature Flags`** patch unlocks hidden Google feature flags and experiment
 | **Cursor Trackpad** | `enableCursorTrackpad` | Boolean | `false` | Enables 2D trackpad cursor navigation and cursor lock mode by holding the spacebar (experimental). |
 | **Grammar Checker & Smart Compose** | `enableGrammarChecker` | Boolean | `true` | Unlocks Grammar check and Smart Compose / inline suggestions under Text correction preferences. |
 | **Dismiss Suggestions Button** | `enableDismissSuggestionsButton` | Boolean | `true` | Adds a close button (X) to dismiss proactive suggestions on the suggestion bar. |
-| **Emoji Scale Setting** | `enableEmojiScale` | Boolean | `true` | Unlocks the emoji size scaling setting in Gboard appearance preferences. |
 | **Bluetooth Microphone** | `enableBluetoothMicrophone` | Boolean | `true` | Unlocks the 'Use Bluetooth microphone' setting under Voice typing preferences. |
 
 ### Technical Architecture & Unlocks:
 1. **Cursor Trackpad Mode** (Disabled by default): Long-pressing and swiping across the spacebar enters full 2D cursor navigation mode (moving horizontally and vertically) with haptic feedback. Holding until locked enters sticky cursor mode. Disabled by default due to input connection flickering in web views (such as Firefox/GeckoView). Phenotype resilience is handled automatically via dependency on **Core Integrity**.
 2. **Bluetooth Microphone**: Unlocks the dedicated "Usar micrófono Bluetooth" (Use Bluetooth microphone) toggle under *Gboard Settings > Dictado por voz* (Voice typing).
 3. **Grammar Checker & Smart Compose**: Unlocks "Revisión gramatical" (Grammar check with blue squiggly underlines) and client-side inline smart suggestions under *Gboard Settings > Correcciones y sugerencias*.
-4. **Emoji Scale Setting**: Unlocks the "Tamaño de los emojis" (Emoji size) slider under *Gboard Settings > Preferencias > Apariencia*.
+4. **Emoji Scale Setting**: Unconditionally unlocks the "Tamaño de los emojis" (Emoji size) slider under *Gboard Settings > Preferencias > Apariencia*.
 5. **Dismiss Suggestions Button**: Renders a dedicated dismiss button (`X`) on the proactive suggestion bar, allowing quick hiding of proactive recommendations.
 6. **Key Shape Selection**: Forces `xsj.i()` to return true, unblocking the key shape border radius selector in custom themes.
 7. **Access Points Menu Redesign**: Forces `enable_access_points_menu_redesign` to true, activating Panel V2 toolbar customization.

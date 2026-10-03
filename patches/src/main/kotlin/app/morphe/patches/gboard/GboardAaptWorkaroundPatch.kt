@@ -5,7 +5,7 @@ import app.morphe.patches.shared.Constants
 import org.w3c.dom.Element
 import java.io.File
 
-private fun ByteArray.containsSequence(sequence: ByteArray): Boolean {
+internal fun ByteArray.containsSequence(sequence: ByteArray): Boolean {
     if (sequence.isEmpty() || size < sequence.size) return false
     val max = size - sequence.size
     for (i in 0..max) {

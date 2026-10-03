@@ -550,19 +550,3 @@ private fun createActionPreference(
     }
     return pref
 }
-
-private fun ByteArray.containsSequence(sequence: ByteArray): Boolean {
-    if (sequence.isEmpty() || this.size < sequence.size) return false
-    val max = this.size - sequence.size
-    for (i in 0..max) {
-        var match = true
-        for (j in sequence.indices) {
-            if (this[i + j] != sequence[j]) {
-                match = false
-                break
-            }
-        }
-        if (match) return true
-    }
-    return false
-}
