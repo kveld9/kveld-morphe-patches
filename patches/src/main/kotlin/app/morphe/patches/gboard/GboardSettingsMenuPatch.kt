@@ -88,12 +88,14 @@ val gboardSettingsMenuPatch = resourcePatch(
         gboardAmoledPatch,
         gboardZeroBottomInsetPatch,
         gboardForceIncognitoPatch,
+        gboardVoiceTypingIncognitoPatch,
         gboardClipboardEnhancementsPatch,
         gboardFeatureFlagsPatch,
         gboardTopToolbarItemCountPatch,
         gboardSeekBarEnhancementsPatch,
         gboardCoreIntegrityPatch,
         gboardDecoupleHapticsPatch,
+        gboardAaptWorkaroundPatch,
     )
 
     execute {
@@ -482,6 +484,15 @@ private fun populateMorpheSettingsScreen(doc: Document): Boolean {
             summary = "Hide the incognito mask icon on the toolbar",
             defaultValue = "false",
             dependency = Constants.GboardPrefs.KEY_FORCE_INCOGNITO,
+        )
+    )
+    privacyCategory.appendChild(
+        createSwitch(
+            doc = doc,
+            key = Constants.GboardPrefs.KEY_VOICE_INCOGNITO,
+            title = "Voice Typing in Incognito",
+            summary = "Enable voice typing and microphone dictation in private fields and incognito mode",
+            defaultValue = "true",
         )
     )
     root.appendChild(privacyCategory)

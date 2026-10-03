@@ -33,6 +33,7 @@ public class GboardExtension {
     public static final String PREF_KEY_BLUETOOTH_MIC = "morphe_bluetooth_mic";
     public static final String PREF_KEY_FORCE_INCOGNITO = "morphe_force_incognito";
     public static final String PREF_KEY_HIDE_INCOGNITO_ICON = "morphe_hide_incognito_icon";
+    public static final String PREF_KEY_VOICE_INCOGNITO = "morphe_voice_typing_incognito";
     public static final String PREF_KEY_DECOUPLE_TOUCH_FEEDBACK = "morphe_decouple_touch_feedback";
 
     public static final int MIN_BOTTOM_PADDING = 0;
@@ -58,6 +59,9 @@ public class GboardExtension {
     public static final int MIN_EMOJI_SCALE = 50;
     public static final int MAX_EMOJI_SCALE = 150;
     public static final int DEFAULT_EMOJI_SCALE = 100;
+
+    private static final int FLAG_IGNORE_GLOBAL_SETTING = 2; // HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING
+    private static final int FALLBACK_VIBRATION_DURATION_MS = 10;
 
     private static volatile Context appContext = null;
 
@@ -125,6 +129,7 @@ public class GboardExtension {
     private static volatile int cachedToolbarItemCount = 5;
     private static volatile int cachedEmojiScale = 100;
     private static volatile boolean cachedDecoupleHaptics = true;
+    private static volatile boolean listenersInitialized = false;
 
     private static void refreshHotPathCache() {
         cachedZeroInsetEnabled = getBooleanPref(PREF_KEY_ZERO_BOTTOM_INSET, true);
@@ -176,6 +181,7 @@ public class GboardExtension {
                 } catch (Throwable ignored) {}
             }
             refreshHotPathCache();
+            listenersInitialized = true;
         }
     }
 
@@ -312,7 +318,25 @@ public class GboardExtension {
         return isHideIncognitoIconEnabled(null);
     }
 
+    public static boolean isVoiceTypingIncognitoEnabled(Context context) {
+        return getBooleanPref(PREF_KEY_VOICE_INCOGNITO, true);
+    }
+
+    public static boolean isVoiceTypingIncognitoEnabled() {
+        return isVoiceTypingIncognitoEnabled(null);
+    }
+
+    public static boolean overrideVoiceTypingIncognito(boolean isIncognito) {
+        if (isVoiceTypingIncognitoEnabled()) {
+            return false;
+        }
+        return isIncognito;
+    }
+
     public static boolean isDecoupleTouchFeedbackEnabled(Context context) {
+        if (!listenersInitialized) {
+            ensureListeners();
+        }
         if (context != null && appContext == null) {
             getContext(context);
         }
@@ -320,6 +344,9 @@ public class GboardExtension {
     }
 
     public static boolean isDecoupleTouchFeedbackEnabled() {
+        if (!listenersInitialized) {
+            ensureListeners();
+        }
         return cachedDecoupleHaptics;
     }
 
@@ -349,7 +376,7 @@ public class GboardExtension {
         if (isDecoupleTouchFeedbackEnabled()) {
             boolean handled = false;
             try {
-                handled = view.performHapticFeedback(feedbackConstant, 2);
+                handled = view.performHapticFeedback(feedbackConstant, FLAG_IGNORE_GLOBAL_SETTING);
             } catch (Throwable ignored) {}
             if (handled) {
                 return true;
@@ -373,11 +400,11 @@ public class GboardExtension {
                             .addPrimitive(android.os.VibrationEffect.Composition.PRIMITIVE_CLICK, 1.0f)
                             .compose();
                 } else {
-                    effect = android.os.VibrationEffect.createOneShot(10, android.os.VibrationEffect.DEFAULT_AMPLITUDE);
+                    effect = android.os.VibrationEffect.createOneShot(FALLBACK_VIBRATION_DURATION_MS, android.os.VibrationEffect.DEFAULT_AMPLITUDE);
                 }
                 vibrator.vibrate(effect);
             } else {
-                vibrator.vibrate(10);
+                vibrator.vibrate(FALLBACK_VIBRATION_DURATION_MS);
             }
             return true;
         } catch (Throwable ignored) {

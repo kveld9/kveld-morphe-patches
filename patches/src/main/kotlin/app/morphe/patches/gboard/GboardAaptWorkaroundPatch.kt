@@ -22,8 +22,6 @@ internal fun ByteArray.containsSequence(sequence: ByteArray): Boolean {
 }
 
 val gboardAaptWorkaroundPatch = resourcePatch(
-    name = "AAPT Resource Workaround",
-    description = "Removes unsupported Android 15 DP2+ attributes (android:supportsConnectionlessStylusHandwriting) from input method XML resources to prevent AAPT linking failures.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_GBOARD)

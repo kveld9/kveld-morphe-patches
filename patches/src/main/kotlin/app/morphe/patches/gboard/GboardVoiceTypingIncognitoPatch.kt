@@ -11,11 +11,10 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
 val gboardVoiceTypingIncognitoPatch = bytecodePatch(
-    name = "Voice Typing in Incognito",
-    description = "Enables voice typing and speech dictation even when Gboard is operating in incognito mode.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
+    extendWith("extensions/extension.mpe")
 
     dependsOn(gboardCoreIntegrityPatch)
 
@@ -42,10 +41,13 @@ val gboardVoiceTypingIncognitoPatch = bytecodePatch(
             val reg = insn.registerA
             addInstructions(
                 match.index,
-                "const/4 v$reg, 0x0",
+                """
+                    invoke-static {v$reg}, ${Constants.GBOARD_EXTENSION_CLASS}->overrideVoiceTypingIncognito(Z)Z
+                    move-result v$reg
+                """.trimIndent(),
             )
             val targetClass = LocaleUtils.cleanClassName(fp.originalClassDef.type)
-            println("[Voice Typing in Incognito] Neutralized incognito check in $targetClass.${fp.method.name}() -> voice dictation enabled in incognito.")
+            println("[Voice Typing in Incognito] Hooked incognito check in $targetClass.${fp.method.name}() -> voice dictation controlled by preference.")
         }
     }
 }

@@ -13,6 +13,8 @@ import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.formats.Instruction35c
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
+private const val USAGE_TOUCH = 18
+
 val gboardDecoupleHapticsPatch = bytecodePatch(
     default = true,
 ) {
@@ -155,7 +157,7 @@ val gboardDecoupleHapticsPatch = bytecodePatch(
                 val usageIndices = impl.instructions.withIndex()
                     .filter { ins ->
                         (ins.value.opcode == Opcode.CONST_16 || ins.value.opcode == Opcode.CONST_4) &&
-                            (ins.value as? NarrowLiteralInstruction)?.narrowLiteral == 18
+                            (ins.value as? NarrowLiteralInstruction)?.narrowLiteral == USAGE_TOUCH
                     }
                     .map { it.index to (it.value as OneRegisterInstruction).registerA }
                     .toList()
