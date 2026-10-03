@@ -155,7 +155,7 @@ private val LIBCHROME_TRAP_HOOKS = listOf(
     // Constructor 2: Brave Promo banner & histogram static initialization calling atomic helpers via range extension thunks.
     // Neutralizing to RET bypasses the thunk pool (0x0a6a00f0 -> __aarch64_ldadd4_acq_rel), eliminating startup SIGILL.
     NativeTrapHook(
-        offset = 0x08ad47a0L,
+        offset = 0x08b54240L,
         expected = byteArrayOf(0x3f, 0x23, 0x03, 0xd5.toByte()),
         replacement = ARM64_RET,
         description = "Promo banner static initialization constructor",
@@ -163,7 +163,7 @@ private val LIBCHROME_TRAP_HOOKS = listOf(
     // Constructor 10: Brave wallet/rewards fee static initialization calling atomic helpers via range extension thunks.
     // Neutralizing to RET bypasses the thunk pool (0x0a6a0100 -> __aarch64_cas4_acq_rel), eliminating startup SIGILL.
     NativeTrapHook(
-        offset = 0x0ab72bf8L,
+        offset = 0x0ababf04L,
         expected = byteArrayOf(0x3f, 0x23, 0x03, 0xd5.toByte()),
         replacement = ARM64_RET,
         description = "Brave wallet fee static initialization constructor",
@@ -226,6 +226,9 @@ internal val braveBtiCompatibilityPatch = rawResourcePatch {
         val hooksPatched = patchNativeTrapHooks(chromeSo)
         if (hooksPatched > 0) {
             println("[Brave Compatibility] Neutralized $hooksPatched ARMv8.0/GSI illegal opcode trap(s) in libchrome.so -> SIGILL prevented.")
+            if (hooksPatched < LIBCHROME_TRAP_HOOKS.size) {
+                println("[WARN] [Brave Compatibility] Incomplete trap coverage: only $hooksPatched of ${LIBCHROME_TRAP_HOOKS.size} constructor traps matched.")
+            }
         }
     }
 }

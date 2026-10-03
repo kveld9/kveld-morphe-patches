@@ -69,7 +69,7 @@ private val braveTelemetryResourcePatch = resourcePatch(
     }
 }
 
-// ── Hosts Blocker Patch: Redirects all 10 telemetry domain strings to 0.0.0.0 in libchrome.so ─────
+// ── Hosts Blocker Patch: Redirects all 12 telemetry domain endpoints to 0.0.0.0 in libchrome.so ─────
 private val braveHostsBlockerPatch = rawResourcePatch(
     name = "Brave Hosts Blocker Layer",
     description = "Redirects telemetry and diagnostic domain strings to 0.0.0.0 in libchrome.so as a second layer of defense.",
@@ -85,18 +85,18 @@ private val braveHostsBlockerPatch = rawResourcePatch(
         )
 
         val hostEntries = listOf(
-            HostEntry(0x00208f9cL, 0x0059b329L, "star-randsrv.bsg.brave.com"),
-            HostEntry(0x00208fcdL, 0x0059b35aL, "collector.bsg.brave.com"),
-            HostEntry(0x00209004L, 0x0059b391L, "usage-ping.brave.com"),
-            HostEntry(0x00208e27L, 0x0059b1b4L, "patterns.wdp.brave.com"),
-            HostEntry(0x00208e3eL, 0x0059b1cbL, "collector.wdp.brave.com"),
-            HostEntry(0x00208e56L, 0x0059b1e3L, "star.wdp.brave.com"),
-            HostEntry(0x00208e69L, 0x0059b1f6L, "quorum.wdp.brave.com"),
-            HostEntry(0x00208e1aL, 0x0059b1a7L, "cr.brave.com"),
-            HostEntry(0x0008bd2eL, 0x00424486L, "crashpad.chromium.org"),
-            HostEntry(0x004cc726L, 0x008527ceL, "crashpad.chromium.org"),
-            HostEntry(0x00208caeL, 0x0059b03bL, "variations.brave.com"),
-            HostEntry(0x0034b7b4L, 0x006d47c1L, "variations.brave.com"),
+            HostEntry(0x00208fbdL, 0x0059b371L, "star-randsrv.bsg.brave.com"),
+            HostEntry(0x00208feeL, 0x0059b3a2L, "collector.bsg.brave.com"),
+            HostEntry(0x00209025L, 0x0059b3d9L, "usage-ping.brave.com"),
+            HostEntry(0x00208e48L, 0x0059b1fcL, "patterns.wdp.brave.com"),
+            HostEntry(0x00208e5fL, 0x0059b213L, "collector.wdp.brave.com"),
+            HostEntry(0x00208e77L, 0x0059b22bL, "star.wdp.brave.com"),
+            HostEntry(0x00208e8aL, 0x0059b23eL, "quorum.wdp.brave.com"),
+            HostEntry(0x00208e3bL, 0x0059b1efL, "cr.brave.com"),
+            HostEntry(0x0008bd66L, 0x004244ceL, "crashpad.chromium.org"),
+            HostEntry(0x004cc73eL, 0x00852816L, "crashpad.chromium.org"),
+            HostEntry(0x00208ccfL, 0x0059b083L, "variations.brave.com"),
+            HostEntry(0x0034b7ccL, 0x006d4809L, "variations.brave.com"),
         )
 
         val targets = listOf(
