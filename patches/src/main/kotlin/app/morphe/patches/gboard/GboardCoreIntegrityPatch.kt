@@ -14,11 +14,10 @@ import app.morphe.patches.shared.clearTryBlocks
 import app.morphe.patches.shared.ensureRegisterCount
 
 val gboardCoreIntegrityPatch = bytecodePatch(
-    name = "Core Integrity",
-    description = "Applies essential runtime stability and integrity fixes for modified APKs: signature check bypass, instant launcher opening, and flag resilience.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
+    extendWith("extensions/extension.mpe")
 
     execute {
         patchSignatureBypass()
@@ -64,6 +63,11 @@ private fun BytecodePatchContext.patchLauncherTrampoline() {
             0,
             """
                 invoke-super {p0}, Landroid/app/Activity;->onResume()V
+                invoke-static {p0}, ${Constants.GBOARD_EXTENSION_CLASS}->checkFirstRun(Landroid/app/Activity;)Z
+                move-result v0
+                if-eqz v0, :cond_morphe_first_run
+                return-void
+                :cond_morphe_first_run
                 new-instance v0, Landroid/content/Intent;
                 invoke-direct {v0}, Landroid/content/Intent;-><init>()V
                 const-string v1, "com.google.android.apps.inputmethod.latin.preference.SettingsActivity"
@@ -81,7 +85,7 @@ private fun BytecodePatchContext.patchLauncherTrampoline() {
         patched++
     }
 
-    println("[Core Integrity] Redirected LauncherActivity ($patched hook applied -> direct SettingsActivity launch).")
+    println("[Core Integrity] Redirected LauncherActivity ($patched hook applied -> check onboarding wizard and direct SettingsActivity launch).")
 }
 
 private fun BytecodePatchContext.patchPhenotypeResilience() {

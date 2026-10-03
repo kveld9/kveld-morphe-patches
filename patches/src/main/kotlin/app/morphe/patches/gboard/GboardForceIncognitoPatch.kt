@@ -5,51 +5,15 @@ import app.morphe.patcher.OpcodesFilter
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions
 import app.morphe.patcher.patch.BytecodePatch
-import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
-import app.morphe.patcher.patch.rawResourcePatch
 import app.morphe.patches.shared.Constants
 import com.android.tools.smali.dexlib2.Opcode
 
-private val gboardForceIncognitoIconResourcePatch = rawResourcePatch(
-    name = "Force Incognito Icon Resource",
-    description = "Replaces the incognito toolbar icon with the standard access points grid icon when hideIncognitoIcon is enabled.",
-    default = false,
-) {
-    compatibleWith(Constants.COMPATIBILITY_GBOARD)
-
-    execute {
-        val shouldHide = (gboardForceIncognitoPatch.options["hideIncognitoIcon"]?.value as? Boolean) == true
-        if (!shouldHide) return@execute
-
-        val resDir = get("res").takeIf { it.exists() && it.isDirectory }
-        val bvlFile = resDir?.walkTopDown()?.firstOrNull { it.name == "BVL.xml" } ?: get("res/BVL.xml").takeIf { it.exists() }
-        val qjFile = resDir?.walkTopDown()?.firstOrNull { it.name == "6qJ.xml" } ?: get("res/6qJ.xml").takeIf { it.exists() }
-
-        if (bvlFile != null && qjFile != null) {
-            bvlFile.writeBytes(qjFile.readBytes())
-            println("[Force Incognito Mode] Replaced incognito icon (${bvlFile.name}) with access points grid icon (${qjFile.name}).")
-        } else {
-            println("[Force Incognito Mode] Warning: Incognito icon (BVL.xml) or grid icon (6qJ.xml) not found in resources.")
-        }
-    }
-}
-
 val gboardForceIncognitoPatch: BytecodePatch = bytecodePatch(
-    name = "Force Incognito Mode",
-    description = "Forces Gboard to always operate in incognito mode (disabling personalized learning and persistent input logging) while keeping clipboard functionality enabled.",
-    default = false,
+    default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
-    dependsOn(gboardForceIncognitoIconResourcePatch)
-
-    val hideIncognitoIcon by booleanOption(
-        key = "hideIncognitoIcon",
-        title = "Hide Incognito Icon",
-        description = "Hides the incognito mask icon on the toolbar by replacing it with the standard access points grid icon.",
-        default = false,
-        required = false,
-    )
+    extendWith("extensions/extension.mpe")
 
     execute {
         val fp1 = Fingerprint(
@@ -61,8 +25,12 @@ val gboardForceIncognitoPatch: BytecodePatch = bytecodePatch(
         fp1.method.addInstructions(
             0,
             """
+                invoke-static {}, ${Constants.GBOARD_EXTENSION_CLASS}->isForceIncognitoEnabled()Z
+                move-result v0
+                if-eqz v0, :cond_skip_morphe_incognito_smn
                 const/4 v0, 0x1
                 return v0
+                :cond_skip_morphe_incognito_smn
             """.trimIndent(),
         )
 
@@ -75,8 +43,18 @@ val gboardForceIncognitoPatch: BytecodePatch = bytecodePatch(
         fp2.method.addInstructions(
             0,
             """
-                const/4 v0, 0x1
+                invoke-static {}, ${Constants.GBOARD_EXTENSION_CLASS}->isForceIncognitoEnabled()Z
+                move-result v0
+                if-eqz v0, :cond_skip_morphe_incognito_foy
+                invoke-static {}, ${Constants.GBOARD_EXTENSION_CLASS}->isHideIncognitoIconEnabled()Z
+                move-result v0
+                if-eqz v0, :cond_show_incognito_mask
+                const/4 v0, 0
                 return v0
+                :cond_show_incognito_mask
+                const/4 v0, 1
+                return v0
+                :cond_skip_morphe_incognito_foy
             """.trimIndent(),
         )
 

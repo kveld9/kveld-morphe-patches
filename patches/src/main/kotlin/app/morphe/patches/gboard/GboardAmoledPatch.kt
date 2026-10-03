@@ -21,9 +21,7 @@ private val COLOR_COMMON_BYTES by lazy {
 }
 
 private val gboardAmoledResourcePatch = rawResourcePatch(
-    name = "Gboard AMOLED Theme Palette",
-    description = "Rewrites style_sheet_color_black.binarypb and style_sheet_color_common.binarypb with Pure Black AMOLED theme palette.",
-    default = false,
+    default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
 
@@ -46,11 +44,10 @@ private val gboardAmoledResourcePatch = rawResourcePatch(
 }
 
 val gboardAmoledPatch = bytecodePatch(
-    name = "Add AMOLED Theme",
-    description = "Adds a selectable Pure Black AMOLED theme using Gboard's native color_black theme package, without replacing Dark, Light, System Auto, or Dynamic Color.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
+    extendWith("extensions/extension.mpe")
     dependsOn(gboardAmoledResourcePatch)
 
     execute {
@@ -72,19 +69,11 @@ val gboardAmoledPatch = bytecodePatch(
         themeListingFragmentFingerprint.method.addInstructions(
             matchIndex,
             """
-                const-string v7, "assets:theme_package_metadata_color_black.binarypb"
-                new-instance v8, Lxss;
-                invoke-direct {v8, v7}, Lxss;-><init>(Ljava/lang/String;)V
-                invoke-static {v14, v8}, Lnck;->e(Landroid/content/Context;Lxss;)Lnck;
-                move-result-object v7
-                new-instance v8, Lnbg;
-                const-string v9, "AMOLED"
-                invoke-direct {v8, v9, v7}, Lnbg;-><init>(Ljava/lang/String;Lnck;)V
-                invoke-interface {v5, v8}, Ljava/util/List;->add(Ljava/lang/Object;)Z
+                invoke-static {v14, v5}, ${Constants.GBOARD_EXTENSION_CLASS}->addAmoledTheme(Landroid/content/Context;Ljava/lang/Object;)V
             """.trimIndent(),
         )
 
         val targetClass = themeListingFragmentFingerprint.originalClassDef.type.substringAfterLast('/').removeSuffix(";")
-        println("[AMOLED Theme] Injected AMOLED theme entry into $targetClass.f() at opcode index $matchIndex")
+        println("[AMOLED Theme] Injected dynamic AMOLED theme entry hook into $targetClass.f() at opcode index $matchIndex")
     }
 }

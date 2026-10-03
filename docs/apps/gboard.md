@@ -48,24 +48,60 @@ If you perform a clean install of Gboard Lite with background sync debloat patch
 
 | Patch Name | Type | Category | Default | Primary Mechanism |
 | :--- | :--- | :--- | :---: | :--- |
-| **Add AMOLED Theme** | `bytecodePatch` + `resourcePatch` | UI & Appearance | ✅ Yes | Adds a selectable Pure Black AMOLED theme using Gboard's native color_black theme package, without replacing standard themes. |
+| **Gboard Enhancements** | `resourcePatch` + `bytecodePatch` | Customization & Suite | ✅ Yes | Master customization suite bundling in-app toggleable features (Pure AMOLED Theme, Zero Bottom Inset, Force Incognito, Clipboard Enhancements, Toolbar Item Count, Feature Flags, Onboarding status, and Core Integrity) managed directly from *Ajustes > Morphe Patches*. |
 | **Block Telemetry** | `bytecodePatch` | Privacy & Security | ✅ Yes | Disables background metrics dispatch, event logging, daily pings, Google Primes profiling, crash reporting, AppDoctor diagnostics, and Tenor share tracking. |
-| **Clipboard Enhancements** | `bytecodePatch` | Usability & Storage | ✅ Yes | Removes hardcoded 1-hour TTL and 5-clip UI throttling, extending retention up to user-configured hours/items. |
 | **Clone Gboard** | `bytecodePatch` + `resourcePatch` | Utility & Modding | ✅ Yes | Appends a custom suffix to the package name to allow installing Gboard alongside the original application. |
-| **Core Integrity** | `bytecodePatch` | Security & Stability | ✅ Yes | Applies essential runtime stability and integrity fixes for modified APKs: signature check bypass, instant launcher opening, and flag resilience. |
 | **Disable Background Sync** | `bytecodePatch` | Battery & Debloat | ❌ No | Neutralizes AndroidX WorkManager schedulers, MDD (Mobile Data Download) periodic sync, and Superpacks eager asset synchronization (opt-in to preserve initial dictionary downloads). |
 | **Disable Remote Configuration** | `bytecodePatch` | Privacy & Stability | ✅ Yes | Disables periodic remote experiment flag synchronization and background updates. |
-| **Feature Flags** | `bytecodePatch` | Customization & Features | ✅ Yes | Unlocks hidden Google feature flags and UI customization experiments via configurable toggles (Access Points redesign, key border shapes, cursor trackpad, grammar checker, dismiss suggestions button, emoji scaling, and Bluetooth mic). |
-| **Force Incognito Mode** | `bytecodePatch` | Privacy & Security | ❌ No | Forces Gboard to always operate in incognito mode (disabling personalized learning and persistent input logging). |
 | **Hardened Intent Security** | `bytecodePatch` | Security & Integrity | ✅ Yes | Enables Gboard internal external intent protection against unauthorized intent hijacking. |
 | **Offline Only** | `bytecodePatch` + `resourcePatch` | Privacy & Security | ❌ No | Completely isolates Gboard from network access by purging manifest permissions, disabling foreground sync services, neutralizing HTTP clients (Cronet, OkHttp, Superpacks), and spoofing offline status. |
 | **Resource Slimmer** | `bytecodePatch` | Optimization | ✅ Yes | Strips embedded third-party license text, onboarding tutorial Lottie animations, promotional GIFs, and APK root metadata/junk files. |
 | **Strip Permissions** | `resourcePatch` | Privacy & Security | ❌ No | Selectively revokes sensitive hardware, privacy, and system permissions from AndroidManifest.xml. |
-| **Top Toolbar Item Count** | `bytecodePatch` | UI & Customization | ✅ Yes | Expands and customizes the maximum number of access point icons displayed directly on the top toolbar (default: 5, range: 4..8). |
 | **Universal Slimmers** | `resourcePatch` + `rawResourcePatch` | Optimization | ✅ Yes | `Locale Resource Slimmer`, `DPI Resource Slimmer`, `PNG Asset Optimizer`, and `APK Junk Cleaner`. |
-| **Zero Bottom Inset** | `bytecodePatch` | UI & Ergonomics | ✅ Yes | Eliminates or customizes the navigation bar bottom inset padding (bottom chin/blank space) under the keyboard in gesture navigation mode. |
 
 ---
+
+## ⚙️ Gboard Enhancements: In-App Customization Suite
+
+The **`Gboard Enhancements`** patch injects a top-level **Morphe Patches** category directly into Gboard's main settings screen (*Ajustes > Morphe Patches*). All runtime-configurable features are consolidated here, eliminating the need to re-patch the APK to adjust settings.
+
+### 1. Actions & Status
+- **Enable Gboard in System Settings**: Dynamic warning card shown when Gboard is installed but disabled in Android settings (`Settings > System > Languages & input > Manage keyboards`). Tapping the card opens the system keyboard manager directly.
+- **Select Gboard as Active Keyboard**: Dynamic warning card shown when Gboard is enabled but not set as the default input method. Tapping opens the input method picker.
+- **Restart Gboard Process**: Dedicated one-tap action card to restart the Gboard process immediately via `AlarmManager` and apply changed settings without requiring manual force-stop or device reboot. Shows live status: *(Restart Pending)* in red when preferences are modified.
+- **Pending Restart Feedback**: When any toggle or slider is modified, an inline notification toast (*Restart Gboard to apply changes*) alerts the user that a restart is required for the change to take effect.
+
+### 2. UI & Appearance
+- **Pure AMOLED Theme**: Injects a native pure black (`#000000`) theme package into Gboard's theme selector without altering standard Light, Dark, System Auto, or Dynamic Color themes.
+- **Key Border Shapes**: Unlocks key shape border selection (Default, Semi-rounded, Round) in theme customization.
+
+### 3. Layout & Ergonomics
+- **Zero Bottom Inset**: Eliminates or customizes the navigation bar bottom inset padding (bottom chin/blank space) under the keyboard in gesture navigation mode.
+- **Bottom Padding (px)**: Live slider (0 to 150 px, default: `0 px`) to fine-tune the bottom margin. Formatted with live unit display during slider drag.
+- **Top Toolbar Item Count**: Live slider (4 to 8, default: `5`) controlling the maximum number of access point icons displayed on the top toolbar before collapsing into the overflow menu.
+- **Dismiss Suggestions Button**: Renders a close button (`X`) on proactive suggestion strips to quickly dismiss recommendations.
+- **Cursor Trackpad Mode**: Unlocks 2D trackpad cursor navigation and cursor lock mode by holding and sliding across the spacebar.
+
+### 4. Clipboard Manager
+- **Extended History Retention**: Enables custom retention duration limit for unpinned clips in history.
+- **Retention Time Limit (Hours)**: Live slider (1 to 168 hours, default: `24h`) controlling unpinned clip expiration in SQLite database and UI.
+- **Raise Unpinned Clips Limit**: Enables custom limit for unpinned clipboard history items.
+- **Unpinned Clips Limit**: Live slider (5 to 100 items, default: `50`) controlling the maximum unpinned items displayed in the clipboard panel.
+- **Clipboard Grid Layout**: Enables multi-column layout for clipboard clips.
+- **Clipboard Grid Columns**: Live slider (1, 2, or 3 columns, default: `2`) controlling clipboard grid columns across phones, foldables, and tablets.
+
+### 5. Smart Features & Voice
+- **Grammar Checker & Smart Compose**: Unlocks inline grammar review and Smart Compose predictions under *Correcciones y sugerencias*.
+- **Bluetooth Microphone**: Unlocks Bluetooth microphone audio input for voice typing under *Dictado por voz*.
+
+### 6. Privacy & Security
+- **Force Incognito Mode**: Always operates in incognito mode (disables personalized learning and persistent input logging) while preserving clipboard functionality.
+- **Hide Incognito Icon**: Hides the incognito mask icon on the top toolbar when Force Incognito is active.
+
+### 7. Core Integrity & Startup Resilience
+- Neutralizes internal signature validation checks in modified APKs.
+- Redirects `LauncherActivity` to verify onboarding/IME status and trampoline directly to `SettingsActivity`.
+- Neutralizes Phenotype default flag reset assertion crashes.
 
 ## 🔒 Network Isolation: Offline Only
 

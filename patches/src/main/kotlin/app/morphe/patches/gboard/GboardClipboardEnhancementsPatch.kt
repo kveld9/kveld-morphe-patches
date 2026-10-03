@@ -5,50 +5,20 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.bytecodePatch
-import app.morphe.patcher.patch.stringOption
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.clearTryBlocks
 import com.android.tools.smali.dexlib2.Opcode
-import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
 val gboardClipboardEnhancementsPatch = bytecodePatch(
-    name = "Clipboard Enhancements",
-    description = "Extends unpinned clipboard history retention duration, raises the maximum number of displayed unpinned clips, and allows customizing keyboard grid columns.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
-
-    val unpinnedClipLimit by stringOption(
-        key = "unpinnedClipLimit",
-        title = "Unpinned clip limit",
-        description = "Maximum number of unpinned clipboard history items to display in the UI (default: 50, range: 5..100).",
-        default = "50",
-        required = false,
-    )
-
-    val retentionHours by stringOption(
-        key = "retentionHours",
-        title = "Retention time limit (hours)",
-        description = "Number of hours to retain unpinned clips in history before automatic cleanup (e.g. 12, 24 for 1 day, 48 for 2 days, 168 for 7 days. Default: 24).",
-        default = "24",
-        required = false,
-    )
-
-    val gridColumns by stringOption(
-        key = "gridColumns",
-        title = "Clipboard grid columns",
-        description = "Number of columns in the clipboard keyboard layout (1, 2, or 3. Default: 2).",
-        default = "2",
-        required = false,
-    )
+    extendWith("extensions/extension.mpe")
 
     execute {
         var patched = 0
-        val parsedLimit = unpinnedClipLimit?.let { Regex("""\d+""").find(it)?.value?.toIntOrNull() }?.coerceIn(5, 100) ?: 50
-        val parsedHours = retentionHours?.let { Regex("""\d+""").find(it)?.value?.toLongOrNull() }?.coerceAtLeast(1L) ?: 24L
-        val parsedColumns = gridColumns?.let { Regex("""\d+""").find(it)?.value?.toIntOrNull() }?.coerceIn(1, 3) ?: 2
-        val retentionMillis = parsedHours * 3600L * 1000L
 
         // 1. Extend SQLite retention TTL & UI query cutoff window
         val fpTtl = Fingerprint(
@@ -62,15 +32,16 @@ val gboardClipboardEnhancementsPatch = bytecodePatch(
             addInstructions(
                 0,
                 """
-                    const-wide v0, $retentionMillis
+                    invoke-static {}, ${Constants.GBOARD_EXTENSION_CLASS}->getClipboardRetentionMillis()J
+                    move-result-wide v0
                     return-wide v0
                 """.trimIndent(),
             )
         }
-        println("[Clipboard Enhancements] Overrode retention limit -> $parsedHours hour(s) ($retentionMillis ms).")
+        println("[Clipboard Enhancements] Hooked retention limit to dynamic Morphe Patches preference.")
         patched++
 
-        // 2. Raise UI unpinned clips throttle from 5 to parsedLimit
+        // 2. Raise UI unpinned clips throttle from 5 to dynamic limit
         val fpLoader = Fingerprint(
             strings = listOf("timestamp DESC limit %d", "(%s & %d) = 0 AND (%s & %d) = 0 AND %s >= ?"),
             returnType = "Ljava/lang/Object;",
@@ -88,11 +59,15 @@ val gboardClipboardEnhancementsPatch = bytecodePatch(
         targetIndices.asReversed().forEach { (idx, reg) ->
             method.replaceInstruction(
                 idx,
-                "const/16 v$reg, $parsedLimit",
+                "invoke-static {}, ${Constants.GBOARD_EXTENSION_CLASS}->getClipboardUnpinnedLimit()I",
+            )
+            method.addInstructions(
+                idx + 1,
+                "move-result v$reg",
             )
         }
         if (targetIndices.isNotEmpty()) {
-            println("[Clipboard Enhancements] Injected unpinned clips limit ($parsedLimit items) across ${targetIndices.size} opcode site(s).")
+            println("[Clipboard Enhancements] Injected dynamic unpinned clips limit hook across ${targetIndices.size} opcode site(s).")
             patched++
         }
 
@@ -108,31 +83,15 @@ val gboardClipboardEnhancementsPatch = bytecodePatch(
             addInstructions(
                 0,
                 """
-                    const/4 v0, $parsedColumns
+                    invoke-static {}, ${Constants.GBOARD_EXTENSION_CLASS}->getClipboardGridColumns()I
+                    move-result v0
                     return v0
                 """.trimIndent(),
             )
         }
-        println("[Clipboard Enhancements] Overrode clipboard grid columns -> $parsedColumns column(s).")
+        println("[Clipboard Enhancements] Hooked clipboard grid columns to dynamic Morphe Patches preference.")
         patched++
 
-        println("[Clipboard Enhancements] Applied $patched clipboard enhancement hook(s) (limit: $parsedLimit clips, retention: $parsedHours hours, columns: $parsedColumns).")
-    }
-}
-
-private fun Method.clearTryBlocks() {
-    val impl = implementation ?: return
-    var clazz: Class<*>? = impl.javaClass
-    while (clazz != null) {
-        try {
-            val field = clazz.getDeclaredField("tryBlocks")
-            field.isAccessible = true
-            (field.get(impl) as? MutableList<*>)?.clear()
-            break
-        } catch (_: NoSuchFieldException) {
-            clazz = clazz.superclass
-        } catch (_: Exception) {
-            break
-        }
+        println("[Clipboard Enhancements] Applied $patched dynamic clipboard enhancement hook(s).")
     }
 }

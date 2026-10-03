@@ -3,21 +3,23 @@ package app.morphe.patches.gboard
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
+import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions
 import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.string
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.LocaleUtils
+import app.morphe.patches.shared.clearTryBlocks
+import app.morphe.patches.shared.ensureRegisterCount
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
 val gboardFeatureFlagsPatch = bytecodePatch(
-    name = "Feature Flags",
-    description = "Unlocks hidden Google feature flags and UI customization experiments: redesigned access points menu, key border shape selector, cursor trackpad mode, grammar checker & Smart Compose, proactive suggestions dismiss button, emoji size scale, and Bluetooth microphone.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
+    extendWith("extensions/extension.mpe")
 
     dependsOn(gboardCoreIntegrityPatch)
 
@@ -39,17 +41,9 @@ val gboardFeatureFlagsPatch = bytecodePatch(
 
     val enableCursorTrackpad by booleanOption(
         key = "enableCursorTrackpad",
-        default = false,
+        default = true,
         title = "Cursor Trackpad",
         description = "Enables 2D trackpad cursor navigation and cursor lock mode by holding the spacebar (experimental).",
-        required = false,
-    )
-
-    val enableGrammarChecker by booleanOption(
-        key = "enableGrammarChecker",
-        default = true,
-        title = "Grammar Checker & Smart Compose",
-        description = "Unlocks Grammar check and Smart Compose / inline suggestions under Text correction preferences.",
         required = false,
     )
 
@@ -61,11 +55,11 @@ val gboardFeatureFlagsPatch = bytecodePatch(
         required = false,
     )
 
-    val enableEmojiScale by booleanOption(
-        key = "enableEmojiScale",
+    val enableGrammarChecker by booleanOption(
+        key = "enableGrammarChecker",
         default = true,
-        title = "Emoji Scale Setting",
-        description = "Unlocks the emoji size scaling setting in Gboard appearance preferences.",
+        title = "Grammar Checker & Smart Compose",
+        description = "Unlocks client-side grammar correction and Smart Compose inline predictions.",
         required = false,
     )
 
@@ -78,18 +72,6 @@ val gboardFeatureFlagsPatch = bytecodePatch(
     )
 
     execute {
-        if (enableAccessPointsRedesign != true &&
-            enableKeyShapeSelection != true &&
-            enableCursorTrackpad != true &&
-            enableGrammarChecker != true &&
-            enableDismissSuggestionsButton != true &&
-            enableEmojiScale != true &&
-            enableBluetoothMicrophone != true
-        ) {
-            println("[Feature Flags] Skipped: All feature flag options are disabled.")
-            return@execute
-        }
-
         var patched = 0
 
         // 1. Access Points Menu Redesign (Panel V2)
@@ -103,14 +85,17 @@ val gboardFeatureFlagsPatch = bytecodePatch(
             val reg = fp.method.getInstruction<OneRegisterInstruction>(matchIndex + 1).registerA
             fp.method.addInstructions(
                 matchIndex + 2,
-                "const/4 v$reg, 0x1",
+                """
+                    invoke-static {}, ${Constants.GBOARD_EXTENSION_CLASS}->isAccessPointsRedesignEnabled()Z
+                    move-result v$reg
+                """.trimIndent(),
             )
             val targetClass = LocaleUtils.cleanClassName(fp.originalClassDef.type)
-            println("[Feature Flags] Access Points Redesign: Injected flag override into $targetClass.<clinit>() at opcode index ${matchIndex + 2}")
+            println("[Feature Flags] Access Points Redesign: Injected dynamic flag hook into $targetClass.<clinit>() at opcode index ${matchIndex + 2}")
             patched++
         }
 
-        // 2. Key Shape Selection UI
+        // 2. Key Shape Selection UI (checked dynamically via Morphe Patches preference)
         if (enableKeyShapeSelection == true) {
             val fp = Fingerprint(
                 definingClass = "Lxsj;",
@@ -121,12 +106,13 @@ val gboardFeatureFlagsPatch = bytecodePatch(
             fp.method.addInstructions(
                 0,
                 """
-                    const/4 v0, 0x1
+                    invoke-static {}, ${Constants.GBOARD_EXTENSION_CLASS}->isKeyShapeSelectionEnabled()Z
+                    move-result v0
                     return v0
                 """.trimIndent(),
             )
             val targetClass = LocaleUtils.cleanClassName(fp.originalClassDef.type)
-            println("[Feature Flags] Key Shape Selection: Forced return true in $targetClass.i() to unlock border shape selector UI")
+            println("[Feature Flags] Key Shape Selection: Hooked $targetClass.i() to check Morphe Patches preference.")
             patched++
         }
 
@@ -135,7 +121,11 @@ val gboardFeatureFlagsPatch = bytecodePatch(
             val fp = Fingerprint(
                 name = "<clinit>",
                 returnType = "V",
-                filters = listOf(string("free_cursor"), string("free_cursor_lock_mode")),
+                filters = listOf(
+                    string("free_cursor"),
+                    string("free_cursor_lock_mode"),
+                    string("free_cursor_trackpadlike"),
+                ),
             )
             val targetClass = LocaleUtils.cleanClassName(fp.originalClassDef.type)
             var count = 0
@@ -148,51 +138,20 @@ val gboardFeatureFlagsPatch = bytecodePatch(
                     else -> 1
                 }
                 val insertIndex = if (nextInsn is OneRegisterInstruction) matchIndex + 2 else matchIndex + 1
-                fp.method.addInstructions(insertIndex, "const/4 v$reg, 0x1")
+                fp.method.addInstructions(
+                    insertIndex,
+                    """
+                        invoke-static {}, ${Constants.GBOARD_EXTENSION_CLASS}->isCursorTrackpadEnabled()Z
+                        move-result v$reg
+                    """.trimIndent(),
+                )
                 count++
             }
-            println("[Feature Flags] Cursor Trackpad: Injected $count flag override(s) into $targetClass.<clinit>() -> 2D spacebar trackpad enabled.")
+            println("[Feature Flags] Cursor Trackpad: Injected $count dynamic flag hook(s) into $targetClass.<clinit>() -> 2D spacebar trackpad enabled.")
             patched++
         }
 
-        // 4. Grammar Checker & Smart Compose / Inline suggestions
-        if (enableGrammarChecker == true) {
-            val fpGrammar = Fingerprint(
-                name = "<clinit>",
-                returnType = "V",
-                filters = listOf(string("enable_grammar_checker")),
-            )
-            val matchGrammar = fpGrammar.instructionMatches.first().index
-            val nextInsnGrammar = fpGrammar.method.getInstruction<Instruction>(matchGrammar + 1)
-            val regGrammar = when (nextInsnGrammar) {
-                is OneRegisterInstruction -> nextInsnGrammar.registerA
-                is FiveRegisterInstruction -> nextInsnGrammar.registerD
-                else -> 1
-            }
-            val insertGrammar = if (nextInsnGrammar is OneRegisterInstruction) matchGrammar + 2 else matchGrammar + 1
-            fpGrammar.method.addInstructions(insertGrammar, "const/4 v$regGrammar, 0x1")
-
-            val fpInline = Fingerprint(
-                name = "<clinit>",
-                returnType = "V",
-                filters = listOf(string("enable_inline_suggestions_on_client_side")),
-            )
-            val matchInline = fpInline.instructionMatches.first().index
-            val nextInsnInline = fpInline.method.getInstruction<Instruction>(matchInline + 1)
-            val regInline = when (nextInsnInline) {
-                is OneRegisterInstruction -> nextInsnInline.registerA
-                is FiveRegisterInstruction -> nextInsnInline.registerD
-                else -> 1
-            }
-            val insertInline = if (nextInsnInline is OneRegisterInstruction) matchInline + 2 else matchInline + 1
-            fpInline.method.addInstructions(insertInline, "const/4 v$regInline, 0x1")
-
-            val targetClass = LocaleUtils.cleanClassName(fpGrammar.originalClassDef.type)
-            println("[Feature Flags] Grammar Checker: Injected 2 flag override(s) into $targetClass -> Grammar Check & Smart Compose unlocked.")
-            patched++
-        }
-
-        // 5. Dismiss Suggestions Button (Close X button)
+        // 4. Dismiss Suggestions Button (Close X button)
         if (enableDismissSuggestionsButton == true) {
             val fp = Fingerprint(
                 name = "<clinit>",
@@ -207,54 +166,134 @@ val gboardFeatureFlagsPatch = bytecodePatch(
                 else -> 1
             }
             val insertIndex = if (nextInsn is OneRegisterInstruction) matchIndex + 2 else matchIndex + 1
-            fp.method.addInstructions(insertIndex, "const/4 v$reg, 0x1")
+            fp.method.addInstructions(
+                insertIndex,
+                """
+                    invoke-static {}, ${Constants.GBOARD_EXTENSION_CLASS}->isDismissSuggestionsEnabled()Z
+                    move-result v$reg
+                """.trimIndent(),
+            )
             val targetClass = LocaleUtils.cleanClassName(fp.originalClassDef.type)
-            println("[Feature Flags] Dismiss Suggestions: Injected flag override into $targetClass.<clinit>() at opcode index $insertIndex")
+            println("[Feature Flags] Dismiss Suggestions: Injected dynamic flag hook into $targetClass.<clinit>() at opcode index $insertIndex")
             patched++
         }
 
-        // 6. Emoji Scale Setting
-        if (enableEmojiScale == true) {
-            val fp = Fingerprint(
+        // 5. Grammar Checker & Smart Compose / Inline suggestions
+        if (enableGrammarChecker == true) {
+            val fpGrammar = Fingerprint(
                 name = "<clinit>",
                 returnType = "V",
-                filters = listOf(string("emoji_scale_supported")),
+                filters = listOf(string("enable_grammar_checker")),
             )
-            val matchIndex = fp.instructionMatches.first().index
-            val nextInsn = fp.method.getInstruction<Instruction>(matchIndex + 1)
-            val reg = when (nextInsn) {
-                is OneRegisterInstruction -> nextInsn.registerA
-                is FiveRegisterInstruction -> nextInsn.registerD
+            val matchGrammar = fpGrammar.instructionMatches.first().index
+            val nextInsnGrammar = fpGrammar.method.getInstruction<Instruction>(matchGrammar + 1)
+            val regGrammar = when (nextInsnGrammar) {
+                is OneRegisterInstruction -> nextInsnGrammar.registerA
+                is FiveRegisterInstruction -> nextInsnGrammar.registerD
                 else -> 1
             }
-            val insertIndex = if (nextInsn is OneRegisterInstruction) matchIndex + 2 else matchIndex + 1
-            fp.method.addInstructions(insertIndex, "const/4 v$reg, 0x1")
-            val targetClass = LocaleUtils.cleanClassName(fp.originalClassDef.type)
-            println("[Feature Flags] Emoji Scale: Injected flag override into $targetClass.<clinit>() at opcode index $insertIndex")
+            val insertGrammar = if (nextInsnGrammar is OneRegisterInstruction) matchGrammar + 2 else matchGrammar + 1
+            fpGrammar.method.addInstructions(
+                insertGrammar,
+                """
+                    invoke-static {}, ${Constants.GBOARD_EXTENSION_CLASS}->isGrammarCheckerEnabled()Z
+                    move-result v$regGrammar
+                """.trimIndent(),
+            )
+
+            val fpInline = Fingerprint(
+                name = "<clinit>",
+                returnType = "V",
+                filters = listOf(string("enable_inline_suggestions_on_client_side")),
+            )
+            val matchInline = fpInline.instructionMatches.first().index
+            val nextInsnInline = fpInline.method.getInstruction<Instruction>(matchInline + 1)
+            val regInline = when (nextInsnInline) {
+                is OneRegisterInstruction -> nextInsnInline.registerA
+                is FiveRegisterInstruction -> nextInsnInline.registerD
+                else -> 1
+            }
+            val insertInline = if (nextInsnInline is OneRegisterInstruction) matchInline + 2 else matchInline + 1
+            fpInline.method.addInstructions(
+                insertInline,
+                """
+                    invoke-static {}, ${Constants.GBOARD_EXTENSION_CLASS}->isGrammarCheckerEnabled()Z
+                    move-result v$regInline
+                """.trimIndent(),
+            )
+
+            val targetClass = LocaleUtils.cleanClassName(fpGrammar.originalClassDef.type)
+            println("[Feature Flags] Grammar Checker: Injected 2 dynamic flag hook(s) into $targetClass -> Grammar Check & Smart Compose unlocked.")
             patched++
         }
 
-        // 7. Bluetooth Microphone Setting
+        // 6. Bluetooth Microphone Setting
         if (enableBluetoothMicrophone == true) {
-            val fp = Fingerprint(
+            val fpBt = Fingerprint(
                 name = "<clinit>",
                 returnType = "V",
                 filters = listOf(string("enable_use_bluetooth_setting")),
             )
-            val matchIndex = fp.instructionMatches.first().index
-            val nextInsn = fp.method.getInstruction<Instruction>(matchIndex + 1)
-            val reg = when (nextInsn) {
-                is OneRegisterInstruction -> nextInsn.registerA
-                is FiveRegisterInstruction -> nextInsn.registerD
+            val matchIndexBt = fpBt.instructionMatches.first().index
+            val nextInsnBt = fpBt.method.getInstruction<Instruction>(matchIndexBt + 1)
+            val regBt = when (nextInsnBt) {
+                is OneRegisterInstruction -> nextInsnBt.registerA
+                is FiveRegisterInstruction -> nextInsnBt.registerD
                 else -> 1
             }
-            val insertIndex = if (nextInsn is OneRegisterInstruction) matchIndex + 2 else matchIndex + 1
-            fp.method.addInstructions(insertIndex, "const/4 v$reg, 0x1")
-            val targetClass = LocaleUtils.cleanClassName(fp.originalClassDef.type)
-            println("[Feature Flags] Bluetooth Microphone: Injected flag override into $targetClass.<clinit>() at opcode index $insertIndex")
+            val insertIndexBt = if (nextInsnBt is OneRegisterInstruction) matchIndexBt + 2 else matchIndexBt + 1
+            fpBt.method.addInstructions(
+                insertIndexBt,
+                """
+                    invoke-static {}, ${Constants.GBOARD_EXTENSION_CLASS}->isBluetoothMicEnabled()Z
+                    move-result v$regBt
+                """.trimIndent(),
+            )
+            val targetClassBt = LocaleUtils.cleanClassName(fpBt.originalClassDef.type)
+            println("[Feature Flags] Bluetooth Microphone: Injected dynamic flag hook into $targetClassBt.<clinit>() at opcode index $insertIndexBt")
             patched++
         }
 
-        println("[Feature Flags] Applied $patched feature flag override(s) -> features unlocked.")
+        // 7. Emoji Scale Setting (enables keyboard engine support for emoji scaling)
+        val fpEmoji = Fingerprint(
+            name = "<clinit>",
+            returnType = "V",
+            filters = listOf(string("emoji_scale_supported")),
+        )
+        val matchEmoji = fpEmoji.instructionMatches.first().index
+        val nextInsnEmoji = fpEmoji.method.getInstruction<Instruction>(matchEmoji + 1)
+        val regEmoji = when (nextInsnEmoji) {
+            is OneRegisterInstruction -> nextInsnEmoji.registerA
+            is FiveRegisterInstruction -> nextInsnEmoji.registerD
+            else -> 1
+        }
+        val insertIndexEmoji = if (nextInsnEmoji is OneRegisterInstruction) matchEmoji + 2 else matchEmoji + 1
+        fpEmoji.method.addInstructions(insertIndexEmoji, "const/4 v$regEmoji, 0x1")
+        val targetClassEmoji = LocaleUtils.cleanClassName(fpEmoji.originalClassDef.type)
+        println("[Feature Flags] Emoji Scale Setting: Injected flag override into $targetClassEmoji.<clinit>() at opcode index $insertIndexEmoji")
+        patched++
+
+        // 8. Hook EmojiKeyboardUtils.getPrefKeyboardEmojiScale to return dynamic Morphe scale
+        val fpEmojiScale = Fingerprint(
+            strings = listOf("EmojiKeyboardUtils.java", "Failed to parse emoji scale setting!"),
+            returnType = "F",
+        )
+        fpEmojiScale.method.apply {
+            clearTryBlocks()
+            ensureRegisterCount(2)
+            removeInstructions(0, implementation!!.instructions.count())
+            addInstructions(
+                0,
+                """
+                    invoke-static {p0}, ${Constants.GBOARD_EXTENSION_CLASS}->getEmojiScale(Landroid/content/Context;)F
+                    move-result v0
+                    return v0
+                """.trimIndent(),
+            )
+        }
+        println("[Feature Flags] EmojiKeyboardUtils: Hooked getPrefKeyboardEmojiScale to dynamic Morphe scale.")
+        patched++
+
+        println("[Feature Flags] Applied $patched feature flag override(s) cleanly (native settings unpolluted).")
     }
 }

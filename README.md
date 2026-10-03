@@ -71,7 +71,7 @@
 </details>
 
 <details>
-<summary>Gboard Lite&nbsp;&nbsp;•&nbsp;&nbsp;<b>15 patches</b></summary>
+<summary>Gboard Lite&nbsp;&nbsp;•&nbsp;&nbsp;<b>9 patches</b></summary>
 <br>
 
 **Supported versions:**
@@ -81,21 +81,15 @@
 
 | Patch | Description | Options |
 |----------|----------------|-----------|
-| **Add AMOLED Theme** | Adds a selectable Pure Black AMOLED theme using Gboard's native color_black theme package, without replacing Dark, Light, System Auto, or Dynamic Color. |  |
 | **Block Telemetry** | Disables background metrics dispatch, event logging, daily pings, Google Primes profiling, crash reporting, AppDoctor diagnostics, and Tenor share tracking. |  |
-| **Clipboard Enhancements** | Extends unpinned clipboard history retention duration, raises the maximum number of displayed unpinned clips, and allows customizing keyboard grid columns. | • Unpinned clip limit<br>• Retention time limit (hours)<br>• Clipboard grid columns |
 | **Clone Gboard** | Changes the package name by appending a dot and custom suffix (defaults to 'clone') to allow installing Gboard alongside the original application. | • Package name suffix |
-| **Core Integrity** | Applies essential runtime stability and integrity fixes for modified APKs: signature check bypass, instant launcher opening, and flag resilience. |  |
 | **Disable Background Sync** | Neutralizes AndroidX WorkManager schedulers, MDD (Mobile Data Download) periodic sync, and Superpacks eager asset synchronization (opt-in to preserve initial dictionary downloads). |  |
 | **Disable Remote Configuration** | Disables periodic remote experiment flag synchronization and background updates. |  |
-| **Feature Flags** | Unlocks hidden Google feature flags and UI customization experiments: redesigned access points menu, key border shape selector, cursor trackpad mode, grammar checker & Smart Compose, proactive suggestions dismiss button, emoji size scale, and Bluetooth microphone. | • Access Points Menu Redesign<br>• Key Shape Selection<br>• Cursor Trackpad<br>• Grammar Checker & Smart Compose<br>• Dismiss Suggestions Button<br>• Emoji Scale Setting<br>• Bluetooth Microphone |
-| **Force Incognito Mode** | Forces Gboard to always operate in incognito mode (disabling personalized learning and persistent input logging) while keeping clipboard functionality enabled. | • Hide Incognito Icon |
+| **Gboard Enhancements** | Master customization suite bundling in-app toggleable features (AMOLED Pure Black theme, zero bottom inset, force incognito, clipboard retention, top toolbar icons count, cursor trackpad, and smart flags) managed directly from a top-level Morphe Patches category in Gboard Settings. |  |
 | **Hardened Intent Security** | Enables Gboard internal external intent protection against unauthorized intent hijacking. |  |
 | **Offline Only** | Completely isolates Gboard from the network by revoking network permissions, neutralizing HTTP clients (Cronet, OkHttp, Superpacks), and spoofing offline status. |  |
 | **Resource Slimmer** | Strips embedded third-party license text, onboarding tutorial Lottie animations, promotional GIFs, and APK root metadata/junk files. |  |
 | **Strip Permissions** | Selectively revokes sensitive hardware, privacy, and system permissions from AndroidManifest.xml. | • Strip Contacts Permission<br>• Strip Microphone Permission<br>• Strip Media & Storage Permissions<br>• Strip System Dictionary Permissions<br>• Strip Cross-Profile Permission |
-| **Top Toolbar Item Count** | Customizes the maximum number of access point icons displayed on the top toolbar. | • Toolbar item count |
-| **Zero Bottom Inset** | Eliminates or customizes the navigation bar bottom inset padding (bottom chin/blank space) under the keyboard in gesture navigation mode. | • Bottom padding (px) |
 
 </details>
 

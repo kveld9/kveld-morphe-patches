@@ -125,6 +125,56 @@ object Constants {
     const val TIKTOK_EXTENSION_SEEN_VIDEO_HOOK = "Lcom/kveld9/morphe/extension/tiktok/TikTokSeenVideoHook;"
     const val BRAVE_EXTENSION_CLASS = "Lcom/kveld9/morphe/extension/BraveExtension;"
     const val CHROMIUM_EXTENSION_CLASS = "Lcom/kveld9/morphe/extension/ChromiumExtension;"
+    const val GBOARD_EXTENSION_CLASS = "Lcom/kveld9/morphe/extension/gboard/GboardExtension;"
+
+    object GboardPrefs {
+        const val KEY_RESTART_GBOARD = "morphe_restart_gboard"
+        const val KEY_ENABLE_IME = "morphe_enable_ime"
+        const val KEY_SELECT_IME = "morphe_select_ime"
+        const val KEY_AMOLED = "morphe_amoled_enabled"
+        const val KEY_ZERO_BOTTOM_INSET = "morphe_zero_bottom_inset"
+        const val KEY_BOTTOM_PADDING = "morphe_bottom_padding"
+        const val KEY_TOOLBAR_ITEM_COUNT = "morphe_toolbar_item_count"
+        const val KEY_EMOJI_SCALE = "morphe_emoji_scale"
+        const val KEY_KEY_SHAPE_SELECTION = "morphe_key_shape_selection"
+        const val KEY_ACCESS_POINTS_REDESIGN = "morphe_access_points_redesign"
+        const val KEY_DISMISS_SUGGESTIONS = "morphe_dismiss_suggestions"
+        const val KEY_CURSOR_TRACKPAD = "morphe_cursor_trackpad"
+        const val KEY_CLIPBOARD_EXTENDED_RETENTION = "morphe_clipboard_extended_retention"
+        const val KEY_CLIPBOARD_RETENTION_HOURS = "morphe_clipboard_retention_hours"
+        const val KEY_CLIPBOARD_RAISE_LIMIT = "morphe_clipboard_raise_limit"
+        const val KEY_CLIPBOARD_UNPINNED_LIMIT = "morphe_clipboard_unpinned_limit"
+        const val KEY_CLIPBOARD_GRID_LAYOUT = "morphe_clipboard_grid_layout"
+        const val KEY_CLIPBOARD_GRID_COLUMNS = "morphe_clipboard_grid_columns"
+        const val KEY_GRAMMAR_CHECKER = "morphe_grammar_checker"
+        const val KEY_BLUETOOTH_MIC = "morphe_bluetooth_mic"
+        const val KEY_FORCE_INCOGNITO = "morphe_force_incognito"
+        const val KEY_HIDE_INCOGNITO_ICON = "morphe_hide_incognito_icon"
+
+        const val MIN_BOTTOM_PADDING = 0
+        const val MAX_BOTTOM_PADDING = 150
+        const val DEFAULT_BOTTOM_PADDING = 0
+
+        const val MIN_TOOLBAR_ITEM_COUNT = 4
+        const val MAX_TOOLBAR_ITEM_COUNT = 8
+        const val DEFAULT_TOOLBAR_ITEM_COUNT = 5
+
+        const val MIN_CLIPBOARD_RETENTION_HOURS = 1
+        const val MAX_CLIPBOARD_RETENTION_HOURS = 168
+        const val DEFAULT_CLIPBOARD_RETENTION_HOURS = 24
+
+        const val MIN_CLIPBOARD_UNPINNED_LIMIT = 5
+        const val MAX_CLIPBOARD_UNPINNED_LIMIT = 100
+        const val DEFAULT_CLIPBOARD_UNPINNED_LIMIT = 50
+
+        const val MIN_CLIPBOARD_GRID_COLUMNS = 1
+        const val MAX_CLIPBOARD_GRID_COLUMNS = 3
+        const val DEFAULT_CLIPBOARD_GRID_COLUMNS = 2
+
+        const val MIN_EMOJI_SCALE = 50
+        const val MAX_EMOJI_SCALE = 150
+        const val DEFAULT_EMOJI_SCALE = 100
+    }
 }
 
 
