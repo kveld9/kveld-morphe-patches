@@ -45,20 +45,23 @@ val gboardDecoupleHapticsPatch = bytecodePatch(
                 parameters = listOf("Landroid/content/Context;"),
                 returnType = "I",
             )
-            fpHapticHelper.method.apply {
-                ensureRegisterCount(2)
-                addInstructions(
-                    0,
-                    """
-                        invoke-static {p0}, ${Constants.GBOARD_EXTENSION_CLASS}->overrideSystemHapticStatus(Landroid/content/Context;)I
-                        move-result v0
-                        if-gez v0, :cond_continue_original_status
-                        return v0
-                        :cond_continue_original_status
-                    """.trimIndent(),
-                )
+            val impl = fpHapticHelper.method.implementation
+            if (impl != null) {
+                val returnIndices = impl.instructions.withIndex()
+                    .filter { it.value.opcode == Opcode.RETURN }
+                    .map { it.index to (it.value as OneRegisterInstruction).registerA }
+                    .toList()
+                returnIndices.asReversed().forEach { (idx, reg) ->
+                    fpHapticHelper.method.addInstructions(
+                        idx,
+                        """
+                            invoke-static {v$reg}, ${Constants.GBOARD_EXTENSION_CLASS}->overrideSystemHapticStatus(I)I
+                            move-result v$reg
+                        """.trimIndent(),
+                    )
+                    patched++
+                }
             }
-            patched++
         }
 
         // 2. Prevent updateVibrationPreference from resetting enable_vibrate_on_keypress
@@ -77,7 +80,7 @@ val gboardDecoupleHapticsPatch = bytecodePatch(
         }
         patched++
 
-        // 3. Hook PressEffectPlayerModuleProvider$Module.a() -> overrideHapticFeedbackSetting
+        // 3. Hook PressEffectPlayerModuleProvider$Module.a() -> overrideSystemHapticAllowed
         val methodSyncSetting = fpModule.classDef.methods.firstOrNull { m ->
             m.name == "a" && m.returnType == "V" && m.parameters.isEmpty()
         }
@@ -100,7 +103,7 @@ val gboardDecoupleHapticsPatch = bytecodePatch(
                 methodSyncSetting.addInstructions(
                     idx + 2,
                     """
-                        invoke-static {v$reg}, ${Constants.GBOARD_EXTENSION_CLASS}->overrideHapticFeedbackSetting(Z)Z
+                        invoke-static {v$reg}, ${Constants.GBOARD_EXTENSION_CLASS}->overrideSystemHapticAllowed(Z)Z
                         move-result v$reg
                     """.trimIndent(),
                 )
@@ -148,7 +151,7 @@ val gboardDecoupleHapticsPatch = bytecodePatch(
                 patched++
             }
 
-            if (m.name == "f") {
+            if (m.name == "f" && m.parameters == listOf("I") && m.returnType == "V") {
                 val usageIndices = impl.instructions.withIndex()
                     .filter { ins ->
                         (ins.value.opcode == Opcode.CONST_16 || ins.value.opcode == Opcode.CONST_4) &&
@@ -170,7 +173,7 @@ val gboardDecoupleHapticsPatch = bytecodePatch(
             }
         }
 
-        // 5. Hook VibrationDurationPreference.an(int) -> overrideHapticFeedbackSetting
+        // 5. Hook VibrationDurationPreference.an(int) -> overrideSystemHapticAllowed
         val fpPref = Fingerprint(
             definingClass = "Lcom/google/android/libraries/inputmethod/preferencewidgets/VibrationDurationPreference;",
             name = "an",
@@ -196,7 +199,7 @@ val gboardDecoupleHapticsPatch = bytecodePatch(
             methodPref.addInstructions(
                 idx + 2,
                 """
-                    invoke-static {v$reg}, ${Constants.GBOARD_EXTENSION_CLASS}->overrideHapticFeedbackSetting(Z)Z
+                    invoke-static {v$reg}, ${Constants.GBOARD_EXTENSION_CLASS}->overrideSystemHapticAllowed(Z)Z
                     move-result v$reg
                 """.trimIndent(),
             )

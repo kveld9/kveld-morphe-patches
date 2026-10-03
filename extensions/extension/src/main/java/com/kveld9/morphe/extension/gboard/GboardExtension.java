@@ -124,9 +124,11 @@ public class GboardExtension {
     private static volatile int cachedBottomPadding = 0;
     private static volatile int cachedToolbarItemCount = 5;
     private static volatile int cachedEmojiScale = 100;
+    private static volatile boolean cachedDecoupleHaptics = true;
 
     private static void refreshHotPathCache() {
         cachedZeroInsetEnabled = getBooleanPref(PREF_KEY_ZERO_BOTTOM_INSET, true);
+        cachedDecoupleHaptics = getBooleanPref(PREF_KEY_DECOUPLE_TOUCH_FEEDBACK, true);
         int pad = getIntPref(PREF_KEY_BOTTOM_PADDING, DEFAULT_BOTTOM_PADDING);
         cachedBottomPadding = Math.max(MIN_BOTTOM_PADDING, Math.min(MAX_BOTTOM_PADDING, pad));
         int tbCount = getIntPref(PREF_KEY_TOOLBAR_ITEM_COUNT, DEFAULT_TOOLBAR_ITEM_COUNT);
@@ -311,21 +313,24 @@ public class GboardExtension {
     }
 
     public static boolean isDecoupleTouchFeedbackEnabled(Context context) {
-        return getBooleanPref(PREF_KEY_DECOUPLE_TOUCH_FEEDBACK, true);
+        if (context != null && appContext == null) {
+            getContext(context);
+        }
+        return cachedDecoupleHaptics;
     }
 
     public static boolean isDecoupleTouchFeedbackEnabled() {
-        return isDecoupleTouchFeedbackEnabled(null);
+        return cachedDecoupleHaptics;
     }
 
-    public static int overrideSystemHapticStatus(Context context) {
-        if (isDecoupleTouchFeedbackEnabled(context)) {
+    public static int overrideSystemHapticStatus(int originalStatus) {
+        if (isDecoupleTouchFeedbackEnabled()) {
             return 1;
         }
-        return -1;
+        return originalStatus;
     }
 
-    public static boolean overrideHapticFeedbackSetting(boolean original) {
+    public static boolean overrideSystemHapticAllowed(boolean original) {
         if (isDecoupleTouchFeedbackEnabled()) {
             return true;
         }
