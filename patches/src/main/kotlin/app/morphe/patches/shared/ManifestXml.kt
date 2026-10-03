@@ -50,10 +50,13 @@ internal fun Element.setApplicationMetaData(name: String, value: String) {
     getOrCreateApplicationMetaData(name).setAttributeNS(ANDROID_XML_NAMESPACE, "android:value", value)
 }
 
-internal fun Element.disableComponentsWhere(predicate: (String) -> Boolean): Int {
+internal fun Element.disableComponentsWhere(
+    vararg tagNames: String = arrayOf("activity", "provider", "service", "receiver"),
+    predicate: (String) -> Boolean,
+): Int {
     var disabled = 0
 
-    childrenNamed("activity", "provider", "service", "receiver")
+    childrenNamed(*tagNames)
         .filter { component ->
             val name = component.getAttribute("android:name").ifBlank { component.getAttributeNS(ANDROID_XML_NAMESPACE, "name") }
             predicate(name)
@@ -72,18 +75,29 @@ internal fun Element.disableComponentsByName(vararg names: String): Int {
     return disableComponentsWhere { it in namesSet }
 }
 
-internal fun Element.disableComponentsByPrefix(vararg prefixes: String): Int =
-    disableComponentsWhere { name -> prefixes.any { prefix -> name.startsWith(prefix) } }
+internal fun Element.stripPermissionsWhere(predicate: (String) -> Boolean): List<String> {
+    val matches = childrenNamed("uses-permission", "uses-permission-sdk-23")
+        .filter {
+            val name = it.getAttribute("android:name").ifBlank { it.getAttributeNS(ANDROID_XML_NAMESPACE, "name") }
+            predicate(name)
+        }
+    val names = matches.map { it.getAttribute("android:name").ifBlank { it.getAttributeNS(ANDROID_XML_NAMESPACE, "name") } }
+    removeChildren(matches)
+    return names
+}
 
 internal fun Element.removeComponentDiscoveryRegistrarsWhere(predicate: (String) -> Boolean): Int {
     var removed = 0
 
     childrenNamed("service")
-        .filter { it.getAttribute("android:name") == "com.google.firebase.components.ComponentDiscoveryService" }
+        .filter {
+            val name = it.getAttribute("android:name").ifBlank { it.getAttributeNS(ANDROID_XML_NAMESPACE, "name") }
+            name == "com.google.firebase.components.ComponentDiscoveryService"
+        }
         .forEach { discoveryService ->
             val matches = discoveryService.childrenNamed("meta-data")
                 .filter { metaData ->
-                    val name = metaData.getAttribute("android:name")
+                    val name = metaData.getAttribute("android:name").ifBlank { metaData.getAttributeNS(ANDROID_XML_NAMESPACE, "name") }
                     name.startsWith("com.google.firebase.components:") && predicate(name)
                 }
             discoveryService.removeChildren(matches)
@@ -92,3 +106,4 @@ internal fun Element.removeComponentDiscoveryRegistrarsWhere(predicate: (String)
 
     return removed
 }
+

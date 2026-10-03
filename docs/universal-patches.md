@@ -14,14 +14,13 @@ Comprehensive reference for universal optimization and resource slimming patches
 | **[PNG Asset Optimizer](#4-png-asset-optimizer-pngassetoptimizerpatch)** | `rawResourcePatch` | PNG Assets (`res/**`, `assets/**`) | In-memory RGBA-verified level 9 zlib recompression + metadata strip | **~1–8 MB** saved, 0% visual degradation |
 | **[APK Junk Cleaner](#5-apk-junk-cleaner-apkjunkcleanerpatch)** | `rawResourcePatch` | Root & Metadata (`META-INF/**`, root) | Prunes compiler metadata, Kotlin debug tables, duplicate licenses | **~0.5–2 MB** saved, cleaner packaging |
 | **[Universal Offline Mode](#6-universal-offline-mode-universalofflinepatch)** | `resourcePatch` | Manifest (`AndroidManifest.xml`) | Revokes `INTERNET` & network permissions + blocks cleartext HTTP | Complete network isolation at OS kernel level |
-| **[Universal Telemetry Neutralizer](#7-universal-telemetry-neutralizer-universaltelemetryneutralizerpatch)** | `resourcePatch` | Manifest (`AndroidManifest.xml`) | Strips ad permissions, disables analytics providers/services, injects opt-out flags | Neutralizes third-party analytics & telemetry dispatch |
+| **[Universal Telemetry Neutralizer](#7-universal-telemetry-neutralizer-universaltelemetryneutralizerpatch)** | `resourcePatch` | Manifest (`AndroidManifest.xml`) | Strips ad permissions, disables analytics providers/services, prunes discovery registrars, injects opt-out flags | Neutralizes third-party analytics & telemetry dispatch |
 | **[Universal Native Binary Trimmer](#8-universal-native-binary-trimmer-universalnativebinarytrimmerpatch)** | `rawResourcePatch` | Native Libraries (`lib/**`) | In-situ byte-level zeroing of non-essential tracking & debug `.so` files | **~1–15 MB** saved, removes resident native crash sidecars |
 | **[Universal WebP Asset Optimizer](#9-universal-webp-asset-optimizer-universalwebpoptimizerpatch)** | `rawResourcePatch` | WebP Assets (`res/**`, `assets/**`) | Lossless chunk stripping (`EXIF`, `XMP`, `ICCP`) + VP8X header recalculation | **~0.5–5 MB** saved, 0% visual degradation |
 | **[Background Sync & JobScheduler Purge](#10-background-sync--jobscheduler-purge-backgroundsyncpurgepatch)** | `resourcePatch` | Manifest (`AndroidManifest.xml`) | Strips boot permissions and disables boot receivers & WorkManager schedulers | Eliminates background wakeups, radio alarms, and standby battery drain |
 | **[Universal Privacy Permissions Stripper](#11-universal-privacy-permissions-stripper-universalprivacypermissionspatch)** | `resourcePatch` | Manifest (`AndroidManifest.xml`) | Selectively revokes sensitive hardware, privacy, and sensor permissions | Eliminates OS permission grants and runtime capability access |
 | **[Universal Screenshot Protection Bypass](#12-universal-screenshot-protection-bypass-universalscreenshotprotectionbypasspatch)** | `bytecodePatch` | Dalvik Bytecode & Manifest | Neutralizes `FLAG_SECURE`, unlocks audio playback capture, and suppresses Android 14+ screenshot detection | Allows screenshots, screen recordings, and internal audio capture across protected views |
 | **[Universal Screen Timeout Enforcer](#13-universal-screen-timeout-enforcer-universalscreentimeoutenforcerpatch)** | `bytecodePatch` | Dalvik Bytecode & Windows | Neutralizes `keepScreenOn(Z)V` view calls and strips `FLAG_KEEP_SCREEN_ON` (`0x80`) | Enforces OS screen timeout and sleep timer during video playback |
-| **[Disable Firebase Telemetry](#14-disable-firebase-telemetry-disablefirebasetelemetrypatch)** | `resourcePatch` | Manifest (`AndroidManifest.xml`) | Injects opt-out metadata, disables DataTransport services & session services | Disables Firebase analytics, crashlytics, and perf telemetry |
 
 ---
 
@@ -254,7 +253,8 @@ The **`Universal Telemetry Neutralizer`** patch neutralizes pervasive third-part
 ### Neutralized Tracking & Analytics Frameworks
 
 - **Google & Firebase Measurement**: `AppMeasurementContentProvider`, `AppMeasurementService`, `AppMeasurementJobService`, `AppMeasurementReceiver`.
-- **Google DataTransport**: `JobInfoSchedulerService`, `TransportBackendDiscovery`, `AlarmManagerSchedulerBroadcastReceiver`.
+- **Google DataTransport & Firebase Sessions**: `JobInfoSchedulerService`, `TransportBackendDiscovery`, `AlarmManagerSchedulerBroadcastReceiver`, `SessionLifecycleService`.
+- **Firebase ComponentDiscovery Registrars**: Prunes registrar `<meta-data>` tags within `ComponentDiscoveryService` for Analytics, Crashlytics, Performance Monitoring, and Sessions, preventing dependency injection from instantiating tracking classes in memory.
 - **Sentry Crash & Performance**: `SentryInitProvider`, `SentryPerformanceProvider`.
 - **Facebook AppEvents**: `FacebookInitProvider`.
 - **AppsFlyer Attribution**: `PluginInfoContentProvider`, `AFJobSchedulerService`, `SingleInstallBroadcastReceiver`, `MultipleInstallBroadcastReceiver`.
@@ -265,10 +265,10 @@ The **`Universal Telemetry Neutralizer`** patch neutralizes pervasive third-part
 
 - **Revoke Advertising & Tracking Permissions (`revokePermissions`)**: Strips `com.google.android.gms.permission.AD_ID`, Android Privacy Sandbox permissions (`ACCESS_ADSERVICES_ATTRIBUTION`, `ACCESS_ADSERVICES_AD_ID`, `ACCESS_ADSERVICES_CUSTOM_AUDIENCE`, `ACCESS_ADSERVICES_TOPICS`), and install referrer permissions (Toggle, default: `true`).
 - **Disable Telemetry ContentProviders (`disableProviders`)**: Sets `android:enabled="false"` on analytics and tracker ContentProviders (Toggle, default: `true`).
-- **Disable Telemetry Background Services (`disableServices`)**: Sets `android:enabled="false"` on telemetry upload, JobScheduler, and DataTransport background services (Toggle, default: `true`).
+- **Disable Telemetry Background Services (`disableServices`)**: Sets `android:enabled="false"` on telemetry upload, JobScheduler, DataTransport, and Firebase session background services (Toggle, default: `true`).
 - **Disable Telemetry Receivers (`disableReceivers`)**: Sets `android:enabled="false"` on campaign, install referrer, and measurement broadcast receivers (Toggle, default: `true`).
-- **Inject Telemetry Opt-Out Flags (`injectOptOutMetadata`)**: Injects declarative opt-out `<meta-data>` tags into `<application>` for Firebase Analytics, Crashlytics, Performance, Google Analytics, Sentry, and AppsFlyer (Toggle, default: `true`).
-- **Disable Firebase Init Provider (`disableFirebaseInitProvider`)**: Sets `android:enabled="false"` on `FirebaseInitProvider` (Toggle, default: `false`). *Keep disabled if the target app relies on Firebase Core, Auth, or Cloud Messaging (FCM).*
+- **Inject Telemetry Opt-Out Flags & Prune Registrars (`injectOptOutFlags`)**: Injects declarative opt-out `<meta-data>` tags into `<application>` for Firebase Analytics, Crashlytics, Performance, Google Analytics, Sentry, and AppsFlyer, and prunes Firebase discovery registrars (Toggle, default: `true`).
+- **Disable Firebase Init Provider (`disableFirebaseInit`)**: Sets `android:enabled="false"` on `FirebaseInitProvider` (Toggle, default: `false`). *Keep disabled if the target app relies on Firebase Core, Auth, or Cloud Messaging (FCM).*
 
 ---
 
@@ -413,29 +413,4 @@ The **`Universal Screen Timeout Enforcer`** patch forces the host application to
 The patch operates without any manual configuration or boolean options (`default = false`). When enabled, it automatically executes the complete screen timeout enforcement pipeline across all bytecode components:
 - Clears `FLAG_KEEP_SCREEN_ON` (`0x80`) on `Window.setFlags`, `Window.addFlags`, and `WindowManager.LayoutParams.flags`.
 - Neutralizes `setKeepScreenOn(Z)V` calls across all UI views and surface holders.
-
----
-
-## 14. Disable Firebase Telemetry (`disableFirebaseTelemetryPatch`)
-
-The **`Disable Firebase Telemetry`** patch disables Firebase telemetry collection flags, analytics, crashlytics, performance monitoring, session lifecycle services, and Google DataTransport sender entry points at the Android application manifest level (`AndroidManifest.xml`).
-
-### 🛡️ Low-Level Manifest Transformations
-
-1. **Opt-Out Metadata Injection**: Injects authoritative opt-out declarations into `<application>`:
-   - `firebase_analytics_collection_enabled = false`
-   - `firebase_analytics_collection_deactivated = true`
-   - `firebase_crashlytics_collection_enabled = false`
-   - `firebase_performance_collection_enabled = false`
-   - `firebase_performance_collection_deactivated = true`
-   - `firebase_performance_logcat_enabled = false`
-   - `firebase_data_collection_default_enabled = false`
-   - `google_analytics_adid_collection_enabled = false`
-   - `google_analytics_deferred_deep_link_enabled = false`
-2. **Component Deactivation**: Sets `android:enabled="false"` and `android:exported="false"` on Google DataTransport scheduling and session services:
-   - `TransportBackendDiscovery`
-   - `JobInfoSchedulerService`
-   - `AlarmManagerSchedulerBroadcastReceiver`
-   - `SessionLifecycleService`
-3. **ComponentDiscoveryService Pruning**: Safely removes Firebase registrar `<meta-data>` tags within `ComponentDiscoveryService` for Analytics, Crashlytics, Performance, and Sessions.
 

@@ -235,14 +235,13 @@
 </details>
 
 <details>
-<summary>Universal&nbsp;&nbsp;•&nbsp;&nbsp;<b>13 patches</b></summary>
+<summary>Universal&nbsp;&nbsp;•&nbsp;&nbsp;<b>12 patches</b></summary>
 <br>
 
 | Patch | Description | Options |
 |----------|----------------|-----------|
 | **APK Junk Cleaner** | Strips non-functional build metadata, compiler properties, Kotlin coroutines debug tables, and duplicate license texts from META-INF and APK root. |  |
 | **Background Sync & JobScheduler Purge** | Strips RECEIVE_BOOT_COMPLETED and disables boot, package-replacement, and periodic background sync receivers and services in AndroidManifest.xml to eliminate background wakeups and conserve battery. | • Strip RECEIVE_BOOT_COMPLETED Permission<br>• Disable Boot & Package Receivers<br>• Disable WorkManager & Job Schedulers<br>• Strip WAKE_LOCK Permission |
-| **Disable Firebase Telemetry** | Disables Firebase telemetry, analytics, crashlytics, and performance collection flags, session services, and DataTransport sender entry points. |  |
 | **DPI Resource Slimmer** | Strips unselected screen density resource directories from res/ (e.g. drawable-mdpi, drawable-hdpi, mipmap-xhdpi). Density-independent resources (nodpi, anydpi) and orphan resources are safely preserved. | • DPI densities to keep<br>• Remove smartwatch (Wear OS) resources<br>• Remove Android TV resources<br>• Remove automotive, dock, and VR resources |
 | **Locale Resource Slimmer** | Strips unselected language translation directories from res/ (e.g. values-*, raw-*, xml-*). Base fallback resources with no language qualifiers are always preserved. | • Locales to keep |
 | **PNG Asset Optimizer** | Losslessly recompresses PNG assets with maximum zlib compression and strips non-rendering metadata chunks (pHYs, tEXt, tIME) while preserving 9-patch structures and pixel accuracy. |  |
@@ -251,7 +250,7 @@
 | **Universal Privacy Permissions Stripper** | Selectively strips sensitive privacy, sensor, and hardware permissions from AndroidManifest.xml via configurable boolean toggles. | • Strip Notification Permission<br>• Strip Camera Permission<br>• Strip Microphone Permissions<br>• Strip Storage & Media Permissions<br>• Strip Location Permissions<br>• Strip Contacts & Accounts Permissions<br>• Strip Calendar Permissions<br>• Strip Nearby Devices Permissions<br>• Strip Body Sensors Permissions |
 | **Universal Screen Timeout Enforcer** | Forces the target application to respect system screen timeout and sleep timers by neutralizing keepScreenOn view calls and stripping FLAG_KEEP_SCREEN_ON from windows and layout parameters. |  |
 | **Universal Screenshot Protection Bypass** | Neutralizes FLAG_SECURE on windows, layout params, and SurfaceViews, unlocks audio playback capture, and suppresses Android 14+ screenshot and screen recording detection callbacks. |  |
-| **Universal Telemetry Neutralizer** | Strips advertising and Privacy Sandbox permissions, disables analytics ContentProviders and telemetry background services (Firebase, Sentry, Adjust, AppsFlyer, DataTransport), and injects telemetry opt-out metadata. | • Revoke Advertising & Tracking Permissions<br>• Disable Telemetry ContentProviders<br>• Disable Telemetry Background Services<br>• Disable Telemetry Receivers<br>• Inject Telemetry Opt-Out Flags<br>• Disable Firebase Init Provider |
+| **Universal Telemetry Neutralizer** | Strips advertising and Privacy Sandbox permissions, disables analytics ContentProviders and telemetry background services (Firebase, Sentry, Adjust, AppsFlyer, DataTransport), prunes ComponentDiscovery registrars, and injects telemetry opt-out metadata. | • Revoke Advertising & Tracking Permissions<br>• Disable Telemetry ContentProviders<br>• Disable Telemetry Background Services<br>• Disable Telemetry Receivers<br>• Inject Telemetry Opt-Out Flags & Prune Registrars<br>• Disable Firebase Init Provider |
 | **Universal WebP Asset Optimizer** | Losslessly strips non-rendering metadata and ancillary chunks (EXIF, XMP, ICCP) from WebP assets across res/ and assets/ to reduce APK size. | • Strip EXIF Metadata<br>• Strip XMP Metadata<br>• Strip ICC Color Profiles |
 
 </details>
