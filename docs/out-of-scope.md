@@ -26,13 +26,15 @@ The design of Morphe Patches is guided by four non-negotiable principles:
 Feature requests that fall into any of the following categories will be closed as **not planned**:
 
 ### ❌ In-App Settings Screens & Dynamic UI Panels
-* **What is requested**: Injecting custom preference menus, floating overlay panels, or settings screens into target applications (e.g., TikTok, Brave, Gboard) to toggle patches dynamically on the fly.
+* **What is requested**: Injecting custom preference menus, floating overlay panels, or settings screens into target applications (e.g., TikTok, Brave, Hevy) to toggle patches dynamically on the fly.
 * **Why it is out of scope**:
   1. **Extreme Fragility**: Applications like TikTok deploy aggressive ProGuard/DexGuard re-obfuscation and publish updates weekly. Hooking into obfuscated Activity, Fragment, or Navigation controller hierarchies breaks continuously across version bumps, making rapid upstream synchronization impossible.
-  2. **Contradicts Zero-Overhead Debloating**: Dynamic in-app toggles require keeping unwanted features, telemetry, and background daemons intact inside the APK and wrapping every hook in runtime conditional guards (`if (isFeatureEnabled())`). This adds SharedPreferences disk I/O to performance-critical paths (video decoding, rendering, networking).
-  3. **Target Heterogeneity**: The repository targets diverse runtimes—native C++ Chromium (`libchrome.so`), React Native Hermes bytecode, Android IME services, and obfuscated Java/Kotlin. There is no universal UI framework across these targets.
-* **Supported Alternative**:
-  Configurable patch parameters (such as SIM regions, video quality presets, clipboard retention limits, or package clone suffixes) are configured **at patch-time** via Morphe Manager / CLI options (`stringOption`). Once patched, the app runs cleanly and standalone without runtime management layers.
+  2. **Contradicts Zero-Overhead Debloating**: Dynamic in-app toggles require keeping unwanted features, telemetry, and background daemons intact inside the APK and wrapping every hook in runtime conditional guards (`if (isFeatureEnabled())`). This adds unnecessary disk I/O to performance-critical paths (video decoding, rendering, networking).
+  3. **Target Heterogeneity**: The repository targets diverse runtimes—native C++ Chromium (`libchrome.so`), React Native Hermes bytecode, and heavily obfuscated Java/Kotlin. There is no universal UI framework across these targets.
+* **Controlled Architectural Exception (Gboard Lite)**:
+  Gboard Lite is the sole exception where an in-app settings category (*Morphe Patches*) is supported. Unlike other targets, Gboard exposes standard AndroidX `PreferenceScreen` XML declarations (`res/xml/setting*.xml`) and standard IME settings activities. This allows declarative injection at the XML resource level (`resourcePatch`) backed by a companion DEX extension (`GboardExtension`), without modifying fragile obfuscated UI view hierarchies or embedding third-party UI activities.
+* **Supported Alternative for All Other Targets**:
+  Configurable patch parameters (such as SIM regions, video quality presets, or package clone suffixes) are configured **at patch-time** via Morphe Manager / CLI options (`stringOption`). Once patched, the app runs cleanly and standalone without runtime management layers.
 
 ---
 
