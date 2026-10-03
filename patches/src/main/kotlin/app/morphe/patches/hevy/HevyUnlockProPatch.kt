@@ -4,6 +4,7 @@ import app.morphe.patcher.patch.rawResourcePatch
 import app.morphe.patches.shared.Constants
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import java.security.MessageDigest
 
 private const val HERMES_MAGIC = 0x1f1903c103bc1fc6L
 private const val HERMES_VERSION_HBC96 = 96
@@ -329,8 +330,15 @@ val hevyUnlockProPatch = rawResourcePatch(
         }
 
         if (patchedCount > 0) {
+            // Recalculate 20-byte SHA-1 footer hash for Hermes bytecode bundles (version > 74 / HBC96)
+            if (bundleBytes.size > 20) {
+                val hashContent = bundleBytes.copyOfRange(0, bundleBytes.size - 20)
+                val md = MessageDigest.getInstance("SHA-1")
+                val hash = md.digest(hashContent)
+                System.arraycopy(hash, 0, bundleBytes, bundleBytes.size - 20, 20)
+            }
             bundleFile.writeBytes(bundleBytes)
-            println("[Unlock Pro] Successfully updated Hevy Pro across $patchedCount functions in assets/index.android.bundle.")
+            println("[Unlock Pro] Successfully updated Hevy Pro across $patchedCount functions in assets/index.android.bundle (recalculated SHA-1 footer).")
         } else {
             println("[Unlock Pro] All targets (${trueTargets.size} Pro, ${falseTargets.size} suppressed) are already patched.")
         }
