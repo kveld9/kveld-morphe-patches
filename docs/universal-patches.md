@@ -118,6 +118,7 @@ When configuring the **`Locales to keep`** option (`locales`), specify a comma-s
 - **Default**: `en` (English `en` and `en-US` are always retained).
 - **Base Fallback Safety**: Resource directories without language qualifiers (e.g. `res/values/`, `res/xml/`) are strictly preserved.
 - **Prefix Matching**: Specifying a base code like `es` automatically preserves both global Spanish and regional variants (`es-rUS`, `es-rES`, `es-r419`).
+- **Multi-Package ARSC Traversal**: Automatically scans and slims across all decoded resource packages (`resources/<package>/res`), ensuring split or modularized application packages are cleaned without leaving secondary package folders untouched.
 
 ### Popular Language Codes
 

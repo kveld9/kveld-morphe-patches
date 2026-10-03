@@ -19,8 +19,9 @@ val localeResourceSlimmerPatch = resourcePatch(
     )
 
     execute {
-        val resDir = get("res")
-        if (!resDir.exists() || !resDir.isDirectory) {
+        val mainRes = get("res")
+        val resDirs = LocaleUtils.resolveResourceDirectories(mainRes)
+        if (resDirs.isEmpty()) {
             println("[Locale Resource Slimmer] res/ directory not found - skipping safely.")
             return@execute
         }
@@ -29,35 +30,39 @@ val localeResourceSlimmerPatch = resourcePatch(
         var removedDirs = 0
         var savedBytes = 0L
 
-        resDir.listFiles { file -> file.isDirectory }?.forEach { dir ->
-            val languages = LocaleUtils.extractResourceLanguages(dir.name)
+        for (resDir in resDirs) {
+            resDir.listFiles { file -> file.isDirectory }?.forEach { dir ->
+                val languages = LocaleUtils.extractResourceLanguages(dir.name)
 
-            // Base resources with no language qualifiers are always kept as fallback
-            if (languages.isEmpty()) return@forEach
+                // Base resources with no language qualifiers are always kept as fallback
+                if (languages.isEmpty()) return@forEach
 
-            // Check if any extracted language matches the keep set
-            val shouldKeep = languages.any { it in keepSet }
+                // Check if any extracted language matches the keep set
+                val shouldKeep = languages.any { it in keepSet }
 
-            if (!shouldKeep) {
-                val dirSize = dir.walkTopDown().filter { it.isFile }.sumOf { it.length() }
-                if (dir.deleteRecursively()) {
-                    removedDirs++
-                    savedBytes += dirSize
+                if (!shouldKeep) {
+                    val dirSize = dir.walkTopDown().filter { it.isFile }.sumOf { it.length() }
+                    if (dir.deleteRecursively()) {
+                        removedDirs++
+                        savedBytes += dirSize
+                    }
                 }
             }
+
+            // Clean up any remaining empty directories
+            resDir.walkBottomUp()
+                .filter { it.isDirectory && it != resDir && it.listFiles()?.isEmpty() == true }
+                .forEach { it.delete() }
         }
 
-        // Clean up any remaining empty directories
-        resDir.walkBottomUp()
-            .filter { it.isDirectory && it != resDir && it.listFiles()?.isEmpty() == true }
-            .forEach { it.delete() }
-
         if (removedDirs == 0) {
-            println("[Locale Resource Slimmer] No non-target localization directories found to strip (kept: ${keepSet.sorted().joinToString(", ")}).")
+            val packageSuffix = if (resDirs.size > 1) " across ${resDirs.size} resource packages" else ""
+            println("[Locale Resource Slimmer] No non-target localization directories found to strip$packageSuffix (kept: ${keepSet.sorted().joinToString(", ")}).")
             return@execute
         }
 
         val savedFormatted = LocaleUtils.formatBytes(savedBytes)
-        println("[Locale Resource Slimmer] Stripped $removedDirs localization dirs (kept: ${keepSet.sorted().joinToString(", ")}) -> Saved $savedFormatted")
+        val packageSuffix = if (resDirs.size > 1) " across ${resDirs.size} resource packages" else ""
+        println("[Locale Resource Slimmer] Stripped $removedDirs localization dirs$packageSuffix (kept: ${keepSet.sorted().joinToString(", ")}) -> Saved $savedFormatted")
     }
 }

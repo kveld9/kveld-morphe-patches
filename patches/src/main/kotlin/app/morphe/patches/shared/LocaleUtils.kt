@@ -1,5 +1,7 @@
 package app.morphe.patches.shared
 
+import java.io.File
+
 object LocaleUtils {
     // Non-language qualifier tokens that appear in Android resource directory names
     private val KNOWN_NON_LANGUAGE_QUALIFIERS = setOf(
@@ -97,5 +99,27 @@ object LocaleUtils {
      */
     fun cleanClassName(type: String): String {
         return type.substringAfterLast('/').removePrefix("L").removeSuffix(";")
+    }
+
+    /**
+     * Resolves all resource directories (`res/`) across all ARSC packages decoded by Morphe.
+     * When Morphe decodes multiple resource packages, they reside under `<work>/resources/<package>/res`.
+     * If multiple package directories are found, returns all valid `res/` directories;
+     * otherwise falls back to `listOf(mainRes)`.
+     */
+    fun resolveResourceDirectories(mainRes: File): List<File> {
+        if (!mainRes.exists() || !mainRes.isDirectory) return emptyList()
+
+        val resourcesRoot = mainRes.parentFile?.parentFile
+        if (resourcesRoot != null && resourcesRoot.isDirectory && resourcesRoot.name == "resources") {
+            val packageResDirs = resourcesRoot.listFiles { f -> f.isDirectory }
+                ?.map { it.resolve("res") }
+                ?.filter { it.isDirectory }
+                ?.distinct()
+            if (!packageResDirs.isNullOrEmpty()) {
+                return packageResDirs
+            }
+        }
+        return listOf(mainRes)
     }
 }
