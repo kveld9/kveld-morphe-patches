@@ -29,33 +29,38 @@ internal fun Element.childrenNamed(vararg names: String): List<Element> {
     }
 }
 
+private const val ANDROID_XML_NAMESPACE = "http://schemas.android.com/apk/res/android"
+
 internal fun Element.removeChildren(nodes: List<Node>) {
     nodes.forEach(::removeChild)
 }
 
 internal fun Element.getOrCreateApplicationMetaData(name: String): Element {
     childrenNamed("meta-data")
-        .firstOrNull { it.getAttribute("android:name") == name }
+        .firstOrNull { it.getAttribute("android:name") == name || it.getAttributeNS(ANDROID_XML_NAMESPACE, "name") == name }
         ?.let { return it }
 
     val metaData = ownerDocument.createElement("meta-data")
-    metaData.setAttribute("android:name", name)
+    metaData.setAttributeNS(ANDROID_XML_NAMESPACE, "android:name", name)
     appendChild(metaData)
     return metaData
 }
 
 internal fun Element.setApplicationMetaData(name: String, value: String) {
-    getOrCreateApplicationMetaData(name).setAttribute("android:value", value)
+    getOrCreateApplicationMetaData(name).setAttributeNS(ANDROID_XML_NAMESPACE, "android:value", value)
 }
 
 internal fun Element.disableComponentsWhere(predicate: (String) -> Boolean): Int {
     var disabled = 0
 
     childrenNamed("activity", "provider", "service", "receiver")
-        .filter { component -> predicate(component.getAttribute("android:name")) }
+        .filter { component ->
+            val name = component.getAttribute("android:name").ifBlank { component.getAttributeNS(ANDROID_XML_NAMESPACE, "name") }
+            predicate(name)
+        }
         .forEach { component ->
-            component.setAttribute("android:enabled", "false")
-            component.setAttribute("android:exported", "false")
+            component.setAttributeNS(ANDROID_XML_NAMESPACE, "android:enabled", "false")
+            component.setAttributeNS(ANDROID_XML_NAMESPACE, "android:exported", "false")
             disabled++
         }
 
