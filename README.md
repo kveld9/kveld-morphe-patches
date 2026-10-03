@@ -331,6 +331,7 @@ Need assistance, have questions regarding patch configurations, or want to follo
 | <a href="https://github.com/Fahry-a"><img src="https://github.com/Fahry-a.png" width="48" height="48" style="border-radius: 50%;" /><br><b>@Fahry-a</b></a> | 💡 Proposed Brave ARMv7a (32-bit) architecture support feature request ([#50](https://github.com/kveld9/kveld-morphe-patches/issues/50)). |
 | <a href="https://github.com/marcoodhb"><img src="https://github.com/marcoodhb.png" width="48" height="48" style="border-radius: 50%;" /><br><b>@marcoodhb</b></a> | 💡 Proposed TikTok Disable double tap to like feature request ([#55](https://github.com/kveld9/kveld-morphe-patches/issues/55)). |
 | <a href="https://github.com/miyqwx-dev"><img src="https://github.com/miyqwx-dev.png" width="48" height="48" style="border-radius: 50%;" /><br><b>@miyqwx-dev</b></a> | 💡 Proposed Gboard Lite Hide Incognito Icon toggle feature request. |
+| <a href="https://github.com/rdx011"><img src="https://github.com/rdx011.png" width="48" height="48" style="border-radius: 50%;" /><br><b>@rdx011</b></a> | 💡 Proposed Gboard Lite Decouple keyboard vibration from system touch feedback feature request ([#69](https://github.com/kveld9/kveld-morphe-patches/issues/69)). |
 <!-- CONTRIBUTORS_END -->
 
 ---

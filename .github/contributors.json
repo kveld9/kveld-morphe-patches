@@ -109,6 +109,15 @@
     {
       "username": "miyqwx-dev",
       "customText": "💡 Proposed Gboard Lite Hide Incognito Icon toggle feature request."
+    },
+    {
+      "username": "rdx011",
+      "contributions": [
+        {
+          "title": "Gboard Lite Decouple keyboard vibration from system touch feedback",
+          "issue": 69
+        }
+      ]
     }
   ]
 }
