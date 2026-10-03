@@ -79,7 +79,7 @@ private val gboardSeekBarEnhancementsPatch = bytecodePatch(
 
 val gboardSettingsMenuPatch = resourcePatch(
     name = "Gboard Enhancements",
-    description = "Master customization suite bundling in-app toggleable features (AMOLED Pure Black theme, zero bottom inset, independent keyboard vibration, force incognito, clipboard retention, top toolbar icons count, cursor trackpad, and smart flags) managed directly from a top-level Morphe Patches category in Gboard Settings.",
+    description = "Master customization suite bundling in-app toggleable features (AMOLED Pure Black theme, zero bottom inset, independent keyboard vibration, force incognito, voice typing in incognito, clipboard retention, top toolbar icons count, cursor trackpad, and smart flags) managed directly from a top-level Morphe Patches category in Gboard Settings.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
@@ -107,12 +107,14 @@ val gboardSettingsMenuPatch = resourcePatch(
 
         val targetScreens = findTargetPreferenceScreens(resDir)
         var injectedHeaders = 0
+        var strippedHeaders = 0
 
         for (file in targetScreens) {
             document(file.absolutePath).use { doc ->
                 if (injectMorpheHeader(doc)) {
                     injectedHeaders++
                 }
+                strippedHeaders += stripUnwantedSettingsHeaders(doc)
             }
         }
 
@@ -144,6 +146,9 @@ val gboardSettingsMenuPatch = resourcePatch(
         }
         if (strippedEmojiSliders > 0) {
             println("[Gboard Enhancements] Stripped $strippedEmojiSliders native EmojiScaleSliderPreference element(s) from other preference screens.")
+        }
+        if (strippedHeaders > 0) {
+            println("[Gboard Enhancements] Pruned $strippedHeaders obsolete telemetry/support header(s) from root settings.")
         }
 
         println("[Gboard Enhancements] Injected top-level Morphe Patches header into $injectedHeaders root screen(s), populated dedicated settings screen: $populatedScreen.")
@@ -216,6 +221,55 @@ private fun hasExistingHeader(root: Element): Boolean {
         if (key == MORPHE_HEADER_KEY) return true
     }
     return false
+}
+
+private fun stripUnwantedSettingsHeaders(doc: Document): Int {
+    val root = doc.documentElement ?: return 0
+    if (root.tagName != "PreferenceScreen") return 0
+    var stripped = 0
+
+    val nodesToRemove = mutableListOf<Element>()
+    val allElements = root.getElementsByTagName("*")
+
+    for (i in 0 until allElements.length) {
+        val elem = allElements.item(i) as? Element ?: continue
+        val tagName = elem.tagName
+        val frag = elem.getAttributeNS(ANDROID_XML_NAMESPACE, "fragment").ifEmpty {
+            elem.getAttribute("android:fragment")
+        }
+        val key = elem.getAttributeNS(ANDROID_XML_NAMESPACE, "key").ifEmpty {
+            elem.getAttribute("android:key")
+        }
+
+        val isPrivacy = frag.endsWith("PrivacySettingsFragment") || key.contains("0x7f1409a4") || key.contains("setting_privacy")
+        val isAbout = frag.endsWith("AboutSettingsFragment") || key.contains("0x7f140994") || key.contains("setting_about")
+        val isRateUs = tagName.endsWith("RateUsPreference") || key.contains("0x7f1409a5") || key.contains("rate_us")
+        val isFooter = tagName.endsWith("FooterPreference") || key.contains("0x7f1409ac") || key.contains("work_profile_footer")
+        val isHelpOrShare = key.contains("0x7f14099d") || key.contains("0x7f1409a6") ||
+            key.contains("help_and_feedback") || key.contains("sharing")
+
+        if (isPrivacy || isAbout || isRateUs || isFooter || isHelpOrShare) {
+            nodesToRemove.add(elem)
+        }
+    }
+
+    for (elem in nodesToRemove) {
+        elem.parentNode?.removeChild(elem)
+        stripped++
+    }
+
+    val categories = root.getElementsByTagName("androidx.preference.PreferenceCategory")
+    for (i in (categories.length - 1) downTo 0) {
+        val cat = categories.item(i) as? Element ?: continue
+        val hasElements = (0 until cat.childNodes.length).any { idx ->
+            cat.childNodes.item(idx) is Element
+        }
+        if (!hasElements) {
+            cat.parentNode?.removeChild(cat)
+        }
+    }
+
+    return stripped
 }
 
 private fun populateMorpheSettingsScreen(doc: Document): Boolean {
@@ -463,7 +517,7 @@ private fun populateMorpheSettingsScreen(doc: Document): Boolean {
     )
     root.appendChild(smartCategory)
 
-    // 5. Privacy & Security
+    // 6. Privacy & Security
     val privacyCategory = doc.createElement("androidx.preference.PreferenceCategory")
     privacyCategory.setAttributeNS(ANDROID_XML_NAMESPACE, "android:title", "Privacy & Security")
 

@@ -107,6 +107,14 @@ The **`Gboard Enhancements`** patch injects a top-level **Morphe Patches** categ
 - Redirects `LauncherActivity` to verify onboarding/IME status and trampoline directly to `SettingsActivity`.
 - Neutralizes Phenotype default flag reset assertion crashes.
 
+### 9. Root Settings Declutter
+- **Privacy Opt-In Removal**: Strips the *Privacidad* header (`PrivacySettingsFragment`) which previously contained telemetry opt-ins and personalized statistics.
+- **Legal & Terms Removal**: Purges the *Información* header (`AboutSettingsFragment`) which only routed to external Google open-source license and terms URLs.
+- **Feedback & Share Dispatchers Removal**: Removes *Ayuda y comentarios* (`help_and_feedback`), *Compartir Gboard* (`sharing`), `RateUsPreference`, and `FooterPreference` from root settings screens (`settings.xml` and `settings_legacy.xml`).
+- **Clean Container Pruning**: Automatically prunes empty `PreferenceCategory` containers left after child removal, presenting a streamlined, distraction-free root settings menu.
+
+---
+
 ## 🔒 Network Isolation: Offline Only
 
 The **`Offline Only`** patch provides complete network isolation for privacy-focused setups.
@@ -131,85 +139,11 @@ The **`Strip Permissions`** patch provides granular control over sensitive hardw
 
 ---
 
-## ⚙️ Configurable Options: Clipboard Enhancements
+## 🏷️ Configurable Options: Clone Gboard
 
-The **`Clipboard Enhancements`** patch modernizes Gboard Lite's local clipboard manager by removing artificial limits imposed on history retention, clip capacity, and keyboard layout:
-
-| Option | Key | Type | Default | Range / Format | Description |
-| :--- | :--- | :--- | :---: | :--- | :--- |
-| **Unpinned clip limit** | `unpinnedClipLimit` | String | `50` | `5` to `100` | Maximum number of unpinned clipboard items loaded and displayed in the UI. |
-| **Retention time limit (hours)** | `retentionHours` | String | `24` | Integer $\ge 1$ | Duration in hours to retain unpinned clips in SQLite storage and UI before automatic cleanup (e.g. `6`, `12`, `24`, `48`, `168`). |
-| **Clipboard grid columns** | `gridColumns` | String | `2` | `1`, `2`, or `3` | Number of columns in the clipboard keyboard layout. |
-
-### Technical Architecture & Synchronization
-
-1. **Synchronized TTL Override (`Lgju;->a(Landroid/content/Context;)J`)**:
-   - Stock Gboard restricts unpinned clip retention to approximately 1 hour using a hardcoded cutoff calculation.
-   - The patch overrides this method to return the user-configured hours converted to milliseconds ($\text{retentionHours} \times 3600 \times 1000 \text{ ms}$).
-   - Because `Lgju;->a` is the single source of truth consumed by both the **Background SQLite Pruner (`Lgkr;->g()V`)** and the **UI History Loader (`Lght;->call()`)**, clips are neither deleted from disk nor hidden from the suggestion/clipboard view until the configured duration expires.
-
-2. **In-situ Opcode Throttling Removal (`Lght;->call()`)**:
-   - Gboard stock queries clamp unpinned clips using three separate `const/4 ..., 5` opcodes in Dalvik bytecode.
-   - The patch detects each target register and rewrites these instructions to `const/16 v$reg, $parsedLimit`, allowing up to 100 recent unpinned items to be fetched from `clipboards.db`.
-
-3. **Custom Grid Span (`ClipboardKeyboard->b()I`)**:
-   - Overrides the `StaggeredGridLayoutManager` span count to render 1, 2, or 3 columns cleanly across phones, foldables, and tablets.
-
----
-
-## 🎛️ Configurable Options: Top Toolbar Item Count
-
-The **`Top Toolbar Item Count`** patch allows customizing the maximum number of access point icons displayed directly in Gboard's top toolbar:
-
-| Option | Key | Type | Default | Range / Format | Description |
-| :--- | :--- | :--- | :---: | :--- | :--- |
-| **Toolbar item count** | `itemCount` | String | `5` | `4` to `8` | Maximum number of access point icons displayed on the top toolbar without collapsing into the overflow menu. |
- 
----
-
-## 🎛️ Configurable Options: Force Incognito Mode
-
-The **`Force Incognito Mode`** patch includes an opt-in toggle to hide the incognito mask icon from the keyboard toolbar:
+The **`Clone Gboard`** patch allows running a patched build alongside stock Gboard by modifying the application package identifier:
 
 | Option | Key | Type | Default | Description |
 | :--- | :--- | :--- | :---: | :--- |
-| **Hide Incognito Icon** | `hideIncognitoIcon` | Boolean | `false` | Hides the incognito mask icon on the toolbar by replacing it with the standard access points grid icon (`res/6qJ.xml` -> `res/BVL.xml`). |
+| **Package Suffix** | `packageSuffix` | String | `clone` | Suffix appended after the original package name (e.g., `clone` -> `com.google.android.inputmethod.latin.clone`). |
 
----
-
-## 📐 Configurable Options: Zero Bottom Inset
-
-The **`Zero Bottom Inset`** patch eliminates the forced empty navigation bar spacer (bottom chin) introduced by gesture navigation in Android 10+:
-
-| Option | Key | Type | Default | Range / Format | Description |
-| :--- | :--- | :--- | :---: | :--- | :--- |
-| **Bottom padding (px)** | `bottomPadding` | String | `0` | `0` to `150` | Forced bottom margin padding in pixels (`0` for completely flush with the bottom edge of the display, or custom value for edge curvature). |
-
-### Technical Architecture:
-- Intercepts `KeyboardModeUtils.getKeyboardBottomOffset(Context, int, int, boolean)` (`Lves;->d`) to neutralize Google's internal physical ergonomic margin (`inch * ydpi`), forcing it directly to the configured padding (`0` px by default).
-- Intercepts `WindowMetricsNotification.getNavigationBarBottomInset()` (`Laatt;->a`), collapsing the calculated navigation bar bottom offset to the configured pixel value across `KeyboardModeManager`, layout controllers, and touchable regions.
-- Eliminates the blank chin space under the spacebar in gesture navigation mode without root, Magisk, or system overlays.
-
----
-
-## 🎛️ Configurable Options: Feature Flags
-
-The **`Feature Flags`** patch unlocks hidden Google feature flags and experimental UI capabilities via compile/patch-time toggles:
-
-| Option | Key | Type | Default | Description |
-| :--- | :--- | :--- | :---: | :--- |
-| **Access Points Menu Redesign** | `enableAccessPointsRedesign` | Boolean | `true` | Enables the redesigned access points menu bar and customization panel (Panel V2). |
-| **Key Shape Selection** | `enableKeyShapeSelection` | Boolean | `true` | Enables key border shape selection UI (Default, Semi-rounded, Round) in theme customization. |
-| **Cursor Trackpad** | `enableCursorTrackpad` | Boolean | `false` | Enables 2D trackpad cursor navigation and cursor lock mode by holding the spacebar (experimental). |
-| **Grammar Checker & Smart Compose** | `enableGrammarChecker` | Boolean | `true` | Unlocks Grammar check and Smart Compose / inline suggestions under Text correction preferences. |
-| **Dismiss Suggestions Button** | `enableDismissSuggestionsButton` | Boolean | `true` | Adds a close button (X) to dismiss proactive suggestions on the suggestion bar. |
-| **Bluetooth Microphone** | `enableBluetoothMicrophone` | Boolean | `true` | Unlocks the 'Use Bluetooth microphone' setting under Voice typing preferences. |
-
-### Technical Architecture & Unlocks:
-1. **Cursor Trackpad Mode** (Disabled by default): Long-pressing and swiping across the spacebar enters full 2D cursor navigation mode (moving horizontally and vertically) with haptic feedback. Holding until locked enters sticky cursor mode. Disabled by default due to input connection flickering in web views (such as Firefox/GeckoView). Phenotype resilience is handled automatically via dependency on **Core Integrity**.
-2. **Bluetooth Microphone**: Unlocks the dedicated "Usar micrófono Bluetooth" (Use Bluetooth microphone) toggle under *Gboard Settings > Dictado por voz* (Voice typing).
-3. **Grammar Checker & Smart Compose**: Unlocks "Revisión gramatical" (Grammar check with blue squiggly underlines) and client-side inline smart suggestions under *Gboard Settings > Correcciones y sugerencias*.
-4. **Emoji Scale Setting**: Unconditionally unlocks the "Tamaño de los emojis" (Emoji size) slider under *Gboard Settings > Preferencias > Apariencia*.
-5. **Dismiss Suggestions Button**: Renders a dedicated dismiss button (`X`) on the proactive suggestion bar, allowing quick hiding of proactive recommendations.
-6. **Key Shape Selection**: Forces `xsj.i()` to return true, unblocking the key shape border radius selector in custom themes.
-7. **Access Points Menu Redesign**: Forces `enable_access_points_menu_redesign` to true, activating Panel V2 toolbar customization.
