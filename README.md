@@ -113,7 +113,7 @@
 | **Always Show Publish Date** | Forces video publish/upload date to remain visible in video author information across all feed types. |  |
 | **Auto-Pause First Video** | Automatically pauses the first video when opening TikTok, allowing the application to finish background initialization and preventing playback lag. |  |
 | **Bypass Mandatory Login** | Neutralizes mandatory login walls, dynamic regional forced login gates, and guest browsing restrictions. |  |
-| **Bypass Screen Capture Detection** | Clears FLAG_SECURE on protected windows to allow screenshots and screen recording across restricted views, and neutralizes screenshot detection listeners and feedback prompts. |  |
+| **Bypass Screen Capture Detection** | Clears FLAG_SECURE on protected windows, restores Circle to Search / screen translate and recent apps snapshots, and neutralizes screenshot detection listeners and feedback prompts. |  |
 | **Clean Share Panel** | Removes clutter from the share panel and direct message dialog, including suggested quick emojis and the 'Send to new group' button. | • Hide Quick Emojis<br>• Hide 'Send to New Group' |
 | **Clean Share URL** | Strips tracking parameters, user IDs, device fingerprints, and marketing tokens from shared TikTok links. |  |
 | **Client-Side AI & Behavioral Profiling Governor** | Neutralizes on-device machine learning inference (Pitaya), Tako AI chatbot entry points and icons, and AI smart search suggestion clutter. |  |
