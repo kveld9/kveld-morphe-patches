@@ -3,6 +3,7 @@ package com.kveld9.morphe.extension.gboard;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.view.View;
 import android.widget.TextView;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -32,6 +33,7 @@ public class GboardExtension {
     public static final String PREF_KEY_BLUETOOTH_MIC = "morphe_bluetooth_mic";
     public static final String PREF_KEY_FORCE_INCOGNITO = "morphe_force_incognito";
     public static final String PREF_KEY_HIDE_INCOGNITO_ICON = "morphe_hide_incognito_icon";
+    public static final String PREF_KEY_DECOUPLE_TOUCH_FEEDBACK = "morphe_decouple_touch_feedback";
 
     public static final int MIN_BOTTOM_PADDING = 0;
     public static final int MAX_BOTTOM_PADDING = 150;
@@ -306,6 +308,76 @@ public class GboardExtension {
 
     public static boolean isHideIncognitoIconEnabled() {
         return isHideIncognitoIconEnabled(null);
+    }
+
+    public static boolean isDecoupleTouchFeedbackEnabled(Context context) {
+        return getBooleanPref(PREF_KEY_DECOUPLE_TOUCH_FEEDBACK, true);
+    }
+
+    public static boolean isDecoupleTouchFeedbackEnabled() {
+        return isDecoupleTouchFeedbackEnabled(null);
+    }
+
+    public static int overrideSystemHapticStatus(Context context) {
+        if (isDecoupleTouchFeedbackEnabled(context)) {
+            return 1;
+        }
+        return -1;
+    }
+
+    public static boolean overrideHapticFeedbackSetting(boolean original) {
+        if (isDecoupleTouchFeedbackEnabled()) {
+            return true;
+        }
+        return original;
+    }
+
+    public static int getVibrationUsage(int originalUsage) {
+        if (isDecoupleTouchFeedbackEnabled()) {
+            return 0;
+        }
+        return originalUsage;
+    }
+
+    public static boolean performHapticFeedback(View view, int feedbackConstant) {
+        if (view == null) return false;
+        if (isDecoupleTouchFeedbackEnabled()) {
+            boolean handled = false;
+            try {
+                handled = view.performHapticFeedback(feedbackConstant, 2);
+            } catch (Throwable ignored) {}
+            if (handled) {
+                return true;
+            }
+            return triggerVibratorFallback(view.getContext());
+        }
+        return view.performHapticFeedback(feedbackConstant);
+    }
+
+    @android.annotation.SuppressLint("MissingPermission")
+    private static boolean triggerVibratorFallback(Context context) {
+        Context ctx = getContext(context);
+        if (ctx == null) return false;
+        try {
+            android.os.Vibrator vibrator = (android.os.Vibrator) ctx.getSystemService(Context.VIBRATOR_SERVICE);
+            if (vibrator == null || !vibrator.hasVibrator()) return false;
+            if (android.os.Build.VERSION.SDK_INT >= 29) {
+                android.os.VibrationEffect effect = null;
+                if (android.os.Build.VERSION.SDK_INT >= 30 && vibrator.areAllPrimitivesSupported(android.os.VibrationEffect.Composition.PRIMITIVE_CLICK)) {
+                    effect = android.os.VibrationEffect.startComposition()
+                            .addPrimitive(android.os.VibrationEffect.Composition.PRIMITIVE_CLICK, 1.0f)
+                            .compose();
+                } else {
+                    effect = android.os.VibrationEffect.createOneShot(10, android.os.VibrationEffect.DEFAULT_AMPLITUDE);
+                }
+                vibrator.vibrate(effect);
+            } else {
+                vibrator.vibrate(10);
+            }
+            return true;
+        } catch (Throwable ignored) {
+            return false;
+        }
     }
 
     public static boolean isKeyShapeSelectionEnabled() {

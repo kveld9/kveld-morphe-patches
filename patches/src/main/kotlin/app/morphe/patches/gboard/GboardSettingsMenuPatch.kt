@@ -79,7 +79,7 @@ private val gboardSeekBarEnhancementsPatch = bytecodePatch(
 
 val gboardSettingsMenuPatch = resourcePatch(
     name = "Gboard Enhancements",
-    description = "Master customization suite bundling in-app toggleable features (AMOLED Pure Black theme, zero bottom inset, force incognito, clipboard retention, top toolbar icons count, cursor trackpad, and smart flags) managed directly from a top-level Morphe Patches category in Gboard Settings.",
+    description = "Master customization suite bundling in-app toggleable features (AMOLED Pure Black theme, zero bottom inset, independent keyboard vibration, force incognito, clipboard retention, top toolbar icons count, cursor trackpad, and smart flags) managed directly from a top-level Morphe Patches category in Gboard Settings.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
@@ -93,6 +93,7 @@ val gboardSettingsMenuPatch = resourcePatch(
         gboardTopToolbarItemCountPatch,
         gboardSeekBarEnhancementsPatch,
         gboardCoreIntegrityPatch,
+        gboardDecoupleHapticsPatch,
     )
 
     execute {
@@ -421,7 +422,22 @@ private fun populateMorpheSettingsScreen(doc: Document): Boolean {
     )
     root.appendChild(clipboardCategory)
 
-    // 4. Smart Features & Voice
+    // 4. Haptics & Vibration
+    val hapticsCategory = doc.createElement("androidx.preference.PreferenceCategory")
+    hapticsCategory.setAttributeNS(ANDROID_XML_NAMESPACE, "android:title", "Haptics & Vibration")
+
+    hapticsCategory.appendChild(
+        createSwitch(
+            doc = doc,
+            key = Constants.GboardPrefs.KEY_DECOUPLE_TOUCH_FEEDBACK,
+            title = "Independent Keyboard Vibration",
+            summary = "Keep keyboard vibration active even when Android's system Touch feedback and gesture haptics are disabled",
+            defaultValue = "true",
+        )
+    )
+    root.appendChild(hapticsCategory)
+
+    // 5. Smart Features & Voice
     val smartCategory = doc.createElement("androidx.preference.PreferenceCategory")
     smartCategory.setAttributeNS(ANDROID_XML_NAMESPACE, "android:title", "Smart Features & Voice")
 

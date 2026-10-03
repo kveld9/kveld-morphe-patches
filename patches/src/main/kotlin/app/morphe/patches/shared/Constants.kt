@@ -150,6 +150,7 @@ object Constants {
         const val KEY_BLUETOOTH_MIC = "morphe_bluetooth_mic"
         const val KEY_FORCE_INCOGNITO = "morphe_force_incognito"
         const val KEY_HIDE_INCOGNITO_ICON = "morphe_hide_incognito_icon"
+        const val KEY_DECOUPLE_TOUCH_FEEDBACK = "morphe_decouple_touch_feedback"
 
         const val MIN_BOTTOM_PADDING = 0
         const val MAX_BOTTOM_PADDING = 150
