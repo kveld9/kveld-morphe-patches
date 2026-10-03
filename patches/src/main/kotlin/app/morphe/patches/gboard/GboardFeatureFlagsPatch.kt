@@ -109,15 +109,16 @@ val gboardFeatureFlagsPatch = bytecodePatch(
                 is OneRegisterInstruction -> nextInsn.registerA
                 else -> 2
             }
+            val insertIndex = if (nextInsn is OneRegisterInstruction) matchIndex + 2 else matchIndex + 1
             fp.method.addInstructions(
-                matchIndex + 1,
+                insertIndex,
                 """
                     invoke-static {}, ${Constants.GBOARD_EXTENSION_CLASS}->isKeyShapeSelectionEnabled()Z
                     move-result v$reg
                 """.trimIndent(),
             )
             val targetClass = LocaleUtils.cleanClassName(fp.originalClassDef.type)
-            println("[Feature Flags] Key Shape Selection: Injected dynamic flag hook for more_pill_keys into $targetClass.<clinit>() at opcode index ${matchIndex + 1}")
+            println("[Feature Flags] Key Shape Selection: Injected dynamic flag hook for more_pill_keys into $targetClass.<clinit>() at opcode index $insertIndex")
             patched++
         }
 
