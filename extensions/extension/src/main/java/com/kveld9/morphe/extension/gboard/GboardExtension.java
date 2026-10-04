@@ -540,11 +540,86 @@ public class GboardExtension {
         return original;
     }
 
+
     public static int getVibrationUsage(int originalUsage) {
         if (isDecoupleTouchFeedbackEnabled()) {
-            return 0;
+            return 17; // VibrationAttributes.USAGE_ALARM
         }
         return originalUsage;
+    }
+
+    @android.annotation.SuppressLint("MissingPermission")
+    public static boolean vibrateCustomDuration(Object player, int durationMs) {
+        if (!isDecoupleTouchFeedbackEnabled()) {
+            return false;
+        }
+        if (durationMs <= 0) {
+            return true;
+        }
+        Context ctx = null;
+        if (player != null) {
+            try {
+                Field fContext = findField(player.getClass(), "h");
+                if (fContext != null) {
+                    Object val = fContext.get(player);
+                    if (val instanceof Context) ctx = (Context) val;
+                }
+            } catch (Throwable ignored) {}
+        }
+        if (ctx == null) {
+            ctx = getContext(null);
+        }
+        if (ctx == null) return false;
+
+        try {
+            android.os.Vibrator vibrator = null;
+            if (player != null) {
+                try {
+                    Field fVibrator = findField(player.getClass(), "j");
+                    if (fVibrator != null) {
+                        Object supplier = fVibrator.get(player);
+                        if (supplier != null) {
+                            Method getMethod = supplier.getClass().getMethod("get");
+                            Object v = getMethod.invoke(supplier);
+                            if (v instanceof android.os.Vibrator) vibrator = (android.os.Vibrator) v;
+                        }
+                    }
+                } catch (Throwable ignored) {}
+            }
+            if (vibrator == null) {
+                vibrator = (android.os.Vibrator) ctx.getSystemService(Context.VIBRATOR_SERVICE);
+            }
+            if (vibrator == null || !vibrator.hasVibrator()) return false;
+
+            if (android.os.Build.VERSION.SDK_INT >= 26) {
+                android.os.VibrationEffect effect;
+                if (android.os.Build.VERSION.SDK_INT >= 30 && vibrator.areAllPrimitivesSupported(android.os.VibrationEffect.Composition.PRIMITIVE_CLICK)) {
+                    float scale = Math.min(1.0f, Math.max(0.05f, ((float) durationMs) * 0.01f));
+                    effect = android.os.VibrationEffect.startComposition()
+                            .addPrimitive(android.os.VibrationEffect.Composition.PRIMITIVE_CLICK, scale)
+                            .compose();
+                } else {
+                    effect = android.os.VibrationEffect.createOneShot(durationMs, android.os.VibrationEffect.DEFAULT_AMPLITUDE);
+                }
+
+                if (android.os.Build.VERSION.SDK_INT >= 33) {
+                    android.os.VibrationAttributes attrs = new android.os.VibrationAttributes.Builder()
+                            .setUsage(android.os.VibrationAttributes.USAGE_ALARM)
+                            .build();
+                    vibrator.vibrate(effect, attrs);
+                } else {
+                    android.media.AudioAttributes audioAttrs = new android.media.AudioAttributes.Builder()
+                            .setUsage(android.media.AudioAttributes.USAGE_ALARM)
+                            .build();
+                    vibrator.vibrate(effect, audioAttrs);
+                }
+            } else {
+                vibrator.vibrate(durationMs);
+            }
+            return true;
+        } catch (Throwable ignored) {
+            return false;
+        }
     }
 
     public static boolean performHapticFeedback(View view, int feedbackConstant) {
@@ -578,7 +653,17 @@ public class GboardExtension {
                 } else {
                     effect = android.os.VibrationEffect.createOneShot(FALLBACK_VIBRATION_DURATION_MS, android.os.VibrationEffect.DEFAULT_AMPLITUDE);
                 }
-                vibrator.vibrate(effect);
+                if (android.os.Build.VERSION.SDK_INT >= 33) {
+                    android.os.VibrationAttributes attrs = new android.os.VibrationAttributes.Builder()
+                            .setUsage(android.os.VibrationAttributes.USAGE_ALARM)
+                            .build();
+                    vibrator.vibrate(effect, attrs);
+                } else {
+                    android.media.AudioAttributes audioAttrs = new android.media.AudioAttributes.Builder()
+                            .setUsage(android.media.AudioAttributes.USAGE_ALARM)
+                            .build();
+                    vibrator.vibrate(effect, audioAttrs);
+                }
             } else {
                 vibrator.vibrate(FALLBACK_VIBRATION_DURATION_MS);
             }

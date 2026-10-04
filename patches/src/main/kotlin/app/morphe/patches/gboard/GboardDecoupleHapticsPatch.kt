@@ -10,7 +10,9 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.formats.Instruction35c
+import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 private const val USAGE_TOUCH = 18
@@ -153,7 +155,43 @@ val gboardDecoupleHapticsPatch = bytecodePatch(
                 patched++
             }
 
+            if (m.name == "n" && m.parameters.isEmpty() && m.returnType == "Z") {
+                val gIndices = impl.instructions.withIndex()
+                    .filter { ins ->
+                        ins.value.opcode == Opcode.IGET_BOOLEAN &&
+                            ((ins.value as? ReferenceInstruction)?.reference as? FieldReference)?.name == "g"
+                    }
+                    .map {
+                        val ins = it.value as? TwoRegisterInstruction ?: it.value as OneRegisterInstruction
+                        it.index to ins.registerA
+                    }
+                    .toList()
+                gIndices.asReversed().forEach { (idx, reg) ->
+                    m.addInstructions(
+                        idx + 1,
+                        """
+                            invoke-static {v$reg}, ${Constants.GBOARD_EXTENSION_CLASS}->overrideSystemHapticAllowed(Z)Z
+                            move-result v$reg
+                        """.trimIndent(),
+                    )
+                    patched++
+                }
+            }
+
             if (m.name == "f" && m.parameters == listOf("I") && m.returnType == "V") {
+                m.ensureRegisterCount(1)
+                m.addInstructions(
+                    0,
+                    """
+                        invoke-static {p0, p1}, ${Constants.GBOARD_EXTENSION_CLASS}->vibrateCustomDuration(Ljava/lang/Object;I)Z
+                        move-result v0
+                        if-eqz v0, :cond_skip_morphe_custom_vibe
+                        return-void
+                        :cond_skip_morphe_custom_vibe
+                    """.trimIndent(),
+                )
+                patched++
+
                 val usageIndices = impl.instructions.withIndex()
                     .filter { ins ->
                         (ins.value.opcode == Opcode.CONST_16 || ins.value.opcode == Opcode.CONST_4) &&
