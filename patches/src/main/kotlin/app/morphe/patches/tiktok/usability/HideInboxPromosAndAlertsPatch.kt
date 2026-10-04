@@ -18,7 +18,7 @@ val hideInboxPromosAndAlertsPatch = bytecodePatch(
     val hideTopPromosAndBanners by booleanOption(
         key = "hideTopPromosAndBanners",
         title = "Hide Top Promotional Banners",
-        description = "Hides header banners including the streak mascot (Mascota de racha), event announcements, top notice banners, and phone link prompts.",
+        description = "Hides header banners including the streak pet / mascot, event announcements, top notice banners, and phone link prompts.",
         default = true,
     )
 
