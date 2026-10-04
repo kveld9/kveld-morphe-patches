@@ -632,6 +632,7 @@ fun main(args: Array<String>) {
 
         if (failedPatches == 0 && fingerprintErrors.isEmpty()) {
             println("\n[BUILD] Compiling modified bytecode & assets via patcher.get()...")
+            File(tempDir, "patched/dex").mkdirs()
             val patcherResult = patcher.get()
             println("[BUILD] Compiled ${patcherResult.dexFiles.size} DEX files successfully.")
 
@@ -649,24 +650,29 @@ fun main(args: Array<String>) {
                 val unsignedApk = File(tempDir, "unsigned-work.apk")
                 actualApkFile.copyTo(unsignedApk, overwrite = true)
                 println("\n[PACK] Applying patcher result to APK (source: ${unsignedApk.length()} bytes)...")
+                val maxVersionCode = System.getProperty("maxVersionCode") == "true" || System.getenv("MAX_VERSION_CODE") == "true"
+                var manifestSynced = false
                 patcherResult.applyTo(unsignedApk)
                 patcherResult.resources.resourcesApk?.let { resApk ->
                     java.util.zip.ZipFile(resApk).use { resZip ->
                         val manifestEntry = resZip.getEntry("AndroidManifest.xml")
                         if (manifestEntry != null) {
-                            val manifestBytes = resZip.getInputStream(manifestEntry).readBytes()
+                            val rawManifestBytes = resZip.getInputStream(manifestEntry).readBytes()
+                            // Apply the versionCode override in the same pass so the APK zip is rewritten only once.
+                            val manifestBytes = if (maxVersionCode) setBinaryXmlVersionCode(rawManifestBytes, Int.MAX_VALUE) else rawManifestBytes
                             val uri = java.net.URI.create("jar:" + unsignedApk.toURI())
                             val env = mapOf("create" to "false")
                             java.nio.file.FileSystems.newFileSystem(uri, env).use { fs ->
                                 val targetManifest = fs.getPath("AndroidManifest.xml")
                                 java.nio.file.Files.write(targetManifest, manifestBytes)
                             }
+                            manifestSynced = true
                             println("[PACK] Synchronized patched AndroidManifest.xml from resources.apk (${manifestBytes.size} bytes)")
+                            if (maxVersionCode) println("[PACK] Overrode AndroidManifest.xml versionCode -> 2147483647 (Int.MAX_VALUE)")
                         }
                     }
                 }
-                val maxVersionCode = System.getProperty("maxVersionCode") == "true" || System.getenv("MAX_VERSION_CODE") == "true"
-                if (maxVersionCode) {
+                if (maxVersionCode && !manifestSynced) {
                     val uri = java.net.URI.create("jar:" + unsignedApk.toURI())
                     val env = mapOf("create" to "false")
                     java.nio.file.FileSystems.newFileSystem(uri, env).use { fs ->
@@ -754,7 +760,7 @@ fun main(args: Array<String>) {
                         val splitApkEntries = apkmZip.entries().asSequence()
                             .filter { it.name.endsWith(".apk", ignoreCase = true) && it.name != baseEntry?.name }
                             .toList()
-                        for (splitEntry in splitApkEntries) {
+                        splitApkEntries.parallelStream().forEach { splitEntry ->
                             val rawSplitFile = File(tempDir, splitEntry.name)
                             apkmZip.getInputStream(splitEntry).use { input ->
                                 rawSplitFile.outputStream().buffered().use { output -> input.copyTo(output) }
