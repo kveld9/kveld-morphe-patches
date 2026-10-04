@@ -17,7 +17,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 
 val feedInterfaceDeclutterPatch = bytecodePatch(
     name = "Feed Interface Declutter",
-    description = "Customizes and cleans feed video overlay elements, including the repost pill, video descriptions, profile photo follow badges, story rings, playlist bottom bars, save buttons, and music discs.",
+    description = "Customizes and cleans feed video overlay elements, including the full screen button, repost pill, video descriptions, profile photo follow badges, story rings, playlist bottom bars, save buttons, and music discs.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -79,6 +79,14 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
         required = false,
     )
 
+    val hideFullscreenButton by booleanOption(
+        key = "hideFullscreenButton",
+        default = false,
+        title = "Hide Full Screen Button",
+        description = "Hides the floating 'Full screen' ('Pantalla completa') landscape orientation button overlay on horizontal feed videos.",
+        required = false,
+    )
+
     execute {
         if (hideRepostBadge != true &&
             hideVideoDescriptions != true &&
@@ -86,7 +94,8 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
             disableStoryRings != true &&
             hidePlaylistBar != true &&
             hideSaveButton != true &&
-            hideMusicCover != true
+            hideMusicCover != true &&
+            hideFullscreenButton != true
         ) {
             println("[Feed Interface Declutter] Skipped: All declutter options are disabled.")
             return@execute
@@ -570,6 +579,87 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
                 parameters = emptyList(),
             ).method.replaceWithReturnVoid()
             println("[Feed Interface Declutter] Hooked VideoMusicCoverAssem.Wr() -> return-void.")
+            patched++
+        }
+
+        // 8. Hide Full Screen Button ('Pantalla completa')
+        if (hideFullscreenButton == true) {
+            val landscapeClass = "Lcom/ss/android/ugc/aweme/feed/landscape/LandscapeEntranceAssem;"
+
+            Fingerprint(
+                definingClass = landscapeClass,
+                name = "Kr",
+                returnType = "Z",
+                parameters = emptyList(),
+            ).method.replaceWithReturnBoolean(false)
+            println("[Feed Interface Declutter] Hooked LandscapeEntranceAssem.Kr() -> return false.")
+            patched++
+
+            Fingerprint(
+                definingClass = landscapeClass,
+                name = "Aa",
+                returnType = "Z",
+                parameters = emptyList(),
+            ).method.replaceWithReturnBoolean(false)
+            println("[Feed Interface Declutter] Hooked LandscapeEntranceAssem.Aa() -> return false.")
+            patched++
+
+            Fingerprint(
+                definingClass = landscapeClass,
+                name = "bf",
+                returnType = "Z",
+                parameters = emptyList(),
+            ).method.replaceWithReturnBoolean(false)
+            println("[Feed Interface Declutter] Hooked LandscapeEntranceAssem.bf() -> return false.")
+            patched++
+
+            val entranceOnViewCreated = Fingerprint(
+                definingClass = landscapeClass,
+                name = "onViewCreated",
+                returnType = "V",
+                parameters = listOf("Landroid/view/View;"),
+            ).method
+            entranceOnViewCreated.clearTryBlocks()
+            entranceOnViewCreated.ensureRegisterCount(2)
+            val count = entranceOnViewCreated.implementation!!.instructions.count()
+            entranceOnViewCreated.removeInstructions(0, count)
+            entranceOnViewCreated.addInstructions(
+                0,
+                """
+                    invoke-super {p0, p1}, Lcom/ss/android/ugc/feed/platform/cell/BaseCellSlotComponent;->onViewCreated(Landroid/view/View;)V
+                    const/16 v0, 0x8
+                    invoke-virtual {p1, v0}, Landroid/view/View;->setVisibility(I)V
+                    return-void
+                """.trimIndent(),
+            )
+            println("[Feed Interface Declutter] Hooked LandscapeEntranceAssem.onViewCreated() -> setVisibility(GONE).")
+            patched++
+
+            Fingerprint(
+                definingClass = landscapeClass,
+                name = "z4",
+                returnType = "V",
+                parameters = listOf("Ljava/lang/Object;"),
+            ).method.replaceWithReturnVoid()
+            println("[Feed Interface Declutter] Hooked LandscapeEntranceAssem.z4() -> return-void.")
+            patched++
+
+            Fingerprint(
+                definingClass = landscapeClass,
+                name = "LLLLIILL",
+                returnType = "V",
+                parameters = listOf("I"),
+            ).method.replaceWithReturnVoid()
+            println("[Feed Interface Declutter] Hooked LandscapeEntranceAssem.LLLLIILL() -> return-void.")
+            patched++
+
+            Fingerprint(
+                definingClass = landscapeClass,
+                name = "LLILZ",
+                returnType = "V",
+                parameters = listOf("I"),
+            ).method.replaceWithReturnVoid()
+            println("[Feed Interface Declutter] Hooked LandscapeEntranceAssem.LLILZ() -> return-void.")
             patched++
         }
 
