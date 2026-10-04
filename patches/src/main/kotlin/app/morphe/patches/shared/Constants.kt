@@ -128,6 +128,16 @@ object Constants {
     const val GBOARD_EXTENSION_CLASS = "Lcom/kveld9/morphe/extension/gboard/GboardExtension;"
 
     object GboardPrefs {
+        const val KEY_HEADER = "morphe_patches_header"
+        const val KEY_SCREEN = "morphe_patches_screen"
+        const val KEY_CAT_ACTIONS = "morphe_cat_actions"
+        const val KEY_CAT_APPEARANCE = "morphe_cat_appearance"
+        const val KEY_CAT_TOOLBAR = "morphe_cat_toolbar"
+        const val KEY_CAT_CLIPBOARD = "morphe_cat_clipboard"
+        const val KEY_CAT_HAPTICS = "morphe_cat_haptics"
+        const val KEY_CAT_SMART = "morphe_cat_smart"
+        const val KEY_CAT_PRIVACY = "morphe_cat_privacy"
+
         const val KEY_RESTART_GBOARD = "morphe_restart_gboard"
         const val KEY_ENABLE_IME = "morphe_enable_ime"
         const val KEY_SELECT_IME = "morphe_select_ime"

@@ -63,7 +63,7 @@ If you perform a clean install of Gboard Lite with background sync debloat patch
 
 ## ⚙️ Gboard Enhancements: In-App Customization Suite
 
-The **`Gboard Enhancements`** patch injects a top-level **Morphe Patches** category directly into Gboard's main settings screen (*Ajustes > Morphe Patches*). All runtime-configurable features are consolidated here, eliminating the need to re-patch the APK to adjust settings.
+The **`Gboard Enhancements`** patch injects a top-level **Morphe Patches** category directly into Gboard's main settings screen (*Ajustes > Morphe Patches*). All runtime-configurable features are consolidated here, eliminating the need to re-patch the APK to adjust settings. All preference titles, summaries, category headers, status cards, and live slider units dynamically adapt to the active device/app language (supporting Spanish on `es` locales with English fallback).
 
 ### 1. Actions & Status
 - **Enable Gboard in System Settings**: Dynamic warning card shown when Gboard is installed but disabled in Android settings (`Settings > System > Languages & input > Manage keyboards`). Tapping the card opens the system keyboard manager directly.
