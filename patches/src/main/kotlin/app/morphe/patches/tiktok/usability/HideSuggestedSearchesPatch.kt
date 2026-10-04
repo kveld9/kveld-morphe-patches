@@ -147,6 +147,6 @@ val hideSuggestedSearchesPatch = bytecodePatch(
         }
         patched++
 
-        println("[Hide Suggested Searches] Applied $patched suggested search suppression hook(s) -> 'Podría interesarte' neutralized.")
+        println("[Hide Suggested Searches] Applied $patched suggested search suppression hook(s) -> 'You may like' neutralized.")
     }
 }
