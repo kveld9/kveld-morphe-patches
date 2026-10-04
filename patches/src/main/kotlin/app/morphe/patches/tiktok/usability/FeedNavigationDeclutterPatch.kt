@@ -56,7 +56,7 @@ val feedNavigationDeclutterPatch = bytecodePatch(
 
     val hidePublishTab by booleanOption(
         key = "hidePublishTab",
-        default = true,
+        default = false,
         title = "Hide Create / Publish Button",
         description = "Removes the central '+' create / publish content button from the bottom navigation bar.",
         required = false,
