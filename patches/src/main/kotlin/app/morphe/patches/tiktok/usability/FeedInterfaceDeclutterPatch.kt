@@ -19,7 +19,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 val feedInterfaceDeclutterPatch = bytecodePatch(
     name = "Feed Interface Declutter",
     description = "Customizes and cleans feed video overlay elements, including the full screen button, repost pill, video descriptions, profile photo follow badges, story rings, playlist bottom bars, save buttons, and music discs.",
-    default = true,
+    default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
     dependsOn(sharedExtensionPatch)
@@ -28,7 +28,7 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
         key = "hideRepostBadge",
         default = true,
         title = "Hide Repost Badge",
-        description = "Hides the repost and shared-by pill badge ('Compartido por') above creator details on feed videos.",
+        description = "Hides the repost and shared-by pill badge ('Shared by' / 'Reposted') above creator details on feed videos.",
         required = false,
     )
 
@@ -84,7 +84,7 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
         key = "hideFullscreenButton",
         default = false,
         title = "Hide Full Screen Button",
-        description = "Hides the floating 'Full screen' ('Pantalla completa') landscape orientation button overlay on horizontal feed videos.",
+        description = "Hides the floating 'Full screen' landscape orientation button overlay on horizontal feed videos.",
         required = false,
     )
 
@@ -104,7 +104,7 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
 
         var patched = 0
 
-        // 1. Hide Repost Badge ('Compartido por')
+        // 1. Hide Repost Badge ('Shared by' / 'Reposted')
         if (hideRepostBadge == true) {
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/feed/platform/cell/interact/info/UpvoteVideoTrigger;",
@@ -583,7 +583,7 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
             patched++
         }
 
-        // 8. Hide Full Screen Button ('Pantalla completa')
+        // 8. Hide Full Screen Button
         if (hideFullscreenButton == true) {
             val landscapeClass = "Lcom/ss/android/ugc/aweme/feed/landscape/LandscapeEntranceAssem;"
 
