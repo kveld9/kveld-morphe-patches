@@ -61,9 +61,42 @@ public final class TikTokFeedAdFilter {
 
     private static Method isFriendsTabFakeAwemeMethod;
     private static Method getRecommendCardTypeMethod;
+    private static Field recommendCardTypeField;
     private static Method getCardInsertInfoMethod;
+    private static Field cardInsertInfoField;
     private static Method getCardTypeMethod;
     private static Field cardTypeField;
+    private static Method getExploreCommunityCommentShowTypeMethod;
+    private static Field exploreCommunityCommentShowTypeField;
+
+    private static Method getWithSurveyMethod;
+    private static Field withSurveyField;
+    private static Method getSurveyInfoMethod;
+    private static Field surveyInfoField;
+    private static Field surveyInfoAltField;
+    private static Method getSurveyInfosMethod;
+    private static Field surveyInfosField;
+    private static Method getSurveyKeyMethod;
+    private static Field surveyKeyField;
+    private static Method getPersonalizedSurveyUIMethod;
+    private static Field mPersonalizedSurveyUIField;
+    private static Method getOnboardingSurveyMethod;
+    private static Field mOnboardingSurveyField;
+    private static Method getPersonalizedOnboardingSurveyMethod;
+    private static Field mPersonalizedOnboardingSurveyField;
+    private static Field questionInfoField;
+    private static Field ueFeedInfoField;
+
+    private static Method setWithSurveyMethod;
+    private static Method setSurveyInfoMethod;
+    private static Method setSurveyInfosMethod;
+    private static Method setSurveyKeyMethod;
+    private static Method setMPersonalizedSurveyUIMethod;
+    private static Method setOnboardingSurveyMethod;
+    private static Method setMPersonalizedOnboardingSurveyMethod;
+
+    private static Method getVideoMethod;
+    private static Field videoField;
 
     private static Method followGetAwemeMethod;
     private static Field followAwemeField;
@@ -211,7 +244,72 @@ public final class TikTokFeedAdFilter {
             try { commercialVideoInfoField = awemeClass.getDeclaredField("commercialVideoInfo"); commercialVideoInfoField.setAccessible(true); } catch (Throwable ignored) {}
             try { isFriendsTabFakeAwemeMethod = awemeClass.getMethod("isFriendsTabFakeAweme"); isFriendsTabFakeAwemeMethod.setAccessible(true); } catch (Throwable ignored) {}
             try { getRecommendCardTypeMethod = awemeClass.getMethod("getRecommendCardType"); getRecommendCardTypeMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { recommendCardTypeField = awemeClass.getDeclaredField("recommendCardType"); recommendCardTypeField.setAccessible(true); } catch (Throwable ignored) {}
             try { getCardInsertInfoMethod = awemeClass.getMethod("getCardInsertInfo"); getCardInsertInfoMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { cardInsertInfoField = awemeClass.getDeclaredField("cardInsertInfo"); cardInsertInfoField.setAccessible(true); } catch (Throwable ignored) {}
+            try { getExploreCommunityCommentShowTypeMethod = awemeClass.getMethod("getExploreCommunityCommentShowType"); getExploreCommunityCommentShowTypeMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { exploreCommunityCommentShowTypeField = awemeClass.getDeclaredField("exploreCommunityCommentShowType"); exploreCommunityCommentShowTypeField.setAccessible(true); } catch (Throwable ignored) {}
+            try { getVideoMethod = awemeClass.getMethod("getVideo"); getVideoMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { videoField = awemeClass.getDeclaredField("video"); videoField.setAccessible(true); } catch (Throwable ignored) {}
+
+            try { getWithSurveyMethod = awemeClass.getMethod("getWithSurvey"); getWithSurveyMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { withSurveyField = awemeClass.getDeclaredField("withSurvey"); withSurveyField.setAccessible(true); } catch (Throwable ignored) {}
+            try { getSurveyInfoMethod = awemeClass.getMethod("getSurveyInfo"); getSurveyInfoMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { surveyInfoField = awemeClass.getDeclaredField("_surveyInfo"); surveyInfoField.setAccessible(true); } catch (Throwable ignored) {}
+            try { surveyInfoAltField = awemeClass.getDeclaredField("surveyInfo"); surveyInfoAltField.setAccessible(true); } catch (Throwable ignored) {}
+            try { getSurveyInfosMethod = awemeClass.getMethod("getSurveyInfos"); getSurveyInfosMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { surveyInfosField = awemeClass.getDeclaredField("surveyInfos"); surveyInfosField.setAccessible(true); } catch (Throwable ignored) {}
+            try { getSurveyKeyMethod = awemeClass.getMethod("getSurveyKey"); getSurveyKeyMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { surveyKeyField = awemeClass.getDeclaredField("surveyKey"); surveyKeyField.setAccessible(true); } catch (Throwable ignored) {}
+            try { getPersonalizedSurveyUIMethod = awemeClass.getMethod("getPersonalizedSurveyUI"); getPersonalizedSurveyUIMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { mPersonalizedSurveyUIField = awemeClass.getDeclaredField("mPersonalizedSurveyUI"); mPersonalizedSurveyUIField.setAccessible(true); } catch (Throwable ignored) {}
+            try { getOnboardingSurveyMethod = awemeClass.getMethod("getOnboardingSurvey"); getOnboardingSurveyMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { mOnboardingSurveyField = awemeClass.getDeclaredField("mOnboardingSurvey"); mOnboardingSurveyField.setAccessible(true); } catch (Throwable ignored) {}
+            try { getPersonalizedOnboardingSurveyMethod = awemeClass.getMethod("getPersonalizedOnboardingSurvey"); getPersonalizedOnboardingSurveyMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { mPersonalizedOnboardingSurveyField = awemeClass.getDeclaredField("mPersonalizedOnboardingSurvey"); mPersonalizedOnboardingSurveyField.setAccessible(true); } catch (Throwable ignored) {}
+            try { questionInfoField = awemeClass.getDeclaredField("questionInfo"); questionInfoField.setAccessible(true); } catch (Throwable ignored) {}
+            try { ueFeedInfoField = awemeClass.getDeclaredField("ueFeedInfo"); ueFeedInfoField.setAccessible(true); } catch (Throwable ignored) {}
+
+            try { setWithSurveyMethod = awemeClass.getMethod("setWithSurvey", boolean.class); setWithSurveyMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try {
+                for (Method m : awemeClass.getMethods()) {
+                    if ("setSurveyInfo".equals(m.getName()) && m.getParameterTypes().length == 1) {
+                        setSurveyInfoMethod = m;
+                        setSurveyInfoMethod.setAccessible(true);
+                        break;
+                    }
+                }
+            } catch (Throwable ignored) {}
+            try { setSurveyInfosMethod = awemeClass.getMethod("setSurveyInfos", List.class); setSurveyInfosMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { setSurveyKeyMethod = awemeClass.getMethod("setSurveyKey", String.class); setSurveyKeyMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try {
+                for (Method m : awemeClass.getMethods()) {
+                    if ("setMPersonalizedSurveyUI".equals(m.getName()) && m.getParameterTypes().length == 1) {
+                        setMPersonalizedSurveyUIMethod = m;
+                        setMPersonalizedSurveyUIMethod.setAccessible(true);
+                        break;
+                    }
+                }
+            } catch (Throwable ignored) {}
+            try {
+                for (Method m : awemeClass.getMethods()) {
+                    if ("setOnboardingSurvey".equals(m.getName()) && m.getParameterTypes().length == 1) {
+                        setOnboardingSurveyMethod = m;
+                        setOnboardingSurveyMethod.setAccessible(true);
+                        break;
+                    }
+                }
+            } catch (Throwable ignored) {}
+            try {
+                for (Method m : awemeClass.getMethods()) {
+                    if ("setMPersonalizedOnboardingSurvey".equals(m.getName()) && m.getParameterTypes().length == 1) {
+                        setMPersonalizedOnboardingSurveyMethod = m;
+                        setMPersonalizedOnboardingSurveyMethod.setAccessible(true);
+                        break;
+                    }
+                }
+            } catch (Throwable ignored) {}
+
             try {
                 ClassLoader loader = awemeClass != null ? awemeClass.getClassLoader() : classLoader;
                 Class<?> cardInfoClass = null;
@@ -1007,6 +1105,73 @@ public final class TikTokFeedAdFilter {
     // 4. FEED BLOAT & DISTRACTION BLOCKER (Independent Patch)
     // =========================================================================
 
+    public static boolean hasMediaContent(Object aweme) {
+        if (aweme == null) return false;
+        try {
+            if (getVideoMethod != null && getVideoMethod.invoke(aweme) != null) return true;
+            if (videoField != null && videoField.get(aweme) != null) return true;
+        } catch (Throwable ignored) {}
+        try {
+            if (TikTokMediaHook.isPhotoMode(aweme)) return true;
+        } catch (Throwable ignored) {}
+        return false;
+    }
+
+    public static boolean isSurveyCard(Object aweme) {
+        if (aweme == null) return false;
+        try {
+            if (getWithSurveyMethod != null) {
+                Object res = getWithSurveyMethod.invoke(aweme);
+                if (Boolean.TRUE.equals(res)) return true;
+            } else if (withSurveyField != null) {
+                if (withSurveyField.getBoolean(aweme)) return true;
+            }
+            if (getSurveyInfoMethod != null && getSurveyInfoMethod.invoke(aweme) != null) return true;
+            if (surveyInfoField != null && surveyInfoField.get(aweme) != null) return true;
+            if (surveyInfoAltField != null && surveyInfoAltField.get(aweme) != null) return true;
+            if (getSurveyInfosMethod != null) {
+                Object infos = getSurveyInfosMethod.invoke(aweme);
+                if (infos instanceof List && !((List<?>) infos).isEmpty()) return true;
+            } else if (surveyInfosField != null) {
+                Object infos = surveyInfosField.get(aweme);
+                if (infos instanceof List && !((List<?>) infos).isEmpty()) return true;
+            }
+            if (mPersonalizedSurveyUIField != null && mPersonalizedSurveyUIField.get(aweme) != null) return true;
+            if (mOnboardingSurveyField != null && mOnboardingSurveyField.get(aweme) != null) return true;
+            if (mPersonalizedOnboardingSurveyField != null && mPersonalizedOnboardingSurveyField.get(aweme) != null) return true;
+            if (questionInfoField != null && questionInfoField.get(aweme) != null) return true;
+            if (ueFeedInfoField != null && ueFeedInfoField.get(aweme) != null) return true;
+        } catch (Throwable ignored) {}
+        return false;
+    }
+
+    public static void stripSurveyBloat(Object aweme) {
+        if (aweme == null) return;
+        if (awemeClass != null && !awemeClass.isInstance(aweme)) {
+            return;
+        }
+        try {
+            if (setWithSurveyMethod != null) setWithSurveyMethod.invoke(aweme, false);
+            if (withSurveyField != null) withSurveyField.setBoolean(aweme, false);
+            if (setSurveyInfoMethod != null) setSurveyInfoMethod.invoke(aweme, (Object) null);
+            if (surveyInfoField != null) surveyInfoField.set(aweme, null);
+            if (surveyInfoAltField != null) surveyInfoAltField.set(aweme, null);
+            if (setSurveyInfosMethod != null) setSurveyInfosMethod.invoke(aweme, (Object) null);
+            if (surveyInfosField != null) surveyInfosField.set(aweme, null);
+            if (setSurveyKeyMethod != null) setSurveyKeyMethod.invoke(aweme, (Object) null);
+            if (surveyKeyField != null) surveyKeyField.set(aweme, null);
+            if (setMPersonalizedSurveyUIMethod != null) setMPersonalizedSurveyUIMethod.invoke(aweme, (Object) null);
+            if (mPersonalizedSurveyUIField != null) mPersonalizedSurveyUIField.set(aweme, null);
+            if (setOnboardingSurveyMethod != null) setOnboardingSurveyMethod.invoke(aweme, (Object) null);
+            if (mOnboardingSurveyField != null) mOnboardingSurveyField.set(aweme, null);
+            if (setMPersonalizedOnboardingSurveyMethod != null) setMPersonalizedOnboardingSurveyMethod.invoke(aweme, (Object) null);
+            if (mPersonalizedOnboardingSurveyField != null) mPersonalizedOnboardingSurveyField.set(aweme, null);
+            if (questionInfoField != null) questionInfoField.set(aweme, null);
+            if (ueFeedInfoField != null) ueFeedInfoField.set(aweme, null);
+            if (exploreCommunityCommentShowTypeField != null) exploreCommunityCommentShowTypeField.set(aweme, null);
+        } catch (Throwable ignored) {}
+    }
+
     public static boolean isFeedBloat(Object aweme) {
         if (aweme == null) return false;
         if (!initialized) {
@@ -1037,40 +1202,36 @@ public final class TikTokFeedAdFilter {
             }
 
             // 3. CardInsertInfo checks:
-            // 34: In-Feed Trending Search Card
-            // 35: In-Feed Trending Search Card V2
-            // 38: In-Feed Standalone Search Interest Card
-            // 49: RecUser / Suggested Accounts Card Insert
-            // 120: Mini-Game Instant Play Card
-            // 127: On This Day (Recuerdos) Creation Card
-            // 84: Creation EOY Card (Recap)
-            // 176: Inspiration Card
-            // 113: AI Remix Card
-            // 2: Effect Recommendation Card
-            // 4, 16: Platform Survey / Feedback Prompts
-            // 188..191: Creation Feed Cards (CapCut / Templates / Camera)
+            // Any CardInsertInfo attached to Aweme indicates an inserted non-video card
+            // (Explore Community/Topic Lynx cards, RecUser, Instant Games, Search Interest, etc.)
             if (getCardInsertInfoMethod != null) {
                 Object cardInfo = getCardInsertInfoMethod.invoke(aweme);
                 if (cardInfo != null) {
-                    int cType = -1;
-                    if (getCardTypeMethod != null) {
-                        Object res = getCardTypeMethod.invoke(cardInfo);
-                        if (res instanceof Number) {
-                            cType = ((Number) res).intValue();
-                        }
-                    } else if (cardTypeField != null) {
-                        Object res = cardTypeField.get(cardInfo);
-                        if (res instanceof Number) {
-                            cType = ((Number) res).intValue();
-                        }
-                    }
-                    if (cType == 34 || cType == 35 || cType == 38 ||
-                        cType == 49 || cType == 120 || cType == 127 || cType == 84 ||
-                        cType == 176 || cType == 113 || cType == 2 || cType == 4 || cType == 16 ||
-                        (cType >= 188 && cType <= 191)) {
-                        return true;
-                    }
+                    return true;
                 }
+            } else if (cardInsertInfoField != null) {
+                Object cardInfo = cardInsertInfoField.get(aweme);
+                if (cardInfo != null) {
+                    return true;
+                }
+            }
+
+            // 4. In-Feed Recommendation Cards
+            if (getRecommendCardTypeMethod != null) {
+                Object rct = getRecommendCardTypeMethod.invoke(aweme);
+                if (rct instanceof Number && ((Number) rct).intValue() > 0) {
+                    return true;
+                }
+            } else if (recommendCardTypeField != null) {
+                Object rct = recommendCardTypeField.get(aweme);
+                if (rct instanceof Number && ((Number) rct).intValue() > 0) {
+                    return true;
+                }
+            }
+
+            // 5. Standalone In-Feed Surveys / Questionnaires without media content
+            if (isSurveyCard(aweme) && !hasMediaContent(aweme)) {
+                return true;
             }
         } catch (Throwable ignored) {}
         return false;
@@ -1104,6 +1265,8 @@ public final class TikTokFeedAdFilter {
                     if (isFeedBloat(item)) {
                         iterator.remove();
                         removed++;
+                    } else {
+                        stripSurveyBloat(item);
                     }
                 }
                 if (removed > 0) {
@@ -1197,6 +1360,11 @@ public final class TikTokFeedAdFilter {
                     if (isFollowFeedBloat(followItem, allowPruningCards)) {
                         iterator.remove();
                         removed++;
+                    } else {
+                        Object aweme = extractAwemeFromFollowItem(followItem);
+                        if (aweme != null) {
+                            stripSurveyBloat(aweme);
+                        }
                     }
                 }
                 if (removed > 0) {
@@ -1304,6 +1472,11 @@ public final class TikTokFeedAdFilter {
                     if (isFriendsV3FeedBloat(item)) {
                         iterator.remove();
                         removed++;
+                    } else {
+                        Object aweme = extractAwemeFromFriendsV3FeedModel(item);
+                        if (aweme != null) {
+                            stripSurveyBloat(aweme);
+                        }
                     }
                 }
                 if (removed > 0) {
@@ -1337,6 +1510,11 @@ public final class TikTokFeedAdFilter {
                     if (isFriendsFeedBloat(item)) {
                         iterator.remove();
                         removed++;
+                    } else {
+                        Object aweme = extractAwemeFromFriendsFeed(item);
+                        if (aweme != null) {
+                            stripSurveyBloat(aweme);
+                        }
                     }
                 }
                 if (removed > 0) {

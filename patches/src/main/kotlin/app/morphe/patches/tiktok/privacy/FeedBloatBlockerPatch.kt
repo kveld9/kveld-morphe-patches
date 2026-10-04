@@ -4,16 +4,17 @@ import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.sharedExtensionPatch
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
 val feedBloatBlockerPatch = bytecodePatch(
     name = "Feed Bloat & Distraction Blocker",
-    description = "Removes non-video clutter and floating ad widgets from the For You, Following, and Friends feeds, including Touchpoint Rewards pendants, floating ad stickers, suggested friend cards, mini-games, CapCut/template creation prompts, memories ('On This Day'), surveys, mini-drama paywalls, and in-feed search recommendations/interest cards.",
+    description = "Removes non-video clutter and floating ad widgets from the For You, Following, and Friends feeds, including Touchpoint Rewards pendants, floating ad stickers, suggested friend cards, mini-games, CapCut/template creation prompts, memories ('On This Day'), community/topic cards, post-video surveys and evaluation questionnaires, mini-drama paywalls, and in-feed search recommendations/interest cards.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
-    extendWith("extensions/extension.mpe")
+    dependsOn(sharedExtensionPatch)
 
     execute {
         var patched = 0
@@ -459,6 +460,261 @@ val feedBloatBlockerPatch = bytecodePatch(
             patched++
         } catch (e: Exception) {
             println("[Feed Bloat Blocker] AbsSearchService.u note: ${e.message}")
+        }
+
+        // 9. Neutralize In-Feed Safety Surveys, Evaluation Cards & Questionnaires
+        try {
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/feed/platform/cell/component/survey/CellSurveyComponent;",
+                name = "onViewCreated",
+                parameters = listOf("Landroid/view/View;"),
+                returnType = "V",
+            ).method.addInstructions(
+                0,
+                """
+                    return-void
+                """.trimIndent(),
+            )
+            println("[Feed Bloat Blocker] Suppressed CellSurveyComponent.onViewCreated(View) -> Survey inflation blocked.")
+            patched++
+        } catch (e: Exception) {
+            println("[Feed Bloat Blocker] CellSurveyComponent.onViewCreated note: ${e.message}")
+        }
+
+        try {
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/feed/platform/cell/component/survey/CellSurveyComponent;",
+                name = "ur",
+                parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;"),
+                returnType = "V",
+            ).method.addInstructions(
+                0,
+                """
+                    return-void
+                """.trimIndent(),
+            )
+            println("[Feed Bloat Blocker] Neutralized CellSurveyComponent.ur(Aweme).")
+            patched++
+        } catch (e: Exception) {
+            println("[Feed Bloat Blocker] CellSurveyComponent.ur note: ${e.message}")
+        }
+
+        try {
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/feed/platform/cell/component/survey/CellSurveyComponent;",
+                name = "wr",
+                parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;", "Z"),
+                returnType = "V",
+            ).method.addInstructions(
+                0,
+                """
+                    return-void
+                """.trimIndent(),
+            )
+            println("[Feed Bloat Blocker] Neutralized CellSurveyComponent.wr(Aweme, Z).")
+            patched++
+        } catch (e: Exception) {
+            println("[Feed Bloat Blocker] CellSurveyComponent.wr note: ${e.message}")
+        }
+
+        try {
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/feed/model/AwemeExtKt;",
+                name = "isWithSurvey",
+                parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;"),
+                returnType = "Z",
+            ).method.addInstructions(
+                0,
+                """
+                    const/4 v0, 0x0
+                    return v0
+                """.trimIndent(),
+            )
+            println("[Feed Bloat Blocker] Neutralized AwemeExtKt.isWithSurvey(Aweme) -> False returned.")
+            patched++
+        } catch (e: Exception) {
+            println("[Feed Bloat Blocker] AwemeExtKt.isWithSurvey note: ${e.message}")
+        }
+
+        try {
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/tiktok/pns/feedsafety/survey/PNSSurveyService;",
+                name = "LIZIZ",
+                returnType = "Z",
+            ).method.addInstructions(
+                0,
+                """
+                    const/4 v0, 0x0
+                    return v0
+                """.trimIndent(),
+            )
+            println("[Feed Bloat Blocker] Neutralized PNSSurveyService.LIZIZ() -> Safety surveys disabled.")
+            patched++
+        } catch (e: Exception) {
+            println("[Feed Bloat Blocker] PNSSurveyService.LIZIZ note: ${e.message}")
+        }
+
+        try {
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/feed/assem/pushsurvey/PushSurveyAssemTrigger;",
+                name = "yr",
+                parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"),
+                returnType = "Z",
+            ).method.addInstructions(
+                0,
+                """
+                    const/4 v0, 0x0
+                    return v0
+                """.trimIndent(),
+            )
+            println("[Feed Bloat Blocker] Neutralized PushSurveyAssemTrigger.yr(VideoItemParams) -> Push survey triggers disabled.")
+            patched++
+        } catch (e: Exception) {
+            println("[Feed Bloat Blocker] PushSurveyAssemTrigger.yr note: ${e.message}")
+        }
+
+        try {
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/feed/component/surveybutton/FeedBottomSurveyButtonComponent;",
+                name = "onParentViewCreated",
+                returnType = "V",
+            ).method.addInstructions(
+                0,
+                """
+                    return-void
+                """.trimIndent(),
+            )
+            println("[Feed Bloat Blocker] Suppressed FeedBottomSurveyButtonComponent.onParentViewCreated().")
+            patched++
+        } catch (e: Exception) {
+            println("[Feed Bloat Blocker] FeedBottomSurveyButtonComponent.onParentViewCreated note: ${e.message}")
+        }
+
+        try {
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
+                name = "getWithSurvey",
+                returnType = "Z",
+            ).method.addInstructions(
+                0,
+                """
+                    const/4 v0, 0x0
+                    return v0
+                """.trimIndent(),
+            )
+            println("[Feed Bloat Blocker] Neutralized Aweme.getWithSurvey() -> False returned.")
+            patched++
+        } catch (e: Exception) {
+            println("[Feed Bloat Blocker] Aweme.getWithSurvey note: ${e.message}")
+        }
+
+        try {
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
+                name = "getSurveyInfo",
+                returnType = "Lcom/ss/android/ugc/aweme/feed/model/survey/SurveyInfo;",
+            ).method.addInstructions(
+                0,
+                """
+                    const/4 v0, 0x0
+                    return-object v0
+                """.trimIndent(),
+            )
+            println("[Feed Bloat Blocker] Neutralized Aweme.getSurveyInfo() -> Null returned.")
+            patched++
+        } catch (e: Exception) {
+            println("[Feed Bloat Blocker] Aweme.getSurveyInfo note: ${e.message}")
+        }
+
+        try {
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
+                name = "getSurveyInfos",
+                returnType = "Ljava/util/List;",
+            ).method.addInstructions(
+                0,
+                """
+                    const/4 v0, 0x0
+                    return-object v0
+                """.trimIndent(),
+            )
+            println("[Feed Bloat Blocker] Neutralized Aweme.getSurveyInfos() -> Null returned.")
+            patched++
+        } catch (e: Exception) {
+            println("[Feed Bloat Blocker] Aweme.getSurveyInfos note: ${e.message}")
+        }
+
+        try {
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
+                name = "getPersonalizedSurveyUI",
+                returnType = "Lcom/ss/android/ugc/aweme/feed/model/survey/PersonalizedSurveyUI;",
+            ).method.addInstructions(
+                0,
+                """
+                    const/4 v0, 0x0
+                    return-object v0
+                """.trimIndent(),
+            )
+            println("[Feed Bloat Blocker] Neutralized Aweme.getPersonalizedSurveyUI() -> Null returned.")
+            patched++
+        } catch (e: Exception) {
+            println("[Feed Bloat Blocker] Aweme.getPersonalizedSurveyUI note: ${e.message}")
+        }
+
+        try {
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
+                name = "getOnboardingSurvey",
+                returnType = "Lcom/ss/android/ugc/aweme/feed/model/survey/OnboardingSurvey;",
+            ).method.addInstructions(
+                0,
+                """
+                    const/4 v0, 0x0
+                    return-object v0
+                """.trimIndent(),
+            )
+            println("[Feed Bloat Blocker] Neutralized Aweme.getOnboardingSurvey() -> Null returned.")
+            patched++
+        } catch (e: Exception) {
+            println("[Feed Bloat Blocker] Aweme.getOnboardingSurvey note: ${e.message}")
+        }
+
+        try {
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
+                name = "getPersonalizedOnboardingSurvey",
+                returnType = "Lcom/ss/android/ugc/aweme/feed/model/survey/PersonalizedOnboardingSurvey;",
+            ).method.addInstructions(
+                0,
+                """
+                    const/4 v0, 0x0
+                    return-object v0
+                """.trimIndent(),
+            )
+            println("[Feed Bloat Blocker] Neutralized Aweme.getPersonalizedOnboardingSurvey() -> Null returned.")
+            patched++
+        } catch (e: Exception) {
+            println("[Feed Bloat Blocker] Aweme.getPersonalizedOnboardingSurvey note: ${e.message}")
+        }
+
+        // 10. Neutralize In-Feed Explore Community / Topic Cards on Aweme
+        try {
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
+                name = "getExploreCommunityCommentShowType",
+                returnType = "Ljava/lang/Integer;",
+            ).method.addInstructions(
+                0,
+                """
+                    const/4 v0, 0x0
+                    return-object v0
+                """.trimIndent(),
+            )
+            println("[Feed Bloat Blocker] Neutralized Aweme.getExploreCommunityCommentShowType() -> Null returned.")
+            patched++
+        } catch (e: Exception) {
+            println("[Feed Bloat Blocker] Aweme.getExploreCommunityCommentShowType note: ${e.message}")
         }
 
         println("[Feed Bloat Blocker] Applied $patched feed bloat blocker hook(s) -> Non-video distractions neutralized.")
