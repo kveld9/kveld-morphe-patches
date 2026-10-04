@@ -75,7 +75,13 @@ val apkJunkCleanerPatch = rawResourcePatch(
         var junkFilesCount = 0
         var savedBytes = 0L
 
+        // Skip protected top-level trees (assets/res/lib/smali) entirely instead of visiting
+        // every file inside them only to discard it in isProtectedFile().
         apkRoot.walkTopDown()
+            .onEnter { dir ->
+                dir == apkRoot ||
+                    dir.relativeTo(apkRoot).path.replace('\\', '/').substringBefore('/').lowercase() !in PROTECTED_ROOT_DIRS
+            }
             .filter { it.isFile }
             .forEach { file ->
                 val relativePath = file.relativeTo(apkRoot).path.replace('\\', '/')
