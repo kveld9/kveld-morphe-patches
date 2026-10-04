@@ -32,7 +32,6 @@ private const val COMMENT_CLASS_DESCRIPTOR = "Lcom/ss/android/ugc/aweme/comment/
 private const val CLIP_DATA_CLASS_DESCRIPTOR = "Landroid/content/ClipData;"
 private const val BASE_COMMENT_CELL_CLASS = "Lcom/ss/android/ugc/aweme/commentv2/commentlist/powercell/BaseCommentCell;"
 private const val COMMENT_ITEM_LIST_CLASS = "Lcom/ss/android/ugc/aweme/comment/model/CommentItemList;"
-private const val COMMENT_CLASS = "Lcom/ss/android/ugc/aweme/comment/model/Comment;"
 
 private data class MethodSignature(
     val definingClass: String,
@@ -166,7 +165,7 @@ private val baseCommentCellBindFingerprint = Fingerprint(
         val instructions = method.implementation?.instructions ?: return@Fingerprint false
         instructions.any { instruction ->
             val reference = (instruction as? ReferenceInstruction)?.reference as? MethodReference
-            reference != null && reference.definingClass == BASE_COMMENT_CELL_CLASS && reference.returnType == COMMENT_CLASS
+            reference != null && reference.definingClass == BASE_COMMENT_CELL_CLASS && reference.returnType == COMMENT_CLASS_DESCRIPTOR
         }
     },
 )
@@ -477,7 +476,7 @@ private fun BytecodePatchContext.applyAutoTranslate(): Int {
         val managerMatch = instructions.withIndex().mapNotNull { (index, instruction) ->
             val field = (instruction as? ReferenceInstruction)?.reference as? FieldReference ?: return@mapNotNull null
             if (instruction.opcode != Opcode.IPUT_OBJECT ||
-                field.type != COMMENT_CLASS ||
+                field.type != COMMENT_CLASS_DESCRIPTOR ||
                 instruction !is TwoRegisterInstruction
             ) {
                 return@mapNotNull null
