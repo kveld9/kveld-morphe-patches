@@ -6,6 +6,7 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLa
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.sharedExtensionPatch
 import app.morphe.patches.shared.ensureRegisterCount
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
@@ -17,7 +18,7 @@ val mediaEnhancementsPatch = bytecodePatch(
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
-    extendWith("extensions/extension.mpe")
+    dependsOn(sharedExtensionPatch)
 
     execute {
         var patched = 0

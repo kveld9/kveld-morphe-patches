@@ -6,6 +6,7 @@ import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions
 import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.sharedExtensionPatch
 import app.morphe.patches.shared.clearTryBlocks
 import app.morphe.patches.shared.ensureRegisterCount
 import app.morphe.patches.shared.replaceWithReturnBoolean
@@ -21,7 +22,7 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
-    extendWith("extensions/extension.mpe")
+    dependsOn(sharedExtensionPatch)
 
     val hideRepostBadge by booleanOption(
         key = "hideRepostBadge",

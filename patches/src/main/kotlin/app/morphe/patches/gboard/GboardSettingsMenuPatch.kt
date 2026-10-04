@@ -6,6 +6,7 @@ import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.sharedExtensionPatch
 import app.morphe.patches.shared.clearTryBlocks
 import java.io.File
 import org.w3c.dom.Document
@@ -18,7 +19,7 @@ private val gboardSeekBarEnhancementsPatch = bytecodePatch(
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
-    extendWith("extensions/extension.mpe")
+    dependsOn(sharedExtensionPatch)
 
     execute {
         var patched = 0

@@ -4,6 +4,7 @@ import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.sharedExtensionPatch
 import app.morphe.patches.shared.replaceWithReturnBoolean
 import app.morphe.patches.shared.replaceWithReturnInt
 import app.morphe.patches.shared.replaceWithReturnNull
@@ -16,7 +17,7 @@ val hideSuggestedSearchesPatch = bytecodePatch(
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
-    extendWith("extensions/extension.mpe")
+    dependsOn(sharedExtensionPatch)
 
     execute {
         var patched = 0

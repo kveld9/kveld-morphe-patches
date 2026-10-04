@@ -9,6 +9,7 @@ import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.string
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.sharedExtensionPatch
 import app.morphe.patches.shared.LocaleUtils
 import app.morphe.patches.shared.clearTryBlocks
 import app.morphe.patches.shared.ensureRegisterCount
@@ -17,7 +18,7 @@ val gboardCoreIntegrityPatch = bytecodePatch(
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
-    extendWith("extensions/extension.mpe")
+    dependsOn(sharedExtensionPatch)
 
     dependsOn(gboardAaptWorkaroundPatch)
 

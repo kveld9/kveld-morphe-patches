@@ -6,6 +6,7 @@ import app.morphe.patcher.methodCall
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.rawResourcePatch
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.sharedExtensionPatch
 import java.util.Base64
 
 private val COLOR_BLACK_BYTES by lazy {
@@ -47,7 +48,7 @@ val gboardAmoledPatch = bytecodePatch(
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
-    extendWith("extensions/extension.mpe")
+    dependsOn(sharedExtensionPatch)
     dependsOn(gboardAmoledResourcePatch)
 
     execute {

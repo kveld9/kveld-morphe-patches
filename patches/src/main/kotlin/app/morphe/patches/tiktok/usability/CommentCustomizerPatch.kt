@@ -11,6 +11,7 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.getReference
+import app.morphe.patches.shared.sharedExtensionPatch
 import app.morphe.patches.shared.replaceWithReturnBoolean
 import app.morphe.patches.shared.replaceWithReturnBooleanObject
 import app.morphe.patches.shared.replaceWithReturnIntegerObject
@@ -557,7 +558,7 @@ val commentCustomizerPatch = bytecodePatch(
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
-    extendWith("extensions/extension.mpe")
+    dependsOn(sharedExtensionPatch)
 
     val commentSortControls by booleanOption(
         key = "commentSortControls",

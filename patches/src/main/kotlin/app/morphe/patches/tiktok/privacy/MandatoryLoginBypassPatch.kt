@@ -4,6 +4,7 @@ import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.sharedExtensionPatch
 import app.morphe.patches.shared.replaceWithReturnBoolean
 
 private const val MANDATORY_LOGIN_SERVICE = "Lcom/ss/android/ugc/aweme/services/MandatoryLoginService;"
@@ -15,7 +16,7 @@ val mandatoryLoginBypassPatch = bytecodePatch(
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
-    extendWith("extensions/extension.mpe")
+    dependsOn(sharedExtensionPatch)
 
     execute {
         var patched = 0

@@ -4,6 +4,7 @@ import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.sharedExtensionPatch
 
 val autoPauseFirstVideoPatch = bytecodePatch(
     name = "Auto-Pause First Video",
@@ -11,7 +12,7 @@ val autoPauseFirstVideoPatch = bytecodePatch(
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
-    extendWith("extensions/extension.mpe")
+    dependsOn(sharedExtensionPatch)
 
     execute {
         var patched = 0
