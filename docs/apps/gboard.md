@@ -65,6 +65,12 @@ If you perform a clean install of Gboard Lite with background sync debloat patch
 
 The **`Gboard Enhancements`** patch injects a top-level **Morphe Patches** category directly into Gboard's main settings screen (*Ajustes > Morphe Patches*). All runtime-configurable features are consolidated here, eliminating the need to re-patch the APK to adjust settings. All preference titles, summaries, category headers, status cards, and live slider units dynamically adapt to the active device/app language (supporting Spanish on `es` locales with English fallback).
 
+### 🌐 Multi-Language Support & Community Contributions
+The settings UI automatically detects the active device system language (`LocaleList` on Android 7+ and legacy `locale`) and routes strings to the corresponding language pack:
+- **Currently Supported**: English (`en`, base fallback) and Spanish (`es`).
+- **Granular Fallback**: If a key is omitted in a regional language pack, it falls back to the English string without breaking or showing empty/null values.
+- **Contributing Translations**: The localization engine is modular and designed for easy community contributions. Anyone can submit a new language pack via a single Pull Request. For step-by-step instructions and a template, refer to the [Gboard i18n Contribution Guide](../../extensions/extension/src/main/java/com/kveld9/morphe/extension/gboard/i18n/README.md).
+
 ### 1. Actions & Status
 - **Enable Gboard in System Settings**: Dynamic warning card shown when Gboard is installed but disabled in Android settings (`Settings > System > Languages & input > Manage keyboards`). Tapping the card opens the system keyboard manager directly.
 - **Select Gboard as Active Keyboard**: Dynamic warning card shown when Gboard is enabled but not set as the default input method. Tapping opens the input method picker.

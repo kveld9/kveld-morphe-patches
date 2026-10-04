@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.TextView;
+import com.kveld9.morphe.extension.gboard.i18n.GboardI18n;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -70,174 +71,7 @@ public class GboardExtension {
     public static final int MAX_EMOJI_SCALE = 150;
     public static final int DEFAULT_EMOJI_SCALE = 100;
 
-    private static class PrefTranslation {
-        final String enTitle;
-        final String enSummary;
-        final String esTitle;
-        final String esSummary;
 
-        PrefTranslation(String enTitle, String enSummary, String esTitle, String esSummary) {
-            this.enTitle = enTitle;
-            this.enSummary = enSummary;
-            this.esTitle = esTitle;
-            this.esSummary = esSummary;
-        }
-    }
-
-    private static final java.util.Map<String, PrefTranslation> TRANSLATIONS = createTranslations();
-
-    private static java.util.Map<String, PrefTranslation> createTranslations() {
-        java.util.Map<String, PrefTranslation> map = new java.util.HashMap<>();
-        addTrans(map, PREF_KEY_HEADER,
-            "Morphe Patches", "Customization and patch toggles",
-            "Parches de Morphe", "Personalización y ajustes de parches");
-        addTrans(map, PREF_KEY_SCREEN,
-            "Morphe Patches", null,
-            "Parches de Morphe", null);
-        addTrans(map, PREF_KEY_CAT_ACTIONS,
-            "Actions & Status", null,
-            "Acciones y estado", null);
-        addTrans(map, PREF_KEY_ENABLE_IME,
-            "Enable Gboard in System Settings", "Gboard is disabled in Android. Tap to enable it in Manage Keyboards.",
-            "Habilitar Gboard en ajustes del sistema", "Gboard está deshabilitado en Android. Toca para habilitarlo en Administrar teclados.");
-        addTrans(map, PREF_KEY_SELECT_IME,
-            "Select Gboard Input Method", "Gboard is enabled but not active. Tap to choose Gboard as your keyboard.",
-            "Seleccionar método de entrada de Gboard", "Gboard está habilitado pero no activo. Toca para elegir Gboard como teclado.");
-        addTrans(map, PREF_KEY_RESTART_GBOARD,
-            "Restart Gboard Process", "Tap to apply changes (required for most options to take effect)",
-            "Reiniciar proceso de Gboard", "Toca para aplicar cambios (necesario para la mayoría de opciones)");
-        addTrans(map, PREF_KEY_CAT_APPEARANCE,
-            "Appearance & Theme", null,
-            "Apariencia y tema", null);
-        addTrans(map, PREF_KEY_AMOLED,
-            "Pure AMOLED Theme", "Force pure black (#000000) background on dark themes",
-            "Tema AMOLED puro", "Forzar fondo negro puro (#000000) en temas oscuros");
-        addTrans(map, PREF_KEY_ZERO_BOTTOM_INSET,
-            "Zero Bottom Inset", "Eliminate bottom margin chin under keyboard in gesture navigation",
-            "Margen inferior cero", "Eliminar el margen inferior debajo del teclado en navegación por gestos");
-        addTrans(map, PREF_KEY_BOTTOM_PADDING,
-            "Bottom Padding (px)", "Forced bottom margin padding in pixels (0 for completely flush, default: 0)",
-            "Relleno inferior (px)", "Relleno del margen inferior en píxeles (0 para rasante total, predeterminado: 0)");
-        addTrans(map, PREF_KEY_KEY_SHAPE_SELECTION,
-            "Key Border Shapes", "Enable rounded and borderless key styles in themes",
-            "Forma de borde de teclas", "Habilitar estilos de teclas redondeadas y sin bordes en temas");
-        addTrans(map, PREF_KEY_EMOJI_SCALE,
-            "Emoji Size Scaling", "Adjust emoji visual size on the keyboard (50% - 150%)",
-            "Escala de tamaño de emojis", "Ajustar el tamaño visual de emojis en el teclado (50% - 150%)");
-        addTrans(map, PREF_KEY_CAT_TOOLBAR,
-            "Toolbar & Navigation", null,
-            "Barra de herramientas y navegación", null);
-        addTrans(map, PREF_KEY_ACCESS_POINTS_REDESIGN,
-            "Access Points Redesign", "Enable redesigned access points menu bar and panel (Panel V2)",
-            "Rediseño de barra de acceso", "Habilitar barra de acceso y panel rediseñados (Panel V2)");
-        addTrans(map, PREF_KEY_TOOLBAR_ITEM_COUNT,
-            "Toolbar Item Count", "Maximum number of access point icons displayed on top toolbar (default: 5)",
-            "Cantidad de elementos en barra", "Cantidad máxima de íconos mostrados en la barra superior (predeterminado: 5)");
-        addTrans(map, PREF_KEY_DISMISS_SUGGESTIONS,
-            "Dismiss Suggestions Button", "Show close button (X) on proactive suggestions bar",
-            "Botón de descartar sugerencias", "Mostrar botón de cerrar (X) en la barra de sugerencias");
-        addTrans(map, PREF_KEY_CURSOR_TRACKPAD,
-            "Cursor Trackpad Mode", "2D spacebar trackpad cursor navigation and cursor lock mode",
-            "Modo trackpad de cursor", "Navegación de cursor bidireccional (2D) en barra espaciadora");
-        addTrans(map, PREF_KEY_CAT_CLIPBOARD,
-            "Clipboard", null,
-            "Portapapeles", null);
-        addTrans(map, PREF_KEY_CLIPBOARD_EXTENDED_RETENTION,
-            "Extended History Retention", "Enable custom retention time limit for unpinned clips",
-            "Retención extendida de historial", "Habilitar límite de tiempo personalizado para elementos no fijados");
-        addTrans(map, PREF_KEY_CLIPBOARD_RETENTION_HOURS,
-            "Retention Time Limit (Hours)", "Hours to retain unpinned clips in history before cleanup (default: 24h)",
-            "Límite de tiempo de retención (horas)", "Horas de retención de elementos no fijados antes de eliminarlos (predeterminado: 24h)");
-        addTrans(map, PREF_KEY_CLIPBOARD_RAISE_LIMIT,
-            "Raise Unpinned Clips Limit", "Enable custom limit for unpinned clipboard history items",
-            "Aumentar límite de elementos no fijados", "Habilitar límite personalizado para elementos no fijados en el historial");
-        addTrans(map, PREF_KEY_CLIPBOARD_UNPINNED_LIMIT,
-            "Unpinned Clips Limit", "Maximum number of unpinned items displayed in clipboard (default: 50)",
-            "Límite de elementos no fijados", "Cantidad máxima de elementos no fijados en el portapapeles (predeterminado: 50)");
-        addTrans(map, PREF_KEY_CLIPBOARD_GRID_LAYOUT,
-            "Clipboard Grid Layout", "Enable custom multi-column layout for clipboard clips",
-            "Diseño en cuadrícula del portapapeles", "Habilitar diseño en múltiples columnas para el portapapeles");
-        addTrans(map, PREF_KEY_CLIPBOARD_GRID_COLUMNS,
-            "Clipboard Grid Columns", "Number of columns in clipboard layout (1, 2, or 3. Default: 2)",
-            "Columnas de cuadrícula del portapapeles", "Número de columnas en el portapapeles (1, 2 o 3. Predeterminado: 2)");
-        addTrans(map, PREF_KEY_CAT_HAPTICS,
-            "Haptics & Vibration", null,
-            "Vibración y respuesta háptica", null);
-        addTrans(map, PREF_KEY_DECOUPLE_TOUCH_FEEDBACK,
-            "Independent Keyboard Vibration", "Keep keyboard vibration active even when Android's system Touch feedback and gesture haptics are disabled",
-            "Vibración independiente del teclado", "Mantener la vibración del teclado activa aunque la respuesta táctil del sistema Android esté desactivada");
-        addTrans(map, PREF_KEY_CAT_SMART,
-            "Smart Features & Voice", null,
-            "Funciones inteligentes y voz", null);
-        addTrans(map, PREF_KEY_GRAMMAR_CHECKER,
-            "Grammar Checker & Smart Compose", "Inline grammar review and Smart Compose predictions",
-            "Corrector gramatical y Redacción inteligente", "Revisión gramatical integrada y predicciones de Redacción inteligente");
-        addTrans(map, PREF_KEY_BLUETOOTH_MIC,
-            "Bluetooth Microphone", "Enable Bluetooth microphone audio input for voice typing",
-            "Micrófono Bluetooth", "Habilitar entrada de audio por micrófono Bluetooth para dictado por voz");
-        addTrans(map, PREF_KEY_CAT_PRIVACY,
-            "Privacy & Security", null,
-            "Privacidad y seguridad", null);
-        addTrans(map, PREF_KEY_FORCE_INCOGNITO,
-            "Force Incognito Mode", "Always operate in incognito mode (disables input history and learning)",
-            "Forzar modo incógnito", "Operar siempre en modo incógnito (deshabilita el historial de entrada y aprendizaje)");
-        addTrans(map, PREF_KEY_HIDE_INCOGNITO_ICON,
-            "Hide Incognito Icon", "Hide the incognito mask icon on the toolbar",
-            "Ocultar ícono de incógnito", "Ocultar el ícono de la máscara de incógnito en la barra de herramientas");
-        addTrans(map, PREF_KEY_VOICE_INCOGNITO,
-            "Voice Typing in Incognito", "Enable voice typing and microphone dictation in private fields and incognito mode",
-            "Dictado por voz en incógnito", "Habilitar dictado por voz en campos privados y modo incógnito");
-        return map;
-    }
-
-    private static void addTrans(java.util.Map<String, PrefTranslation> map, String key,
-                                 String enTitle, String enSummary,
-                                 String esTitle, String esSummary) {
-        map.put(key, new PrefTranslation(enTitle, enSummary, esTitle, esSummary));
-    }
-
-    public static boolean isSpanish(Context context) {
-        Context ctx = getContext(context);
-        if (ctx != null) {
-            Boolean configResult = checkConfigSpanish(ctx);
-            if (configResult != null) return configResult;
-        }
-        return checkDefaultLocaleSpanish();
-    }
-
-    private static Boolean checkConfigSpanish(Context ctx) {
-        try {
-            android.content.res.Configuration cfg = ctx.getResources().getConfiguration();
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                android.os.LocaleList locales = cfg.getLocales();
-                if (locales != null && !locales.isEmpty()) {
-                    String lang = locales.get(0).getLanguage();
-                    if (lang != null && !lang.isEmpty()) {
-                        return isSpanishTag(lang);
-                    }
-                }
-            }
-            @SuppressWarnings("deprecation")
-            java.util.Locale loc = cfg.locale;
-            if (loc != null && loc.getLanguage() != null && !loc.getLanguage().isEmpty()) {
-                return isSpanishTag(loc.getLanguage());
-            }
-        } catch (Throwable ignored) {}
-        return null;
-    }
-
-    private static boolean checkDefaultLocaleSpanish() {
-        try {
-            java.util.Locale def = java.util.Locale.getDefault();
-            return def != null && isSpanishTag(def.getLanguage());
-        } catch (Throwable ignored) {
-            return false;
-        }
-    }
-
-    private static boolean isSpanishTag(String tag) {
-        return tag != null && tag.equalsIgnoreCase("es");
-    }
 
     private static final int FLAG_IGNORE_GLOBAL_SETTING = 2; // HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING
     private static final int FALLBACK_VIBRATION_DURATION_MS = 10;
@@ -325,7 +159,7 @@ public class GboardExtension {
                 android.os.Handler handler = new android.os.Handler(android.os.Looper.getMainLooper());
                 handler.post(() -> {
                     try {
-                        String msg = isSpanish(ctx) ? "Reinicia Gboard para aplicar los cambios" : "Restart Gboard to apply changes";
+                        String msg = GboardI18n.getRestartToast(ctx);
                         android.widget.Toast.makeText(ctx, msg, android.widget.Toast.LENGTH_SHORT).show();
                     } catch (Throwable ignored) {}
                 });
@@ -645,7 +479,7 @@ public class GboardExtension {
             android.os.Vibrator vibrator = (android.os.Vibrator) ctx.getSystemService(Context.VIBRATOR_SERVICE);
             if (vibrator == null || !vibrator.hasVibrator()) return false;
             if (android.os.Build.VERSION.SDK_INT >= 29) {
-                android.os.VibrationEffect effect = null;
+                android.os.VibrationEffect effect;
                 if (android.os.Build.VERSION.SDK_INT >= 30 && vibrator.areAllPrimitivesSupported(android.os.VibrationEffect.Composition.PRIMITIVE_CLICK)) {
                     effect = android.os.VibrationEffect.startComposition()
                             .addPrimitive(android.os.VibrationEffect.Composition.PRIMITIVE_CLICK, 1.0f)
@@ -839,32 +673,8 @@ public class GboardExtension {
     public static String formatSeekBarValue(Object pref, int value) {
         String key = getPreferenceKey(pref);
         if (key == null) return String.valueOf(value);
-
-        boolean es = isSpanish(getContextFromPref(pref));
-        switch (key) {
-            case PREF_KEY_BOTTOM_PADDING:
-                return value + " px";
-            case PREF_KEY_TOOLBAR_ITEM_COUNT:
-                return Math.max(MIN_TOOLBAR_ITEM_COUNT, value) + (es ? " íconos" : " icons");
-            case PREF_KEY_CLIPBOARD_RETENTION_HOURS:
-                return Math.max(MIN_CLIPBOARD_RETENTION_HOURS, value) + " h";
-            case PREF_KEY_CLIPBOARD_UNPINNED_LIMIT:
-                return Math.max(MIN_CLIPBOARD_UNPINNED_LIMIT, value) + (es ? " elementos" : " clips");
-            case PREF_KEY_CLIPBOARD_GRID_COLUMNS:
-                int cols = Math.max(MIN_CLIPBOARD_GRID_COLUMNS, value);
-                return formatCols(cols, es);
-            case PREF_KEY_EMOJI_SCALE:
-                return Math.max(MIN_EMOJI_SCALE, value) + " %";
-            default:
-                return String.valueOf(value);
-        }
-    }
-
-    private static String formatCols(int cols, boolean es) {
-        if (es) {
-            return cols + (cols == 1 ? " columna" : " columnas");
-        }
-        return cols + (cols == 1 ? " col" : " cols");
+        Context ctx = getContextFromPref(pref);
+        return GboardI18n.formatUnit(ctx, key, value);
     }
 
     public static boolean isImeEnabled(Context context) {
@@ -987,12 +797,9 @@ public class GboardExtension {
     private static void applyDynamicLocalization(Object pref, Object holder, String key, Context ctx) {
         if (PREF_KEY_RESTART_GBOARD.equals(key)) return;
 
-        PrefTranslation trans = TRANSLATIONS.get(key);
-        if (trans == null) return;
-
-        boolean es = isSpanish(ctx);
-        String title = es ? trans.esTitle : trans.enTitle;
-        String summary = es ? trans.esSummary : trans.enSummary;
+        String title = GboardI18n.getTitle(ctx, key);
+        String summary = GboardI18n.getSummary(ctx, key);
+        if (title == null && summary == null) return;
 
         android.view.View itemView = getItemViewFromHolder(holder);
         if (itemView != null) {
@@ -1074,9 +881,8 @@ public class GboardExtension {
                 pref = restartPrefRef.get();
             }
             Context ctx = (pref != null) ? getContextFromPref(pref) : getContext(null);
-            boolean es = isSpanish(ctx);
-            String title = getRestartTitle(restartPending, es);
-            String summary = getRestartSummary(restartPending, es);
+            String title = GboardI18n.getRestartTitle(ctx, restartPending);
+            String summary = GboardI18n.getRestartSummary(ctx, restartPending);
 
             if (holder != null) {
                 android.view.View itemView = getItemViewFromHolder(holder);
@@ -1106,22 +912,6 @@ public class GboardExtension {
                 });
             }
         } catch (Throwable ignored) {}
-    }
-
-    private static String getRestartTitle(boolean pending, boolean es) {
-        if (pending) {
-            return es ? "Reiniciar Gboard (Reinicio pendiente)" : "Restart Gboard (Restart Pending)";
-        }
-        return es ? "Reiniciar proceso de Gboard" : "Restart Gboard Process";
-    }
-
-    private static String getRestartSummary(boolean pending, boolean es) {
-        if (pending) {
-            return es ? "¡Cambios pendientes! Toca aquí para reiniciar Gboard y aplicar los cambios ahora."
-                      : "Changes pending! Tap here to restart Gboard and apply changes now.";
-        }
-        return es ? "Toca para aplicar cambios (necesario para la mayoría de opciones)"
-                  : "Tap to apply changes (required for most options to take effect)";
     }
 
     private static android.view.View getItemViewFromHolder(Object holder) {
@@ -1166,7 +956,7 @@ public class GboardExtension {
             Context ctx = getContextFromPref(pref);
             if (ctx != null) {
                 try {
-                    String msg = isSpanish(ctx) ? "Reiniciando Gboard..." : "Restarting Gboard...";
+                    String msg = GboardI18n.getRestartingToast(ctx);
                     android.widget.Toast.makeText(ctx, msg, android.widget.Toast.LENGTH_SHORT).show();
                 } catch (Throwable ignored) {}
 
