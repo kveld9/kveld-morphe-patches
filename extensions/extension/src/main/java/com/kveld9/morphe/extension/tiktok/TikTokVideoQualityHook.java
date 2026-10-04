@@ -424,6 +424,50 @@ public final class TikTokVideoQualityHook {
         return false;
     }
 
+    /**
+     * DASH renditions are video-only fragmented MP4; their audio is served separately
+     * through Video.bitRateAudio, so saving one directly yields a silent file.
+     */
+    public static boolean isDashBitrate(Object bitrateObj) {
+        if (bitrateObj == null) return false;
+        try {
+            Object dash = bitrateObj.getClass().getMethod("isDash").invoke(bitrateObj);
+            if (Boolean.TRUE.equals(dash)) return true;
+        } catch (Throwable ignored) {}
+        try {
+            Object fmt = bitrateObj.getClass().getMethod("getFormat").invoke(bitrateObj);
+            if (fmt instanceof String && ((String) fmt).toLowerCase().contains("dash")) return true;
+        } catch (Throwable ignored) {}
+        return false;
+    }
+
+    /**
+     * BitRate.isBytevc1() is a codec id (0 = H.264, 1 = ByteVC1/HEVC, 2 = ByteVC2), not a flag.
+     * ByteVC2 is proprietary and cannot be decoded by gallery players, so it is never a download target.
+     */
+    public static boolean isBytevc2(Object bitrateObj) {
+        if (bitrateObj == null) return false;
+        try {
+            Object res = bitrateObj.getClass().getMethod("isBytevc1").invoke(bitrateObj);
+            if (res instanceof Integer && ((Integer) res) >= 2) return true;
+        } catch (Throwable ignored) {}
+        for (String getter : new String[]{"getFormat", "getGearName"}) {
+            try {
+                Object val = bitrateObj.getClass().getMethod(getter).invoke(bitrateObj);
+                if (val instanceof String) {
+                    String s = ((String) val).toLowerCase();
+                    if (s.contains("bytevc2") || s.contains("bvc2")) return true;
+                }
+            } catch (Throwable ignored) {}
+        }
+        return false;
+    }
+
+    /** Progressive (muxed audio + video) rendition in a codec that standard players can decode. */
+    public static boolean isDownloadableBitrate(Object bitrateObj) {
+        return !isDashBitrate(bitrateObj) && !isBytevc2(bitrateObj);
+    }
+
     public static boolean isBytevc1(Object bitrateObj) {
         if (bitrateObj == null) return false;
         try {
@@ -833,7 +877,7 @@ public final class TikTokVideoQualityHook {
 
         for (Object item : bitrates) {
             if (item == null) continue;
-            if (isAudioBitrate(item)) continue;
+            if (isAudioBitrate(item) || !isDownloadableBitrate(item)) continue;
             int h = resolveBitrateHeight(item);
             if (h <= 0) {
                 h = deriveBitrateFromBps(item);
@@ -986,7 +1030,8 @@ public final class TikTokVideoQualityHook {
                             Object bestAllowedBytevc1 = null;
 
                             for (Object item : cappedList) {
-                                if (isAudioBitrate(item) || resolveBitrateHeight(item) <= 0) continue;
+                                // Progressive play addresses must never receive video-only DASH or ByteVC2 URLs
+                                if (isAudioBitrate(item) || !isDownloadableBitrate(item) || resolveBitrateHeight(item) <= 0) continue;
                                 if (isBytevc1(item)) {
                                     if (bestAllowedBytevc1 == null) {
                                         bestAllowedBytevc1 = item;
