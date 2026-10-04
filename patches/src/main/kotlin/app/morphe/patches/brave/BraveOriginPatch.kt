@@ -11,6 +11,7 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patcher.string
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.findXmlContaining
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
@@ -129,11 +130,7 @@ private val braveOriginResourcePatch = resourcePatch(
     compatibleWith(Constants.COMPATIBILITY_BRAVE)
 
     execute {
-        val targetFile = get("res").walkTopDown()
-            .filter { it.isFile && it.extension == "xml" }
-            .firstOrNull { file ->
-                file.readText().contains("rewards_switch")
-            } ?: run {
+        val targetFile = get("res").findXmlContaining(listOf("rewards_switch")).firstOrNull() ?: run {
                 println("[BraveOrigin] Skipped: rewards_switch XML preference not found.")
                 return@execute
             }

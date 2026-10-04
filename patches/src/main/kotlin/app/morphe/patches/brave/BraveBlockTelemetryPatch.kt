@@ -8,6 +8,7 @@ import app.morphe.patcher.patch.rawResourcePatch
 import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.sharedExtensionPatch
+import app.morphe.patches.shared.findXmlContaining
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import org.w3c.dom.Element
@@ -28,13 +29,7 @@ private val braveTelemetryResourcePatch = resourcePatch(
             "web_discovery_project_switch",
         )
 
-        val targetFiles = get("res").walkTopDown()
-            .filter { it.isFile && it.extension == "xml" }
-            .filter { file ->
-                val content = file.readText()
-                telemetrySwitches.any { key -> content.contains(key) }
-            }
-            .toList()
+        val targetFiles = get("res").findXmlContaining(telemetrySwitches)
 
         var modifiedAttrs = 0
         var modifiedFiles = 0
