@@ -334,7 +334,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
         patch_id="comment_customizer",
         name="Comment Customizer",
         target_type="bytecode",
-        description="Customizes TikTok's comment section, including native sort controls, clean text copying, disabling suggested emojis bar, enabling voice comments, and automatic comment translation.",
+        description="Customizes TikTok's comment section, including native sort controls, clean text copying, disabling suggested emojis bar, hiding comment quick actions, enabling voice comments, and automatic comment translation.",
         required_classes=[
             "Lcom/ss/android/ugc/aweme/comment/model/Comment;",
             "Lcom/ss/android/ugc/aweme/comment/model/CommentKeyboardModel;",

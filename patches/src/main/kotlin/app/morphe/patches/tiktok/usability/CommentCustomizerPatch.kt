@@ -359,6 +359,61 @@ private fun BytecodePatchContext.applyDisableSuggestedEmojis(): Int {
     return patched
 }
 
+private fun BytecodePatchContext.applyHideCommentQuickActions(): Int {
+    var patched = 0
+
+    val assemFp = Fingerprint(
+        definingClass = "Lcom/ss/android/ugc/aweme/comment/keyboard/keyboardv2/refactor/BaseInputAssem;",
+        name = "onViewCreated",
+        parameters = listOf("Landroid/view/View;"),
+        returnType = "V",
+    )
+    val onViewCreatedMethod = assemFp.method
+    val assemClass = assemFp.classDef
+    val linearLayoutField = assemClass.fields.firstOrNull {
+        it.type == "Landroid/widget/LinearLayout;"
+    } ?: throw PatchException("Comment Customizer: LinearLayout action field not found in BaseInputAssem.")
+
+    val putIndex = onViewCreatedMethod.implementation?.instructions?.withIndex()?.firstOrNull { (_, ins) ->
+        val field = (ins as? ReferenceInstruction)?.reference as? FieldReference
+        ins.opcode == Opcode.IPUT_OBJECT &&
+            field?.definingClass == assemClass.type &&
+            field?.name == linearLayoutField.name
+    }?.index ?: throw PatchException("Comment Customizer: Could not find ${linearLayoutField.name} assignment in onViewCreated.")
+
+    val putInstruction = onViewCreatedMethod.getInstruction<Instruction>(putIndex)
+    val reg = (putInstruction as? TwoRegisterInstruction)?.registerA
+        ?: throw PatchException("Comment Customizer: Could not determine register for ${linearLayoutField.name}.")
+
+    if (reg <= 15) {
+        onViewCreatedMethod.addInstructions(
+            putIndex + 1,
+            """
+                invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_COMMENT_HOOK}->hideCommentQuickActions(Landroid/view/View;)V
+            """.trimIndent(),
+        )
+    } else {
+        onViewCreatedMethod.addInstructions(
+            putIndex + 1,
+            """
+                invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_COMMENT_HOOK}->hideCommentQuickActions(Landroid/view/View;)V
+            """.trimIndent(),
+        )
+    }
+    patched++
+
+    Fingerprint(
+        definingClass = "Lcom/ss/android/ugc/aweme/comment/model/CommentKeyboardModel;",
+        name = "getHideIconGroupOnAgentOpenComment",
+        returnType = "Z",
+        parameters = emptyList(),
+    ).method.replaceWithReturnBoolean(true)
+    patched++
+
+    println("[Comment Customizer] Comment quick actions hidden.")
+    return patched
+}
+
 private fun BytecodePatchContext.applyEnableVoiceComments(): Int {
     var patched = 0
 
@@ -498,7 +553,7 @@ private fun BytecodePatchContext.applyAutoTranslate(): Int {
 
 val commentCustomizerPatch = bytecodePatch(
     name = "Comment Customizer",
-    description = "Customizes TikTok's comment section, including native sort controls, clean text copying, disabling suggested emojis bar, enabling voice comments, and automatic comment translation.",
+    description = "Customizes TikTok's comment section, including native sort controls, clean text copying, disabling suggested emojis bar, hiding comment quick actions, enabling voice comments, and automatic comment translation.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -528,6 +583,14 @@ val commentCustomizerPatch = bytecodePatch(
         required = false,
     )
 
+    val hideCommentQuickActions by booleanOption(
+        key = "hideCommentQuickActions",
+        default = true,
+        title = "Hide Comment Quick Actions",
+        description = "Hides the quick action buttons (photo, emoji, and mention) inside the comment input bar.",
+        required = false,
+    )
+
     val enableVoiceComments by booleanOption(
         key = "enableVoiceComments",
         default = true,
@@ -548,6 +611,7 @@ val commentCustomizerPatch = bytecodePatch(
         if (commentSortControls != true &&
             copyWithoutUsername != true &&
             disableSuggestedEmojis != true &&
+            hideCommentQuickActions != true &&
             enableVoiceComments != true &&
             autoTranslate != true
         ) {
@@ -567,6 +631,10 @@ val commentCustomizerPatch = bytecodePatch(
 
         if (disableSuggestedEmojis == true) {
             patched += applyDisableSuggestedEmojis()
+        }
+
+        if (hideCommentQuickActions == true) {
+            patched += applyHideCommentQuickActions()
         }
 
         if (enableVoiceComments == true) {

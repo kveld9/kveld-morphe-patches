@@ -28,7 +28,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Usability** | **Disable Post-Download Share Dialog** | `bytecodePatch` | Suppresses the automatic 'Share to' and friend suggestions bottom sheet that pops up after finishing a download. |
 | **Usability** | **Show Seekbar** | `bytecodePatch` | Restores video seekbar and scrubbing controls where hidden or disabled. |
 | **Usability** | **Always Show Publish Date** | `bytecodePatch` | Forces video publish and upload timestamps to remain permanently visible on feed cards. |
-| **Usability** | **[Comment Customizer](#2-comment-customizer)** | `bytecodePatch` | Customizes comment section: native sort controls, clean text copying, disabling suggested emojis bar, voice comments, and automatic translation. |
+| **Usability** | **[Comment Customizer](#2-comment-customizer)** | `bytecodePatch` | Customizes comment section: native sort controls, clean text copying, disabling suggested emojis bar, hiding comment quick actions, voice comments, and automatic translation. |
 | **Usability** | **Disable Double Tap to Like** | `bytecodePatch` | Disables the double tap gesture to like videos in the feed, preventing accidental likes while scrolling or pausing. Videos can still be liked using the like button. |
 | **Usability** | **Playback Speed Persistence** | `bytecodePatch` | Persists user-selected video speed across feed scrolling and restarts. |
 | **Usability** | **[Video Quality Governor](#2-video-quality-governor)** | `bytecodePatch` | Decoupled resolution ceilings for playback (e.g. 480p) and downloads (e.g. 1080p). |
@@ -273,6 +273,7 @@ The **`Disable Feed Long-Press Actions`** patch neutralizes long-press gesture d
   - **`commentSortControls` (default: true)**: Unlocks TikTok's internal native comment sorting controls sheet (Most Relevant, Newest, Creator Only, Media Only) by overriding `comment_sort_opt_style` configuration getter (`2`) and Aweme comment sort eligibility checks.
   - **`copyWithoutUsername` (default: true)**: Copies clean comment text without prepending the author username (`@username: `). Hooks `ClipData` builder `LIZ(String, String, List)` and BPEA clipboard helper callers.
   - **`disableSuggestedEmojis` (default: true)**: Removes the horizontal bar of suggested quick emojis above the comment input box across active keyboard and passive comment views (`ExposedEmojiPanelTrigger`, `CommentPanelFakeInput`, `CommentKeyboardModel`, `PersonalizedEmojiExperiment`).
+  - **`hideCommentQuickActions` (default: true)**: Hides the quick action buttons (photo/gallery, emoji/sticker, and mention `@`) inside the comment input bar (`BaseInputAssem`, `CommentKeyboardModel`, and `TikTokCommentHook.hideCommentQuickActions`).
   - **`enableVoiceComments` (default: true)**: Forces native voice comment recording buttons in comment input bars, bypassing regional rollout restrictions and remote server blocks (`audio_comment_publish`, `comment_audio_publish_entry_forbidden`, `VEAudioRecorder`).
   - **`autoTranslate` (default: false)**: Automatically dispatches batch translations for incoming comments via TikTok's native engine (`BaseCommentCell`, `CommentList.onLoaded`).
 
