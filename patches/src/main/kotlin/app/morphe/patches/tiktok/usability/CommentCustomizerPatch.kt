@@ -72,9 +72,15 @@ private fun Method.isCommentCopyBuilder(clipboardHelper: MethodSignature): Boole
 
     implementation.instructions.forEach { instruction ->
         val reference = (instruction as? ReferenceInstruction)?.reference as? MethodReference ?: return@forEach
-        if (reference.isCommentGetText()) hasCommentText = true
-        if (reference.isCommentGetUser()) hasCommentUser = true
-        if (clipboardHelper.matches(reference)) hasClipboardHelperCall = true
+        // This runs over every instruction in the APK; read the dex-backed class string once.
+        val definingClass = reference.definingClass
+        if (definingClass == COMMENT_CLASS_DESCRIPTOR) {
+            if (reference.isCommentGetText()) hasCommentText = true
+            if (reference.isCommentGetUser()) hasCommentUser = true
+        }
+        if (definingClass == clipboardHelper.definingClass && clipboardHelper.matches(reference)) {
+            hasClipboardHelperCall = true
+        }
     }
 
     return hasCommentText && hasCommentUser && hasClipboardHelperCall

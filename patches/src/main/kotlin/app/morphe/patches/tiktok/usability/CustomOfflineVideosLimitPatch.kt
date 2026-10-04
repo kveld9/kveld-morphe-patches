@@ -8,6 +8,7 @@ import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.sharedExtensionPatch
 import app.morphe.patches.shared.ensureRegisterCount
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
@@ -233,12 +234,20 @@ val customOfflineVideosLimitPatch = bytecodePatch(
 
         // 5. Radio item cell class discovery and title/subtitle hooks
         try {
+            // This fingerprint has no class or string anchor, so it is evaluated for every method in
+            // the APK. The field check only depends on the class, so compute it once per class.
+            var lastClassDef: ClassDef? = null
+            var lastClassHasRadioCellFields = false
             val radioCellFingerprint = Fingerprint(
                 custom = { method, classDef ->
-                    val fieldTypes = classDef.fields.map { it.type }.toSet()
-                    fieldTypes.contains("I") &&
-                        fieldTypes.contains("Landroid/app/Activity;") &&
-                        fieldTypes.contains("Lcom/ss/android/ugc/aweme/offlinemode/viewmodel/OfflineModeManagerVM;") &&
+                    if (classDef !== lastClassDef) {
+                        lastClassDef = classDef
+                        val fieldTypes = classDef.fields.map { it.type }.toSet()
+                        lastClassHasRadioCellFields = fieldTypes.contains("I") &&
+                            fieldTypes.contains("Landroid/app/Activity;") &&
+                            fieldTypes.contains("Lcom/ss/android/ugc/aweme/offlinemode/viewmodel/OfflineModeManagerVM;")
+                    }
+                    lastClassHasRadioCellFields &&
                         method.implementation?.instructions?.any { insn ->
                             val ref = (insn as? ReferenceInstruction)?.reference as? MethodReference
                             ref?.name == "<init>" &&
