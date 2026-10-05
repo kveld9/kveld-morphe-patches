@@ -4,6 +4,7 @@ import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.addInstructionsAtControlFlowLabel
 import app.morphe.patches.shared.sharedExtensionPatch
 import app.morphe.patches.shared.replaceWithReturnBoolean
 import app.morphe.patches.shared.replaceWithReturnInt
@@ -91,7 +92,7 @@ val hideSuggestedSearchesPatch = bytecodePatch(
             ?.toList() ?: emptyList()
 
         hatReturnIndices.asReversed().forEach { returnIndex ->
-            hatMethod.addInstructions(
+            hatMethod.addInstructionsAtControlFlowLabel(
                 returnIndex,
                 """
                     const/4 v0, 0x0
@@ -114,7 +115,7 @@ val hideSuggestedSearchesPatch = bytecodePatch(
             ?.toList() ?: emptyList()
 
         returnIndices.asReversed().forEach { (returnIndex, reg) ->
-            method.addInstructions(
+            method.addInstructionsAtControlFlowLabel(
                 returnIndex,
                 """
                     invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_SEARCH_HOOK}->filterSuggestedAbParams(Ljava/util/Map;)Ljava/util/Map;
@@ -137,7 +138,7 @@ val hideSuggestedSearchesPatch = bytecodePatch(
             ?.toList() ?: emptyList()
 
         schemaReturnIndices.asReversed().forEach { (returnIndex, reg) ->
-            schemaMethod.addInstructions(
+            schemaMethod.addInstructionsAtControlFlowLabel(
                 returnIndex,
                 """
                     invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_SEARCH_HOOK}->filterSuggestedSchema(Ljava/lang/String;)Ljava/lang/String;
