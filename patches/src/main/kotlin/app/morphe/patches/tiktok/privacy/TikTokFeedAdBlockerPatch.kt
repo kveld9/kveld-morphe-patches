@@ -1,9 +1,9 @@
 package app.morphe.patches.tiktok.privacy
 
 import app.morphe.patcher.Fingerprint
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.addInstructionsAtControlFlowLabel
 import app.morphe.patches.shared.sharedExtensionPatch
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
@@ -32,7 +32,7 @@ val tikTokFeedAdBlockerPatch = bytecodePatch(
                 ?.toList() ?: emptyList()
 
             returnIndices.asReversed().forEach { (returnIndex, reg) ->
-                method.addInstructions(
+                method.addInstructionsAtControlFlowLabel(
                     returnIndex,
                     """
                         invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAdsInList(Ljava/lang/Object;)V
@@ -58,7 +58,7 @@ val tikTokFeedAdBlockerPatch = bytecodePatch(
             ?.toList() ?: emptyList()
 
         feedApiReturns.asReversed().forEach { (returnIndex, reg) ->
-            feedApiMethod.addInstructions(
+            feedApiMethod.addInstructionsAtControlFlowLabel(
                 returnIndex,
                 """
                     invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAdsInFeedItemList(Ljava/lang/Object;)V
@@ -91,7 +91,7 @@ val tikTokFeedAdBlockerPatch = bytecodePatch(
             ?.toList() ?: emptyList()
 
         followReturns.asReversed().forEach { (returnIndex, reg) ->
-            followMethod.addInstructions(
+            followMethod.addInstructionsAtControlFlowLabel(
                 returnIndex,
                 """
                     invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAdsInFollowFeedList(Ljava/lang/Object;)V
