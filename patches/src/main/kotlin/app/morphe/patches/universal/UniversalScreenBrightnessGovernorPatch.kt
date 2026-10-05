@@ -1,4 +1,4 @@
-package app.morphe.patches.shared
+package app.morphe.patches.universal
 
 import app.morphe.patcher.extensions.InstructionExtensions.instructionsOrNull
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction

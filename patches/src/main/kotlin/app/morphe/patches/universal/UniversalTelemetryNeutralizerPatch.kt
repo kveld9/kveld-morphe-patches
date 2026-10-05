@@ -1,7 +1,12 @@
-package app.morphe.patches.shared
+package app.morphe.patches.universal
 
 import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.resourcePatch
+import app.morphe.patches.shared.childrenNamed
+import app.morphe.patches.shared.disableComponentsWhere
+import app.morphe.patches.shared.removeComponentDiscoveryRegistrarsWhere
+import app.morphe.patches.shared.setApplicationMetaData
+import app.morphe.patches.shared.stripPermissionsWhere
 
 private val TRACKING_PERMISSIONS = setOf(
     "com.google.android.gms.permission.AD_ID",

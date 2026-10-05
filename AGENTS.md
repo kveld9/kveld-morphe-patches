@@ -36,7 +36,8 @@ morphe-patches/
 │       │   ├── nokoprint/   # Specific NokoPrint patch implementations
 │       │   ├── tiktok/      # Specific TikTok patch implementations
 │       │   ├── xiaomi/      # Specific Xiaomi Earbuds patch implementations
-│       │   └── shared/      # Centralized Compatibility contracts (Constants.kt)
+│       │   ├── shared/      # Centralized Compatibility contracts (Constants.kt) and shared helpers
+│       │   └── universal/   # Universal patches (no compatibleWith), applicable to any APK
 │       └── util/            # Patch list metadata generator (PatchListGenerator.kt)
 ├── extensions/              # MPE (Morphe Patch Extension) DEX Payloads
 │   └── extension/src/main/  # Companion Java runtime hooks (compiled to extension.mpe)

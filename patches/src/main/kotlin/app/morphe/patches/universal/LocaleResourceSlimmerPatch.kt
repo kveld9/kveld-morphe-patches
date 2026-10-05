@@ -1,7 +1,8 @@
-package app.morphe.patches.shared
+package app.morphe.patches.universal
 
 import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patcher.patch.stringOption
+import app.morphe.patches.shared.LocaleUtils
 
 @Suppress("unused")
 val localeResourceSlimmerPatch = resourcePatch(

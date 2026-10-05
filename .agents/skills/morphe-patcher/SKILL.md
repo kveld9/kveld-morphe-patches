@@ -88,7 +88,7 @@ Compatibility is configured via `compatibleWith(...)`:
   compatibleWith(targetA, targetB)
   ```
 - **Universal Patches**:
-  **Omitting `compatibleWith(...)`** entirely produces a universal patch (e.g. `LocaleResourceSlimmerPatch`, `DpiResourceSlimmerPatch`). Universal patches are offered across all target applications in Morphe Manager and the CLI patcher.
+  **Omitting `compatibleWith(...)`** entirely produces a universal patch (e.g. `LocaleResourceSlimmerPatch`, `DpiResourceSlimmerPatch`). Universal patches are offered across all target applications in Morphe Manager and the CLI patcher. Universal patch sources live in `app.morphe.patches.universal`; `app.morphe.patches.shared` holds only contracts and helpers.
 
 ---
 

@@ -1,7 +1,9 @@
-package app.morphe.patches.shared
+package app.morphe.patches.universal
 
 import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.resourcePatch
+import app.morphe.patches.shared.ANDROID_XML_NAMESPACE
+import app.morphe.patches.shared.getAttributeValue
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 

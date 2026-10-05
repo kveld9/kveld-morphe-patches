@@ -1,7 +1,8 @@
-package app.morphe.patches.shared
+package app.morphe.patches.universal
 
 import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.rawResourcePatch
+import app.morphe.patches.shared.LocaleUtils
 import java.io.File
 
 private val CRASH_AND_TRACKING_LIBS = setOf(

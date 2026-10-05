@@ -1,6 +1,7 @@
-package app.morphe.patches.shared
+package app.morphe.patches.universal
 
 import app.morphe.patcher.patch.rawResourcePatch
+import app.morphe.patches.shared.LocaleUtils
 import java.io.File
 
 private val PROTECTED_EXTENSIONS = setOf(
