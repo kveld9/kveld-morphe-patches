@@ -114,8 +114,11 @@ When adding or updating any patch, the following gates are **MANDATORY**:
    ./gradlew runPatchTest -Papp=<targetApp>
    # Or with an explicit APK file path:
    ./gradlew runPatchTest -Papk=/path/to/app.apk
+   # When the change touches code behind a patch option, also run with every boolean option forced on:
+   ./gradlew runPatchTest -Papp=<targetApp> -PallOptions=true
    ```
-   The patching run MUST complete with **100% success** (0 failed patches, 0 fingerprint errors, 0 exceptions).
+   The patching run MUST complete with **100% success** (0 failed patches, 0 fingerprint errors, 0 smali compile errors, 0 exceptions).
+   **Zero-Smali-Compile-Error Invariant**: The inline smali compiler silently drops any instruction it cannot assemble (e.g. `[6,8] Invalid register: v22`) instead of failing. Non-range invokes (`invoke-* {...}`) can only address `v0`-`v15`; in large methods `p` registers map above that, so use the `/range` form or copy values into low registers first. The runner fails on these errors (`Detected Smali Compile Errors`).
    **Zero-Fingerprint-Mismatch Invariant (Definitive Completion Gate)**:
    A patch update or the creation of a new patch is **NEVER** complete if there is even a single `Failed to match the fingerprint` or `fingerprint mismatch` in the patcher logs (standard or verbose).
    Wrapping hooks in `try-catch` with diagnostic log lines (`Target note: ${e.message}`) is strictly a temporary development aid to pinpoint shifted targets during initial triage; it is **STRICTLY PROHIBITED** to leave failing fingerprints caught by try-catch in final/committed code. Every single hook target must either:
@@ -163,7 +166,7 @@ For non-trivial logic, Smali hooks, native ARM64 patching (`libchrome.so`), or s
 11. **Metadata Synchronization Integrity**:
     - When patch options, default values, or descriptions are modified in Kotlin source code, verify that patch catalog generator tasks (`./gradlew generatePatchesList`) are synchronized before release packaging.
 12. **DO NOT Declare Patch Tasks Complete Without In-Situ Morphe Patcher Verification & Zero Fingerprint Mismatches**:
-    - Never conclude any patch edit or declare a task complete without executing `./gradlew runPatchTest -Papp=<target>` with all corresponding patches active for that target app and asserting 100% success (0 failed patches, 0 exceptions, and 0 fingerprint mismatches/failed fingerprints in the logs). Any log line containing `Failed to match the fingerprint` or `fingerprint mismatch` constitutes an incomplete/broken patch that blocks completion.
+    - Never conclude any patch edit or declare a task complete without executing `./gradlew runPatchTest -Papp=<target>` with all corresponding patches active for that target app and asserting 100% success (0 failed patches, 0 exceptions, 0 smali compile errors, and 0 fingerprint mismatches/failed fingerprints in the logs). Any log line containing `Failed to match the fingerprint` or `fingerprint mismatch` constitutes an incomplete/broken patch that blocks completion.
 13. **Strict Prohibition of Emojis in Code, Scripts & Tooling**:
     - Under no circumstances should emojis or unicode pictographs be used anywhere in codebase source files, including Kotlin, Java, Python, Smali, Bash/Shell scripts, Gradle build files, configuration files, test files, diagnostic telemetry, or CLI/runtime logs.
     - All code, logs, comments, and console outputs MUST strictly use clean, standard ASCII / plain-text formatting (e.g. `[INFO]`, `[WARN]`, `[PASS]`, `[FAIL]`, `[AUDIT]`, `[BUILD]`). Emojis are tolerated exclusively in end-user documentation (such as `README.md`) if already present, but are strictly prohibited in codebase implementation files and tooling.
@@ -226,6 +229,8 @@ For non-trivial logic, Smali hooks, native ARM64 patching (`libchrome.so`), or s
 ./gradlew runPatchTest -Papp=xiaomi_earbuds
 # Or auto-detect target app from git diff / candidate downloads:
 ./gradlew runPatchTest
+# Force every boolean patch option on (covers hooks behind disabled-by-default toggles):
+./gradlew runPatchTest -Papp=tiktok -PallOptions=true
 
 # Generate updated patches-list.json from compiled .mpp
 ./gradlew generatePatchesList
