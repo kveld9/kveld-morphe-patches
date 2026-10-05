@@ -46,6 +46,7 @@ public class GboardExtension {
     public static final String PREF_KEY_HIDE_INCOGNITO_ICON = "morphe_hide_incognito_icon";
     public static final String PREF_KEY_VOICE_INCOGNITO = "morphe_voice_typing_incognito";
     public static final String PREF_KEY_DECOUPLE_TOUCH_FEEDBACK = "morphe_decouple_touch_feedback";
+    public static final String PREF_KEY_MODERN_HAPTICS = "morphe_modern_haptics";
 
     public static final int MIN_BOTTOM_PADDING = 0;
     public static final int MAX_BOTTOM_PADDING = 150;
@@ -619,6 +620,15 @@ public class GboardExtension {
 
     public static boolean isGrammarCheckerEnabled() {
         return getBooleanPref(PREF_KEY_GRAMMAR_CHECKER, true);
+    }
+
+    /**
+     * Minimum SDK for Gboard's haptic primitive keypress path (vibration_effect_min_sdk).
+     * Gboard ships 1024, which disables the path on every device; 30 is the platform floor for
+     * VibrationEffect.Composition. Gboard's own areAllEffectsSupported() check still applies.
+     */
+    public static long getVibrationEffectMinSdk() {
+        return getBooleanPref(PREF_KEY_MODERN_HAPTICS, true) ? 30L : 1024L;
     }
 
     public static boolean isBluetoothMicEnabled() {

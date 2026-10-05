@@ -95,6 +95,7 @@ val gboardSettingsMenuPatch = resourcePatch(
         gboardSeekBarEnhancementsPatch,
         gboardCoreIntegrityPatch,
         gboardDecoupleHapticsPatch,
+        gboardModernHapticsPatch,
         gboardAaptWorkaroundPatch,
     )
 
@@ -493,6 +494,15 @@ private fun populateMorpheSettingsScreen(doc: Document): Boolean {
             key = Constants.GboardPrefs.KEY_DECOUPLE_TOUCH_FEEDBACK,
             title = "Independent Keyboard Vibration",
             summary = "Keep keyboard vibration active even when Android's system Touch feedback and gesture haptics are disabled",
+            defaultValue = "true",
+        )
+    )
+    hapticsCategory.appendChild(
+        createSwitch(
+            doc = doc,
+            key = Constants.GboardPrefs.KEY_MODERN_HAPTICS,
+            title = "Modern Keypress Haptics",
+            summary = "Use Android haptic primitives (crisp tick) for keypresses instead of a plain buzz. Strength slider becomes intensity. Restart Gboard to apply",
             defaultValue = "true",
         )
     )

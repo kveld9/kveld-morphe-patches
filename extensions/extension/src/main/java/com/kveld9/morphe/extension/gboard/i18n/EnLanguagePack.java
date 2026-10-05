@@ -42,6 +42,7 @@ public class EnLanguagePack extends BaseLanguagePack {
         titles.put(PREF_KEY_CLIPBOARD_GRID_COLUMNS, "Clipboard Grid Columns");
         titles.put(PREF_KEY_CAT_HAPTICS, "Haptics & Vibration");
         titles.put(PREF_KEY_DECOUPLE_TOUCH_FEEDBACK, "Independent Keyboard Vibration");
+        titles.put(PREF_KEY_MODERN_HAPTICS, "Modern Keypress Haptics");
         titles.put(PREF_KEY_CAT_SMART, "Smart Features & Voice");
         titles.put(PREF_KEY_GRAMMAR_CHECKER, "Grammar Checker & Smart Compose");
         titles.put(PREF_KEY_BLUETOOTH_MIC, "Bluetooth Microphone");
@@ -73,6 +74,7 @@ public class EnLanguagePack extends BaseLanguagePack {
         summaries.put(PREF_KEY_CLIPBOARD_GRID_LAYOUT, "Enable custom multi-column layout for clipboard clips");
         summaries.put(PREF_KEY_CLIPBOARD_GRID_COLUMNS, "Number of columns in clipboard layout (1, 2, or 3. Default: 2)");
         summaries.put(PREF_KEY_DECOUPLE_TOUCH_FEEDBACK, "Keep keyboard vibration active even when Android's system Touch feedback and gesture haptics are disabled");
+        summaries.put(PREF_KEY_MODERN_HAPTICS, "Use Android haptic primitives (crisp tick) for keypresses instead of a plain buzz. Strength slider becomes intensity. Restart Gboard to apply");
         summaries.put(PREF_KEY_GRAMMAR_CHECKER, "Inline grammar review and Smart Compose predictions");
         summaries.put(PREF_KEY_BLUETOOTH_MIC, "Enable Bluetooth microphone audio input for voice typing");
         summaries.put(PREF_KEY_FORCE_INCOGNITO, "Always operate in incognito mode (disables input history and learning)");

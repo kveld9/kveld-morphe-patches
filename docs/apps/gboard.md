@@ -98,6 +98,7 @@ The settings UI automatically detects the active device system language (`Locale
 
 ### 5. Haptics & Vibration
 - **Independent Keyboard Vibration**: Decouples Gboard keypress vibration from Android's system-wide Touch feedback and gesture navigation haptics setting. When enabled (default: on), Gboard maintains its own vibration response even if system-wide touch feedback is disabled in Android settings, preventing unwanted gesture haptics elsewhere in the OS.
+- **Modern Keypress Haptics**: Gboard ships its haptic-primitive keypress path (`VibrationEffect.Composition`, the crisp system tick) disabled behind `vibration_effect_min_sdk = 1024`, an API level no device reports. When enabled (default: on), the minimum is lowered to API 30 so keypresses use the primitive tick instead of a plain one-shot buzz. Gboard's own `areAllEffectsSupported()` hardware check is untouched, so vibrators without primitive support keep the legacy path. On the primitive path the vibration strength slider maps to intensity rather than milliseconds. Restart Gboard after toggling, since the flag is read once at class initialization.
 
 ### 6. Smart Features & Voice
 - **Grammar Checker & Smart Compose**: Unlocks inline grammar review and Smart Compose predictions under *Correcciones y sugerencias*.
