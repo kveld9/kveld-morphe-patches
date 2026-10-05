@@ -158,6 +158,7 @@ object Constants {
         const val KEY_CLIPBOARD_UNPINNED_LIMIT = "morphe_clipboard_unpinned_limit"
         const val KEY_CLIPBOARD_GRID_LAYOUT = "morphe_clipboard_grid_layout"
         const val KEY_CLIPBOARD_GRID_COLUMNS = "morphe_clipboard_grid_columns"
+        const val KEY_CLIPBOARD_CHAR_LIMIT = "morphe_clipboard_char_limit"
         const val KEY_GRAMMAR_CHECKER = "morphe_grammar_checker"
         const val KEY_BLUETOOTH_MIC = "morphe_bluetooth_mic"
         const val KEY_FORCE_INCOGNITO = "morphe_force_incognito"
@@ -185,6 +186,11 @@ object Constants {
         const val MIN_CLIPBOARD_GRID_COLUMNS = 1
         const val MAX_CLIPBOARD_GRID_COLUMNS = 3
         const val DEFAULT_CLIPBOARD_GRID_COLUMNS = 2
+
+        // Thousands of characters per text clip; Gboard ships text_clip_item_char_limit = 20000.
+        const val MIN_CLIPBOARD_CHAR_LIMIT_K = 5
+        const val MAX_CLIPBOARD_CHAR_LIMIT_K = 200
+        const val DEFAULT_CLIPBOARD_CHAR_LIMIT_K = 20
 
         const val MIN_EMOJI_SCALE = 50
         const val MAX_EMOJI_SCALE = 150

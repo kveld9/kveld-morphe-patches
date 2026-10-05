@@ -40,6 +40,7 @@ public class EsLanguagePack extends BaseLanguagePack {
         titles.put(PREF_KEY_CLIPBOARD_UNPINNED_LIMIT, "Límite de elementos no fijados");
         titles.put(PREF_KEY_CLIPBOARD_GRID_LAYOUT, "Diseño en cuadrícula del portapapeles");
         titles.put(PREF_KEY_CLIPBOARD_GRID_COLUMNS, "Columnas de cuadrícula del portapapeles");
+        titles.put(PREF_KEY_CLIPBOARD_CHAR_LIMIT, "Límite de caracteres por elemento");
         titles.put(PREF_KEY_CAT_HAPTICS, "Vibración y respuesta háptica");
         titles.put(PREF_KEY_DECOUPLE_TOUCH_FEEDBACK, "Vibración independiente del teclado");
         titles.put(PREF_KEY_MODERN_HAPTICS, "Vibración háptica moderna");
@@ -73,6 +74,7 @@ public class EsLanguagePack extends BaseLanguagePack {
         summaries.put(PREF_KEY_CLIPBOARD_UNPINNED_LIMIT, "Cantidad máxima de elementos no fijados en el portapapeles (predeterminado: 50)");
         summaries.put(PREF_KEY_CLIPBOARD_GRID_LAYOUT, "Habilitar diseño en múltiples columnas para el portapapeles");
         summaries.put(PREF_KEY_CLIPBOARD_GRID_COLUMNS, "Número de columnas en el portapapeles (1, 2 o 3. Predeterminado: 2)");
+        summaries.put(PREF_KEY_CLIPBOARD_CHAR_LIMIT, "Máximo de caracteres guardados por elemento de texto, en miles (predeterminado: 20 mil). Reinicia Gboard para aplicar");
         summaries.put(PREF_KEY_DECOUPLE_TOUCH_FEEDBACK, "Mantener la vibración del teclado activa aunque la respuesta táctil del sistema Android esté desactivada");
         summaries.put(PREF_KEY_MODERN_HAPTICS, "Usar primitivas hápticas de Android (toque nítido) en vez de un zumbido simple. El control de intensidad pasa a medir fuerza. Reinicia Gboard para aplicar");
         summaries.put(PREF_KEY_GRAMMAR_CHECKER, "Revisión gramatical integrada y predicciones de Redacción inteligente");
@@ -121,6 +123,8 @@ public class EsLanguagePack extends BaseLanguagePack {
                 return value + (value == 1 ? " elemento" : " elementos");
             case PREF_KEY_CLIPBOARD_GRID_COLUMNS:
                 return value + (value == 1 ? " columna" : " columnas");
+            case PREF_KEY_CLIPBOARD_CHAR_LIMIT:
+                return value + " mil caracteres";
             case PREF_KEY_EMOJI_SCALE:
                 return value + " %";
             default:

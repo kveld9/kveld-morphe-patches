@@ -481,6 +481,16 @@ private fun populateMorpheSettingsScreen(doc: Document): Boolean {
             dependency = Constants.GboardPrefs.KEY_CLIPBOARD_GRID_LAYOUT,
         )
     )
+    clipboardCategory.appendChild(
+        createSeekBar(
+            doc = doc,
+            key = Constants.GboardPrefs.KEY_CLIPBOARD_CHAR_LIMIT,
+            title = "Clip Character Limit",
+            summary = "Maximum characters stored per text clip, in thousands (default: 20k). Restart Gboard to apply",
+            defaultValue = Constants.GboardPrefs.DEFAULT_CLIPBOARD_CHAR_LIMIT_K,
+            max = Constants.GboardPrefs.MAX_CLIPBOARD_CHAR_LIMIT_K,
+        )
+    )
     root.appendChild(clipboardCategory)
 
     // 4. Haptics & Vibration

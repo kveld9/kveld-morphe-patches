@@ -2,9 +2,12 @@ package app.morphe.patches.gboard
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.extensions.InstructionExtensions.instructions
 import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patcher.string
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.sharedExtensionPatch
 import app.morphe.patches.shared.clearTryBlocks
@@ -91,6 +94,33 @@ val gboardClipboardEnhancementsPatch = bytecodePatch(
             )
         }
         println("[Clipboard Enhancements] Hooked clipboard grid columns to dynamic Morphe Patches preference.")
+        patched++
+
+        // 4. Per-item text clip character limit (text_clip_item_char_limit Phenotype long flag)
+        val fpCharLimit = Fingerprint(
+            name = "<clinit>",
+            returnType = "V",
+            filters = listOf(string("text_clip_item_char_limit")),
+        )
+        fpCharLimit.method.apply {
+            val body = instructions.toList()
+            val defaultIndex = fpCharLimit.instructionMatches.first().index + 1
+            val default = body[defaultIndex]
+            if (default.opcode !in setOf(Opcode.CONST_WIDE_16, Opcode.CONST_WIDE_32, Opcode.CONST_WIDE) ||
+                body[defaultIndex + 1].opcode != Opcode.INVOKE_STATIC
+            ) {
+                throw PatchException("[Clipboard Enhancements] Unexpected text_clip_item_char_limit declaration shape")
+            }
+            val reg = (default as OneRegisterInstruction).registerA
+            addInstructions(
+                defaultIndex + 1,
+                """
+                    invoke-static {}, ${Constants.GBOARD_EXTENSION_CLASS}->getClipboardCharLimit()J
+                    move-result-wide v$reg
+                """.trimIndent(),
+            )
+        }
+        println("[Clipboard Enhancements] Hooked per-clip character limit to dynamic Morphe Patches preference.")
         patched++
 
         println("[Clipboard Enhancements] Applied $patched dynamic clipboard enhancement hook(s).")

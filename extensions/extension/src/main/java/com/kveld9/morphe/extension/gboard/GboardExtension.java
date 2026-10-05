@@ -40,6 +40,7 @@ public class GboardExtension {
     public static final String PREF_KEY_CLIPBOARD_UNPINNED_LIMIT = "morphe_clipboard_unpinned_limit";
     public static final String PREF_KEY_CLIPBOARD_GRID_LAYOUT = "morphe_clipboard_grid_layout";
     public static final String PREF_KEY_CLIPBOARD_GRID_COLUMNS = "morphe_clipboard_grid_columns";
+    public static final String PREF_KEY_CLIPBOARD_CHAR_LIMIT = "morphe_clipboard_char_limit";
     public static final String PREF_KEY_GRAMMAR_CHECKER = "morphe_grammar_checker";
     public static final String PREF_KEY_BLUETOOTH_MIC = "morphe_bluetooth_mic";
     public static final String PREF_KEY_FORCE_INCOGNITO = "morphe_force_incognito";
@@ -67,6 +68,10 @@ public class GboardExtension {
     public static final int MIN_CLIPBOARD_GRID_COLUMNS = 1;
     public static final int MAX_CLIPBOARD_GRID_COLUMNS = 3;
     public static final int DEFAULT_CLIPBOARD_GRID_COLUMNS = 2;
+
+    public static final int MIN_CLIPBOARD_CHAR_LIMIT_K = 5;
+    public static final int MAX_CLIPBOARD_CHAR_LIMIT_K = 200;
+    public static final int DEFAULT_CLIPBOARD_CHAR_LIMIT_K = 20;
 
     public static final int MIN_EMOJI_SCALE = 50;
     public static final int MAX_EMOJI_SCALE = 150;
@@ -601,6 +606,13 @@ public class GboardExtension {
         return Math.max(MIN_CLIPBOARD_GRID_COLUMNS, Math.min(MAX_CLIPBOARD_GRID_COLUMNS, cols));
     }
 
+    /** Per-item text clip character limit (text_clip_item_char_limit), slider stored in thousands. */
+    public static long getClipboardCharLimit() {
+        int k = getIntPref(PREF_KEY_CLIPBOARD_CHAR_LIMIT, DEFAULT_CLIPBOARD_CHAR_LIMIT_K);
+        k = Math.max(MIN_CLIPBOARD_CHAR_LIMIT_K, Math.min(MAX_CLIPBOARD_CHAR_LIMIT_K, k));
+        return ((long) k) * 1000L;
+    }
+
     public static boolean isAccessPointsRedesignEnabled() {
         return getBooleanPref(PREF_KEY_ACCESS_POINTS_REDESIGN, true);
     }
@@ -691,6 +703,8 @@ public class GboardExtension {
                 min = MIN_CLIPBOARD_UNPINNED_LIMIT;
             } else if (PREF_KEY_CLIPBOARD_GRID_COLUMNS.equals(key)) {
                 min = MIN_CLIPBOARD_GRID_COLUMNS;
+            } else if (PREF_KEY_CLIPBOARD_CHAR_LIMIT.equals(key)) {
+                min = MIN_CLIPBOARD_CHAR_LIMIT_K;
             } else if (PREF_KEY_EMOJI_SCALE.equals(key)) {
                 min = MIN_EMOJI_SCALE;
             }

@@ -97,6 +97,7 @@ The settings UI automatically detects the active device system language (`Locale
 - **Unpinned Clips Limit**: Live slider (5 to 100 items, default: `50`) controlling the maximum unpinned items displayed in the clipboard panel.
 - **Clipboard Grid Layout**: Enables multi-column layout for clipboard clips.
 - **Clipboard Grid Columns**: Live slider (1, 2, or 3 columns, default: `2`) controlling clipboard grid columns across phones, foldables, and tablets.
+- **Clip Character Limit**: Live slider (5k to 200k characters, default: `20k`, Gboard's stock value) overriding the `text_clip_item_char_limit` flag that caps how many characters each text clip stores. Restart Gboard after changing it, since the flag is read once at class initialization.
 
 ### 5. Haptics & Vibration
 - **Independent Keyboard Vibration**: Decouples Gboard keypress vibration from Android's system-wide Touch feedback and gesture navigation haptics setting. When enabled (default: on), Gboard maintains its own vibration response even if system-wide touch feedback is disabled in Android settings, preventing unwanted gesture haptics elsewhere in the OS.
