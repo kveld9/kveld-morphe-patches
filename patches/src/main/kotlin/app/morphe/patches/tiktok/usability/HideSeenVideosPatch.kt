@@ -4,6 +4,7 @@ import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.addInstructionsAtControlFlowLabel
 import app.morphe.patches.shared.sharedExtensionPatch
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
@@ -38,6 +39,8 @@ val hideSeenVideosPatch = bytecodePatch(
             )
             println("[Hide Seen Videos] Hooked PlayerController.onPlayProgressChange -> Playback threshold tracker active.")
             patched++
+        } else {
+            println("[Hide Seen Videos] Skipped: PlayerController.onPlayProgressChange(String, long, long) not found.")
         }
 
         val onCompletedMethod = playerControllerFp.classDef.methods.firstOrNull {
@@ -54,6 +57,8 @@ val hideSeenVideosPatch = bytecodePatch(
             )
             println("[Hide Seen Videos] Hooked PlayerController.onPlayCompleted -> Completion tracker active.")
             patched++
+        } else {
+            println("[Hide Seen Videos] Skipped: PlayerController.onPlayCompleted(String) not found.")
         }
 
         // 2. Hook FeedApiService.fetchFeedList return points (live FYP network responses)
@@ -69,7 +74,7 @@ val hideSeenVideosPatch = bytecodePatch(
             ?.toList() ?: emptyList()
 
         feedApiReturns.asReversed().forEach { (returnIndex, reg) ->
-            feedApiMethod.addInstructions(
+            feedApiMethod.addInstructionsAtControlFlowLabel(
                 returnIndex,
                 """
                     invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_SEEN_VIDEO_HOOK}->filterSeenVideosInFeedItemList(Ljava/lang/Object;)V
