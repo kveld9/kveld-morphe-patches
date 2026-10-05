@@ -1,9 +1,11 @@
 package app.morphe.patches.gboard
 
 import app.morphe.patcher.Fingerprint
+import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
-import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
+import app.morphe.patcher.extensions.InstructionExtensions.instructions
 import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.string
@@ -12,8 +14,10 @@ import app.morphe.patches.shared.sharedExtensionPatch
 import app.morphe.patches.shared.LocaleUtils
 import app.morphe.patches.shared.clearTryBlocks
 import app.morphe.patches.shared.ensureRegisterCount
+import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
+import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
-import com.android.tools.smali.dexlib2.iface.instruction.Instruction
+import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
 val gboardFeatureFlagsPatch = bytecodePatch(
@@ -75,209 +79,66 @@ val gboardFeatureFlagsPatch = bytecodePatch(
     execute {
         var patched = 0
 
+        fun flagFingerprint(vararg flags: String) = Fingerprint(
+            name = "<clinit>",
+            returnType = "V",
+            filters = flags.map { string(it) },
+        )
+
+        fun hookFlag(flag: String, hook: String, label: String) {
+            val fp = flagFingerprint(flag)
+            fp.method.overrideFlagWithHook(fp.instructionMatches.first().index, flag, hook)
+            val targetClass = LocaleUtils.cleanClassName(fp.originalClassDef.type)
+            println("[Feature Flags] $label: Injected isolated flag hook for $flag into $targetClass.<clinit>()")
+            patched++
+        }
+
         // 1. Access Points Menu Redesign (Panel V2)
         if (enableAccessPointsRedesign == true) {
-            val fp = Fingerprint(
-                name = "<clinit>",
-                returnType = "V",
-                filters = listOf(string("enable_access_points_menu_redesign")),
-            )
-            val matchIndex = fp.instructionMatches.first().index
-            val reg = fp.method.getInstruction<OneRegisterInstruction>(matchIndex + 1).registerA
-            fp.method.addInstructions(
-                matchIndex + 2,
-                """
-                    invoke-static {}, ${Constants.GBOARD_EXTENSION_CLASS}->isAccessPointsRedesignEnabled()Z
-                    move-result v$reg
-                """.trimIndent(),
-            )
-            val targetClass = LocaleUtils.cleanClassName(fp.originalClassDef.type)
-            println("[Feature Flags] Access Points Redesign: Injected dynamic flag hook into $targetClass.<clinit>() at opcode index ${matchIndex + 2}")
-            patched++
+            hookFlag("enable_access_points_menu_redesign", "isAccessPointsRedesignEnabled", "Access Points Redesign")
         }
 
         // 2. Key Shape Selection UI (more_pill_keys Phenotype flag -> dynamic Morphe preference)
         if (enableKeyShapeSelection == true) {
-            val fp = Fingerprint(
-                name = "<clinit>",
-                returnType = "V",
-                filters = listOf(string("more_pill_keys")),
-            )
-            val matchIndex = fp.instructionMatches.first().index
-            val nextInsn = fp.method.getInstruction<Instruction>(matchIndex + 1)
-            val reg = when (nextInsn) {
-                is FiveRegisterInstruction -> nextInsn.registerD
-                is OneRegisterInstruction -> nextInsn.registerA
-                else -> 2
-            }
-            val insertIndex = if (nextInsn is OneRegisterInstruction) matchIndex + 2 else matchIndex + 1
-            fp.method.addInstructions(
-                insertIndex,
-                """
-                    invoke-static {}, ${Constants.GBOARD_EXTENSION_CLASS}->isKeyShapeSelectionEnabled()Z
-                    move-result v$reg
-                """.trimIndent(),
-            )
-            val targetClass = LocaleUtils.cleanClassName(fp.originalClassDef.type)
-            println("[Feature Flags] Key Shape Selection: Injected dynamic flag hook for more_pill_keys into $targetClass.<clinit>() at opcode index $insertIndex")
-            patched++
+            hookFlag("more_pill_keys", "isKeyShapeSelectionEnabled", "Key Shape Selection")
         }
 
         // 3. Cursor Trackpad Mode (2D spacebar navigation & lock)
         if (enableCursorTrackpad == true) {
-            val fp = Fingerprint(
-                name = "<clinit>",
-                returnType = "V",
-                filters = listOf(
-                    string("free_cursor"),
-                    string("free_cursor_lock_mode"),
-                    string("free_cursor_trackpadlike"),
-                ),
-            )
-            val targetClass = LocaleUtils.cleanClassName(fp.originalClassDef.type)
-            var count = 0
-            for (match in fp.instructionMatches.sortedByDescending { it.index }) {
-                val matchIndex = match.index
-                val nextInsn = fp.method.getInstruction<Instruction>(matchIndex + 1)
-                val reg = when (nextInsn) {
-                    is OneRegisterInstruction -> nextInsn.registerA
-                    is FiveRegisterInstruction -> nextInsn.registerD
-                    else -> 1
-                }
-                val insertIndex = if (nextInsn is OneRegisterInstruction) matchIndex + 2 else matchIndex + 1
-                fp.method.addInstructions(
-                    insertIndex,
-                    """
-                        invoke-static {}, ${Constants.GBOARD_EXTENSION_CLASS}->isCursorTrackpadEnabled()Z
-                        move-result v$reg
-                    """.trimIndent(),
-                )
-                count++
+            val cursorFlags = listOf("free_cursor", "free_cursor_lock_mode", "free_cursor_trackpadlike")
+            val fp = flagFingerprint(*cursorFlags.toTypedArray())
+            // Descending order keeps earlier match indices valid while instructions are inserted.
+            fp.instructionMatches.zip(cursorFlags).sortedByDescending { it.first.index }.forEach { (match, flag) ->
+                fp.method.overrideFlagWithHook(match.index, flag, "isCursorTrackpadEnabled")
             }
-            println("[Feature Flags] Cursor Trackpad: Injected $count dynamic flag hook(s) into $targetClass.<clinit>() -> 2D spacebar trackpad enabled.")
+            val targetClass = LocaleUtils.cleanClassName(fp.originalClassDef.type)
+            println("[Feature Flags] Cursor Trackpad: Injected ${cursorFlags.size} isolated flag hook(s) into $targetClass.<clinit>() -> 2D spacebar trackpad enabled.")
             patched++
         }
 
         // 4. Dismiss Suggestions Button (Close X button)
         if (enableDismissSuggestionsButton == true) {
-            val fp = Fingerprint(
-                name = "<clinit>",
-                returnType = "V",
-                filters = listOf(string("enable_close_proactive_suggestions_access_point")),
-            )
-            val matchIndex = fp.instructionMatches.first().index
-            val nextInsn = fp.method.getInstruction<Instruction>(matchIndex + 1)
-            val reg = when (nextInsn) {
-                is OneRegisterInstruction -> nextInsn.registerA
-                is FiveRegisterInstruction -> nextInsn.registerD
-                else -> 1
-            }
-            val insertIndex = if (nextInsn is OneRegisterInstruction) matchIndex + 2 else matchIndex + 1
-            fp.method.addInstructions(
-                insertIndex,
-                """
-                    invoke-static {}, ${Constants.GBOARD_EXTENSION_CLASS}->isDismissSuggestionsEnabled()Z
-                    move-result v$reg
-                """.trimIndent(),
-            )
-            val targetClass = LocaleUtils.cleanClassName(fp.originalClassDef.type)
-            println("[Feature Flags] Dismiss Suggestions: Injected dynamic flag hook into $targetClass.<clinit>() at opcode index $insertIndex")
-            patched++
+            hookFlag("enable_close_proactive_suggestions_access_point", "isDismissSuggestionsEnabled", "Dismiss Suggestions")
         }
 
         // 5. Grammar Checker & Smart Compose / Inline suggestions
         if (enableGrammarChecker == true) {
-            val fpGrammar = Fingerprint(
-                name = "<clinit>",
-                returnType = "V",
-                filters = listOf(string("enable_grammar_checker")),
-            )
-            val matchGrammar = fpGrammar.instructionMatches.first().index
-            val nextInsnGrammar = fpGrammar.method.getInstruction<Instruction>(matchGrammar + 1)
-            val regGrammar = when (nextInsnGrammar) {
-                is OneRegisterInstruction -> nextInsnGrammar.registerA
-                is FiveRegisterInstruction -> nextInsnGrammar.registerD
-                else -> 1
-            }
-            val insertGrammar = if (nextInsnGrammar is OneRegisterInstruction) matchGrammar + 2 else matchGrammar + 1
-            fpGrammar.method.addInstructions(
-                insertGrammar,
-                """
-                    invoke-static {}, ${Constants.GBOARD_EXTENSION_CLASS}->isGrammarCheckerEnabled()Z
-                    move-result v$regGrammar
-                """.trimIndent(),
-            )
-
-            val fpInline = Fingerprint(
-                name = "<clinit>",
-                returnType = "V",
-                filters = listOf(string("enable_inline_suggestions_on_client_side")),
-            )
-            val matchInline = fpInline.instructionMatches.first().index
-            val nextInsnInline = fpInline.method.getInstruction<Instruction>(matchInline + 1)
-            val regInline = when (nextInsnInline) {
-                is OneRegisterInstruction -> nextInsnInline.registerA
-                is FiveRegisterInstruction -> nextInsnInline.registerD
-                else -> 1
-            }
-            val insertInline = if (nextInsnInline is OneRegisterInstruction) matchInline + 2 else matchInline + 1
-            fpInline.method.addInstructions(
-                insertInline,
-                """
-                    invoke-static {}, ${Constants.GBOARD_EXTENSION_CLASS}->isGrammarCheckerEnabled()Z
-                    move-result v$regInline
-                """.trimIndent(),
-            )
-
-            val targetClass = LocaleUtils.cleanClassName(fpGrammar.originalClassDef.type)
-            println("[Feature Flags] Grammar Checker: Injected 2 dynamic flag hook(s) into $targetClass -> Grammar Check & Smart Compose unlocked.")
-            patched++
+            hookFlag("enable_grammar_checker", "isGrammarCheckerEnabled", "Grammar Checker")
+            hookFlag("enable_inline_suggestions_on_client_side", "isGrammarCheckerEnabled", "Inline Suggestions")
         }
 
         // 6. Bluetooth Microphone Setting
         if (enableBluetoothMicrophone == true) {
-            val fpBt = Fingerprint(
-                name = "<clinit>",
-                returnType = "V",
-                filters = listOf(string("enable_use_bluetooth_setting")),
-            )
-            val matchIndexBt = fpBt.instructionMatches.first().index
-            val nextInsnBt = fpBt.method.getInstruction<Instruction>(matchIndexBt + 1)
-            val regBt = when (nextInsnBt) {
-                is OneRegisterInstruction -> nextInsnBt.registerA
-                is FiveRegisterInstruction -> nextInsnBt.registerD
-                else -> 1
-            }
-            val insertIndexBt = if (nextInsnBt is OneRegisterInstruction) matchIndexBt + 2 else matchIndexBt + 1
-            fpBt.method.addInstructions(
-                insertIndexBt,
-                """
-                    invoke-static {}, ${Constants.GBOARD_EXTENSION_CLASS}->isBluetoothMicEnabled()Z
-                    move-result v$regBt
-                """.trimIndent(),
-            )
-            val targetClassBt = LocaleUtils.cleanClassName(fpBt.originalClassDef.type)
-            println("[Feature Flags] Bluetooth Microphone: Injected dynamic flag hook into $targetClassBt.<clinit>() at opcode index $insertIndexBt")
-            patched++
+            hookFlag("enable_use_bluetooth_setting", "isBluetoothMicEnabled", "Bluetooth Microphone")
         }
 
         // 7. Emoji Scale Setting (enables keyboard engine support for emoji scaling)
-        val fpEmoji = Fingerprint(
-            name = "<clinit>",
-            returnType = "V",
-            filters = listOf(string("emoji_scale_supported")),
-        )
-        val matchEmoji = fpEmoji.instructionMatches.first().index
-        val nextInsnEmoji = fpEmoji.method.getInstruction<Instruction>(matchEmoji + 1)
-        val regEmoji = when (nextInsnEmoji) {
-            is OneRegisterInstruction -> nextInsnEmoji.registerA
-            is FiveRegisterInstruction -> nextInsnEmoji.registerD
-            else -> 1
+        val fpEmoji = flagFingerprint("emoji_scale_supported")
+        fpEmoji.method.overrideFlagDefault(fpEmoji.instructionMatches.first().index, "emoji_scale_supported") { reg ->
+            "const/4 v$reg, 0x1"
         }
-        val insertIndexEmoji = if (nextInsnEmoji is OneRegisterInstruction) matchEmoji + 2 else matchEmoji + 1
-        fpEmoji.method.addInstructions(insertIndexEmoji, "const/4 v$regEmoji, 0x1")
         val targetClassEmoji = LocaleUtils.cleanClassName(fpEmoji.originalClassDef.type)
-        println("[Feature Flags] Emoji Scale Setting: Injected flag override into $targetClassEmoji.<clinit>() at opcode index $insertIndexEmoji")
+        println("[Feature Flags] Emoji Scale Setting: Injected isolated flag override into $targetClassEmoji.<clinit>()")
         patched++
 
         // 8. Hook EmojiKeyboardUtils.getPrefKeyboardEmojiScale to return dynamic Morphe scale
@@ -304,3 +165,47 @@ val gboardFeatureFlagsPatch = bytecodePatch(
         println("[Feature Flags] Applied $patched feature flag override(s) cleanly (native settings unpolluted).")
     }
 }
+
+/**
+ * Overrides the boolean default handed to a Phenotype flag factory without leaking into sibling flags.
+ *
+ * Flag holder `<clinit>` methods hoist one `const/4 vN, 0x0` and pass `vN` to every following
+ * `a(String, Z)` factory call. Writing the override into `vN` would therefore force every later flag
+ * in the method to the same value (e.g. `enable_use_bluetooth_setting` -> `hide_offline_speech_recognition`).
+ * The override is written right before the factory call and the original constant is restored right
+ * after its `move-result-object`, so only the targeted flag observes it.
+ */
+private fun MutableMethod.overrideFlagDefault(stringIndex: Int, flag: String, valueSmali: (Int) -> String) {
+    val body = instructions.toList()
+    val invokeIndex = (stringIndex + 1 until minOf(stringIndex + 4, body.size))
+        .firstOrNull { body[it].opcode == Opcode.INVOKE_STATIC }
+        ?: throw PatchException("[Feature Flags] No factory invoke follows \"$flag\"")
+    val reg = (body[invokeIndex] as FiveRegisterInstruction).registerD
+
+    val resultIndex = invokeIndex + 1
+    val result = body.getOrNull(resultIndex)
+    if (result?.opcode != Opcode.MOVE_RESULT_OBJECT || (result as OneRegisterInstruction).registerA == reg) {
+        throw PatchException("[Feature Flags] Unexpected factory result shape after \"$flag\"")
+    }
+
+    val originalIndex = (invokeIndex - 1 downTo 0).firstOrNull {
+        val insn = body[it]
+        insn is OneRegisterInstruction && insn.registerA == reg
+    } ?: throw PatchException("[Feature Flags] No default writer found for \"$flag\"")
+    val original = body[originalIndex]
+    if (original.opcode != Opcode.CONST_4) {
+        throw PatchException("[Feature Flags] Default of \"$flag\" is ${original.opcode}, expected CONST_4")
+    }
+    val literal = (original as NarrowLiteralInstruction).narrowLiteral
+
+    addInstruction(resultIndex + 1, "const/4 v$reg, 0x${Integer.toHexString(literal)}")
+    addInstructions(invokeIndex, valueSmali(reg))
+}
+
+private fun MutableMethod.overrideFlagWithHook(stringIndex: Int, flag: String, hook: String) =
+    overrideFlagDefault(stringIndex, flag) { reg ->
+        """
+            invoke-static {}, ${Constants.GBOARD_EXTENSION_CLASS}->$hook()Z
+            move-result v$reg
+        """.trimIndent()
+    }
