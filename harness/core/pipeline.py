@@ -286,12 +286,12 @@ class PipelineRegistry:
         meta = apk_ctx.get_metadata()
         pipeline_cls = cls.find_pipeline(meta.package_name)
         if pipeline_cls is None:
-            # Fallback to first registered or raise
-            if cls._pipelines:
-                _safe_print(f"Unrecognized package '{meta.package_name}'. Defaulting to {cls._pipelines[0].app_name} pipeline.")
-                pipeline_cls = cls._pipelines[0]
-            else:
-                raise RuntimeError(f"No pipelines registered to handle package '{meta.package_name}'")
+            supported = ", ".join(p.app_name for p in cls._pipelines) or "none"
+            _safe_print(
+                f"[ERROR] No harness pipeline handles package '{meta.package_name}' (supported: {supported}). "
+                "Validate it with ./gradlew runPatchTest instead."
+            )
+            return 2
 
         pipeline = pipeline_cls(apk_ctx=apk_ctx, mode=mode, output_report=output_report, repo_root=repo_root)
         return pipeline.execute()

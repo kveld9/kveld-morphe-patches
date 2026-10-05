@@ -27,6 +27,12 @@ class TestPipelineRegistry(unittest.TestCase):
         self.assertEqual(PipelineRegistry.find_pipeline("com.google.android.apps.inputmethod.latin"), GboardPipeline)
         self.assertEqual(PipelineRegistry.find_pipeline("com.mi.earphone"), XiaomiEarbudsPipeline)
 
+    def test_unknown_package_is_rejected_not_routed_to_another_pipeline(self):
+        self.assertIsNone(PipelineRegistry.find_pipeline("com.hevy"))
+        apk_ctx = MagicMock()
+        apk_ctx.get_metadata.return_value = MagicMock(package_name="com.nokoprint")
+        self.assertEqual(PipelineRegistry.dispatch(apk_ctx=apk_ctx), 2)
+
 
 
 class TestTransactionalMigrationContext(unittest.TestCase):
