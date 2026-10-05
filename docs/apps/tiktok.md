@@ -49,7 +49,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Usability** | **Stop Video Looping** | `bytecodePatch` | Prevents videos from looping continuously on playback completion. |
 | **Usability** | **[Hide Inbox Promos & Alerts](#9-hide-inbox-promos--alerts)** | `bytecodePatch` | Hides promotional banners, streak mascot cards, contact sync suggestions, friend recommendations, and migration guide tooltips in the inbox and direct messages. |
 | **Usability** | **Hide Inbox Story & Status Tray** | `bytecodePatch` | Removes the horizontal story, notes, and status tray (Skylight) displayed at the top of direct messages and the inbox. |
-| **Usability** | **[Direct Message Declutter](#10-direct-message-declutter)** | `bytecodePatch` | Cleans direct message conversations and chat list items via individual toggles for chat list camera icons, header voice/video call buttons, message forward buttons, streak mascot and reaction bars, input camera buttons, and right-side input action buttons (gallery, emoji, mic). |
+| **Usability** | **[Direct Message Declutter](#10-direct-message-declutter)** | `bytecodePatch` | Cleans direct message conversations and chat list items via individual toggles for chat list camera icons, header voice/video call buttons, message forward buttons, streak mascot and reaction bars, input camera buttons, right-side input action buttons (gallery, emoji, mic), try effect buttons on shared videos, and automatic sticker reply suggestions. |
 | **Usability** | **[Disable Feed Long-Press Actions](#7-disable-feed-long-press-actions)** | `bytecodePatch` | Disables long-press action gestures on feed buttons, including Like to repost, Share to quick DMs, and Comment to quick emojis. |
 | **Usability** | **Enable Profile Banner** | `bytecodePatch` | Unlocks custom profile banner header cover feature and banner editing tools in Edit Profile. |
 | **Usability** | **System Font** | `bytecodePatch` | Forces TikTok to use the Android system font instead of bundled proprietary TikTokSans fonts. |
@@ -287,6 +287,8 @@ The **`Direct Message Declutter`** patch cleans direct message conversations and
 | **Hide Gallery Button** | `hideGalleryButton` | Boolean | `true` | Hides the photo album / gallery button on the right side of the chat message input field. |
 | **Hide Sticker & Emoji Button** | `hideEmojiButton` | Boolean | `true` | Hides the sticker and emoji selector button on the right side of the chat message input field. |
 | **Hide Voice Record Button** | `hideVoiceRecordButton` | Boolean | `true` | Hides the microphone / voice recording button on the right side of the chat message input field. |
+| **Hide Try Effect Button** | `hideTryEffectButton` | Boolean | `true` | Removes the 'Try effect' camera button shown on shared videos that use an effect in direct messages. |
+| **Hide Sticker Reply Suggestions** | `hideStickerReplySuggestions` | Boolean | `true` | Removes the automatic 'Tap a sticker to reply' suggestion panel above the input bar. The manual sticker reply button keeps working. |
 
 ---
 
@@ -470,8 +472,10 @@ The **`Direct Message Declutter`** patch cleans direct message conversations and
   - **Input Camera Shortcut (`hideInputCamera`)**: Hooks `DMCameraFeatureImpl;->LJII(...)` to return `null` and suppresses container `0x7f0a479c` (`input_camera_container`) with `View.GONE` in `IMInputAssem.onViewCreated(View)V`.
   - **Right Input Action Buttons (`hideGalleryButton`, `hideEmojiButton`, `hideVoiceRecordButton`)**:
     - **Photo Album / Gallery**: Sets `0x7f0a3d4f` (`im_photo_btn`) to `View.GONE` and returns early in `IMImageBtnViewAssem.Wr(View)V`.
-    - **Stickers & Emojis**: Sets `0x7f0a3ce0` (`im_emoji_btn`) to `View.GONE` and returns early in `InputEmojiButtonUIAssem.onViewCreated(View)V`.
+    - **Stickers & Emojis**: Sets `0x7f0a3ce0` (`im_emoji_btn`) to `View.GONE` and returns early in `InputEmojiButtonUIAssem.onViewCreated(View)V`. For the redesigned input bar layout (`ui_slot_input_layout_redesign`), forces the `InputIconBtn` `EMOJI_BTN` slot view (`0x7f0a3aba` / `kwq`) to 0x0 dimensions (`width = 0`, `height = 0`), strips margins (`setMarginEnd(0)`), disables click and touch interactions (`setClickable(false)`, `setEnabled(false)`), scaled to 0 (`setScaleX(0f)`, `setScaleY(0f)`), and sets `View.GONE` directly in its setup lambda built by `LX/0YEc;->LIZ`.
     - **Voice Record**: Sets `0x7f0a4980` (`record_btn`) to `View.GONE` and returns early in `RecordBtnAssem.onViewCreated(View)V`.
     - *Preservation Invariant*: The parent actions container `0x7f0a3dd3` (`im_input_right_container`) is intentionally left intact so that `SendButtonAssemV2` appears seamlessly when typing text.
+  - **Try Effect CTA Button (`hideTryEffectButton`)**: Hooks both static eligibility gate methods in obfuscated gate class `LX/0qRQ;` (`LIZIZ(...)Z` called by `AwemeCardAssem` and `LIZJ(...)Z` called by CTA list builders `LX/0qPi`/`LX/0qPj` before instantiating `TryEffectCTAButtonType` / `LX/0YK6;`) to return `false`, neutralizing the 'Try effect' camera shortcut button on shared videos in direct messages.
+  - **Sticker Reply Suggestions (`hideStickerReplySuggestions`)**: In `ReplyToStickerRecommendationViewModel`, hooks the static synthetic default-args dispatcher method (`y83(...)V`) by injecting a bitmask check on register `p3` at instruction offset 0 (`and-int/lit8 v0, p3, 0x2`). When called by automatic triggers without a message argument (mask contains bit `0x2`), it returns early (`return-void`), suppressing the automatic 'Tap a sticker to reply' suggestion panel above the text input bar while preserving manual sticker replies initiated via the sticker reply button (mask `0x1`).
 
 

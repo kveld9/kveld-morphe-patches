@@ -11,12 +11,17 @@ import app.morphe.patches.shared.ensureRegisterCount
 import app.morphe.patches.shared.replaceWithReturnBoolean
 import app.morphe.patches.shared.replaceWithReturnNull
 import com.android.tools.smali.dexlib2.AccessFlags
+import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.iface.instruction.Instruction
+import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 val directMessageDeclutterPatch = bytecodePatch(
     name = "Direct Message Declutter",
-    description = "Removes visual clutter in direct messages and chat list, including the call button, reaction tray, message forward button, camera icons, and input action buttons.",
+    description = "Removes visual clutter in direct messages and chat list, including the call button, reaction tray, message forward button, camera icons, input action buttons, try effect button, and sticker reply suggestions.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -85,6 +90,22 @@ val directMessageDeclutterPatch = bytecodePatch(
         required = false,
     )
 
+    val hideTryEffectButton by booleanOption(
+        key = "hideTryEffectButton",
+        title = "Hide Try Effect Button",
+        description = "Removes the 'Try effect' camera button shown on shared videos that use an effect in direct messages.",
+        default = true,
+        required = false,
+    )
+
+    val hideStickerReplySuggestions by booleanOption(
+        key = "hideStickerReplySuggestions",
+        title = "Hide Sticker Reply Suggestions",
+        description = "Removes the automatic 'Tap a sticker to reply' suggestion panel above the input bar. The manual sticker reply button keeps working.",
+        default = true,
+        required = false,
+    )
+
     execute {
         if (hideChatListCamera != true &&
             hideCallButton != true &&
@@ -93,7 +114,9 @@ val directMessageDeclutterPatch = bytecodePatch(
             hideInputCamera != true &&
             hideGalleryButton != true &&
             hideEmojiButton != true &&
-            hideVoiceRecordButton != true
+            hideVoiceRecordButton != true &&
+            hideTryEffectButton != true &&
+            hideStickerReplySuggestions != true
         ) {
             println("[Direct Message Declutter] All toggles disabled -> nothing to patch.")
             return@execute
@@ -362,6 +385,73 @@ val directMessageDeclutterPatch = bytecodePatch(
                 println("[Direct Message Declutter] Hooked InputEmojiButtonUIAssem.onViewCreated -> View.GONE.")
                 patched++
             }
+
+            val redesignedEmojiBtnId = 0x7f0a3aba
+
+            val isRedesignedEmojiSetId: (Instruction, Instruction) -> Boolean = { a, b ->
+                val isLiteral = (a as? NarrowLiteralInstruction)?.narrowLiteral == redesignedEmojiBtnId ||
+                    (a as? WideLiteralInstruction)?.wideLiteral == redesignedEmojiBtnId.toLong()
+                val methodRef = (b as? ReferenceInstruction)?.reference as? MethodReference
+                isLiteral &&
+                    methodRef?.definingClass == "Landroid/view/View;" &&
+                    methodRef.name == "setId" &&
+                    methodRef.returnType == "V" &&
+                    methodRef.parameterTypes.size == 1 &&
+                    methodRef.parameterTypes[0] == "I"
+            }
+
+            val isKotlinUnitField: (Instruction) -> Boolean = { ins ->
+                ((ins as? ReferenceInstruction)?.reference as? FieldReference)?.definingClass == "Lkotlin/Unit;"
+            }
+
+            val redesignedEmojiFp = Fingerprint(
+                returnType = "Ljava/lang/Object;",
+                custom = { method, _ ->
+                    AccessFlags.STATIC.isSet(method.accessFlags) &&
+                        method.parameterTypes.size == 3 &&
+                        method.parameterTypes[1] == "Ljava/lang/Object;" &&
+                        method.parameterTypes[2] == "Ljava/lang/Object;" &&
+                        method.implementation?.instructions?.zipWithNext()?.any { (a, b) -> isRedesignedEmojiSetId(a, b) } == true
+                },
+            )
+            val redesignedMethod = redesignedEmojiFp.method
+            val instructions = redesignedMethod.implementation?.instructions?.toList()
+            if (instructions != null) {
+                val setIdIndex = instructions.zipWithNext().indexOfFirst { (a, b) -> isRedesignedEmojiSetId(a, b) } + 1
+                if (setIdIndex > 0) {
+                    val unitIndex = instructions.withIndex().firstOrNull { (index, ins) ->
+                        index > setIdIndex && isKotlinUnitField(ins)
+                    }?.index
+                    if (unitIndex != null) {
+                        val layoutParamsType = "Landroid/view/ViewGroup\$LayoutParams;"
+                        val marginLayoutParamsType = "Landroid/view/ViewGroup\$MarginLayoutParams;"
+                        redesignedMethod.addInstructions(
+                            unitIndex,
+                            """
+                                const/4 v0, 0x0
+                                iput v0, v1, $layoutParamsType->width:I
+                                iput v0, v1, $layoutParamsType->height:I
+                                invoke-virtual {v1, v0}, $marginLayoutParamsType->setMarginEnd(I)V
+                                invoke-virtual {p2, v1}, Landroid/view/View;->setLayoutParams($layoutParamsType)V
+                                invoke-virtual {p2, v0}, Landroid/view/View;->setClickable(Z)V
+                                invoke-virtual {p2, v0}, Landroid/view/View;->setEnabled(Z)V
+                                invoke-virtual {p2, v0}, Landroid/view/View;->setScaleX(F)V
+                                invoke-virtual {p2, v0}, Landroid/view/View;->setScaleY(F)V
+                                const/16 v0, 0x8
+                                invoke-virtual {p2, v0}, Landroid/view/View;->setVisibility(I)V
+                            """.trimIndent(),
+                        )
+                        println("[Direct Message Declutter] Hooked redesigned input EMOJI_BTN slot setup -> 0x0, scale 0, disabled, GONE.")
+                        patched++
+                    } else {
+                        println("[Direct Message Declutter] Skipped redesigned EMOJI_BTN hook: Unit return anchor not found.")
+                    }
+                } else {
+                    println("[Direct Message Declutter] Skipped redesigned EMOJI_BTN hook: setId anchor not found.")
+                }
+            } else {
+                println("[Direct Message Declutter] Skipped redesigned EMOJI_BTN hook: no implementation.")
+            }
         }
 
         // 8. Feature: Hide Voice Recording Button inside input field
@@ -390,6 +480,71 @@ val directMessageDeclutterPatch = bytecodePatch(
                 println("[Direct Message Declutter] Hooked RecordBtnAssem.onViewCreated -> View.GONE.")
                 patched++
             }
+        }
+
+        // 9. Feature: Hide Try Effect Button on shared video cards
+        if (hideTryEffectButton == true) {
+            val isTryEffectSiblingGate: (Method) -> Boolean = { m ->
+                AccessFlags.STATIC.isSet(m.accessFlags) &&
+                    m.returnType == "Z" &&
+                    m.parameterTypes.size == 4 &&
+                    m.parameterTypes[0].startsWith("L") &&
+                    m.parameterTypes[1] == "Lcom/ss/android/ugc/aweme/im/chatroom/api/model/SessionInfo;" &&
+                    m.parameterTypes[2] == "Ljava/lang/String;" &&
+                    m.parameterTypes[3] == "Z"
+            }
+
+            val tryEffectFp = Fingerprint(
+                returnType = "Z",
+                custom = { method, classDef ->
+                    AccessFlags.STATIC.isSet(method.accessFlags) &&
+                        method.parameterTypes.size == 5 &&
+                        method.parameterTypes[0] == "Landroidx/fragment/app/Fragment;" &&
+                        method.parameterTypes[1].startsWith("L") &&
+                        method.parameterTypes[2] == "Lcom/ss/android/ugc/aweme/im/chatroom/api/model/SessionInfo;" &&
+                        method.parameterTypes[3] == "Ljava/lang/String;" &&
+                        method.parameterTypes[4] == "Z" &&
+                        classDef.methods.any(isTryEffectSiblingGate)
+                },
+            )
+            val gateClass = tryEffectFp.classDef
+            val method5Arg = tryEffectFp.method
+            val method4Arg = gateClass.methods.first(isTryEffectSiblingGate)
+
+            method5Arg.replaceWithReturnBoolean(false)
+            println("[Direct Message Declutter] Hooked ${gateClass.type}.${method5Arg.name} -> Try effect CTA disabled.")
+            patched++
+
+            method4Arg.replaceWithReturnBoolean(false)
+            println("[Direct Message Declutter] Hooked ${gateClass.type}.${method4Arg.name} -> Try effect CTA disabled.")
+            patched++
+        }
+
+        // 10. Feature: Hide Sticker Reply Suggestions above input bar
+        if (hideStickerReplySuggestions == true) {
+            val stickerRecommendationFp = Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/im/sdk/chat/feature/replytosticker/ReplyToStickerRecommendationViewModel;",
+                returnType = "V",
+                custom = { method, _ ->
+                    AccessFlags.STATIC.isSet(method.accessFlags) &&
+                        method.parameterTypes.size == 4 &&
+                        method.parameterTypes[0] == "Lcom/ss/android/ugc/aweme/im/sdk/chat/feature/replytosticker/ReplyToStickerRecommendationViewModel;" &&
+                        method.parameterTypes[1] == "Z" &&
+                        method.parameterTypes[3] == "I"
+                },
+            )
+            val stickerMethod = stickerRecommendationFp.method
+            stickerMethod.addInstructions(
+                0,
+                """
+                    and-int/lit8 v0, p3, 0x2
+                    if-eqz v0, :keep_sticker_reply
+                    return-void
+                    :keep_sticker_reply
+                """.trimIndent(),
+            )
+            println("[Direct Message Declutter] Hooked ReplyToStickerRecommendationViewModel.${stickerMethod.name} -> automatic sticker reply suggestions disabled.")
+            patched++
         }
 
         println("[Direct Message Declutter] Applied $patched hooks -> direct messages decluttered.")
