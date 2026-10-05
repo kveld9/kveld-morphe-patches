@@ -1,0 +1,33 @@
+name: Sync Repository to Codeberg
+
+on:
+  push:
+    branches:
+      - '**'
+    tags:
+      - '**'
+  workflow_run:
+    workflows: ["Release"]
+    types:
+      - completed
+  workflow_dispatch:
+
+jobs:
+  sync:
+    name: Sync
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push to Codeberg
+        env:
+          CODEBERG_TOKEN: ${{ secrets.CODEBERG_TOKEN }}
+        run: |
+          git remote add codeberg "https://kveld9:${CODEBERG_TOKEN}@codeberg.org/kveld9/kveld-morphe-patches.git"
+          git fetch origin '+refs/heads/*:refs/heads/*' --update-head-ok
+          git fetch origin '+refs/tags/*:refs/tags/*' --update-head-ok
+          git push --force --prune codeberg 'refs/heads/*:refs/heads/*'
+          git push --force --tags codeberg
