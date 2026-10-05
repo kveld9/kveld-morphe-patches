@@ -195,15 +195,16 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
                 parameters = listOf("Landroid/view/View;"),
             ).method
             descOnViewCreated.clearTryBlocks()
-            descOnViewCreated.ensureRegisterCount(2)
+            descOnViewCreated.ensureRegisterCount(4)
             val descCount = descOnViewCreated.implementation!!.instructions.count()
             descOnViewCreated.removeInstructions(0, descCount)
             descOnViewCreated.addInstructions(
                 0,
                 """
-                    invoke-super {p0, p1}, Lcom/ss/android/ugc/feed/platform/cell/BaseCellSlotComponent;->onViewCreated(Landroid/view/View;)V
+                    invoke-super/range {p0 .. p1}, Lcom/ss/android/ugc/feed/platform/cell/BaseCellSlotComponent;->onViewCreated(Landroid/view/View;)V
+                    move-object/from16 v1, p1
                     const/16 v0, 0x8
-                    invoke-virtual {p1, v0}, Landroid/view/View;->setVisibility(I)V
+                    invoke-virtual {v1, v0}, Landroid/view/View;->setVisibility(I)V
                     return-void
                 """.trimIndent(),
             )
@@ -316,15 +317,16 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
                     parameters = listOf("Landroid/view/View;"),
                 ).method
                 transOnViewCreated.clearTryBlocks()
-                transOnViewCreated.ensureRegisterCount(2)
+                transOnViewCreated.ensureRegisterCount(4)
                 val count = transOnViewCreated.implementation!!.instructions.count()
                 transOnViewCreated.removeInstructions(0, count)
                 transOnViewCreated.addInstructions(
                     0,
                     """
-                        invoke-super {p0, p1}, Lcom/ss/android/ugc/feed/platform/cell/BaseCellSlotComponent;->onViewCreated(Landroid/view/View;)V
+                        invoke-super/range {p0 .. p1}, Lcom/ss/android/ugc/feed/platform/cell/BaseCellSlotComponent;->onViewCreated(Landroid/view/View;)V
+                        move-object/from16 v1, p1
                         const/16 v0, 0x8
-                        invoke-virtual {p1, v0}, Landroid/view/View;->setVisibility(I)V
+                        invoke-virtual {v1, v0}, Landroid/view/View;->setVisibility(I)V
                         return-void
                     """.trimIndent(),
                 )
@@ -540,15 +542,16 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
                 parameters = listOf("Landroid/view/View;"),
             ).method
             coverOnViewCreated.clearTryBlocks()
-            coverOnViewCreated.ensureRegisterCount(2)
+            coverOnViewCreated.ensureRegisterCount(4)
             val count = coverOnViewCreated.implementation!!.instructions.count()
             coverOnViewCreated.removeInstructions(0, count)
             coverOnViewCreated.addInstructions(
                 0,
                 """
-                    invoke-super {p0, p1}, Lcom/ss/android/ugc/feed/platform/cell/BaseCellSlotComponent;->onViewCreated(Landroid/view/View;)V
+                    invoke-super/range {p0 .. p1}, Lcom/ss/android/ugc/feed/platform/cell/BaseCellSlotComponent;->onViewCreated(Landroid/view/View;)V
+                    move-object/from16 v1, p1
                     const/16 v0, 0x8
-                    invoke-virtual {p1, v0}, Landroid/view/View;->setVisibility(I)V
+                    invoke-virtual {v1, v0}, Landroid/view/View;->setVisibility(I)V
                     return-void
                 """.trimIndent(),
             )
