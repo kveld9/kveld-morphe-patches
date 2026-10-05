@@ -413,7 +413,8 @@ The **`Direct Message Declutter`** patch cleans direct message conversations and
 ### 13. Hide AI-Generated Content (`hideAiTaggedContentPatch`)
 - Filters and skips videos tagged with native AI-generated metadata, C2PA content credentials, or creator AI disclosure tags across the For You, Following, and Friends feeds.
 - **Feed API Response Interception**: Hooks `FeedApiService.fetchFeedList` to filter incoming items at the network response boundary before model mapping.
-- **Feed Item Model Interception**: Hooks `FeedItemList.getItems()`, `FollowFeedList.getItems()`, `FriendsV3FeedResponse.<init>`, and `FriendsFeedResponse.<init>` to sanitize feed collections in-situ.
+- **Feed Item Model Interception**: Hooks `FeedItemList.getItems()` and `FollowFeedList.getItems()` to sanitize feed collections in-situ.
+- **Friends Feed Network Interception**: Hooks `FriendsV3FeedNetworkSource.LJ` (V3 response handler) and the obfuscated friend feed request `LX/06CX;->LIZLLL` (`/tiktok/v1/friend/friend_feed`, V2) return points to filter `friendsV3Feeds` / `friendFeedData` after deserialization.
 - **Multi-Vector AI Metadata Inspection**: Inspects `Aweme` for:
   - `AIGCInfo` (`AIGCLabelType != 0`, `createByAI == true`).
   - `ModerationAigcInfo` (`moderationAigcLabelType != 0`, `moderationUserLabelStatus != 0`, `creatorGuidanceStatus != 0`, `moderationCreatorSegment` populated).

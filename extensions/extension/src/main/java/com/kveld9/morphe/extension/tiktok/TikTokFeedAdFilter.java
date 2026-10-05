@@ -1983,6 +1983,35 @@ public final class TikTokFeedAdFilter {
         }
     }
 
+    private static volatile Field friendsV3FeedsField;
+    private static volatile Field friendFeedDataField;
+
+    public static void filterAiContentInFriendsV3Response(Object response) {
+        if (response == null) return;
+        try {
+            Field field = friendsV3FeedsField;
+            if (field == null) {
+                field = response.getClass().getDeclaredField("friendsV3Feeds");
+                field.setAccessible(true);
+                friendsV3FeedsField = field;
+            }
+            filterAiContentInFriendsV3Feeds(field.get(response));
+        } catch (Throwable ignored) {}
+    }
+
+    public static void filterAiContentInFriendsFeedResponse(Object response) {
+        if (response == null) return;
+        try {
+            Field field = friendFeedDataField;
+            if (field == null) {
+                field = response.getClass().getDeclaredField("friendFeedData");
+                field.setAccessible(true);
+                friendFeedDataField = field;
+            }
+            filterAiContentInFriendsFeedData(field.get(response));
+        } catch (Throwable ignored) {}
+    }
+
     // =========================================================================
     // Backward Compatibility Delegates
     // =========================================================================
