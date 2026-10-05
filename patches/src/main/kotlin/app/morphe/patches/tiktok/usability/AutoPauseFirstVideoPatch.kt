@@ -4,6 +4,7 @@ import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.addInstructionsAtControlFlowLabel
 import app.morphe.patches.shared.sharedExtensionPatch
 
 val autoPauseFirstVideoPatch = bytecodePatch(
@@ -31,7 +32,7 @@ val autoPauseFirstVideoPatch = bytecodePatch(
         }
         if (l0ReturnIndex == -1) error("Could not find return instruction in PlayerController.l0")
 
-        l0Method.addInstructions(
+        l0Method.addInstructionsAtControlFlowLabel(
             l0ReturnIndex,
             """
                 invoke-static/range {p0 .. p1}, ${Constants.TIKTOK_EXTENSION_AUTOPAUSE_HOOK}->onFirstVideoLoaded(Ljava/lang/Object;Ljava/lang/Object;)V
