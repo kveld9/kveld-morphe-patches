@@ -5,8 +5,9 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
-import app.morphe.patches.shared.sharedExtensionPatch
+import app.morphe.patches.shared.addInstructionsAtControlFlowLabel
 import app.morphe.patches.shared.ensureRegisterCount
+import app.morphe.patches.shared.sharedExtensionPatch
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
@@ -338,7 +339,7 @@ val customShareSheetPatch = bytecodePatch(
         val panelInstructions = panelInitMethod.implementation!!.instructions
         val panelReturnIdx = panelInstructions.indexOfLast { it.opcode == Opcode.RETURN_VOID }
         if (panelReturnIdx != -1) {
-            panelInitMethod.addInstructions(
+            panelInitMethod.addInstructionsAtControlFlowLabel(
                 panelReturnIdx,
                 """
                     invoke-static {p0}, ${Constants.TIKTOK_EXTENSION_SHARE_HOOK}->filterSharePanel(Ljava/lang/Object;)V
