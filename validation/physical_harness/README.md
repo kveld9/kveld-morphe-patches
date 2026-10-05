@@ -36,7 +36,7 @@ validation/physical_harness/
 ---
 
 ### Step 2: Run Tests in VANILLA Mode
-1. Install the Vanilla Brave APK (e.g. v1.93.x):
+1. Install the Vanilla Brave APK (the target version pinned in `Constants.kt`):
    ```bash
    adb install -r <path-to-vanilla-apk.apk>
    ```
