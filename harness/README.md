@@ -1,6 +1,9 @@
 # 🔮 Morphe Patches Automated Update & Reverse Engineering Harness
 
-Automated reverse-engineering and patch update harness for **Brave Browser** (`com.brave.browser`), **Gboard Lite** (`com.google.android.inputmethod.latin`), **Hevy** (`com.hevy`), **TikTok** (`com.zhiliaoapp.musically`), **NokoPrint** (`com.nokoprint`), and **Xiaomi Earbuds** (`com.mi.earphone`).
+Automated reverse-engineering and patch update harness for **Brave Browser** (`com.brave.browser`), **Gboard Lite** (`com.google.android.inputmethod.latin`), **TikTok** (`com.zhiliaoapp.musically`), and **Xiaomi Earbuds** (`com.mi.earphone`).
+
+> [!NOTE]
+> Hevy and NokoPrint have no harness pipeline (`harness/pipelines/`). Update them manually and validate with `./gradlew runPatchTest -Papp=hevy` / `-Papp=nokoprint`.
 
 ---
 
@@ -9,7 +12,7 @@ Automated reverse-engineering and patch update harness for **Brave Browser** (`c
 The harness automates the reverse-engineering lifecycle when upstream releases new APKs:
 
 ```
-Target APK / APKM (Brave, Gboard, Hevy, TikTok, NokoPrint, or Xiaomi Earbuds)
+Target APK / APKM / XAPK (Brave, Gboard, TikTok, or Xiaomi Earbuds)
      ↓
 [harness/update.py]            ➜ Package Identification & Pipeline Dispatcher
      ↓
@@ -39,16 +42,16 @@ Run this command to inspect fingerprints, obfuscated symbol changes, and invaria
 
 ```bash
 # For Gboard
-python harness/update.py <path-to-gboard.apk> --audit
+./venv/bin/python harness/update.py <path-to-gboard.apk> --audit
 
 # For Brave
-python harness/update.py <path-to-brave.apk> --audit
+./venv/bin/python harness/update.py <path-to-brave.apk> --audit
 
-# For Hevy (APKM bundle required)
-python harness/update.py <path-to-hevy.apkm> --audit
+# For TikTok (nodpi APK)
+./venv/bin/python harness/update.py <path-to-tiktok.apk> --audit
 
 # For Xiaomi Earbuds (XAPK bundle required)
-python harness/update.py <path-to-earbuds.xapk> --audit
+./venv/bin/python harness/update.py <path-to-earbuds.xapk> --audit
 ```
 
 ### 2. Update and build for a new version
@@ -56,16 +59,16 @@ When ready to migrate patches to the new version:
 
 ```bash
 # For Gboard
-python harness/update.py <path-to-gboard.apk> --update
+./venv/bin/python harness/update.py <path-to-gboard.apk> --update
 
 # For Brave
-python harness/update.py <path-to-brave.apk> --update
+./venv/bin/python harness/update.py <path-to-brave.apk> --update
 
-# For Hevy (APKM bundle required)
-python harness/update.py <path-to-hevy.apkm> --update
+# For TikTok (nodpi APK)
+./venv/bin/python harness/update.py <path-to-tiktok.apk> --update
 
 # For Xiaomi Earbuds (XAPK bundle required)
-python harness/update.py <path-to-earbuds.xapk> --update
+./venv/bin/python harness/update.py <path-to-earbuds.xapk> --update
 ```
 
 
@@ -75,9 +78,15 @@ This will:
 3. Automatically execute `./gradlew buildAndroid`, `./gradlew generatePatchesList`, and sync `README.md`.
 4. Output the complete report.
 
+After any patch source change, the in-situ patching gate is mandatory (see `AGENTS.md`):
+
+```bash
+./gradlew runPatchTest -Papp=<targetApp>
+```
+
 ### 3. Run the Harness Test Suite
 ```bash
-python -m unittest discover harness/tests
+./venv/bin/python -m unittest discover harness/tests
 ```
 
 ---
@@ -114,10 +123,12 @@ Whenever a patch is **created, modified, renamed, or updated**, the following re
 3. **Catalog Generation (`patches-list.json`)**:
    - Execute `./gradlew.bat generatePatchesList` (or `./gradlew generatePatchesList`) to re-export the standalone Morphe Patch Package metadata.
 4. **Documentation & Table Synchronization (`README.md`)**:
-   - Run `python .github/scripts/generate_patches_readme.py kveld9/kveld-morphe-patches main patches-list.json README.md` to refresh the Markdown tables and patch counts.
+   - The README patch catalog (`PATCHES_START` / `PATCHES_END`) is regenerated automatically by the release pipeline (`.releaserc`) and by `harness/update.py --update`; do not edit it by hand. To preview it locally, run `python .github/scripts/generate_patches_readme.py <owner>/<repo> main patches-list.json README.md` and do not commit the result.
    - Update high-level summary highlights (e.g. *Key Highlights*) if the scope of features changed.
 5. **Harness Verification & Report Generation**:
-   - Re-run `python harness/update.py <apk> --audit` to assert zero regressions and update `BRAVE_HARNESS_REPORT.md` or `GBOARD_HARNESS_REPORT.md`.
-6. **Harness Integrity & Logging Test Suite**:
-   - Execute `python -m unittest discover harness/tests` to verify that `AdversarialValidator.assert_patches_dynamic_logging()` passes across all patch source files.
+   - Re-run `./venv/bin/python harness/update.py <apk> --audit` to assert zero regressions and regenerate the pipeline report (`BRAVE_HARNESS_REPORT.md`, `GBOARD_HARNESS_REPORT.md`, `TIKLITE_HARNESS_REPORT.md`, or `XIAOMI_EARBUDS_HARNESS_REPORT.md`; git-ignored).
+6. **In-Situ Patching Gate**:
+   - Execute `./gradlew runPatchTest -Papp=<targetApp>` (add `-PallOptions=true` when the change sits behind a patch option) and confirm 0 failed patches, 0 fingerprint mismatches, and 0 smali compile errors.
+7. **Harness Integrity & Logging Test Suite**:
+   - Execute `./venv/bin/python -m unittest discover harness/tests` to verify that `AdversarialValidator.assert_patches_dynamic_logging()` passes across all patch source files.
 
