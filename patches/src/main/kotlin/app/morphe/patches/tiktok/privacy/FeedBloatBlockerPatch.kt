@@ -407,6 +407,58 @@ val feedBloatBlockerPatch = bytecodePatch(
             println("[Feed Bloat Blocker] FriendsFeedResponse note: ${e.message}")
         }
 
+        Fingerprint(
+            definingClass = "Lcom/ss/android/ugc/aweme/friendstab/repo/FriendsV3FeedNetworkSource;",
+            name = "LJ",
+            parameters = listOf("Lcom/ss/android/ugc/aweme/friendstab/repo/FriendsV3FeedResponse;"),
+            returnType = "Ljava/lang/Object;",
+        ).method.addInstructions(
+            0,
+            """
+                invoke-static {p1}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterFeedBloatInFriendsV3Response(Ljava/lang/Object;)V
+            """.trimIndent(),
+        )
+        println("[Feed Bloat Blocker] Hooked FriendsV3FeedNetworkSource.LJ -> Friends V3 network responses filtered and suggested friends nulled.")
+        patched++
+
+        // Hook FriendsFeedApi network fetch return points (LX/06CX;->LIZLLL in v47.1.4)
+        val friendsFeedApiFingerprint = Fingerprint(
+            definingClass = "LX/06CX;",
+            name = "LIZLLL",
+            parameters = listOf(
+                "I",
+                "I",
+                "Ljava/lang/String;",
+                "Ljava/util/List;",
+                "Ljava/util/List;",
+                "Ljava/util/List;",
+                "Ljava/util/List;",
+                "Ljava/lang/String;",
+                "Ljava/lang/String;",
+                "Z",
+                "Z",
+            ),
+            returnType = "Lcom/ss/android/ugc/aweme/friendstab/api/FriendsFeedResponse;",
+        )
+        val friendsFeedApiMethod = friendsFeedApiFingerprint.method
+        val friendsFeedApiReturns = friendsFeedApiMethod.implementation?.instructions?.withIndex()
+            ?.filter { it.value.opcode == Opcode.RETURN_OBJECT }
+            ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
+            ?.toList() ?: emptyList()
+
+        friendsFeedApiReturns.asReversed().forEach { (returnIndex, reg) ->
+            friendsFeedApiMethod.addInstructionsAtControlFlowLabel(
+                returnIndex,
+                """
+                    invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterFeedBloatInFriendsFeedResponse(Ljava/lang/Object;)V
+                """.trimIndent(),
+            )
+        }
+        if (friendsFeedApiReturns.isNotEmpty()) {
+            println("[Feed Bloat Blocker] Hooked FriendsFeedApi.LIZLLL (${friendsFeedApiReturns.size} return point(s)) -> Friends V2 network responses filtered and inserted cards nulled.")
+            patched++
+        }
+
         try {
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/friendstab/ui/feed/cell/component/recuser/FriendsV3HorizontalRecUserCardCell;",

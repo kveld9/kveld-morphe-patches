@@ -1985,6 +1985,9 @@ public final class TikTokFeedAdFilter {
 
     private static volatile Field friendsV3FeedsField;
     private static volatile Field friendFeedDataField;
+    private static volatile Field newlyShownMafIdsField;
+    private static volatile Field cardInsertResultsField;
+    private static volatile Field insertedResultsField;
 
     public static void filterAiContentInFriendsV3Response(Object response) {
         if (response == null) return;
@@ -2009,6 +2012,59 @@ public final class TikTokFeedAdFilter {
                 friendFeedDataField = field;
             }
             filterAiContentInFriendsFeedData(field.get(response));
+        } catch (Throwable ignored) {}
+    }
+
+    public static void filterFeedBloatInFriendsV3Response(Object response) {
+        if (response == null) return;
+        try {
+            Field field = friendsV3FeedsField;
+            if (field == null) {
+                field = response.getClass().getDeclaredField("friendsV3Feeds");
+                field.setAccessible(true);
+                friendsV3FeedsField = field;
+            }
+            filterFeedBloatInFriendsV3Feeds(field.get(response));
+        } catch (Throwable ignored) {}
+        try {
+            Field field = newlyShownMafIdsField;
+            if (field == null) {
+                field = response.getClass().getDeclaredField("newlyShownMafIds");
+                field.setAccessible(true);
+                newlyShownMafIdsField = field;
+            }
+            field.set(response, null);
+        } catch (Throwable ignored) {}
+    }
+
+    public static void filterFeedBloatInFriendsFeedResponse(Object response) {
+        if (response == null) return;
+        try {
+            Field field = friendFeedDataField;
+            if (field == null) {
+                field = response.getClass().getDeclaredField("friendFeedData");
+                field.setAccessible(true);
+                friendFeedDataField = field;
+            }
+            filterFeedBloatInFriendsFeedData(field.get(response));
+        } catch (Throwable ignored) {}
+        try {
+            Field field = cardInsertResultsField;
+            if (field == null) {
+                field = response.getClass().getDeclaredField("cardInsertResults");
+                field.setAccessible(true);
+                cardInsertResultsField = field;
+            }
+            field.set(response, null);
+        } catch (Throwable ignored) {}
+        try {
+            Field field = insertedResultsField;
+            if (field == null) {
+                field = response.getClass().getDeclaredField("insertedResults");
+                field.setAccessible(true);
+                insertedResultsField = field;
+            }
+            field.set(response, null);
         } catch (Throwable ignored) {}
     }
 
