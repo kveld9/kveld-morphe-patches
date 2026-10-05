@@ -4,6 +4,7 @@ import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.addInstructionsAtControlFlowLabel
 import app.morphe.patches.shared.sharedExtensionPatch
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
@@ -52,7 +53,7 @@ val hideSearchPopularLivesPatch = bytecodePatch(
             ?.toList() ?: emptyList()
 
         returnIndices.asReversed().forEach { (returnIndex, reg) ->
-            method.addInstructions(
+            method.addInstructionsAtControlFlowLabel(
                 returnIndex,
                 """
                     invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_SEARCH_HOOK}->filterPopularLivesAbParams(Ljava/util/Map;)Ljava/util/Map;
@@ -75,7 +76,7 @@ val hideSearchPopularLivesPatch = bytecodePatch(
             ?.toList() ?: emptyList()
 
         schemaReturnIndices.asReversed().forEach { (returnIndex, reg) ->
-            schemaMethod.addInstructions(
+            schemaMethod.addInstructionsAtControlFlowLabel(
                 returnIndex,
                 """
                     invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_SEARCH_HOOK}->filterPopularLivesSchema(Ljava/lang/String;)Ljava/lang/String;
