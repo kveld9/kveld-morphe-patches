@@ -213,7 +213,7 @@
 </details>
 
 <details>
-<summary>Gboard Lite&nbsp;&nbsp;•&nbsp;&nbsp;<b>10 patches</b></summary>
+<summary>Gboard Lite&nbsp;&nbsp;•&nbsp;&nbsp;<b>11 patches</b></summary>
 <br>
 
 **Supported versions:**
@@ -228,6 +228,7 @@
 | **Disable Background Sync** | Neutralizes AndroidX WorkManager schedulers, MDD (Mobile Data Download) periodic sync, and Superpacks eager asset synchronization (opt-in to preserve initial dictionary downloads). |  |
 | **Disable Cloud Backup** | Disables Android backup for Gboard (allowBackup=false and backup agent removed) so keyboard settings, learned words, and personal dictionary data are never uploaded to Google Drive backups or copied by device-to-device transfer. |  |
 | **Disable Remote Configuration** | Disables periodic remote experiment flag synchronization and background updates. |  |
+| **Disable Play Services Integration** | Makes Gboard's Google Play services availability check always report SERVICE_DISABLED, so GMS-backed code paths (Clearcut logging, Phenotype, account sync, Google Help feedback) are skipped at the source instead of being attempted. |  |
 | **Gboard Enhancements** | Master customization suite bundling in-app toggleable features (AMOLED Pure Black theme, zero bottom inset, independent keyboard vibration, force incognito, voice typing in incognito, clipboard retention, top toolbar icons count, cursor trackpad, and smart flags) managed directly from a top-level Morphe Patches category in Gboard Settings. |  |
 | **Hardened Intent Security** | Enables Gboard internal external intent protection against unauthorized intent hijacking and removes the exported, permissionless web debug bridge content provider. |  |
 | **Offline Only** | Completely isolates Gboard from the network by revoking network permissions, neutralizing HTTP clients (Cronet, OkHttp, Superpacks), and spoofing offline status. |  |
