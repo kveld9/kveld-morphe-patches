@@ -367,6 +367,80 @@ val directMessageDeclutterPatch = bytecodePatch(
                 println("[Direct Message Declutter] Hooked IMImageBtnViewAssem.Wr -> View.GONE.")
                 patched++
             }
+
+            val isAlbumViewConfigMethod: (Method) -> Boolean = { method ->
+                AccessFlags.STATIC.isSet(method.accessFlags) &&
+                    method.parameterTypes.size == 3 &&
+                    method.parameterTypes[1] == "Ljava/lang/Object;" &&
+                    method.parameterTypes[2] == "Ljava/lang/Object;" &&
+                    method.implementation?.instructions?.any { ins ->
+                        val methodRef = (ins as? ReferenceInstruction)?.reference as? MethodReference
+                        methodRef?.parameterTypes?.size == 1 &&
+                            methodRef.parameterTypes[0] == "Lcom/bytedance/assem/arch/core/UIAssem;" &&
+                            methodRef.returnType == "V"
+                    } == true &&
+                    method.implementation?.instructions?.any { ins ->
+                        val methodRef = (ins as? ReferenceInstruction)?.reference as? MethodReference
+                        methodRef?.name == "setMarginEnd"
+                    } == true
+            }
+
+            val redesignedAlbumClassFp = Fingerprint(
+                custom = { _, classDef ->
+                    classDef.methods.any(isAlbumViewConfigMethod)
+                },
+            )
+            val albumMethods = redesignedAlbumClassFp.classDef.methods.filter(isAlbumViewConfigMethod)
+            var hookedAlbumCount = 0
+            for (redesignedMethod in albumMethods) {
+                val instructions = redesignedMethod.implementation?.instructions?.toList()
+                if (instructions != null) {
+                    val unitIndex = instructions.indexOfLast { ins ->
+                        ((ins as? ReferenceInstruction)?.reference as? FieldReference)?.definingClass == "Lkotlin/Unit;"
+                    }
+                    if (unitIndex >= 0) {
+                        redesignedMethod.ensureRegisterCount(6)
+                        val layoutParamsType = "Landroid/view/ViewGroup\$LayoutParams;"
+                        val marginLayoutParamsType = "Landroid/view/ViewGroup\$MarginLayoutParams;"
+                        redesignedMethod.addInstructions(
+                            unitIndex,
+                            """
+                                move-object/from16 v0, p2
+                                if-eqz v0, :cond_skip_album
+                                instance-of v1, v0, Landroid/view/View;
+                                if-eqz v1, :cond_skip_album
+                                check-cast v0, Landroid/view/View;
+                                const/4 v1, 0x0
+                                invoke-virtual {v0, v1}, Landroid/view/View;->setClickable(Z)V
+                                invoke-virtual {v0, v1}, Landroid/view/View;->setEnabled(Z)V
+                                invoke-virtual {v0, v1}, Landroid/view/View;->setScaleX(F)V
+                                invoke-virtual {v0, v1}, Landroid/view/View;->setScaleY(F)V
+                                const/16 v1, 0x8
+                                invoke-virtual {v0, v1}, Landroid/view/View;->setVisibility(I)V
+                                invoke-virtual {v0}, Landroid/view/View;->getLayoutParams()$layoutParamsType
+                                move-result-object v1
+                                if-eqz v1, :cond_skip_album
+                                const/4 v2, 0x0
+                                iput v2, v1, $layoutParamsType->width:I
+                                iput v2, v1, $layoutParamsType->height:I
+                                instance-of v2, v1, $marginLayoutParamsType
+                                if-eqz v2, :cond_skip_margin
+                                check-cast v1, $marginLayoutParamsType
+                                const/4 v2, 0x0
+                                invoke-virtual {v1, v2}, $marginLayoutParamsType->setMarginEnd(I)V
+                                :cond_skip_margin
+                                invoke-virtual {v0, v1}, Landroid/view/View;->setLayoutParams($layoutParamsType)V
+                                :cond_skip_album
+                            """.trimIndent(),
+                        )
+                        hookedAlbumCount++
+                    }
+                }
+            }
+            if (hookedAlbumCount > 0) {
+                println("[Direct Message Declutter] Hooked redesigned input SCALING_ALBUM_BTN slot setup ($hookedAlbumCount targets) -> 0x0, scale 0, disabled, GONE.")
+                patched++
+            }
         }
 
         // 7. Feature: Hide Emoji/Stickers Button inside input field
