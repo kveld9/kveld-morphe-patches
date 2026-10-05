@@ -5,6 +5,7 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.addInstructionsAtControlFlowLabel
 import app.morphe.patches.shared.sharedExtensionPatch
 import app.morphe.patches.shared.ensureRegisterCount
 import com.android.tools.smali.dexlib2.Opcode
@@ -57,7 +58,7 @@ val gboardDecoupleHapticsPatch = bytecodePatch(
                     .map { it.index to (it.value as OneRegisterInstruction).registerA }
                     .toList()
                 returnIndices.asReversed().forEach { (idx, reg) ->
-                    fpHapticHelper.method.addInstructions(
+                    fpHapticHelper.method.addInstructionsAtControlFlowLabel(
                         idx,
                         """
                             invoke-static {v$reg}, ${Constants.GBOARD_EXTENSION_CLASS}->overrideSystemHapticStatus(I)I
