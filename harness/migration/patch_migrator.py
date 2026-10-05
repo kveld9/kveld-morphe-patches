@@ -87,6 +87,10 @@ class PatchMigrator:
             ("GBOARD_TARGET_VERSION_V7A", f"{base}-armeabi-v7a"),
         ])
 
+    def plan_tiktok_constants_update(self, new_version: str) -> MigrationPlan:
+        # AppTarget description interpolates $TIKTOK_TARGET_VERSION.
+        return self._plan_version_constants([("TIKTOK_TARGET_VERSION", new_version)])
+
     def plan_xiaomi_earbuds_constants_update(self, new_version: str) -> MigrationPlan:
         content = self.constants_file.read_text(encoding="utf-8")
         changes = []

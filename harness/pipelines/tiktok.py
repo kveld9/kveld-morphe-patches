@@ -7,6 +7,7 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional, Tuple
 
 from harness.core.pipeline import BaseTargetPipeline, PipelineRegistry
+from harness.migration.patch_migrator import MigrationPlan
 from harness.reporting.reporter import HarnessReportData
 from harness.tiktok.validator import TikTokValidator
 
@@ -39,9 +40,9 @@ class TikTokPipeline(BaseTargetPipeline):
 
         return patch_results, {}
 
-    def create_migration_plans(self, extra_data: Any) -> List[Any]:
-        # Minimal version update plan for Constants.kt if migrator is present
-        return []
+    def create_migration_plans(self, extra_data: Any) -> List[MigrationPlan]:
+        plan_const = self.migrator.plan_tiktok_constants_update(self.meta.version_name)
+        return [plan_const] if plan_const else []
 
     def build_report_data(
         self,

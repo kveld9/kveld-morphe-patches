@@ -91,6 +91,13 @@ class TestMigratorAndValidator(unittest.TestCase):
         for old, _ in changed:
             self.assertRegex(old, r'const val GBOARD_TARGET_VERSION(_V7A)? = ')
 
+    # 13c. TikTok new version -> constant bumped, interpolated description untouched
+    def test_tiktok_version_bump(self):
+        plan = self.migrator.plan_tiktok_constants_update("99.9.9")
+        self.assertIn('const val TIKTOK_TARGET_VERSION = "99.9.9"', plan.modified_content)
+        self.assertEqual(plan.changes, ["Updated TIKTOK_TARGET_VERSION to '99.9.9'"])
+        self.assertEqual(len(plan.original_content.splitlines()), len(plan.modified_content.splitlines()))
+
     # 16. Origin pref key migration -> updated
     def test_origin_pref_key_migration(self):
         symbols = BraveOriginSymbols(
