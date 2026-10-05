@@ -11,10 +11,10 @@ import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.shared.Constants
-import app.morphe.patches.shared.getReference
-import app.morphe.patches.shared.sharedExtensionPatch
 import app.morphe.patches.shared.clearTryBlocks
 import app.morphe.patches.shared.ensureRegisterCount
+import app.morphe.patches.shared.getReference
+import app.morphe.patches.shared.sharedExtensionPatch
 import app.morphe.patches.shared.replaceWithReturnBoolean
 import app.morphe.patches.shared.replaceWithReturnBooleanObject
 import app.morphe.patches.shared.replaceWithReturnIntegerObject
@@ -425,6 +425,7 @@ private fun BytecodePatchContext.applyHideCommentQuickActions(): Int {
     println("[Comment Customizer] Comment quick actions hidden.")
     return patched
 }
+
 private fun BytecodePatchContext.applyHideCommentSurveys(): Int {
     var patched = 0
 
@@ -490,6 +491,58 @@ private fun BytecodePatchContext.applyHideCommentSurveys(): Int {
     }
 
     println("[Comment Customizer] In-comment surveys and feedback cards blocked.")
+    return patched
+}
+
+private fun BytecodePatchContext.applyHideStoryRings(): Int {
+    var patched = 0
+
+    val avatarRingClassDef = Fingerprint(
+        name = "setRingStrokeWidthByAvatarSize",
+        parameters = listOf("I"),
+        returnType = "V",
+        custom = { _, classDef ->
+            classDef.superclass == "Landroid/widget/FrameLayout;"
+        },
+    ).classDef
+
+    Fingerprint(
+        definingClass = avatarRingClassDef.type,
+        name = "setMode",
+        returnType = "V",
+    ).method.replaceWithReturnVoid()
+    patched++
+
+    val drawMethod = Fingerprint(
+        definingClass = avatarRingClassDef.type,
+        name = "draw",
+        returnType = "V",
+        parameters = listOf("Landroid/graphics/Canvas;"),
+    ).method
+    val drawImpl = drawMethod.implementation
+    if (drawImpl != null) {
+        drawMethod.clearTryBlocks()
+        drawMethod.ensureRegisterCount(2)
+        drawMethod.removeInstructions(0, drawImpl.instructions.count())
+        drawMethod.addInstructions(
+            0,
+            """
+                invoke-super {p0, p1}, Landroid/widget/FrameLayout;->draw(Landroid/graphics/Canvas;)V
+                return-void
+            """.trimIndent(),
+        )
+        patched++
+    }
+
+    Fingerprint(
+        definingClass = avatarRingClassDef.type,
+        name = "onInterceptTouchEvent",
+        returnType = "Z",
+        parameters = listOf("Landroid/view/MotionEvent;"),
+    ).method.replaceWithReturnBoolean(false)
+    patched++
+
+    println("[Comment Customizer] Profile photo story rings and click interceptors disabled on comment avatars.")
     return patched
 }
 
@@ -632,7 +685,7 @@ private fun BytecodePatchContext.applyAutoTranslate(): Int {
 
 val commentCustomizerPatch = bytecodePatch(
     name = "Comment Customizer",
-    description = "Customizes TikTok's comment section, including native sort controls, clean text copying, disabling suggested emojis bar, hiding comment quick actions, hiding in-comment surveys and feedback cards, enabling voice comments, and automatic comment translation.",
+    description = "Customizes TikTok's comment section, including native sort controls, clean text copying, disabling suggested emojis bar, hiding comment quick actions, hiding in-comment surveys and feedback cards, hiding profile photo story rings, enabling voice comments, and automatic comment translation.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -678,6 +731,14 @@ val commentCustomizerPatch = bytecodePatch(
         required = false,
     )
 
+    val hideStoryRings by booleanOption(
+        key = "hideStoryRings",
+        default = true,
+        title = "Hide Comment Story Rings",
+        description = "Removes profile photo story rings from avatars in the comment section.",
+        required = false,
+    )
+
     val enableVoiceComments by booleanOption(
         key = "enableVoiceComments",
         default = true,
@@ -700,6 +761,7 @@ val commentCustomizerPatch = bytecodePatch(
             disableSuggestedEmojis != true &&
             hideCommentQuickActions != true &&
             hideCommentSurveys != true &&
+            hideStoryRings != true &&
             enableVoiceComments != true &&
             autoTranslate != true
         ) {
@@ -727,6 +789,10 @@ val commentCustomizerPatch = bytecodePatch(
 
         if (hideCommentSurveys == true) {
             patched += applyHideCommentSurveys()
+        }
+
+        if (hideStoryRings == true) {
+            patched += applyHideStoryRings()
         }
 
         if (enableVoiceComments == true) {
