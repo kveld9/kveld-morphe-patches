@@ -28,7 +28,7 @@ Target APK / APKM / XAPK (Brave, Gboard, TikTok, or Xiaomi Earbuds)
      ↓
 [harness/migration/migrator]   ➜ Minimal Source Update (Constants.kt, Kotlin AST)
      ↓
-[Gradle / Toolchain]           ➜ check, buildAndroid, generatePatchesList, README sync
+[Gradle / Toolchain]           ➜ check, buildAndroid, MPP bundle integrity
      ↓
 [harness/reporting/]           ➜ Structured Markdown Reports
 ```
@@ -75,7 +75,7 @@ When ready to migrate patches to the new version:
 This will:
 1. Validate all fingerprints, contracts, and safety gates.
 2. If all checks pass (`VERIFIED`), apply minimal edits to `Constants.kt` and patch source files.
-3. Automatically execute `./gradlew buildAndroid`, `./gradlew generatePatchesList`, and sync `README.md`.
+3. Automatically execute `./gradlew check buildAndroid` and assert MPP bundle integrity, rolling back on failure. Release artifacts (`patches-list.json`, the README patch catalog) are left to CI.
 4. Output the complete report.
 
 After any patch source change, the in-situ patching gate is mandatory (see `AGENTS.md`):
@@ -123,7 +123,7 @@ Whenever a patch is **created, modified, renamed, or updated**, the following re
 3. **Catalog Generation (`patches-list.json`)**:
    - Execute `./gradlew.bat generatePatchesList` (or `./gradlew generatePatchesList`) to re-export the standalone Morphe Patch Package metadata.
 4. **Documentation & Table Synchronization (`README.md`)**:
-   - The README patch catalog (`PATCHES_START` / `PATCHES_END`) is regenerated automatically by the release pipeline (`.releaserc`) and by `harness/update.py --update`; do not edit it by hand. To preview it locally, run `python .github/scripts/generate_patches_readme.py <owner>/<repo> main patches-list.json README.md` and do not commit the result.
+   - The README patch catalog (`PATCHES_START` / `PATCHES_END`) is regenerated automatically by the release pipeline (`.releaserc`); do not edit it by hand. To preview it locally, run `python .github/scripts/generate_patches_readme.py <owner>/<repo> main patches-list.json README.md` and do not commit the result.
    - Update high-level summary highlights (e.g. *Key Highlights*) if the scope of features changed.
 5. **Harness Verification & Report Generation**:
    - Re-run `./venv/bin/python harness/update.py <apk> --audit` to assert zero regressions and regenerate the pipeline report (`BRAVE_HARNESS_REPORT.md`, `GBOARD_HARNESS_REPORT.md`, `TIKLITE_HARNESS_REPORT.md`, or `XIAOMI_EARBUDS_HARNESS_REPORT.md`; written to the current directory unless `--output` is given; git-ignored).

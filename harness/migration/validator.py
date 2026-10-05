@@ -5,7 +5,6 @@ Executes structural uniqueness assertions, native byte verification, and Gradle 
 
 from __future__ import annotations
 
-import os
 import subprocess
 import sys
 from dataclasses import dataclass, field
@@ -391,9 +390,13 @@ class AdversarialValidator:
         )
 
     def run_gradle_build_verification(self) -> Tuple[bool, str]:
-        """Runs gradle check, buildAndroid, generatePatchesList and validates .mpp bundle integrity."""
+        """Runs gradle check and buildAndroid, then validates .mpp bundle integrity.
+
+        patches-list.json and the README patch catalog are release artifacts owned by
+        semantic-release in CI, so update mode never regenerates them locally.
+        """
         gradle_cmd = str(self.repo_root / ("gradlew.bat" if sys.platform.startswith("win") else "gradlew"))
-        cmd = [gradle_cmd, "check", "buildAndroid", "generatePatchesList"]
+        cmd = [gradle_cmd, "check", "buildAndroid"]
         res = subprocess.run(cmd, cwd=str(self.repo_root), capture_output=True, text=True, shell=sys.platform.startswith("win"))
         if res.returncode != 0:
             return False, f"Gradle build failed:\n{res.stdout}\n{res.stderr}"
@@ -403,17 +406,7 @@ class AdversarialValidator:
         if not bundle_ok:
             return False, bundle_err
 
-        # Run README sync
-        repo_slug = os.environ.get("GITHUB_REPOSITORY") or "kveld9/kveld-morphe-patches"
-        readme_cmd = [
-            "python", ".github/scripts/generate_patches_readme.py",
-            repo_slug, "main", "patches-list.json", "README.md"
-        ]
-        res_readme = subprocess.run(readme_cmd, cwd=str(self.repo_root), capture_output=True, text=True)
-        if res_readme.returncode != 0:
-            return False, f"README sync script failed:\n{res_readme.stdout}\n{res_readme.stderr}"
-
-        return True, "All Gradle build, MPP bundle integrity, and metadata verification checks passed successfully."
+        return True, "Gradle check, buildAndroid, and MPP bundle integrity verification passed."
 
     def assert_mpp_bundle_integrity(self) -> Tuple[bool, str]:
         """Asserts that the compiled .mpp bundle contains classes.dex (Dalvik bytecode) and required extensions.
