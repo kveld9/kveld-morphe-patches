@@ -308,3 +308,16 @@ class DexIndex:
             if semi != -1:
                 return prefix + param_part[i:semi + 1], semi + 1
         return None, i + 1
+
+
+def find_contract_target(index: DexIndex, scope: List[IndexedClass], target: str) -> List[IndexedMethod]:
+    """Methods satisfying a contract target that is either a method name or a string literal.
+
+    Names are matched inside the contract classes (globally when none are declared). String
+    literals are matched across every DEX, like the patch fingerprints that consume them:
+    obfuscated helpers outside the contract classes often hold the experiment keys.
+    """
+    name_pool = [m for cls in scope for m in cls.methods] if scope else index.methods
+    matched = {id(m): m for m in name_pool if m.name == target}
+    matched.update((id(m), m) for m in index.methods_referencing(target))
+    return list(matched.values())

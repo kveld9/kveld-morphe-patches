@@ -51,5 +51,31 @@ class TestDexStringIndex(unittest.TestCase):
         self.assertEqual(indexed.candidates_for_string("a"), [])
 
 
+class TestFindContractTarget(unittest.TestCase):
+
+    @staticmethod
+    def _method(name):
+        m = MagicMock()
+        m.name = name
+        return m
+
+    def test_strings_are_global_names_are_scoped(self):
+        from harness.core.dex import find_contract_target
+
+        in_scope = self._method("pZ")
+        out_of_scope_same_name = self._method("pZ")
+        obfuscated_holder = self._method("LIZ")
+        index = MagicMock()
+        index.methods = [in_scope, out_of_scope_same_name, obfuscated_holder]
+        index.methods_referencing.side_effect = lambda s: [obfuscated_holder] if s == "fyp_auto_scroll" else []
+        scope = [MagicMock(methods=[in_scope])]
+
+        self.assertEqual(find_contract_target(index, scope, "pZ"), [in_scope])
+        self.assertEqual(find_contract_target(index, scope, "fyp_auto_scroll"), [obfuscated_holder])
+        self.assertEqual(find_contract_target(index, scope, "missing"), [])
+        # Without declared classes, names are matched across the whole index.
+        self.assertEqual(len(find_contract_target(index, [], "pZ")), 2)
+
+
 if __name__ == "__main__":
     unittest.main()
