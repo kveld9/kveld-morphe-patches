@@ -14,11 +14,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional
 
-try:
-    from pyaxmlparser import APK as PyAXML_APK
-except ImportError:
-    PyAXML_APK = None
-
 
 @dataclass
 class ApkMetadata:
@@ -150,22 +145,7 @@ class ApkContext:
         return self._parse_manifest_from_path(self.apk_path)
 
     def _parse_manifest_from_path(self, path: Path) -> tuple[str, str, int]:
-        pkg_name, ver_name, ver_code = self._try_pyaxml_manifest(path)
-        if not pkg_name or not ver_name:
-            pkg_name, ver_name, ver_code = self._try_androguard_manifest(path)
-        return pkg_name, ver_name, ver_code
-
-    def _try_pyaxml_manifest(self, path: Path) -> tuple[str, str, int]:
-        if PyAXML_APK is None:
-            return "", "", 0
-        try:
-            apk_obj = PyAXML_APK(str(path))
-            pkg_name = apk_obj.package or ""
-            ver_name = apk_obj.version_name or ""
-            ver_code = int(apk_obj.version_code) if apk_obj.version_code else 0
-            return pkg_name, ver_name, ver_code
-        except Exception:
-            return "", "", 0
+        return self._try_androguard_manifest(path)
 
     def _try_androguard_manifest(self, path: Path) -> tuple[str, str, int]:
         try:

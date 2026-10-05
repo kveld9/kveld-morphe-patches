@@ -8,7 +8,7 @@ from __future__ import annotations
 import zipfile
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Optional
+from typing import List
 
 from harness.core.apk import ApkMetadata
 from harness.core.dex import DexIndex

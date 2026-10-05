@@ -8,7 +8,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from harness.core.dex import DexIndex, IndexedClass, IndexedMethod
 
@@ -55,28 +55,16 @@ class BraveNotificationSchedulerSymbols:
     on_start_task_method: ResolvedSymbol
 
 
-@dataclass
-class BravePrefServiceSymbols:
-    boolean_getter_method: ResolvedSymbol
-
-
-@dataclass
-class BravePartnerCustomizationSymbols:
-    initialized_field: ResolvedSymbol
-
-
 class SymbolResolver:
     """Resolves obfuscated members on Brave classes using structural analysis."""
 
     def __init__(self, index: DexIndex):
         self.index = index
 
-    def resolve_all(self) -> Dict[str, any]:
+    def resolve_all(self) -> Dict[str, Any]:
         return {
             "origin": self.resolve_brave_origin_symbols(),
             "scheduler": self.resolve_notification_scheduler_symbols(),
-            "pref_service": self.resolve_pref_service_symbols(),
-            "partner_customizations": self.resolve_partner_customization_symbols(),
         }
 
     def resolve_brave_origin_symbols(self) -> Optional[BraveOriginSymbols]:
@@ -260,49 +248,3 @@ class SymbolResolver:
             evidence=[f"NotificationScheduler task starter: {m.full_name}"]
         )
         return BraveNotificationSchedulerSymbols(on_start_task_method=sym)
-
-    def resolve_pref_service_symbols(self) -> Optional[BravePrefServiceSymbols]:
-        cls_name = "Lorg/chromium/components/prefs/PrefService;"
-        cls = self.index.find_class(cls_name)
-        if not cls:
-            return None
-
-        # Look for (String) -> Z method on PrefService
-        bool_getters = [
-            m for m in cls.methods
-            if m.parameters == ["Ljava/lang/String;"] and m.return_type == "Z"
-        ]
-        if not bool_getters:
-            return None
-
-        m = bool_getters[0]
-        sym = ResolvedSymbol(
-            symbol_id="pref_service_boolean_getter",
-            target_class=cls_name,
-            old_symbol="e(Ljava/lang/String;)Z",
-            new_symbol=f"{m.name}(Ljava/lang/String;)Z",
-            symbol_type="method",
-            confidence=SymbolConfidence.VERIFIED,
-            evidence=[f"PrefService boolean getter: {m.full_name}"]
-        )
-        return BravePrefServiceSymbols(boolean_getter_method=sym)
-
-    def resolve_partner_customization_symbols(self) -> Optional[BravePartnerCustomizationSymbols]:
-        cls_name = "Lorg/chromium/chrome/browser/partnercustomizations/PartnerBrowserCustomizations;"
-        cls = self.index.find_class(cls_name)
-        if not cls:
-            return None
-
-        # Look for Boolean instance field
-        bool_fields = [f for f in cls.fields if f[1] == "Ljava/lang/Boolean;"]
-        f_name = bool_fields[0][0] if bool_fields else "b"
-        sym = ResolvedSymbol(
-            symbol_id="partner_customization_init_field",
-            target_class=cls_name,
-            old_symbol="b:Ljava/lang/Boolean;",
-            new_symbol=f"{f_name}:Ljava/lang/Boolean;",
-            symbol_type="field",
-            confidence=SymbolConfidence.VERIFIED if bool_fields else SymbolConfidence.BLOCKED,
-            evidence=[f"PartnerBrowserCustomizations boolean field: {f_name}"]
-        )
-        return BravePartnerCustomizationSymbols(initialized_field=sym)

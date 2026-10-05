@@ -11,7 +11,7 @@ echo "Cleaning up workspace in $REPO_ROOT..."
 
 # 1. Remove temporary reports & diffs
 echo "==> Removing generated reports and diffs..."
-rm -f ./*_HARNESS_REPORT.md ./APK_DIFF.md
+rm -f ./*_HARNESS_REPORT.md
 
 # 2. Remove loose APKs & patch bundles in root
 echo "==> Removing loose APKs, bundles, and signatures..."

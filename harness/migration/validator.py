@@ -16,6 +16,7 @@ from typing import Dict, List, Optional, Tuple
 from harness.core.dex import DexIndex
 from harness.core.elf import Elf64Analyzer
 from harness.core.fingerprints import FingerprintQuery, FingerprintResolver, FingerprintStatus
+from harness.core.telemetry import KNOWN_TELEMETRY_HOSTS
 
 
 class PatchStatus(str, Enum):
@@ -57,6 +58,17 @@ class AdversarialValidator:
         results["braveNativeBloatSlimmerPatch"] = self._audit_native_bloat_slimmer_patch()
         return results
 
+    def _resolve_queries(self, queries: List[FingerprintQuery]) -> Tuple[List[Tuple[str, str, str]], List[str], List[str]]:
+        """Resolves each query, returning (fingerprint_results, blocking_reasons, evidence)."""
+        fp_res, blocking, evidence = [], [], []
+        for q in queries:
+            res = self.fp_resolver.resolve(q)
+            fp_res.append((q.name_id, res.status.value, res.matched_method.full_name if res.matched_method else "NONE"))
+            if res.status != FingerprintStatus.VERIFIED:
+                blocking.append(f"Fingerprint '{q.name_id}' failed: {res.status.value}")
+            else:
+                evidence.extend(res.evidence)
+        return fp_res, blocking, evidence
 
     def _audit_origin_patch(self) -> PatchAuditResult:
         queries = [
@@ -117,17 +129,7 @@ class AdversarialValidator:
             ),
         ]
 
-        fp_res = []
-        blocking = []
-        evidence = []
-
-        for q in queries:
-            res = self.fp_resolver.resolve(q)
-            fp_res.append((q.name_id, res.status.value, res.matched_method.full_name if res.matched_method else "NONE"))
-            if res.status != FingerprintStatus.VERIFIED:
-                blocking.append(f"Fingerprint '{q.name_id}' failed: {res.status.value}")
-            else:
-                evidence.extend(res.evidence)
+        fp_res, blocking, evidence = self._resolve_queries(queries)
 
         status = PatchStatus.VERIFIED if not blocking else PatchStatus.BLOCKED
         return PatchAuditResult(
@@ -168,17 +170,7 @@ class AdversarialValidator:
             ),
         ]
 
-        fp_res = []
-        blocking = []
-        evidence = []
-
-        for q in queries:
-            res = self.fp_resolver.resolve(q)
-            fp_res.append((q.name_id, res.status.value, res.matched_method.full_name if res.matched_method else "NONE"))
-            if res.status != FingerprintStatus.VERIFIED:
-                blocking.append(f"Fingerprint '{q.name_id}' failed: {res.status.value}")
-            else:
-                evidence.extend(res.evidence)
+        fp_res, blocking, evidence = self._resolve_queries(queries)
 
         # Native ELF checks
         native_checks = []
@@ -188,20 +180,8 @@ class AdversarialValidator:
             if not (self.elf_analyzer.is_aarch64 or getattr(self.elf_analyzer, "is_arm32", False)):
                 blocking.append("libchrome.so architecture is not supported (expected ARM64 or ARM32).")
 
-            # Check known hosts from patch file
-            hosts_to_check = [
-                "star-randsrv.bsg.brave.com",
-                "collector.bsg.brave.com",
-                "usage-ping.brave.com",
-                "patterns.wdp.brave.com",
-                "collector.wdp.brave.com",
-                "star.wdp.brave.com",
-                "quorum.wdp.brave.com",
-                "cr.brave.com",
-                "crashpad.chromium.org",
-                "variations.brave.com",
-            ]
-            for host in hosts_to_check:
+            # Known hosts redirected by BraveBlockTelemetryPatch
+            for host in KNOWN_TELEMETRY_HOSTS:
                 status, matches = self.elf_analyzer.analyze_host(host)
                 passed = (len(matches) > 0)
                 native_checks.append((host, passed, f"Found {len(matches)} occurrences in ELF"))
@@ -271,17 +251,7 @@ class AdversarialValidator:
             ),
         ]
 
-        fp_res = []
-        blocking = []
-        evidence = []
-
-        for q in queries:
-            res = self.fp_resolver.resolve(q)
-            fp_res.append((q.name_id, res.status.value, res.matched_method.full_name if res.matched_method else "NONE"))
-            if res.status != FingerprintStatus.VERIFIED:
-                blocking.append(f"Fingerprint '{q.name_id}' failed: {res.status.value}")
-            else:
-                evidence.extend(res.evidence)
+        fp_res, blocking, evidence = self._resolve_queries(queries)
 
         # Check onStartTask method
         cls = self.dex_index.find_class("Lorg/chromium/chrome/browser/notifications/scheduler/NotificationSchedulerTask;")
@@ -322,17 +292,7 @@ class AdversarialValidator:
             ),
         ]
 
-        fp_res = []
-        blocking = []
-        evidence = []
-
-        for q in queries:
-            res = self.fp_resolver.resolve(q)
-            fp_res.append((q.name_id, res.status.value, res.matched_method.full_name if res.matched_method else "NONE"))
-            if res.status != FingerprintStatus.VERIFIED:
-                blocking.append(f"Fingerprint '{q.name_id}' failed: {res.status.value}")
-            else:
-                evidence.extend(res.evidence)
+        fp_res, blocking, evidence = self._resolve_queries(queries)
 
         status = PatchStatus.VERIFIED if not blocking else PatchStatus.BLOCKED
         return PatchAuditResult(
@@ -362,16 +322,7 @@ class AdversarialValidator:
                 strings=["BackgroundSync.Wakeup.DelayTime"],
             ),
         ]
-        fp_res = []
-        blocking = []
-        evidence = []
-        for q in queries:
-            res = self.fp_resolver.resolve(q)
-            fp_res.append((q.name_id, res.status.value, res.matched_method.full_name if res.matched_method else "NONE"))
-            if res.status != FingerprintStatus.VERIFIED:
-                blocking.append(f"Fingerprint '{q.name_id}' failed: {res.status.value}")
-            else:
-                evidence.extend(res.evidence)
+        fp_res, blocking, evidence = self._resolve_queries(queries)
         status = PatchStatus.VERIFIED if not blocking else PatchStatus.BLOCKED
         return PatchAuditResult(
             patch_name="Disable Background Sync & Periodic Sync",
@@ -390,16 +341,7 @@ class AdversarialValidator:
                 strings=["android.intent.action.BATTERY_CHANGED", "cr_BatteryStatusManager"],
             ),
         ]
-        fp_res = []
-        blocking = []
-        evidence = []
-        for q in queries:
-            res = self.fp_resolver.resolve(q)
-            fp_res.append((q.name_id, res.status.value, res.matched_method.full_name if res.matched_method else "NONE"))
-            if res.status != FingerprintStatus.VERIFIED:
-                blocking.append(f"Fingerprint '{q.name_id}' failed: {res.status.value}")
-            else:
-                evidence.extend(res.evidence)
+        fp_res, blocking, evidence = self._resolve_queries(queries)
         status = PatchStatus.VERIFIED if not blocking else PatchStatus.BLOCKED
         return PatchAuditResult(
             patch_name="Disable Battery Status API & OS Listener",
@@ -424,16 +366,7 @@ class AdversarialValidator:
                 strings=["disable-fre", "Chrome.FirstRun.SkippedByPolicy"],
             ),
         ]
-        fp_res = []
-        blocking = []
-        evidence = []
-        for q in queries:
-            res = self.fp_resolver.resolve(q)
-            fp_res.append((q.name_id, res.status.value, res.matched_method.full_name if res.matched_method else "NONE"))
-            if res.status != FingerprintStatus.VERIFIED:
-                blocking.append(f"Fingerprint '{q.name_id}' failed: {res.status.value}")
-            else:
-                evidence.extend(res.evidence)
+        fp_res, blocking, evidence = self._resolve_queries(queries)
         status = PatchStatus.VERIFIED if not blocking else PatchStatus.BLOCKED
         return PatchAuditResult(
             patch_name="Skip First Run",
@@ -456,8 +389,6 @@ class AdversarialValidator:
             status=PatchStatus.VERIFIED,
             evidence=["Raw resource patch stripping bloat companion binaries across lib/arm64-v8a/ and lib/armeabi-v7a/"],
         )
-
-
 
     def run_gradle_build_verification(self) -> Tuple[bool, str]:
         """Runs gradle check, buildAndroid, generatePatchesList and validates .mpp bundle integrity."""
@@ -539,6 +470,6 @@ class AdversarialValidator:
                 missing_logs.append(str(kt.relative_to(self.repo_root)))
 
         if missing_logs:
-            return False, f"The following patch files are missing diagnostic logging:\n" + "\n".join(missing_logs)
+            return False, "The following patch files are missing diagnostic logging:\n" + "\n".join(missing_logs)
 
         return True, f"All {len(kt_files)} patch definitions have verified diagnostic logging."

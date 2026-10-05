@@ -8,9 +8,9 @@ from __future__ import annotations
 import zipfile
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List
 
-from harness.core.dex import DexIndex, IndexedClass, IndexedMethod
+from harness.core.dex import DexIndex
 
 
 @dataclass

@@ -19,7 +19,7 @@ class TikTokValidator:
 
     def audit_all_patches(self) -> Dict[str, PatchAuditResult]:
         results: Dict[str, PatchAuditResult] = {}
-        all_entries = self.apk_ctx.get_all_entry_names() if hasattr(self.apk_ctx, "get_all_entry_names") else []
+        all_entries = self.apk_ctx.get_all_entry_names()
 
         for contract in TIKTOK_PATCH_CONTRACTS:
             status = "VERIFIED"

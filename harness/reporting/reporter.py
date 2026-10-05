@@ -9,7 +9,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
-from harness.core.apk import ApkMetadata
 from harness.core.symbols import BraveOriginSymbols, SymbolConfidence
 from harness.core.telemetry import TelemetryReport
 from harness.gboard.invariants import InvariantsReport
@@ -252,9 +251,3 @@ class HarnessReporter:
         ])
         return lines
 
-
-# Backwards compatibility aliases
-ReportData = HarnessReportData
-AuditReporter = HarnessReporter
-GboardReportData = HarnessReportData
-GboardAuditReporter = HarnessReporter

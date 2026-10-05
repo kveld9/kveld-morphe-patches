@@ -6,7 +6,7 @@ Specifies target classes, fingerprints, required invariants, and forbidden regre
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Callable, List, Optional, Tuple
+from typing import List
 
 from harness.core.fingerprints import FingerprintQuery
 

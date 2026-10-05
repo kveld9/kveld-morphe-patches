@@ -8,9 +8,9 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
-from harness.core.symbols import BraveOriginSymbols, BraveNotificationSchedulerSymbols, SymbolConfidence
+from harness.core.symbols import BraveOriginSymbols, BraveNotificationSchedulerSymbols
 from harness.core.telemetry import HostAuditResult
 
 
@@ -35,7 +35,6 @@ class PatchMigrator:
         self.telemetry_patch_file = self.repo_root / "patches/src/main/kotlin/app/morphe/patches/brave/BraveBlockTelemetryPatch.kt"
         self.origin_patch_file = self.repo_root / "patches/src/main/kotlin/app/morphe/patches/brave/BraveOriginPatch.kt"
         self.scheduler_patch_file = self.repo_root / "patches/src/main/kotlin/app/morphe/patches/brave/BraveNotificationSchedulerOptimizationPatch.kt"
-        self.perf_patch_file = self.repo_root / "patches/src/main/kotlin/app/morphe/patches/brave/BraveStartupPerformancePatch.kt"
 
     def plan_constants_update(self, new_version: str) -> MigrationPlan:
         content = self.constants_file.read_text(encoding="utf-8")
