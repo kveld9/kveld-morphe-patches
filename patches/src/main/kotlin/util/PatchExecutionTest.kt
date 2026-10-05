@@ -423,6 +423,17 @@ fun main(args: Array<String>) {
             if (!patchNameFilter.isNullOrEmpty()) " matching '$patchNameFilter'" else ""
     }
 
+    if (System.getProperty("allOptions").toBoolean()) {
+        var forced = 0
+        targetPatches.forEach { patch ->
+            patch.options.values.filter { it.default is Boolean }.forEach { option ->
+                patch.options[option.key] = true
+                forced++
+            }
+        }
+        println("[INFO] allOptions: forced $forced boolean patch option(s) to true.")
+    }
+
     println("Loaded ${targetPatches.size} patch(es) for ${targetApp.appName} from ${patchFiles.first().name}:")
     targetPatches.sortedBy { it.name }.forEach { println("  • ${it.name}") }
 
@@ -549,6 +560,11 @@ fun main(args: Array<String>) {
     val originalOut = System.out
     val originalErr = System.err
     val fingerprintErrors = java.util.concurrent.CopyOnWriteArrayList<String>()
+    // The inline smali tree walker only reports semantic errors (e.g. "[6,8] Invalid register: v22")
+    // to stderr and silently drops the offending instruction, so they must be caught here.
+    val smaliErrorPattern = Regex("""^\[\d+,\d+] .+""")
+    val pendingSmaliErrors = java.util.concurrent.CopyOnWriteArrayList<String>()
+    val smaliCompileErrors = mutableListOf<String>()
 
     class InterceptingOutputStream(val delegate: OutputStream) : OutputStream() {
         private val buffer = ByteArrayOutputStream()
@@ -577,6 +593,10 @@ fun main(args: Array<String>) {
         }
 
         private fun checkLine(line: String) {
+            if (smaliErrorPattern.matches(line.trim())) {
+                pendingSmaliErrors.add(line.trim())
+                return
+            }
             val lower = line.lowercase()
             if (line.startsWith("Detected Fingerprint Failures:") || line.startsWith("[ERROR]") || line.startsWith("FINAL PATCHING RESULT")) return
             if (lower.contains("failed to match the fingerprint") || (lower.contains("fingerprint mismatch") && !line.startsWith("Detected Fingerprint Failures:"))) {
@@ -607,6 +627,10 @@ fun main(args: Array<String>) {
             patcher().collect { result ->
                 totalPatches++
                 val patchName = result.patch.name ?: "Unknown"
+                if (pendingSmaliErrors.isNotEmpty()) {
+                    pendingSmaliErrors.forEach { smaliCompileErrors.add("$patchName: $it") }
+                    pendingSmaliErrors.clear()
+                }
                 if (result.exception == null) {
                     successfulPatches++
                     println("[PASS] $patchName")
@@ -629,8 +653,9 @@ fun main(args: Array<String>) {
         println("Successful:    $successfulPatches")
         println("Failed:        $failedPatches")
         println("Detected Fingerprint Failures: ${fingerprintErrors.size}")
+        println("Detected Smali Compile Errors: ${smaliCompileErrors.size}")
 
-        if (failedPatches == 0 && fingerprintErrors.isEmpty()) {
+        if (failedPatches == 0 && fingerprintErrors.isEmpty() && smaliCompileErrors.isEmpty()) {
             println("\n[BUILD] Compiling modified bytecode & assets via patcher.get()...")
             File(tempDir, "patched/dex").mkdirs()
             val patcherResult = patcher.get()
@@ -845,6 +870,12 @@ fun main(args: Array<String>) {
         println("\n[ERROR] Unresolved fingerprint mismatches detected during patch execution (${fingerprintErrors.size}):")
         fingerprintErrors.forEach { println("  • $it") }
         error("Patcher execution failed: ${fingerprintErrors.size} fingerprint mismatch(es) detected! A patch update or creation is NEVER complete until 100% of fingerprints resolve cleanly.")
+    }
+
+    if (smaliCompileErrors.isNotEmpty()) {
+        println("\n[ERROR] Inline smali compile errors detected; the offending instructions were dropped (${smaliCompileErrors.size}):")
+        smaliCompileErrors.forEach { println("  • $it") }
+        error("Patcher execution failed: ${smaliCompileErrors.size} inline smali compile error(s) detected! Non-range invokes cannot address registers above v15; use the /range form or move values into low registers.")
     }
 
     if (failedPatches > 0) {

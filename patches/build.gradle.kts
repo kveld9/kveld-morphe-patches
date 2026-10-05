@@ -66,11 +66,15 @@ tasks {
         if (project.hasProperty("maxVersionCode")) {
             systemProperty("maxVersionCode", project.property("maxVersionCode").toString())
         }
+        if (project.hasProperty("allOptions")) {
+            systemProperty("allOptions", project.property("allOptions").toString())
+        }
         System.getProperty("targetApp")?.let { systemProperty("targetApp", it) }
         System.getProperty("targetApk")?.let { systemProperty("targetApk", it) }
         System.getProperty("outputApk")?.let { systemProperty("outputApk", it) }
         System.getProperty("patchName")?.let { systemProperty("patchName", it) }
         System.getProperty("maxVersionCode")?.let { systemProperty("maxVersionCode", it) }
+        System.getProperty("allOptions")?.let { systemProperty("allOptions", it) }
     }
 
     jar {
