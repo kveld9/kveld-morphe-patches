@@ -5,8 +5,9 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.stringOption
 import app.morphe.patches.shared.Constants
-import app.morphe.patches.shared.sharedExtensionPatch
+import app.morphe.patches.shared.addInstructionsAtControlFlowLabel
 import app.morphe.patches.shared.ensureRegisterCount
+import app.morphe.patches.shared.sharedExtensionPatch
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
@@ -91,7 +92,7 @@ val videoQualityGovernorPatch = bytecodePatch(
             ?.toList() ?: emptyList()
 
         returnIndices.asReversed().forEach { (returnIndex, reg) ->
-            method.addInstructions(
+            method.addInstructionsAtControlFlowLabel(
                 returnIndex,
                 """
                     invoke-static {v$reg, p0}, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->capVideoObject(Ljava/lang/Object;Ljava/lang/Object;)V
@@ -116,7 +117,7 @@ val videoQualityGovernorPatch = bytecodePatch(
             ?.toList() ?: emptyList()
 
         videoReturnIndices.asReversed().forEach { (returnIndex, reg) ->
-            videoMethod.addInstructions(
+            videoMethod.addInstructionsAtControlFlowLabel(
                 returnIndex,
                 """
                     invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->filterBitrates(Ljava/util/List;)Ljava/util/List;
@@ -142,7 +143,7 @@ val videoQualityGovernorPatch = bytecodePatch(
             ?.toList() ?: emptyList()
 
         rawReturnIndices.asReversed().forEach { (returnIndex, reg) ->
-            rawMethod.addInstructions(
+            rawMethod.addInstructionsAtControlFlowLabel(
                 returnIndex,
                 """
                     invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->filterBitrates(Ljava/util/List;)Ljava/util/List;
@@ -168,7 +169,7 @@ val videoQualityGovernorPatch = bytecodePatch(
             ?.toList() ?: emptyList()
 
         simReturnIndices.asReversed().forEach { (returnIndex, reg) ->
-            simMethod.addInstructions(
+            simMethod.addInstructionsAtControlFlowLabel(
                 returnIndex,
                 """
                     invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->filterBitrates(Ljava/util/List;)Ljava/util/List;
@@ -194,7 +195,7 @@ val videoQualityGovernorPatch = bytecodePatch(
             ?.toList() ?: emptyList()
 
         downloadNoWrmkIndices.asReversed().forEach { (returnIndex, reg) ->
-            downloadNoWrmkMethod.addInstructions(
+            downloadNoWrmkMethod.addInstructionsAtControlFlowLabel(
                 returnIndex,
                 """
                     invoke-static {v$reg, p0}, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->enforceDownloadCap(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
@@ -221,7 +222,7 @@ val videoQualityGovernorPatch = bytecodePatch(
             ?.toList() ?: emptyList()
 
         downloadAddrIndices.asReversed().forEach { (returnIndex, reg) ->
-            downloadAddrMethod.addInstructions(
+            downloadAddrMethod.addInstructionsAtControlFlowLabel(
                 returnIndex,
                 """
                     invoke-static {v$reg, p0}, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->enforceDownloadCap(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
