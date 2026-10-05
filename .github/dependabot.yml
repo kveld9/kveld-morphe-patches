@@ -3,14 +3,14 @@ updates:
   - package-ecosystem: github-actions
     labels: []
     directory: /
-    target-branch: dev
+    target-branch: main
     schedule:
       interval: monthly
 
   - package-ecosystem: npm
     labels: []
     directory: /
-    target-branch: dev
+    target-branch: main
     schedule:
       interval: monthly
     ignore:
@@ -21,6 +21,6 @@ updates:
   - package-ecosystem: gradle
     labels: []
     directory: /
-    target-branch: dev
+    target-branch: main
     schedule:
       interval: monthly
