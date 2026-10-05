@@ -8,8 +8,6 @@ import org.w3c.dom.Element
 import java.io.File
 import javax.xml.parsers.DocumentBuilderFactory
 
-private const val ANDROID_XML_NAMESPACE = "http://schemas.android.com/apk/res/android"
-
 private val STRIPPABLE_DENSITY_QUALIFIERS = setOf(
     "ldpi", "mdpi", "tvdpi", "hdpi", "xhdpi", "xxhdpi", "xxxhdpi"
 )
@@ -106,14 +104,6 @@ private fun extractEntryNameFromResourceRef(ref: String): String? {
     val slashIndex = clean.lastIndexOf('/')
     if (slashIndex == -1 || slashIndex >= clean.length - 1) return null
     return extractResourceEntryName(clean.substring(slashIndex + 1))
-}
-
-private fun getAttributeValue(element: Element, attributeName: String): String {
-    val attrNs = element.getAttributeNS(ANDROID_XML_NAMESPACE, attributeName)
-    if (attrNs.isNotBlank()) return attrNs.trim()
-    val attrPrefixed = element.getAttribute("android:$attributeName")
-    if (attrPrefixed.isNotBlank()) return attrPrefixed.trim()
-    return element.getAttribute(attributeName).trim()
 }
 
 private fun extractIconNamesFromElement(

@@ -5,8 +5,6 @@ import app.morphe.patcher.patch.resourcePatch
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 
-private const val ANDROID_XML_NAMESPACE = "http://schemas.android.com/apk/res/android"
-
 private val BOOT_AND_WAKEUP_ACTIONS = setOf(
     "android.intent.action.BOOT_COMPLETED",
     "android.intent.action.LOCKED_BOOT_COMPLETED",
@@ -38,14 +36,6 @@ private val BACKGROUND_SYNC_RECEIVERS = setOf(
     "androidx.profileinstaller.ProfileInstallReceiver",
     "com.google.android.datatransport.runtime.scheduling.jobscheduling.AlarmManagerSchedulerBroadcastReceiver",
 )
-
-private fun getAttributeValue(element: Element, attributeName: String): String {
-    val attr = element.getAttribute("android:$attributeName")
-    if (attr.isNotBlank()) return attr.trim()
-    val attrNs = element.getAttributeNS(ANDROID_XML_NAMESPACE, attributeName)
-    if (attrNs.isNotBlank()) return attrNs.trim()
-    return element.getAttribute(attributeName).trim()
-}
 
 private fun disableElement(element: Element): Boolean {
     val current = getAttributeValue(element, "enabled")

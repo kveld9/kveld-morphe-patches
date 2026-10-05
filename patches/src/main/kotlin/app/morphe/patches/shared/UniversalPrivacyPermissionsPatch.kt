@@ -5,9 +5,6 @@ import app.morphe.patcher.patch.resourcePatch
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 
-private const val ANDROID_XML_NAMESPACE = "http://schemas.android.com/apk/res/android"
-private val PERMISSION_TAGS = listOf("uses-permission", "uses-permission-sdk-23")
-
 private val NOTIFICATION_PERMISSIONS = setOf(
     "android.permission.POST_NOTIFICATIONS",
 )

@@ -16,7 +16,6 @@ import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import org.w3c.dom.Element
 
-private const val ANDROID_XML_NAMESPACE = "http://schemas.android.com/apk/res/android"
 private const val MASK_CLEAR_FLAG_SECURE = "-0x2001"
 
 private sealed class PendingMutation(val instructionIndex: Int) {

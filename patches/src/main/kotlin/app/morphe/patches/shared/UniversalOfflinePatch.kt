@@ -5,7 +5,6 @@ import app.morphe.patcher.patch.resourcePatch
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 
-private const val ANDROID_XML_NAMESPACE = "http://schemas.android.com/apk/res/android"
 private const val PERMISSION_INTERNET = "android.permission.INTERNET"
 
 private val NETWORK_STATE_PERMISSIONS = setOf(
@@ -29,8 +28,6 @@ private val GOOGLE_SERVICES_PERMISSIONS = setOf(
     "com.google.android.providers.gsf.permission.READ_GSERVICES",
     "android.permission.GET_ACCOUNTS",
 )
-
-private val PERMISSION_TAGS = listOf("uses-permission", "uses-permission-sdk-23")
 
 private fun buildBlockedPermissions(
     stripNetworkState: Boolean,

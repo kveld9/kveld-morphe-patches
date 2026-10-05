@@ -3,19 +3,10 @@ package app.morphe.patches.gboard
 import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.PERMISSION_TAGS
+import app.morphe.patches.shared.getAttributeValue
 import org.w3c.dom.Document
 import org.w3c.dom.Element
-
-private const val ANDROID_XML_NAMESPACE = "http://schemas.android.com/apk/res/android"
-private val PERMISSION_TAGS = listOf("uses-permission", "uses-permission-sdk-23")
-
-private fun getAttributeValue(element: Element, attributeName: String): String {
-    val attr = element.getAttribute("android:$attributeName")
-    if (attr.isNotBlank()) return attr.trim()
-    val attrNs = element.getAttributeNS(ANDROID_XML_NAMESPACE, attributeName)
-    if (attrNs.isNotBlank()) return attrNs.trim()
-    return element.getAttribute(attributeName).trim()
-}
 
 private fun removeManifestPermissions(doc: Document, blocked: Set<String>): List<String> {
     val removed = mutableListOf<String>()

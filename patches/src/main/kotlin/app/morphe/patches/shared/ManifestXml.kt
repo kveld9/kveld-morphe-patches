@@ -8,6 +8,17 @@ import org.w3c.dom.Node
  * resource patches without boilerplate NodeList iteration.
  */
 
+internal const val ANDROID_XML_NAMESPACE = "http://schemas.android.com/apk/res/android"
+internal val PERMISSION_TAGS = listOf("uses-permission", "uses-permission-sdk-23")
+
+internal fun getAttributeValue(element: Element, attributeName: String): String {
+    val attr = element.getAttribute("android:$attributeName")
+    if (attr.isNotBlank()) return attr.trim()
+    val attrNs = element.getAttributeNS(ANDROID_XML_NAMESPACE, attributeName)
+    if (attrNs.isNotBlank()) return attrNs.trim()
+    return element.getAttribute(attributeName).trim()
+}
+
 internal fun Element.childrenNamed(name: String): List<Element> {
     val nodes = childNodes
     return buildList {
@@ -28,8 +39,6 @@ internal fun Element.childrenNamed(vararg names: String): List<Element> {
         }
     }
 }
-
-private const val ANDROID_XML_NAMESPACE = "http://schemas.android.com/apk/res/android"
 
 internal fun Element.removeChildren(nodes: List<Node>) {
     nodes.forEach(::removeChild)

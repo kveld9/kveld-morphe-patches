@@ -5,6 +5,7 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.resourcePatch
+import app.morphe.patches.shared.ANDROID_XML_NAMESPACE
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.sharedExtensionPatch
 import app.morphe.patches.shared.clearTryBlocks
@@ -12,7 +13,6 @@ import java.io.File
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 
-private const val ANDROID_XML_NAMESPACE = "http://schemas.android.com/apk/res/android"
 private const val DEVELOPER_SETTINGS_FRAGMENT = "com.google.android.apps.inputmethod.latin.preference.DeveloperSettingsFragment"
 
 private val gboardSeekBarEnhancementsPatch = bytecodePatch(

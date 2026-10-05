@@ -1,10 +1,9 @@
 package app.morphe.patches.gboard
 
 import app.morphe.patcher.patch.resourcePatch
+import app.morphe.patches.shared.ANDROID_XML_NAMESPACE
 import app.morphe.patches.shared.Constants
 import org.w3c.dom.Element
-
-private const val ANDROID_XML_NAMESPACE = "http://schemas.android.com/apk/res/android"
 
 private val BACKUP_ATTRIBUTES = listOf(
     "backupAgent",
