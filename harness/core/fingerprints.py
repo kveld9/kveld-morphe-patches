@@ -7,9 +7,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Callable, List, Optional, Set, Tuple
+from typing import Callable, List, Optional, Tuple
 
-from harness.core.dex import DexIndex, IndexedClass, IndexedMethod
+from harness.core.dex import DexIndex, IndexedMethod
 
 
 class FingerprintStatus(str, Enum):
@@ -70,8 +70,7 @@ class FingerprintResolver:
             return cls.methods, None
 
         if query.strings:
-            first_str = query.strings[0]
-            return [m for m in self.index.methods if first_str in m.referenced_strings], None
+            return self.index.methods_referencing(query.strings[0]), None
         return self.index.methods, None
 
     @staticmethod
@@ -176,7 +175,7 @@ class FingerprintResolver:
         candidates = []
         # If strings are given, find all methods containing those strings regardless of method name/signature
         if query.strings:
-            for m in self.index.methods:
+            for m in self.index.methods_referencing(query.strings[0]):
                 if all(s in m.referenced_strings for s in query.strings):
                     candidates.append(m)
         elif query.defining_class:

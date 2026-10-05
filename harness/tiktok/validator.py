@@ -45,11 +45,11 @@ class TikTokValidator:
                             if req_str == m.name or req_str in m.referenced_strings
                         ]
                     else:
-                        # Unscoped: check globally across all methods
-                        matched_methods = [
-                            m for m in self.dex_index.methods
-                            if req_str in m.name or req_str in m.referenced_strings
-                        ]
+                        # Unscoped: method names are cheap to scan; strings go through the index
+                        matched_methods = {
+                            id(m): m for m in self.dex_index.methods if req_str in m.name
+                        }
+                        matched_methods.update((id(m), m) for m in self.dex_index.methods_referencing(req_str))
 
                     if matched_methods:
                         details.append(f"Target `{req_str}` found ({len(matched_methods)} occurrence(s))")

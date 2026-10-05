@@ -43,10 +43,10 @@ class XiaomiEarbudsValidator:
                         if req_str == m.name or req_str in m.referenced_strings
                     ]
                 else:
-                    matched_methods = [
-                        m for m in self.dex_index.methods
-                        if req_str == m.name or req_str in m.referenced_strings
-                    ]
+                    matched_methods = {
+                        id(m): m for m in self.dex_index.methods if req_str == m.name
+                    }
+                    matched_methods.update((id(m), m) for m in self.dex_index.methods_referencing(req_str))
 
                 if matched_methods:
                     evidence.append(f"Target `{req_str}` found ({len(matched_methods)} occurrence(s))")

@@ -5,9 +5,11 @@ Provides unified indexing for classes, methods, fields, strings, opcodes, and ca
 
 from __future__ import annotations
 
+import bisect
 import logging
+import struct
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 try:
     from loguru import logger as loguru_logger
@@ -24,10 +26,8 @@ from androguard.core.dex import DEX, EncodedMethod, ClassDefItem
 class DexInstructionWrapper:
     offset: int
     opcode_name: str
-    raw_insn: any
+    raw_insn: Any
     string_value: Optional[str] = None
-    method_ref: Optional[Tuple[str, str, List[str], str]] = None
-    field_ref: Optional[Tuple[str, str, str]] = None
 
 
 @dataclass
@@ -56,7 +56,6 @@ class IndexedMethod:
             return self._instructions
         self._instructions = []
         self._referenced_strings = set()
-        self._called_methods = set()
 
         code = self.encoded_method.get_code()
         if not code:
@@ -64,19 +63,14 @@ class IndexedMethod:
 
         for ins in code.get_bc().get_instructions():
             str_val = self._extract_string_ref(ins)
-            call_ref = self._extract_method_call(ins)
             if str_val is not None:
                 self._referenced_strings.add(str_val)
-            if call_ref is not None:
-                self._called_methods.add(call_ref)
 
             self._instructions.append(DexInstructionWrapper(
                 offset=ins.get_op_value(),
                 opcode_name=ins.get_name(),
                 raw_insn=ins,
                 string_value=str_val,
-                method_ref=None,
-                field_ref=None,
             ))
         return self._instructions
 
@@ -112,9 +106,12 @@ class IndexedMethod:
 
     @property
     def called_methods(self) -> Set[Tuple[str, str, str]]:
+        # Rendering every invoke to text is expensive, so call targets are only
+        # extracted for the few methods a query actually inspects.
         if self._called_methods is None:
-            self.get_instructions()
-        return self._called_methods or set()
+            calls = (self._extract_method_call(i.raw_insn) for i in self.get_instructions())
+            self._called_methods = {c for c in calls if c is not None}
+        return self._called_methods
 
 
 @dataclass
@@ -143,6 +140,62 @@ class IndexedClass:
         return all_methods
 
 
+class _IndexedDex:
+    """Raw DEX buffer plus the lookups needed to resolve const-string references by id."""
+
+    def __init__(self, dex: DEX, raw: bytes):
+        self.dex = dex
+        self.raw = raw
+        self._code_items: Dict[int, Tuple[int, List[IndexedMethod]]] = {}  # insns start -> (end, methods)
+        self._starts: Optional[List[int]] = None
+        self._string_ids: Optional[Dict[str, int]] = None
+
+    def add_code_range(self, code_off: int, method: IndexedMethod):
+        if not code_off:
+            return
+        # code_item: insns_size (uint32, in 16-bit units) at +12, insns at +16.
+        insns_units = struct.unpack_from("<I", self.raw, code_off + 12)[0]
+        start = code_off + 16
+        # Identical code items may be shared by several methods.
+        self._code_items.setdefault(start, (start + insns_units * 2, []))[1].append(method)
+        self._starts = None
+
+    def _string_id(self, value: str) -> Optional[int]:
+        if self._string_ids is None:
+            count = struct.unpack_from("<I", self.raw, 0x38)[0]
+            self._string_ids = {self.dex.CM.get_string(i): i for i in range(count)}
+        return self._string_ids.get(value)
+
+    def candidates_for_string(self, value: str) -> List[IndexedMethod]:
+        idx = self._string_id(value)
+        if idx is None:
+            return []
+        if self._starts is None:
+            self._starts = sorted(self._code_items)
+        # const-string vAA, string@BBBB (0x1a) and const-string/jumbo vAA, string@BBBBBBBB (0x1b):
+        # find the literal id (C-speed bytes.find, every occurrence, overlaps included) and
+        # check the opcode two bytes before it.
+        encodings = [(0x1B, struct.pack("<I", idx))]
+        if idx <= 0xFFFF:
+            encodings.append((0x1A, struct.pack("<H", idx)))
+        raw = self.raw
+        found: Dict[int, IndexedMethod] = {}
+        for opcode, needle in encodings:
+            pos = raw.find(needle, 2)
+            while pos != -1:
+                off = pos - 2
+                if raw[off] == opcode:
+                    slot = bisect.bisect_right(self._starts, off) - 1
+                    if slot >= 0:
+                        start = self._starts[slot]
+                        end, methods = self._code_items[start]
+                        if off < end and (off - start) % 2 == 0:
+                            for method in methods:
+                                found[id(method)] = method
+                pos = raw.find(needle, pos + 1)
+        return list(found.values())
+
+
 class DexIndex:
     """High performance indexing container over all DEX files in an APK."""
 
@@ -150,13 +203,14 @@ class DexIndex:
         self.classes_by_name: Dict[str, IndexedClass] = {}
         self.classes: List[IndexedClass] = []
         self.methods: List[IndexedMethod] = []
-        self.string_to_methods: Dict[str, List[IndexedMethod]] = {}
-        self.dex_objects: List[Tuple[str, DEX]] = []
+        self._dexes: List[_IndexedDex] = []
+        self._string_refs: Dict[str, List[IndexedMethod]] = {}
 
     def index_dex_files(self, dex_entries: List[Tuple[str, bytes]]):
         for dex_name, raw_bytes in dex_entries:
             d = DEX(raw_bytes)
-            self.dex_objects.append((dex_name, d))
+            indexed_dex = _IndexedDex(d, raw_bytes)
+            self._dexes.append(indexed_dex)
 
             for c in d.get_classes():
                 cls_name = c.get_name()
@@ -193,12 +247,30 @@ class DexIndex:
                     )
                     idx_cls.methods.append(idx_m)
                     self.methods.append(idx_m)
+                    indexed_dex.add_code_range(m.get_code_off(), idx_m)
 
                 self.classes.append(idx_cls)
                 self.classes_by_name[cls_name] = idx_cls
 
     def find_class(self, name: str) -> Optional[IndexedClass]:
         return self.classes_by_name.get(name)
+
+    def methods_referencing(self, value: str) -> List[IndexedMethod]:
+        """Methods holding a const-string of `value`, without decoding every method.
+
+        Raw const-string encodings of the string id are located in each DEX buffer and
+        mapped to their code items; only those candidates are decoded to confirm the hit.
+        """
+        cached = self._string_refs.get(value)
+        if cached is not None:
+            return cached
+        result: List[IndexedMethod] = []
+        for indexed_dex in self._dexes:
+            for method in indexed_dex.candidates_for_string(value):
+                if value in method.referenced_strings:
+                    result.append(method)
+        self._string_refs[value] = result
+        return result
 
     @classmethod
     def _parse_descriptor(cls, desc: str) -> Tuple[List[str], str]:
