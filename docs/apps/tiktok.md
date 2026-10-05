@@ -26,9 +26,9 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | :--- | :--- | :--- | :--- |
 | **Usability** | **Media Usability & Watermark-Free Downloader** | `bytecodePatch` | Unblocks download button in Share panel, extracts clean original streams without watermark stamps. |
 | **Usability** | **Disable Post-Download Share Dialog** | `bytecodePatch` | Suppresses the automatic 'Share to' and friend suggestions bottom sheet that pops up after finishing a download. |
-| **Usability** | **Show Seekbar** | `bytecodePatch` | Restores video seekbar and scrubbing controls where hidden or disabled. |
+| **Usability** | **[Show Seekbar](#8-show-seekbar)** | `bytecodePatch` | Restores video seekbar and scrubbing controls where hidden or disabled. |
 | **Usability** | **Always Show Publish Date** | `bytecodePatch` | Forces video publish and upload timestamps to remain permanently visible on feed cards. |
-| **Usability** | **[Comment Customizer](#2-comment-customizer)** | `bytecodePatch` | Customizes comment section: native sort controls, clean text copying, disabling suggested emojis bar, hiding comment quick actions, voice comments, and automatic translation. |
+| **Usability** | **[Comment Customizer](#2-comment-customizer-commentcustomizerpatch)** | `bytecodePatch` | Customizes comment section: native sort controls, clean text copying, disabling suggested emojis bar, hiding comment quick actions, voice comments, and automatic translation. |
 | **Usability** | **Disable Double Tap to Like** | `bytecodePatch` | Disables the double tap gesture to like videos in the feed, preventing accidental likes while scrolling or pausing. Videos can still be liked using the like button. |
 | **Usability** | **Playback Speed Persistence** | `bytecodePatch` | Persists user-selected video speed across feed scrolling and restarts. |
 | **Usability** | **[Video Quality Governor](#2-video-quality-governor)** | `bytecodePatch` | Decoupled resolution ceilings for playback (e.g. 480p) and downloads (e.g. 1080p). |
@@ -37,7 +37,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Usability** | **[Custom Share Sheet](#5-custom-share-sheet)** | `bytecodePatch` | Customizes and cleans the share menu via individual boolean toggles for third-party apps, essential actions, and direct message friend rows. |
 | **Usability** | **[Clean Share Panel](#6-clean-share-panel)** | `bytecodePatch` | Removes suggested quick emojis and the 'Send to new group' button from the direct share dialog. |
 | **Usability** | **Navigation & Header Declutter** | `bytecodePatch` | Removes clutter from the feed navigation and top header bar, including Nearby and Community tabs, top-left LIVE button, central '+' create content button, in-video bottom search bar, friend profile pictures on the Friends tab, and unread message badges on the Inbox tab. |
-| **Usability** | **[Feed Interface Declutter](#8-feed-interface-declutter)** | `bytecodePatch` | Customizes and cleans feed video overlay elements via individual toggles for full screen button, repost pill, video descriptions, profile photo follow badges, story rings, playlist bottom bars, save buttons, and music discs. |
+| **Usability** | **[Feed Interface Declutter](#7-feed-interface-declutter-feedinterfacedeclutterpatch)** | `bytecodePatch` | Customizes and cleans feed video overlay elements via individual toggles for full screen button, repost pill, video descriptions, profile photo follow badges, story rings, playlist bottom bars, save buttons, and music discs. |
 | **Usability** | **Disable Profile Photo LIVE Status** | `bytecodePatch` | Removes pulsing LIVE ring/badge from creator avatars in feed and forces clicks directly to user profile. |
 | **Usability** | **Force Auto-Scroll** | `bytecodePatch` | Forces the activation of the native video auto-scroll experiment flag for accounts and regions that lack it due to A/B testing. |
 | **Usability** | **Hide Popular Lives In Search** | `bytecodePatch` | Removes the Popular LIVEs recommendation card and live stream broadcasts from the search discovery page. |
@@ -47,6 +47,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Usability** | **Hide Seen Videos** | `bytecodePatch` | Filters previously watched videos from incoming For You feed batches based on playback progress. |
 | **Usability** | **Resume Video After Scroll** | `bytecodePatch` | Resumes video playback from previous playback position when returning to a video in the feed. |
 | **Usability** | **Stop Video Looping** | `bytecodePatch` | Prevents videos from looping continuously on playback completion. |
+| **Usability** | **[Hide Inbox Promos & Alerts](#9-hide-inbox-promos--alerts)** | `bytecodePatch` | Hides promotional banners, streak mascot cards, contact sync suggestions, friend recommendations, and migration guide tooltips in the inbox and direct messages. |
 | **Usability** | **Hide Inbox Story & Status Tray** | `bytecodePatch` | Removes the horizontal story, notes, and status tray (Skylight) displayed at the top of direct messages and the inbox. |
 | **Usability** | **[Disable Feed Long-Press Actions](#7-disable-feed-long-press-actions)** | `bytecodePatch` | Disables long-press action gestures on feed buttons, including Like to repost, Share to quick DMs, and Comment to quick emojis. |
 | **Usability** | **Enable Profile Banner** | `bytecodePatch` | Unlocks custom profile banner header cover feature and banner editing tools in Edit Profile. |
@@ -71,10 +72,10 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Performance** | **[Display Refresh Rate Governor](#3-display-refresh-rate-governor)** | `bytecodePatch` | Locks window to peak hardware refresh rate (120Hz/90Hz) and neutralizes playback downclocking. |
 | **Performance** | **Instant Launch & Splash Blocker** | `bytecodePatch` | Eliminates cold startup delays, real-time splash advertisements, and background TopView ad preloading. |
 | **Performance** | **Resource & Battery Governor** | `bytecodePatch` | Suppresses 3D shake ad sensors and video buffer preloading. |
-| **Performance** | **P2P Video Relay Blocker** | `rawResourcePatch` | Strips `libavmdlp2pv2.so` and `libp2plivevdp.so` to stop background P2P CDN seeding. |
+| **Performance** | **P2P Video Relay & Mesh CDN Blocker** | `rawResourcePatch` | Strips `libavmdlp2pv2.so` and `libp2plivevdp.so` to stop background P2P CDN seeding. |
 | **Performance** | **Disable Push Notifications** | `bytecodePatch` | Neutralizes background push socket polling and persistent wake locks. |
 | **Performance** | **Live Stream 3D Gift Optimizer** | `bytecodePatch` | Disables 3D gift particle effect engine to eliminate live frame drops. |
-| **Performance** | **Live Stream Suite Optimizer** | `rawResourcePatch` | Strips `liblink_mic_sdk.so`, Lyrax RTC broadcaster libs, and battle minigames (~50 MB saved). |
+| **Performance** | **Live Stream SDK & Minigame De-bloat** | `rawResourcePatch` | Strips `liblink_mic_sdk.so`, Lyrax RTC broadcaster libs, and battle minigames (~50 MB saved). |
 | **Slimmer** | **Core Asset De-bloat** | `rawResourcePatch` | Strips Microblink OCR models, C2PA AI libs, ByteDance TTWebView engine, non-Latin fonts, Python VM (~77 MB saved). |
 | **Slimmer** | **Studio & Creation De-bloat** | `rawResourcePatch` | Strips AR camera engine (`libeffect_plugin.so`) and video editor SDK (`libttvesdk_plugin.so`) (~101 MB saved). |
 | **Slimmer** | **Language Pack Purger** | `rawResourcePatch` | Strips unselected language string bundles from `assets/strings#lang_*`. |
@@ -252,6 +253,24 @@ The **`Disable Feed Long-Press Actions`** patch neutralizes long-press gesture d
 | **Disable Long-Press Share (Quick DMs)** | `disableShareQuickDms` | Boolean | `true` | Prevents holding the Share button on feed videos from opening the quick share recent contacts tray. |
 | **Disable Long-Press Comment (Quick Emojis)** | `disableCommentReactions` | Boolean | `true` | Prevents holding the Comment button on feed videos from opening the quick reaction emojis picker. |
 
+### 8. Show Seekbar
+
+The **`Show Seekbar`** patch restores TikTok's native video seekbar and scrubbing controls on feed videos where they are normally hidden or disabled.
+
+| Toggle Option | Key | Type | Default | Description |
+| :--- | :--- | :---: | :---: | :--- |
+| **Show Dragging Thumbnail Preview** | `showThumbnail` | Boolean | `true` | Displays real-time video frame thumbnail previews while dragging the seekbar thumb. |
+
+### 9. Hide Inbox Promos & Alerts
+
+The **`Hide Inbox Promos & Alerts`** patch removes promotional and nudge elements from the inbox and direct messages. It is governed by three independent boolean toggles:
+
+| Toggle Option | Key | Type | Default | Description |
+| :--- | :--- | :---: | :---: | :--- |
+| **Hide Top Promotional Banners** | `hideTopPromosAndBanners` | Boolean | `true` | Hides header banners including the streak pet / mascot, event announcements, top notice banners, and phone link prompts. |
+| **Hide Contact & Friend Recommendations** | `hideContactRecommendations` | Boolean | `true` | Hides user recommendation cards (Chat with contacts / Find and chat with them), suggested accounts, and mutual friends modules in the chatlist. |
+| **Hide Navigation Notices & Tooltips** | `hideNavigationNoticesAndTooltips` | Boolean | `true` | Hides UI migration tooltips (e.g. New followers has moved), bulletin board guide banners, and Shop migration notices. |
+
 ---
 
 ## 🔒 Deep Technical Patch Breakdown
@@ -327,7 +346,7 @@ The **`Disable Feed Long-Press Actions`** patch neutralizes long-press gesture d
   - **`hideFriendsAvatarPreview` (default: true)**: Prevents friend profile pictures from replacing the Friends icon on the bottom navigation bar. Suppresses avatar fetching and ability attachment via `ISocial2TabRedDotService` (`enableTabAvatar` -> `false`, `loadAvatarAbility` -> `return-void`, `dealWithFriendsAvatar` -> `return-void`), neutralizes `BaseBottomTabAvatarAbility` and `FriendBottomTabAvatarAbility` (`isShowing` -> `false`, `cr2` -> `false`), stubs bottom tab manager view attachment and binding (`LJI`, `LJII`, `LJJJI` -> `return-void`, `LJJIIZ` -> `false`), and neutralizes the new-user exemption/reminder setting (`tt_friends_tab_avatar_exemption_new_user_days` -> `false`), ensuring the standard Friends icon remains consistently visible.
   - **`hideInboxBadge` (default: true)**: Removes the unread message counter badge and notification red dot from the bottom Messages (Inbox) tab. Stubs `NoticeCountTabBadgePresentServiceImpl` (`onResume`, `onReset` -> `return-void`, `isShowing` -> `false`), neutralizes evaluation and EventBus dispatchers on the presentation manager (`LJJIJIIJI` -> `return-void`, `onNoticeCountChangedEvent` -> `return-void`), and injects guards into the bottom Tab Manager (`LJIIL` -> forces count to 0, `LJJL` -> returns early, `LJIJJLI` -> returns 0) for the `NOTIFICATION` tab.
 
-### 8. Feed Interface Declutter (`feedInterfaceDeclutterPatch`)
+### 7. Feed Interface Declutter (`feedInterfaceDeclutterPatch`)
 - Consolidates clutter removal across feed video cell overlay elements via compile/patch-time toggles:
   - **`hideRepostBadge` (default: true)**: Hides the repost and shared-by pill badge ('Shared by' / 'Reposted') above creator details on feed videos. Hooks `UpvoteVideoTrigger.yr(VideoItemParams)Z` -> returns `false`, preventing `UpvoteVideoAssemNew` from being attached or activated. Stubs `UpvoteVideoAssemNew` methods (`tr`/`hb` -> `false`, `LLLLIILL`/`LLILZ`/`z4` -> `return-void`, `onViewCreated` -> `View.GONE`).
   - **`hideVideoDescriptions` (default: true)**: Hides video descriptions, captions, hashtags, "more" expansion buttons, and the "See translation" interactive button across feed videos while keeping creator and author info intact. Enforces `View.GONE` (`0x8`) in `VideoDescAssem.onViewCreated`, stubs `z4`/`js` to prevent text binding, neutralizes `FriendsV3DescAssem`, and neutralizes `TranslationControlsAssem` and `TranslationStatusAssem` to eliminate leftover translation action buttons.
@@ -338,7 +357,7 @@ The **`Disable Feed Long-Press Actions`** patch neutralizes long-press gesture d
   - **`hideMusicCover` (default: false)**: Hides the rotating vinyl music album cover disc at the bottom right corner of feed videos. Enforces `View.GONE` (`0x8`) in `VideoMusicCoverAssem.onViewCreated`, stubs `z4`, and neutralizes rotation animators (`Tr`, `Wr`).
   - **`hideFullscreenButton` (default: false)**: Hides the floating 'Full screen' button on horizontal/landscape feed videos. Hooks `LandscapeEntranceAssem.Kr()Z` -> `false`, `Aa()Z` -> `false`, `bf()Z` -> `false`, enforces `View.GONE` (`0x8`) in `LandscapeEntranceAssem.onViewCreated`, stubs `z4` to neutralize binding, and stubs `LLLLIILL`/`LLILZ` with `return-void` to prevent visibility synchronization and auto-rotation triggers.
 
-### 9. Disable Profile Photo LIVE Status (`disableAvatarLiveStatusPatch`)
+### 8. Disable Profile Photo LIVE Status (`disableAvatarLiveStatusPatch`)
 - Removes the pulsing LIVE ring animation and LIVE badge from creator avatars in the feed and ensures avatar taps route strictly to the creator's user profile instead of launching the live stream broadcast.
 - Dynamically locates and hooks the author live validator (`LX/09A7;->LIZIZ(Aweme, User)Z`) -> returns `false`.
 - Hooks `FeedAvatarAssemWrap.Yr()Z` -> returns `false`, preventing the attachment and lifecycle execution of `FeedAvatarLiveAssem`.
@@ -346,7 +365,7 @@ The **`Disable Feed Long-Press Actions`** patch neutralizes long-press gesture d
 - Stubs `FeedAvatarLiveAssem.Ar(ZZ)V` and `FeedAvatarLiveAssem.onBind(Object)V` with `return-void` to eliminate live streaming UI bindings and animations.
 - Preserves `FeedAvatarDefaultAssem`'s default avatar click handler (`LX/0BIx`), routing taps directly to `//user/profile`.
 
-### 13. Force Auto-Scroll (`forceAutoScrollPatch`)
+### 9. Force Auto-Scroll (`forceAutoScrollPatch`)
 - Forces the activation of TikTok's native video auto-scroll experiment flag for accounts and regions where it is withheld by server-side A/B testing experiments.
 - **Feed Auto-Scroll A/B Experiment Flag**: Hooks the core experiment evaluator referencing `"fyp_auto_scroll"` -> returns `true`.
 - **FypAutoScrollServiceImpl Capability Bridge**: Forces `FypAutoScrollServiceImpl.LJIILJJIL()` -> returns `true`, granting the feed panel full auto-scroll capabilities.
@@ -354,25 +373,25 @@ The **`Disable Feed Long-Press Actions`** patch neutralizes long-press gesture d
 - **FeedBottomBarFacade Capability Hook**: Forces `FeedBottomBarFacadeImpl.LJIJJLI()` referencing `"panel_auto_scroll"` to return `true`.
 - **Long-Press Menu Item Constructor**: Overrides `createAutoScrollItem` in `LX/0oWb;->LJII`, neutralizing the `"panel_auto_scroll"` guard and the `isLogin()` requirement so that the Auto-scroll toggle option is permanently available and visible in the video long-press / share menu.
 
-### 14. Disable Search History Recording (`disableSearchHistoryRecordingPatch`)
+### 10. Disable Search History Recording (`disableSearchHistoryRecordingPatch`)
 - Prevents search queries, keywords, and search interactions from being written to persistent local history or device storage.
 - **Search History Manager Hook**: Stubs `LX/0D7Z;->LIZ(SearchHistory, String)V` with `return-void` to neutralize search history record persistence.
 - **Manual Search PV Tracking Hook**: Stubs `ManualSearchPvStore.LJIIJ(String, String)V` with `return-void` to prevent manual search pageview and query history accumulation.
 - **Top History Recommendation Suppression**: Hooks `SuggestWordResponse.getTopHistoryWords()` -> returns `null` to neutralize server-pushed search history suggestions.
 
-### 15. Hide Suggested Searches (`hideSuggestedSearchesPatch`)
+### 11. Hide Suggested Searches (`hideSuggestedSearchesPatch`)
 - Removes the suggested search keywords section ('You may like' / 'Search suggestions') from the search discovery screen.
 - **Search Intermediate Raw Payload & Model Filtering**: Intercepts `RecomDataWrapper.<init>(String, SuggestWordResponse)` to filter out `"recom_search"`, `"recom_search_pic"`, `"recom_search_under_bar"`, and `"guess_search"` card items from the raw JSON payload and parsed response model before Lynx rendering.
 - **Cached Guess Search Preload Neutralization**: Hooks `LX/0HMZ;->LIZ()Lorg/json/JSONObject;` and `LX/0HMZ;->LIZIZ()Ljava/lang/String;` to return `null`, eliminating cached suggestion preloading on startup.
 - **Native Guess Search Fallback Override**: Forces `DynamicSingleIntermediateFragmentNew.yU()Z` -> returns `false` to disable native guess search fallback rendering.
 - **Lynx AB Parameters & Evaluator Suppression**: Overrides AB evaluator `LX/0HL2;->LIZ` -> returns `0` and stubs `LX/0HL2;<clinit>()` to disable `show_suggest_search_words`. Intercepts `SparkHostApiImpl.LJLJI` to sanitize Lynx `abParams` (`show_suggest_search_words = 0`, `sbp_not_login_disable_guess_search = 1`, `disable_suggest_guide = 1`), and sanitizes schema URLs in `LX/0HLB;->LIZ` to strip suggestion queries before template evaluation.
 
-### 16. Hide Popular Lives In Search (`hideSearchPopularLivesPatch`)
+### 12. Hide Popular Lives In Search (`hideSearchPopularLivesPatch`)
 - Removes the Popular LIVEs recommendation card and live stream broadcasts from the search discovery screen.
 - **Search Intermediate Raw Payload & Model Filtering**: Intercepts `RecomDataWrapper.<init>(String, SuggestWordResponse)` to filter out `"trending_rank_live"` and `"live_popular"` card items from the raw JSON payload and parsed response model before Lynx rendering.
 - **Lynx AB Parameters & Schema Sanitization**: Intercepts `SparkHostApiImpl.LJLJI` to sanitize Lynx `abParams` (`has_transfer_tab_live = 0`, clears `transfer_tab_live_url`, `intermediate_show_trending_billboard = 0`), and strips `intermediate_show_trending_billboard` from Lynx schema URLs in `LX/0HLB;->LIZ`.
 
-### 18. Hide AI-Generated Content (`hideAiTaggedContentPatch`)
+### 13. Hide AI-Generated Content (`hideAiTaggedContentPatch`)
 - Filters and skips videos tagged with native AI-generated metadata, C2PA content credentials, or creator AI disclosure tags across the For You, Following, and Friends feeds.
 - **Feed API Response Interception**: Hooks `FeedApiService.fetchFeedList` to filter incoming items at the network response boundary before model mapping.
 - **Feed Item Model Interception**: Hooks `FeedItemList.getItems()`, `FollowFeedList.getItems()`, `FriendsV3FeedResponse.<init>`, and `FriendsFeedResponse.<init>` to sanitize feed collections in-situ.
@@ -384,44 +403,44 @@ The **`Disable Feed Long-Press Actions`** patch neutralizes long-press gesture d
   - Native AI banners and anchors (`ANCHOR_AIGC`, Lynx AI disclosure templates).
   - Video description and tag regex matching for creator-disclosed AI markers (`#aigenerated`, `#ai`, `#generadoporIA`, etc.).
 
-### 19. Disable Search Video Autoplay (`disableSearchVideoAutoplayPatch`)
+### 14. Disable Search Video Autoplay (`disableSearchVideoAutoplayPatch`)
 - Disables automatic video and media playback in TikTok search results, preserving bandwidth and preventing unwanted audio or distraction while browsing search cards.
 - **Search List Autoplay Calculation Loop Suppression**: Injects `return-void` at index 0 of `SearchListAutoplayHelper.LIZIZ(Z LX/0JHH;)V` (fingerprinted by string `"checkLogic() is not called on main thread"`), halting the recurring scroll and idle candidate evaluation cycle.
 - **Card AutoPlay Ability Inactivation**: Injects `const/4 v0, 0` / `return v0` into `SearchCardVideoPlayerAssem$autoPlayAbility$2$1.l2()Z`, `SearchVideoForLynx$ability$1.l2()Z`, and `SearchCardPhotoPlayerAssem$autoPlayAbility$2$1.l2()Z`, asserting `false` for card autoplay eligibility.
 - **Playback Execution Guard**: Injects `return-void` into `r()V` on all search card `AutoPlayAbility` implementations, preventing any direct invocation from triggering video playback or hiding cover thumbnails. Detail view playback when opening a video remains fully functional via `PlayerController`.
 
-### 21. Resume Video After Scroll (`resumeVideoAfterScrollPatch`)
+### 15. Resume Video After Scroll (`resumeVideoAfterScrollPatch`)
 - Persists and restores playback timestamp when scrolling away and returning to feed videos.
 - **Configuration Gate Activation**: Hooks `FeedPlayProgressContinueConfig` gate (`invoke()`), forcing `enable = true`.
 - **Feed Type Restriction Bypass**: Intercepts the event type check matching `landscape_change_keep_tag`, replacing the `MOVE_RESULT` register with `1` to allow timestamp restoration across standard vertical portrait feeds.
 
-### 22. Stop Video Looping (`stopVideoLoopingPatch`)
+### 16. Stop Video Looping (`stopVideoLoopingPatch`)
 - Prevents videos from repeating in an infinite loop upon playback completion.
 - **Native Player Looping Suppression**: Injects `const/4 p1, 0x0` at instruction offset 0 of `Lcom/ss/ttvideoengine/TTVideoEngine;->setLooping(Z)V`, ensuring `isLooping` remains disabled for the underlying media session.
 
-### 23. Hide Seen Videos (`hideSeenVideosPatch`)
+### 17. Hide Seen Videos (`hideSeenVideosPatch`)
 - Automatically filters previously watched videos from incoming For You feed batches, preventing repeat content during the session while preserving active viewing history.
 - **Playback Tracking**: Hooks `PlayerController.onPlayProgressChange(String, long, long)` (recording videos viewed for >= 5s or >= 70% duration) and `PlayerController.onPlayCompleted(String)`.
 - **Network Ingestion Filtering**: Hooks `FeedApiService.fetchFeedList()` return points, pruning seen video entries directly from deserialized `FeedItemList` payloads before they are delivered to the UI layer, preventing adapter desynchronization and frame drops.
 
-### 25. Disable Post-Download Share Dialog (`disablePostDownloadDialogPatch`)
+### 18. Disable Post-Download Share Dialog (`disablePostDownloadDialogPatch`)
 - Suppresses the automatic 'Share to' and friend suggestions bottom sheet that pops up after finishing a video or media download.
 - **Bottom Sheet Presentation Neutralization**: Stubs the popup display launcher in `DownloadAndShareFragment` (fingerprinted by `definingClass = DownloadAndShareFragment` and string `"after_video_saved_share_to_nscreen"`) with `return-void` at instruction offset 0, preventing the creation and display of the `TuxSheet` bottom sheet dialog while preserving download completion toasts and saved file integrity.
 
-### 26. Hide Inbox Story & Status Tray (`hideInboxStoryTrayPatch`)
+### 19. Hide Inbox Story & Status Tray (`hideInboxStoryTrayPatch`)
 - Removes the horizontal story carousel, status notes, and creation bubbles (Skylight) displayed at the top of the direct messages inbox.
 - **Skylight Widget Injector Suppression**: Hooks `InboxSkylightWidgetV2Injector.enable()Z` -> returns `false`, preventing the Skylight container from registering or injecting into the inbox multi-pod recycler.
 - **Combine Pod Provider Neutralization**: Stubs `InboxSkylightWidgetV2.Sq()Ljava/util/List;` -> returns `emptyList()`, neutralizing story and thought combine pod creation.
 - **Eligibility Gate Neutralization**: Hooks `InboxSkylightWidgetV2.er(List)Z` -> returns `false`, ensuring display eligibility checks evaluate to empty.
 
-### 27. Disable Feed Long-Press Actions (`disableFeedLongPressActionsPatch`)
+### 20. Disable Feed Long-Press Actions (`disableFeedLongPressActionsPatch`)
 - Disables long-press action gestures on feed buttons, eliminating unwanted menu popups while preserving standard single-tap actions.
 - **Configurable Options**:
   - `disableLikeRepost` (default: `true`): Prevents long-pressing the Like (heart) button from opening TikTok's Repost action panel. Hooks `VideoDiggAssem.Sr(View)Z` to consume the long-press gesture (`return true`) without triggering the repost panel or falling through to click. Single tap to like or unlike remains fully functional.
   - `disableShareQuickDms` (default: `true`): Prevents holding the Share button from launching the quick-share recent contacts tray. Overrides the `im_long_press_share_button_to_quick_share` configuration lambda to return `0` (`Integer.valueOf(0)`) and neutralizes the `ShareUnreadVideoQuickDMTrigger` eligibility check -> returns `false`. Single tap to open the full share sheet remains fully functional.
   - `disableCommentReactions` (default: `true`): Prevents long-pressing the Comment button from opening the quick emoji reaction picker. Overrides the `long_press_quick_comment` configuration lambda to return `0` (`Integer.valueOf(0)`), causing `VideoCommentAssem.Kr()` and `Lr()` to attach only the native single-tap `OnClickListener` without long-press touch listeners. Single tap to open comments remains fully functional.
 
-### 28. Enable Profile Banner (`profileBannerPatch`)
+### 21. Enable Profile Banner (`profileBannerPatch`)
 - Unlocks the custom profile banner (background header cover) feature on user profiles and enables the banner selection, cropping, and editing tools in Edit Profile.
 - **ProfileBackgroundExp Gate Activation**: Hooks the main feature evaluation gate in `ProfileBackgroundExp` (`(Z)Z`) -> returns `true`, allowing `MusProfileEditFragment` to attach `ProfileBgEditHelper` (`LX/0axG`) and `ProfileRootBaseComponent` to assemble the `ProfileBackgroundComponent`.
 
