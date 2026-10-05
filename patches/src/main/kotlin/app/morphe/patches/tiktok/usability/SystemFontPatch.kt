@@ -103,6 +103,8 @@ private fun BytecodePatchContext.hookDynamicFontProvider(): Int {
 
 private fun BytecodePatchContext.hookAssetFontLoader(): Int {
     val assetFontFp = Fingerprint(
+        definingClass = "LX/00kn;",
+        name = "s4",
         parameters = listOf("Landroid/content/res/AssetManager;", "Ljava/lang/String;"),
         returnType = "Landroid/graphics/Typeface;",
     )
@@ -130,10 +132,9 @@ private fun BytecodePatchContext.hookWebViewFontLoader(): Int {
     webFontFp.method.addInstructions(
         0,
         """
-            invoke-static {p2}, ${Constants.TIKTOK_EXTENSION_FONT_HOOK}->shouldInterceptWebFont(Landroid/webkit/WebResourceRequest;)Z
-            move-result v0
+            invoke-static {p2}, ${Constants.TIKTOK_EXTENSION_FONT_HOOK}->interceptWebFont(Landroid/webkit/WebResourceRequest;)Landroid/webkit/WebResourceResponse;
+            move-result-object v0
             if-eqz v0, :cond_web_orig
-            const/4 v0, 0x0
             return-object v0
             :cond_web_orig
         """.trimIndent(),

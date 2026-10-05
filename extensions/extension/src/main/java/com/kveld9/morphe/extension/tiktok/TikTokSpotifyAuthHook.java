@@ -95,6 +95,7 @@ public final class TikTokSpotifyAuthHook {
 
         final Dialog dialog = new Dialog(activity, android.R.style.Theme_DeviceDefault_NoActionBar) {
             @Override
+            @SuppressLint("GestureBackNavigation")
             public void onBackPressed() {
                 if (webView.canGoBack()) {
                     webView.goBack();
@@ -124,7 +125,6 @@ public final class TikTokSpotifyAuthHook {
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 if (handleUrl(Uri.parse(url))) {
-                    view.stopLoading();
                     return;
                 }
                 super.onPageStarted(view, url, favicon);
@@ -136,6 +136,7 @@ public final class TikTokSpotifyAuthHook {
                 }
                 if (!delivered[0]) {
                     delivered[0] = true;
+                    webView.stopLoading();
                     deliverRedirect(requestCode, activity, uri);
                     dismissQuietly(dialog);
                 }

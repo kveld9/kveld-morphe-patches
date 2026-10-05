@@ -2,14 +2,16 @@ package com.kveld9.morphe.extension.tiktok;
 
 import android.content.res.AssetManager;
 import android.graphics.Typeface;
-import android.net.Uri;
 import android.os.Build;
 import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
+import java.io.ByteArrayInputStream;
 
 public final class TikTokFontHook {
 
     private TikTokFontHook() {}
 
+    private static final String TAG = "Morphe";
     private static volatile boolean logged = false;
 
     private static void logOnce(int weight, boolean italic) {
@@ -17,7 +19,7 @@ public final class TikTokFontHook {
             return;
         }
         logged = true;
-        android.util.Log.i("TikTokFontHook", "TikTok system font redirection active (weight=" + weight + ", italic=" + italic + ")");
+        android.util.Log.e(TAG, "[System Font] TikTok system font redirection active (weight=" + weight + ", italic=" + italic + ")");
     }
 
     private static Typeface resolveModernTypeface(int weight, boolean italic) {
@@ -108,6 +110,8 @@ public final class TikTokFontHook {
         return getSystemTypefaceForPath(fontPath);
     }
 
+    private static final byte[] EMPTY_BYTES = new byte[0];
+
     /**
      * Intercepts WebView font asset loading requests to fall back to system font in WebViews.
      */
@@ -119,5 +123,19 @@ public final class TikTokFontHook {
         return urlString.contains("tiktoksans")
             || urlString.contains("tiktokvffont")
             || urlString.contains("tiktokdisplayfont");
+    }
+
+    /**
+     * Intercepts WebView font asset loading requests and returns an empty response so CSS falls back to system font.
+     */
+    public static WebResourceResponse interceptWebFont(WebResourceRequest req) {
+        if (!shouldInterceptWebFont(req)) {
+            return null;
+        }
+        try {
+            return new WebResourceResponse("font/otf", "UTF-8", new ByteArrayInputStream(EMPTY_BYTES));
+        } catch (Throwable t) {
+            return null;
+        }
     }
 }
