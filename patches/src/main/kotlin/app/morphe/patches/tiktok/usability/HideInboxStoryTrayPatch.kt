@@ -9,7 +9,7 @@ import app.morphe.patches.shared.replaceWithReturnEmptyList
 val hideInboxStoryTrayPatch = bytecodePatch(
     name = "Hide Inbox Story & Status Tray",
     description = "Hides the horizontal story, notes, and status tray (Skylight) displayed at the top of direct messages and the inbox.",
-    default = true,
+    default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
 
