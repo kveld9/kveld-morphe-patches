@@ -53,6 +53,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Usability** | **[Disable Feed Long-Press Actions](#7-disable-feed-long-press-actions)** | `bytecodePatch` | Disables long-press action gestures on feed buttons, including Like to repost, Share to quick DMs, and Comment to quick emojis. |
 | **Usability** | **Enable Profile Banner** | `bytecodePatch` | Unlocks custom profile banner header cover feature and banner editing tools in Edit Profile. |
 | **Usability** | **System Font** | `bytecodePatch` | Forces TikTok to use the Android system font instead of bundled proprietary TikTokSans fonts. |
+| **Usability** | **[Popups & Prompts Suppressor](#23-popups--prompts-suppressor-popupsandpromptssuppressorpatch)** | `bytecodePatch` | Suppresses intrusive popups, dialogs, and modal prompts, including 'Follow your friends' dialogs, contacts sync overlays, multi-account notification guides, 2SV security checkup modals, PopLayer promotional sheets, live stream teaser bubbles, sticker recommendations, and DM streak expiration warnings. |
 | **Privacy** | **Fix Google Login** | `bytecodePatch` | Restores Google account sign-in via Web OAuth fallback when GMS rejects modified APK signature. |
 | **Privacy** | **Fix Spotify Login** | `bytecodePatch` | Restores 'Add to Spotify' by intercepting the Spotify SDK SSO intent (rejected by the Spotify app for the re-signed APK) and completing Spotify Web OAuth in a WebView hosted over the SDK `LoginActivity`. |
 | **Privacy** | **Bypass Mandatory Login** | `bytecodePatch` | Neutralizes mandatory login walls, dynamic regional forced login gates, and guest browsing restrictions. |
@@ -290,6 +291,18 @@ The **`Direct Message Declutter`** patch cleans direct message conversations and
 | **Hide Try Effect Button** | `hideTryEffectButton` | Boolean | `true` | Removes the 'Try effect' camera button shown on shared videos that use an effect in direct messages. |
 | **Hide Sticker Reply Suggestions** | `hideStickerReplySuggestions` | Boolean | `true` | Removes the automatic 'Tap a sticker to reply' suggestion panel above the input bar. The manual sticker reply button keeps working. |
 
+### 11. Popups & Prompts Suppressor
+
+The **`Popups & Prompts Suppressor`** patch suppresses intrusive dialogs, bottom sheets, full-screen takeover prompts, and inline nudge banners across TikTok. Governed by 5 independent boolean toggle switches, it eliminates recurring account/contact sync nags, personalized sticker popups, annoying PopLayer promotion sheets, floating live stream teaser bubbles, and DM streak expiration warnings.
+
+| Toggle Option | Key | Type | Default | Description |
+| :--- | :--- | :---: | :---: | :--- |
+| **Suppress Account & Permission Nags** | `suppressAccountPrompts` | Boolean | `true` | Suppresses 'Follow your friends' modals, 'Find contacts' Friends tab sync overlays, multi-account notification guides, and 'Security checkup 2SV' upsells. |
+| **Suppress Sticker Recommendations** | `suppressStickerRecommendations` | Boolean | `true` | Disables personalized sticker suggestion popups and typing recommendations in direct messages. |
+| **Filter PopLayer Prompts & Nags** | `filterPopLayerPrompts` | Boolean | `true` | Suppresses repetitive PopLayer prompts including favorites collection guides, launcher shortcut dialogs, repost newbie sheets, STEM feed prompts, campus education sheets, creator inbox guides, app review dialogs, marketing opt-ins, FYP surveys, CapCut/Lemon8 upsells, profile visitor prompts, and story intro sheets. |
+| **Suppress Live Teaser Bubbles** | `suppressLiveTeaserBubble` | Boolean | `true` | Disables floating live stream preview teasers and popup windows from appearing over the video feed. |
+| **Suppress DM Streak Reminders** | `suppressStreakReminders` | Boolean | `true` | Suppresses direct message streak expiration warning banners and inline urgency reminders. |
+
 ---
 
 ## 🔒 Deep Technical Patch Breakdown
@@ -480,6 +493,23 @@ The **`Direct Message Declutter`** patch cleans direct message conversations and
     - *Preservation Invariant*: The parent actions container `0x7f0a3dd3` (`im_input_right_container`) is intentionally left intact so that `SendButtonAssemV2` appears seamlessly when typing text.
   - **Try Effect CTA Button (`hideTryEffectButton`)**: Hooks both static eligibility gate methods in obfuscated gate class `LX/0qRQ;` (`LIZIZ(...)Z` called by `AwemeCardAssem` and `LIZJ(...)Z` called by CTA list builders `LX/0qPi`/`LX/0qPj` before instantiating `TryEffectCTAButtonType` / `LX/0YK6;`) to return `false`, neutralizing the 'Try effect' camera shortcut button on shared videos in direct messages.
   - **Sticker Reply Suggestions (`hideStickerReplySuggestions`)**: In `ReplyToStickerRecommendationViewModel`, hooks the static synthetic default-args dispatcher method (`y83(...)V`) by injecting a bitmask check on register `p3` at instruction offset 0 (`and-int/lit8 v0, p3, 0x2`). When called by automatic triggers without a message argument (mask contains bit `0x2`), it returns early (`return-void`), suppressing the automatic 'Tap a sticker to reply' suggestion panel above the text input bar while preserving manual sticker replies initiated via the sticker reply button (mask `0x1`).
+
+### 23. Popups & Prompts Suppressor (`popupsAndPromptsSuppressorPatch`)
+- Suppresses intrusive modal popups, bottom sheets, overlay takeovers, and nudge reminders via modular boolean toggles:
+  - **Account & Permission Nags (`suppressAccountPrompts`)**:
+    - Stubs `RecUserPopupInMainActivityController.LIZLLL()V` with `return-void` to prevent the "Follow your friends" recommendation dialog on startup and navigation.
+    - Stubs `LX/0YL4;->LJII(...)V` with `return-void` to suppress "Get notifications from other accounts" prompts when switching accounts.
+    - Suppresses the "Find contacts" sync overlay on the Friends tab by stubbing `LX/0v6A;->canShow()Z` -> `false`, `LX/0v6A;->LJII(...)V` -> `return-void`, and `RelationAuthDialogControl;->LJFF(...)V` -> `return-void`.
+    - Suppresses 2-Step Verification security checkup popups by intercepting `LocalCampaignManager.showLocalCampaign` (`"UPSELL_2SV_POPUP"`) -> `false` and `PopSuiteManagerService.shouldShowPopSuitePopup` -> `false`.
+  - **Sticker Recommendations (`suppressStickerRecommendations`)**:
+    - Disables sticker typing recommendations in direct messages by intercepting `ChatFeatureListConf.featureEnable` -> `false` when queried for `TYPING_RECOMMEND`.
+  - **PopLayer Prompts & Nags (`filterPopLayerPrompts`)**:
+    - Hooks `LX/07Q5;->canShow()Z` (`PopLayerBaseFragment.canShow`) to check against companion extension hook `TikTokPopupHook.shouldSuppressPopLayer()`.
+    - Blocks 18 targeted PopLayer labels and triggers: favorites collections guide, add shortcut nag, repost newbie guide, STEM feed prompt, campus education sheet, creator inbox guide, in-app review prompt, marketing/email opt-ins, FYP survey dialogs, CapCut upsell sheets, Lemon8 promo modals, profile visitor prompts, and story introduction sheets.
+  - **Live Stream Teaser Bubble (`suppressLiveTeaserBubble`)**:
+    - Suppresses floating live stream preview teaser bubbles over feed videos by stubbing `LiveBubbleUtil.LIZ` -> `return-void` and forcing `LiveBubbleUtil.LJIIIIZZ` -> `false`.
+  - **DM Streak Reminders (`suppressStreakReminders`)**:
+    - Neutralizes streak expiration urgency alerts and inline reminder messages in direct messages by forcing `LX/0O2v;->LIZ` (`has_streak_reminder_inline_msg`) -> `false`.
 
 ### 24. Update Prompt Suppressor (`disableInAppUpdateNagsPatch`)
 - Neutralizes background update polling tasks and device ID check routines to prevent forced update popups.
