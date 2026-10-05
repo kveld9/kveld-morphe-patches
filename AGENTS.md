@@ -129,7 +129,7 @@ When adding or updating any patch, the following gates are **MANDATORY**:
 3. **Smoke Launch Verification (Zero-Crash Baseline)**: Verify that the patched APK launches cleanly without runtime crashes or uncaught startup exceptions.
 
 ### Step 5: `ADVERSARIAL RISK GATE & AUDIT`
-For non-trivial logic, Smali hooks, native ARM64 patching (`libchrome.so`), or shared compatibility changes (`Constants.kt`), run `/audit-stack` (post-change adversarial audit; the repository-mandated gates above are part of it) before declaring completion.
+For non-trivial logic, Smali hooks, native ARM64 patching (`libchrome.so`), or shared compatibility changes (`Constants.kt`), perform a rigorous post-change adversarial audit (correctness, integration, security/privacy, and repository hygiene, re-running the mandatory gates above) before declaring completion.
 
 ---
 
