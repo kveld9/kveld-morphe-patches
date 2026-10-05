@@ -126,6 +126,44 @@ Comprehensive technical and configuration guide for **Brave Browser** (`com.brav
 - **Objective**: Strip unselected language binary PAK archives from `assets/locales/` to reclaim **~9.64 MB** of APK space.
 - **Mechanisms**: Replaces stripped `.pak` files with the binary resource table of `en-US.pak` to satisfy Chromium's native C++ `ui::ResourceBundle` loader without triggering fatal assertion aborts.
 
+> [!NOTE]
+> #### Why Chromium Browsers Require a Dedicated PAK Slimmer
+> Standard Android applications (such as Gboard Lite, Hevy, or NokoPrint) store localized strings in the standard Android resource hierarchy (`res/values-<lang>/strings.xml`). Android's `AssetManager` automatically falls back to base `res/values/` when a localized folder is deleted, making universal directory removal safe via **`Locale Resource Slimmer`**.
+>
+> In contrast, Chromium-based browsers compile over 95% of their browser UI strings, Omnibox text, Brave Shields, and core Chromium components into **Chromium DataPack v5 binary archives** located in `assets/locales/<locale>.pak`.
+> - **Native C++ Loader Invariant**: Chromium's native C++ resource loader (`ui::ResourceBundle`) expects a valid binary DataPack file for the active device locale. Deleting `<locale>.pak` or replacing it with an empty (0-byte) stub triggers a native segmentation fault or assertion failure on startup (`Check failed: file_is_valid`) whenever the device is set to an unselected language.
+> - **Zero-Crash Fallback Substitution**: Instead of deleting files, `Locale PAK Slimmer` safely replaces stripped `.pak` files with the binary table of `en-US.pak`. This satisfies the native C++ loader while reclaiming ~9.64 MB of storage.
+> - **Complementary Operation**: For maximum slimming in Brave, both `Locale PAK Slimmer` (targeting native `assets/locales/*.pak`) and `Locale Resource Slimmer` (targeting Android wrapper `res/values-*`) can be applied together without conflict.
+
+#### Popular Language Codes
+
+| Language | Locale Code(s) |
+| :--- | :--- |
+| **Spanish** | `es` (Spain / Global), `es-419` (Latin America) |
+| **English** | `en-US` (US - *Always kept*), `en-GB` (UK) |
+| **Portuguese** | `pt-BR` (Brazil), `pt-PT` (Portugal) |
+| **French** | `fr` (France), `fr-CA` (Canada) |
+| **German / Italian / Dutch** | `de` (German), `it` (Italian), `nl` (Dutch) |
+| **Russian / Ukrainian / Polish** | `ru`, `uk`, `pl` |
+| **Japanese / Korean / Chinese** | `ja`, `ko`, `zh-CN` (Simplified), `zh-TW` (Traditional), `zh-HK` (Hong Kong) |
+| **Nordic Languages** | `sv` (Swedish), `da` (Danish), `fi` (Finnish), `nb` (Norwegian), `is` (Icelandic) |
+| **Regional Languages of Spain** | `ca` (Catalan), `gl` (Galician), `eu` (Basque) |
+| **Arabic / Turkish / Hebrew** | `ar`, `tr`, `he` |
+
+<details>
+<summary><b>🔍 View all 81 available base locale codes in Brave</b></summary>
+<br>
+
+```text
+af, am, ar, as, az, be, bg, bn, bs, ca, cs, da, de, el, en-GB, en-US, es, es-419,
+et, eu, fa, fi, fil, fr, fr-CA, gl, gu, he, hi, hr, hu, hy, id, is, it, ja, ka,
+kk, km, kn, ko, ky, lo, lt, lv, mk, ml, mn, mr, ms, my, nb, ne, nl, or, pa, pl,
+pt-BR, pt-PT, ro, ru, si, sk, sl, sq, sr, sr-Latn, sv, sw, ta, te, th, tr, uk,
+ur, uz, vi, zh-CN, zh-HK, zh-TW, zu
+```
+
+</details>
+
 ### 12. Sensor Privacy Guard (`sensorPrivacyPatch`)
 - **Objective**: Prevent side-channel hardware fingerprinting, battery drain, and acoustic keystroke sniffing via web sensor APIs.
 - **Mechanisms**:
@@ -158,7 +196,7 @@ Comprehensive technical and configuration guide for **Brave Browser** (`com.brav
 - **Option Key**: `locales`
 - **Default**: `en-US`
 - **Accepted Format**: Comma-separated list of locale codes (e.g. `es, es-419, pt-BR, fr, de`).
-- **Notes**: English (`en-US`) is always preserved automatically as an essential Chromium fallback. For the full list of 81 supported locale codes, consult the [Universal Patches Guide](../universal-patches.md#1-locale-pak-slimmer-localepakslimmerpatch).
+- **Notes**: English (`en-US`) is always preserved automatically as an essential Chromium fallback. To prevent Chromium startup crashes on devices configured with unselected system languages, stripped language PAKs are safely populated with the base `en-US` resource table fallback rather than empty stubs. For the full list of 81 supported locale codes, consult [Locale PAK Slimmer](#11-locale-pak-slimmer-localepakslimmerpatch).
 
 ---
 

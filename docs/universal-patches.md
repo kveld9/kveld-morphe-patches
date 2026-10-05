@@ -8,20 +8,19 @@ Comprehensive reference for universal optimization and resource slimming patches
 
 | Patch | Type | Target Scope | Primary Mechanism | Space / Performance Impact |
 | :--- | :--- | :--- | :--- | :--- |
-| **[Locale PAK Slimmer](#1-locale-pak-slimmer-localepakslimmerpatch)** | `rawResourcePatch` | Chromium (`assets/locales/*.pak`) | Binary fallback substitution with `en-US` tables | **~10.5 MB** (Brave) saved |
-| **[Locale Resource Slimmer](#2-locale-resource-slimmer-localeresourceslimmerpatch)** | `resourcePatch` | Android Resources (`res/values-*`) | Prunes unselected language directory trees bottom-up | **~5–25 MB** saved depending on target |
-| **[DPI Resource Slimmer](#3-dpi-resource-slimmer-dpiresourceslimmerpatch)** | `resourcePatch` | Android Drawables (`res/drawable-*`) | Retains target device screen density, safe orphan forward-copy | **~5–30 MB** saved, reduced bitmap memory footprint |
-| **[PNG Asset Optimizer](#4-png-asset-optimizer-pngassetoptimizerpatch)** | `rawResourcePatch` | PNG Assets (`res/**`, `assets/**`) | In-memory RGBA-verified level 9 zlib recompression + metadata strip | **~1–8 MB** saved, 0% visual degradation |
-| **[APK Junk Cleaner](#5-apk-junk-cleaner-apkjunkcleanerpatch)** | `rawResourcePatch` | Root & Metadata (`META-INF/**`, root) | Prunes compiler metadata, Kotlin debug tables, duplicate licenses | **~0.5–2 MB** saved, cleaner packaging |
-| **[Universal Offline Mode](#6-universal-offline-mode-universalofflinepatch)** | `resourcePatch` | Manifest (`AndroidManifest.xml`) | Revokes `INTERNET` & network permissions + blocks cleartext HTTP | Complete network isolation at OS kernel level |
-| **[Universal Telemetry Neutralizer](#7-universal-telemetry-neutralizer-universaltelemetryneutralizerpatch)** | `resourcePatch` | Manifest (`AndroidManifest.xml`) | Strips ad permissions, disables analytics providers/services, prunes discovery registrars, injects opt-out flags | Neutralizes third-party analytics & telemetry dispatch |
-| **[Universal Native Binary Trimmer](#8-universal-native-binary-trimmer-universalnativebinarytrimmerpatch)** | `rawResourcePatch` | Native Libraries (`lib/**`) | In-situ byte-level zeroing of non-essential tracking & debug `.so` files | **~1–15 MB** saved, removes resident native crash sidecars |
-| **[Universal WebP Asset Optimizer](#9-universal-webp-asset-optimizer-universalwebpoptimizerpatch)** | `rawResourcePatch` | WebP Assets (`res/**`, `assets/**`) | Lossless chunk stripping (`EXIF`, `XMP`, `ICCP`) + VP8X header recalculation | **~0.5–5 MB** saved, 0% visual degradation |
-| **[Background Sync & JobScheduler Purge](#10-background-sync--jobscheduler-purge-backgroundsyncpurgepatch)** | `resourcePatch` | Manifest (`AndroidManifest.xml`) | Strips boot permissions and disables boot receivers & WorkManager schedulers | Eliminates background wakeups, radio alarms, and standby battery drain |
-| **[Universal Privacy Permissions Stripper](#11-universal-privacy-permissions-stripper-universalprivacypermissionspatch)** | `resourcePatch` | Manifest (`AndroidManifest.xml`) | Selectively revokes sensitive hardware, privacy, and sensor permissions | Eliminates OS permission grants and runtime capability access |
-| **[Universal Screenshot Protection Bypass](#12-universal-screenshot-protection-bypass-universalscreenshotprotectionbypasspatch)** | `bytecodePatch` | Dalvik Bytecode & Manifest | Neutralizes `FLAG_SECURE`, unlocks audio playback capture, and suppresses Android 14+ screenshot detection | Allows screenshots, screen recordings, and internal audio capture across protected views |
-| **[Universal Screen Timeout Enforcer](#13-universal-screen-timeout-enforcer-universalscreentimeoutenforcerpatch)** | `bytecodePatch` | Dalvik Bytecode & Windows | Neutralizes `keepScreenOn(Z)V` view calls and strips `FLAG_KEEP_SCREEN_ON` (`0x80`) | Enforces OS screen timeout and sleep timer during video playback |
-| **[Universal Screen Brightness Governor](#14-universal-screen-brightness-governor-universalscreenbrightnessgovernorpatch)** | `bytecodePatch` | Dalvik Bytecode & Windows | Neutralizes direct writes to `WindowManager.LayoutParams.screenBrightness` (`iput`) | Prevents apps from overriding display brightness & HDR brightness spikes |
+| **[Locale Resource Slimmer](#1-locale-resource-slimmer-localeresourceslimmerpatch)** | `resourcePatch` | Android Resources (`res/values-*`) | Prunes unselected language directory trees bottom-up | **~5–25 MB** saved depending on target |
+| **[DPI Resource Slimmer](#2-dpi-resource-slimmer-dpiresourceslimmerpatch)** | `resourcePatch` | Android Drawables (`res/drawable-*`) | Retains target device screen density, safe orphan forward-copy | **~5–30 MB** saved, reduced bitmap memory footprint |
+| **[PNG Asset Optimizer](#3-png-asset-optimizer-pngoptimizerpatch)** | `rawResourcePatch` | PNG Assets (`res/**`, `assets/**`) | In-memory RGBA-verified level 9 zlib recompression + metadata strip | **~1–8 MB** saved, 0% visual degradation |
+| **[APK Junk Cleaner](#4-apk-junk-cleaner-apkjunkcleanerpatch)** | `rawResourcePatch` | Root & Metadata (`META-INF/**`, root) | Prunes compiler metadata, Kotlin debug tables, duplicate licenses | **~0.5–2 MB** saved, cleaner packaging |
+| **[Universal Offline Mode](#5-universal-offline-mode-universalofflinepatch)** | `resourcePatch` | Manifest (`AndroidManifest.xml`) | Revokes `INTERNET` & network permissions + blocks cleartext HTTP | Complete network isolation at OS kernel level |
+| **[Universal Telemetry Neutralizer](#6-universal-telemetry-neutralizer-universaltelemetryneutralizerpatch)** | `resourcePatch` | Manifest (`AndroidManifest.xml`) | Strips ad permissions, disables analytics providers/services, prunes discovery registrars, injects opt-out flags | Neutralizes third-party analytics & telemetry dispatch |
+| **[Universal Native Binary Trimmer](#7-universal-native-binary-trimmer-universalnativebinarytrimmerpatch)** | `rawResourcePatch` | Native Libraries (`lib/**`) | In-situ byte-level zeroing of non-essential tracking & debug `.so` files | **~1–15 MB** saved, removes resident native crash sidecars |
+| **[Universal WebP Asset Optimizer](#8-universal-webp-asset-optimizer-universalwebpoptimizerpatch)** | `rawResourcePatch` | WebP Assets (`res/**`, `assets/**`) | Lossless chunk stripping (`EXIF`, `XMP`, `ICCP`) + VP8X header recalculation | **~0.5–5 MB** saved, 0% visual degradation |
+| **[Background Sync & JobScheduler Purge](#9-background-sync--jobscheduler-purge-backgroundsyncpurgepatch)** | `resourcePatch` | Manifest (`AndroidManifest.xml`) | Strips boot permissions and disables boot receivers & WorkManager schedulers | Eliminates background wakeups, radio alarms, and standby battery drain |
+| **[Universal Privacy Permissions Stripper](#10-universal-privacy-permissions-stripper-universalprivacypermissionspatch)** | `resourcePatch` | Manifest (`AndroidManifest.xml`) | Selectively revokes sensitive hardware, privacy, and sensor permissions | Eliminates OS permission grants and runtime capability access |
+| **[Universal Screenshot Protection Bypass](#11-universal-screenshot-protection-bypass-universalscreenshotprotectionbypasspatch)** | `bytecodePatch` | Dalvik Bytecode & Manifest | Neutralizes `FLAG_SECURE`, unlocks audio playback capture, and suppresses Android 14+ screenshot detection | Allows screenshots, screen recordings, and internal audio capture across protected views |
+| **[Universal Screen Timeout Enforcer](#12-universal-screen-timeout-enforcer-universalscreentimeoutenforcerpatch)** | `bytecodePatch` | Dalvik Bytecode & Windows | Neutralizes `keepScreenOn(Z)V` view calls and strips `FLAG_KEEP_SCREEN_ON` (`0x80`) | Enforces OS screen timeout and sleep timer during video playback |
+| **[Universal Screen Brightness Governor](#13-universal-screen-brightness-governor-universalscreenbrightnessgovernorpatch)** | `bytecodePatch` | Dalvik Bytecode & Windows | Neutralizes direct writes to `WindowManager.LayoutParams.screenBrightness` (`iput`) | Prevents apps from overriding display brightness & HDR brightness spikes |
 
 ---
 
@@ -29,8 +28,8 @@ Comprehensive reference for universal optimization and resource slimming patches
 
 Morphe Patches uses a multi-tiered **defense-in-depth** model separating generic packaging-level mitigations from specialized Dalvik runtime hooks:
 
-- **Universal Patches**: Operate at the platform and packaging tier. They transform Android XML resources (`AndroidManifest.xml`), optimize asset payloads (`res/**`, `assets/**`), and inspect standard native architecture directories (`lib/**`).
-- **App-Specific Patches**: Operate at the Dalvik bytecode execution tier (`dexlib2`), companion runtime DEX payloads (`extension.mpe`), and proprietary binary targets (`libchrome.so`). They neutralize internal state machines, spoof hardware checks, and stub obfuscated methods.
+- **Universal Patches**: Transform manifest/resources/assets/lib and may also rewrite bytecode call sites that target public Android framework APIs (e.g. `FLAG_SECURE`, `FLAG_KEEP_SCREEN_ON`, `screenBrightness`) without depending on app-specific obfuscated classes.
+- **App-Specific Patches**: Target obfuscated app code via fingerprints, `extension.mpe` payloads, and proprietary binaries (`libchrome.so`). They neutralize internal state machines, spoof hardware checks, and stub obfuscated methods.
 
 ### Coexistence & Pipeline Idempotency
 Applying both universal and app-specific patches simultaneously to the same target APK is **completely safe and idempotent**:
@@ -58,62 +57,12 @@ Applying both universal and app-specific patches simultaneously to the same targ
 
 ---
 
-## 1. Locale PAK Slimmer (`localePakSlimmerPatch`)
-
-The **`Locale PAK Slimmer`** patch strips unneeded language resource PAKs from `assets/locales/` in Chromium-based browsers (Brave) to reclaim substantial APK storage (**~10.5 MB in Brave**).
-
-> [!NOTE]
-> ### Why Chromium Browsers Require a Dedicated PAK Slimmer
-> Standard Android applications (such as Gboard Lite, Hevy, or NokoPrint) store localized strings in the standard Android resource hierarchy (`res/values-<lang>/strings.xml`). Android's `AssetManager` automatically falls back to base `res/values/` when a localized folder is deleted, making universal directory removal safe via **`Locale Resource Slimmer`**.
->
-> In contrast, Chromium-based browsers compile over 95% of their browser UI strings, Omnibox text, Brave Shields, and core Chromium components into **Chromium DataPack v5 binary archives** located in `assets/locales/<locale>.pak`.
-> - **Native C++ Loader Invariant**: Chromium's native C++ resource loader (`ui::ResourceBundle`) expects a valid binary DataPack file for the active device locale. Deleting `<locale>.pak` or replacing it with an empty (0-byte) stub triggers a native segmentation fault or assertion failure on startup (`Check failed: file_is_valid`) whenever the device is set to an unselected language.
-> - **Zero-Crash Fallback Substitution**: Instead of deleting files, `Locale PAK Slimmer` safely replaces stripped `.pak` files with the binary table of `en-US.pak`. This satisfies the native C++ loader while reclaiming ~10.5 MB of storage.
-> - **Complementary Operation**: For maximum slimming in Brave, both `Locale PAK Slimmer` (targeting native `assets/locales/*.pak`) and `Locale Resource Slimmer` (targeting Android wrapper `res/values-*`) can be applied together without conflict.
-
-### Configuration in Morphe Manager
-
-When configuring the **`Locales to keep`** option, specify a comma-separated list of locale codes (e.g. `es-419, es, en-US, pt-BR`).
-- English (`en-US`) is always preserved automatically as an essential Chromium fallback.
-- To prevent Chromium startup crashes on devices configured with unselected system languages, stripped language PAKs are safely populated with the base `en-US` resource table fallback rather than empty stubs.
-
-### Popular Language Codes
-
-| Language | Locale Code(s) |
-| :--- | :--- |
-| **Spanish** | `es` (Spain / Global), `es-419` (Latin America) |
-| **English** | `en-US` (US - *Always kept*), `en-GB` (UK) |
-| **Portuguese** | `pt-BR` (Brazil), `pt-PT` (Portugal) |
-| **French** | `fr` (France), `fr-CA` (Canada) |
-| **German / Italian / Dutch** | `de` (German), `it` (Italian), `nl` (Dutch) |
-| **Russian / Ukrainian / Polish** | `ru`, `uk`, `pl` |
-| **Japanese / Korean / Chinese** | `ja`, `ko`, `zh-CN` (Simplified), `zh-TW` (Traditional), `zh-HK` (Hong Kong) |
-| **Nordic Languages** | `sv` (Swedish), `da` (Danish), `fi` (Finnish), `nb` (Norwegian), `is` (Icelandic) |
-| **Regional Languages of Spain** | `ca` (Catalan), `gl` (Galician), `eu` (Basque) |
-| **Arabic / Turkish / Hebrew** | `ar`, `tr`, `he` |
-
-<details>
-<summary><b>🔍 View all 81 available base locale codes in Brave</b></summary>
-<br>
-
-```text
-af, am, ar, as, az, be, bg, bn, bs, ca, cs, da, de, el, en-GB, en-US, es, es-419,
-et, eu, fa, fi, fil, fr, fr-CA, gl, gu, he, hi, hr, hu, hy, id, is, it, ja, ka,
-kk, km, kn, ko, ky, lo, lt, lv, mk, ml, mn, mr, ms, my, nb, ne, nl, or, pa, pl,
-pt-BR, pt-PT, ro, ru, si, sk, sl, sq, sr, sr-Latn, sv, sw, ta, te, th, tr, uk,
-ur, uz, vi, zh-CN, zh-HK, zh-TW, zu
-```
-
-</details>
-
----
-
-## 2. Locale Resource Slimmer (`localeResourceSlimmerPatch`)
+## 1. Locale Resource Slimmer (`localeResourceSlimmerPatch`)
 
 The **`Locale Resource Slimmer`** patch strips unselected language translation directories from `res/` (such as `values-*`, `raw-*`, `xml-*`) across any supported target APK (Gboard Lite, Hevy, Brave, TikTok, NokoPrint, Xiaomi Earbuds) to reduce APK size.
 
 > [!TIP]
-> **Chromium Browsers (Brave)**: While `Locale Resource Slimmer` trims standard Android wrapper resources in `res/values-*`, Chromium browsers store over 95% of their strings (~10.5 MB) in native binary `.pak` files inside `assets/locales/`. For complete multilingual slimming in Brave, combine this patch with the specialized **`Locale PAK Slimmer`**.
+> **Chromium Browsers (Brave)**: While `Locale Resource Slimmer` trims standard Android wrapper resources in `res/values-*`, Chromium browsers store over 95% of their strings (~10.5 MB) in native binary `.pak` files inside `assets/locales/`. For complete multilingual slimming in Brave, combine this patch with the Brave-specific [**`Locale PAK Slimmer`**](apps/brave.md#11-locale-pak-slimmer-localepakslimmerpatch).
 
 ### Configuration in Morphe Manager
 
@@ -155,7 +104,7 @@ sw, ta, te, th, tl, tr, uk, ur, uz, vi, yo, zh, zh-rCN, zh-rHK, zh-rTW, zu
 
 ---
 
-## 3. DPI Resource Slimmer (`dpiResourceSlimmerPatch`)
+## 2. DPI Resource Slimmer (`dpiResourceSlimmerPatch`)
 
 The **`DPI Resource Slimmer`** patch strips unselected screen density asset directories (such as `drawable-mdpi`, `drawable-hdpi`, `drawable-xhdpi`, `mipmap-mdpi`, etc.) from `res/` across all supported target APKs to significantly reduce final APK size and RAM footprint during bitmap decoding.
 
@@ -189,7 +138,7 @@ The **`DPI Resource Slimmer`** patch strips unselected screen density asset dire
 
 ---
 
-## 4. PNG Asset Optimizer (`pngAssetOptimizerPatch`)
+## 3. PNG Asset Optimizer (`pngOptimizerPatch`)
 
 The **`PNG Asset Optimizer`** losslessly recompresses PNG assets inside `res/` and `assets/` with maximum zlib compression (`BEST_COMPRESSION`, level 9) and strips non-rendering metadata chunks (`pHYs`, `tEXt`, `tIME`).
 
@@ -200,7 +149,7 @@ The **`PNG Asset Optimizer`** losslessly recompresses PNG assets inside `res/` a
 
 ---
 
-## 5. APK Junk Cleaner (`apkJunkCleanerPatch`)
+## 4. APK Junk Cleaner (`apkJunkCleanerPatch`)
 
 The **`APK Junk Cleaner`** strips non-functional build metadata, compiler properties, Kotlin coroutines debug tables, and duplicate license notices from `META-INF` and APK root.
 
@@ -211,7 +160,7 @@ The **`APK Junk Cleaner`** strips non-functional build metadata, compiler proper
 
 ---
 
-## 6. Universal Offline Mode (`universalOfflinePatch`)
+## 5. Universal Offline Mode (`universalOfflinePatch`)
 
 The **`Universal Offline Mode`** patch isolates any application from the network by stripping `android.permission.INTERNET` and associated network permissions from `AndroidManifest.xml` and enforcing `android:usesCleartextTraffic="false"` on the `<application>` element.
 
@@ -242,7 +191,7 @@ All options in **`Universal Offline Mode`** are declared as native boolean switc
 
 ---
 
-## 7. Universal Telemetry Neutralizer (`universalTelemetryNeutralizerPatch`)
+## 6. Universal Telemetry Neutralizer (`universalTelemetryNeutralizerPatch`)
 
 The **`Universal Telemetry Neutralizer`** patch neutralizes pervasive third-party tracking, ad-attribution SDKs, and crash analytics frameworks at the Android application manifest level (`AndroidManifest.xml`). It combines permission revocation, component deactivation, and declarative metadata opt-out injection.
 
@@ -275,7 +224,7 @@ The **`Universal Telemetry Neutralizer`** patch neutralizes pervasive third-part
 
 ---
 
-## 8. Universal Native Binary Trimmer (`universalNativeBinaryTrimmerPatch`)
+## 7. Universal Native Binary Trimmer (`universalNativeBinaryTrimmerPatch`)
 
 The **`Universal Native Binary Trimmer`** patch inspects native architecture directories in `lib/**` (`lib/arm64-v8a/`, `lib/armeabi-v7a/`, `lib/x86_64/`, etc.) and performs byte-level in-situ zeroing (`writeBytes(byteArrayOf())`) on non-essential crash reporters, telemetry engines, and debugging/profiling companion shared libraries (`.so`).
 
@@ -295,7 +244,7 @@ The **`Universal Native Binary Trimmer`** patch inspects native architecture dir
 
 ---
 
-## 9. Universal WebP Asset Optimizer (`universalWebpOptimizerPatch`)
+## 8. Universal WebP Asset Optimizer (`universalWebpOptimizerPatch`)
 
 The **`Universal WebP Asset Optimizer`** losslessly strips non-rendering metadata chunks (`EXIF`, `XMP `, `ICCP`) from WebP images located in `res/**` and `assets/**` across any Android application.
 
@@ -312,7 +261,7 @@ The **`Universal WebP Asset Optimizer`** losslessly strips non-rendering metadat
 
 ---
 
-## 10. Background Sync & JobScheduler Purge (`backgroundSyncPurgePatch`)
+## 9. Background Sync & JobScheduler Purge (`backgroundSyncPurgePatch`)
 
 The **`Background Sync & JobScheduler Purge`** patch stops unneeded background wakeups, radio modem alarms, and persistent standby battery drain by removing startup permissions and disabling boot-triggered broadcast receivers and periodic WorkManager scheduler components in `AndroidManifest.xml`.
 
@@ -335,7 +284,7 @@ The **`Background Sync & JobScheduler Purge`** patch stops unneeded background w
 
 ---
 
-## 11. Universal Privacy Permissions Stripper (`universalPrivacyPermissionsPatch`)
+## 10. Universal Privacy Permissions Stripper (`universalPrivacyPermissionsPatch`)
 
 The **`Universal Privacy Permissions Stripper`** patch selectively strips sensitive privacy, sensor, and hardware permissions from `AndroidManifest.xml` via modular boolean toggles. It enables strict isolation of host applications by removing permissions at the Android packaging level.
 
@@ -377,7 +326,7 @@ The **`Universal Privacy Permissions Stripper`** patch selectively strips sensit
 
 ---
 
-## 12. Universal Screenshot Protection Bypass (`universalScreenshotProtectionBypassPatch`)
+## 11. Universal Screenshot Protection Bypass (`universalScreenshotProtectionBypassPatch`)
 
 The **`Universal Screenshot Protection Bypass`** patch neutralizes `WindowManager.LayoutParams.FLAG_SECURE` (`0x2000`) across all windows, layout parameters, and `SurfaceView` instances, unlocks internal audio playback capture for screen recording on Android 10+, and suppresses native Android 14+ screenshot and screen recording detection callbacks.
 
@@ -402,7 +351,7 @@ The patch operates without any manual configuration or boolean options. When ena
 
 ---
 
-## 13. Universal Screen Timeout Enforcer (`universalScreenTimeoutEnforcerPatch`)
+## 12. Universal Screen Timeout Enforcer (`universalScreenTimeoutEnforcerPatch`)
 
 The **`Universal Screen Timeout Enforcer`** patch forces the host application to respect the operating system's configured screen timeout (`SCREEN_OFF_TIMEOUT`) and sleep timers by neutralizing keepScreenOn view calls and stripping `FLAG_KEEP_SCREEN_ON` from windows and layout parameters.
 
@@ -419,7 +368,7 @@ The patch operates without any manual configuration or boolean options (`default
 
 ---
 
-## 14. Universal Screen Brightness Governor (`universalScreenBrightnessGovernorPatch`)
+## 13. Universal Screen Brightness Governor (`universalScreenBrightnessGovernorPatch`)
 
 The **`Universal Screen Brightness Governor`** patch prevents applications from overriding device screen brightness (such as aggressive HDR video playback brightness boosts, in-app brightness sliders, or blinding screens) by neutralizing all direct writes to `WindowManager.LayoutParams.screenBrightness`.
 
