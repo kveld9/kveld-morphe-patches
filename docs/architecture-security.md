@@ -93,7 +93,7 @@ Chromium browsers (such as Brave), however, bypass Android's resource pipeline f
    - Deleting `<locale>.pak` from the APK causes Chromium's native C++ resource loader (`ui::ResourceBundle::LoadLocaleResources`) to fail startup initialization when the host device is set to that language.
    - Truncating `<locale>.pak` to an empty (0-byte) file causes Chromium to trigger an assertion crash (`Check failed: file_is_valid`).
 3. **Morphe's Safe Substitution Strategy**:
-   - `BraveLocaleSlimmerPatch`: Copies `en-US.pak` byte payloads into all stripped locale paths, satisfying the C++ bundle loader with zero native crashes while freeing ~10.5 MB.
+   - `Locale PAK Slimmer` (`localePakSlimmerPatch`): Copies `en-US.pak` byte payloads into all stripped locale paths, satisfying the C++ bundle loader with zero native crashes while freeing ~9.64 MB.
 4. **Separation of Concerns**:
    - `Locale Resource Slimmer` operates universally across all Android apps on `res/values-*`.
    - `Locale PAK Slimmer` operates specifically on Chromium's native `assets/locales/*.pak`.
