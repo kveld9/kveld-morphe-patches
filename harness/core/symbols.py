@@ -53,8 +53,6 @@ class BraveOriginSymbols:
 @dataclass
 class BraveNotificationSchedulerSymbols:
     on_start_task_method: ResolvedSymbol
-    param2_type: str
-    param3_type: str
 
 
 @dataclass
@@ -243,29 +241,25 @@ class SymbolResolver:
         if not cls:
             return None
 
-        # Look for onStartTask method: returns I, parameters start with Context
+        # onStartTask: returns I, first parameter is Context. Must be unique to be trusted.
         task_methods = [
             m for m in cls.methods
-            if m.return_type == "I" and len(m.parameters) in (1, 3) and m.parameters[0] == "Landroid/content/Context;"
+            if m.return_type == "I" and m.parameters[:1] == ["Landroid/content/Context;"]
         ]
-        if not task_methods:
+        if len(task_methods) != 1:
             return None
 
         m = task_methods[0]
         sym = ResolvedSymbol(
             symbol_id="scheduler_on_start_task",
             target_class=cls_name,
-            old_symbol="c(Landroid/content/Context;Lfjj;Lu5c;)I",
-            new_symbol=f"{m.name}({','.join(m.parameters)})I",
+            old_symbol="c",
+            new_symbol=m.name,
             symbol_type="method",
             confidence=SymbolConfidence.VERIFIED,
             evidence=[f"NotificationScheduler task starter: {m.full_name}"]
         )
-        return BraveNotificationSchedulerSymbols(
-            on_start_task_method=sym,
-            param2_type=m.parameters[1],
-            param3_type=m.parameters[2],
-        )
+        return BraveNotificationSchedulerSymbols(on_start_task_method=sym)
 
     def resolve_pref_service_symbols(self) -> Optional[BravePrefServiceSymbols]:
         cls_name = "Lorg/chromium/components/prefs/PrefService;"

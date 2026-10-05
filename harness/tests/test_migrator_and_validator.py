@@ -113,6 +113,30 @@ class TestMigratorAndValidator(unittest.TestCase):
         self.assertTrue(plan.has_changes)
         self.assertIn("Updated Preference key field to 'H'", plan.changes)
 
+    # 17. Scheduler onStartTask rename -> fingerprint name migrated, identical name -> NO-OP
+    def test_scheduler_on_start_task_rename(self):
+        from harness.core.symbols import BraveNotificationSchedulerSymbols
+
+        def plan_for(name):
+            sym = ResolvedSymbol("scheduler_on_start_task", "", "c", name, "method", SymbolConfidence.VERIFIED)
+            return self.migrator.plan_scheduler_symbols_update(BraveNotificationSchedulerSymbols(sym))
+
+        renamed = plan_for("zq")
+        self.assertTrue(renamed.has_changes)
+        self.assertIn('name = "zq",\n            returnType = "I",', renamed.modified_content)
+        self.assertEqual(len(renamed.original_content.splitlines()), len(renamed.modified_content.splitlines()))
+
+    # 18. Scheduler resolver must not index missing parameters
+    def test_scheduler_resolver_single_param_method(self):
+        from harness.core.symbols import SymbolResolver
+
+        method = MagicMock(return_type="I", parameters=["Landroid/content/Context;"], full_name="X->c(Landroid/content/Context;)I")
+        method.name = "c"
+        index = MagicMock()
+        index.find_class.return_value = MagicMock(methods=[method])
+        resolved = SymbolResolver(index).resolve_notification_scheduler_symbols()
+        self.assertEqual(resolved.on_start_task_method.new_symbol, "c")
+
 
 if __name__ == "__main__":
     unittest.main()

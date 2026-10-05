@@ -252,16 +252,17 @@ class PatchMigrator:
     def plan_scheduler_symbols_update(self, symbols: BraveNotificationSchedulerSymbols) -> MigrationPlan:
         content = self.scheduler_patch_file.read_text(encoding="utf-8")
         changes = []
+        new_name = symbols.on_start_task_method.new_symbol
 
-        # Update parameters = listOf("Landroid/content/Context;", "Lvtj;", "Locc;")
-        param_block = f'            parameters = listOf(\n                "Landroid/content/Context;",\n                "{symbols.param2_type}",\n                "{symbols.param3_type}",\n            ),'
+        # The onStartTask hook is anchored by its obfuscated name on NotificationSchedulerTask.
         new_content = re.sub(
-            r'            parameters = listOf\(\s*"Landroid/content/Context;",\s*"[^"]+",\s*"[^"]+",\s*\),',
-            param_block,
-            content
+            r'(definingClass = "Lorg/chromium/chrome/browser/notifications/scheduler/NotificationSchedulerTask;",\s*name = ")[^"]+(",\s*returnType = "I",)',
+            rf"\g<1>{new_name}\g<2>",
+            content,
+            count=1,
         )
         if new_content != content:
-            changes.append(f"Updated NotificationScheduler parameters to ['Landroid/content/Context;', '{symbols.param2_type}', '{symbols.param3_type}']")
+            changes.append(f"Updated NotificationScheduler onStartTask method name to '{new_name}'")
 
         return MigrationPlan(self.scheduler_patch_file, content, new_content, changes)
 
