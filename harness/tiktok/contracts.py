@@ -457,7 +457,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
             "Lcom/ss/android/ugc/aweme/discover/model/suggest/RecomDataWrapper;",
             "Lcom/ss/android/ugc/aweme/search/middle/DynamicSingleIntermediateFragmentNew;",
         ],
-        required_strings=["yU"],
+        required_strings=["pZ"],
         criticality="HIGH",
     ),
     PatchContract(
