@@ -226,33 +226,43 @@ val directMessageDeclutterPatch = bytecodePatch(
             val sideSlotClassFp = Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/im/sdk/chat/ui/slots/SideMessageStatusReusedSkeletonUISlot;",
             )
-            val vsMethod = sideSlotClassFp.classDef.methods.first {
-                AccessFlags.STATIC.isSet(it.accessFlags) &&
-                    it.parameters.size == 1 &&
-                    it.returnType != "V"
+            val sideSlotClass = sideSlotClassFp.classDef
+            val getterMethod = sideSlotClass.methods.first {
+                !AccessFlags.STATIC.isSet(it.accessFlags) &&
+                    it.parameterTypes.isEmpty() &&
+                    it.returnType == "Lcom/bytedance/tux/icon/TuxIconView;"
             }
-            val vsImpl = vsMethod.implementation
-            if (vsImpl != null) {
-                val enumType = vsMethod.returnType
-                var hooked = false
-                for ((index, instruction) in vsImpl.instructions.withIndex()) {
-                    if (instruction is ReferenceInstruction) {
-                        val fieldRef = instruction.reference as? FieldReference
-                        if (fieldRef?.name == "FORWARD") {
-                            vsMethod.removeInstructions(index, 1)
-                            vsMethod.addInstructions(
-                                index,
-                                "sget-object v0, $enumType->NOTHING:$enumType",
-                            )
-                            hooked = true
-                            break
-                        }
-                    }
-                }
-                if (hooked) {
-                    println("[Direct Message Declutter] Hooked SideMessageStatusReusedSkeletonUISlot.vs -> NOTHING.")
-                    patched++
-                }
+            val bindForwardMethod = sideSlotClass.methods.first {
+                !AccessFlags.STATIC.isSet(it.accessFlags) &&
+                    it.parameterTypes.size == 1 &&
+                    it.returnType == "V" &&
+                    it.implementation?.instructions?.any { ins ->
+                        ins is ReferenceInstruction &&
+                            (ins.reference as? MethodReference)?.let { mRef ->
+                                mRef.definingClass == sideSlotClass.type &&
+                                    mRef.name == getterMethod.name
+                            } == true
+                    } == true
+            }
+            val bindImpl = bindForwardMethod.implementation
+            if (bindImpl != null) {
+                bindForwardMethod.clearTryBlocks()
+                bindForwardMethod.ensureRegisterCount(4)
+                bindForwardMethod.removeInstructions(0, bindImpl.instructions.count())
+                bindForwardMethod.addInstructions(
+                    0,
+                    """
+                        invoke-virtual {p0}, ${sideSlotClass.type}->${getterMethod.name}()Lcom/bytedance/tux/icon/TuxIconView;
+                        move-result-object v0
+                        if-eqz v0, :cond_skip_forward
+                        const/16 v1, 0x8
+                        invoke-virtual {v0, v1}, Landroid/view/View;->setVisibility(I)V
+                        :cond_skip_forward
+                        return-void
+                    """.trimIndent(),
+                )
+                println("[Direct Message Declutter] Hooked ${sideSlotClass.type}.${bindForwardMethod.name} -> Forward TuxIconView GONE.")
+                patched++
             }
         }
 
