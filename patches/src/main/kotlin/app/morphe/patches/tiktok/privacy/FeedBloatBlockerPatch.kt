@@ -4,6 +4,7 @@ import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.addInstructionsAtControlFlowLabel
 import app.morphe.patches.shared.sharedExtensionPatch
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
@@ -33,7 +34,7 @@ val feedBloatBlockerPatch = bytecodePatch(
                 ?.toList() ?: emptyList()
 
             returnIndices.asReversed().forEach { (returnIndex, reg) ->
-                method.addInstructions(
+                method.addInstructionsAtControlFlowLabel(
                     returnIndex,
                     """
                         invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterFeedBloatInFeedItemList(Ljava/lang/Object;)V
@@ -62,7 +63,7 @@ val feedBloatBlockerPatch = bytecodePatch(
                 ?.toList() ?: emptyList()
 
             returnIndices.asReversed().forEach { (returnIndex, reg) ->
-                method.addInstructions(
+                method.addInstructionsAtControlFlowLabel(
                     returnIndex,
                     """
                         invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterFeedBloatInList(Ljava/lang/Object;)V
@@ -91,7 +92,7 @@ val feedBloatBlockerPatch = bytecodePatch(
                 ?.toList() ?: emptyList()
 
             returnIndices.asReversed().forEach { (returnIndex, reg) ->
-                method.addInstructions(
+                method.addInstructionsAtControlFlowLabel(
                     returnIndex,
                     """
                         invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterFeedBloatInFollowFeedList(Ljava/lang/Object;)V
