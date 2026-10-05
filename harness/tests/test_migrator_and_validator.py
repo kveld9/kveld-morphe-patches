@@ -77,7 +77,19 @@ class TestMigratorAndValidator(unittest.TestCase):
         plan = self.migrator.plan_gboard_constants_update("18.1.0.999999999-lite_beta-arm64-v8a")
         self.assertTrue(plan.has_changes)
         self.assertIn('const val GBOARD_TARGET_VERSION = "18.1.0.999999999-lite_beta-arm64-v8a"', plan.modified_content)
-        self.assertIn('Download 18.1.0.999999999-lite_beta-arm64-v8a (APK nodpi) from APKMirror', plan.modified_content)
+        self.assertIn('const val GBOARD_TARGET_VERSION_V7A = "18.1.0.999999999-lite_beta-armeabi-v7a"', plan.modified_content)
+
+    # 13b. Gboard bump must only touch the two Gboard version constants
+    def test_gboard_version_bump_leaves_other_lines_untouched(self):
+        plan = self.migrator.plan_gboard_constants_update("18.1.0.999999999-lite_beta-armeabi-v7a")
+        changed = [
+            (old, new)
+            for old, new in zip(plan.original_content.splitlines(), plan.modified_content.splitlines())
+            if old != new
+        ]
+        self.assertEqual(len(changed), 2)
+        for old, _ in changed:
+            self.assertRegex(old, r'const val GBOARD_TARGET_VERSION(_V7A)? = ')
 
     # 16. Origin pref key migration -> updated
     def test_origin_pref_key_migration(self):

@@ -61,30 +61,31 @@ class PatchMigrator:
 
         return MigrationPlan(self.constants_file, content, new_content2, changes)
 
-    def plan_gboard_constants_update(self, new_version: str) -> MigrationPlan:
+    def _plan_version_constants(self, updates: List[Tuple[str, str]]) -> MigrationPlan:
+        """Bumps `const val <NAME> = "..."` entries without touching any other line."""
         content = self.constants_file.read_text(encoding="utf-8")
+        new_content = content
         changes = []
+        for const_name, new_version in updates:
+            updated = re.sub(
+                rf'const val {const_name} = "[^"]+"',
+                f'const val {const_name} = "{new_version}"',
+                new_content,
+                count=1,
+            )
+            if updated != new_content:
+                changes.append(f"Updated {const_name} to '{new_version}'")
+                new_content = updated
+        return MigrationPlan(self.constants_file, content, new_content, changes)
 
-        # 1. GBOARD_TARGET_VERSION = "..."
-        new_content = re.sub(
-            r'const val GBOARD_TARGET_VERSION = "[^"]+"',
-            f'const val GBOARD_TARGET_VERSION = "{new_version}"',
-            content
-        )
-        if new_content != content:
-            changes.append(f"Updated GBOARD_TARGET_VERSION to '{new_version}'")
-
-        # 2. description = "Download ... (APK nodpi) from APKMirror"
-        new_content2 = re.sub(
-            r'description = "(?:Download [^"]+ from APKMirror|Gboard Lite beta [^"]+)"',
-            f'description = "Download {new_version} (APK nodpi) from APKMirror"',
-            new_content
-        )
-        if new_content2 != new_content:
-            changes.append(f"Updated Gboard AppTarget description to 'Download {new_version} (APK nodpi) from APKMirror'")
-
-        return MigrationPlan(self.constants_file, content, new_content2, changes)
-
+    def plan_gboard_constants_update(self, new_version: str) -> MigrationPlan:
+        # AppTarget descriptions interpolate $GBOARD_TARGET_VERSION / $GBOARD_TARGET_VERSION_V7A,
+        # so only the constants are bumped. Both ABI targets share one release.
+        base = re.sub(r"-(?:arm64-v8a|armeabi-v7a)$", "", new_version)
+        return self._plan_version_constants([
+            ("GBOARD_TARGET_VERSION", f"{base}-arm64-v8a"),
+            ("GBOARD_TARGET_VERSION_V7A", f"{base}-armeabi-v7a"),
+        ])
 
     def plan_xiaomi_earbuds_constants_update(self, new_version: str) -> MigrationPlan:
         content = self.constants_file.read_text(encoding="utf-8")
