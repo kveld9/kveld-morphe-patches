@@ -236,7 +236,7 @@
 </details>
 
 <details>
-<summary>Universal&nbsp;&nbsp;•&nbsp;&nbsp;<b>12 patches</b></summary>
+<summary>Universal&nbsp;&nbsp;•&nbsp;&nbsp;<b>13 patches</b></summary>
 <br>
 
 | Patch | Description | Options |
@@ -249,6 +249,7 @@
 | **Universal Native Binary Trimmer** | Strips non-essential tracking, crash reporting, and debug companion native libraries in lib/** (e.g. libcrashlytics, libsentry, libbugly, libgwp-asan) by zeroing bytes in-situ. | • Trim Crash Reporting Libraries<br>• Trim Debug & Profiling Libraries |
 | **Universal Offline Mode** | Forces offline execution across any application by revoking INTERNET and network permissions from AndroidManifest.xml and blocking cleartext HTTP traffic at the OS level. | • Strip Network State Permissions<br>• Strip Wi-Fi Control Permissions<br>• Strip Push Notification Permissions<br>• Strip Google Services Sync Permissions<br>• Block Cleartext Traffic |
 | **Universal Privacy Permissions Stripper** | Selectively strips sensitive privacy, sensor, and hardware permissions from AndroidManifest.xml via configurable boolean toggles. | • Strip Notification Permission<br>• Strip Camera Permission<br>• Strip Microphone Permissions<br>• Strip Storage & Media Permissions<br>• Strip Location Permissions<br>• Strip Contacts & Accounts Permissions<br>• Strip Calendar Permissions<br>• Strip Nearby Devices Permissions<br>• Strip Body Sensors Permissions |
+| **Universal Screen Brightness Governor** | Prevents applications from overriding display brightness (such as HDR video playback brightness boosts, in-app brightness sliders, or blinding screens) by neutralizing all direct writes to WindowManager.LayoutParams.screenBrightness. |  |
 | **Universal Screen Timeout Enforcer** | Forces the target application to respect system screen timeout and sleep timers by neutralizing keepScreenOn view calls and stripping FLAG_KEEP_SCREEN_ON from windows and layout parameters. |  |
 | **Universal Screenshot Protection Bypass** | Neutralizes FLAG_SECURE on windows, layout params, and SurfaceViews, unlocks audio playback capture, and suppresses Android 14+ screenshot and screen recording detection callbacks. |  |
 | **Universal Telemetry Neutralizer** | Strips advertising and Privacy Sandbox permissions, disables analytics ContentProviders and telemetry background services (Firebase, Sentry, Adjust, AppsFlyer, DataTransport), prunes ComponentDiscovery registrars, and injects telemetry opt-out metadata. | • Revoke Advertising & Tracking Permissions<br>• Disable Telemetry ContentProviders<br>• Disable Telemetry Background Services<br>• Disable Telemetry Receivers<br>• Inject Telemetry Opt-Out Flags & Prune Registrars<br>• Disable Firebase Init Provider |
@@ -277,7 +278,7 @@ Technical references, setup manuals, and architecture notes are organized by foc
 ### 🌐 Universal & Architecture Reference
 | Guide | Description |
 | :--- | :--- |
-| **[Universal Patches & Options](docs/universal-patches.md)** | Universal debloat & privacy suite: Screenshot Protection Bypass, Privacy Permissions Stripper, Telemetry Neutralizer, Native Binary Trimmer, WebP Optimizer, Background Sync Purge, Offline Mode, DPI/Locale Slimmers, and Asset Cleaners. |
+| **[Universal Patches & Options](docs/universal-patches.md)** | Universal debloat & privacy suite: Screen Brightness Governor, Screenshot Protection Bypass, Privacy Permissions Stripper, Telemetry Neutralizer, Native Binary Trimmer, WebP Optimizer, Background Sync Purge, Offline Mode, DPI/Locale Slimmers, and Asset Cleaners. |
 | **[Compatibility Guide](docs/compatibility.md)** | CPU architecture policy (`arm64-v8a` vs `armeabi-v7a`), APK variant requirements, and SHA-256 baseline. |
 | **[Project Scope & Out of Scope](docs/out-of-scope.md)** | Non-negotiable design philosophy, compile-time invariants, and rejected feature categories. |
 | **[Architecture & Security Notes](docs/architecture-security.md)** | Static analysis scanner false positives (ML Kit, Play Billing) and native ELF telemetry neutralization. |

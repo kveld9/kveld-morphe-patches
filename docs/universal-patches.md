@@ -21,6 +21,7 @@ Comprehensive reference for universal optimization and resource slimming patches
 | **[Universal Privacy Permissions Stripper](#11-universal-privacy-permissions-stripper-universalprivacypermissionspatch)** | `resourcePatch` | Manifest (`AndroidManifest.xml`) | Selectively revokes sensitive hardware, privacy, and sensor permissions | Eliminates OS permission grants and runtime capability access |
 | **[Universal Screenshot Protection Bypass](#12-universal-screenshot-protection-bypass-universalscreenshotprotectionbypasspatch)** | `bytecodePatch` | Dalvik Bytecode & Manifest | Neutralizes `FLAG_SECURE`, unlocks audio playback capture, and suppresses Android 14+ screenshot detection | Allows screenshots, screen recordings, and internal audio capture across protected views |
 | **[Universal Screen Timeout Enforcer](#13-universal-screen-timeout-enforcer-universalscreentimeoutenforcerpatch)** | `bytecodePatch` | Dalvik Bytecode & Windows | Neutralizes `keepScreenOn(Z)V` view calls and strips `FLAG_KEEP_SCREEN_ON` (`0x80`) | Enforces OS screen timeout and sleep timer during video playback |
+| **[Universal Screen Brightness Governor](#14-universal-screen-brightness-governor-universalscreenbrightnessgovernorpatch)** | `bytecodePatch` | Dalvik Bytecode & Windows | Neutralizes direct writes to `WindowManager.LayoutParams.screenBrightness` (`iput`) | Prevents apps from overriding display brightness & HDR brightness spikes |
 
 ---
 
@@ -51,6 +52,8 @@ Applying both universal and app-specific patches simultaneously to the same targ
 | **Background Sync & JobScheduler Purge** | ⚠️ Safe by Default | Keep `stripWakeLock = false` (default) on web browsers (Brave) to prevent suspending background file downloads when the screen turns off. |
 | **Universal Privacy Permissions Stripper** | ⚠️ Safe by Default | All toggles are opt-in (default: `false`). Revoke only permissions you wish to strip for your target application to prevent runtime `SecurityException` crashes in apps that lack error handling. |
 | **Universal Screenshot Protection Bypass** | ✅ Yes | Safely neutralizes `FLAG_SECURE` bitwise and silences screenshot/screen recording callbacks across any application. |
+| **Universal Screen Timeout Enforcer** | ✅ Yes | Safely neutralizes `FLAG_KEEP_SCREEN_ON` bitwise and silences view `setKeepScreenOn` calls to enforce system sleep timeout. |
+| **Universal Screen Brightness Governor** | ✅ Yes | Safely neutralizes writes to `WindowManager.LayoutParams.screenBrightness` so display brightness remains strictly under system and user control. |
 | **Universal Offline Mode** | ⚠️ Contextual | **Never apply to web browsers (Brave) or streaming media apps (TikTok)**, as it halts socket creation at the OS kernel level (`AID_INET`). For Gboard Lite and Xiaomi Earbuds, pair with their companion app-specific offline patches for graceful timeout handling. |
 
 ---
@@ -413,4 +416,21 @@ The **`Universal Screen Timeout Enforcer`** patch forces the host application to
 The patch operates without any manual configuration or boolean options (`default = false`). When enabled, it automatically executes the complete screen timeout enforcement pipeline across all bytecode components:
 - Clears `FLAG_KEEP_SCREEN_ON` (`0x80`) on `Window.setFlags`, `Window.addFlags`, and `WindowManager.LayoutParams.flags`.
 - Neutralizes `setKeepScreenOn(Z)V` calls across all UI views and surface holders.
+
+---
+
+## 14. Universal Screen Brightness Governor (`universalScreenBrightnessGovernorPatch`)
+
+The **`Universal Screen Brightness Governor`** patch prevents applications from overriding device screen brightness (such as aggressive HDR video playback brightness boosts, in-app brightness sliders, or blinding screens) by neutralizing all direct writes to `WindowManager.LayoutParams.screenBrightness`.
+
+### 🛡️ Low-Level Bytecode & Window Enforcement
+
+1. **Instruction Neutralization**: Scans all Dalvik bytecode instructions across the application for direct field store operations targeting `Landroid/view/WindowManager$LayoutParams;->screenBrightness:F` (`iput`). Each matching instruction is cleanly replaced with `nop`.
+2. **Framework Default Invariance**: Because the Android OS framework initializes `WindowManager.LayoutParams.screenBrightness` to `BRIGHTNESS_OVERRIDE_NONE` (`-1.0f`), preventing any in-app write guarantees that the window's layout parameters retain `-1.0f` throughout the application lifecycle.
+3. **OS-Level Control Guarantee**: The system WindowManager and DisplayManager continue to govern screen brightness according to the user's manual brightness setting and ambient light sensor, completely eliminating unwanted in-app brightness spikes without destabilizing registers or altering method control flow.
+
+### 🛡️ Plug & Play Operation
+
+The patch operates without any manual configuration or boolean options (`default = false`). When enabled in Morphe Manager or CLI, it automatically neutralizes all screen brightness override attempts across all classes in the target APK.
+
 
