@@ -118,6 +118,11 @@ When adding or updating any patch, the following gates are **MANDATORY**:
    ./gradlew runPatchTest -Papp=<targetApp> -PallOptions=true
    ```
    The patching run MUST complete with **100% success** (0 failed patches, 0 fingerprint errors, 0 smali compile errors, 0 exceptions).
+   **Quiet Gate Invocation (Agents)**: Agents should send the full log to a git-ignored file and read only the verdict, e.g.:
+   ```bash
+   ./gradlew runPatchTest -Papp=<targetApp> --console=plain > build/patchtest-<targetApp>.log 2>&1; rc=$?; sed -n '/FINAL PATCHING RESULT/,$p' build/patchtest-<targetApp>.log | grep -v '^\s*at ' || tail -40 build/patchtest-<targetApp>.log; echo "exit=$rc"
+   ```
+   This is safe because `patches/src/main/kotlin/util/PatchExecutionTest.kt` intercepts the complete stdout/stderr itself, lists every fingerprint mismatch, smali compile error and failed patch inside the `FINAL PATCHING RESULT` block, and exits non-zero; filtering afterwards cannot hide a failure. The verdict is the exit code plus that block, never the filtered text alone. If the block is missing (build or setup failure before patching), the tail is shown instead. Grep the saved log when more context is needed. The same pattern applies to `./gradlew check` (full log to `build/`, show the tail plus `FAILED`/`error:` lines).
    **Zero-Smali-Compile-Error Invariant**: The inline smali compiler silently drops any instruction it cannot assemble (e.g. `[6,8] Invalid register: v22`) instead of failing. Non-range invokes (`invoke-* {...}`) can only address `v0`-`v15`; in large methods `p` registers map above that, so use the `/range` form or copy values into low registers first. The runner fails on these errors (`Detected Smali Compile Errors`).
    **Zero-Fingerprint-Mismatch Invariant (Definitive Completion Gate)**:
    A patch update or the creation of a new patch is **NEVER** complete if there is even a single `Failed to match the fingerprint` or `fingerprint mismatch` in the patcher logs (standard or verbose).
