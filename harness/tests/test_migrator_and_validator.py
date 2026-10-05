@@ -137,6 +137,14 @@ class TestMigratorAndValidator(unittest.TestCase):
         resolved = SymbolResolver(index).resolve_notification_scheduler_symbols()
         self.assertEqual(resolved.on_start_task_method.new_symbol, "c")
 
+    # 19. Current telemetry offsets are read per ABI from the patch source
+    def test_current_telemetry_offsets(self):
+        arm64 = self.migrator.current_telemetry_offsets(is_arm32=False)
+        arm32 = self.migrator.current_telemetry_offsets(is_arm32=True)
+        self.assertEqual(len(arm64["crashpad.chromium.org"]), 2)
+        self.assertEqual(set(arm64), set(arm32))
+        self.assertNotEqual(arm64["cr.brave.com"], arm32["cr.brave.com"])
+
 
 if __name__ == "__main__":
     unittest.main()

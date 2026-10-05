@@ -116,6 +116,16 @@ class PatchMigrator:
         return MigrationPlan(self.constants_file, content, new_content2, changes)
 
 
+    def current_telemetry_offsets(self, is_arm32: bool = False) -> Dict[str, List[int]]:
+        """Reads HostEntry(arm64, arm32, host) offsets currently declared in BraveBlockTelemetryPatch.kt."""
+        offsets: Dict[str, List[int]] = {}
+        if not self.telemetry_patch_file.exists():
+            return offsets
+        pattern = re.compile(r'HostEntry\(\s*0x([0-9a-fA-F]+)L\s*,\s*0x([0-9a-fA-F]+)L\s*,\s*"([^"]+)"\s*\)')
+        for arm64_off, arm32_off, host in pattern.findall(self.telemetry_patch_file.read_text(encoding="utf-8")):
+            offsets.setdefault(host, []).append(int(arm32_off if is_arm32 else arm64_off, 16))
+        return offsets
+
     def plan_telemetry_hosts_update(self, host_results: List[HostAuditResult], is_arm32: bool = False) -> MigrationPlan:
         content = self.telemetry_patch_file.read_text(encoding="utf-8")
         changes = []

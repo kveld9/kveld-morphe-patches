@@ -46,7 +46,8 @@ class BravePipeline(BaseTargetPipeline):
         telemetry_report = None
         if self.elf_analyzer:
             print("[AUDIT] Auditing native telemetry domain offsets...")
-            telemetry_report = TelemetryScanner(self.elf_analyzer).audit_known_hosts()
+            current_offsets = self.migrator.current_telemetry_offsets(is_arm32=self.elf_analyzer.is_arm32)
+            telemetry_report = TelemetryScanner(self.elf_analyzer).audit_known_hosts(current_offsets)
 
         print("[AUDIT] Running adversarial validation on all Brave patches...")
         validator = AdversarialValidator(self.repo_root, self.dex_index, self.elf_analyzer)
