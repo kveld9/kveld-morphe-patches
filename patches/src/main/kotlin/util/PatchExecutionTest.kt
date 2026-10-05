@@ -660,6 +660,7 @@ fun main(args: Array<String>) {
         if (failedPatches == 0 && fingerprintErrors.isEmpty() && smaliCompileErrors.isEmpty()) {
             println("\n[BUILD] Compiling modified bytecode & assets via patcher.get()...")
             File(tempDir, "patched/dex").mkdirs()
+            File(tempDir, "patched/originalDex").mkdirs()
             val patcherResult = patcher.get()
             println("[BUILD] Compiled ${patcherResult.dexFiles.size} DEX files successfully.")
 

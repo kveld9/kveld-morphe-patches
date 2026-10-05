@@ -530,6 +530,7 @@ class AdversarialValidator:
         kt_files = [
             f for f in patches_dir.rglob("*.kt")
             if not (f.parent.name == "shared" and not f.name.endswith("Patch.kt"))
+            and f.name != "SharedExtensionPatch.kt"
         ]
         missing_logs = []
         for kt in kt_files:

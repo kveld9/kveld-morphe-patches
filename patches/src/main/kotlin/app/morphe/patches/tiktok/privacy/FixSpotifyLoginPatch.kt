@@ -16,6 +16,8 @@ val fixSpotifyLoginPatch = bytecodePatch(
     dependsOn(sharedExtensionPatch)
 
     execute {
+        var patched = 0
+
         // The Spotify auth SDK lives in the df_music_dsp dynamic feature dex, which the patcher
         // does not load. Its SSO intent is launched through this base-dex startActivityForResult
         // wrapper, so the extension intercepts it there. Parameters sit in high registers
@@ -36,7 +38,8 @@ val fixSpotifyLoginPatch = bytecodePatch(
             nop
             """.trimIndent()
         )
+        patched++
 
-        println("[Fix Spotify Login] Applied 1 hook -> Spotify SSO routed to Web OAuth.")
+        println("[Fix Spotify Login] Applied $patched hook -> Spotify SSO routed to Web OAuth.")
     }
 }
