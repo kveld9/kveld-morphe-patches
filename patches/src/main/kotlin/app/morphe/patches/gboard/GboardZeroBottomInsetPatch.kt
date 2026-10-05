@@ -58,6 +58,21 @@ val gboardZeroBottomInsetPatch = bytecodePatch(
         )
         patchedCount++
 
-        println("[Zero Bottom Inset] Hooked dynamic bottom offset preference across $patchedCount methods (KeyboardModeUtils, WindowMetricsNotification).")
+        // 3. GoogleInputMethodService.onWindowShown() -> drop the framework-drawn IME navigation bar gap
+        val fpOnWindowShown = Fingerprint(
+            name = "onWindowShown",
+            returnType = "V",
+            parameters = listOf(),
+            strings = listOf("GoogleInputMethodService.java", "onWindowShown"),
+        )
+        fpOnWindowShown.method.addInstructions(
+            0,
+            """
+                invoke-static {p0}, ${Constants.GBOARD_EXTENSION_CLASS}->applyImeNavBarInset(Landroid/inputmethodservice/InputMethodService;)V
+            """.trimIndent(),
+        )
+        patchedCount++
+
+        println("[Zero Bottom Inset] Hooked dynamic bottom offset preference across $patchedCount methods (KeyboardModeUtils, WindowMetricsNotification, GoogleInputMethodService).")
     }
 }

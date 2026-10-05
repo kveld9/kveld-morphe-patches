@@ -312,6 +312,58 @@ public class GboardExtension {
         return cachedBottomPadding;
     }
 
+    private static java.lang.ref.WeakReference<View> imeNavBarFrame = new java.lang.ref.WeakReference<>(null);
+
+    /**
+     * Since Android 13 the framework draws its own navigation bar inside the IME window
+     * (back chevron + IME switcher) and shrinks the IME content above it, so Gboard's own
+     * bottom offsets cannot remove that gap. Hide the frame and let the content reach the bottom.
+     */
+    public static void applyImeNavBarInset(android.inputmethodservice.InputMethodService service) {
+        try {
+            if (android.os.Build.VERSION.SDK_INT < 33 || getBottomPadding() < 0) return;
+            android.app.Dialog dialog = service.getWindow();
+            if (dialog == null) return;
+            android.view.Window window = dialog.getWindow();
+            if (window == null) return;
+            final android.view.ViewGroup decor = (android.view.ViewGroup) window.getDecorView();
+            View frame = null;
+            for (int i = 0; i < decor.getChildCount(); i++) {
+                View child = decor.getChildAt(i);
+                if (child.getClass().getName().endsWith("NavigationBarFrame")) {
+                    frame = child;
+                    break;
+                }
+            }
+            if (frame == null) return;
+            window.setDecorFitsSystemWindows(false);
+            hideImeNavBar(window, frame);
+            if (imeNavBarFrame.get() != frame) {
+                imeNavBarFrame = new java.lang.ref.WeakReference<>(frame);
+                // The framework re-shows the frame and Gboard re-tints the nav bar background on
+                // every nav button/theme update; re-apply before the frame is drawn.
+                decor.getViewTreeObserver().addOnPreDrawListener(() -> {
+                    View f = imeNavBarFrame.get();
+                    if (f == null || getBottomPadding() < 0) return true;
+                    return !hideImeNavBar(window, f);
+                });
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    private static boolean hideImeNavBar(android.view.Window window, View frame) {
+        boolean changed = false;
+        if (frame.getVisibility() != View.GONE) {
+            frame.setVisibility(View.GONE);
+            changed = true;
+        }
+        if (window.getNavigationBarColor() != android.graphics.Color.TRANSPARENT) {
+            window.setNavigationBarColor(android.graphics.Color.TRANSPARENT);
+            changed = true;
+        }
+        return changed;
+    }
+
     public static boolean isForceIncognitoEnabled(Context context) {
         return getBooleanPref(PREF_KEY_FORCE_INCOGNITO, false);
     }

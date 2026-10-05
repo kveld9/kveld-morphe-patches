@@ -44,8 +44,7 @@ enum class TargetApp(
         packageName = Constants.GBOARD_PACKAGE_NAME,
         candidateFilenames = listOf(
             "gboard-${Constants.GBOARD_TARGET_VERSION}.apk",
-            "gboard-18.2.4.969776716-lite_beta-arm64-v8a.apk",
-            "gboard-18.2.4.969776716-lite_beta-armeabi-v7a.apk",
+            "gboard-${Constants.GBOARD_TARGET_VERSION_V7A}.apk",
         ),
         filePattern = Regex("(?i).*gboard.*\\.apk$"),
         patchDirectoryPart = "gboard",
@@ -170,7 +169,10 @@ private fun findApkForTarget(target: TargetApp, searchDirs: List<File>): File? {
         }
     }
     for (dir in searchDirs) {
-        val matched = dir.listFiles { f -> f.isFile && target.filePattern.containsMatchIn(f.name) }
+        // Never fall back to an output of a previous run: re-patching a patched APK hides fingerprint drift.
+        val matched = dir.listFiles { f ->
+            f.isFile && target.filePattern.containsMatchIn(f.name) && !f.name.contains("patched", ignoreCase = true)
+        }
             ?.maxByOrNull { it.lastModified() }
         if (matched != null) return matched
     }
