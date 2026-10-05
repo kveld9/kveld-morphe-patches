@@ -4,7 +4,7 @@ import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
-import app.morphe.patches.shared.LocaleUtils
+import app.morphe.patches.shared.cleanClassName
 
 // ConnectionResult.SERVICE_DISABLED. SERVICE_MISSING (1) is remapped to SERVICE_UPDATING (18) by
 // GoogleApiAvailability when the GMS package is installed, which makes GoogleApiManager retry
@@ -35,7 +35,7 @@ val gboardDisablePlayServicesPatch = bytecodePatch(
             """.trimIndent(),
         )
 
-        val targetClass = LocaleUtils.cleanClassName(fp.originalClassDef.type)
+        val targetClass = cleanClassName(fp.originalClassDef.type)
         println("[Disable Play Services] Applied 1 hook -> $targetClass.${fp.method.name}() now reports SERVICE_DISABLED.")
     }
 }

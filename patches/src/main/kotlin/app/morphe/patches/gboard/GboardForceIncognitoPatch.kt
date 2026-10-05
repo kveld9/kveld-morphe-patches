@@ -7,6 +7,7 @@ import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions
 import app.morphe.patcher.patch.BytecodePatch
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.cleanClassName
 import app.morphe.patches.shared.sharedExtensionPatch
 import com.android.tools.smali.dexlib2.Opcode
 
@@ -86,8 +87,8 @@ val gboardForceIncognitoPatch: BytecodePatch = bytecodePatch(
             )
         }
 
-        val c1 = app.morphe.patches.shared.LocaleUtils.cleanClassName(fp1.originalClassDef.type)
-        val c2 = app.morphe.patches.shared.LocaleUtils.cleanClassName(fp2.originalClassDef.type)
+        val c1 = cleanClassName(fp1.originalClassDef.type)
+        val c2 = cleanClassName(fp2.originalClassDef.type)
         println("[Force Incognito Mode] Hooked incognito predicates in $c1, $c2 & unblocked clipboard ($removedOpcodes opcodes stripped)")
     }
 }

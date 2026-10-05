@@ -6,8 +6,8 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.cleanClassName
 import app.morphe.patches.shared.sharedExtensionPatch
-import app.morphe.patches.shared.LocaleUtils
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
@@ -47,7 +47,7 @@ val gboardVoiceTypingIncognitoPatch = bytecodePatch(
                     move-result v$reg
                 """.trimIndent(),
             )
-            val targetClass = LocaleUtils.cleanClassName(fp.originalClassDef.type)
+            val targetClass = cleanClassName(fp.originalClassDef.type)
             println("[Voice Typing in Incognito] Hooked incognito check in $targetClass.${fp.method.name}() -> voice dictation controlled by preference.")
         }
     }

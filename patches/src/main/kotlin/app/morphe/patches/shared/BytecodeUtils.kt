@@ -18,6 +18,12 @@ import com.android.tools.smali.dexlib2.iface.reference.Reference
 import com.android.tools.smali.dexlib2.util.MethodUtil
 
 /**
+ * Cleans Dalvik type descriptor strings to plain class names (e.g. 'Lcom/example/Foo;' -> 'Foo', 'Lfnr;' -> 'fnr').
+ */
+fun cleanClassName(type: String): String =
+    type.substringAfterLast('/').removePrefix("L").removeSuffix(";")
+
+/**
  * Clears exception try-catch blocks from a method implementation before replacing instructions.
  * Prevents Dalvik / ART VerifyError caused by dangling try blocks referencing wiped instruction offsets.
  */

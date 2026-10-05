@@ -9,10 +9,10 @@ import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.string
 import app.morphe.patches.shared.Constants
-import app.morphe.patches.shared.sharedExtensionPatch
-import app.morphe.patches.shared.LocaleUtils
+import app.morphe.patches.shared.cleanClassName
 import app.morphe.patches.shared.clearTryBlocks
 import app.morphe.patches.shared.ensureRegisterCount
+import app.morphe.patches.shared.sharedExtensionPatch
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
@@ -102,7 +102,7 @@ val gboardTopToolbarItemCountPatch = bytecodePatch(
             patched++
         }
 
-        val targetClass = LocaleUtils.cleanClassName(fpMax.originalClassDef.type)
+        val targetClass = cleanClassName(fpMax.originalClassDef.type)
         println("[Top Toolbar Item Count] Injected $patched toolbar limit override(s) in $targetClass -> dynamic preference enabled.")
     }
 }

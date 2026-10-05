@@ -9,10 +9,10 @@ import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.string
 import app.morphe.patches.shared.Constants
-import app.morphe.patches.shared.sharedExtensionPatch
-import app.morphe.patches.shared.LocaleUtils
+import app.morphe.patches.shared.cleanClassName
 import app.morphe.patches.shared.clearTryBlocks
 import app.morphe.patches.shared.ensureRegisterCount
+import app.morphe.patches.shared.sharedExtensionPatch
 
 val gboardCoreIntegrityPatch = bytecodePatch(
     default = true,
@@ -41,7 +41,7 @@ private fun BytecodePatchContext.patchSignatureBypass() {
         """.trimIndent(),
     )
 
-    val targetClass = LocaleUtils.cleanClassName(fp.originalClassDef.type)
+    val targetClass = cleanClassName(fp.originalClassDef.type)
     println("[Core Integrity] Neutralized signature validation check in $targetClass.${fp.method.name}()")
 }
 
@@ -117,7 +117,7 @@ private fun BytecodePatchContext.patchPhenotypeResilience() {
     if (deepEqualsIndex != null) {
         val branchIndex = deepEqualsIndex + 2
         resetCheckFp.method.removeInstruction(branchIndex)
-        val targetClass = LocaleUtils.cleanClassName(resetCheckFp.originalClassDef.type)
+        val targetClass = cleanClassName(resetCheckFp.originalClassDef.type)
         println("[Core Integrity] Neutralized flag reset assertion jump at opcode index $branchIndex in $targetClass.${resetCheckFp.method.name}()")
     } else {
         error("[Core Integrity] Failed to locate Phenotype flag reset branch instruction.")

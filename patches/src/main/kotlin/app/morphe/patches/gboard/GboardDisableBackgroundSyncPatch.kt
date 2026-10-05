@@ -4,7 +4,7 @@ import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
-import app.morphe.patches.shared.LocaleUtils
+import app.morphe.patches.shared.cleanClassName
 
 val gboardDisableBackgroundSyncPatch = bytecodePatch(
     name = "Disable Background Sync",
@@ -169,7 +169,7 @@ val gboardDisableBackgroundSyncPatch = bytecodePatch(
             returnType = "V",
         )
         fpMdd1.method.addInstructions(0, "return-void")
-        val cMdd1 = LocaleUtils.cleanClassName(fpMdd1.originalClassDef.type)
+        val cMdd1 = cleanClassName(fpMdd1.originalClassDef.type)
         hookedMethods.add("$cMdd1.a")
 
         val fpMdd2 = Fingerprint(
@@ -179,7 +179,7 @@ val gboardDisableBackgroundSyncPatch = bytecodePatch(
             returnType = "V",
         )
         fpMdd2.method.addInstructions(0, "return-void")
-        val cMdd2 = LocaleUtils.cleanClassName(fpMdd2.originalClassDef.type)
+        val cMdd2 = cleanClassName(fpMdd2.originalClassDef.type)
         hookedMethods.add("$cMdd2.t")
 
         val fpMdd3 = Fingerprint(
@@ -270,7 +270,7 @@ val gboardDisableBackgroundSyncPatch = bytecodePatch(
             returnType = "V",
         )
         fpSp1.method.addInstructions(0, "return-void")
-        val cSp1 = LocaleUtils.cleanClassName(fpSp1.originalClassDef.type)
+        val cSp1 = cleanClassName(fpSp1.originalClassDef.type)
         hookedMethods.add("$cSp1.n")
 
         val fpSp2 = Fingerprint(
@@ -280,7 +280,7 @@ val gboardDisableBackgroundSyncPatch = bytecodePatch(
             returnType = "V",
         )
         fpSp2.method.addInstructions(0, "return-void")
-        val cSp2 = LocaleUtils.cleanClassName(fpSp2.originalClassDef.type)
+        val cSp2 = cleanClassName(fpSp2.originalClassDef.type)
         hookedMethods.add("$cSp2.n")
 
         val targetClasses = hookedMethods.map { it.substringBefore('.') }.distinct()

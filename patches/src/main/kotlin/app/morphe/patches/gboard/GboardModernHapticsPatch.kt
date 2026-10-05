@@ -7,7 +7,7 @@ import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.string
 import app.morphe.patches.shared.Constants
-import app.morphe.patches.shared.LocaleUtils
+import app.morphe.patches.shared.cleanClassName
 import app.morphe.patches.shared.sharedExtensionPatch
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
@@ -61,7 +61,7 @@ val gboardModernHapticsPatch = bytecodePatch(
             """.trimIndent(),
         )
 
-        val targetClass = LocaleUtils.cleanClassName(fp.originalClassDef.type)
+        val targetClass = cleanClassName(fp.originalClassDef.type)
         println("[Modern Haptics] Applied 1 hook -> $VIBRATION_EFFECT_MIN_SDK in $targetClass.<clinit>() now follows the in-app toggle.")
     }
 }

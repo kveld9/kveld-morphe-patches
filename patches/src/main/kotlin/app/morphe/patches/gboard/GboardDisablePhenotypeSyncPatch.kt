@@ -4,6 +4,7 @@ import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.cleanClassName
 
 val gboardDisablePhenotypeSyncPatch = bytecodePatch(
     name = "Disable Remote Configuration",
@@ -40,7 +41,7 @@ val gboardDisablePhenotypeSyncPatch = bytecodePatch(
             returnType = "V",
         )
         fp3.method.addInstructions(0, "return-void")
-        val c3 = app.morphe.patches.shared.LocaleUtils.cleanClassName(fp3.originalClassDef.type)
+        val c3 = cleanClassName(fp3.originalClassDef.type)
         hookedMethods.add("$c3.dD")
 
         val fp4 = Fingerprint(

@@ -7,6 +7,7 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patcher.string
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.cleanClassName
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import org.w3c.dom.Element
 
@@ -66,7 +67,7 @@ val gboardHardenedIntentSecurityPatch = bytecodePatch(
             "const/4 v$reg, 0x1",
         )
 
-        val targetClass = app.morphe.patches.shared.LocaleUtils.cleanClassName(fingerprint.originalClassDef.type)
+        val targetClass = cleanClassName(fingerprint.originalClassDef.type)
         println("[Hardened Intent Security] Injected flag override into $targetClass.<clinit>() at opcode index ${matchIndex + 2}")
     }
 }

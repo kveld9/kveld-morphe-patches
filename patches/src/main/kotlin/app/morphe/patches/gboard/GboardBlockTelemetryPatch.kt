@@ -4,7 +4,7 @@ import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
-import app.morphe.patches.shared.LocaleUtils
+import app.morphe.patches.shared.cleanClassName
 
 val gboardBlockTelemetryPatch = bytecodePatch(
     name = "Block Telemetry",
@@ -25,7 +25,7 @@ val gboardBlockTelemetryPatch = bytecodePatch(
                 returnType = "V",
             )
             fp.method.addInstructions(0, "return-void")
-            val c = LocaleUtils.cleanClassName(fp.originalClassDef.type)
+            val c = cleanClassName(fp.originalClassDef.type)
             hookedMethods.add("$c.$methodName")
         }
 
@@ -36,7 +36,7 @@ val gboardBlockTelemetryPatch = bytecodePatch(
             returnType = "V",
         )
         fpHcg.method.addInstructions(0, "return-void")
-        val cHcg = LocaleUtils.cleanClassName(fpHcg.originalClassDef.type)
+        val cHcg = cleanClassName(fpHcg.originalClassDef.type)
         hookedMethods.add("$cHcg.b")
 
         val fpJga = Fingerprint(
@@ -46,7 +46,7 @@ val gboardBlockTelemetryPatch = bytecodePatch(
             returnType = "V",
         )
         fpJga.method.addInstructions(0, "return-void")
-        val cJga = LocaleUtils.cleanClassName(fpJga.originalClassDef.type)
+        val cJga = cleanClassName(fpJga.originalClassDef.type)
         hookedMethods.add("$cJga.dD")
 
         // 2. Daily Ping Worker (DailyPingWorker.c)
@@ -84,7 +84,7 @@ val gboardBlockTelemetryPatch = bytecodePatch(
             returnType = "V",
         )
         fpLxd.method.addInstructions(0, "return-void")
-        val cLxd = LocaleUtils.cleanClassName(fpLxd.originalClassDef.type)
+        val cLxd = cleanClassName(fpLxd.originalClassDef.type)
         hookedMethods.add("$cLxd.dD")
 
         val fpOrc = Fingerprint(
@@ -94,7 +94,7 @@ val gboardBlockTelemetryPatch = bytecodePatch(
             returnType = "V",
         )
         fpOrc.method.addInstructions(0, "return-void")
-        val cOrc = LocaleUtils.cleanClassName(fpOrc.originalClassDef.type)
+        val cOrc = cleanClassName(fpOrc.originalClassDef.type)
         hookedMethods.add("$cOrc.b")
 
         val fpCrash = Fingerprint(
@@ -122,7 +122,7 @@ val gboardBlockTelemetryPatch = bytecodePatch(
                 return-object v1
             """.trimIndent(),
         )
-        val cNjv = LocaleUtils.cleanClassName(fpNjv.originalClassDef.type)
+        val cNjv = cleanClassName(fpNjv.originalClassDef.type)
         hookedMethods.add("$cNjv.get")
 
         // 4. AppDoctor Diagnostics (AppDoctorReceiver)
@@ -143,7 +143,7 @@ val gboardBlockTelemetryPatch = bytecodePatch(
             returnType = "V",
         )
         fpTenor.method.addInstructions(0, "return-void")
-        val cTenor = LocaleUtils.cleanClassName(fpTenor.originalClassDef.type)
+        val cTenor = cleanClassName(fpTenor.originalClassDef.type)
         hookedMethods.add("$cTenor.F")
 
         val targetClasses = hookedMethods.map { it.substringBefore('.') }.distinct()

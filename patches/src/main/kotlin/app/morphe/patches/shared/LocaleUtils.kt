@@ -94,12 +94,6 @@ object LocaleUtils {
         }
     }
 
-    /**
-     * Cleans Dalvik type descriptor strings to plain class names (e.g. 'Lcom/example/Foo;' -> 'Foo', 'Lfnr;' -> 'fnr').
-     */
-    fun cleanClassName(type: String): String {
-        return type.substringAfterLast('/').removePrefix("L").removeSuffix(";")
-    }
 
     /**
      * Resolves all resource directories (`res/`) across all ARSC packages decoded by Morphe.

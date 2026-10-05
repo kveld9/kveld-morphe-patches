@@ -10,10 +10,10 @@ import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.string
 import app.morphe.patches.shared.Constants
-import app.morphe.patches.shared.sharedExtensionPatch
-import app.morphe.patches.shared.LocaleUtils
+import app.morphe.patches.shared.cleanClassName
 import app.morphe.patches.shared.clearTryBlocks
 import app.morphe.patches.shared.ensureRegisterCount
+import app.morphe.patches.shared.sharedExtensionPatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
@@ -88,7 +88,7 @@ val gboardFeatureFlagsPatch = bytecodePatch(
         fun hookFlag(flag: String, hook: String, label: String) {
             val fp = flagFingerprint(flag)
             fp.method.overrideFlagWithHook(fp.instructionMatches.first().index, flag, hook)
-            val targetClass = LocaleUtils.cleanClassName(fp.originalClassDef.type)
+            val targetClass = cleanClassName(fp.originalClassDef.type)
             println("[Feature Flags] $label: Injected isolated flag hook for $flag into $targetClass.<clinit>()")
             patched++
         }
@@ -111,7 +111,7 @@ val gboardFeatureFlagsPatch = bytecodePatch(
             fp.instructionMatches.zip(cursorFlags).sortedByDescending { it.first.index }.forEach { (match, flag) ->
                 fp.method.overrideFlagWithHook(match.index, flag, "isCursorTrackpadEnabled")
             }
-            val targetClass = LocaleUtils.cleanClassName(fp.originalClassDef.type)
+            val targetClass = cleanClassName(fp.originalClassDef.type)
             println("[Feature Flags] Cursor Trackpad: Injected ${cursorFlags.size} isolated flag hook(s) into $targetClass.<clinit>() -> 2D spacebar trackpad enabled.")
             patched++
         }
@@ -137,7 +137,7 @@ val gboardFeatureFlagsPatch = bytecodePatch(
         fpEmoji.method.overrideFlagDefault(fpEmoji.instructionMatches.first().index, "emoji_scale_supported") { reg ->
             "const/4 v$reg, 0x1"
         }
-        val targetClassEmoji = LocaleUtils.cleanClassName(fpEmoji.originalClassDef.type)
+        val targetClassEmoji = cleanClassName(fpEmoji.originalClassDef.type)
         println("[Feature Flags] Emoji Scale Setting: Injected isolated flag override into $targetClassEmoji.<clinit>()")
         patched++
 
