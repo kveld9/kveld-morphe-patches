@@ -71,7 +71,7 @@
 </details>
 
 <details>
-<summary>TikTok&nbsp;&nbsp;•&nbsp;&nbsp;<b>54 patches</b></summary>
+<summary>TikTok&nbsp;&nbsp;•&nbsp;&nbsp;<b>55 patches</b></summary>
 <br>
 
 **Supported versions:**
@@ -93,6 +93,7 @@
 | **Custom Offline Videos Limit** | Customizes the maximum number of videos available for offline download caching. | • Custom Offline Videos Limit |
 | **Custom Share Sheet** | Customizes and cleans the native TikTok share sheet via individual toggle switches for third-party apps, essential sharing features, and secondary utility actions. | • Hide WhatsApp<br>• Hide Instagram<br>• Hide Facebook & Messenger<br>• Hide Telegram<br>• Hide X / Twitter<br>• Hide Snapchat<br>• Hide Reddit & Discord<br>• Hide SMS & Messages<br>• Hide Secondary Networks<br>• Hide 'Repost' Button<br>• Hide QR Code<br>• Hide 'Copy Link'<br>• Hide System Share ('More')<br>• Hide Friends / Direct Messages Row<br>• Hide 'Promote' Action<br>• Hide 'Why This Video'<br>• Hide 'Create Group' Action<br>• Hide 'Add to Story'<br>• Hide 'Create Sticker'<br>• Hide 'Duet' Action<br>• Hide 'Stitch' Action<br>• Hide 'Picture-in-Picture' (PiP)<br>• Hide 'Clear Display'<br>• Hide 'Background Audio'<br>• Hide Live Wallpaper & GIF<br>• Hide 'Not Interested'<br>• Hide 'Report' |
 | **Device Privacy Guard** | Neutralizes invasive runtime permissions (contacts sync, location tracking, nearby devices), advertising ID profiling, background clipboard snooping routines, and motion sensor profiling to protect user data. |  |
+| **Direct Message Declutter** | Cleans direct message conversations and chat list items via individual toggles for chat list camera icons, header voice/video call buttons, message forward buttons, streak mascot and reaction bars, input camera buttons, photo gallery buttons, sticker and emoji buttons, and voice recording buttons. | • Hide Chat List Camera Icon<br>• Hide Header Call Button<br>• Hide Message Forward Button<br>• Hide Reaction & Streak Bar<br>• Hide Input Camera Button<br>• Hide Gallery Button<br>• Hide Sticker & Emoji Button<br>• Hide Voice Record Button |
 | **Disable Double Tap to Like** | Disables the double tap gesture to like videos in the feed, preventing accidental likes while scrolling or pausing. Videos can still be liked using the like button. |  |
 | **Disable Feed Long-Press Actions** | Disables long-press action gestures on feed buttons, including Like to repost, Share to quick DMs, and Comment to quick emojis. | • Disable Long-Press Like (Repost)<br>• Disable Long-Press Share (Quick DMs)<br>• Disable Long-Press Comment (Quick Emojis) |
 | **Disable Post-Download Share Dialog** | Suppresses the automatic 'Share to' and friend suggestions bottom sheet that pops up after finishing a download. |  |

@@ -49,6 +49,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Usability** | **Stop Video Looping** | `bytecodePatch` | Prevents videos from looping continuously on playback completion. |
 | **Usability** | **[Hide Inbox Promos & Alerts](#9-hide-inbox-promos--alerts)** | `bytecodePatch` | Hides promotional banners, streak mascot cards, contact sync suggestions, friend recommendations, and migration guide tooltips in the inbox and direct messages. |
 | **Usability** | **Hide Inbox Story & Status Tray** | `bytecodePatch` | Removes the horizontal story, notes, and status tray (Skylight) displayed at the top of direct messages and the inbox. |
+| **Usability** | **[Direct Message Declutter](#10-direct-message-declutter)** | `bytecodePatch` | Cleans direct message conversations and chat list items via individual toggles for chat list camera icons, header voice/video call buttons, message forward buttons, streak mascot and reaction bars, input camera buttons, and right-side input action buttons (gallery, emoji, mic). |
 | **Usability** | **[Disable Feed Long-Press Actions](#7-disable-feed-long-press-actions)** | `bytecodePatch` | Disables long-press action gestures on feed buttons, including Like to repost, Share to quick DMs, and Comment to quick emojis. |
 | **Usability** | **Enable Profile Banner** | `bytecodePatch` | Unlocks custom profile banner header cover feature and banner editing tools in Edit Profile. |
 | **Usability** | **System Font** | `bytecodePatch` | Forces TikTok to use the Android system font instead of bundled proprietary TikTokSans fonts. |
@@ -272,6 +273,21 @@ The **`Hide Inbox Promos & Alerts`** patch removes promotional and nudge element
 | **Hide Contact & Friend Recommendations** | `hideContactRecommendations` | Boolean | `true` | Hides user recommendation cards (Chat with contacts / Find and chat with them), suggested accounts, and mutual friends modules in the chatlist. |
 | **Hide Navigation Notices & Tooltips** | `hideNavigationNoticesAndTooltips` | Boolean | `true` | Hides UI migration tooltips (e.g. New followers has moved), bulletin board guide banners, and Shop migration notices. |
 
+### 10. Direct Message Declutter
+
+The **`Direct Message Declutter`** patch cleans direct message conversations and chat list items via individual boolean toggles:
+
+| Toggle Option | Key | Type | Default | Description |
+| :--- | :--- | :---: | :---: | :--- |
+| **Hide Chat List Camera Icon** | `hideChatListCamera` | Boolean | `true` | Hides the quick camera action icon on conversation rows in the DM inbox chat list. |
+| **Hide Header Call Button** | `hideCallButton` | Boolean | `true` | Hides the audio/video call button (receiver icon) in the 1-on-1 chat header bar. |
+| **Hide Message Forward Button** | `hideMessageForwardButton` | Boolean | `true` | Hides the quick forward/share icon displayed beside chat message bubbles. |
+| **Hide Reaction & Streak Bar** | `hideReactionTray` | Boolean | `true` | Hides the floating emoji reaction tray and streak mascot bar displayed above the chat text input. |
+| **Hide Input Camera Button** | `hideInputCamera` | Boolean | `true` | Hides the camera shortcut icon to the left of the chat message input field. |
+| **Hide Gallery Button** | `hideGalleryButton` | Boolean | `true` | Hides the photo album / gallery button on the right side of the chat message input field. |
+| **Hide Sticker & Emoji Button** | `hideEmojiButton` | Boolean | `true` | Hides the sticker and emoji selector button on the right side of the chat message input field. |
+| **Hide Voice Record Button** | `hideVoiceRecordButton` | Boolean | `true` | Hides the microphone / voice recording button on the right side of the chat message input field. |
+
 ---
 
 ## 🔒 Deep Technical Patch Breakdown
@@ -444,5 +460,18 @@ The **`Hide Inbox Promos & Alerts`** patch removes promotional and nudge element
 ### 21. Enable Profile Banner (`profileBannerPatch`)
 - Unlocks the custom profile banner (background header cover) feature on user profiles and enables the banner selection, cropping, and editing tools in Edit Profile.
 - **ProfileBackgroundExp Gate Activation**: Hooks the main feature evaluation gate in `ProfileBackgroundExp` (`(Z)Z`) -> returns `true`, allowing `MusProfileEditFragment` to attach `ProfileBgEditHelper` (`LX/0axG`) and `ProfileRootBaseComponent` to assemble the `ProfileBackgroundComponent`.
+
+### 22. Direct Message Declutter (`directMessageDeclutterPatch`)
+- Declutters direct message chat rooms and the inbox conversation list via modular boolean toggles:
+  - **Chat List Camera Icon (`hideChatListCamera`)**: Hooks the serialized view configuration model `LX/0CbL;` in its `<init>` constructors and `setShowCameraIcon(Z)V` to enforce `showCameraIcon = false`, removing the camera shortcut on conversation list rows.
+  - **Header Call Button (`hideCallButton`)**: In `BaseSingleChatTitleBarRightAssem.onViewCreated(View)V`, sets the call icon view (`0x7f0a39ae` / `icon_call_container`) to `View.GONE` and sets field `LLLFF` to `null` to neutralize async observer callbacks without crashing.
+  - **Message Forward Button (`hideMessageForwardButton`)**: In `SideMessageStatusReusedSkeletonUISlot;->vs(LX/0BVS;)LX/0pxs;`, substitutes return value `LX/0pxs;->FORWARD` with `LX/0pxs;->NOTHING`, suppressing the forward arrow button beside individual chat messages while keeping the reply button functional.
+  - **Reaction & Streak Mascot Bar (`hideReactionTray`)**: Hooks `ActionBarServiceImpl;->LJI()Z` to return `false` (neutralizing feature eligibility) and injects `View.GONE` into `ActionBarUIAssem.onViewCreated(View)V` immediately prior to `return-void`, hiding the emoji reaction bar and streak mascot.
+  - **Input Camera Shortcut (`hideInputCamera`)**: Hooks `DMCameraFeatureImpl;->LJII(...)` to return `null` and suppresses container `0x7f0a479c` (`input_camera_container`) with `View.GONE` in `IMInputAssem.onViewCreated(View)V`.
+  - **Right Input Action Buttons (`hideGalleryButton`, `hideEmojiButton`, `hideVoiceRecordButton`)**:
+    - **Photo Album / Gallery**: Sets `0x7f0a3d4f` (`im_photo_btn`) to `View.GONE` and returns early in `IMImageBtnViewAssem.Wr(View)V`.
+    - **Stickers & Emojis**: Sets `0x7f0a3ce0` (`im_emoji_btn`) to `View.GONE` and returns early in `InputEmojiButtonUIAssem.onViewCreated(View)V`.
+    - **Voice Record**: Sets `0x7f0a4980` (`record_btn`) to `View.GONE` and returns early in `RecordBtnAssem.onViewCreated(View)V`.
+    - *Preservation Invariant*: The parent actions container `0x7f0a3dd3` (`im_input_right_container`) is intentionally left intact so that `SendButtonAssemV2` appears seamlessly when typing text.
 
 
