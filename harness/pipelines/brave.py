@@ -7,7 +7,7 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional, Tuple
 
 from harness.core.pipeline import BaseTargetPipeline, PipelineRegistry
-from harness.core.symbols import SymbolResolver
+from harness.core.symbols import ResolvedSymbol, SymbolConfidence, SymbolResolver
 from harness.core.telemetry import TelemetryScanner
 from harness.migration.patch_migrator import MigrationPlan
 from harness.migration.validator import AdversarialValidator
@@ -53,6 +53,23 @@ class BravePipeline(BaseTargetPipeline):
         patch_results = validator.audit_brave_patches()
 
         return patch_results, {"symbols": symbols, "telemetry_report": telemetry_report}
+
+    @staticmethod
+    def _blocked_origin_symbols(extra_data: Any) -> List[ResolvedSymbol]:
+        origin = (extra_data or {}).get("symbols", {}).get("origin")
+        if not origin:
+            return []
+        return [s for s in vars(origin).values() if s.confidence == SymbolConfidence.BLOCKED]
+
+    def is_all_verified(self, patch_results: Dict[str, Any], extra_data: Any) -> bool:
+        # Unresolved obfuscated symbols fall back to stale names; never migrate with them.
+        return super().is_all_verified(patch_results, extra_data) and not self._blocked_origin_symbols(extra_data)
+
+    def collect_blocked_reasons(self, patch_results: Dict[str, Any], extra_data: Any) -> List[str]:
+        reasons = super().collect_blocked_reasons(patch_results, extra_data)
+        for sym in self._blocked_origin_symbols(extra_data):
+            reasons.append(f"Unresolved obfuscated symbol '{sym.symbol_id}' (fallback '{sym.new_symbol}' not applied)")
+        return reasons
 
     def create_migration_plans(self, extra_data: Any) -> List[MigrationPlan]:
         symbols = extra_data.get("symbols", {})

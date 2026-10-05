@@ -10,11 +10,17 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
 from harness.core.apk import ApkMetadata
-from harness.core.symbols import BraveOriginSymbols, BraveNotificationSchedulerSymbols
+from harness.core.symbols import BraveOriginSymbols, SymbolConfidence
 from harness.core.telemetry import TelemetryReport
 from harness.gboard.invariants import InvariantsReport
 from harness.gboard.themes import ThemeAuditReport
 from harness.migration.validator import PatchAuditResult, PatchStatus
+
+
+SYMBOL_ICONS = {
+    SymbolConfidence.VERIFIED: "[PASS]",
+    SymbolConfidence.BLOCKED: "[FAIL]",
+}
 
 
 @dataclass
@@ -181,15 +187,9 @@ class HarnessReporter:
         ]
         origin_syms: Optional[BraveOriginSymbols] = symbols.get("origin")
         if origin_syms:
-            for s in [
-                origin_syms.locked_field,
-                origin_syms.key_mapping_method,
-                origin_syms.context_getter_method,
-                origin_syms.update_prefs_method,
-                origin_syms.find_pref_method,
-                origin_syms.pref_listener_field,
-            ]:
-                lines.append(f"| `{s.symbol_id}` | `{s.target_class}` | `{s.old_symbol}` | `{s.new_symbol}` | [PASS] `{s.confidence.value}` |")
+            for s in vars(origin_syms).values():
+                icon = SYMBOL_ICONS.get(s.confidence, "[WARN]")
+                lines.append(f"| `{s.symbol_id}` | `{s.target_class}` | `{s.old_symbol}` | `{s.new_symbol}` | {icon} `{s.confidence.value}` |")
         lines.extend(["", "---", ""])
         return lines
 

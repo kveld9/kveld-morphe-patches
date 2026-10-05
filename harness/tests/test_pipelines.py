@@ -35,6 +35,40 @@ class TestPipelineRegistry(unittest.TestCase):
 
 
 
+class TestBraveSymbolGate(unittest.TestCase):
+
+    @staticmethod
+    def _origin_symbols(blocked_id=None):
+        from harness.core.symbols import BraveOriginSymbols, ResolvedSymbol, SymbolConfidence
+
+        def sym(sid):
+            conf = SymbolConfidence.BLOCKED if sid == blocked_id else SymbolConfidence.VERIFIED
+            return ResolvedSymbol(sid, "", "a", "b", "method", conf)
+
+        return BraveOriginSymbols(
+            locked_field=sym("locked"),
+            key_mapping_method=sym("key"),
+            context_getter_method=sym("ctx"),
+            update_prefs_method=sym("update"),
+            find_pref_method=sym("find"),
+            pref_listener_field=sym("listener"),
+            pref_key_field=sym("pref_key"),
+        )
+
+    def test_blocked_symbol_blocks_update(self):
+        pipeline = object.__new__(BravePipeline)
+        extra = {"symbols": {"origin": self._origin_symbols(blocked_id="ctx")}}
+        self.assertFalse(pipeline.is_all_verified({}, extra))
+        reasons = pipeline.collect_blocked_reasons({}, extra)
+        self.assertEqual(len(reasons), 1)
+        self.assertIn("'ctx'", reasons[0])
+
+    def test_resolved_symbols_allow_update(self):
+        pipeline = object.__new__(BravePipeline)
+        extra = {"symbols": {"origin": self._origin_symbols()}}
+        self.assertTrue(pipeline.is_all_verified({}, extra))
+
+
 class TestTransactionalMigrationContext(unittest.TestCase):
 
     def setUp(self):
