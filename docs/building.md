@@ -61,6 +61,15 @@ Every patch change must be validated by running the Morphe Patcher against the t
 
 # Force every boolean patch option on (covers hooks behind disabled-by-default toggles)
 ./gradlew runPatchTest -Papp=<targetApp> -PallOptions=true
+
+# Also write a signed, installable APK
+./gradlew runPatchTest -Papp=<targetApp> -Pout=candidate_apks/<app>_<version>_patched.apk
+```
+
+For bundle targets (`.apkm` / `.xapk`), the signed split APKs are written next to the output and prefixed with its name (`<app>_<version>_patched.<split>.apk`), so one glob installs the whole set:
+
+```bash
+adb install-multiple -r candidate_apks/<app>_<version>_patched*.apk
 ```
 
 ---

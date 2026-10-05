@@ -811,7 +811,9 @@ fun main(args: Array<String>) {
                                 }
                             }
 
-                            val signedSplitFile = File(outFile.parentFile, splitEntry.name)
+                            // Prefix splits with the output name so bundles of different apps never overwrite
+                            // each other and `adb install-multiple -r <out-stem>*.apk` installs the whole set.
+                            val signedSplitFile = File(outFile.parentFile, "${outFile.nameWithoutExtension}.${File(splitEntry.name).name}")
                             println("[SIGN] Signing companion split -> ${signedSplitFile.name}...")
                             if (zipalignBin != null && apksignerBin != null && keystoreFile.exists() && keystoreFile.length() > 0L) {
                                 val splitAlignArgs = if (supports16k) {
