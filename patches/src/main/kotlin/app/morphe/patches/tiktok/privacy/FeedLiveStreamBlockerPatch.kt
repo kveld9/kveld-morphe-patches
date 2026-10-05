@@ -1,9 +1,9 @@
 package app.morphe.patches.tiktok.privacy
 
 import app.morphe.patcher.Fingerprint
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.addInstructionsAtControlFlowLabel
 import app.morphe.patches.shared.sharedExtensionPatch
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
@@ -34,7 +34,7 @@ val feedLiveStreamBlockerPatch = bytecodePatch(
 
             returnIndices.asReversed().forEach { returnIndex ->
                 val reg = (method.implementation!!.instructions[returnIndex] as OneRegisterInstruction).registerA
-                method.addInstructions(
+                method.addInstructionsAtControlFlowLabel(
                     returnIndex,
                     """
                         invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterLiveStreamsInFeedItemList(Ljava/lang/Object;)V
@@ -63,7 +63,7 @@ val feedLiveStreamBlockerPatch = bytecodePatch(
                 ?.toList() ?: emptyList()
 
             returnIndices.asReversed().forEach { (returnIndex, reg) ->
-                method.addInstructions(
+                method.addInstructionsAtControlFlowLabel(
                     returnIndex,
                     """
                         invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterLiveStreamsInList(Ljava/lang/Object;)V
@@ -92,7 +92,7 @@ val feedLiveStreamBlockerPatch = bytecodePatch(
                 ?.toList() ?: emptyList()
 
             returnIndices.asReversed().forEach { (returnIndex, reg) ->
-                method.addInstructions(
+                method.addInstructionsAtControlFlowLabel(
                     returnIndex,
                     """
                         invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterLiveStreamsInFollowFeedList(Ljava/lang/Object;)V
