@@ -5,8 +5,9 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.intOption
 import app.morphe.patches.shared.Constants
-import app.morphe.patches.shared.sharedExtensionPatch
+import app.morphe.patches.shared.addInstructionsAtControlFlowLabel
 import app.morphe.patches.shared.ensureRegisterCount
+import app.morphe.patches.shared.sharedExtensionPatch
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
@@ -91,7 +92,7 @@ val customOfflineVideosLimitPatch = bytecodePatch(
                     ?.toList() ?: emptyList()
 
                 returnIndices.asReversed().forEach { (returnIndex, reg) ->
-                    listProviderMethod.addInstructions(
+                    listProviderMethod.addInstructionsAtControlFlowLabel(
                         returnIndex,
                         """
                             invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_OFFLINE_VIDEOS_HOOK}->getOfflineLimits(Ljava/util/List;)Ljava/util/List;
@@ -149,7 +150,7 @@ val customOfflineVideosLimitPatch = bytecodePatch(
                     ?.toList() ?: emptyList()
 
                 returnIndices.asReversed().forEach { (returnIndex, reg) ->
-                    titleFormatterMethod.addInstructions(
+                    titleFormatterMethod.addInstructionsAtControlFlowLabel(
                         returnIndex,
                         """
                             invoke-static {p0, p1, v$reg}, ${Constants.TIKTOK_EXTENSION_OFFLINE_VIDEOS_HOOK}->formatTitle(ILandroid/app/Activity;Ljava/lang/String;)Ljava/lang/String;
@@ -212,7 +213,7 @@ val customOfflineVideosLimitPatch = bytecodePatch(
                     ?.toList() ?: emptyList()
 
                 returnIndices.asReversed().forEach { (returnIndex, reg) ->
-                    subtitleMethod.addInstructions(
+                    subtitleMethod.addInstructionsAtControlFlowLabel(
                         returnIndex,
                         """
                             invoke-static {p1, p2, v$reg}, ${Constants.TIKTOK_EXTENSION_OFFLINE_VIDEOS_HOOK}->formatProgressSubtitle(Landroid/content/Context;ILjava/lang/String;)Ljava/lang/String;
