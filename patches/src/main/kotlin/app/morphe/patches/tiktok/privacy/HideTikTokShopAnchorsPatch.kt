@@ -5,6 +5,7 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.addInstructionsAtControlFlowLabel
 import app.morphe.patches.shared.sharedExtensionPatch
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
@@ -49,7 +50,7 @@ val hideTikTokShopAnchorsPatch = bytecodePatch(
 
             returnIndices.asReversed().forEach { returnIndex ->
                 val reg = (feedApiMethod.implementation!!.instructions[returnIndex] as OneRegisterInstruction).registerA
-                feedApiMethod.addInstructions(
+                feedApiMethod.addInstructionsAtControlFlowLabel(
                     returnIndex,
                     """
                         invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->stripShopAnchorsInFeedItemList(Ljava/lang/Object;)V
@@ -74,7 +75,7 @@ val hideTikTokShopAnchorsPatch = bytecodePatch(
                 ?.toList() ?: emptyList()
 
             feedItemListReturnIndices.asReversed().forEach { (returnIndex, reg) ->
-                feedItemListMethod.addInstructions(
+                feedItemListMethod.addInstructionsAtControlFlowLabel(
                     returnIndex,
                     """
                         invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->stripShopAnchorsInList(Ljava/lang/Object;)V
@@ -99,7 +100,7 @@ val hideTikTokShopAnchorsPatch = bytecodePatch(
                 ?.toList() ?: emptyList()
 
             followFeedListReturnIndices.asReversed().forEach { (returnIndex, reg) ->
-                followFeedListMethod.addInstructions(
+                followFeedListMethod.addInstructionsAtControlFlowLabel(
                     returnIndex,
                     """
                         invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->stripShopAnchorsInFollowFeedList(Ljava/lang/Object;)V
