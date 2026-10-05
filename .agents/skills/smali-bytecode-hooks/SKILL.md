@@ -149,8 +149,4 @@ return-void
 
 ## 6. Mandatory In-Situ Patcher Verification Gate
 
-Any modified Smali hook, register rewrite, or dexlib2 fingerprint MUST be validated by running the Morphe Patcher against the target APK before declaring completion:
-```bash
-./gradlew runPatchTest -Papp=<targetApp>
-```
-The patching execution must conclude with **100% success** (0 failed patches, 0 fingerprint mismatches).
+Any modified Smali hook, register rewrite, or fingerprint must pass the `runPatchTest` gate in `AGENTS.md` (Section 3, Step 4), including its zero-smali-compile-error rule (non-range invokes only address `v0`-`v15`).

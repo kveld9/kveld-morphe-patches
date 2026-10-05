@@ -129,7 +129,7 @@ When adding or updating any patch, the following gates are **MANDATORY**:
 3. **Smoke Launch Verification (Zero-Crash Baseline)**: Verify that the patched APK launches cleanly without runtime crashes or uncaught startup exceptions.
 
 ### Step 5: `ADVERSARIAL RISK GATE & AUDIT`
-For non-trivial logic, Smali hooks, native ARM64 patching (`libchrome.so`), or shared compatibility changes (`Constants.kt`), invoke the `adversarial-pr-breaker` subagent or perform a rigorous red-team audit before declaring completion.
+For non-trivial logic, Smali hooks, native ARM64 patching (`libchrome.so`), or shared compatibility changes (`Constants.kt`), perform a rigorous red-team audit (e.g. `/code-review`) before declaring completion.
 
 ---
 
@@ -165,8 +165,7 @@ For non-trivial logic, Smali hooks, native ARM64 patching (`libchrome.so`), or s
     - All validation runtime outputs (`validation/runtime/`, `validation/physical_harness/results/`) must remain strictly excluded via `.gitignore` and sanitized by `scripts/clean_workspace.sh`.
 11. **Metadata Synchronization Integrity**:
     - When patch options, default values, or descriptions are modified in Kotlin source code, verify that patch catalog generator tasks (`./gradlew generatePatchesList`) are synchronized before release packaging.
-12. **DO NOT Declare Patch Tasks Complete Without In-Situ Morphe Patcher Verification & Zero Fingerprint Mismatches**:
-    - Never conclude any patch edit or declare a task complete without executing `./gradlew runPatchTest -Papp=<target>` with all corresponding patches active for that target app and asserting 100% success (0 failed patches, 0 exceptions, 0 smali compile errors, and 0 fingerprint mismatches/failed fingerprints in the logs). Any log line containing `Failed to match the fingerprint` or `fingerprint mismatch` constitutes an incomplete/broken patch that blocks completion.
+12. **DO NOT Declare Patch Tasks Complete Without the In-Situ Patching Gate**: see Section 3, Step 4 (`runPatchTest`, 100% success, zero fingerprint mismatches, zero smali compile errors).
 13. **Strict Prohibition of Emojis in Code, Scripts & Tooling**:
     - Under no circumstances should emojis or unicode pictographs be used anywhere in codebase source files, including Kotlin, Java, Python, Smali, Bash/Shell scripts, Gradle build files, configuration files, test files, diagnostic telemetry, or CLI/runtime logs.
     - All code, logs, comments, and console outputs MUST strictly use clean, standard ASCII / plain-text formatting (e.g. `[INFO]`, `[WARN]`, `[PASS]`, `[FAIL]`, `[AUDIT]`, `[BUILD]`). Emojis are tolerated exclusively in end-user documentation (such as `README.md`) if already present, but are strictly prohibited in codebase implementation files and tooling.
@@ -187,8 +186,7 @@ For non-trivial logic, Smali hooks, native ARM64 patching (`libchrome.so`), or s
     - Under NO circumstances should you ask to proceed with the `commit -> push -> PR title/description generation` closing sequence.
     - NEVER generate PR titles, PR descriptions, or suggest opening PRs.
     - When an implementation unit is complete and verified, simply present the technical outcome, validation evidence, and conclude.
-16. **Prohibition of Multi-Version Target Retentions**:
-    - Under no circumstances should any target application declare multiple supported versions in `Constants.kt` or `README.md`. Always target strictly the latest supported version (`targets = listOf(AppTarget(version = ..., ...))`). Any residual compatibility blocks, fallbacks, or documentation references to older target versions must be completely eliminated upon updating.
+16. **Prohibition of Multi-Version Target Retentions**: see the Single Target Version Invariant in Section 2; this also covers `README.md` and every other documentation reference.
 17. **Strict Prohibition of In-App Settings Screens & Dynamic UI Panels**:
     - Never propose or implement in-app settings activities, preference menus, or overlay panels to toggle patches dynamically at runtime. Dynamic toggles introduce extreme ProGuard/DexGuard fragility across weekly upstream bumps and disk I/O overhead on performance-critical paths. All configurable parameters must be compile/patch-time options via Morphe Manager / CLI (`stringOption`), except for declarative AndroidX XML preference injections authorized in `docs/out-of-scope.md` (such as Gboard Enhancements). Authoritative boundary: `docs/out-of-scope.md`.
 18. **Strict Prohibition of Server-Side Bypasses, DRM, and Account Exploits**:

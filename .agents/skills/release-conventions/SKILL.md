@@ -22,20 +22,7 @@ Automated semantic releases depend on commit messages adhering strictly to the c
 
 ### Mandatory Atomic Commits Policy
 
-Never squash or bundle unrelated changes across test harnesses, patch suites, cross-compatibility bridges, and documentation into a single monolithic commit. Every patch and task must produce discrete, atomic commits:
-
-1. **Single Commit per Patch (New or Updated)** (`feat(<target>): ...` or `fix(<target>): ...`):
-   Every new patch or patch update MUST be committed in a single, autonomous commit containing both the patch implementation (Kotlin/Smali/resources/ELF) AND its accompanying documentation entries (README.md, app-specific docs).
-2. **Strict Prohibition of Documentation Batching & Multi-Patch Grouping**:
-   - Never split a patch's code and documentation into separate commits during patch creation or updates.
-   - Never bundle multiple distinct patches together into a single commit.
-   - Under NO circumstances should documentation from multiple distinct patches be grouped or batched into a collective `docs:` commit.
-3. **Tooling & Test Harness** (`test(harness): ...` or `refactor(harness): ...`):
-   Isolate test runner, automation, and harness improvements from product patch logic.
-4. **Cross-Compatibility & Shared Contracts** (`feat(patches): ...` or `feat(shared): ...`):
-   Isolate shared compatibility bindings across apps when not part of an individual patch unit.
-5. **Standalone Documentation** (`docs(<app>): ...` or `docs: ...`):
-   Strictly reserved for documentation-only updates unrelated to patch creation or modification (e.g. typo fixes, architectural guides, standalone FAQ edits).
+Commit granularity (1 patch / 1 option / 1 fix = 1 commit, code and docs together) is defined in `AGENTS.md`, rule 14. Follow it exactly.
 
 ---
 
@@ -61,9 +48,8 @@ When commits are pushed to `main`, the automated release pipeline executes:
 
 ---
 
-## 3. Branching Strategy & Direct Commit Workflow
- 
- - **Single-Branch Workflow**: Development and releases are anchored on `main`.
- - **Strict Direct Workflow (No Pull Requests)**: This repository operates without PRs. Work is committed directly or managed locally without PRs. Under no circumstances should agents propose, generate, or ask about PR titles, descriptions, or PR workflows.
- - Automated releases trigger exclusively on pushes to `main`.
- - **Never force-push** after a release tag has been created.
+## 3. Branching Strategy
+
+- Development and releases are anchored on `main`; there is no `dev` branch and no PR workflow (`AGENTS.md`, rule 15).
+- Automated releases trigger exclusively from `main`.
+- **Never force-push** after a release tag has been created.

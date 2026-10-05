@@ -126,9 +126,9 @@ Whenever a patch is **created, modified, renamed, or updated**, the following re
    - The README patch catalog (`PATCHES_START` / `PATCHES_END`) is regenerated automatically by the release pipeline (`.releaserc`) and by `harness/update.py --update`; do not edit it by hand. To preview it locally, run `python .github/scripts/generate_patches_readme.py <owner>/<repo> main patches-list.json README.md` and do not commit the result.
    - Update high-level summary highlights (e.g. *Key Highlights*) if the scope of features changed.
 5. **Harness Verification & Report Generation**:
-   - Re-run `./venv/bin/python harness/update.py <apk> --audit` to assert zero regressions and regenerate the pipeline report (`BRAVE_HARNESS_REPORT.md`, `GBOARD_HARNESS_REPORT.md`, `TIKLITE_HARNESS_REPORT.md`, or `XIAOMI_EARBUDS_HARNESS_REPORT.md`; git-ignored).
+   - Re-run `./venv/bin/python harness/update.py <apk> --audit` to assert zero regressions and regenerate the pipeline report (`BRAVE_HARNESS_REPORT.md`, `GBOARD_HARNESS_REPORT.md`, `TIKLITE_HARNESS_REPORT.md`, or `XIAOMI_EARBUDS_HARNESS_REPORT.md`; written to the current directory unless `--output` is given; git-ignored).
 6. **In-Situ Patching Gate**:
    - Execute `./gradlew runPatchTest -Papp=<targetApp>` (add `-PallOptions=true` when the change sits behind a patch option) and confirm 0 failed patches, 0 fingerprint mismatches, and 0 smali compile errors.
 7. **Harness Integrity & Logging Test Suite**:
-   - Execute `./venv/bin/python -m unittest discover harness/tests` to verify that `AdversarialValidator.assert_patches_dynamic_logging()` passes across all patch source files.
+   - Execute `./venv/bin/python -m unittest discover harness/tests` to verify that `AdversarialValidator.assert_patches_dynamic_logging()` passes. It only asserts that every patch source contains a `println(`; the dynamic-content rule above is enforced by review, not by the test.
 

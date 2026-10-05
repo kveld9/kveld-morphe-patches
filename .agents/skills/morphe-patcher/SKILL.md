@@ -199,18 +199,6 @@ Every patch execution must emit concise, high-signal diagnostic telemetry captur
 
 ---
 
-## 7. Mandatory Verification Gate: In-Situ Morphe Patcher Execution
+## 7. Mandatory Verification Gate
 
-After completing any change in any patch or adding a new patch:
-1. **Zero Fake Completion**: Never declare a task or implementation complete merely based on `./gradlew check` or static checks.
-2. **Execute Full-Suite In-Situ Patching**:
-   ```bash
-   ./gradlew runPatchTest -Papp=<targetApp>
-   ```
-   Targets: `gboard`, `tiktok`, `brave`, `hevy`, `nokoprint`, `xiaomi_earbuds`.
-   Or specify an explicit APK:
-   ```bash
-   ./gradlew runPatchTest -Papk=/path/to/app.apk
-   ```
-3. **Assert 100% Pass Rate**: Every single patch corresponding to that target app must execute and pass with **zero exceptions, zero fingerprint mismatches, and zero failed patches**.
-
+Static checks are never enough. Run the in-situ patching gate defined in `AGENTS.md` (Section 3, Step 4): `./gradlew runPatchTest -Papp=<targetApp>` (targets: `gboard`, `tiktok`, `brave`, `hevy`, `nokoprint`, `xiaomi_earbuds`), adding `-PallOptions=true` when the change sits behind an option.
