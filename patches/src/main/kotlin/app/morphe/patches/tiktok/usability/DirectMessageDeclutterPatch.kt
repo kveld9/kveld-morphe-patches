@@ -629,6 +629,44 @@ val directMessageDeclutterPatch = bytecodePatch(
             )
             println("[Direct Message Declutter] Hooked ReplyToStickerRecommendationViewModel.${stickerMethod.name} -> automatic sticker reply suggestions disabled.")
             patched++
+
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/im/sdk/chat/ui/base/assems/preshown/PreshownStickerBannerProtocol;",
+                name = "isEnabled",
+                returnType = "Z",
+                parameters = emptyList(),
+            ).method.replaceWithReturnBoolean(false)
+            println("[Direct Message Declutter] Hooked PreshownStickerBannerProtocol.isEnabled -> preshown sticker reply banner disabled.")
+            patched++
+
+            val interceptFp = Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/im/sdk/chat/ui/base/assems/preshown/PreshownStickerBannerProtocol;",
+                name = "intercept",
+                returnType = "Ljava/util/List;",
+                parameters = listOf("Ljava/util/List;"),
+            )
+            val interceptMethod = interceptFp.method
+            val interceptImpl = interceptMethod.implementation
+            if (interceptImpl != null) {
+                interceptMethod.clearTryBlocks()
+                interceptMethod.removeInstructions(0, interceptImpl.instructions.count())
+                interceptMethod.addInstructions(
+                    0,
+                    """
+                        return-object p1
+                    """.trimIndent(),
+                )
+                println("[Direct Message Declutter] Hooked PreshownStickerBannerProtocol.intercept -> passthrough message list.")
+                patched++
+            }
+
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/im/sdk/chat/ui/base/assems/input/typingrecommendation/TypingRecommendationPanelAssem;",
+                returnType = "Z",
+                parameters = emptyList(),
+            ).method.replaceWithReturnBoolean(false)
+            println("[Direct Message Declutter] Hooked TypingRecommendationPanelAssem -> typing sticker recommendations disabled.")
+            patched++
         }
 
         println("[Direct Message Declutter] Applied $patched hooks -> direct messages decluttered.")
