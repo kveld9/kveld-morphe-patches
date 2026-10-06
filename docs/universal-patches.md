@@ -20,7 +20,7 @@ Comprehensive reference for universal optimization and resource slimming patches
 | **[Universal Privacy Permissions Stripper](#10-universal-privacy-permissions-stripper-universalprivacypermissionspatch)** | `resourcePatch` | Manifest (`AndroidManifest.xml`) | Selectively revokes sensitive hardware, privacy, and sensor permissions | Eliminates OS permission grants and runtime capability access |
 | **[Universal Screenshot Protection Bypass](#11-universal-screenshot-protection-bypass-universalscreenshotprotectionbypasspatch)** | `bytecodePatch` | Dalvik Bytecode & Manifest | Neutralizes `FLAG_SECURE`, unlocks audio playback capture, and suppresses Android 14+ screenshot detection | Allows screenshots, screen recordings, and internal audio capture across protected views |
 | **[Universal Screen Timeout Enforcer](#12-universal-screen-timeout-enforcer-universalscreentimeoutenforcerpatch)** | `bytecodePatch` | Dalvik Bytecode & Windows | Neutralizes `keepScreenOn(Z)V` view calls and strips `FLAG_KEEP_SCREEN_ON` (`0x80`) | Enforces OS screen timeout and sleep timer during video playback |
-| **[Universal Screen Brightness Governor](#13-universal-screen-brightness-governor-universalscreenbrightnessgovernorpatch)** | `bytecodePatch` | Dalvik Bytecode & Windows | Neutralizes direct writes to `WindowManager.LayoutParams.screenBrightness` (`iput`) | Prevents apps from overriding display brightness & HDR brightness spikes |
+| **[Universal Screen Brightness Governor](#13-universal-screen-brightness-governor-universalscreenbrightnessgovernorpatch)** | `bytecodePatch` | Dalvik Bytecode & Windows | Neutralizes direct writes to `WindowManager.LayoutParams.screenBrightness` (`iput`) | Prevents apps from overriding display brightness via window layout params |
 
 ---
 
@@ -370,7 +370,10 @@ The patch operates without any manual configuration or boolean options (`default
 
 ## 13. Universal Screen Brightness Governor (`universalScreenBrightnessGovernorPatch`)
 
-The **`Universal Screen Brightness Governor`** patch prevents applications from overriding device screen brightness (such as aggressive HDR video playback brightness boosts, in-app brightness sliders, or blinding screens) by neutralizing all direct writes to `WindowManager.LayoutParams.screenBrightness`.
+The **`Universal Screen Brightness Governor`** patch prevents applications from overriding device screen brightness (such as in-app brightness sliders, barcode/QR full-screen brightness, or window-level overrides) by neutralizing all direct writes to `WindowManager.LayoutParams.screenBrightness`.
+
+> [!NOTE]
+> **Hardware HDR Video Playback Scope**: Direct field writes to `WindowManager.LayoutParams.screenBrightness` only control window-level UI brightness overrides. Hardware HDR video brightness boosts (HDR10 / PQ / HLG) are driven at the display subsystem level by graphic buffer dataspaces (`BT2020_ITU_PQ`) passed to `SurfaceFlinger`. Disabling HDR video playback requires app-specific stream or codec governor patches (such as `Disable HDR Video Playback` in TikTok) rather than window layout parameters.
 
 ### 🛡️ Low-Level Bytecode & Window Enforcement
 
