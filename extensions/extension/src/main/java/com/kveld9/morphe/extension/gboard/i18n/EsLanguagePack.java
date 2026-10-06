@@ -51,6 +51,7 @@ public class EsLanguagePack extends BaseLanguagePack {
         titles.put(PREF_KEY_FORCE_INCOGNITO, "Forzar modo incógnito");
         titles.put(PREF_KEY_HIDE_INCOGNITO_ICON, "Ocultar ícono de incógnito");
         titles.put(PREF_KEY_VOICE_INCOGNITO, "Dictado por voz en incógnito");
+        titles.put(PREF_KEY_CLIPBOARD_INCOGNITO, "Portapapeles en incógnito");
     }
 
     @Override
@@ -82,6 +83,7 @@ public class EsLanguagePack extends BaseLanguagePack {
         summaries.put(PREF_KEY_FORCE_INCOGNITO, "Operar siempre en modo incógnito (deshabilita el historial de entrada y aprendizaje)");
         summaries.put(PREF_KEY_HIDE_INCOGNITO_ICON, "Ocultar el ícono de la máscara de incógnito en la barra de herramientas");
         summaries.put(PREF_KEY_VOICE_INCOGNITO, "Habilitar dictado por voz en campos privados y modo incógnito");
+        summaries.put(PREF_KEY_CLIPBOARD_INCOGNITO, "Habilitar historial del portapapeles y pegado en campos privados y modo incógnito");
     }
 
     @Override

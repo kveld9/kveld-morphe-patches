@@ -114,9 +114,10 @@ The settings UI automatically detects the active device system language (`Locale
 - **Bluetooth Microphone**: Unlocks Bluetooth microphone audio input for voice typing under *Dictado por voz*.
 
 ### 7. Privacy & Security
-- **Force Incognito Mode**: Always operates in incognito mode (disables personalized learning and persistent input logging) while preserving clipboard functionality.
+- **Force Incognito Mode**: Always operates in incognito mode (disables personalized learning and persistent input logging).
 - **Hide Incognito Icon**: Hides the incognito mask icon on the top toolbar when Force Incognito is active.
 - **Voice Typing in Incognito**: Unlocks speech dictation and voice typing microphone input in incognito mode and private input fields (toggleable switch under Morphe Patches > Privacy & Security, default: enabled).
+- **Clipboard in Incognito**: Unlocks clipboard history and paste in incognito mode and private input fields (toggleable switch under Morphe Patches > Privacy & Security, default: enabled).
 
 ### 8. Core Integrity & Startup Resilience
 - Neutralizes internal signature validation checks in modified APKs.

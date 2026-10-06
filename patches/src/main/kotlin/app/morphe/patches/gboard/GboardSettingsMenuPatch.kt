@@ -79,7 +79,7 @@ private val gboardSeekBarEnhancementsPatch = bytecodePatch(
 
 val gboardSettingsMenuPatch = resourcePatch(
     name = "Gboard Enhancements",
-    description = "Master customization suite bundling in-app toggleable features (AMOLED Pure Black theme, zero bottom inset, independent keyboard vibration, force incognito, voice typing in incognito, clipboard retention, top toolbar icons count, cursor trackpad, and smart flags) managed directly from a top-level Morphe Patches category in Gboard Settings.",
+    description = "Master customization suite bundling in-app toggleable features (AMOLED Pure Black theme, zero bottom inset, independent keyboard vibration, force incognito, voice typing in incognito, clipboard in incognito, clipboard retention, top toolbar icons count, cursor trackpad, and smart flags) managed directly from a top-level Morphe Patches category in Gboard Settings.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
@@ -573,6 +573,15 @@ private fun populateMorpheSettingsScreen(doc: Document): Boolean {
             key = Constants.GboardPrefs.KEY_VOICE_INCOGNITO,
             title = "Voice Typing in Incognito",
             summary = "Enable voice typing and microphone dictation in private fields and incognito mode",
+            defaultValue = "true",
+        )
+    )
+    privacyCategory.appendChild(
+        createSwitch(
+            doc = doc,
+            key = Constants.GboardPrefs.KEY_CLIPBOARD_INCOGNITO,
+            title = "Clipboard in Incognito",
+            summary = "Enable clipboard history and paste in private fields and incognito mode",
             defaultValue = "true",
         )
     )

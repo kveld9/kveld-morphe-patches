@@ -51,6 +51,7 @@ public class EnLanguagePack extends BaseLanguagePack {
         titles.put(PREF_KEY_FORCE_INCOGNITO, "Force Incognito Mode");
         titles.put(PREF_KEY_HIDE_INCOGNITO_ICON, "Hide Incognito Icon");
         titles.put(PREF_KEY_VOICE_INCOGNITO, "Voice Typing in Incognito");
+        titles.put(PREF_KEY_CLIPBOARD_INCOGNITO, "Clipboard in Incognito");
     }
 
     @Override
@@ -82,5 +83,6 @@ public class EnLanguagePack extends BaseLanguagePack {
         summaries.put(PREF_KEY_FORCE_INCOGNITO, "Always operate in incognito mode (disables input history and learning)");
         summaries.put(PREF_KEY_HIDE_INCOGNITO_ICON, "Hide the incognito mask icon on the toolbar");
         summaries.put(PREF_KEY_VOICE_INCOGNITO, "Enable voice typing and microphone dictation in private fields and incognito mode");
+        summaries.put(PREF_KEY_CLIPBOARD_INCOGNITO, "Enable clipboard history and paste in private fields and incognito mode");
     }
 }

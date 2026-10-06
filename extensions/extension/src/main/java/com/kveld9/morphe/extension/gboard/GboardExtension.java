@@ -46,6 +46,7 @@ public class GboardExtension {
     public static final String PREF_KEY_FORCE_INCOGNITO = "morphe_force_incognito";
     public static final String PREF_KEY_HIDE_INCOGNITO_ICON = "morphe_hide_incognito_icon";
     public static final String PREF_KEY_VOICE_INCOGNITO = "morphe_voice_typing_incognito";
+    public static final String PREF_KEY_CLIPBOARD_INCOGNITO = "morphe_clipboard_incognito";
     public static final String PREF_KEY_DECOUPLE_TOUCH_FEEDBACK = "morphe_decouple_touch_feedback";
     public static final String PREF_KEY_MODERN_HAPTICS = "morphe_modern_haptics";
 
@@ -396,6 +397,21 @@ public class GboardExtension {
 
     public static boolean overrideVoiceTypingIncognito(boolean isIncognito) {
         if (isVoiceTypingIncognitoEnabled()) {
+            return false;
+        }
+        return isIncognito;
+    }
+
+    public static boolean isClipboardIncognitoEnabled(Context context) {
+        return getBooleanPref(PREF_KEY_CLIPBOARD_INCOGNITO, true);
+    }
+
+    public static boolean isClipboardIncognitoEnabled() {
+        return isClipboardIncognitoEnabled(null);
+    }
+
+    public static boolean overrideClipboardIncognito(boolean isIncognito) {
+        if (isClipboardIncognitoEnabled()) {
             return false;
         }
         return isIncognito;

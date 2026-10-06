@@ -165,6 +165,7 @@ object Constants {
         const val KEY_FORCE_INCOGNITO = "morphe_force_incognito"
         const val KEY_HIDE_INCOGNITO_ICON = "morphe_hide_incognito_icon"
         const val KEY_VOICE_INCOGNITO = "morphe_voice_typing_incognito"
+        const val KEY_CLIPBOARD_INCOGNITO = "morphe_clipboard_incognito"
         const val KEY_DECOUPLE_TOUCH_FEEDBACK = "morphe_decouple_touch_feedback"
         const val KEY_MODERN_HAPTICS = "morphe_modern_haptics"
 

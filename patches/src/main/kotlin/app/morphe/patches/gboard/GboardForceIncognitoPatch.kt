@@ -3,13 +3,14 @@ package app.morphe.patches.gboard
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.OpcodesFilter
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
-import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions
+import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.BytecodePatch
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.cleanClassName
 import app.morphe.patches.shared.sharedExtensionPatch
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
 val gboardForceIncognitoPatch: BytecodePatch = bytecodePatch(
     default = true,
@@ -73,22 +74,21 @@ val gboardForceIncognitoPatch: BytecodePatch = bytecodePatch(
             strings = listOf("clipboard_primary_uri", ""),
         )
 
-        var removedOpcodes = 0
         onPrimaryClipChangedFingerprint.method.apply {
             val patternMatch = onPrimaryClipChangedFingerprint.instructionMatches
-            val isIncognitoModeIndex = patternMatch.first().index
-            val returnVoidIndex = patternMatch.last().index
-            val count = (returnVoidIndex - isIncognitoModeIndex) + 1
-            removedOpcodes = count
-
-            removeInstructions(
-                index = isIncognitoModeIndex,
-                count = count,
+            val moveResultIndex = patternMatch[1].index
+            val reg = getInstruction<OneRegisterInstruction>(moveResultIndex).registerA
+            addInstructions(
+                moveResultIndex + 1,
+                """
+                    invoke-static {v$reg}, ${Constants.GBOARD_EXTENSION_CLASS}->overrideClipboardIncognito(Z)Z
+                    move-result v$reg
+                """.trimIndent(),
             )
         }
 
         val c1 = cleanClassName(fp1.originalClassDef.type)
         val c2 = cleanClassName(fp2.originalClassDef.type)
-        println("[Force Incognito Mode] Hooked incognito predicates in $c1, $c2 & unblocked clipboard ($removedOpcodes opcodes stripped)")
+        println("[Force Incognito Mode] Hooked incognito predicates in $c1, $c2 & clipboard guard controlled by preference")
     }
 }
