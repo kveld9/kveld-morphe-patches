@@ -44,6 +44,12 @@ internal fun Element.removeChildren(nodes: List<Node>) {
     nodes.forEach(::removeChild)
 }
 
+/** Replaces an android: attribute whether or not the decoded manifest bound it to the android namespace. */
+private fun Element.setAndroidAttribute(localName: String, value: String) {
+    removeAttribute("android:$localName")
+    setAttributeNS(ANDROID_XML_NAMESPACE, "android:$localName", value)
+}
+
 internal fun Element.getOrCreateApplicationMetaData(name: String): Element {
     childrenNamed("meta-data")
         .firstOrNull { it.getAttribute("android:name") == name || it.getAttributeNS(ANDROID_XML_NAMESPACE, "name") == name }
@@ -56,7 +62,7 @@ internal fun Element.getOrCreateApplicationMetaData(name: String): Element {
 }
 
 internal fun Element.setApplicationMetaData(name: String, value: String) {
-    getOrCreateApplicationMetaData(name).setAttributeNS(ANDROID_XML_NAMESPACE, "android:value", value)
+    getOrCreateApplicationMetaData(name).setAndroidAttribute("value", value)
 }
 
 internal fun Element.disableComponentsWhere(
@@ -71,8 +77,8 @@ internal fun Element.disableComponentsWhere(
             predicate(name)
         }
         .forEach { component ->
-            component.setAttributeNS(ANDROID_XML_NAMESPACE, "android:enabled", "false")
-            component.setAttributeNS(ANDROID_XML_NAMESPACE, "android:exported", "false")
+            component.setAndroidAttribute("enabled", "false")
+            component.setAndroidAttribute("exported", "false")
             disabled++
         }
 
