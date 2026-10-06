@@ -8,7 +8,7 @@ private val EMPTY_BYTES = byteArrayOf()
 
 val creatorBloatSlimmerPatch = rawResourcePatch(
     name = "Studio & Creation De-bloat",
-    description = "Strips heavy video creation plugins, CapCut NLE editor SDKs, effect plugins, camera/music dynamic features, upload video encoders, and AR camera face models to significantly reduce APK size.",
+    description = "Strips heavy video creation plugins, CapCut NLE editor SDKs, effect plugins, camera/music dynamic features, upload video encoders, on-device AI runtimes (LiteRT), and AR camera face models to significantly reduce APK size.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -29,6 +29,13 @@ val creatorBloatSlimmerPatch = rawResourcePatch(
             // Camera/music dynamic features (df_ family, viewer-only builds skip them)
             "libdex_df_camera_biz.so",
             "libdex_df_music_dsp.so",
+            // On-device AI runtimes (LiteRT + client AI JNI, loaded via df_ship SPI for creation/assistant features; playback AI uses libbytenn.so)
+            "libLiteRtRuntimeCApi.so",
+            "libLiteRtOpenClAccelerator.so",
+            "liblitert_jni.so",
+            "libclient_ai_impl_jni.so",
+            "libclient_ai_impl_df_jni.so",
+            "libByteAINN.so",
         )
 
         var savedBytes = 0L
