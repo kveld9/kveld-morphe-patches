@@ -117,9 +117,32 @@ public final class TikTokFeedAdFilter {
     private static Field friendsV3RepostItemField;
     private static Method friendsV3GetRepostedAwemeMethod;
     private static Field friendsV3RepostedAwemeField;
+    private static Field friendsV3ReposterField;
 
     private static Method friendsFeedGetAwemeMethod;
     private static Field friendsFeedAwemeField;
+
+    private static Method awemeGetAuthorMethod;
+    private static Field awemeAuthorField;
+    private static Method awemeGetFeedRelationLabelMethod;
+    private static Field awemeFeedRelationLabelField;
+    private static Method awemeGetRelationLabelMethod;
+    private static Field awemeRelationLabelField;
+    private static Method awemeGetRelationRecommendInfoMethod;
+    private static Field awemeRelationRecommendInfoField;
+    private static Method awemeGetRecReasonsStructMethod;
+    private static Field awemeRecReasonsStructField;
+
+    private static Method userGetFollowStatusMethod;
+    private static Field userFollowStatusField;
+    private static Method userGetMatchedFriendStructMethod;
+    private static Field userMatchedFriendStructField;
+    private static Method userIsMatchedFriendAvailableMethod;
+    private static Field userMatchedFriendAvailableField;
+    private static Method userGetUidMethod;
+    private static Field userUidField;
+    private static Method userGetRecTypeMethod;
+    private static Field userRecTypeField;
 
     private static Method getAigcInfoMethod;
     private static Field aigcInfoField;
@@ -385,6 +408,7 @@ public final class TikTokFeedAdFilter {
                 if (repostClass != null) {
                     try { friendsV3GetRepostedAwemeMethod = repostClass.getMethod("getRepostedAweme"); friendsV3GetRepostedAwemeMethod.setAccessible(true); } catch (Throwable ignored) {}
                     try { friendsV3RepostedAwemeField = repostClass.getDeclaredField("repostedAweme"); friendsV3RepostedAwemeField.setAccessible(true); } catch (Throwable ignored) {}
+                    try { friendsV3ReposterField = repostClass.getDeclaredField("reposter"); friendsV3ReposterField.setAccessible(true); } catch (Throwable ignored) {}
                 }
             } catch (Throwable ignored) {}
 
@@ -403,6 +427,41 @@ public final class TikTokFeedAdFilter {
                     try { friendsFeedAwemeField = friendsFeedClass.getDeclaredField("aweme"); friendsFeedAwemeField.setAccessible(true); } catch (Throwable ignored) {}
                 }
             } catch (Throwable ignored) {}
+
+            try {
+                ClassLoader loader = awemeClass != null ? awemeClass.getClassLoader() : classLoader;
+                Class<?> userClass = null;
+                try {
+                    userClass = loader.loadClass("com.ss.android.ugc.aweme.profile.model.User");
+                } catch (Throwable t) {
+                    if (classLoader != loader) {
+                        userClass = classLoader.loadClass("com.ss.android.ugc.aweme.profile.model.User");
+                    }
+                }
+                if (userClass != null) {
+                    try { userGetFollowStatusMethod = userClass.getMethod("getFollowStatus"); userGetFollowStatusMethod.setAccessible(true); } catch (Throwable ignored) {}
+                    try { userFollowStatusField = userClass.getDeclaredField("followStatus"); userFollowStatusField.setAccessible(true); } catch (Throwable ignored) {}
+                    try { userGetMatchedFriendStructMethod = userClass.getMethod("getMatchedFriendStruct"); userGetMatchedFriendStructMethod.setAccessible(true); } catch (Throwable ignored) {}
+                    try { userMatchedFriendStructField = userClass.getDeclaredField("matchedFriendStruct"); userMatchedFriendStructField.setAccessible(true); } catch (Throwable ignored) {}
+                    try { userIsMatchedFriendAvailableMethod = userClass.getMethod("isMatchedFriendAvailable"); userIsMatchedFriendAvailableMethod.setAccessible(true); } catch (Throwable ignored) {}
+                    try { userMatchedFriendAvailableField = userClass.getDeclaredField("matchedFriendAvailable"); userMatchedFriendAvailableField.setAccessible(true); } catch (Throwable ignored) {}
+                    try { userGetUidMethod = userClass.getMethod("getUid"); userGetUidMethod.setAccessible(true); } catch (Throwable ignored) {}
+                    try { userUidField = userClass.getDeclaredField("uid"); userUidField.setAccessible(true); } catch (Throwable ignored) {}
+                    try { userGetRecTypeMethod = userClass.getMethod("getRecType"); userGetRecTypeMethod.setAccessible(true); } catch (Throwable ignored) {}
+                    try { userRecTypeField = userClass.getDeclaredField("recType"); userRecTypeField.setAccessible(true); } catch (Throwable ignored) {}
+                }
+            } catch (Throwable ignored) {}
+
+            try { awemeGetAuthorMethod = awemeClass.getMethod("getAuthor"); awemeGetAuthorMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { awemeAuthorField = awemeClass.getDeclaredField("author"); awemeAuthorField.setAccessible(true); } catch (Throwable ignored) {}
+            try { awemeGetFeedRelationLabelMethod = awemeClass.getMethod("getFeedRelationLabel"); awemeGetFeedRelationLabelMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { awemeFeedRelationLabelField = awemeClass.getDeclaredField("feedRelationLabel"); awemeFeedRelationLabelField.setAccessible(true); } catch (Throwable ignored) {}
+            try { awemeGetRelationLabelMethod = awemeClass.getMethod("getRelationLabel"); awemeGetRelationLabelMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { awemeRelationLabelField = awemeClass.getDeclaredField("relationLabel"); awemeRelationLabelField.setAccessible(true); } catch (Throwable ignored) {}
+            try { awemeGetRelationRecommendInfoMethod = awemeClass.getMethod("getRelationRecommendInfo"); awemeGetRelationRecommendInfoMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { awemeRelationRecommendInfoField = awemeClass.getDeclaredField("relationRecommendInfo"); awemeRelationRecommendInfoField.setAccessible(true); } catch (Throwable ignored) {}
+            try { awemeGetRecReasonsStructMethod = awemeClass.getMethod("getRecReasonsStruct"); awemeGetRecReasonsStructMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { awemeRecReasonsStructField = awemeClass.getDeclaredField("recReasonsStruct"); awemeRecReasonsStructField.setAccessible(true); } catch (Throwable ignored) {}
 
             try { getAigcInfoMethod = awemeClass.getMethod("getAigcInfo"); getAigcInfoMethod.setAccessible(true); } catch (Throwable ignored) {}
             try { aigcInfoField = awemeClass.getDeclaredField("aigcInfo"); aigcInfoField.setAccessible(true); } catch (Throwable ignored) {}
@@ -2069,8 +2128,347 @@ public final class TikTokFeedAdFilter {
     }
 
     // =========================================================================
-    // Backward Compatibility Delegates
+    // Friends Feed Strict Mutuals Filtering (Block Suggested / Non-Mutuals)
     // =========================================================================
+
+    private static String getCurrentUserId(ClassLoader classLoader) {
+        try {
+            ClassLoader loader = awemeClass != null ? awemeClass.getClassLoader() : classLoader;
+            Class<?> userServiceClass = null;
+            try {
+                userServiceClass = loader.loadClass("com.ss.android.ugc.aweme.framework/services/IUserService".replace('/', '.'));
+            } catch (Throwable t) {
+                if (classLoader != loader && classLoader != null) {
+                    try { userServiceClass = classLoader.loadClass("com.ss.android.ugc.aweme.framework/services/IUserService".replace('/', '.')); } catch (Throwable ignored) {}
+                }
+            }
+
+            if (userServiceClass != null) {
+                Class<?> serviceManagerClass = loader.loadClass("com.ss.android.ugc.aweme.framework.services.ServiceManager");
+                Method getMethod = serviceManagerClass.getMethod("get");
+                Object serviceManager = getMethod.invoke(null);
+                if (serviceManager != null) {
+                    Method getServiceMethod = serviceManagerClass.getMethod("getService", Class.class);
+                    Object userService = getServiceMethod.invoke(serviceManager, userServiceClass);
+                    if (userService != null) {
+                        Method getUserIdMethod = userService.getClass().getMethod("getCurrentUserID");
+                        Object uid = getUserIdMethod.invoke(userService);
+                        if (uid instanceof String && !((String) uid).isEmpty()) {
+                            return (String) uid;
+                        }
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
+
+        try {
+            ClassLoader loader = awemeClass != null ? awemeClass.getClassLoader() : classLoader;
+            Class<?> baseUserServiceClass = loader.loadClass("com.ss.android.ugc.aweme.services.BaseUserService");
+            Object baseUserService = baseUserServiceClass.getDeclaredConstructor().newInstance();
+            Method getUserIdMethod = baseUserServiceClass.getMethod("getCurrentUserID");
+            Object uid = getUserIdMethod.invoke(baseUserService);
+            if (uid instanceof String && !((String) uid).isEmpty()) {
+                return (String) uid;
+            }
+        } catch (Throwable ignored) {}
+
+        return null;
+    }
+
+    private static Object getAuthorFromAweme(Object aweme) {
+        if (aweme == null) return null;
+        try {
+            if (awemeGetAuthorMethod != null) {
+                Object author = awemeGetAuthorMethod.invoke(aweme);
+                if (author != null) return author;
+            }
+            if (awemeAuthorField != null) {
+                Object author = awemeAuthorField.get(aweme);
+                if (author != null) return author;
+            }
+        } catch (Throwable ignored) {}
+        return null;
+    }
+
+    private static int getFollowStatusFromUser(Object user) {
+        if (user == null) return -1;
+        try {
+            if (userGetFollowStatusMethod != null) {
+                Object status = userGetFollowStatusMethod.invoke(user);
+                if (status instanceof Number) return ((Number) status).intValue();
+            }
+            if (userFollowStatusField != null) {
+                Object status = userFollowStatusField.get(user);
+                if (status instanceof Number) return ((Number) status).intValue();
+            }
+        } catch (Throwable ignored) {}
+        return -1;
+    }
+
+    private static String getUidFromUser(Object user) {
+        if (user == null) return null;
+        try {
+            if (userGetUidMethod != null) {
+                Object uid = userGetUidMethod.invoke(user);
+                if (uid instanceof String) return (String) uid;
+            }
+            if (userUidField != null) {
+                Object uid = userUidField.get(user);
+                if (uid instanceof String) return (String) uid;
+            }
+        } catch (Throwable ignored) {}
+        return null;
+    }
+
+    private static boolean isSuggestedAccountUser(Object user) {
+        if (user == null) return false;
+        try {
+            if (userGetMatchedFriendStructMethod != null) {
+                Object matched = userGetMatchedFriendStructMethod.invoke(user);
+                if (matched != null) return true;
+            }
+            if (userMatchedFriendStructField != null) {
+                Object matched = userMatchedFriendStructField.get(user);
+                if (matched != null) return true;
+            }
+            if (userIsMatchedFriendAvailableMethod != null) {
+                Object available = userIsMatchedFriendAvailableMethod.invoke(user);
+                if (Boolean.TRUE.equals(available)) return true;
+            }
+            if (userMatchedFriendAvailableField != null) {
+                Object available = userMatchedFriendAvailableField.get(user);
+                if (Boolean.TRUE.equals(available)) return true;
+            }
+            if (userGetRecTypeMethod != null) {
+                Object recType = userGetRecTypeMethod.invoke(user);
+                if (recType instanceof String && !((String) recType).isEmpty() && !"0".equals(recType)) {
+                    return true;
+                }
+            }
+            if (userRecTypeField != null) {
+                Object recType = userRecTypeField.get(user);
+                if (recType instanceof String && !((String) recType).isEmpty() && !"0".equals(recType)) {
+                    return true;
+                }
+            }
+        } catch (Throwable ignored) {}
+        return false;
+    }
+
+    private static boolean hasAwemeRelationSuggestion(Object aweme) {
+        if (aweme == null) return false;
+        try {
+            if (awemeGetFeedRelationLabelMethod != null && awemeGetFeedRelationLabelMethod.invoke(aweme) != null) return true;
+            if (awemeFeedRelationLabelField != null && awemeFeedRelationLabelField.get(aweme) != null) return true;
+            if (awemeGetRelationLabelMethod != null && awemeGetRelationLabelMethod.invoke(aweme) != null) return true;
+            if (awemeRelationLabelField != null && awemeRelationLabelField.get(aweme) != null) return true;
+            if (awemeGetRelationRecommendInfoMethod != null && awemeGetRelationRecommendInfoMethod.invoke(aweme) != null) return true;
+            if (awemeRelationRecommendInfoField != null && awemeRelationRecommendInfoField.get(aweme) != null) return true;
+            if (awemeGetRecReasonsStructMethod != null && awemeGetRecReasonsStructMethod.invoke(aweme) != null) return true;
+            if (awemeRecReasonsStructField != null && awemeRecReasonsStructField.get(aweme) != null) return true;
+        } catch (Throwable ignored) {}
+        return false;
+    }
+
+    private static Object extractReposterFromFriendsV3FeedModel(Object item) {
+        if (item == null) return null;
+        try {
+            Object repost = null;
+            if (friendsV3RepostItemField != null) {
+                repost = friendsV3RepostItemField.get(item);
+            }
+            if (repost == null && friendsV3GetRepostItemMethod != null) {
+                repost = friendsV3GetRepostItemMethod.invoke(item);
+            }
+            if (repost != null && friendsV3ReposterField != null) {
+                return friendsV3ReposterField.get(repost);
+            }
+        } catch (Throwable ignored) {}
+        return null;
+    }
+
+    public static boolean isFriendsFeedSuggestedVideo(Object item, String currentUserId) {
+        if (item == null) return false;
+
+        // Check 1: Repost item in Friends V3 feed
+        Object reposter = extractReposterFromFriendsV3FeedModel(item);
+        if (reposter != null) {
+            String reposterUid = getUidFromUser(reposter);
+            if (currentUserId != null && currentUserId.equals(reposterUid)) {
+                return false; // User's own repost
+            }
+            if (isSuggestedAccountUser(reposter)) {
+                return true;
+            }
+            int reposterFollowStatus = getFollowStatusFromUser(reposter);
+            // followStatus: 2 = mutual friend ("amigos" / follow each other)
+            if (reposterFollowStatus != 2) {
+                return true;
+            }
+            return false;
+        }
+
+        // Check 2: Direct Aweme item
+        Object aweme = extractAwemeFromFriendsV3FeedModel(item);
+        if (aweme == null) {
+            aweme = extractAwemeFromFriendsFeed(item);
+        }
+        if (aweme == null && awemeClass != null && awemeClass.isInstance(item)) {
+            aweme = item;
+        }
+        if (aweme == null) return false;
+
+        Object author = getAuthorFromAweme(aweme);
+        if (author == null) {
+            return false;
+        }
+
+        String authorUid = getUidFromUser(author);
+        if (currentUserId != null && currentUserId.equals(authorUid)) {
+            return false; // User's own video
+        }
+
+        // Tagged with suggested / "Personas que quizás conozcas" metadata
+        if (isSuggestedAccountUser(author)) {
+            return true;
+        }
+        if (hasAwemeRelationSuggestion(aweme)) {
+            return true;
+        }
+
+        // Strict mutual check: If not mutual follow (followStatus != 2), filter
+        int followStatus = getFollowStatusFromUser(author);
+        if (followStatus != 2) {
+            return true;
+        }
+
+        return false;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static void filterSuggestedVideosInFriendsV3Feeds(Object listObj) {
+        if (!(listObj instanceof List)) return;
+        List<Object> items = (List<Object>) listObj;
+        if (items.isEmpty()) return;
+
+        synchronized (items) {
+            try {
+                if (!initialized) {
+                    for (Object item : items) {
+                        if (item != null) {
+                            ensureInitialized(item.getClass().getClassLoader());
+                            break;
+                        }
+                    }
+                }
+
+                ClassLoader loader = items.get(0) != null ? items.get(0).getClass().getClassLoader() : null;
+                String currentUserId = getCurrentUserId(loader);
+
+                int removed = 0;
+                Iterator<Object> iterator = items.iterator();
+                while (iterator.hasNext()) {
+                    Object item = iterator.next();
+                    if (isFriendsFeedSuggestedVideo(item, currentUserId)) {
+                        iterator.remove();
+                        removed++;
+                    }
+                }
+                if (removed > 0) {
+                    Log.i(TAG, "[Friends Feed Strict Mutuals] Pruned " + removed + " suggested / non-mutual video(s) from Friends V3 feed.");
+                }
+            } catch (Throwable ignored) {}
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static void filterSuggestedVideosInFriendsFeedData(Object listObj) {
+        if (!(listObj instanceof List)) return;
+        List<Object> items = (List<Object>) listObj;
+        if (items.isEmpty()) return;
+
+        synchronized (items) {
+            try {
+                if (!initialized) {
+                    for (Object item : items) {
+                        if (item != null) {
+                            ensureInitialized(item.getClass().getClassLoader());
+                            break;
+                        }
+                    }
+                }
+
+                ClassLoader loader = items.get(0) != null ? items.get(0).getClass().getClassLoader() : null;
+                String currentUserId = getCurrentUserId(loader);
+
+                int removed = 0;
+                Iterator<Object> iterator = items.iterator();
+                while (iterator.hasNext()) {
+                    Object item = iterator.next();
+                    if (isFriendsFeedSuggestedVideo(item, currentUserId)) {
+                        iterator.remove();
+                        removed++;
+                    }
+                }
+                if (removed > 0) {
+                    Log.i(TAG, "[Friends Feed Strict Mutuals] Pruned " + removed + " suggested / non-mutual video(s) from Friends feed.");
+                }
+            } catch (Throwable ignored) {}
+        }
+    }
+
+    public static void filterSuggestedVideosInFriendsV3Response(Object response) {
+        if (response == null) return;
+        try {
+            Field field = friendsV3FeedsField;
+            if (field == null) {
+                field = response.getClass().getDeclaredField("friendsV3Feeds");
+                field.setAccessible(true);
+                friendsV3FeedsField = field;
+            }
+            filterSuggestedVideosInFriendsV3Feeds(field.get(response));
+        } catch (Throwable ignored) {}
+        try {
+            Field field = newlyShownMafIdsField;
+            if (field == null) {
+                field = response.getClass().getDeclaredField("newlyShownMafIds");
+                field.setAccessible(true);
+                newlyShownMafIdsField = field;
+            }
+            field.set(response, null);
+        } catch (Throwable ignored) {}
+    }
+
+    public static void filterSuggestedVideosInFriendsFeedResponse(Object response) {
+        if (response == null) return;
+        try {
+            Field field = friendFeedDataField;
+            if (field == null) {
+                field = response.getClass().getDeclaredField("friendFeedData");
+                field.setAccessible(true);
+                friendFeedDataField = field;
+            }
+            filterSuggestedVideosInFriendsFeedData(field.get(response));
+        } catch (Throwable ignored) {}
+        try {
+            Field field = cardInsertResultsField;
+            if (field == null) {
+                field = response.getClass().getDeclaredField("cardInsertResults");
+                field.setAccessible(true);
+                cardInsertResultsField = field;
+            }
+            field.set(response, null);
+        } catch (Throwable ignored) {}
+        try {
+            Field field = insertedResultsField;
+            if (field == null) {
+                field = response.getClass().getDeclaredField("insertedResults");
+                field.setAccessible(true);
+                insertedResultsField = field;
+            }
+            field.set(response, null);
+        } catch (Throwable ignored) {}
+    }
 
     public static void filterAwemeList(Object listObj) {
         filterAdsInList(listObj);

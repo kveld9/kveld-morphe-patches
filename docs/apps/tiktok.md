@@ -65,6 +65,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Privacy** | **[SIM Region Selector](#1-sim-region-selector)** | `bytecodePatch` | Spoofs SIM and network country ISO codes to bypass regional restrictions. |
 | **Privacy** | **Feed Ad Blocker** | `bytecodePatch` | Filters sponsored cards, brand promotions, commercial audio, and search video scroll advertisements across For You, Following, and Search feeds. |
 | **Privacy** | **Hide TikTok Shop & Mall** | `bytecodePatch` | Removes product anchors, showcase badges, and bottom/top Shop navigation tabs (configurable via `hideShopTab` and `hideVideoAnchors`). |
+| **Privacy** | **Friends Feed Strict Mutuals** | `bytecodePatch` | Filters suggested accounts, recommended videos, and non-mutual profiles (such as 'People you may know') from the Friends feed so it strictly reproduces content from mutual friends. |
 | **Privacy** | **Hide AI-Generated Content** | `bytecodePatch` | Filters and skips videos tagged with native AI-generated metadata, C2PA content credentials, or creator AI disclosure tags across the For You, Following, and Friends feeds. |
 | **Privacy** | **Feed Live Stream Blocker** | `bytecodePatch` | Removes live broadcast cards and live recommendations from FYP and Following. |
 | **Privacy** | **Feed Bloat & Distraction Blocker** | `bytecodePatch` | Removes friend suggestions, suggested account carousels, mini-games, CapCut prompts, memories, community/topic cards, post-video evaluation surveys, questionnaires, mini-dramas, Lemon8 promo, in-feed search recommendations/interest cards, and floating rewards pendants across For You, Following, and Friends feeds. |
@@ -438,48 +439,58 @@ The **`Popups & Prompts Suppressor`** patch suppresses intrusive dialogs, bottom
   - Native AI banners and anchors (`ANCHOR_AIGC`, Lynx AI disclosure templates).
   - Video description and tag regex matching for creator-disclosed AI markers (`#aigenerated`, `#ai`, `#generadoporIA`, etc.).
 
-### 14. Disable Search Video Autoplay (`disableSearchVideoAutoplayPatch`)
+### 14. Friends Feed Strict Mutuals (`friendsFeedStrictMutualsPatch`)
+- Enforces strict mutual friendship verification across the TikTok Friends tab, eliminating non-mutual suggested accounts, recommended videos, and "People you may know" (`Personas que quizás conozcas`) cards.
+- **Friends V3 & V2 Network Interception**: Hooks `FriendsV3FeedResponse.<init>` and `FriendsV3FeedNetworkSource.LJ` for Friends V3 payloads, as well as `FriendsFeedResponse.<init>` and `LX/06CX;->LIZLLL` (`/tiktok/v1/friend/friend_feed`) return points for Friends V2 payloads.
+- **Mutual Follow & Suggested Tag Inspection**:
+  - Validates `author.getFollowStatus() == 2` (mutual friends who follow each other). If the author is not a mutual friend (`followStatus != 2`), the video is pruned from playback.
+  - Detects and prunes suggested accounts via `User.getMatchedFriendStruct()`, `User.isMatchedFriendAvailable()`, and `User.getRecType()`.
+  - Prunes videos tagged with recommendation relation labels (`Aweme.getFeedRelationLabel()`, `getRelationLabel()`, `getRelationRecommendInfo()`, and `getRecReasonsStruct()`).
+  - For reposts (`FriendsV3RepostModel`), inspects the `reposter` user profile: ensures `reposter.getFollowStatus() == 2` and filters out suggested reposter accounts.
+  - Automatically preserves user's own uploads and self-reposts by verifying `author.getUid()` / `reposter.getUid()` against the logged-in user (`IUserService.getCurrentUserID()`).
+
+### 15. Disable Search Video Autoplay (`disableSearchVideoAutoplayPatch`)
 - Disables automatic video and media playback in TikTok search results, preserving bandwidth and preventing unwanted audio or distraction while browsing search cards.
 - **Search List Autoplay Calculation Loop Suppression**: Injects `return-void` at index 0 of `SearchListAutoplayHelper.LIZIZ(Z LX/0JHH;)V` (fingerprinted by string `"checkLogic() is not called on main thread"`), halting the recurring scroll and idle candidate evaluation cycle.
 - **Card AutoPlay Ability Inactivation**: Injects `const/4 v0, 0` / `return v0` into `SearchCardVideoPlayerAssem$autoPlayAbility$2$1.l2()Z`, `SearchVideoForLynx$ability$1.l2()Z`, and `SearchCardPhotoPlayerAssem$autoPlayAbility$2$1.l2()Z`, asserting `false` for card autoplay eligibility.
 - **Playback Execution Guard**: Injects `return-void` into `r()V` on all search card `AutoPlayAbility` implementations, preventing any direct invocation from triggering video playback or hiding cover thumbnails. Detail view playback when opening a video remains fully functional via `PlayerController`.
 
-### 15. Resume Video After Scroll (`resumeVideoAfterScrollPatch`)
+### 16. Resume Video After Scroll (`resumeVideoAfterScrollPatch`)
 - Persists and restores playback timestamp when scrolling away and returning to feed videos.
 - **Configuration Gate Activation**: Hooks `FeedPlayProgressContinueConfig` gate (`invoke()`), forcing `enable = true`.
 - **Feed Type Restriction Bypass**: Intercepts the event type check matching `landscape_change_keep_tag`, replacing the `MOVE_RESULT` register with `1` to allow timestamp restoration across standard vertical portrait feeds.
 
-### 16. Stop Video Looping (`stopVideoLoopingPatch`)
+### 17. Stop Video Looping (`stopVideoLoopingPatch`)
 - Prevents videos from repeating in an infinite loop upon playback completion.
 - **Native Player Looping Suppression**: Injects `const/4 p1, 0x0` at instruction offset 0 of `Lcom/ss/ttvideoengine/TTVideoEngine;->setLooping(Z)V`, ensuring `isLooping` remains disabled for the underlying media session.
 
-### 17. Hide Seen Videos (`hideSeenVideosPatch`)
+### 18. Hide Seen Videos (`hideSeenVideosPatch`)
 - Automatically filters previously watched videos from incoming For You feed batches, preventing repeat content during the session while preserving active viewing history.
 - **Playback Tracking**: Hooks `PlayerController.onPlayProgressChange(String, long, long)` (recording videos viewed for >= 5s or >= 70% duration) and `PlayerController.onPlayCompleted(String)`.
 - **Network Ingestion Filtering**: Hooks `FeedApiService.fetchFeedList()` return points, pruning seen video entries directly from deserialized `FeedItemList` payloads before they are delivered to the UI layer, preventing adapter desynchronization and frame drops.
 
-### 18. Disable Post-Download Share Dialog (`disablePostDownloadDialogPatch`)
+### 19. Disable Post-Download Share Dialog (`disablePostDownloadDialogPatch`)
 - Suppresses the automatic 'Share to' and friend suggestions bottom sheet that pops up after finishing a video or media download.
 - **Bottom Sheet Presentation Neutralization**: Stubs the popup display launcher in `DownloadAndShareFragment` (fingerprinted by `definingClass = DownloadAndShareFragment` and string `"after_video_saved_share_to_nscreen"`) with `return-void` at instruction offset 0, preventing the creation and display of the `TuxSheet` bottom sheet dialog while preserving download completion toasts and saved file integrity.
 
-### 19. Hide Inbox Story & Status Tray (`hideInboxStoryTrayPatch`)
+### 20. Hide Inbox Story & Status Tray (`hideInboxStoryTrayPatch`)
 - Removes the horizontal story carousel, status notes, and creation bubbles (Skylight) displayed at the top of the direct messages inbox.
 - **Skylight Widget Injector Suppression**: Hooks `InboxSkylightWidgetV2Injector.enable()Z` -> returns `false`, preventing the Skylight container from registering or injecting into the inbox multi-pod recycler.
 - **Combine Pod Provider Neutralization**: Stubs `InboxSkylightWidgetV2.Sq()Ljava/util/List;` -> returns `emptyList()`, neutralizing story and thought combine pod creation.
 - **Eligibility Gate Neutralization**: Hooks `InboxSkylightWidgetV2.er(List)Z` -> returns `false`, ensuring display eligibility checks evaluate to empty.
 
-### 20. Disable Feed Long-Press Actions (`disableFeedLongPressActionsPatch`)
+### 21. Disable Feed Long-Press Actions (`disableFeedLongPressActionsPatch`)
 - Disables long-press action gestures on feed buttons, eliminating unwanted menu popups while preserving standard single-tap actions.
 - **Configurable Options**:
   - `disableLikeRepost` (default: `true`): Prevents long-pressing the Like (heart) button from opening TikTok's Repost action panel. Hooks `VideoDiggAssem.Sr(View)Z` to consume the long-press gesture (`return true`) without triggering the repost panel or falling through to click. Single tap to like or unlike remains fully functional.
   - `disableShareQuickDms` (default: `true`): Prevents holding the Share button from launching the quick-share recent contacts tray. Overrides the `im_long_press_share_button_to_quick_share` configuration lambda to return `0` (`Integer.valueOf(0)`) and neutralizes the `ShareUnreadVideoQuickDMTrigger` eligibility check -> returns `false`. Single tap to open the full share sheet remains fully functional.
   - `disableCommentReactions` (default: `true`): Prevents long-pressing the Comment button from opening the quick emoji reaction picker. Overrides the `long_press_quick_comment` configuration lambda to return `0` (`Integer.valueOf(0)`), causing `VideoCommentAssem.Kr()` and `Lr()` to attach only the native single-tap `OnClickListener` without long-press touch listeners. Single tap to open comments remains fully functional.
 
-### 21. Enable Profile Banner (`profileBannerPatch`)
+### 22. Enable Profile Banner (`profileBannerPatch`)
 - Unlocks the custom profile banner (background header cover) feature on user profiles and enables the banner selection, cropping, and editing tools in Edit Profile.
 - **ProfileBackgroundExp Gate Activation**: Hooks the main feature evaluation gate in `ProfileBackgroundExp` (`(Z)Z`) -> returns `true`, allowing `MusProfileEditFragment` to attach `ProfileBgEditHelper` (`LX/0axG`) and `ProfileRootBaseComponent` to assemble the `ProfileBackgroundComponent`.
 
-### 22. Direct Message Declutter (`directMessageDeclutterPatch`)
+### 23. Direct Message Declutter (`directMessageDeclutterPatch`)
 - Declutters direct message chat rooms and the inbox conversation list via modular boolean toggles:
   - **Chat List Camera Icon (`hideChatListCamera`)**: Hooks the serialized view configuration model `LX/0CbL;` in its `<init>` constructors and `setShowCameraIcon(Z)V` to enforce `showCameraIcon = false`, removing the camera shortcut on conversation list rows.
   - **Header Call Button (`hideCallButton`)**: In `BaseSingleChatTitleBarRightAssem.onViewCreated(View)V`, sets the call icon view (`0x7f0a39ae` / `icon_call_container`) to `View.GONE` and sets field `LLLFF` to `null` to neutralize async observer callbacks without crashing.
@@ -494,7 +505,7 @@ The **`Popups & Prompts Suppressor`** patch suppresses intrusive dialogs, bottom
   - **Try Effect CTA Button (`hideTryEffectButton`)**: Hooks both static eligibility gate methods in obfuscated gate class `LX/0qRQ;` (`LIZIZ(...)Z` called by `AwemeCardAssem` and `LIZJ(...)Z` called by CTA list builders `LX/0qPi`/`LX/0qPj` before instantiating `TryEffectCTAButtonType` / `LX/0YK6;`) to return `false`, neutralizing the 'Try effect' camera shortcut button on shared videos in direct messages.
   - **Sticker Reply Suggestions (`hideStickerReplySuggestions`)**: In `ReplyToStickerRecommendationViewModel`, hooks the static synthetic default-args dispatcher method (`y83(...)V`) by injecting a bitmask check on register `p3` at instruction offset 0 (`and-int/lit8 v0, p3, 0x2`). When called by automatic triggers without a message argument (mask contains bit `0x2`), it returns early (`return-void`), suppressing the automatic 'Tap a sticker to reply' suggestion panel above the text input bar while preserving manual sticker replies initiated via the sticker reply button (mask `0x1`).
 
-### 23. Popups & Prompts Suppressor (`popupsAndPromptsSuppressorPatch`)
+### 24. Popups & Prompts Suppressor (`popupsAndPromptsSuppressorPatch`)
 - Suppresses intrusive modal popups, bottom sheets, overlay takeovers, and nudge reminders via modular boolean toggles:
   - **Account & Permission Nags (`suppressAccountPrompts`)**:
     - Stubs `RecUserPopupInMainActivityController.LIZLLL()V` with `return-void` to prevent the "Follow your friends" recommendation dialog on startup and navigation.
@@ -511,6 +522,6 @@ The **`Popups & Prompts Suppressor`** patch suppresses intrusive dialogs, bottom
   - **DM Streak Reminders (`suppressStreakReminders`)**:
     - Neutralizes streak expiration urgency alerts and inline reminder messages in direct messages by forcing `LX/0O2v;->LIZ` (`has_streak_reminder_inline_msg`) -> `false`.
 
-### 24. Update Prompt Suppressor (`disableInAppUpdateNagsPatch`)
+### 25. Update Prompt Suppressor (`disableInAppUpdateNagsPatch`)
 - Neutralizes background update polling tasks and device ID check routines to prevent forced update popups.
 - Stubs `run()V` on `CheckUpdateChangeDeviceIDTaskHolder$Background`, `CheckUpdateChangeDeviceIDTaskHolder$BootFinish`, and cold startup task `CheckUpdateChangeDeviceIDTask` with `return-void`.
