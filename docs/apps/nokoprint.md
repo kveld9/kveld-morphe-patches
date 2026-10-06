@@ -27,6 +27,7 @@ Comprehensive technical, architecture, and patch guide for **NokoPrint - WiFi, B
 | **Block Telemetry & Trackers** | `bytecodePatch` | Privacy & Telemetry | ✅ Yes | Strips `AD_ID` advertising permissions, neutralizes Google Firebase/Measurement components in `AndroidManifest.xml`, stubs TikTok Business SDK init/events, and stubs Firebase/Measurement telemetry dispatchers. |
 | **Multi-Store Debridger** | `resourcePatch` | Debloat & Performance | ✅ Yes | Disables orphan billing activities, services, and permissions for alternative OEM stores (Huawei HMS/AGConnect & OTA, Xiaomi Billing & Common IAP, Samsung IAP, RuStore, OneStore, CafeBazaar, Amazon IAP). |
 | **Network Security Hardening** | `resourcePatch` | Security & Network | ✅ Yes | Enforces user trust anchors while preserving HTTP cleartext traffic for driver downloads and LAN printers. |
+| **Skip Welcome Dialog** | `bytecodePatch` | Debloat & UX | ✅ Yes | Auto-accepts the first-launch privacy notice in `ActivityHome` (`privacy_accepted=true` + post-consent init) instead of showing the About dialog. Menu About is untouched. |
 | **Universal Patches Suite** | Multiple | Optimization & Privacy | Contextual | Compatible with universal slimmers and privacy patches (Telemetry Neutralizer, Native Binary Trimmer, WebP/PNG Optimizers, DPI/Locale Slimmers, Offline Mode). See [Universal Patch Reference](../universal-patches.md). |
 
 ---
@@ -85,3 +86,9 @@ Comprehensive technical, architecture, and patch guide for **NokoPrint - WiFi, B
   - Replaces `res/xml/network_security_config.xml`.
   - Configures system and user trust anchors (`<certificates src="system" />`, `<certificates src="user" />`).
   - Preserves `base-config cleartextTrafficPermitted="true"` globally to ensure driver download fallback retries (`http://www.nokoprint.com/android_packs/`) and direct communication with WiFi and Ethernet printers (raw port 9100 / IPP / LPD) function normally without `Cleartext HTTP traffic not permitted` errors.
+
+### 7. Skip Welcome Dialog (`nokoPrintSkipWelcomeDialogPatch`)
+- **Objective**: Remove the non-cancelable About/privacy dialog (version, tagline, privacy policy link, EXIT/ACCEPT) shown on first launch.
+- **Mechanisms**:
+  - Hooks the `ActivityHome` dialog builder (`(Z)V`, matched by its `purchase_sku`/`purchase_store` strings). When called in first-launch mode it performs the app's own accept action: writes `privacy_accepted=true` and invokes the post-consent initializer derived from the accept handler (`u0.onClick`), then returns without showing the dialog.
+  - The menu About dialog (`false` argument) runs the original code unchanged.

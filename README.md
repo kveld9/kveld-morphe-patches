@@ -51,7 +51,7 @@
 
 <!-- PATCHES_START -->
 <details>
-<summary>NokoPrint - WiFi, Bluetooth, USB&nbsp;&nbsp;•&nbsp;&nbsp;<b>6 patches</b></summary>
+<summary>NokoPrint - WiFi, Bluetooth, USB&nbsp;&nbsp;•&nbsp;&nbsp;<b>7 patches</b></summary>
 <br>
 
 **Supported versions:**
@@ -67,6 +67,7 @@
 | **Block Telemetry & Trackers** | Neutralizes Firebase Analytics, Google Measurement, TikTok Business SDK, and crashlytics tracking. |  |
 | **Multi-Store Debridger** | Disables orphan billing activities, services, and permissions for alternative OEM stores (Huawei, Xiaomi, Samsung). |  |
 | **Network Security Hardening** | Enforces user trust anchors while preserving HTTP cleartext traffic for driver downloads and LAN printers. |  |
+| **Skip Welcome Dialog** | Suppresses the first-launch About/privacy dialog by applying the app's own accept action silently. The About entry in the menu keeps working. |  |
 
 </details>
 
