@@ -495,6 +495,87 @@ val feedBloatBlockerPatch = bytecodePatch(
             println("[Feed Bloat Blocker] FriendsV3BottomRecUserListCell note: ${e.message}")
         }
 
+        try {
+            val bigCardConfigFull = Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/relation/feed/RecUserBigCardConfig;",
+                name = "<init>",
+                parameters = listOf(
+                    "I",
+                    "I",
+                    "J",
+                    "J",
+                    "J",
+                    "I",
+                    "I",
+                    "I",
+                    "Z",
+                    "Z",
+                    "Lcom/ss/android/ugc/aweme/relation/feed/FYPConfig;",
+                    "Lcom/ss/android/ugc/aweme/relation/feed/FriendsTabConfig;",
+                    "I",
+                    "Lcom/ss/android/ugc/aweme/relation/feed/StackCardConfig;",
+                    "Z",
+                ),
+                returnType = "V",
+            ).method
+            val fullReturns = bigCardConfigFull.implementation?.instructions?.withIndex()
+                ?.filter { it.value.opcode == Opcode.RETURN_VOID }
+                ?.map { it.index }
+                ?.toList() ?: emptyList()
+            fullReturns.asReversed().forEach { returnIndex ->
+                bigCardConfigFull.addInstructionsAtControlFlowLabel(
+                    returnIndex,
+                    """
+                        invoke-static/range {p0 .. p0}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->disableRecUserBigCardInFriendsTab(Ljava/lang/Object;)V
+                    """.trimIndent(),
+                )
+            }
+            if (fullReturns.isNotEmpty()) {
+                println("[Feed Bloat Blocker] Disabled RecUserBigCardConfig.<init>(full) -> Friends tab swipe BigCards disabled.")
+                patched++
+            }
+        } catch (e: Exception) {
+            println("[Feed Bloat Blocker] RecUserBigCardConfig(full) note: ${e.message}")
+        }
+
+        try {
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/relation/feed/TTRecUserBigCardViewHolder;",
+                name = "LJIIIIZZ",
+                parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;"),
+                returnType = "V",
+            ).method.addInstructions(
+                0,
+                """
+                    invoke-static/range {p0 .. p0}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->collapseRecUserCardCell(Ljava/lang/Object;)V
+                    return-void
+                """.trimIndent(),
+            )
+            println("[Feed Bloat Blocker] Collapsed TTRecUserBigCardViewHolder.LJIIIIZZ(Aweme).")
+            patched++
+        } catch (e: Exception) {
+            println("[Feed Bloat Blocker] TTRecUserBigCardViewHolder.LJIIIIZZ note: ${e.message}")
+        }
+
+        try {
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/relation/feed/TTRecUserBigCardViewHolder;",
+                name = "B1",
+                parameters = listOf("Landroid/view/View;"),
+                returnType = "V",
+            ).method.addInstructions(
+                0,
+                """
+                    invoke-static/range {p0 .. p0}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->collapseRecUserCardCell(Ljava/lang/Object;)V
+                    return-void
+                """.trimIndent(),
+            )
+            println("[Feed Bloat Blocker] Collapsed TTRecUserBigCardViewHolder.B1(View).")
+            patched++
+        } catch (e: Exception) {
+            println("[Feed Bloat Blocker] TTRecUserBigCardViewHolder.B1 note: ${e.message}")
+        }
+
         // 8. Neutralize In-Feed Search Recommendations & Trending Search Cards
         try {
             Fingerprint(

@@ -1613,6 +1613,54 @@ public final class TikTokFeedAdFilter {
         } catch (Throwable ignored) {}
     }
 
+    public static void disableRecUserBigCardInFriendsTab(Object config) {
+        if (config == null) return;
+        try {
+            try {
+                Field friendsTabField = config.getClass().getDeclaredField("friendsTabConfig");
+                friendsTabField.setAccessible(true);
+                Object friendsTab = friendsTabField.get(config);
+                if (friendsTab != null) {
+                    for (String name : new String[]{"showsPerDay", "showsPerDayLite", "showsPerDayPlus"}) {
+                        try {
+                            Field f = friendsTab.getClass().getDeclaredField(name);
+                            f.setAccessible(true);
+                            f.setInt(friendsTab, 0);
+                        } catch (Throwable ignored) {}
+                    }
+                    for (String name : new String[]{"interval", "intervalLite", "intervalPlus"}) {
+                        try {
+                            Field f = friendsTab.getClass().getDeclaredField(name);
+                            f.setAccessible(true);
+                            f.setInt(friendsTab, Integer.MAX_VALUE);
+                        } catch (Throwable ignored) {}
+                    }
+                }
+            } catch (Throwable ignored) {}
+            try {
+                Field fypField = config.getClass().getDeclaredField("fypConfig");
+                fypField.setAccessible(true);
+                Object fyp = fypField.get(config);
+                if (fyp != null) {
+                    for (String name : new String[]{"showsPerDay", "showsPerDayLite", "showsPerDayPlus"}) {
+                        try {
+                            Field f = fyp.getClass().getDeclaredField(name);
+                            f.setAccessible(true);
+                            f.setInt(fyp, 0);
+                        } catch (Throwable ignored) {}
+                    }
+                    for (String name : new String[]{"interval", "intervalLite", "intervalPlus"}) {
+                        try {
+                            Field f = fyp.getClass().getDeclaredField(name);
+                            f.setAccessible(true);
+                            f.setInt(fyp, Integer.MAX_VALUE);
+                        } catch (Throwable ignored) {}
+                    }
+                }
+            } catch (Throwable ignored) {}
+        } catch (Throwable ignored) {}
+    }
+
     // Backward compatibility delegates
     public static void filterSuggestedAccountsInList(Object listObj) {
         filterFeedBloatInList(listObj);
