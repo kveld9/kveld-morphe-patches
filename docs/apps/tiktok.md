@@ -528,3 +528,9 @@ The **`Popups & Prompts Suppressor`** patch suppresses intrusive dialogs, bottom
 ### 25. Update Prompt Suppressor (`disableInAppUpdateNagsPatch`)
 - Neutralizes background update polling tasks and device ID check routines to prevent forced update popups.
 - Stubs `run()V` on `CheckUpdateChangeDeviceIDTaskHolder$Background`, `CheckUpdateChangeDeviceIDTaskHolder$BootFinish`, and cold startup task `CheckUpdateChangeDeviceIDTask` with `return-void`.
+
+### 26. Disable HDR Video Playback (`disableHdrVideoPatch`)
+- Forces the video playback engine to select standard SDR bitrates (BT.709/sRGB) instead of HDR (HDR10/PQ/HLG), preventing blinding screen brightness spikes and display thermal throttling while preserving smooth playback.
+- Stubs `isForceHdrOff()Z` -> `true` across all `ISimPlayerConfig` and `PlayerConfigImpl` implementations to trigger PlayerKit's native HDR rendition filter.
+- Stubs `SimVideoUrlModel.isHaveHdr()Z` -> `false` and `SimBitRate.isHdr()Z` -> `false` to ensure player models report streams strictly as standard dynamic range.
+

@@ -71,7 +71,7 @@
 </details>
 
 <details>
-<summary>TikTok&nbsp;&nbsp;•&nbsp;&nbsp;<b>59 patches</b></summary>
+<summary>TikTok&nbsp;&nbsp;•&nbsp;&nbsp;<b>60 patches</b></summary>
 <br>
 
 **Supported versions:**
@@ -96,6 +96,7 @@
 | **Direct Message Declutter** | Cleans direct message conversations and chat list items via individual toggles for chat list camera icons, header voice/video call buttons, message forward buttons, streak mascot and reaction bars, input camera buttons, photo gallery buttons, sticker and emoji buttons, voice recording buttons, try effect buttons, and sticker reply suggestions. | • Hide Chat List Camera Icon<br>• Hide Header Call Button<br>• Hide Message Forward Button<br>• Hide Reaction & Streak Bar<br>• Hide Input Camera Button<br>• Hide Gallery Button<br>• Hide Sticker & Emoji Button<br>• Hide Voice Record Button<br>• Hide Try Effect Button<br>• Hide Sticker Reply Suggestions |
 | **Disable Double Tap to Like** | Disables the double tap gesture to like videos in the feed, preventing accidental likes while scrolling or pausing. Videos can still be liked using the like button. |  |
 | **Disable Feed Long-Press Actions** | Disables long-press action gestures on feed buttons, including Like to repost, Share to quick DMs, and Comment to quick emojis. | • Disable Long-Press Like (Repost)<br>• Disable Long-Press Share (Quick DMs)<br>• Disable Long-Press Comment (Quick Emojis) |
+| **Disable HDR Video Playback** | Forces the video playback engine to select standard SDR bitrates (BT.709/sRGB) instead of HDR (HDR10/PQ/HLG), preventing blinding screen brightness spikes and display thermal throttling while preserving smooth playback. |  |
 | **Disable Post-Download Share Dialog** | Suppresses the automatic 'Share to' and friend suggestions bottom sheet that pops up after finishing a download. |  |
 | **Disable Profile Photo LIVE Status** | Removes the pulsing LIVE ring and badge from creator avatars in the feed and ensures clicking navigates strictly to the user profile instead of launching the live stream. |  |
 | **Disable Push Notifications** | Neutralizes background push notification tasks and persistent socket wake locks to eliminate background battery drain. |  |
