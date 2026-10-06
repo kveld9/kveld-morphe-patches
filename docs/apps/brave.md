@@ -38,6 +38,7 @@ Comprehensive technical and configuration guide for **Brave Browser** (`com.brav
 | **Locale PAK Slimmer** | `rawResourcePatch` | Storage Reclamation | ✅ Yes | Strips unselected language PAKs from `assets/locales/` (~9.64 MB saved) using zero-crash binary fallback substitution. |
 | **Sensor Privacy Guard** | `bytecodePatch` | Privacy & Anti-Fingerprinting | ✅ Yes | Forces `PlatformSensorProvider.hasSensorType -> false` and `PlatformSensor.create -> null`. Neutralizes W3C Generic Sensor APIs. |
 | **Disable Tab Auto-Minimization** | `bytecodePatch` | Debloat & UX | ✅ Yes | Forces `ChromeTabbedActivity.k6 ()Z -> false`, preventing Brave from minimizing active tabs to the background and opening a New Tab Page on resume. |
+| **Disable Content Capture** | `bytecodePatch` | Privacy & Anti-Tracking | ✅ Yes | Forces `OnscreenContentProvider.shouldCapture -> false`. Stops page text/URL streaming to the Android ContentCapture service. |
 | **Skip First Run** | `bytecodePatch` | Usability & UX | ✅ Yes | Skips the welcome screen, search engine selection, and onboarding First Run Experience (FRE) on clean installs. |
 | **Universal Patches Suite** | Multiple | Optimization & Privacy | Contextual | Compatible with universal slimmers and privacy patches (Telemetry Neutralizer, Native Binary Trimmer, WebP/PNG Optimizers, DPI/Locale Slimmers). See [Universal Patch Reference](../universal-patches.md). |
 
@@ -182,6 +183,12 @@ ur, uz, vi, zh-CN, zh-HK, zh-TW, zu
   - Stubs `ChromeTabbedActivity.k6 ()Z` with `const/4 v0, 0x0; return v0`.
   - Bypasses opening screen checks, inactivity timer evaluations, and session-end triggers.
   - Ensures the user's active foreground tab remains immediately active and displayed whenever the browser is launched or resumed.
+
+### 15. Disable Content Capture (`disableContentCapturePatch`)
+- **Objective**: Prevent Chromium from streaming visible web page text, titles, favicons and URLs to the Android ContentCapture system service (Android System Intelligence on Pixel and other devices that ship a capture service).
+- **Mechanisms**:
+  - Forces `OnscreenContentProvider.shouldCapture(String)` to return `false`. The method is JNI-only and gates native capture, so no content is extracted or dispatched while `CompositorViewHolder` keeps a valid provider instance.
+  - No effect on devices without a ContentCapture service (`adb shell dumpsys content_capture` reports `Can't find service`).
 
 ---
 
