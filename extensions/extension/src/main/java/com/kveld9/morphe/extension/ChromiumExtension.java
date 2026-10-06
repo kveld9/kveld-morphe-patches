@@ -148,7 +148,12 @@ public class ChromiumExtension {
         "matt_word",
         "matt_source",
         "matt_campaign_id",
-        "searchvariation"
+        "searchvariation",
+        "reco_item_pos",
+        "is_advertising",
+        "ad_domain",
+        "ad_position",
+        "ad_click_id"
     ));
 
     /**
@@ -331,7 +336,9 @@ public class ChromiumExtension {
     }
 
     private static boolean isMercadoLibreTrackingParam(String lowerParam) {
-        return MERCADOLIBRE_TRACKING_PARAMS.contains(lowerParam) || lowerParam.startsWith("c_");
+        return MERCADOLIBRE_TRACKING_PARAMS.contains(lowerParam)
+            || lowerParam.startsWith("c_")
+            || lowerParam.startsWith("reco_");
     }
 
     private static boolean isDomainScopedTrackingParam(String lowerHost, String lowerParam) {
