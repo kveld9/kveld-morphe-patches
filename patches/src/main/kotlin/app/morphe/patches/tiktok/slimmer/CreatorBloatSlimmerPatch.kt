@@ -8,7 +8,7 @@ private val EMPTY_BYTES = byteArrayOf()
 
 val creatorBloatSlimmerPatch = rawResourcePatch(
     name = "Studio & Creation De-bloat",
-    description = "Strips heavy video creation plugins, CapCut NLE editor SDKs, effect plugins, and AR camera face models to significantly reduce APK size.",
+    description = "Strips heavy video creation plugins, CapCut NLE editor SDKs, effect plugins, camera/music dynamic features, upload video encoders, and AR camera face models to significantly reduce APK size.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -20,6 +20,15 @@ val creatorBloatSlimmerPatch = rawResourcePatch(
             "libttvesdk_plugin.so",
             "libEffectCreatorJni.so",
             "libILAMaterialSDK.so",
+            // CutSame template engine (NEEDED-depends on NLE editor + ttvesdk, creation-only)
+            "libCutSameJni.so",
+            "libDavinciResourceJni.so",
+            // Upload-path video encoders (playback uses ByteVC decoders linked by libttmplayer)
+            "libbytevc1enc.so",
+            "libbytevc1enc10b.so",
+            // Camera/music dynamic features (df_ family, viewer-only builds skip them)
+            "libdex_df_camera_biz.so",
+            "libdex_df_music_dsp.so",
         )
 
         var savedBytes = 0L
