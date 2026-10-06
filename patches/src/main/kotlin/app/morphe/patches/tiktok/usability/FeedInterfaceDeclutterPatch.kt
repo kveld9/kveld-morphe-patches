@@ -18,7 +18,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 
 val feedInterfaceDeclutterPatch = bytecodePatch(
     name = "Feed Interface Declutter",
-    description = "Customizes and cleans feed video overlay elements, including the full screen button, repost pill, video descriptions, profile photo follow badges, story rings, playlist bottom bars, save buttons, and music discs.",
+    description = "Customizes and cleans feed video overlay elements, including the full screen button, repost pill, interest feedback pills, video descriptions, profile photo follow badges, story rings, playlist bottom bars, save buttons, and music discs.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -88,6 +88,14 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
         required = false,
     )
 
+    val hideFeedbackButtons by booleanOption(
+        key = "hideFeedbackButtons",
+        default = true,
+        title = "Hide Feedback Buttons",
+        description = "Hides the 'Not interested' / 'Interested' feedback pills above the bottom navigation on feed videos.",
+        required = false,
+    )
+
     execute {
         if (hideRepostBadge != true &&
             hideVideoDescriptions != true &&
@@ -96,7 +104,8 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
             hidePlaylistBar != true &&
             hideSaveButton != true &&
             hideMusicCover != true &&
-            hideFullscreenButton != true
+            hideFullscreenButton != true &&
+            hideFeedbackButtons != true
         ) {
             println("[Feed Interface Declutter] Skipped: All declutter options are disabled.")
             return@execute
@@ -664,6 +673,64 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
                 parameters = listOf("I"),
             ).method.replaceWithReturnVoid()
             println("[Feed Interface Declutter] Hooked LandscapeEntranceAssem.LLILZ() -> return-void.")
+            patched++
+        }
+
+        // 9. Hide Feedback Buttons ('Not interested' / 'Interested')
+        if (hideFeedbackButtons == true) {
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/feed/assem/earlyfeedback/EarlyFeedbackButtonTrigger;",
+                name = "yr",
+                returnType = "Z",
+                parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"),
+            ).method.replaceWithReturnBoolean(false)
+            println("[Feed Interface Declutter] Hooked EarlyFeedbackButtonTrigger.yr() -> return false.")
+            patched++
+
+            val feedbackAssems = listOf(
+                "Lcom/ss/android/ugc/aweme/feed/assem/earlyfeedback/EarlyFeedbackButtonAssem;",
+                "Lcom/ss/android/ugc/aweme/feed/assem/earlyfeedback/EarlyFeedbackStandardButtonAssem;",
+            )
+
+            for (assemClass in feedbackAssems) {
+                val feedbackOnViewCreated = Fingerprint(
+                    definingClass = assemClass,
+                    name = "onViewCreated",
+                    returnType = "V",
+                    parameters = listOf("Landroid/view/View;"),
+                ).method
+                feedbackOnViewCreated.clearTryBlocks()
+                feedbackOnViewCreated.ensureRegisterCount(2)
+                val feedbackCount = feedbackOnViewCreated.implementation!!.instructions.count()
+                feedbackOnViewCreated.removeInstructions(0, feedbackCount)
+                feedbackOnViewCreated.addInstructions(
+                    0,
+                    """
+                        const/16 v0, 0x8
+                        invoke-virtual {p1, v0}, Landroid/view/View;->setVisibility(I)V
+                        return-void
+                    """.trimIndent(),
+                )
+                println("[Feed Interface Declutter] Hooked $assemClass onViewCreated() -> setVisibility(GONE).")
+                patched++
+
+                Fingerprint(
+                    definingClass = assemClass,
+                    name = "z4",
+                    returnType = "V",
+                    parameters = listOf("Ljava/lang/Object;"),
+                ).method.replaceWithReturnVoid()
+                println("[Feed Interface Declutter] Hooked $assemClass z4() -> return-void.")
+                patched++
+            }
+
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/feed/assem/earlyfeedback/EarlyFeedbackStandardButtonAssem;",
+                name = "Mr",
+                returnType = "V",
+                parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"),
+            ).method.replaceWithReturnVoid()
+            println("[Feed Interface Declutter] Hooked EarlyFeedbackStandardButtonAssem.Mr() -> return-void.")
             patched++
         }
 
