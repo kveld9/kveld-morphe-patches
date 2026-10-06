@@ -80,6 +80,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Performance** | **Disable Push Notifications** | `bytecodePatch` | Neutralizes background push socket polling and persistent wake locks. |
 | **Performance** | **Live Stream 3D Gift Optimizer** | `bytecodePatch` | Disables 3D gift particle effect engine to eliminate live frame drops. |
 | **Performance** | **Live Stream SDK & Minigame De-bloat** | `rawResourcePatch` | Strips `liblink_mic_sdk.so`, Lyrax RTC broadcaster libs, DM call engine (`libvoip.so`), live RTM/base runtimes, and battle minigames. Breaks live viewing/broadcasting and DM voice/video calls. |
+| **Slimmer** | **Voice & Speech Engine De-bloat** | `rawResourcePatch` | Strips on-device voice recognition/synthesis engines (`libspeechspg.so`, `libspeechsdk.so`). Breaks voice search, voice input, and editor text-to-speech. |
 | **Slimmer** | **Core Asset De-bloat** | `rawResourcePatch` | Strips Microblink OCR models, C2PA AI libs, ByteDance TTWebView engine, non-Latin fonts, Python VM (~77 MB saved). |
 | **Slimmer** | **Studio & Creation De-bloat** | `rawResourcePatch` | Strips AR camera engine (`libeffect_plugin.so`), video editor SDK (`libttvesdk_plugin.so`), CapCut NLE libs, CutSame/Davinci template engine, camera/music dynamic features, upload video encoders, and on-device AI runtimes (LiteRT). |
 | **Slimmer** | **Language Pack Purger** | `rawResourcePatch` | Strips unselected language string bundles from `assets/strings#lang_*`. |
