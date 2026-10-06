@@ -61,6 +61,8 @@ private val OPT_OUT_METADATA = listOf(
     "google_analytics_default_allow_ad_personalization_signals" to "false",
     "google_analytics_automatic_screen_reporting_enabled" to "false",
     "appsflyer_data_collection_enabled" to "false",
+    "com.facebook.sdk.AutoLogAppEventsEnabled" to "false",
+    "com.facebook.sdk.AdvertiserIDCollectionEnabled" to "false",
     "io.sentry.auto-init" to "false",
 )
 
@@ -107,7 +109,7 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
         key = "injectOptOutFlags",
         default = true,
         title = "Inject Telemetry Opt-Out Flags & Prune Registrars",
-        description = "Inject meta-data opt-out entries into application tag (Firebase Analytics, Crashlytics, Performance, AppsFlyer, Sentry) and prune Firebase discovery registrars.",
+        description = "Inject meta-data opt-out entries into application tag (Firebase Analytics, Crashlytics, Performance, AppsFlyer, Sentry, Facebook SDK) and prune Firebase discovery registrars.",
         required = false,
     )
 
