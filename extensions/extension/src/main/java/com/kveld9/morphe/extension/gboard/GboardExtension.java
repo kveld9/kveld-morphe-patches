@@ -858,7 +858,11 @@ public class GboardExtension {
         synchronized (GboardExtension.class) {
             if (prefFieldsResolved) return;
             try {
-                Field fTitle = findField(prefClass, "a");
+                // NOTE: verified against the target Gboard dex: the title holder is
+                // field "q" (read by v() into android.R.id.title) and the summary
+                // holder is field "a" (read by m() into android.R.id.summary).
+                // Mapping them the other way around swaps every title/summary pair.
+                Field fTitle = findField(prefClass, "q");
                 if (fTitle == null || !CharSequence.class.isAssignableFrom(fTitle.getType())) {
                     fTitle = findField(prefClass, "mTitle");
                 }
@@ -866,7 +870,7 @@ public class GboardExtension {
                     cachedTitleField = fTitle;
                 }
 
-                Field fSummary = findField(prefClass, "q");
+                Field fSummary = findField(prefClass, "a");
                 if (fSummary == null || !CharSequence.class.isAssignableFrom(fSummary.getType())) {
                     fSummary = findField(prefClass, "mSummary");
                 }
@@ -883,8 +887,8 @@ public class GboardExtension {
                         }
                     }
                     if (csFields.size() >= 2) {
-                        if (cachedTitleField == null) cachedTitleField = csFields.get(0);
-                        if (cachedSummaryField == null) cachedSummaryField = csFields.get(1);
+                        if (cachedSummaryField == null) cachedSummaryField = csFields.get(0);
+                        if (cachedTitleField == null) cachedTitleField = csFields.get(1);
                     }
                 }
             } catch (Throwable ignored) {}
