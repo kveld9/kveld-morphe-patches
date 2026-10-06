@@ -7,7 +7,7 @@ private val EMPTY_BYTES = byteArrayOf()
 
 val speechEngineSlimmerPatch = rawResourcePatch(
     name = "Voice & Speech Engine De-bloat",
-    description = "Strips on-device voice recognition and speech synthesis engines (libspeechspg.so, libspeechsdk.so) to save APK space. Breaks voice search (microphone button), voice input, and editor text-to-speech/sing features.",
+    description = "Strips on-device voice recognition and speech synthesis engines (libspeechspg.so, libspeechsdk.so) and their loader stubs (libspeechengine.so, libspeechepg.so) to save APK space. Breaks voice search (microphone button), voice input, and editor text-to-speech/sing features.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
