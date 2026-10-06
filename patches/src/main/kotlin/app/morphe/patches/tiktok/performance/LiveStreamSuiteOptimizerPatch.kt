@@ -7,7 +7,7 @@ private val EMPTY_BYTES = byteArrayOf()
 
 val liveStreamSuiteOptimizerPatch = rawResourcePatch(
     name = "Live Stream SDK & Minigame De-bloat",
-    description = "Strips Live link mic SDK (liblink_mic_sdk.so), Lyrax RTC broadcasting engines (liblyrax.so), and live stream interactive minigames to reduce APK size and memory footprint.",
+    description = "Strips Live link mic SDK (liblink_mic_sdk.so), Lyrax RTC broadcasting engines (liblyrax.so), DM voice/video call engine (libvoip.so), live RTM messaging (librtmglobal.so) and live base runtime (libbase_live.so), plus live stream interactive minigames to reduce APK size and memory footprint. Breaks live viewing/broadcasting and direct message calls.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -20,6 +20,13 @@ val liveStreamSuiteOptimizerPatch = rawResourcePatch(
             "lib/armeabi-v7a/liblink_mic_sdk.so",
             "lib/armeabi-v7a/liblyrax.so",
             "lib/armeabi-v7a/liblyrax_plugin.so",
+            // DM voice/video calls (im/callroom, /tiktok/v1/im/voip/*) and live RTM/base runtimes
+            "lib/arm64-v8a/libvoip.so",
+            "lib/arm64-v8a/librtmglobal.so",
+            "lib/arm64-v8a/libbase_live.so",
+            "lib/armeabi-v7a/libvoip.so",
+            "lib/armeabi-v7a/librtmglobal.so",
+            "lib/armeabi-v7a/libbase_live.so",
         )
 
         var savedBytes = 0L
