@@ -187,11 +187,11 @@ For non-trivial logic, Smali hooks, native ARM64 patching (`libchrome.so`), or s
       b) **Cross-Compatibility & Shared Contracts** (`feat(patches): ...` or `feat(shared): ...`): Isolated when bridging shared features across apps outside an individual patch unit.
       c) **Standalone Technical Documentation** (`docs(<app>): ...` or `docs: ...`): Strictly reserved for documentation-only changes that are NOT part of a patch creation or update (e.g. typos, global architecture notes, general README updates).
     - Each commit must adhere strictly to Conventional Commits to ensure clean `@semantic-release` changelog generation and bisectability.
-15. **Strict No-PR Policy (Direct Repository Workflow)**:
-    - This repository and maintainer DO NOT work with Pull Requests (PRs). Work is committed directly or managed locally without PRs.
-    - Under NO circumstances should you ask to proceed with the `commit -> push -> PR title/description generation` closing sequence.
-    - NEVER generate PR titles, PR descriptions, or suggest opening PRs.
-    - When an implementation unit is complete and verified, simply present the technical outcome, validation evidence, and conclude.
+15. **Mandatory Direct Commit & Strict No-Push / No-PR Policy**:
+    - Automatically commit every completed, verified unit of work as soon as it is finished. Always commit; never ask whether to commit.
+    - **Strict No-Push**: NEVER push to remote (`git push` is strictly prohibited). Pushing is reserved exclusively for the user.
+    - **Strict No-PR**: This repository and maintainer DO NOT work with Pull Requests (PRs). Work is committed directly or managed locally without PRs. Under NO circumstances should you ask to proceed with push or PR closing sequences, and NEVER generate PR titles or PR descriptions.
+    - Commits MUST strictly be atomic, isolated, independent, clean, and concise.
 16. **Prohibition of Multi-Version Target Retentions**: see the Single Target Version Invariant in Section 2; this also covers `README.md` and every other documentation reference.
 17. **Strict Prohibition of In-App Settings Screens & Dynamic UI Panels**:
     - Never propose or implement in-app settings activities, preference menus, or overlay panels to toggle patches dynamically at runtime. Dynamic toggles introduce extreme ProGuard/DexGuard fragility across weekly upstream bumps and disk I/O overhead on performance-critical paths. All configurable parameters must be compile/patch-time options via Morphe Manager / CLI (`stringOption`), except for declarative AndroidX XML preference injections authorized in `docs/out-of-scope.md` (such as Gboard Enhancements). Authoritative boundary: `docs/out-of-scope.md`.
