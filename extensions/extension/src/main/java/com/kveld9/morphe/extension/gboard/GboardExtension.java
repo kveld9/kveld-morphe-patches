@@ -842,11 +842,21 @@ public class GboardExtension {
         synchronized (GboardExtension.class) {
             if (prefFieldsResolved) return;
             try {
-                cachedTitleField = findField(prefClass, "a");
-                if (cachedTitleField == null) cachedTitleField = findField(prefClass, "mTitle");
+                Field fTitle = findField(prefClass, "a");
+                if (fTitle == null || !CharSequence.class.isAssignableFrom(fTitle.getType())) {
+                    fTitle = findField(prefClass, "mTitle");
+                }
+                if (fTitle != null && CharSequence.class.isAssignableFrom(fTitle.getType())) {
+                    cachedTitleField = fTitle;
+                }
 
-                cachedSummaryField = findField(prefClass, "q");
-                if (cachedSummaryField == null) cachedSummaryField = findField(prefClass, "mSummary");
+                Field fSummary = findField(prefClass, "q");
+                if (fSummary == null || !CharSequence.class.isAssignableFrom(fSummary.getType())) {
+                    fSummary = findField(prefClass, "mSummary");
+                }
+                if (fSummary != null && CharSequence.class.isAssignableFrom(fSummary.getType())) {
+                    cachedSummaryField = fSummary;
+                }
 
                 if (cachedTitleField == null || cachedSummaryField == null) {
                     java.util.List<Field> csFields = new java.util.ArrayList<>();
@@ -957,7 +967,7 @@ public class GboardExtension {
                 if (prefClass != null) {
                     Field fN = findField(prefClass, "N");
                     if (fN == null) fN = findField(prefClass, "mClickListener");
-                    if (fN != null) {
+                    if (fN != null && android.view.View.OnClickListener.class.isAssignableFrom(fN.getType())) {
                         fN.set(pref, (android.view.View.OnClickListener) v -> {
                             try {
                                 action.run();
