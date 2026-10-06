@@ -14,7 +14,7 @@ private const val SERVICE_DISABLED = 3
 @Suppress("unused")
 val gboardDisablePlayServicesPatch = bytecodePatch(
     name = "Disable Play Services Integration",
-    description = "Makes Gboard's Google Play services availability check always report SERVICE_DISABLED, so GMS-backed code paths (Clearcut logging, Phenotype, account sync, Google Help feedback) are skipped at the source instead of being attempted.",
+    description = "Makes Gboard's Google Play services availability check always report SERVICE_DISABLED, so GMS-backed code paths (Clearcut logging, Phenotype, account sync, Google Help feedback) are skipped at the source instead of being attempted. Note: Disables Gboard's inline Google Translate tool, which relies on Play Services Cronet.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
