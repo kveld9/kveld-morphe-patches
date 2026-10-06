@@ -290,7 +290,7 @@ The **`Direct Message Declutter`** patch cleans direct message conversations and
 | **Hide Sticker & Emoji Button** | `hideEmojiButton` | Boolean | `true` | Hides the sticker and emoji selector button on the right side of the chat message input field. |
 | **Hide Voice Record Button** | `hideVoiceRecordButton` | Boolean | `true` | Hides the microphone / voice recording button on the right side of the chat message input field. |
 | **Hide Try Effect Button** | `hideTryEffectButton` | Boolean | `true` | Removes the 'Try effect' camera button shown on shared videos that use an effect in direct messages. |
-| **Hide Sticker Reply Suggestions** | `hideStickerReplySuggestions` | Boolean | `true` | Removes the automatic 'Tap a sticker to reply' suggestion panel above the input bar. The manual sticker reply button keeps working. |
+| **Hide Sticker Reply Suggestions** | `hideStickerReplySuggestions` | Boolean | `true` | Removes the automatic 'Tap a sticker to reply' suggestion panel and the typing-triggered sticker/GIF strip above the input bar. The manual sticker reply button keeps working. |
 
 ### 11. Popups & Prompts Suppressor
 
@@ -506,7 +506,7 @@ The **`Popups & Prompts Suppressor`** patch suppresses intrusive dialogs, bottom
   - **Sticker Reply Suggestions (`hideStickerReplySuggestions`)**: Neutralizes sticker suggestion popups and reply banners in direct messages:
     - **Incoming Reply Suggestions**: In `ReplyToStickerRecommendationViewModel`, hooks the static synthetic default-args dispatcher method (`y83(...)V`) by injecting a bitmask check on register `p3` at instruction offset 0 (`and-int/lit8 v0, p3, 0x2`). When called by automatic triggers without a message argument (mask contains bit `0x2`), it returns early (`return-void`), suppressing the automatic 'Tap a sticker to reply' suggestion panel above the text input bar while preserving manual sticker replies initiated via the sticker reply button (mask `0x1`).
     - **Preshown Reply Banner**: Hooks `PreshownStickerBannerProtocol.isEnabled()Z` -> `false` and converts `PreshownStickerBannerProtocol.intercept(List)List` to passthrough `return-object p1`, preventing the bottom conversation banner from instantiating.
-    - **Typing Recommendations**: Hooks `TypingRecommendationPanelAssem.()Z` -> `false`, suppressing the typing-triggered floating sticker recommendation tray.
+    - **Typing Recommendations**: Hooks `TypingRecommendationPanelAssem.Kq()Z` -> `false` and stubs the typing strip pipeline `Aq(LX/0XIS;)V`, `Rq(LX/0pPl;)V`, `Sq(List;)V`, `rq(LX/0pPl;)V` and `uq(LX/0pPl;)V` with `return-void`, suppressing the typing-triggered sticker/GIF strip above the input bar.
 
 ### 24. Popups & Prompts Suppressor (`popupsAndPromptsSuppressorPatch`)
 - Suppresses intrusive modal popups, bottom sheets, overlay takeovers, and nudge reminders via modular boolean toggles:

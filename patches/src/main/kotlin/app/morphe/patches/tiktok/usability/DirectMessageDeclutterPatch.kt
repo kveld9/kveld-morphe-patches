@@ -10,6 +10,7 @@ import app.morphe.patches.shared.clearTryBlocks
 import app.morphe.patches.shared.ensureRegisterCount
 import app.morphe.patches.shared.replaceWithReturnBoolean
 import app.morphe.patches.shared.replaceWithReturnNull
+import app.morphe.patches.shared.replaceWithReturnVoid
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
@@ -21,7 +22,7 @@ import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 val directMessageDeclutterPatch = bytecodePatch(
     name = "Direct Message Declutter",
-    description = "Removes visual clutter in direct messages and chat list, including the call button, reaction tray, message forward button, camera icons, input action buttons, try effect button, and sticker reply suggestions.",
+    description = "Removes visual clutter in direct messages and chat list, including the call button, reaction tray, message forward button, camera icons, input action buttons, try effect button, sticker reply suggestions, and the typing-triggered sticker strip.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -101,7 +102,7 @@ val directMessageDeclutterPatch = bytecodePatch(
     val hideStickerReplySuggestions by booleanOption(
         key = "hideStickerReplySuggestions",
         title = "Hide Sticker Reply Suggestions",
-        description = "Removes the automatic 'Tap a sticker to reply' suggestion panel above the input bar. The manual sticker reply button keeps working.",
+        description = "Removes the automatic 'Tap a sticker to reply' suggestion panel and the typing-triggered sticker/GIF strip above the input bar. The manual sticker reply button keeps working.",
         default = true,
         required = false,
     )
@@ -665,7 +666,52 @@ val directMessageDeclutterPatch = bytecodePatch(
                 returnType = "Z",
                 parameters = emptyList(),
             ).method.replaceWithReturnBoolean(false)
-            println("[Direct Message Declutter] Hooked TypingRecommendationPanelAssem -> typing sticker recommendations disabled.")
+            println("[Direct Message Declutter] Hooked TypingRecommendationPanelAssem.Kq -> typing sticker recommendations disabled.")
+            patched++
+
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/im/sdk/chat/ui/base/assems/input/typingrecommendation/TypingRecommendationPanelAssem;",
+                name = "Aq",
+                returnType = "V",
+                parameters = listOf("LX/0XIS;"),
+            ).method.replaceWithReturnVoid()
+            println("[Direct Message Declutter] Hooked TypingRecommendationPanelAssem.Aq -> typing state reducer stubbed.")
+            patched++
+
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/im/sdk/chat/ui/base/assems/input/typingrecommendation/TypingRecommendationPanelAssem;",
+                name = "Rq",
+                returnType = "V",
+                parameters = listOf("LX/0pPl;"),
+            ).method.replaceWithReturnVoid()
+            println("[Direct Message Declutter] Hooked TypingRecommendationPanelAssem.Rq -> sticker data push suppressed.")
+            patched++
+
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/im/sdk/chat/ui/base/assems/input/typingrecommendation/TypingRecommendationPanelAssem;",
+                name = "Sq",
+                returnType = "V",
+                parameters = listOf("Ljava/util/List;"),
+            ).method.replaceWithReturnVoid()
+            println("[Direct Message Declutter] Hooked TypingRecommendationPanelAssem.Sq -> GIF/sticker list processing suppressed.")
+            patched++
+
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/im/sdk/chat/ui/base/assems/input/typingrecommendation/TypingRecommendationPanelAssem;",
+                name = "rq",
+                returnType = "V",
+                parameters = listOf("LX/0pPl;"),
+            ).method.replaceWithReturnVoid()
+            println("[Direct Message Declutter] Hooked TypingRecommendationPanelAssem.rq -> floating banner path suppressed.")
+            patched++
+
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/im/sdk/chat/ui/base/assems/input/typingrecommendation/TypingRecommendationPanelAssem;",
+                name = "uq",
+                returnType = "V",
+                parameters = listOf("LX/0pPl;"),
+            ).method.replaceWithReturnVoid()
+            println("[Direct Message Declutter] Hooked TypingRecommendationPanelAssem.uq -> inline suggestion path suppressed.")
             patched++
         }
 
