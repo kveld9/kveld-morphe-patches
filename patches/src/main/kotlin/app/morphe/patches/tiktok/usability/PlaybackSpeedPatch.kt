@@ -167,20 +167,22 @@ val playbackSpeedPatch = bytecodePatch(
                     parameters = listOf("I", "Ljava/lang/String;", "Z", "Z"),
                     returnType = "Z",
                 ).method
-                boolGate.ensureRegisterCount(1)
+                boolGate.ensureRegisterCount(2)
                 val boolReturns = boolGate.implementation?.instructions?.withIndex()
                     ?.filter { it.value.opcode == Opcode.RETURN }
                     ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
                     ?.toList() ?: emptyList()
                 boolReturns.forEachIndexed { ordinal, (returnIndex, reg) ->
+                    // Only the return register is live at a return point; scratch must differ.
+                    val scratch = if (reg == 0) 1 else 0
                     boolGate.addInstructionsAtControlFlowLabel(
                         returnIndex,
                         """
                             if-eqz p2, :speed_lock_keep_stock_$ordinal
-                            const-string v0, "long_press_speed_up_enable"
-                            invoke-virtual {p2, v0}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
-                            move-result v0
-                            if-eqz v0, :speed_lock_keep_stock_$ordinal
+                            const-string v$scratch, "long_press_speed_up_enable"
+                            invoke-virtual {p2, v$scratch}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+                            move-result v$scratch
+                            if-eqz v$scratch, :speed_lock_keep_stock_$ordinal
                             const/4 v$reg, 0x1
                             :speed_lock_keep_stock_$ordinal
                             nop
@@ -198,20 +200,22 @@ val playbackSpeedPatch = bytecodePatch(
                     parameters = listOf("I", "I", "Ljava/lang/String;", "Z"),
                     returnType = "I",
                 ).method
-                intGate.ensureRegisterCount(1)
+                intGate.ensureRegisterCount(2)
                 val intReturns = intGate.implementation?.instructions?.withIndex()
                     ?.filter { it.value.opcode == Opcode.RETURN }
                     ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
                     ?.toList() ?: emptyList()
                 intReturns.forEachIndexed { ordinal, (returnIndex, reg) ->
+                    // Only the return register is live at a return point; scratch must differ.
+                    val scratch = if (reg == 0) 1 else 0
                     intGate.addInstructionsAtControlFlowLabel(
                         returnIndex,
                         """
                             if-eqz p3, :speed_lock_keep_distance_$ordinal
-                            const-string v0, "long_press_speed_up_lock"
-                            invoke-virtual {p3, v0}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
-                            move-result v0
-                            if-eqz v0, :speed_lock_keep_distance_$ordinal
+                            const-string v$scratch, "long_press_speed_up_lock"
+                            invoke-virtual {p3, v$scratch}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+                            move-result v$scratch
+                            if-eqz v$scratch, :speed_lock_keep_distance_$ordinal
                             if-lez v$reg, :speed_lock_keep_distance_$ordinal
                             const/16 v$reg, 0x8c
                             :speed_lock_keep_distance_$ordinal
