@@ -172,8 +172,9 @@ val playbackSpeedPatch = bytecodePatch(
                     ?.filter { it.value.opcode == Opcode.RETURN }
                     ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
                     ?.toList() ?: emptyList()
-                boolReturns.forEachIndexed { ordinal, (returnIndex, reg) ->
+                boolReturns.asReversed().forEachIndexed { ordinal, (returnIndex, reg) ->
                     // Only the return register is live at a return point; scratch must differ.
+                    // Descending order keeps earlier indices valid after each insertion.
                     val scratch = if (reg == 0) 1 else 0
                     boolGate.addInstructionsAtControlFlowLabel(
                         returnIndex,
@@ -205,8 +206,9 @@ val playbackSpeedPatch = bytecodePatch(
                     ?.filter { it.value.opcode == Opcode.RETURN }
                     ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
                     ?.toList() ?: emptyList()
-                intReturns.forEachIndexed { ordinal, (returnIndex, reg) ->
+                intReturns.asReversed().forEachIndexed { ordinal, (returnIndex, reg) ->
                     // Only the return register is live at a return point; scratch must differ.
+                    // Descending order keeps earlier indices valid after each insertion.
                     val scratch = if (reg == 0) 1 else 0
                     intGate.addInstructionsAtControlFlowLabel(
                         returnIndex,
