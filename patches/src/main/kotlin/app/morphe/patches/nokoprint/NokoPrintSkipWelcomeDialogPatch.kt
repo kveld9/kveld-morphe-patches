@@ -6,8 +6,10 @@ import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.getReference
 import com.android.tools.smali.dexlib2.Opcode
-import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
@@ -29,7 +31,7 @@ val nokoPrintSkipWelcomeDialogPatch = bytecodePatch(
             strings = listOf(PRIVACY_ACCEPTED_KEY),
         ).method
 
-        val acceptInstructions = acceptHandlerMethod.implementation?.instructions
+        val acceptInstructions = acceptHandlerMethod.implementation?.instructions?.toList()
             ?: error("[Skip Welcome Dialog] Accept handler has no instructions.")
 
         val prefsField = deriveSharedPreferencesField(acceptInstructions)
@@ -45,6 +47,8 @@ val nokoPrintSkipWelcomeDialogPatch = bytecodePatch(
             parameters = listOf("Z"),
             strings = listOf("purchase_sku", "purchase_store"),
         ).method
+
+        requireLocalRegisters(builderMethod, 3)
 
         builderMethod.addInstructionsWithLabels(
             0,
@@ -68,42 +72,45 @@ val nokoPrintSkipWelcomeDialogPatch = bytecodePatch(
     }
 }
 
-private fun deriveSharedPreferencesField(instructions: Iterable<*>): FieldReference {
-    for (inst in instructions) {
-        val refInst = inst as? ReferenceInstruction ?: continue
-        if (refInst.opcode != Opcode.IGET_OBJECT) continue
-
-        val fieldRef = refInst.reference as? FieldReference ?: continue
-        if (fieldRef.type == "Landroid/content/SharedPreferences;") {
-            return fieldRef
-        }
+private fun requireLocalRegisters(method: Method, minLocalRegisters: Int) {
+    val impl = method.implementation
+        ?: error("[Skip Welcome Dialog] Dialog builder has no implementation.")
+    val parameterRegisters = 1 + method.parameterTypes.sumOf {
+        if (it.toString() == "J" || it.toString() == "D") 2 else 1
     }
-    error("[Skip Welcome Dialog] Failed to derive SharedPreferences FieldReference from accept handler.")
+    val localRegisters = impl.registerCount - parameterRegisters
+    check(localRegisters >= minLocalRegisters) {
+        "[Skip Welcome Dialog] Dialog builder has only $localRegisters local registers; the hook needs v0-v2."
+    }
 }
 
-private fun derivePostConsentMethod(instructions: Iterable<*>): MethodReference {
-    var seenApply = false
-    for (inst in instructions) {
-        val refInst = inst as? ReferenceInstruction ?: continue
-        if (!seenApply) {
-            if (isSharedPreferencesApply(refInst)) {
-                seenApply = true
-            }
-            continue
+private fun deriveSharedPreferencesField(instructions: List<Instruction>): FieldReference =
+    instructions.firstNotNullOfOrNull { instruction ->
+        if (instruction.opcode == Opcode.IGET_OBJECT) {
+            instruction.getReference<FieldReference>()
+                ?.takeIf { it.type == "Landroid/content/SharedPreferences;" }
+        } else {
+            null
         }
+    } ?: error("[Skip Welcome Dialog] Failed to derive SharedPreferences FieldReference from accept handler.")
 
-        if (refInst.opcode == Opcode.INVOKE_VIRTUAL) {
-            val methodRef = refInst.reference as? MethodReference
-            if (methodRef != null) {
-                return methodRef
-            }
-        }
+private fun derivePostConsentMethod(instructions: List<Instruction>): MethodReference {
+    val applyIndex = instructions.indexOfFirst { isSharedPreferencesApply(it) }
+    if (applyIndex == -1) {
+        error("[Skip Welcome Dialog] Failed to derive post-consent MethodReference from accept handler.")
     }
-    error("[Skip Welcome Dialog] Failed to derive post-consent MethodReference from accept handler.")
+
+    return instructions.drop(applyIndex + 1).firstNotNullOfOrNull { instruction ->
+        if (instruction.opcode == Opcode.INVOKE_VIRTUAL) {
+            instruction.getReference<MethodReference>()
+        } else {
+            null
+        }
+    } ?: error("[Skip Welcome Dialog] Failed to derive post-consent MethodReference from accept handler.")
 }
 
-private fun isSharedPreferencesApply(refInst: ReferenceInstruction): Boolean {
-    val methodRef = refInst.reference as? MethodReference ?: return false
+private fun isSharedPreferencesApply(instruction: Instruction): Boolean {
+    val methodRef = instruction.getReference<MethodReference>() ?: return false
     return methodRef.definingClass == "Landroid/content/SharedPreferences\$Editor;" &&
         methodRef.name == "apply" &&
         methodRef.returnType == "V"
