@@ -132,6 +132,18 @@ private fun BytecodePatchContext.applyAccountPromptHooks(): Int {
     println("[Popups & Prompts Suppressor] Neutralized RelationAuthDialogControl.LJFF() -> Relation auth trigger blocked.")
     count++
 
+    Fingerprint(
+        definingClass = "LX/0v5r;",
+        name = "LIZIZ",
+        parameters = listOf(
+            "LX/1Gbn;",
+            "[LX/0Se8;",
+        ),
+        returnType = "V",
+    ).method.replaceWithReturnVoid()
+    println("[Popups & Prompts Suppressor] Neutralized LX/0v5r.LIZIZ() -> Find contacts access dialog pipeline blocked.")
+    count++
+
     // 4. "Security checkup 2SV" upsell modal
     Fingerprint(
         definingClass = "Lcom/ss/android/ugc/aweme/services/popsuite/local/LocalCampaignManager;",
