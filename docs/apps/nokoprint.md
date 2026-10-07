@@ -90,5 +90,6 @@ Comprehensive technical, architecture, and patch guide for **NokoPrint - WiFi, B
 ### 7. Skip Welcome Dialog (`nokoPrintSkipWelcomeDialogPatch`)
 - **Objective**: Remove the non-cancelable About/privacy dialog (version, tagline, privacy policy link, EXIT/ACCEPT) shown on first launch.
 - **Mechanisms**:
-  - Hooks the `ActivityHome` dialog builder (`(Z)V`, matched by its `purchase_sku`/`purchase_store` strings). When called in first-launch mode it performs the app's own accept action: writes `privacy_accepted=true` and invokes the post-consent initializer derived from the accept handler (`u0.onClick`), then returns without showing the dialog.
+  - Hooks the `ActivityHome` dialog builder (`(Z)V`, matched by its `purchase_sku`/`purchase_store` strings). When called in first-launch mode it performs the app's own accept action: writes `privacy_accepted=true` and invokes the post-consent initializer derived from the accept handler (the `DialogInterface.OnClickListener.onClick` that writes `privacy_accepted`), then returns without showing the dialog.
   - The menu About dialog (`false` argument) runs the original code unchanged.
+  - **Privacy notice**: enabling this patch accepts NokoPrint's privacy policy on the user's behalf. The policy remains readable from the menu About dialog. Google UMP ads consent is a separate flow and is not affected.
