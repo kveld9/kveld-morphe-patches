@@ -33,6 +33,7 @@ public final class TikTokCommentTranslateHook {
     private static final int MAX_REQUESTED_BATCH_KEYS = 12;
 
     private static final Object LOCK = new Object();
+    private static final LinkedHashSet<String> patchExcludedLanguages = new LinkedHashSet<>();
     private static final LinkedHashMap<String, VisibleComment> visibleComments = new LinkedHashMap<>();
     private static final LinkedHashMap<String, LoadedBatch> loadedBatches = new LinkedHashMap<>();
     private static final LinkedHashSet<String> requestedLoadedBatchKeys = new LinkedHashSet<>();
@@ -310,6 +311,25 @@ public final class TikTokCommentTranslateHook {
         return "true".equalsIgnoreCase(translated);
     }
 
+    /**
+     * Sets the patch-time do-not-translate language list (comma-separated ISO 639
+     * codes, e.g. "en,es"). Replaces any previous patch list; empty clears it.
+     */
+    public static void setExcludedLanguages(String csv) {
+        LinkedHashSet<String> parsed = new LinkedHashSet<>();
+        if (csv != null) {
+            for (String part : csv.split(",")) {
+                String code = part.trim().toLowerCase(Locale.ROOT);
+                if (code.matches("[a-z]{2,3}")) parsed.add(code);
+            }
+        }
+        synchronized (LOCK) {
+            patchExcludedLanguages.clear();
+            patchExcludedLanguages.addAll(parsed);
+        }
+        Log.i(TAG, "[Translate] Patch excluded languages: " + parsed);
+    }
+
     private static boolean shouldSkipTranslation(Object comment) {
         String commentLanguage = primaryLanguageTag(invokeStringQuiet(comment, "getCommentLanguage"));
         if (isBlank(commentLanguage)) return false;
@@ -320,6 +340,9 @@ public final class TikTokCommentTranslateHook {
         for (String language : getNativeDoNotTranslateLanguages()) {
             if (commentLanguage.equals(primaryLanguageTag(language))) return true;
         }
+        synchronized (LOCK) {
+            if (patchExcludedLanguages.contains(commentLanguage)) return true;
+        }
         return false;
     }
 
@@ -329,6 +352,11 @@ public final class TikTokCommentTranslateHook {
                 .append(":dnt");
         for (String language : getNativeDoNotTranslateLanguages()) {
             key.append(':').append(value(primaryLanguageTag(language)));
+        }
+        synchronized (LOCK) {
+            for (String language : patchExcludedLanguages) {
+                key.append(":patch:").append(value(language));
+            }
         }
         return key.toString().toLowerCase(Locale.ROOT);
     }

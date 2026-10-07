@@ -9,6 +9,7 @@ import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patcher.patch.stringOption
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.clearTryBlocks
@@ -594,7 +595,7 @@ private fun BytecodePatchContext.applyEnableVoiceComments(): Int {
     return patched
 }
 
-private fun BytecodePatchContext.applyAutoTranslate(): Int {
+private fun BytecodePatchContext.applyAutoTranslate(excludedLanguages: String): Int {
     var patched = 0
 
     baseCommentCellBindFingerprint.match().method.apply {
@@ -651,6 +652,18 @@ private fun BytecodePatchContext.applyAutoTranslate(): Int {
     }
 
     commentListLoadedFingerprint.match().method.apply {
+        if (excludedLanguages.isNotEmpty()) {
+            ensureRegisterCount(1)
+            addInstructions(
+                0,
+                """
+                    const-string v0, "$excludedLanguages"
+                    invoke-static {v0}, ${Constants.TIKTOK_EXTENSION_COMMENT_TRANSLATE_HOOK}->setExcludedLanguages(Ljava/lang/String;)V
+                """.trimIndent(),
+            )
+            println("[Comment Customizer] Pushed do-not-translate languages ($excludedLanguages).")
+        }
+
         val match = implementation!!.instructions.withIndex()
             .firstNotNullOfOrNull { (index, instruction) ->
                 val field = (instruction as? ReferenceInstruction)?.reference as? FieldReference ?: return@firstNotNullOfOrNull null
@@ -755,6 +768,14 @@ val commentCustomizerPatch = bytecodePatch(
         required = false,
     )
 
+    val translationExcludedLanguages by stringOption(
+        key = "translationExcludedLanguages",
+        title = "Do-Not-Translate Languages",
+        description = "Comma-separated ISO 639 codes (e.g. 'en,es,zh') whose comments keep their original text. Applies on top of TikTok's native do-not-translate list and only matters when Auto-Translate Comments is enabled.",
+        default = "",
+        required = false,
+    )
+
     execute {
         if (commentSortControls != true &&
             copyWithoutUsername != true &&
@@ -800,7 +821,14 @@ val commentCustomizerPatch = bytecodePatch(
         }
 
         if (autoTranslate == true) {
-            patched += applyAutoTranslate()
+            val normalizedExclusions = (translationExcludedLanguages ?: "")
+                .split(Regex("[,;\\s]+"))
+                .map { it.lowercase().substringBefore('-').substringBefore('_') }
+                .filter { it.matches(Regex("^[a-z]{2,3}$")) && it != "und" }
+                .distinct()
+                .sorted()
+                .joinToString(",")
+            patched += applyAutoTranslate(normalizedExclusions)
         }
 
         println("[Comment Customizer] Applied $patched comment customization hook(s).")
