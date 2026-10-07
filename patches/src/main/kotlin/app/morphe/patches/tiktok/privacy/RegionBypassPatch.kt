@@ -202,9 +202,13 @@ val regionBypassPatch = bytecodePatch(
                                 it.returnType.toString() == head.returnType
                         } ?: return@forEach
                         // Apply in reverse index order so earlier call sites keep valid indices.
-                        group.sortedByDescending { it.callIndex }.forEach { site ->
+                        for (site in group.sortedByDescending { it.callIndex }) {
                             val moveResult = mutableMethod.implementation?.instructions
-                                ?.getOrNull(site.callIndex + 1) as? OneRegisterInstruction ?: return@forEach
+                                ?.getOrNull(site.callIndex + 1) as? OneRegisterInstruction
+                            if (moveResult == null) {
+                                println("[SIM Region Selector] Skipped call site without move-result in ${head.first}->${head.second}.")
+                                continue
+                            }
                             mutableMethod.addInstructions(
                                 site.callIndex + 2,
                                 """
