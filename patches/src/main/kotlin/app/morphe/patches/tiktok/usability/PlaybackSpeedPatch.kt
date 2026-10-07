@@ -36,6 +36,20 @@ private fun findAbGateResult(
     return null
 }
 
+/**
+ * Diagnostic aid for version bumps: logs the invoke callees of a gate method whose
+ * expected AB-lookup signature was not found, so the new signature can be adopted.
+ */
+private fun logGateCallees(method: MutableMethod, tag: String) {
+    val callees = method.implementation?.instructions
+        ?.filter { it.opcode?.name?.startsWith("INVOKE_") == true }
+        ?.mapNotNull { (it as? ReferenceInstruction)?.reference as? MethodReference }
+        ?.map { "${it.definingClass}->${it.name}(${it.parameterTypes.joinToString(",")})${it.returnType}" }
+        ?.distinct()
+        ?.take(12) ?: emptyList()
+    println("[$tag] Gate method ${method.definingClass}->${method.name} callees: $callees")
+}
+
 val playbackSpeedPatch = bytecodePatch(
     name = "Playback Speed Persistence",
     description = "Persists selected video playback speed across all feed videos and application restarts, and optionally enables the native hold-and-slide 2x speed lock gesture.",
@@ -160,7 +174,10 @@ val playbackSpeedPatch = bytecodePatch(
                     enableMethod,
                     listOf("I", "Ljava/lang/String;", "Z", "Z"),
                     "Z",
-                ) ?: error("Long-press speed-up enable gate lookup not found")
+                ) ?: run {
+                    logGateCallees(enableMethod, "Playback Speed Persistence")
+                    error("Long-press speed-up enable gate lookup not found")
+                }
                 enableMethod.addInstructions(
                     moveIndex + 1,
                     "const/4 v$resultReg, 0x1",
@@ -182,7 +199,10 @@ val playbackSpeedPatch = bytecodePatch(
                     lockMethod,
                     listOf("I", "I", "Ljava/lang/String;", "Z"),
                     "I",
-                ) ?: error("Long-press speed-up lock distance lookup not found")
+                ) ?: run {
+                    logGateCallees(lockMethod, "Playback Speed Persistence")
+                    error("Long-press speed-up lock distance lookup not found")
+                }
                 lockMethod.addInstructions(
                     moveIndex + 1,
                     """

@@ -206,7 +206,7 @@ val regionBypassPatch = bytecodePatch(
                             val moveResult = mutableMethod.implementation?.instructions
                                 ?.getOrNull(site.callIndex + 1) as? OneRegisterInstruction
                             if (moveResult == null) {
-                                println("[SIM Region Selector] Skipped call site without move-result in ${head.first}->${head.second}.")
+                                println("[SIM Region Selector] Skipped call site without move-result in ${head.definingClass}->${head.methodName}.")
                                 continue
                             }
                             mutableMethod.addInstructions(
