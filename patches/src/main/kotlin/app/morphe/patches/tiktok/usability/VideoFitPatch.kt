@@ -75,11 +75,11 @@ val videoFitPatch = bytecodePatch(
         if (fieldMap["height"] != "I") {
             throw PatchException("Expected field height:I in $resultClass, found: ${fieldMap["height"]}")
         }
-        if (fieldMap["translateX"] != "F") {
-            throw PatchException("Expected field translateX:Float in $resultClass, found: ${fieldMap["translateX"]}")
+        if (fieldMap["translateX"] != "Ljava/lang/Float;") {
+            throw PatchException("Expected field translateX:Ljava/lang/Float; in $resultClass, found: ${fieldMap["translateX"]}")
         }
-        if (fieldMap["translateY"] != "F") {
-            throw PatchException("Expected field translateY:Float in $resultClass, found: ${fieldMap["translateY"]}")
+        if (fieldMap["translateY"] != "Ljava/lang/Float;") {
+            throw PatchException("Expected field translateY:Ljava/lang/Float; in $resultClass, found: ${fieldMap["translateY"]}")
         }
 
         val hasCopyMethod = resultClassDef.methods.any { method ->
@@ -87,11 +87,11 @@ val videoFitPatch = bytecodePatch(
                 method.parameterTypes.size >= 4 &&
                 method.parameterTypes[0] == "I" &&
                 method.parameterTypes[1] == "I" &&
-                method.parameterTypes[2] == "F" &&
-                method.parameterTypes[3] == "F"
+                method.parameterTypes[2] == "Ljava/lang/Float;" &&
+                method.parameterTypes[3] == "Ljava/lang/Float;"
         }
         if (!hasCopyMethod) {
-            throw PatchException("Method copy(I,I,Float,Float,...) not found in $resultClass")
+            throw PatchException("Method copy(I,I,Ljava/lang/Float;,Ljava/lang/Float;,...) not found in $resultClass")
         }
         println("[Video Fit] Validated VideoAdaptionResult structure (width, height, translateX, translateY, copy).")
 

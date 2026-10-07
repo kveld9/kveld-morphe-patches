@@ -83,12 +83,18 @@ public final class TikTokVideoFitHook {
                 for (Method m : clazz.getMethods()) {
                     if ("copy".equals(m.getName()) && m.getParameterTypes().length >= 4) {
                         Class<?>[] pts = m.getParameterTypes();
-                        if (pts[0] == int.class && pts[1] == int.class && pts[2] == float.class && pts[3] == float.class) {
+                        boolean isBoxed = pts[0] == int.class && pts[1] == int.class
+                                && pts[2] == Float.class && pts[3] == Float.class;
+                        boolean isPrimitive = pts[0] == int.class && pts[1] == int.class
+                                && pts[2] == float.class && pts[3] == float.class;
+                        if (isBoxed || isPrimitive) {
+                            Float boxedX = Float.valueOf(transX);
+                            Float boxedY = Float.valueOf(transY);
                             if (pts.length == 4) {
-                                return m.invoke(originalResult, newW, newH, transX, transY);
+                                return m.invoke(originalResult, newW, newH, boxedX, boxedY);
                             } else if (pts.length == 6) {
                                 // Default args copy(width, height, transX, transY, mask, marker)
-                                return m.invoke(originalResult, newW, newH, transX, transY, 0, null);
+                                return m.invoke(originalResult, newW, newH, boxedX, boxedY, 0, null);
                             }
                         }
                     }
@@ -101,11 +107,11 @@ public final class TikTokVideoFitHook {
 
             Field transXField = clazz.getDeclaredField("translateX");
             transXField.setAccessible(true);
-            transXField.setFloat(originalResult, transX);
+            transXField.set(originalResult, Float.valueOf(transX));
 
             Field transYField = clazz.getDeclaredField("translateY");
             transYField.setAccessible(true);
-            transYField.setFloat(originalResult, transY);
+            transYField.set(originalResult, Float.valueOf(transY));
 
             Log.d(TAG, "[Video Fit] Fitted result: " + newW + "x" + newH + " trans=(" + transX + "," + transY + ")");
             return originalResult;
