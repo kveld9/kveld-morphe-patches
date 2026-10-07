@@ -32,8 +32,8 @@ val mediaEnhancementsPatch = bytecodePatch(
 
     val downloadQuality by stringOption(
         key = "downloadQuality",
-        title = "Preferred Download Quality",
-        description = "Preferred saved-video quality: 'high' (best available stream), 'medium', or 'low' (smallest stream). Anything else falls back to 'high'.",
+        title = "Saved-Video Quality Preference",
+        description = "Download quality control (the single place for download quality; the Video Quality Governor only caps playback): 'high' (best available stream), 'medium', 'low' (smallest stream), or a fixed resolution ceiling in p (1080, 720, 540, 480, 360 - best stream within the ceiling). Anything else falls back to 'high'.",
         default = "high",
         required = false,
     )
@@ -41,7 +41,12 @@ val mediaEnhancementsPatch = bytecodePatch(
     execute {
         var patched = 0
         val watermarkFree = removeWatermark != false
-        val quality = (downloadQuality?.trim()?.lowercase() ?: "high").takeIf { it == "medium" || it == "low" } ?: "high"
+        val rawQuality = (downloadQuality?.trim()?.lowercase() ?: "high")
+        val quality = when {
+            rawQuality == "medium" || rawQuality == "low" -> rawQuality
+            rawQuality.toIntOrNull() in listOf(1080, 720, 540, 480, 360) -> rawQuality
+            else -> "high"
+        }
 
         // 0. Push quality preference into the runtime hook.
         try {

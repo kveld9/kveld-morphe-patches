@@ -324,10 +324,18 @@ public final class TikTokMediaHook {
         String pref = downloadQuality;
         if (pref == null) pref = "high";
         pref = pref.trim().toLowerCase();
-        if (!pref.equals("medium") && !pref.equals("low")) pref = "high";
+
+        int maxHeight = 0;
+        try {
+            maxHeight = Integer.parseInt(pref);
+        } catch (Throwable ignored) {}
+        if (maxHeight < 0) maxHeight = 0;
+        boolean capped = maxHeight > 0;
+        if (!capped && !pref.equals("medium") && !pref.equals("low")) pref = "high";
 
         java.util.List<long[]> scored = new java.util.ArrayList<>();
         java.util.List<Object> models = new java.util.ArrayList<>();
+        java.util.List<Long> heights = new java.util.ArrayList<>();
         try {
             ensureVideoReflection(videoObj.getClass().getClassLoader());
             Method getBitRate = videoObj.getClass().getMethod("getBitRate");
@@ -346,6 +354,7 @@ public final class TikTokMediaHook {
                 if (area < 0 && bitrate < 0) continue;
                 scored.add(new long[]{area, bitrate});
                 models.add(playAddr);
+                heights.add(readLongMethod(rate, "getHeight"));
             }
         } catch (Throwable ignored) {
             return null;
@@ -362,7 +371,17 @@ public final class TikTokMediaHook {
         });
 
         int pick;
-        if (pref.equals("low")) {
+        if (capped) {
+            pick = -1;
+            for (int idx : order) {
+                long h = heights.get(idx);
+                if (h < 0 || h <= maxHeight) {
+                    pick = idx;
+                    break;
+                }
+            }
+            if (pick < 0) return null;
+        } else if (pref.equals("low")) {
             pick = order[order.length - 1];
         } else if (pref.equals("medium")) {
             pick = order[order.length / 2];
