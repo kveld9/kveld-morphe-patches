@@ -333,7 +333,7 @@ The **`Popups & Prompts Suppressor`** patch suppresses intrusive dialogs, bottom
 | :--- | :--- | :---: | :---: | :--- |
 | **Suppress Account & Permission Nags** | `suppressAccountPrompts` | Boolean | `true` | Suppresses 'Follow your friends' modals, 'Find contacts' Friends tab sync overlays, multi-account notification guides, and 'Security checkup 2SV' upsells. |
 | **Suppress Sticker Recommendations** | `suppressStickerRecommendations` | Boolean | `true` | Disables personalized sticker suggestion popups and typing recommendations in direct messages. |
-| **Filter PopLayer Prompts & Nags** | `filterPopLayerPrompts` | Boolean | `true` | Suppresses repetitive PopLayer prompts including favorites collection guides, launcher shortcut dialogs, repost newbie sheets, STEM feed prompts, campus education sheets, creator inbox guides, app review dialogs, marketing opt-ins, FYP surveys, CapCut/Lemon8 upsells, profile visitor prompts, and story intro sheets. |
+| **Filter PopLayer Prompts & Nags** | `filterPopLayerPrompts` | Boolean | `true` | Suppresses repetitive PopLayer prompts including favorites collection guides, launcher shortcut dialogs, repost newbie sheets, STEM feed prompts, campus education sheets, creator inbox guides, app review dialogs, marketing opt-ins, FYP surveys, CapCut/Lemon8 upsells, profile visitor prompts, profile view history sheets, message push guides, and story intro sheets. |
 | **Suppress Live Teaser Bubbles** | `suppressLiveTeaserBubble` | Boolean | `true` | Disables floating live stream preview teasers and popup windows from appearing over the video feed. |
 | **Suppress DM Streak Reminders** | `suppressStreakReminders` | Boolean | `true` | Suppresses direct message streak expiration warning banners and inline urgency reminders. |
 
@@ -555,13 +555,14 @@ The **`Popups & Prompts Suppressor`** patch suppresses intrusive dialogs, bottom
   - **Account & Permission Nags (`suppressAccountPrompts`)**:
     - Stubs `RecUserPopupInMainActivityController.LIZLLL()V` with `return-void` to prevent the "Follow your friends" recommendation dialog on startup and navigation.
     - Stubs `LX/0YL4;->LJII(...)V` with `return-void` to suppress "Get notifications from other accounts" prompts when switching accounts.
-    - Suppresses the "Find contacts" sync overlay on the Friends tab by stubbing `LX/0v6A;->canShow()Z` -> `false`, `LX/0v6A;->LJII(...)V` -> `return-void`, and `RelationAuthDialogControl;->LJFF(...)V` -> `return-void`.
-    - Suppresses 2-Step Verification security checkup popups by intercepting `LocalCampaignManager.showLocalCampaign` (`"UPSELL_2SV_POPUP"`) -> `false` and `PopSuiteManagerService.shouldShowPopSuitePopup` -> `false`.
+    - Suppresses the "Find contacts" sync overlay on the Friends tab by stubbing `LX/0v6A;->canShow()Z` -> `false`, `LX/0v6A;->LJII(...)V` -> `return-void`, and `RelationAuthDialogControl;->LJFF(...)V` -> `return-void`. Note: The secondary Find Contacts sync overlay remains pending runtime flow analysis.
+    - Suppresses 2-Step Verification security checkup popups and message push guides by intercepting `LocalCampaignManager.showLocalCampaign` -> `false` and `PopSuiteManagerService.shouldShowPopSuitePopup` -> `false` (generalized to block `UPSELL_2SV_POPUP`, `MESSAGE_REQUEST_PUSH_GUIDE_POPUP`, and `GPPPA` 2SV fullsheet/profile variants).
   - **Sticker Recommendations (`suppressStickerRecommendations`)**:
     - Disables sticker typing recommendations in direct messages by intercepting `ChatFeatureListConf.featureEnable` -> `false` when queried for `TYPING_RECOMMEND`.
   - **PopLayer Prompts & Nags (`filterPopLayerPrompts`)**:
     - Hooks `LX/07Q5;->canShow()Z` (`PopLayerBaseFragment.canShow`) to check against companion extension hook `TikTokPopupHook.shouldSuppressPopLayer()`.
-    - Blocks 18 targeted PopLayer labels and triggers: favorites collections guide, add shortcut nag, repost newbie guide, STEM feed prompt, campus education sheet, creator inbox guide, in-app review prompt, marketing/email opt-ins, FYP survey dialogs, CapCut upsell sheets, Lemon8 promo modals, profile visitor prompts, and story introduction sheets.
+    - Blocks targeted PopLayer labels and triggers: favorites collections guide, add shortcut nag, repost newbie guide, STEM feed prompt, campus education sheet, creator inbox guide, in-app review prompt, marketing/email opt-ins, FYP survey dialogs, CapCut upsell sheets, Lemon8 promo modals, profile visitor prompts, message push guides, and story introduction sheets.
+    - Stubs `LX/0P2r;->LIZ()V` with `return-void` to strictly block the "Profile view history turn-on" PopLayer sheet before it reaches the trigger evaluation.
   - **Live Stream Teaser Bubble (`suppressLiveTeaserBubble`)**:
     - Suppresses floating live stream preview teaser bubbles over feed videos by stubbing `LiveBubbleUtil.LIZ` -> `return-void` and forcing `LiveBubbleUtil.LJIIIIZZ` -> `false`.
   - **DM Streak Reminders (`suppressStreakReminders`)**:

@@ -149,8 +149,7 @@ private fun BytecodePatchContext.applyAccountPromptHooks(): Int {
     popSuiteMethod.addInstructions(
         0,
         """
-            const-string v0, "UPSELL_2SV_POPUP"
-            invoke-virtual {v0, p1}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+            invoke-static {p1}, ${Constants.TIKTOK_EXTENSION_POPUP_HOOK}->shouldSuppressPopSuite(Ljava/lang/String;)Z
             move-result v0
             if-eqz v0, :cond_orig
             const/4 v0, 0
@@ -158,7 +157,7 @@ private fun BytecodePatchContext.applyAccountPromptHooks(): Int {
             :cond_orig
         """.trimIndent(),
     )
-    println("[Popups & Prompts Suppressor] Hooked PopSuiteManagerService.shouldShowPopSuitePopup() -> 2SV security checkup popup blocked.")
+    println("[Popups & Prompts Suppressor] Hooked PopSuiteManagerService.shouldShowPopSuitePopup() -> Generalized PopSuite suppression activated.")
     count++
 
     return count
@@ -187,6 +186,8 @@ private fun BytecodePatchContext.applyStickerRecommendationHooks(): Int {
 }
 
 private fun BytecodePatchContext.applyPopLayerFilterHook(): Int {
+    var count = 0
+
     val method = Fingerprint(
         definingClass = "LX/07Q5;",
         name = "canShow",
@@ -204,7 +205,17 @@ private fun BytecodePatchContext.applyPopLayerFilterHook(): Int {
         """.trimIndent(),
     )
     println("[Popups & Prompts Suppressor] Hooked LX/07Q5.canShow() -> PopLayer semantic label filter activated.")
-    return 1
+    count++
+
+    Fingerprint(
+        definingClass = "LX/0P2r;",
+        name = "LIZ",
+        returnType = "V",
+    ).method.replaceWithReturnVoid()
+    println("[Popups & Prompts Suppressor] Neutralized LX/0P2r.LIZ() -> Profile view history turn-on sheet blocked.")
+    count++
+
+    return count
 }
 
 private fun BytecodePatchContext.applyLiveTeaserBubbleHooks(): Int {
