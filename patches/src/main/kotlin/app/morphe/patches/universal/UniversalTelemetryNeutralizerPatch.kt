@@ -68,6 +68,23 @@ private val GOOGLE_ANALYTICS_RECEIVERS = setOf(
     "com.google.android.gms.analytics.AnalyticsReceiver",
 )
 
+private val META_ANALYTICS_SERVICES = setOf(
+    "com.facebook.analytics2.fabric.onefabric.FFAlarmUploadJobService",
+    "com.facebook.analytics2.logger.GooglePlayUploadService",
+    "com.facebook.analytics2.logger.legacy.uploader.AlarmBasedUploadService",
+    "com.facebook.analytics2.logger.legacy.uploader.Analytics2UploadService",
+    "com.facebook.analytics2.logger.legacy.uploader.LollipopUploadService",
+    "com.facebook.analytics2.logger.service.LollipopUploadSafeService",
+    "com.facebook.delayedworker.DelayedWorkerService",
+)
+
+private val META_ANALYTICS_RECEIVERS = setOf(
+    "com.facebook.analytics2.fabric.onefabric.OneFabricUploadAlarmReceiver",
+    "com.facebook.analytics2.logger.legacy.uploader.HighPriUploadRetryReceiver",
+    "com.instagram.analytics.uploadscheduler.AnalyticsUploadAlarmReceiver",
+    "com.facebook.delayedworker.DelayedWorkerServiceReceiver",
+)
+
 private val OPT_OUT_METADATA = listOf(
     "firebase_analytics_collection_enabled" to "false",
     "firebase_analytics_collection_deactivated" to "true",
@@ -157,6 +174,14 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
         required = false,
     )
 
+    val disableMetaAnalytics by booleanOption(
+        key = "disableMetaAnalytics",
+        default = true,
+        title = "Disable Meta Analytics Upload Pipeline",
+        description = "Disable Meta Analytics2/OneFabric upload services, Instagram upload scheduler receiver, and deferred analytics worker components.",
+        required = false,
+    )
+
     execute {
         val manifestFile = get("AndroidManifest.xml")
         if (!manifestFile.exists()) {
@@ -172,6 +197,7 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
         val shouldDisableFirebase = disableFirebaseInit ?: false
         val shouldDisablePush = disablePushServices ?: false
         val shouldDisableGoogleAnalytics = disableGoogleAnalytics ?: true
+        val shouldDisableMetaAnalytics = disableMetaAnalytics ?: true
 
         var removedPerms: List<String> = emptyList()
         var disabledProvidersCount = 0
@@ -180,6 +206,8 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
         var disabledPushCount = 0
         var disabledGaServicesCount = 0
         var disabledGaReceiversCount = 0
+        var disabledMetaServicesCount = 0
+        var disabledMetaReceiversCount = 0
         var injectedFlagsCount = 0
         var removedRegistrarsCount = 0
 
@@ -218,6 +246,11 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
                     disabledGaReceiversCount = application.disableComponentsWhere("receiver") { it in GOOGLE_ANALYTICS_RECEIVERS }
                 }
 
+                if (shouldDisableMetaAnalytics) {
+                    disabledMetaServicesCount = application.disableComponentsWhere("service") { it in META_ANALYTICS_SERVICES }
+                    disabledMetaReceiversCount = application.disableComponentsWhere("receiver") { it in META_ANALYTICS_RECEIVERS }
+                }
+
                 if (shouldInjectOptOut) {
                     OPT_OUT_METADATA.forEach { (name, value) ->
                         application.setApplicationMetaData(name, value)
@@ -234,7 +267,7 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
             }
         }
 
-        val totalDisabled = disabledProvidersCount + disabledServicesCount + disabledReceiversCount + disabledPushCount + disabledGaServicesCount + disabledGaReceiversCount
+        val totalDisabled = disabledProvidersCount + disabledServicesCount + disabledReceiversCount + disabledPushCount + disabledGaServicesCount + disabledGaReceiversCount + disabledMetaServicesCount + disabledMetaReceiversCount
         if (removedPerms.isEmpty() && totalDisabled == 0 && injectedFlagsCount == 0 && removedRegistrarsCount == 0) {
             println("[Universal Telemetry Neutralizer] AndroidManifest.xml is already clean (0 tracking elements found).")
             return@execute
