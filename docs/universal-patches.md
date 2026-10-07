@@ -216,7 +216,7 @@ The **`Universal Telemetry Neutralizer`** patch neutralizes pervasive third-part
 - **AppsFlyer Attribution**: `PluginInfoContentProvider`, `AFJobSchedulerService`, `SingleInstallBroadcastReceiver`, `MultipleInstallBroadcastReceiver`.
 - **Adjust Attribution**: `AdjustReferrerReceiver`.
 - **Flurry & Branch Analytics**: `FlurryContentProvider`, `BranchInitProvider`.
-- **Third-Party Ad & Engagement SDKs**: AudienceNetwork, Vungle, Braze, Fairtiq telemetry (`AudienceNetworkContentProvider`, `FacebookContentProvider`, `VungleProvider`, `StartupTimeProvider`, `TrackingServiceImpl`, `BrazePushReceiver`, `BrazeFlushPushDeliveryReceiver`, `AuthenticationTokenManager$CurrentAuthenticationTokenChangedBroadcastReceiver`, `CurrentAccessTokenExpirationBroadcastReceiver`).
+- **Third-Party Ad & Engagement SDKs**: AudienceNetwork, Vungle, Braze, Fairtiq telemetry, AdMob (`MobileAdsInitProvider`, `AdService`), and mediation init providers (AppLovin, ironSource/LevelPlay, Mintegral, BidMachine) (`AudienceNetworkContentProvider`, `FacebookContentProvider`, `VungleProvider`, `StartupTimeProvider`, `TrackingServiceImpl`, `BrazePushReceiver`, `BrazeFlushPushDeliveryReceiver`, `AuthenticationTokenManager$CurrentAuthenticationTokenChangedBroadcastReceiver`, `CurrentAccessTokenExpirationBroadcastReceiver`, `AppLovinInitProvider`, `FullscreenAdService`, `IronsourceLifecycleProvider`, `LevelPlayActivityLifecycleProvider`, `MBComponentLifecycleProvider`, `BidMachineInitProvider`).
 
 ### Configuration in Morphe Manager
 

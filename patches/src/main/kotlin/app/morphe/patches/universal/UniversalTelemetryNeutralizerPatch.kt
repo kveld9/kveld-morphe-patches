@@ -31,6 +31,12 @@ private val TELEMETRY_PROVIDERS = setOf(
     "com.vungle.ads.VungleProvider",
     "com.fairtiq.sdk.internal.telemetry.processTime.StartupTimeProvider",
     "com.google.mlkit.common.internal.MlKitInitProvider",
+    "com.google.android.gms.ads.MobileAdsInitProvider",
+    "com.applovin.sdk.AppLovinInitProvider",
+    "com.ironsource.lifecycle.IronsourceLifecycleProvider",
+    "com.ironsource.lifecycle.LevelPlayActivityLifecycleProvider",
+    "com.mbridge.msdk.config.component.status.MBComponentLifecycleProvider",
+    "io.bidmachine.BidMachineInitProvider",
 )
 
 private const val FIREBASE_INIT_PROVIDER = "com.google.firebase.provider.FirebaseInitProvider"
@@ -44,6 +50,8 @@ private val TELEMETRY_SERVICES = setOf(
     "com.appsflyer.internal.service.AFJobSchedulerService",
     "com.google.mlkit.common.internal.MlKitComponentDiscoveryService",
     "com.fairtiq.sdk.internal.services.tracking.TrackingServiceImpl",
+    "com.google.android.gms.ads.AdService",
+    "com.applovin.impl.adview.activity.FullscreenAdService",
 )
 
 private val TELEMETRY_RECEIVERS = setOf(
