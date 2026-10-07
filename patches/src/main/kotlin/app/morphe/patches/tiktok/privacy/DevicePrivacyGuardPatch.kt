@@ -2,59 +2,16 @@ package app.morphe.patches.tiktok.privacy
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
-import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.sharedExtensionPatch
+import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
-import com.android.tools.smali.dexlib2.iface.instruction.Instruction
+import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
-
-private fun buildStaticInvokeSmali(
-    instruction: Instruction,
-    targetMethodSignature: String,
-): String {
-    if (instruction is RegisterRangeInstruction) {
-        val start = instruction.startRegister
-        val count = instruction.registerCount
-        val end = start + count - 1
-        return if (count == 0) {
-            "invoke-static {}, $targetMethodSignature"
-        } else {
-            "invoke-static/range {v$start .. v$end}, $targetMethodSignature"
-        }
-    }
-    if (instruction is FiveRegisterInstruction) {
-        val count = instruction.registerCount
-        val regs = when (count) {
-            0 -> emptyList()
-            1 -> listOf(instruction.registerC)
-            2 -> listOf(instruction.registerC, instruction.registerD)
-            3 -> listOf(instruction.registerC, instruction.registerD, instruction.registerE)
-            4 -> listOf(instruction.registerC, instruction.registerD, instruction.registerE, instruction.registerF)
-            5 -> listOf(instruction.registerC, instruction.registerD, instruction.registerE, instruction.registerF, instruction.registerG)
-            else -> emptyList()
-        }
-        if (regs.isEmpty()) {
-            return "invoke-static {}, $targetMethodSignature"
-        }
-        if (regs.size == 1 && regs[0] > 15) {
-            return "invoke-static/range {v${regs[0]} .. v${regs[0]}}, $targetMethodSignature"
-        }
-        val isContiguous = regs.size > 1 && regs.zipWithNext().all { (a, b) -> b == a + 1 }
-        return if (regs.all { it <= 15 }) {
-            "invoke-static {${regs.joinToString(", ") { "v$it" }}}, $targetMethodSignature"
-        } else if (isContiguous) {
-            "invoke-static/range {v${regs.first()} .. v${regs.last()}}, $targetMethodSignature"
-        } else {
-            "invoke-static {${regs.joinToString(", ") { "v$it" }}}, $targetMethodSignature"
-        }
-    }
-    error("Unsupported instruction format for static invoke rewriting: ${instruction.javaClass.name}")
-}
 
 val devicePrivacyGuardPatch = bytecodePatch(
     name = "Device Privacy Guard",
@@ -447,6 +404,15 @@ val devicePrivacyGuardPatch = bytecodePatch(
         // ==========================================
         // 7. CONTENTRESOLVER CONTACTS QUERY ISOLATION
         // ==========================================
+        // Note: We intentionally avoid both:
+        // (1) Single-index removeInstructions + replace: re-links branch targets into
+        //     the following move-result-object instruction, triggering an ART VerifyError
+        //     ("invalid use of move-result") and crashing at startup (verified on-device in X.02zD).
+        // (2) Register frame growth (ensureRegisterCount): expands total register count and shifts
+        //     parameter register numbers (v-numbers) up, leaving existing instructions pointing to
+        //     now-undefined low registers, triggering an ART VerifyError ("register vX has type Undefined").
+        // Therefore, we use strictly insert-only instrumentation with zero scratch registers, using
+        // range-singletons (invoke-static/range {vX .. vX}) immediately AFTER move-result-object.
 
         var querySites = 0
 
@@ -471,8 +437,7 @@ val devicePrivacyGuardPatch = bytecodePatch(
         query5ParamFp.matchAll().forEach { match ->
             val method = match.method
             val instructions = method.implementation?.instructions?.toList() ?: return@forEach
-            val edits = mutableListOf<Pair<Int, String>>()
-            val targetSig = "${Constants.TIKTOK_EXTENSION_PRIVACY_HOOK}->interceptQuery(Landroid/content/ContentResolver;Landroid/net/Uri;[Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;)Landroid/database/Cursor;"
+            val edits = mutableListOf<Triple<Int, Int, Int>>()
             instructions.forEachIndexed { index, instruction ->
                 val ref = (instruction as? ReferenceInstruction)?.reference as? MethodReference ?: return@forEachIndexed
                 if (ref.definingClass == "Landroid/content/ContentResolver;" &&
@@ -486,14 +451,28 @@ val devicePrivacyGuardPatch = bytecodePatch(
                         "Ljava/lang/String;",
                     )
                 ) {
-                    edits.add(index to buildStaticInvokeSmali(instruction, targetSig))
+                    val nextInsn = instructions.getOrNull(index + 1) ?: return@forEachIndexed
+                    if (nextInsn.opcode != Opcode.MOVE_RESULT_OBJECT) return@forEachIndexed
+                    val resultReg = (nextInsn as OneRegisterInstruction).registerA
+                    val uriReg = when (instruction) {
+                        is RegisterRangeInstruction -> instruction.startRegister + 1
+                        is FiveRegisterInstruction -> instruction.registerD
+                        else -> return@forEachIndexed
+                    }
+                    edits.add(Triple(index + 2, uriReg, resultReg))
                 }
             }
             if (edits.isNotEmpty()) {
                 edits.sortByDescending { it.first }
-                edits.forEach { (index, replacementSmali) ->
-                    method.removeInstructions(index, 1)
-                    method.addInstructions(index, replacementSmali)
+                edits.forEach { (insertIndex, uriReg, resultReg) ->
+                    method.addInstructions(
+                        insertIndex,
+                        """
+                            invoke-static/range {v$uriReg .. v$uriReg}, ${Constants.TIKTOK_EXTENSION_PRIVACY_HOOK}->noteUri(Landroid/net/Uri;)V
+                            invoke-static/range {v$resultReg .. v$resultReg}, ${Constants.TIKTOK_EXTENSION_PRIVACY_HOOK}->filterNotedResult(Landroid/database/Cursor;)Landroid/database/Cursor;
+                            move-result-object v$resultReg
+                        """.trimIndent(),
+                    )
                     querySites++
                 }
             }
@@ -521,8 +500,7 @@ val devicePrivacyGuardPatch = bytecodePatch(
         query6ParamFp.matchAll().forEach { match ->
             val method = match.method
             val instructions = method.implementation?.instructions?.toList() ?: return@forEach
-            val edits = mutableListOf<Pair<Int, String>>()
-            val targetSig = "${Constants.TIKTOK_EXTENSION_PRIVACY_HOOK}->interceptQuery(Landroid/content/ContentResolver;Landroid/net/Uri;[Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;Landroid/os/CancellationSignal;)Landroid/database/Cursor;"
+            val edits = mutableListOf<Triple<Int, Int, Int>>()
             instructions.forEachIndexed { index, instruction ->
                 val ref = (instruction as? ReferenceInstruction)?.reference as? MethodReference ?: return@forEachIndexed
                 if (ref.definingClass == "Landroid/content/ContentResolver;" &&
@@ -537,14 +515,28 @@ val devicePrivacyGuardPatch = bytecodePatch(
                         "Landroid/os/CancellationSignal;",
                     )
                 ) {
-                    edits.add(index to buildStaticInvokeSmali(instruction, targetSig))
+                    val nextInsn = instructions.getOrNull(index + 1) ?: return@forEachIndexed
+                    if (nextInsn.opcode != Opcode.MOVE_RESULT_OBJECT) return@forEachIndexed
+                    val resultReg = (nextInsn as OneRegisterInstruction).registerA
+                    val uriReg = when (instruction) {
+                        is RegisterRangeInstruction -> instruction.startRegister + 1
+                        is FiveRegisterInstruction -> instruction.registerD
+                        else -> return@forEachIndexed
+                    }
+                    edits.add(Triple(index + 2, uriReg, resultReg))
                 }
             }
             if (edits.isNotEmpty()) {
                 edits.sortByDescending { it.first }
-                edits.forEach { (index, replacementSmali) ->
-                    method.removeInstructions(index, 1)
-                    method.addInstructions(index, replacementSmali)
+                edits.forEach { (insertIndex, uriReg, resultReg) ->
+                    method.addInstructions(
+                        insertIndex,
+                        """
+                            invoke-static/range {v$uriReg .. v$uriReg}, ${Constants.TIKTOK_EXTENSION_PRIVACY_HOOK}->noteUri(Landroid/net/Uri;)V
+                            invoke-static/range {v$resultReg .. v$resultReg}, ${Constants.TIKTOK_EXTENSION_PRIVACY_HOOK}->filterNotedResult(Landroid/database/Cursor;)Landroid/database/Cursor;
+                            move-result-object v$resultReg
+                        """.trimIndent(),
+                    )
                     querySites++
                 }
             }
@@ -570,8 +562,7 @@ val devicePrivacyGuardPatch = bytecodePatch(
         query4ParamFp.matchAll().forEach { match ->
             val method = match.method
             val instructions = method.implementation?.instructions?.toList() ?: return@forEach
-            val edits = mutableListOf<Pair<Int, String>>()
-            val targetSig = "${Constants.TIKTOK_EXTENSION_PRIVACY_HOOK}->interceptQuery(Landroid/content/ContentResolver;Landroid/net/Uri;[Ljava/lang/String;Landroid/os/Bundle;Landroid/os/CancellationSignal;)Landroid/database/Cursor;"
+            val edits = mutableListOf<Triple<Int, Int, Int>>()
             instructions.forEachIndexed { index, instruction ->
                 val ref = (instruction as? ReferenceInstruction)?.reference as? MethodReference ?: return@forEachIndexed
                 if (ref.definingClass == "Landroid/content/ContentResolver;" &&
@@ -584,14 +575,28 @@ val devicePrivacyGuardPatch = bytecodePatch(
                         "Landroid/os/CancellationSignal;",
                     )
                 ) {
-                    edits.add(index to buildStaticInvokeSmali(instruction, targetSig))
+                    val nextInsn = instructions.getOrNull(index + 1) ?: return@forEachIndexed
+                    if (nextInsn.opcode != Opcode.MOVE_RESULT_OBJECT) return@forEachIndexed
+                    val resultReg = (nextInsn as OneRegisterInstruction).registerA
+                    val uriReg = when (instruction) {
+                        is RegisterRangeInstruction -> instruction.startRegister + 1
+                        is FiveRegisterInstruction -> instruction.registerD
+                        else -> return@forEachIndexed
+                    }
+                    edits.add(Triple(index + 2, uriReg, resultReg))
                 }
             }
             if (edits.isNotEmpty()) {
                 edits.sortByDescending { it.first }
-                edits.forEach { (index, replacementSmali) ->
-                    method.removeInstructions(index, 1)
-                    method.addInstructions(index, replacementSmali)
+                edits.forEach { (insertIndex, uriReg, resultReg) ->
+                    method.addInstructions(
+                        insertIndex,
+                        """
+                            invoke-static/range {v$uriReg .. v$uriReg}, ${Constants.TIKTOK_EXTENSION_PRIVACY_HOOK}->noteUri(Landroid/net/Uri;)V
+                            invoke-static/range {v$resultReg .. v$resultReg}, ${Constants.TIKTOK_EXTENSION_PRIVACY_HOOK}->filterNotedResult(Landroid/database/Cursor;)Landroid/database/Cursor;
+                            move-result-object v$resultReg
+                        """.trimIndent(),
+                    )
                     querySites++
                 }
             }
@@ -600,16 +605,16 @@ val devicePrivacyGuardPatch = bytecodePatch(
         if (querySites == 0) {
             throw PatchException("Zero ContentResolver.query call sites found to intercept.")
         }
-        println("[Device Privacy Guard] Intercepted $querySites ContentResolver.query call site(s) -> contacts queries suppressed.")
+        println("[Device Privacy Guard] Intercepted $querySites ContentResolver.query call site(s) -> contacts queries filtered.")
         patched++
 
         // ==========================================
-        // 8. PACKAGEMANAGER INVENTORY READING ISOLATION
+        // 8. PACKAGEMANAGER INVENTORY READING ISOLATION (8.3)
         // ==========================================
 
         var packageSites = 0
 
-        // 8.1 queryIntentActivities(Intent, int)
+        // 8.3 queryIntentActivities(Intent, int)
         val pkgQueryIntentFp = Fingerprint(
             custom = { method, _ ->
                 method.implementation?.instructions?.any { ins ->
@@ -624,8 +629,7 @@ val devicePrivacyGuardPatch = bytecodePatch(
         pkgQueryIntentFp.matchAll().forEach { match ->
             val method = match.method
             val instructions = method.implementation?.instructions?.toList() ?: return@forEach
-            val edits = mutableListOf<Pair<Int, String>>()
-            val targetSig = "${Constants.TIKTOK_EXTENSION_PRIVACY_HOOK}->interceptQueryIntentActivities(Landroid/content/pm/PackageManager;Landroid/content/Intent;I)Ljava/util/List;"
+            val edits = mutableListOf<Triple<Int, Int, Int>>()
             instructions.forEachIndexed { index, instruction ->
                 val ref = (instruction as? ReferenceInstruction)?.reference as? MethodReference ?: return@forEachIndexed
                 if (ref.definingClass == "Landroid/content/pm/PackageManager;" &&
@@ -633,14 +637,28 @@ val devicePrivacyGuardPatch = bytecodePatch(
                     ref.returnType == "Ljava/util/List;" &&
                     ref.parameterTypes.map { it.toString() } == listOf("Landroid/content/Intent;", "I")
                 ) {
-                    edits.add(index to buildStaticInvokeSmali(instruction, targetSig))
+                    val nextInsn = instructions.getOrNull(index + 1) ?: return@forEachIndexed
+                    if (nextInsn.opcode != Opcode.MOVE_RESULT_OBJECT) return@forEachIndexed
+                    val resultReg = (nextInsn as OneRegisterInstruction).registerA
+                    val intentReg = when (instruction) {
+                        is RegisterRangeInstruction -> instruction.startRegister + 1
+                        is FiveRegisterInstruction -> instruction.registerD
+                        else -> return@forEachIndexed
+                    }
+                    edits.add(Triple(index + 2, intentReg, resultReg))
                 }
             }
             if (edits.isNotEmpty()) {
                 edits.sortByDescending { it.first }
-                edits.forEach { (index, replacementSmali) ->
-                    method.removeInstructions(index, 1)
-                    method.addInstructions(index, replacementSmali)
+                edits.forEach { (insertIndex, intentReg, resultReg) ->
+                    method.addInstructions(
+                        insertIndex,
+                        """
+                            invoke-static/range {v$intentReg .. v$intentReg}, ${Constants.TIKTOK_EXTENSION_PRIVACY_HOOK}->noteIntent(Landroid/content/Intent;)V
+                            invoke-static/range {v$resultReg .. v$resultReg}, ${Constants.TIKTOK_EXTENSION_PRIVACY_HOOK}->filterNotedIntentResult(Ljava/util/List;)Ljava/util/List;
+                            move-result-object v$resultReg
+                        """.trimIndent(),
+                    )
                     packageSites++
                 }
             }
@@ -649,12 +667,16 @@ val devicePrivacyGuardPatch = bytecodePatch(
         if (packageSites == 0) {
             throw PatchException("Zero PackageManager inventory call sites found to intercept.")
         }
-        println("[Device Privacy Guard] Intercepted $packageSites PackageManager inventory call site(s) -> package scanning isolated.")
+        println("[Device Privacy Guard] Intercepted $packageSites PackageManager inventory call site(s) -> package scanning filtered.")
         patched++
 
         // ==========================================
         // 9. LOCATIONMANAGER HARDWARE QUERY ISOLATION
         // ==========================================
+        // Note: requestSingleUpdate and requestLocationUpdates hooks are pruned entirely.
+        // Residual single-fix requests are non-blocking, and forcing LocationManager.getLastKnownLocation -> null
+        // combined with the neutralized startup location Lego tasks (Section 2.6) and suppressed scene
+        // permissions (Section 2.1-2.4) comprehensively neutralizes runtime location acquisition.
 
         var locationSites = 0
 
@@ -673,8 +695,7 @@ val devicePrivacyGuardPatch = bytecodePatch(
         locGetLastKnownFp.matchAll().forEach { match ->
             val method = match.method
             val instructions = method.implementation?.instructions?.toList() ?: return@forEach
-            val edits = mutableListOf<Pair<Int, String>>()
-            val targetSig = "${Constants.TIKTOK_EXTENSION_PRIVACY_HOOK}->interceptGetLastKnownLocation(Landroid/location/LocationManager;Ljava/lang/String;)Landroid/location/Location;"
+            val edits = mutableListOf<Pair<Int, Int>>()
             instructions.forEachIndexed { index, instruction ->
                 val ref = (instruction as? ReferenceInstruction)?.reference as? MethodReference ?: return@forEachIndexed
                 if (ref.definingClass == "Landroid/location/LocationManager;" &&
@@ -682,51 +703,19 @@ val devicePrivacyGuardPatch = bytecodePatch(
                     ref.returnType == "Landroid/location/Location;" &&
                     ref.parameterTypes.map { it.toString() } == listOf("Ljava/lang/String;")
                 ) {
-                    edits.add(index to buildStaticInvokeSmali(instruction, targetSig))
+                    val nextInsn = instructions.getOrNull(index + 1) ?: return@forEachIndexed
+                    if (nextInsn.opcode != Opcode.MOVE_RESULT_OBJECT) return@forEachIndexed
+                    val resultReg = (nextInsn as OneRegisterInstruction).registerA
+                    edits.add(index + 2 to resultReg)
                 }
             }
             if (edits.isNotEmpty()) {
                 edits.sortByDescending { it.first }
-                edits.forEach { (index, replacementSmali) ->
-                    method.removeInstructions(index, 1)
-                    method.addInstructions(index, replacementSmali)
-                    locationSites++
-                }
-            }
-        }
-
-        // 9.2 requestSingleUpdate(String, LocationListener, Looper) -> void
-        val locSingleUpdateStrFp = Fingerprint(
-            custom = { method, _ ->
-                method.implementation?.instructions?.any { ins ->
-                    val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference ?: return@any false
-                    ref.definingClass == "Landroid/location/LocationManager;" &&
-                        ref.name == "requestSingleUpdate" &&
-                        ref.returnType == "V" &&
-                        ref.parameterTypes.map { it.toString() } == listOf("Ljava/lang/String;", "Landroid/location/LocationListener;", "Landroid/os/Looper;")
-                } == true
-            },
-        )
-        locSingleUpdateStrFp.matchAll().forEach { match ->
-            val method = match.method
-            val instructions = method.implementation?.instructions?.toList() ?: return@forEach
-            val edits = mutableListOf<Pair<Int, String>>()
-            val targetSig = "${Constants.TIKTOK_EXTENSION_PRIVACY_HOOK}->interceptRequestSingleUpdate(Landroid/location/LocationManager;Ljava/lang/String;Landroid/location/LocationListener;Landroid/os/Looper;)V"
-            instructions.forEachIndexed { index, instruction ->
-                val ref = (instruction as? ReferenceInstruction)?.reference as? MethodReference ?: return@forEachIndexed
-                if (ref.definingClass == "Landroid/location/LocationManager;" &&
-                    ref.name == "requestSingleUpdate" &&
-                    ref.returnType == "V" &&
-                    ref.parameterTypes.map { it.toString() } == listOf("Ljava/lang/String;", "Landroid/location/LocationListener;", "Landroid/os/Looper;")
-                ) {
-                    edits.add(index to buildStaticInvokeSmali(instruction, targetSig))
-                }
-            }
-            if (edits.isNotEmpty()) {
-                edits.sortByDescending { it.first }
-                edits.forEach { (index, replacementSmali) ->
-                    method.removeInstructions(index, 1)
-                    method.addInstructions(index, replacementSmali)
+                edits.forEach { (insertIndex, resultReg) ->
+                    method.addInstructions(
+                        insertIndex,
+                        "const/16 v$resultReg, 0x0",
+                    )
                     locationSites++
                 }
             }
@@ -735,7 +724,7 @@ val devicePrivacyGuardPatch = bytecodePatch(
         if (locationSites == 0) {
             throw PatchException("Zero LocationManager call sites found to intercept.")
         }
-        println("[Device Privacy Guard] Intercepted $locationSites LocationManager call site(s) -> hardware location queries suppressed.")
+        println("[Device Privacy Guard] Intercepted $locationSites LocationManager.getLastKnownLocation call site(s) -> forced null.")
         patched++
 
         println("[Device Privacy Guard] Applied $patched device privacy protection hook(s).")
