@@ -34,7 +34,6 @@ public class GboardExtension {
     public static final String PREF_KEY_ACCESS_POINTS_REDESIGN = "morphe_access_points_redesign";
     public static final String PREF_KEY_DISMISS_SUGGESTIONS = "morphe_dismiss_suggestions";
     public static final String PREF_KEY_CURSOR_TRACKPAD = "morphe_cursor_trackpad";
-    public static final String PREF_KEY_HIDE_NUMBER_HINTS = "morphe_hide_number_hints";
     public static final String PREF_KEY_CLIPBOARD_EXTENDED_RETENTION = "morphe_clipboard_extended_retention";
     public static final String PREF_KEY_CLIPBOARD_RETENTION_HOURS = "morphe_clipboard_retention_hours";
     public static final String PREF_KEY_CLIPBOARD_RAISE_LIMIT = "morphe_clipboard_raise_limit";
@@ -645,14 +644,6 @@ public class GboardExtension {
 
     public static boolean isCursorTrackpadEnabled() {
         return getBooleanPref(PREF_KEY_CURSOR_TRACKPAD, false);
-    }
-
-    public static boolean isHideNumberHintsEnabled() {
-        return getBooleanPref(PREF_KEY_HIDE_NUMBER_HINTS, false);
-    }
-
-    public static boolean isNumberHintsEnabled() {
-        return !isHideNumberHintsEnabled();
     }
 
     public static boolean isGrammarCheckerEnabled() {

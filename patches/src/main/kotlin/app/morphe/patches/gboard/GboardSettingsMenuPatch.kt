@@ -96,7 +96,6 @@ val gboardSettingsMenuPatch = resourcePatch(
         gboardCoreIntegrityPatch,
         gboardDecoupleHapticsPatch,
         gboardModernHapticsPatch,
-        gboardHideNumberHintsPatch,
         gboardAaptWorkaroundPatch,
     )
 
@@ -412,15 +411,6 @@ private fun populateMorpheSettingsScreen(doc: Document): Boolean {
             key = Constants.GboardPrefs.KEY_CURSOR_TRACKPAD,
             title = "Cursor Trackpad Mode",
             summary = "2D spacebar trackpad cursor navigation and cursor lock mode",
-            defaultValue = "false",
-        )
-    )
-    toolbarCategory.appendChild(
-        createSwitch(
-            doc = doc,
-            key = Constants.GboardPrefs.KEY_HIDE_NUMBER_HINTS,
-            title = "Hide Number Hints",
-            summary = "Hide the small number hints above the letter row. Long-press symbols keep working",
             defaultValue = "false",
         )
     )
