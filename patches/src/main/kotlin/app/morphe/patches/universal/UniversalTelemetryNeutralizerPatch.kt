@@ -48,6 +48,17 @@ private val TELEMETRY_RECEIVERS = setOf(
     "com.appsflyer.MultipleInstallBroadcastReceiver",
 )
 
+private val PUSH_SERVICES = setOf(
+    "com.facebook.rti.push.service.FbnsService",
+    "com.facebook.rti.pushv2.inapp.InappFbnsService",
+    "com.facebook.pushlite.PushLiteFallbackJobService",
+    "com.facebook.pushlite.PushLiteGCMJobService",
+    "com.facebook.pushlite.PushLiteLollipopJobService",
+    "com.facebook.pushlite.tokenprovider.fcm.PushLiteFcmListenerService",
+    "com.facebook.pushlite.tokenprovider.fcm.PushLiteFirebaseMessagingService",
+    "com.google.firebase.messaging.FirebaseMessagingService",
+)
+
 private val OPT_OUT_METADATA = listOf(
     "firebase_analytics_collection_enabled" to "false",
     "firebase_analytics_collection_deactivated" to "true",
@@ -69,7 +80,7 @@ private val OPT_OUT_METADATA = listOf(
 @Suppress("unused")
 val universalTelemetryNeutralizerPatch = resourcePatch(
     name = "Universal Telemetry Neutralizer",
-    description = "Strips advertising and Privacy Sandbox permissions, disables analytics ContentProviders and telemetry background services (Firebase, Sentry, Adjust, AppsFlyer, DataTransport), prunes ComponentDiscovery registrars, and injects telemetry opt-out metadata.",
+    description = "Strips advertising and Privacy Sandbox permissions, disables analytics ContentProviders and telemetry background services (Firebase, Sentry, Adjust, AppsFlyer, DataTransport), prunes ComponentDiscovery registrars, and injects telemetry opt-out metadata. Includes an optional toggle to disable push notification services.",
     default = false,
 ) {
     // Universal patch: applies to any target APK in Morphe Manager / CLI (no compatibleWith)
@@ -121,6 +132,14 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
         required = false,
     )
 
+    val disablePushServices by booleanOption(
+        key = "disablePushServices",
+        default = false,
+        title = "Disable Push Notification Services",
+        description = "Disable Meta Fbns, PushLite, and Firebase Cloud Messaging services. WARNING: this breaks push notifications; enable only to fully silence background push delivery.",
+        required = false,
+    )
+
     execute {
         val manifestFile = get("AndroidManifest.xml")
         if (!manifestFile.exists()) {
@@ -134,11 +153,13 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
         val shouldDisableReceivers = disableReceivers ?: true
         val shouldInjectOptOut = injectOptOutFlags ?: true
         val shouldDisableFirebase = disableFirebaseInit ?: false
+        val shouldDisablePush = disablePushServices ?: false
 
         var removedPerms: List<String> = emptyList()
         var disabledProvidersCount = 0
         var disabledServicesCount = 0
         var disabledReceiversCount = 0
+        var disabledPushCount = 0
         var injectedFlagsCount = 0
         var removedRegistrarsCount = 0
 
@@ -168,6 +189,10 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
                     disabledReceiversCount = application.disableComponentsWhere("receiver") { it in TELEMETRY_RECEIVERS }
                 }
 
+                if (shouldDisablePush) {
+                    disabledPushCount = application.disableComponentsWhere("service") { it in PUSH_SERVICES }
+                }
+
                 if (shouldInjectOptOut) {
                     OPT_OUT_METADATA.forEach { (name, value) ->
                         application.setApplicationMetaData(name, value)
@@ -184,7 +209,7 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
             }
         }
 
-        val totalDisabled = disabledProvidersCount + disabledServicesCount + disabledReceiversCount
+        val totalDisabled = disabledProvidersCount + disabledServicesCount + disabledReceiversCount + disabledPushCount
         if (removedPerms.isEmpty() && totalDisabled == 0 && injectedFlagsCount == 0 && removedRegistrarsCount == 0) {
             println("[Universal Telemetry Neutralizer] AndroidManifest.xml is already clean (0 tracking elements found).")
             return@execute

@@ -221,6 +221,7 @@ The **`Universal Telemetry Neutralizer`** patch neutralizes pervasive third-part
 - **Disable Telemetry Receivers (`disableReceivers`)**: Sets `android:enabled="false"` on campaign, install referrer, and measurement broadcast receivers (Toggle, default: `true`).
 - **Inject Telemetry Opt-Out Flags & Prune Registrars (`injectOptOutFlags`)**: Injects declarative opt-out `<meta-data>` tags into `<application>` for Firebase Analytics, Crashlytics, Performance, Google Analytics, Sentry, AppsFlyer, and the Facebook SDK (`AutoLogAppEventsEnabled`, `AdvertiserIDCollectionEnabled`), and prunes Firebase discovery registrars (Toggle, default: `true`).
 - **Disable Firebase Init Provider (`disableFirebaseInit`)**: Sets `android:enabled="false"` on `FirebaseInitProvider` (Toggle, default: `false`). *Keep disabled if the target app relies on Firebase Core, Auth, or Cloud Messaging (FCM).*
+- **Disable Push Notification Services (`disablePushServices`)**: Sets `android:enabled="false"` on Meta Fbns, PushLite, and Firebase Cloud Messaging services (Toggle, default: `false`). *WARNING: this breaks push notifications; enable only to fully silence background push delivery.*
 
 ---
 
