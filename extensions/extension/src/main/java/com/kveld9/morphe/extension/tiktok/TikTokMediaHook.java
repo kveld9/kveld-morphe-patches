@@ -20,6 +20,7 @@ public final class TikTokMediaHook {
 
     private static final String TAG = "MorpheTikTok";
     public static volatile boolean forceWatermarkFreeDownload = true;
+    public static volatile String downloadQuality = "high";
 
     private static volatile boolean videoReflectionInitialized = false;
     private static Field downloadNoWatermarkAddrField;
@@ -251,6 +252,12 @@ public final class TikTokMediaHook {
             if (governorStream != null && hasUsableUrl(governorStream)) return governorStream;
         } catch (Throwable ignored) {}
 
+        // 1b. Quality-preferred stream from the BitRate ladder (high/medium/low).
+        try {
+            Object ranked = selectQualityRankedStream(videoObj);
+            if (ranked != null) return ranked;
+        } catch (Throwable ignored) {}
+
         // 2. Native H.264 streams (matches LX/0oMC.LIZ)
         if (h264PlayAddrValueField != null) {
             try {
@@ -304,6 +311,92 @@ public final class TikTokMediaHook {
         }
 
         return null;
+    }
+
+    /**
+     * Picks a download stream from the Video BitRate ladder according to the
+     * patch-time downloadQuality preference (high/medium/low). Only H.264
+     * progressive streams are eligible; returns null when the ladder carries
+     * no usable size metadata so the regular fallback chain applies.
+     */
+    private static Object selectQualityRankedStream(Object videoObj) {
+        if (videoObj == null) return null;
+        String pref = downloadQuality;
+        if (pref == null) pref = "high";
+        pref = pref.trim().toLowerCase();
+        if (!pref.equals("medium") && !pref.equals("low")) pref = "high";
+
+        java.util.List<long[]> scored = new java.util.ArrayList<>();
+        java.util.List<Object> models = new java.util.ArrayList<>();
+        try {
+            ensureVideoReflection(videoObj.getClass().getClassLoader());
+            Method getBitRate = videoObj.getClass().getMethod("getBitRate");
+            Object listObj = getBitRate.invoke(videoObj);
+            if (!(listObj instanceof List)) return null;
+            for (Object rate : (List<?>) listObj) {
+                if (rate == null) continue;
+                Object playAddr = null;
+                try {
+                    Method getRatePlayAddr = rate.getClass().getMethod("getPlayAddr");
+                    playAddr = getRatePlayAddr.invoke(rate);
+                } catch (Throwable ignored) {}
+                if (!isH264VideoUrlModel(playAddr)) continue;
+                long area = readBitRateArea(rate);
+                long bitrate = readBitRateValue(rate);
+                if (area < 0 && bitrate < 0) continue;
+                scored.add(new long[]{area, bitrate});
+                models.add(playAddr);
+            }
+        } catch (Throwable ignored) {
+            return null;
+        }
+        if (models.isEmpty()) return null;
+
+        Integer[] order = new Integer[models.size()];
+        for (int i = 0; i < order.length; i++) order[i] = i;
+        java.util.Arrays.sort(order, (a, b) -> {
+            long[] sa = scored.get(a);
+            long[] sb = scored.get(b);
+            if (sa[0] != sb[0]) return Long.compare(sb[0], sa[0]);
+            return Long.compare(sb[1], sa[1]);
+        });
+
+        int pick;
+        if (pref.equals("low")) {
+            pick = order[order.length - 1];
+        } else if (pref.equals("medium")) {
+            pick = order[order.length / 2];
+        } else {
+            pick = order[0];
+        }
+        Object chosen = models.get(pick);
+        Log.i(TAG, "[Watermark Free] Quality preference '" + pref + "' selected stream "
+            + (pick + 1) + "/" + models.size() + ".");
+        return chosen;
+    }
+
+    private static long readBitRateArea(Object rate) {
+        long w = readLongMethod(rate, "getWidth");
+        long h = readLongMethod(rate, "getHeight");
+        if (w > 0 && h > 0) return w * h;
+        return -1;
+    }
+
+    private static long readBitRateValue(Object rate) {
+        long v = readLongMethod(rate, "getBitRate");
+        if (v >= 0) return v;
+        v = readLongMethod(rate, "getDataSize");
+        if (v >= 0) return v;
+        return -1;
+    }
+
+    private static long readLongMethod(Object target, String name) {
+        try {
+            Method m = target.getClass().getMethod(name);
+            Object v = m.invoke(target);
+            if (v instanceof Number) return ((Number) v).longValue();
+        } catch (Throwable ignored) {}
+        return -1;
     }
 
     public static void patchVideoObject(Object videoObj) {

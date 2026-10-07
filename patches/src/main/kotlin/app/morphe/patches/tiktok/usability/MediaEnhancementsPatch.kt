@@ -4,7 +4,9 @@ import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patcher.patch.stringOption
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.sharedExtensionPatch
 import app.morphe.patches.shared.ensureRegisterCount
@@ -20,8 +22,50 @@ val mediaEnhancementsPatch = bytecodePatch(
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
     dependsOn(sharedExtensionPatch)
 
+    val removeWatermark by booleanOption(
+        key = "removeWatermark",
+        default = true,
+        title = "Remove Watermark",
+        description = "Routes downloads to clean unwatermarked streams and strips client-side watermark overlays. Disable to keep stock watermarked downloads while retaining the unblocked download button.",
+        required = false,
+    )
+
+    val downloadQuality by stringOption(
+        key = "downloadQuality",
+        title = "Preferred Download Quality",
+        description = "Preferred saved-video quality: 'high' (best available stream), 'medium', or 'low' (smallest stream). Anything else falls back to 'high'.",
+        default = "high",
+        required = false,
+    )
+
     execute {
         var patched = 0
+        val watermarkFree = removeWatermark != false
+        val quality = (downloadQuality?.trim()?.lowercase() ?: "high").takeIf { it == "medium" || it == "low" } ?: "high"
+
+        // 0. Push quality preference into the runtime hook.
+        try {
+            val clinit = Fingerprint(
+                definingClass = Constants.TIKTOK_EXTENSION_MEDIA_HOOK,
+                name = "<clinit>",
+            ).method
+            val instructions = clinit.implementation!!.instructions
+            val returnIdx = instructions.indexOfLast { it.opcode == Opcode.RETURN_VOID }
+            val insertIdx = if (returnIdx != -1) returnIdx else 0
+            clinit.addInstructions(
+                insertIdx,
+                """
+                    const-string v0, "$quality"
+                    sput-object v0, ${Constants.TIKTOK_EXTENSION_MEDIA_HOOK}->downloadQuality:Ljava/lang/String;
+                    const/4 v0, ${if (watermarkFree) "0x1" else "0x0"}
+                    sput-boolean v0, ${Constants.TIKTOK_EXTENSION_MEDIA_HOOK}->forceWatermarkFreeDownload:Z
+                """.trimIndent(),
+            )
+            println("[Media Usability] Pushed download configuration (quality=$quality, watermarkFree=$watermarkFree).")
+            patched++
+        } catch (e: Exception) {
+            println("[Media Usability] Download configuration note: ${e.message}")
+        }
 
         // 1. Force Aweme download permission flags
         try {
@@ -97,12 +141,14 @@ val mediaEnhancementsPatch = bytecodePatch(
         }
 
         // 2. ACLCommonShare invariants (Unblocks restricted downloads & activates watermark-free mode)
-        val aclHooks = listOf(
+        val aclHooks = mutableListOf(
             "getCode" to ("I" to "const/4 v0, 0x0\nreturn v0"), // 0 = Allowed
             "getShowType" to ("I" to "const/4 v0, 0x2\nreturn v0"), // 2 = Visible in share panel
-            "getTranscode" to ("I" to "const/4 v0, 0x1\nreturn v0"), // 1 = Direct watermark-free mode
             "getMute" to ("Z" to "const/4 v0, 0x0\nreturn v0"), // false = Audio retained
         )
+        if (watermarkFree) {
+            aclHooks.add("getTranscode" to ("I" to "const/4 v0, 0x1\nreturn v0")) // 1 = Direct watermark-free mode
+        }
 
         for ((methodName, sig) in aclHooks) {
             val (retType, smaliCode) = sig
@@ -211,6 +257,7 @@ val mediaEnhancementsPatch = bytecodePatch(
         }
 
         // 6. Neutralize AwemeVideoWaterMarkAbilityProtocol watermark triggers
+        if (watermarkFree) {
         val protocolClasses = listOf(
             "Lcom/ss/android/ugc/trill/download/protocol/watermark/AwemeVideoWaterMarkAbilityProtocol;",
             "Lcom/ss/android/ugc/aweme/share/base/download/configuration/protocol/WaterMarkAbilityProtocol;",
@@ -238,8 +285,12 @@ val mediaEnhancementsPatch = bytecodePatch(
             }
         }
         println("[Media Usability] Neutralized WaterMarkAbilityProtocol & AwemeVideoWaterMarkAbilityProtocol watermark flags.")
+        } else {
+            println("[Media Usability] Watermark removal disabled -> protocol flags kept stock.")
+        }
 
         // 7. Strip client-side drawn watermark on saved image posts & comment pictures
+        if (watermarkFree) {
         try {
             val fp = Fingerprint(
                 strings = listOf("[tiktok_logo]"),
@@ -266,8 +317,12 @@ val mediaEnhancementsPatch = bytecodePatch(
         } catch (e: Exception) {
             println("[Media Usability] CommentImageWatermark note: ${e.message}")
         }
+        } else {
+            println("[Media Usability] Watermark removal disabled -> image overlays kept stock.")
+        }
 
         // 8. Safe client-side WaterMarkServiceImpl bypass
+        if (watermarkFree) {
         try {
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/watermark/WaterMarkServiceImpl;",
@@ -288,8 +343,12 @@ val mediaEnhancementsPatch = bytecodePatch(
         } catch (e: Exception) {
             println("[Media Usability] WaterMarkServiceImpl note: ${e.message}")
         }
+        } else {
+            println("[Media Usability] Watermark removal disabled -> WaterMarkService kept stock.")
+        }
 
         // 9. Redirect watermarked downloader spec (LIZIZ) to unwatermarked downloader spec (LIZ)
+        if (watermarkFree) {
         try {
             val fp = Fingerprint(
                 strings = listOf("suffix_scene"),
@@ -320,6 +379,9 @@ val mediaEnhancementsPatch = bytecodePatch(
             patched++
         } catch (e: Exception) {
             println("[Media Usability] DownloaderSpec redirect note: ${e.message}")
+        }
+        } else {
+            println("[Media Usability] Watermark removal disabled -> downloader spec kept stock.")
         }
 
         println("[Media Usability & Watermark-Free Downloader] Applied $patched media usability and watermark-free download hook(s).")
