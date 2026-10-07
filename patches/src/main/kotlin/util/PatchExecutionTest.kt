@@ -328,6 +328,12 @@ private fun setBinaryXmlVersionCode(data: ByteArray, newVersionCode: Int): ByteA
     return data
 }
 
+private fun persistentKeyStoreFile(): File {
+    val xdg = System.getenv("XDG_CONFIG_HOME")?.takeIf { it.isNotBlank() }
+    val base = if (xdg != null) File(xdg, "morphe") else File(System.getProperty("user.home") ?: ".", ".config/morphe")
+    return File(base, "morphe-device.p12")
+}
+
 private fun ensurePkcs12KeyStore(keystoreFile: File) {
     if (keystoreFile.exists() && keystoreFile.length() > 0L) return
     keystoreFile.parentFile?.mkdirs()
@@ -719,8 +725,7 @@ fun main(args: Array<String>) {
                 val buildToolsMajor = zipalignBin?.parentFile?.name?.split('.')?.firstOrNull()?.toIntOrNull() ?: 0
                 val supports16k = buildToolsMajor >= 35
 
-                val keystoreFile = File("build/morphe-device.p12").takeIf { it.exists() && it.length() > 0L }
-                    ?: File("build/morphe-debug.p12").absoluteFile
+                val keystoreFile = persistentKeyStoreFile()
                 ensurePkcs12KeyStore(keystoreFile)
 
                 if (zipalignBin != null && apksignerBin != null && keystoreFile.exists() && keystoreFile.length() > 0L) {
