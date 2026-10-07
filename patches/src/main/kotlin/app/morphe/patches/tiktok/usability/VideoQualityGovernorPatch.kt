@@ -186,6 +186,84 @@ val videoQualityGovernorPatch = bytecodePatch(
             patched++
         }
 
+        // 6. Hook SimVideoUrlModel.getRawBitRate() for detail-page PlayerKit playback engine
+        val simGetRawBitrateFp = Fingerprint(
+            definingClass = "Lcom/ss/android/ugc/playerkit/simapicommon/model/SimVideoUrlModel;",
+            name = "getRawBitRate",
+            returnType = "Ljava/util/List;",
+        )
+        val simRawMethod = simGetRawBitrateFp.method
+        val simRawReturnIndices = simRawMethod.implementation?.instructions?.withIndex()
+            ?.filter { it.value.opcode == Opcode.RETURN_OBJECT }
+            ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
+            ?.toList() ?: emptyList()
+
+        simRawReturnIndices.asReversed().forEach { (returnIndex, reg) ->
+            simRawMethod.addInstructionsAtControlFlowLabel(
+                returnIndex,
+                """
+                    invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->filterBitrates(Ljava/util/List;)Ljava/util/List;
+                    move-result-object v$reg
+                """.trimIndent(),
+            )
+        }
+        if (simRawReturnIndices.isNotEmpty()) {
+            println("[Video Quality Governor] Hooked SimVideoUrlModel.getRawBitRate() (${simRawReturnIndices.size} return point(s)) -> Detail playback bitrate filter active.")
+            patched++
+        }
+
+        // 7. Hook Video.getProperPlayAddr() return points to enforce capped play address.
+        // Covers direct URL reads on every path (feed, detail, search, profile) even when
+        // Aweme.getVideo() is bypassed by the detail page.
+        val videoGetProperPlayAddrFp = Fingerprint(
+            definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Video;",
+            name = "getProperPlayAddr",
+            returnType = "Lcom/ss/android/ugc/aweme/feed/model/VideoUrlModel;",
+        )
+        val properPlayAddrMethod = videoGetProperPlayAddrFp.method
+        val properPlayAddrReturnIndices = properPlayAddrMethod.implementation?.instructions?.withIndex()
+            ?.filter { it.value.opcode == Opcode.RETURN_OBJECT }
+            ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
+            ?.toList() ?: emptyList()
+
+        properPlayAddrReturnIndices.asReversed().forEach { (returnIndex, reg) ->
+            properPlayAddrMethod.addInstructionsAtControlFlowLabel(
+                returnIndex,
+                """
+                    invoke-static {v$reg, p0}, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->enforcePlaybackCap(Ljava/lang/Object;Ljava/lang/Object;)V
+                """.trimIndent(),
+            )
+        }
+        if (properPlayAddrReturnIndices.isNotEmpty()) {
+            println("[Video Quality Governor] Hooked Video.getProperPlayAddr() (${properPlayAddrReturnIndices.size} return point(s)) -> Detail-path play address enforcement active.")
+            patched++
+        }
+
+        // 8. Hook Video.getPlayAddr() return points with the same enforcement.
+        val videoGetPlayAddrFp = Fingerprint(
+            definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Video;",
+            name = "getPlayAddr",
+            returnType = "Lcom/ss/android/ugc/aweme/feed/model/VideoUrlModel;",
+        )
+        val playAddrMethod = videoGetPlayAddrFp.method
+        val playAddrReturnIndices = playAddrMethod.implementation?.instructions?.withIndex()
+            ?.filter { it.value.opcode == Opcode.RETURN_OBJECT }
+            ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
+            ?.toList() ?: emptyList()
+
+        playAddrReturnIndices.asReversed().forEach { (returnIndex, reg) ->
+            playAddrMethod.addInstructionsAtControlFlowLabel(
+                returnIndex,
+                """
+                    invoke-static {v$reg, p0}, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->enforcePlaybackCap(Ljava/lang/Object;Ljava/lang/Object;)V
+                """.trimIndent(),
+            )
+        }
+        if (playAddrReturnIndices.isNotEmpty()) {
+            println("[Video Quality Governor] Hooked Video.getPlayAddr() (${playAddrReturnIndices.size} return point(s)) -> Direct play address enforcement active.")
+            patched++
+        }
+
         println("[Video Quality Governor] Applied $patched video resolution capping hook(s) (playback: ${chosenPlaybackRes}p).")
     }
 }

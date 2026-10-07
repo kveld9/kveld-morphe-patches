@@ -940,6 +940,60 @@ public final class TikTokVideoQualityHook {
     }
 
     /**
+     * Resolves the capped playback address for a Video object without calling any
+     * hooked getter (field reflection only), so it is safe to invoke from
+     * Video.getPlayAddr()/getProperPlayAddr() return hooks without recursion.
+     * Returns null when no capped stream applies.
+     */
+    @SuppressWarnings("rawtypes")
+    private static Object findCappedPlayAddr(Object videoObj, int cap) {
+        if (videoObj == null || cap <= 0 || videoBitRateListField == null) return null;
+        try {
+            Object listObj = videoBitRateListField.get(videoObj);
+            if (!(listObj instanceof List)) return null;
+            List originalList = (List) listObj;
+            if (originalList.isEmpty()) return null;
+            Object best = resolveBestBitrate(dropByteVC2(originalList), cap);
+            if (best == null) return null;
+            return extractPlayAddrFromBitrate(best);
+        } catch (Throwable ignored) {
+            return null;
+        }
+    }
+
+    private static String urlModelUri(Object urlModel) {
+        if (urlModel == null) return null;
+        try {
+            Object uri = urlModel.getClass().getMethod("getUri").invoke(urlModel);
+            if (uri instanceof String) return (String) uri;
+        } catch (Throwable ignored) {}
+        return null;
+    }
+
+    /**
+     * Enforces the playback resolution cap on a directly-read play address.
+     * Covers every path that reads Video.getPlayAddr()/getProperPlayAddr(), including
+     * the detail page, which bypasses Aweme.getVideo(). Mutates the returned
+     * UrlModel in place to the best stream at or below the cap. Void return keeps
+     * Dalvik verifier types intact at the hooked return points.
+     */
+    public static void enforcePlaybackCap(Object playAddr, Object videoObj) {
+        if (!isGovernorEnabled || playAddr == null || videoObj == null) return;
+        try {
+            ensureReflection(videoObj.getClass().getClassLoader());
+            int cap = getMaxResolution();
+            Object bestAddr = findCappedPlayAddr(videoObj, cap);
+            if (bestAddr == null || bestAddr == playAddr) return;
+            String currentUri = urlModelUri(playAddr);
+            if (currentUri != null && currentUri.equals(urlModelUri(bestAddr))) return;
+            syncUrlModel(playAddr, bestAddr);
+            Log.i(TAG, "[Video Quality Governor] Detail-path playAddr enforced to capped stream (cap " + cap + "p).");
+        } catch (Throwable t) {
+            Log.w(TAG, "[Video Quality Governor] enforcePlaybackCap note: " + t.getMessage());
+        }
+    }
+
+    /**
      * Intercepts Video objects before playback to ensure both bitRateList and
      * the default play addresses (playAddrValue, playAddrBytevc1Value) obey the resolution cap,
      * while preserving the highest-quality stream matching download resolution ceiling for downloads.
