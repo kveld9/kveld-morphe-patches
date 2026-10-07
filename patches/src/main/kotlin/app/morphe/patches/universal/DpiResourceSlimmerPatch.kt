@@ -260,7 +260,7 @@ val dpiResourceSlimmerPatch = resourcePatch(
         key = "stripSmartwatch",
         title = "Remove smartwatch (Wear OS) resources",
         description = "Removes graphic and non-values layout resources qualified for Wear OS smartwatches (e.g. watch qualifiers).",
-        default = false,
+        default = true,
         required = false,
     )
 
@@ -268,7 +268,7 @@ val dpiResourceSlimmerPatch = resourcePatch(
         key = "stripTelevision",
         title = "Remove Android TV resources",
         description = "Removes graphic and non-values layout resources qualified for Android TV / Leanback (e.g. television qualifiers).",
-        default = false,
+        default = true,
         required = false,
     )
 
@@ -276,7 +276,7 @@ val dpiResourceSlimmerPatch = resourcePatch(
         key = "stripOtherFormFactors",
         title = "Remove automotive, dock, and VR resources",
         description = "Removes graphic and non-values layout resources qualified for car head units, desk docks, appliances, or VR headsets.",
-        default = false,
+        default = true,
         required = false,
     )
 
