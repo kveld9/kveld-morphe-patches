@@ -180,6 +180,11 @@ Download quality is **not** configured here: it lives solely in the Media Usabil
 | :--- | :--- | :--- | :---: | :--- | :--- |
 | **Maximum Playback Resolution** | `maxQuality` | String | `480` | `1080`, `720`, `540`, `480`, `360`, `none` | Caps video playback height in vertical pixels. Discards higher rendition profiles in feed. |
 | **Avoid ByteVC2 Software Decoding** | `avoidByteVC2` | Boolean | `true` | `true`, `false` | Drops ByteVC2 renditions when an H.264 or ByteVC1 alternative exists, forcing hardware decoding. |
+| **Drop Undecodable Video Streams** | `dropUndecodableVideo` | Boolean | `true` | `true`, `false` | When the ladder floor exceeds the hardware decoder, keeps audio-only instead of decoder-reject retry loops. |
+
+ByteVC2 is ByteDance's proprietary codec with no hardware decoder, so TikTok decodes it on the CPU (measured at ~0.6 CPU cores per playing video on a Snapdragon 636). Dropping it lets H.264/ByteVC1 renditions play through the hardware MediaCodec decoder. As a trade-off, ByteVC1 and H.264 renditions are larger, so mobile data usage can increase slightly; if a video only offers ByteVC2, it is kept.
+
+Undecodable guard: stream dimensions are resolved from bitrate metadata and compared against the largest long side reported by `MediaCodecList` for the stream codec family (`video/hevc` for ByteVC1/HEVC, `video/avc` otherwise). When even the lowest ladder rendition exceeds it (e.g. `2160x3840` on a decoder topped at `2560x1440`, observed as `C2MtkVdec: BAD VALUE: Resolution not supported` retry loops), video streams are dropped and the audio track is preserved so playback fails fast instead of freezing the device. ByteVC2 is excluded (dedicated CPU decoder) and unknown dimensions or hardware fail open (ladder kept).
 
 #### Supported Resolution Ceilings
 

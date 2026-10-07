@@ -35,6 +35,15 @@ val videoQualityGovernorPatch = bytecodePatch(
         description = "Drops ByteVC2 renditions from playback bitrate lists when an H.264 or ByteVC1 alternative exists, so videos use the hardware decoder instead of TikTok's CPU-bound ByteVC2 software decoder.",
         required = false,
     )
+
+    val dropUndecodableVideo by booleanOption(
+        key = "dropUndecodableVideo",
+        default = true,
+        title = "Drop Undecodable Video Streams",
+        description = "When the ladder's lowest video stream exceeds the device hardware decoder capability (queried via MediaCodecList), drops video streams and keeps audio-only instead of entering decoder-reject retry loops that freeze the device.",
+        required = false,
+    )
+
     execute {
         fun parseResolution(raw: String?, defaultRes: Int): Int {
             val q = raw?.trim()?.lowercase() ?: return defaultRes
@@ -67,6 +76,9 @@ val videoQualityGovernorPatch = bytecodePatch(
 
         val avoidByteVC2Enabled = avoidByteVC2 ?: true
         val avoidByteVC2Const = if (avoidByteVC2Enabled) 1 else 0
+        val dropUndecodableEnabled = dropUndecodableVideo ?: true
+        val dropUndecodableConst = if (dropUndecodableEnabled) 1 else 0
+
         hookClinit.addInstructions(
             insertIdx,
             """
@@ -78,9 +90,11 @@ val videoQualityGovernorPatch = bytecodePatch(
                 sput v0, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->downloadAllowedResolution:I
                 const/4 v0, $avoidByteVC2Const
                 sput-boolean v0, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->avoidByteVC2:Z
+                const/4 v0, $dropUndecodableConst
+                sput-boolean v0, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->dropUndecodableVideo:Z
             """.trimIndent(),
         )
-        println("[Video Quality Governor] Initialized playback cap: playback=${chosenPlaybackRes}p, avoidByteVC2=$avoidByteVC2Enabled (download ceiling retired).")
+        println("[Video Quality Governor] Initialized playback cap: playback=${chosenPlaybackRes}p, avoidByteVC2=$avoidByteVC2Enabled, dropUndecodable=$dropUndecodableEnabled (download ceiling retired).")
         patched++
 
         // 2. Hook Aweme.getVideo() return points to cap Video model and default play addresses

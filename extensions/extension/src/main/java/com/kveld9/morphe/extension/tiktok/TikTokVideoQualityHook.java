@@ -3,12 +3,15 @@ package com.kveld9.morphe.extension.tiktok;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.media.MediaCodecInfo;
+import android.media.MediaCodecList;
 import android.util.Log;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +35,7 @@ public final class TikTokVideoQualityHook {
 
     public static volatile boolean isGovernorEnabled = false;
     public static volatile boolean avoidByteVC2 = false;
+    public static volatile boolean dropUndecodableVideo = false;
     public static volatile int maxAllowedResolution = 480;
     public static volatile int downloadAllowedResolution = 1080;
 
@@ -729,7 +733,122 @@ public final class TikTokVideoQualityHook {
         Log.i(TAG, "[Video Quality Governor] Dropped " + dropped + " ByteVC2 rendition(s) -> hardware decoder path");
         return filtered;
     }
+
+    /**
+     * Resolves actual stream pixel dimensions (width, height) from bitrate metadata
+     * or its play address model. Returns null when dimensions are unknown.
+     * Unlike resolveBitrateHeight, no ladder-tier normalization is applied.
+     */
+    private static int[] resolveBitrateSize(Object bitrateObj) {
+        if (bitrateObj == null) return null;
+        int w = readIntGetter(bitrateObj, "getVideoWidth");
+        int h = readIntGetter(bitrateObj, "getVideoHeight");
+        if (w > 0 && h > 0) return new int[]{w, h};
+        try {
+            Object playAddr = extractPlayAddrFromBitrate(bitrateObj);
+            if (playAddr != null) {
+                int uw = readIntGetter(playAddr, "getWidth");
+                int uh = readIntGetter(playAddr, "getHeight");
+                if (uw > 0 && uh > 0) return new int[]{uw, uh};
+            }
+        } catch (Throwable ignored) {}
+        return null;
+    }
+
+    private static int readIntGetter(Object target, String getter) {
+        if (target == null) return -1;
+        try {
+            Object res = target.getClass().getMethod(getter).invoke(target);
+            if (res instanceof Integer) return (Integer) res;
+        } catch (Throwable ignored) {}
+        return -1;
+    }
+
+    private static boolean supportsMime(MediaCodecInfo info, String mime) {
+        try {
+            for (String t : info.getSupportedTypes()) {
+                if (mime.equalsIgnoreCase(t)) return true;
+            }
+        } catch (Throwable ignored) {}
+        return false;
+    }
+
+    private static int codecMaxSide(MediaCodecInfo info, String mime) {
+        if (info == null || info.isEncoder() || !supportsMime(info, mime)) return -1;
+        try {
+            MediaCodecInfo.CodecCapabilities caps = info.getCapabilitiesForType(mime);
+            if (caps == null || caps.getVideoCapabilities() == null) return -1;
+            MediaCodecInfo.VideoCapabilities vc = caps.getVideoCapabilities();
+            return Math.max(vc.getSupportedWidths().getUpper(), vc.getSupportedHeights().getUpper());
+        } catch (Throwable ignored) {
+            return -1;
+        }
+    }
+
+    private static final Map<String, Integer> hwMaxLongSideCache =
+        Collections.synchronizedMap(new HashMap<String, Integer>());
+
+    /**
+     * Queries MediaCodecList once per mime for the largest supported long side
+     * across all device decoders. Returns -1 when unknown (fail-open: never drop).
+     */
+    private static int getHwMaxLongSide(String mime) {
+        Integer cached = hwMaxLongSideCache.get(mime);
+        if (cached != null) return cached;
+        int result = -1;
+        try {
+            MediaCodecList list = new MediaCodecList(MediaCodecList.ALL_CODECS);
+            for (MediaCodecInfo info : list.getCodecInfos()) {
+                int side = codecMaxSide(info, mime);
+                if (side > result) result = side;
+            }
+        } catch (Throwable ignored) {}
+        hwMaxLongSideCache.put(mime, result);
+        return result;
+    }
+
+    /**
+     * True when the stream's long side exceeds every device decoder for its codec
+     * family, meaning the hardware rejects it (observed as C2MtkVdec BAD VALUE loops
      * on 2160x3840 content). ByteVC2 is excluded: it uses ByteDance's CPU decoder.
+     * Unknown dimensions or unknown hardware fail open (false).
+     */
+    private static boolean isUndecodableSize(Object item) {
+        if (item == null || isBytevc2(item)) return false;
+        int[] size = resolveBitrateSize(item);
+        if (size == null) return false;
+        String mime = isBytevc1(item) ? "video/hevc" : "video/avc";
+        int hwMax = getHwMaxLongSide(mime);
+        if (hwMax <= 0) return false;
+        return Math.max(size[0], size[1]) > hwMax;
+    }
+
+    /**
+     * When the ladder floor itself exceeds hardware capability, no playable video
+     * rendition exists: returns an audio-only list so the player fails fast instead
+     * of entering decoder-reject retry loops. Returns null to proceed normally.
+     */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private static List maybeDropUndecodable(List originalList, Object lowestVideoStream) {
+        if (!dropUndecodableVideo || lowestVideoStream == null) return null;
+        if (!isUndecodableSize(lowestVideoStream)) return null;
+        List audioOnly = new ArrayList();
+        int dropped = 0;
+        for (Object item : originalList) {
+            if (item == null) continue;
+            if (isAudioBitrate(item)) {
+                audioOnly.add(item);
+            } else {
+                dropped++;
+            }
+        }
+        if (audioOnly.isEmpty()) return null;
+        int[] size = resolveBitrateSize(lowestVideoStream);
+        String dims = (size != null) ? (size[0] + "x" + size[1]) : "unknown-size";
+        Log.i(TAG, "[Video Quality Governor] Undecodable " + dims + " stream exceeds HW decoder -> dropped " + dropped + " video stream(s), audio-only fallback.");
+        return audioOnly;
+    }
+
     /**
      * Filters a list of BitRate or SimBitRate objects, discarding any streams whose
      * resolution height exceeds maxAllowedResolution.
@@ -781,6 +900,12 @@ public final class TikTokVideoQualityHook {
         if (!hasVideoInFiltered && lowestVideoStream != null) {
             filtered.add(lowestVideoStream);
             hasVideoInFiltered = true;
+        }
+
+        // Undecodable guard: ladder floor exceeds hardware -> audio-only instead of retry loops
+        List undecodableFallback = maybeDropUndecodable(originalList, lowestVideoStream);
+        if (undecodableFallback != null) {
+            return undecodableFallback;
         }
 
         if (filtered.isEmpty() || !hasVideoInFiltered) {
