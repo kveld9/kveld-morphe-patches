@@ -85,6 +85,22 @@ private val META_ANALYTICS_RECEIVERS = setOf(
     "com.facebook.delayedworker.DelayedWorkerServiceReceiver",
 )
 
+private val CRASH_UPLOAD_SERVICES = setOf(
+    "com.facebook.common.errorreporting.memory.service.jobschedulercompat.fbsvc.DumperUploadService",
+    "com.facebook.common.errorreporting.memory.service.jobschedulercompat.igsvc.DumperUploadService",
+    "com.whatsapp.infra.crash.upload.ExceptionsUploadService",
+    "com.whatsapp.infra.perf.profilo.ProfiloUploadService",
+)
+
+private val CRASH_DETECTOR_RECEIVERS = setOf(
+    "com.facebook.errorreporting.lacrima.detector.broadcast.ProtectedLockScreenBroadcastReceiver",
+    "com.facebook.errorreporting.lacrima.detector.broadcast.PublicLockScreenBroadcastReceiver",
+    "com.facebook.errorreporting.lacrima.detector.broadcast.SystemShutdownBootBroadcastReceiver",
+    "com.facebook.errorreporting.lacrima.detector.broadcast.InternalShutdownBootBroadcastReceiver",
+    "com.facebook.errorreporting.lacrima.detector.broadcast.SecureShutdownBootBroadcastReceiver",
+    "com.facebook.nobreak.CrashLoop\$LastState",
+)
+
 private val OPT_OUT_METADATA = listOf(
     "firebase_analytics_collection_enabled" to "false",
     "firebase_analytics_collection_deactivated" to "true",
@@ -182,6 +198,14 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
         required = false,
     )
 
+    val disableCrashDetectors by booleanOption(
+        key = "disableCrashDetectors",
+        default = true,
+        title = "Disable Crash Detectors & Dump Upload",
+        description = "Disable Lacrima lock-screen/shutdown crash detectors, crash-loop state trackers, and background crash-dump upload services. User-initiated bug reports are untouched.",
+        required = false,
+    )
+
     execute {
         val manifestFile = get("AndroidManifest.xml")
         if (!manifestFile.exists()) {
@@ -198,6 +222,7 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
         val shouldDisablePush = disablePushServices ?: false
         val shouldDisableGoogleAnalytics = disableGoogleAnalytics ?: true
         val shouldDisableMetaAnalytics = disableMetaAnalytics ?: true
+        val shouldDisableCrashDetectors = disableCrashDetectors ?: true
 
         var removedPerms: List<String> = emptyList()
         var disabledProvidersCount = 0
@@ -208,6 +233,8 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
         var disabledGaReceiversCount = 0
         var disabledMetaServicesCount = 0
         var disabledMetaReceiversCount = 0
+        var disabledCrashServicesCount = 0
+        var disabledCrashReceiversCount = 0
         var injectedFlagsCount = 0
         var removedRegistrarsCount = 0
 
@@ -251,6 +278,11 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
                     disabledMetaReceiversCount = application.disableComponentsWhere("receiver") { it in META_ANALYTICS_RECEIVERS }
                 }
 
+                if (shouldDisableCrashDetectors) {
+                    disabledCrashServicesCount = application.disableComponentsWhere("service") { it in CRASH_UPLOAD_SERVICES }
+                    disabledCrashReceiversCount = application.disableComponentsWhere("receiver") { it in CRASH_DETECTOR_RECEIVERS }
+                }
+
                 if (shouldInjectOptOut) {
                     OPT_OUT_METADATA.forEach { (name, value) ->
                         application.setApplicationMetaData(name, value)
@@ -267,7 +299,7 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
             }
         }
 
-        val totalDisabled = disabledProvidersCount + disabledServicesCount + disabledReceiversCount + disabledPushCount + disabledGaServicesCount + disabledGaReceiversCount + disabledMetaServicesCount + disabledMetaReceiversCount
+        val totalDisabled = disabledProvidersCount + disabledServicesCount + disabledReceiversCount + disabledPushCount + disabledGaServicesCount + disabledGaReceiversCount + disabledMetaServicesCount + disabledMetaReceiversCount + disabledCrashServicesCount + disabledCrashReceiversCount
         if (removedPerms.isEmpty() && totalDisabled == 0 && injectedFlagsCount == 0 && removedRegistrarsCount == 0) {
             println("[Universal Telemetry Neutralizer] AndroidManifest.xml is already clean (0 tracking elements found).")
             return@execute
