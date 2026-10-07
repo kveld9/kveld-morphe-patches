@@ -34,6 +34,7 @@ public class GboardExtension {
     public static final String PREF_KEY_ACCESS_POINTS_REDESIGN = "morphe_access_points_redesign";
     public static final String PREF_KEY_DISMISS_SUGGESTIONS = "morphe_dismiss_suggestions";
     public static final String PREF_KEY_CURSOR_TRACKPAD = "morphe_cursor_trackpad";
+    public static final String PREF_KEY_HIDE_NUMBER_HINTS = "morphe_hide_number_hints";
     public static final String PREF_KEY_CLIPBOARD_EXTENDED_RETENTION = "morphe_clipboard_extended_retention";
     public static final String PREF_KEY_CLIPBOARD_RETENTION_HOURS = "morphe_clipboard_retention_hours";
     public static final String PREF_KEY_CLIPBOARD_RAISE_LIMIT = "morphe_clipboard_raise_limit";
@@ -644,6 +645,33 @@ public class GboardExtension {
 
     public static boolean isCursorTrackpadEnabled() {
         return getBooleanPref(PREF_KEY_CURSOR_TRACKPAD, false);
+    }
+
+    public static boolean isHideNumberHintsEnabled() {
+        return getBooleanPref(PREF_KEY_HIDE_NUMBER_HINTS, false);
+    }
+
+    /**
+     * Clears single-digit secondary labels from a SoftKeyDef so the small
+     * number hints above the letter row are not rendered. Long-press actions
+     * live in a separate field and keep working. Fail-safe: any reflection
+     * mismatch is ignored and the hints stay visible.
+     */
+    public static void sanitizeNumberHints(Object def) {
+        try {
+            if (!isHideNumberHintsEnabled()) return;
+            if (def == null) return;
+            Field fHints = findField(def.getClass(), "h");
+            if (fHints == null || fHints.getType() != CharSequence[].class) return;
+            CharSequence[] hints = (CharSequence[]) fHints.get(def);
+            if (hints == null) return;
+            for (int i = 0; i < hints.length; i++) {
+                CharSequence cs = hints[i];
+                if (cs != null && cs.length() == 1 && Character.isDigit(cs.charAt(0))) {
+                    hints[i] = "";
+                }
+            }
+        } catch (Throwable ignored) {}
     }
 
     public static boolean isGrammarCheckerEnabled() {
