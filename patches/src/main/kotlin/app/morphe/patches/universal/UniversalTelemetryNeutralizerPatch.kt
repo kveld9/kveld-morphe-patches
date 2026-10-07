@@ -101,6 +101,40 @@ private val CRASH_DETECTOR_RECEIVERS = setOf(
     "com.facebook.nobreak.CrashLoop\$LastState",
 )
 
+private val DEVICE_ID_PROVIDERS = setOf(
+    "libraries.accessv2.src.provider.AccessLibraryContentProvider",
+    "com.facebook.katana.provider.AttributionIdProvider",
+    "com.facebook.katana.provider.InstallReferrerProvider",
+    "com.instagram.contentprovider.InstallReferrerProvider",
+    "com.facebook.katana.provider.LastUsedTimestampProvider",
+    "com.facebook.messaging.partneranalytics.marketinsights.LastUsedTimestampProvider",
+    "com.facebook.fdidlite.FDIDLiteProvider",
+    "com.instagram.common.analytics.fdidlite.AsyncInstagramFDIDLiteProvider",
+    "com.instagram.common.analytics.phoneid.AsyncInstagramPhoneIdProvider",
+    "com.facebook.katana.liteprovider.usdid.UsdidValuesProvider",
+    "com.instagram.liteprovider.usdid.UsdidValuesProvider",
+    "com.instagram.barcelona.liteprovider.usdid.UsdidValuesProvider",
+    "com.facebook.katana.liteprovider.FirstPartyUserValuesLiteProvider",
+    "com.instagram.liteprovider.v2.FirstPartyUserValuesLiteProviderV2",
+    "com.instagram.barcelona.liteprovider.BarcelonaLiteContentProvider",
+    "com.instagram.contentprovider.AsyncFamilyAppsUserValuesProvider",
+    "com.facebook.messaging.provider.FamilyAppsUserValuesProvider",
+    "com.facebook.messaging.liteprovider.FamilyAppsUserValuesLiteProvider",
+    "com.whatsapp.accesslibraryprovider.provider.FamilyAppsUserValuesProvider",
+)
+
+private val DEVICE_ID_SERVICES = setOf(
+    "com.facebook.secure.usdid.signing.CrossSigningService",
+    "com.facebook.messaging.universallinks.receiver.InstallReferrerFetchJobIntentService",
+)
+
+private val DEVICE_ID_RECEIVERS = setOf(
+    "com.facebook.googleplay.GooglePlayInstallReferrerReceiver",
+    "com.instagram.common.analytics.phoneid.InstagramPhoneIdRequestReceiver",
+    "com.whatsapp.phoneid.PhoneIdRequestReceiver",
+    "com.facebook.secure.usdid.signing.CrossSigningBroadcastReceiver",
+)
+
 private val OPT_OUT_METADATA = listOf(
     "firebase_analytics_collection_enabled" to "false",
     "firebase_analytics_collection_deactivated" to "true",
@@ -206,6 +240,14 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
         required = false,
     )
 
+    val disableDeviceIdProviders by booleanOption(
+        key = "disableDeviceIdProviders",
+        default = false,
+        title = "Disable Device-ID & Cross-App Identity Providers",
+        description = "Disable attribution, FDID/PhoneId/USDiD, and FamilyApps cross-app identity providers plus referrer and cross-signing components. WARNING: may break login, account switching, and deferred deep links; enable only to fully silence device-identity collection.",
+        required = false,
+    )
+
     execute {
         val manifestFile = get("AndroidManifest.xml")
         if (!manifestFile.exists()) {
@@ -223,6 +265,7 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
         val shouldDisableGoogleAnalytics = disableGoogleAnalytics ?: true
         val shouldDisableMetaAnalytics = disableMetaAnalytics ?: true
         val shouldDisableCrashDetectors = disableCrashDetectors ?: true
+        val shouldDisableDeviceIds = disableDeviceIdProviders ?: false
 
         var removedPerms: List<String> = emptyList()
         var disabledProvidersCount = 0
@@ -235,6 +278,9 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
         var disabledMetaReceiversCount = 0
         var disabledCrashServicesCount = 0
         var disabledCrashReceiversCount = 0
+        var disabledDeviceIdProvidersCount = 0
+        var disabledDeviceIdServicesCount = 0
+        var disabledDeviceIdReceiversCount = 0
         var injectedFlagsCount = 0
         var removedRegistrarsCount = 0
 
@@ -283,6 +329,12 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
                     disabledCrashReceiversCount = application.disableComponentsWhere("receiver") { it in CRASH_DETECTOR_RECEIVERS }
                 }
 
+                if (shouldDisableDeviceIds) {
+                    disabledDeviceIdProvidersCount = application.disableComponentsWhere("provider") { it in DEVICE_ID_PROVIDERS }
+                    disabledDeviceIdServicesCount = application.disableComponentsWhere("service") { it in DEVICE_ID_SERVICES }
+                    disabledDeviceIdReceiversCount = application.disableComponentsWhere("receiver") { it in DEVICE_ID_RECEIVERS }
+                }
+
                 if (shouldInjectOptOut) {
                     OPT_OUT_METADATA.forEach { (name, value) ->
                         application.setApplicationMetaData(name, value)
@@ -299,7 +351,7 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
             }
         }
 
-        val totalDisabled = disabledProvidersCount + disabledServicesCount + disabledReceiversCount + disabledPushCount + disabledGaServicesCount + disabledGaReceiversCount + disabledMetaServicesCount + disabledMetaReceiversCount + disabledCrashServicesCount + disabledCrashReceiversCount
+        val totalDisabled = disabledProvidersCount + disabledServicesCount + disabledReceiversCount + disabledPushCount + disabledGaServicesCount + disabledGaReceiversCount + disabledMetaServicesCount + disabledMetaReceiversCount + disabledCrashServicesCount + disabledCrashReceiversCount + disabledDeviceIdProvidersCount + disabledDeviceIdServicesCount + disabledDeviceIdReceiversCount
         if (removedPerms.isEmpty() && totalDisabled == 0 && injectedFlagsCount == 0 && removedRegistrarsCount == 0) {
             println("[Universal Telemetry Neutralizer] AndroidManifest.xml is already clean (0 tracking elements found).")
             return@execute
