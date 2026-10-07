@@ -539,39 +539,59 @@ val feedBloatBlockerPatch = bytecodePatch(
         }
 
         try {
-            Fingerprint(
+            val methodLJIIIIZZ = Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/relation/feed/TTRecUserBigCardViewHolder;",
                 name = "LJIIIIZZ",
                 parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;"),
                 returnType = "V",
-            ).method.addInstructions(
-                0,
-                """
-                    invoke-static/range {p0 .. p0}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->collapseRecUserCardCell(Ljava/lang/Object;)V
-                    return-void
-                """.trimIndent(),
-            )
-            println("[Feed Bloat Blocker] Collapsed TTRecUserBigCardViewHolder.LJIIIIZZ(Aweme).")
-            patched++
+            ).method
+            val returnsLJIIIIZZ = methodLJIIIIZZ.implementation?.instructions?.withIndex()
+                ?.filter { it.value.opcode == Opcode.RETURN_VOID }
+                ?.map { it.index }
+                ?.toList() ?: emptyList()
+            returnsLJIIIIZZ.asReversed().forEach { returnIndex ->
+                methodLJIIIIZZ.addInstructionsAtControlFlowLabel(
+                    returnIndex,
+                    """
+                        invoke-static/range {p0 .. p0}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->collapseRecUserCardCell(Ljava/lang/Object;)V
+                    """.trimIndent(),
+                )
+            }
+            if (returnsLJIIIIZZ.isNotEmpty()) {
+                println("[Feed Bloat Blocker] Collapsed TTRecUserBigCardViewHolder.LJIIIIZZ(Aweme).")
+                patched++
+            } else {
+                println("[Feed Bloat Blocker] TTRecUserBigCardViewHolder.LJIIIIZZ note: No RETURN_VOID found")
+            }
         } catch (e: Exception) {
             println("[Feed Bloat Blocker] TTRecUserBigCardViewHolder.LJIIIIZZ note: ${e.message}")
         }
 
         try {
-            Fingerprint(
+            val methodB1 = Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/relation/feed/TTRecUserBigCardViewHolder;",
                 name = "B1",
                 parameters = listOf("Landroid/view/View;"),
                 returnType = "V",
-            ).method.addInstructions(
-                0,
-                """
-                    invoke-static/range {p0 .. p0}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->collapseRecUserCardCell(Ljava/lang/Object;)V
-                    return-void
-                """.trimIndent(),
-            )
-            println("[Feed Bloat Blocker] Collapsed TTRecUserBigCardViewHolder.B1(View).")
-            patched++
+            ).method
+            val returnsB1 = methodB1.implementation?.instructions?.withIndex()
+                ?.filter { it.value.opcode == Opcode.RETURN_VOID }
+                ?.map { it.index }
+                ?.toList() ?: emptyList()
+            returnsB1.asReversed().forEach { returnIndex ->
+                methodB1.addInstructionsAtControlFlowLabel(
+                    returnIndex,
+                    """
+                        invoke-static/range {p0 .. p0}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->collapseRecUserCardCell(Ljava/lang/Object;)V
+                    """.trimIndent(),
+                )
+            }
+            if (returnsB1.isNotEmpty()) {
+                println("[Feed Bloat Blocker] Collapsed TTRecUserBigCardViewHolder.B1(View).")
+                patched++
+            } else {
+                println("[Feed Bloat Blocker] TTRecUserBigCardViewHolder.B1 note: No RETURN_VOID found")
+            }
         } catch (e: Exception) {
             println("[Feed Bloat Blocker] TTRecUserBigCardViewHolder.B1 note: ${e.message}")
         }
