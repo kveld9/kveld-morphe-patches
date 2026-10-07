@@ -651,6 +651,10 @@ public class GboardExtension {
         return getBooleanPref(PREF_KEY_HIDE_NUMBER_HINTS, false);
     }
 
+    public static boolean isNumberHintsEnabled() {
+        return !isHideNumberHintsEnabled();
+    }
+
     public static boolean isGrammarCheckerEnabled() {
         return getBooleanPref(PREF_KEY_GRAMMAR_CHECKER, true);
     }
