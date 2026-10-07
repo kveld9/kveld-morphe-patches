@@ -3,51 +3,42 @@ package app.morphe.patches.tiktok.usability
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions
+import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.addInstructionsAtControlFlowLabel
+import app.morphe.patches.shared.ensureRegisterCount
 import app.morphe.patches.shared.sharedExtensionPatch
-import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
-import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
-import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 /**
- * Locates the first AB-gate lookup call with the given signature inside [method] and returns
- * the index of its `move-result` instruction together with the result register.
+ * Locates the AB-helper class exposing the boolean/int experiment lookups and returns
+ * its type, or null when the obfuscated helper shape shifted.
  */
-private fun findAbGateResult(
-    method: MutableMethod,
-    parameterTypes: List<String>,
-    returnType: String,
-): Pair<Int, Int>? {
-    val instructions = method.implementation?.instructions ?: return null
-    for ((index, instruction) in instructions.withIndex()) {
-        if (instruction.opcode?.name?.startsWith("INVOKE_") != true) continue
-        val ref = (instruction as? ReferenceInstruction)?.reference as? MethodReference ?: continue
-        if (ref.parameterTypes.map { it.toString() } != parameterTypes || ref.returnType != returnType) continue
-        val moveResult = instructions.getOrNull(index + 1) as? OneRegisterInstruction ?: continue
-        if (moveResult.opcode != Opcode.MOVE_RESULT) continue
-        return (index + 1) to moveResult.registerA
+private fun BytecodePatchContext.findAbHelperType(): String? {
+    var helperType: String? = null
+    classDefForEach { classDef ->
+        if (helperType != null) return@classDefForEach
+        val methods = classDef.methods
+        val hasGetter = methods.any { it.name == "LJIIIZ" && it.parameterTypes.isEmpty() }
+        if (!hasGetter) return@classDefForEach
+        val hasBoolGate = methods.any {
+            it.name == "LIZJ" &&
+                it.parameterTypes.map { p -> p.toString() } == listOf("I", "Ljava/lang/String;", "Z", "Z") &&
+                it.returnType == "Z"
+        }
+        val hasIntGate = methods.any {
+            it.name == "LJIIJJI" &&
+                it.parameterTypes.map { p -> p.toString() } == listOf("I", "I", "Ljava/lang/String;", "Z") &&
+                it.returnType == "I"
+        }
+        if (hasBoolGate && hasIntGate) helperType = classDef.type
     }
-    return null
-}
-
-/**
- * Diagnostic aid for version bumps: logs the invoke callees of a gate method whose
- * expected AB-lookup signature was not found, so the new signature can be adopted.
- */
-private fun logGateCallees(method: MutableMethod, tag: String) {
-    val callees = method.implementation?.instructions
-        ?.filter { it.opcode?.name?.startsWith("INVOKE_") == true }
-        ?.mapNotNull { (it as? ReferenceInstruction)?.reference as? MethodReference }
-        ?.map { "${it.definingClass}->${it.name}(${it.parameterTypes.joinToString(",")})${it.returnType}" }
-        ?.distinct()
-        ?.take(12) ?: emptyList()
-    println("[$tag] Gate method ${method.definingClass}->${method.name} callees: $callees")
+    return helperType
 }
 
 val playbackSpeedPatch = bytecodePatch(
@@ -161,59 +152,77 @@ val playbackSpeedPatch = bytecodePatch(
             println("[Playback Speed Persistence] PlayerManager.setSpeed note: ${e.message}")
         }
 
-        // 5. Hold-and-slide 2x speed lock (native long-press speed-up rollout gates)
+        // 5. Hold-and-slide 2x speed lock (native long-press speed-up rollout gates).
+        // The gates are read through the AB-helper class (obfuscated, triaged per target
+        // version); hooks are key-scoped so other experiments are untouched.
         if (enableSpeedLock == true) {
             try {
-                val enableMethod = Fingerprint(
-                    name = "<clinit>",
-                    returnType = "V",
-                    parameters = emptyList(),
-                    strings = listOf("long_press_speed_up_enable"),
-                ).method
-                val (moveIndex, resultReg) = findAbGateResult(
-                    enableMethod,
-                    listOf("I", "Ljava/lang/String;", "Z", "Z"),
-                    "Z",
-                ) ?: run {
-                    logGateCallees(enableMethod, "Playback Speed Persistence")
-                    error("Long-press speed-up enable gate lookup not found")
-                }
-                enableMethod.addInstructions(
-                    moveIndex + 1,
-                    "const/4 v$resultReg, 0x1",
-                )
-                println("[Playback Speed Persistence] Forced long-press speed-up enable gate -> true.")
-                patched++
-            } catch (e: Exception) {
-                println("[Playback Speed Persistence] Long-press speed-up enable note: ${e.message}")
-            }
+                val helper = findAbHelperType()
+                    ?: error("AB-helper class (LJIIIZ/LIZJ/LJIIJJI) not found")
+                println("[Playback Speed Persistence] AB-helper class: $helper.")
 
-            try {
-                val lockMethod = Fingerprint(
-                    name = "invoke",
-                    returnType = "Ljava/lang/Object;",
-                    parameters = emptyList(),
-                    strings = listOf("long_press_speed_up_lock"),
+                val boolGate = Fingerprint(
+                    definingClass = helper,
+                    name = "LIZJ",
+                    parameters = listOf("I", "Ljava/lang/String;", "Z", "Z"),
+                    returnType = "Z",
                 ).method
-                val (moveIndex, resultReg) = findAbGateResult(
-                    lockMethod,
-                    listOf("I", "I", "Ljava/lang/String;", "Z"),
-                    "I",
-                ) ?: run {
-                    logGateCallees(lockMethod, "Playback Speed Persistence")
-                    error("Long-press speed-up lock distance lookup not found")
+                boolGate.ensureRegisterCount(1)
+                val boolReturns = boolGate.implementation?.instructions?.withIndex()
+                    ?.filter { it.value.opcode == Opcode.RETURN }
+                    ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
+                    ?.toList() ?: emptyList()
+                boolReturns.forEachIndexed { ordinal, (returnIndex, reg) ->
+                    boolGate.addInstructionsAtControlFlowLabel(
+                        returnIndex,
+                        """
+                            if-eqz p2, :speed_lock_keep_stock_$ordinal
+                            const-string v0, "long_press_speed_up_enable"
+                            invoke-virtual {p2, v0}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+                            move-result v0
+                            if-eqz v0, :speed_lock_keep_stock_$ordinal
+                            const/4 v$reg, 0x1
+                            :speed_lock_keep_stock_$ordinal
+                            nop
+                        """.trimIndent(),
+                    )
                 }
-                lockMethod.addInstructions(
-                    moveIndex + 1,
-                    """
-                        if-lez v$resultReg, :speed_lock_keep_distance
-                        const/16 v$resultReg, 0x8c
-                        :speed_lock_keep_distance
-                        nop
-                    """.trimIndent(),
-                )
-                println("[Playback Speed Persistence] Clamped long-press speed-up lock distance -> 140dp fallback.")
-                patched++
+                if (boolReturns.isNotEmpty()) {
+                    println("[Playback Speed Persistence] Forced long_press_speed_up_enable gate -> true (${boolReturns.size} return(s)).")
+                    patched++
+                }
+
+                val intGate = Fingerprint(
+                    definingClass = helper,
+                    name = "LJIIJJI",
+                    parameters = listOf("I", "I", "Ljava/lang/String;", "Z"),
+                    returnType = "I",
+                ).method
+                intGate.ensureRegisterCount(1)
+                val intReturns = intGate.implementation?.instructions?.withIndex()
+                    ?.filter { it.value.opcode == Opcode.RETURN }
+                    ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
+                    ?.toList() ?: emptyList()
+                intReturns.forEachIndexed { ordinal, (returnIndex, reg) ->
+                    intGate.addInstructionsAtControlFlowLabel(
+                        returnIndex,
+                        """
+                            if-eqz p3, :speed_lock_keep_distance_$ordinal
+                            const-string v0, "long_press_speed_up_lock"
+                            invoke-virtual {p3, v0}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+                            move-result v0
+                            if-eqz v0, :speed_lock_keep_distance_$ordinal
+                            if-lez v$reg, :speed_lock_keep_distance_$ordinal
+                            const/16 v$reg, 0x8c
+                            :speed_lock_keep_distance_$ordinal
+                            nop
+                        """.trimIndent(),
+                    )
+                }
+                if (intReturns.isNotEmpty()) {
+                    println("[Playback Speed Persistence] Clamped long_press_speed_up_lock distance -> 140dp fallback (${intReturns.size} return(s)).")
+                    patched++
+                }
             } catch (e: Exception) {
                 println("[Playback Speed Persistence] Long-press speed-up lock note: ${e.message}")
             }
