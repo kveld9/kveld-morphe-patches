@@ -3,8 +3,12 @@ package app.morphe.patches.tiktok.usability
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
+import app.morphe.patcher.patch.PatchException
+import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.sharedExtensionPatch
+import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
@@ -15,13 +19,31 @@ import com.android.tools.smali.dexlib2.iface.reference.StringReference
 
 val alwaysShowPublishDatePatch = bytecodePatch(
     name = "Always Show Publish Date",
-    description = "Forces video publish/upload date to remain visible in video author information across all feed types.",
+    description = "Forces video publish/upload date to remain visible in video author information across all feed types, with optional creator country code tags and sensitive warning suppression.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
+    dependsOn(sharedExtensionPatch)
+
+    val showAuthorRegion by booleanOption(
+        key = "showAuthorRegion",
+        title = "Show Author Region",
+        description = "Displays the creator's country or region code next to their username in video author info across feeds and deep-linked detail views.",
+        default = false,
+        required = false,
+    )
+
+    val skipContentWarnings by booleanOption(
+        key = "skipContentWarnings",
+        title = "Skip Content Warnings",
+        description = "Bypasses and clears sensitive content warnings, graphic media blur overlays, and age gates on feed videos.",
+        default = false,
+        required = false,
+    )
 
     execute {
         var patched = 0
+        var vmMethodFound = false
 
         // 1. Hook VideoAuthorInfoVM.paramSync2StateAccept
         try {
@@ -33,6 +55,7 @@ val alwaysShowPublishDatePatch = bytecodePatch(
                 },
             )
             val method = fp.method
+            vmMethodFound = true
             val instructions = method.implementation!!.instructions
 
             val regionStart = instructions.indexOfFirst { instruction ->
@@ -120,8 +143,77 @@ val alwaysShowPublishDatePatch = bytecodePatch(
                 patched++
             }
             println("[Always Show Publish Date] Applied ${vmInjections.size} VM hook(s).")
+
+            // 8b: Author region hook via VideoAuthorInfoVM
+            if (showAuthorRegion == true) {
+                val paramReg = if (AccessFlags.STATIC.isSet(method.accessFlags)) "p0" else "p1"
+                method.addInstructions(
+                    0,
+                    "invoke-static/range {$paramReg .. $paramReg}, ${Constants.TIKTOK_EXTENSION_AUTHOR_REGION_HOOK}->onVideoItemParams(Ljava/lang/Object;)V",
+                )
+                println("[Always Show Publish Date] Hooked VideoAuthorInfoVM.paramSync2StateAccept -> Author region sync active.")
+                patched++
+            }
+
+            // 8d: Skip content warnings
+            // Justification: VideoAuthorInfoVM.paramSync2StateAccept(VideoItemParams) is the authoritative
+            // state entry point where video parameters and warning metadata are ingested before binding
+            // to view states. Clearing warnings here via SensitiveWarnings.clear(params) prevents warning
+            // overlays and blur masks from ever attaching to feed items.
+            if (skipContentWarnings == true) {
+                val paramReg = if (AccessFlags.STATIC.isSet(method.accessFlags)) "p0" else "p1"
+                method.addInstructions(
+                    0,
+                    "invoke-static/range {$paramReg .. $paramReg}, ${Constants.TIKTOK_EXTENSION_SENSITIVE_WARNINGS_HOOK}->clear(Ljava/lang/Object;)V",
+                )
+                println("[Always Show Publish Date] Prepended SensitiveWarnings.clear at index 0.")
+                patched++
+            }
         } catch (e: Exception) {
             println("[Always Show Publish Date] VideoAuthorInfoVM note: ${e.message}")
+        }
+
+        if (skipContentWarnings == true && !vmMethodFound) {
+            throw PatchException("Anchor VideoAuthorInfoVM.paramSync2StateAccept(VideoItemParams) not found for skipContentWarnings")
+        }
+
+        // 8b: Deep-link without feed activity hooks
+        if (showAuthorRegion == true) {
+            try {
+                Fingerprint(
+                    definingClass = "Lcom/ss/android/ugc/aweme/main/MainActivity;",
+                    name = "onCreate",
+                    parameters = listOf("Landroid/os/Bundle;"),
+                    returnType = "V",
+                ).method.addInstructions(
+                    0,
+                    """
+                        invoke-static/range {p0 .. p0}, ${Constants.TIKTOK_EXTENSION_AUTHOR_REGION_HOOK}->install(Landroid/app/Activity;)V
+                    """.trimIndent(),
+                )
+                println("[Always Show Publish Date] Hooked MainActivity.onCreate -> author region monitor active.")
+                patched++
+            } catch (e: Exception) {
+                println("[Always Show Publish Date] MainActivity note: ${e.message}")
+            }
+
+            try {
+                Fingerprint(
+                    definingClass = "Lcom/ss/android/ugc/aweme/detail/ui/DetailActivity;",
+                    name = "onCreate",
+                    parameters = listOf("Landroid/os/Bundle;"),
+                    returnType = "V",
+                ).method.addInstructions(
+                    0,
+                    """
+                        invoke-static/range {p0 .. p0}, ${Constants.TIKTOK_EXTENSION_AUTHOR_REGION_HOOK}->install(Landroid/app/Activity;)V
+                    """.trimIndent(),
+                )
+                println("[Always Show Publish Date] Hooked DetailActivity.onCreate -> author region monitor active.")
+                patched++
+            } catch (e: Exception) {
+                println("[Always Show Publish Date] DetailActivity note: ${e.message}")
+            }
         }
 
         // 2. Hook VideoAuthorInfoRelationAssem (onViewCreated and hs)
