@@ -2,6 +2,7 @@ package app.morphe.patches.tiktok.usability
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.stringOption
 import app.morphe.patches.shared.Constants
@@ -27,6 +28,13 @@ val videoQualityGovernorPatch = bytecodePatch(
         required = false,
     )
 
+    val avoidByteVC2 by booleanOption(
+        key = "avoidByteVC2",
+        default = true,
+        title = "Avoid ByteVC2 Software Decoding",
+        description = "Drops ByteVC2 renditions from playback bitrate lists when an H.264 or ByteVC1 alternative exists, so videos use the hardware decoder instead of TikTok's CPU-bound ByteVC2 software decoder.",
+        required = false,
+    )
     execute {
         fun parseResolution(raw: String?, defaultRes: Int): Int {
             val q = raw?.trim()?.lowercase() ?: return defaultRes
@@ -57,6 +65,8 @@ val videoQualityGovernorPatch = bytecodePatch(
         val returnIdx = clinitInstructions.indexOfLast { it.opcode == Opcode.RETURN_VOID }
         val insertIdx = if (returnIdx != -1) returnIdx else 0
 
+        val avoidByteVC2Enabled = avoidByteVC2 ?: true
+        val avoidByteVC2Const = if (avoidByteVC2Enabled) 1 else 0
         hookClinit.addInstructions(
             insertIdx,
             """
@@ -66,9 +76,11 @@ val videoQualityGovernorPatch = bytecodePatch(
                 sput v0, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->maxAllowedResolution:I
                 const/4 v0, 0
                 sput v0, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->downloadAllowedResolution:I
+                const/4 v0, $avoidByteVC2Const
+                sput-boolean v0, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->avoidByteVC2:Z
             """.trimIndent(),
         )
-        println("[Video Quality Governor] Initialized playback cap: playback=${chosenPlaybackRes}p (download ceiling retired).")
+        println("[Video Quality Governor] Initialized playback cap: playback=${chosenPlaybackRes}p, avoidByteVC2=$avoidByteVC2Enabled (download ceiling retired).")
         patched++
 
         // 2. Hook Aweme.getVideo() return points to cap Video model and default play addresses

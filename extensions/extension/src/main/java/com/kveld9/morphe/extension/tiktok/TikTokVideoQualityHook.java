@@ -31,6 +31,7 @@ public final class TikTokVideoQualityHook {
     private static final String KEY_DOWNLOAD_QUALITY = "download_video_quality";
 
     public static volatile boolean isGovernorEnabled = false;
+    public static volatile boolean avoidByteVC2 = false;
     public static volatile int maxAllowedResolution = 480;
     public static volatile int downloadAllowedResolution = 1080;
 
@@ -699,6 +700,36 @@ public final class TikTokVideoQualityHook {
         return deriveBitrateFromBps(bitrateObj);
     }
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private static List dropByteVC2(List list) {
+        if (!avoidByteVC2 || list == null || list.isEmpty()) {
+            return list;
+        }
+
+        List filtered = new ArrayList();
+        boolean hasVideo = false;
+        int dropped = 0;
+
+        for (Object item : list) {
+            if (item == null) continue;
+            if (isAudioBitrate(item)) {
+                filtered.add(item);
+            } else if (isBytevc2(item)) {
+                dropped++;
+            } else {
+                filtered.add(item);
+                hasVideo = true;
+            }
+        }
+
+        if (!hasVideo || dropped == 0) {
+            return list;
+        }
+
+        Log.i(TAG, "[Video Quality Governor] Dropped " + dropped + " ByteVC2 rendition(s) -> hardware decoder path");
+        return filtered;
+    }
+     * on 2160x3840 content). ByteVC2 is excluded: it uses ByteDance's CPU decoder.
     /**
      * Filters a list of BitRate or SimBitRate objects, discarding any streams whose
      * resolution height exceeds maxAllowedResolution.
@@ -708,6 +739,8 @@ public final class TikTokVideoQualityHook {
         if (originalList == null || originalList.isEmpty()) {
             return originalList;
         }
+
+        originalList = dropByteVC2(originalList);
 
         int cap = getMaxResolution();
         if (cap <= 0) {

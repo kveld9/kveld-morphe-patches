@@ -172,11 +172,13 @@ TH, TR, TW, UA, US, UY, VN, ZA
 
 The **`Video Quality Governor`** patch enforces a user-configured maximum playback resolution ceiling (`1080p`, `720p`, `540p`, `480p`, `360p`, or unconstrained) across video feeds. While standard TikTok features like "Data Saver" only compress network transfers under cellular conditions without capping hardware decoders, this governor caps the actual rendition ladder (`bitRateList` and `SimBitRate`) parsed by PlayerKit/TTPlayer, reducing hardware MediaCodec load, thermals, GraphicBuffers memory consumption, and frame drops on lower-spec or battery-sensitive devices.
 
+
 Download quality is **not** configured here: it lives solely in the Media Usability patch (`downloadQuality`: `high`/`medium`/`low` or a `1080`/`720`/`540`/`480`/`360` ceiling), which always wins for saved files. (The former `maxDownloadQuality` option was retired for exactly this reason: one place for download quality.)
 
 | Option | Key | Type | Default | Supported Ceilings | Description |
 | :--- | :--- | :--- | :---: | :--- | :--- |
 | **Maximum Playback Resolution** | `maxQuality` | String | `480` | `1080`, `720`, `540`, `480`, `360`, `none` | Caps video playback height in vertical pixels. Discards higher rendition profiles in feed. |
+| **Avoid ByteVC2 Software Decoding** | `avoidByteVC2` | Boolean | `true` | `true`, `false` | Drops ByteVC2 renditions when an H.264 or ByteVC1 alternative exists, forcing hardware decoding. |
 
 #### Supported Resolution Ceilings
 
