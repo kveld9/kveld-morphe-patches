@@ -182,7 +182,19 @@ Download quality is **not** configured here: it lives solely in the Media Usabil
 | **Avoid ByteVC2 Software Decoding** | `avoidByteVC2` | Boolean | `true` | `true`, `false` | Drops ByteVC2 renditions when an H.264 or ByteVC1 alternative exists, forcing hardware decoding. |
 | **Drop Undecodable Video Streams** | `dropUndecodableVideo` | Boolean | `true` | `true`, `false` | When the ladder floor exceeds the hardware decoder, keeps audio-only instead of decoder-reject retry loops. |
 
-ByteVC2 is ByteDance's proprietary codec with no hardware decoder, so TikTok decodes it on the CPU (measured at ~0.6 CPU cores per playing video on a Snapdragon 636). Dropping it lets H.264/ByteVC1 renditions play through the hardware MediaCodec decoder. As a trade-off, ByteVC1 and H.264 renditions are larger, so mobile data usage can increase slightly; if a video only offers ByteVC2, it is kept.
+ByteVC2 is ByteDance's proprietary codec with no hardware decoder, so TikTok decodes it on the CPU. Dropping it lets H.264/ByteVC1 renditions play through the hardware MediaCodec decoder. As a trade-off, ByteVC1 and H.264 renditions are larger, so mobile data usage can increase slightly; if a video only offers ByteVC2, it is kept.
+
+Measured A/B on a Moto G56 (Dimensity MT6855G, TikTok 47.1.4, 15 feed videos per arm, same build except the flag):
+
+| Metric | avoidByteVC2 on | avoidByteVC2 off |
+| --- | --- | --- |
+| ByteVC2 renditions dropped | 4 | 0 |
+| ByteVC2 software decoder instances created | 0 | 2 |
+| Hardware (ByteVC1) decode lines | 24 | 28 |
+| Software VDecod threads observed | none | VDecod2-V15/V16 active |
+| Crashes | 0 | 0 |
+
+Caveat: per-core CPU delta was not rigorously measured (point samples, different content per arm); the historical ~0.6 CPU cores per video figure comes from a Snapdragon 636 baseline, not from this test.
 
 Undecodable guard: stream dimensions are resolved from bitrate metadata and compared against the largest long side reported by `MediaCodecList` for the stream codec family (`video/hevc` for ByteVC1/HEVC, `video/avc` otherwise). No orientation is assumed: any single known side above the hardware maximum already proves undecodability. When ladder entries hide their own size, the parent `Video` dimensions (authoritative server metadata) are used as fallback. When even the lowest ladder rendition exceeds it (e.g. `2160x3840` on a decoder topped at `2560x1440`, observed as `C2MtkVdec: BAD VALUE: Resolution not supported` retry loops), video streams are dropped and the audio track is preserved so playback fails fast instead of freezing the device. ByteVC2 is excluded (dedicated CPU decoder) and unknown dimensions or hardware fail open (ladder kept).
 
