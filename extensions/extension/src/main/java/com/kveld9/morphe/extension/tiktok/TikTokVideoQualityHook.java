@@ -735,12 +735,12 @@ public final class TikTokVideoQualityHook {
     }
 
     /**
-     * Resolves actual stream pixel dimensions (width, height) from bitrate metadata
-     * or its play address model. Returns null when dimensions are unknown.
+     * Resolves stream pixel dimensions (width, height) from bitrate metadata
+     * or its play address model. Unknown sides are -1.
      * Unlike resolveBitrateHeight, no ladder-tier normalization is applied.
      */
-    private static int[] resolveBitrateSize(Object bitrateObj) {
-        if (bitrateObj == null) return null;
+    private static int[] resolveBitrateDims(Object bitrateObj) {
+        if (bitrateObj == null) return new int[]{-1, -1};
         int w = readIntGetter(bitrateObj, "getVideoWidth");
         int h = readIntGetter(bitrateObj, "getVideoHeight");
         if (w > 0 && h > 0) return new int[]{w, h};
@@ -749,10 +749,17 @@ public final class TikTokVideoQualityHook {
             if (playAddr != null) {
                 int uw = readIntGetter(playAddr, "getWidth");
                 int uh = readIntGetter(playAddr, "getHeight");
-                if (uw > 0 && uh > 0) return new int[]{uw, uh};
+                if (uw > 0 || uh > 0) return new int[]{uw, uh};
             }
         } catch (Throwable ignored) {}
-        return null;
+        if (w > 0 || h > 0) return new int[]{w, h};
+        return new int[]{-1, -1};
+    }
+
+    /** Parent Video dimensions (authoritative server metadata), -1 when unknown. */
+    private static int[] videoSize(Object videoObj) {
+        if (videoObj == null) return new int[]{-1, -1};
+        return new int[]{readIntGetter(videoObj, "getWidth"), readIntGetter(videoObj, "getHeight")};
     }
 
     private static int readIntGetter(Object target, String getter) {
@@ -808,19 +815,22 @@ public final class TikTokVideoQualityHook {
     }
 
     /**
-     * True when the stream's long side exceeds every device decoder for its codec
+     * True when a known stream side exceeds every device decoder for its codec
      * family, meaning the hardware rejects it (observed as C2MtkVdec BAD VALUE loops
-     * on 2160x3840 content). ByteVC2 is excluded: it uses ByteDance's CPU decoder.
+     * on 2160x3840 content). No orientation is assumed: the long side is always
+     * >= any single known side. ByteVC2 is excluded: it uses ByteDance's CPU decoder.
      * Unknown dimensions or unknown hardware fail open (false).
      */
-    private static boolean isUndecodableSize(Object item) {
+    private static boolean isUndecodableSize(Object item, int[] parentSize) {
         if (item == null || isBytevc2(item)) return false;
-        int[] size = resolveBitrateSize(item);
-        if (size == null) return false;
+        int[] size = resolveBitrateDims(item);
+        if (size[0] <= 0 && size[1] <= 0 && parentSize != null) {
+            size = parentSize;
+        }
         String mime = isBytevc1(item) ? "video/hevc" : "video/avc";
         int hwMax = getHwMaxLongSide(mime);
         if (hwMax <= 0) return false;
-        return Math.max(size[0], size[1]) > hwMax;
+        return (size[0] > hwMax) || (size[1] > hwMax);
     }
 
     /**
@@ -829,9 +839,9 @@ public final class TikTokVideoQualityHook {
      * of entering decoder-reject retry loops. Returns null to proceed normally.
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private static List maybeDropUndecodable(List originalList, Object lowestVideoStream) {
+    private static List maybeDropUndecodable(List originalList, Object lowestVideoStream, int[] parentSize) {
         if (!dropUndecodableVideo || lowestVideoStream == null) return null;
-        if (!isUndecodableSize(lowestVideoStream)) return null;
+        if (!isUndecodableSize(lowestVideoStream, parentSize)) return null;
         List audioOnly = new ArrayList();
         int dropped = 0;
         for (Object item : originalList) {
@@ -843,18 +853,24 @@ public final class TikTokVideoQualityHook {
             }
         }
         if (audioOnly.isEmpty()) return null;
-        int[] size = resolveBitrateSize(lowestVideoStream);
-        String dims = (size != null) ? (size[0] + "x" + size[1]) : "unknown-size";
+        int[] size = resolveBitrateDims(lowestVideoStream);
+        String dims = (size[0] > 0 || size[1] > 0) ? (size[0] + "x" + size[1]) : "unknown-size";
         Log.i(TAG, "[Video Quality Governor] Undecodable " + dims + " stream exceeds HW decoder -> dropped " + dropped + " video stream(s), audio-only fallback.");
         return audioOnly;
     }
 
-    /**
-     * Filters a list of BitRate or SimBitRate objects, discarding any streams whose
-     * resolution height exceeds maxAllowedResolution.
-     */
     @SuppressWarnings({"rawtypes", "unchecked"})
     public static List filterBitrates(List originalList) {
+        return filterBitratesEx(originalList, null);
+    }
+
+    /**
+     * Filters a list of BitRate or SimBitRate objects, discarding any streams whose
+     * resolution height exceeds maxAllowedResolution. videoObj (when available) lends
+     * authoritative parent dimensions for ladder entries that hide their own size.
+     */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static List filterBitratesEx(List originalList, Object videoObj) {
         if (originalList == null || originalList.isEmpty()) {
             return originalList;
         }
@@ -903,7 +919,7 @@ public final class TikTokVideoQualityHook {
         }
 
         // Undecodable guard: ladder floor exceeds hardware -> audio-only instead of retry loops
-        List undecodableFallback = maybeDropUndecodable(originalList, lowestVideoStream);
+        List undecodableFallback = maybeDropUndecodable(originalList, lowestVideoStream, videoSize(videoObj));
         if (undecodableFallback != null) {
             return undecodableFallback;
         }

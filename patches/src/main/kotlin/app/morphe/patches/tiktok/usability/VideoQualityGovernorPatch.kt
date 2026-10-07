@@ -138,7 +138,7 @@ val videoQualityGovernorPatch = bytecodePatch(
             videoMethod.addInstructionsAtControlFlowLabel(
                 returnIndex,
                 """
-                    invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->filterBitrates(Ljava/util/List;)Ljava/util/List;
+                    invoke-static {v$reg, p0}, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->filterBitratesEx(Ljava/util/List;Ljava/lang/Object;)Ljava/util/List;
                     move-result-object v$reg
                 """.trimIndent(),
             )
@@ -164,7 +164,7 @@ val videoQualityGovernorPatch = bytecodePatch(
             rawMethod.addInstructionsAtControlFlowLabel(
                 returnIndex,
                 """
-                    invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->filterBitrates(Ljava/util/List;)Ljava/util/List;
+                    invoke-static {v$reg, p0}, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->filterBitratesEx(Ljava/util/List;Ljava/lang/Object;)Ljava/util/List;
                     move-result-object v$reg
                 """.trimIndent(),
             )
