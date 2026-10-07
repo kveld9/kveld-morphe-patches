@@ -17,7 +17,7 @@ import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 val videoFitPatch = bytecodePatch(
     name = "Video Fit",
-    description = "Adjusts video display aspect ratio across feeds and story cells: 'fit' ensures the entire video is visible without cropping, 'fill' expands the video to fill the screen, or 'off' preserves stock aspect ratio.",
+    description = "Adjusts video display aspect ratio across feeds and story cells: 'fit' ensures the entire video is visible without cropping, or 'fill' expands the video to fill the screen.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -26,18 +26,14 @@ val videoFitPatch = bytecodePatch(
     val fitMode by stringOption(
         key = "fitMode",
         title = "Video Fit Mode",
-        description = "Aspect ratio mode for feed and story videos: 'fit' (entire video visible without crop), 'fill' (crop to fill screen), or 'off' (stock behavior).",
-        default = "off",
-        values = mapOf("Fit video" to "fit", "Fill screen" to "fill", "Off" to "off"),
+        description = "Aspect ratio mode for feed and story videos: 'fit' (entire video visible without crop), or 'fill' (crop to fill screen).",
+        default = "fit",
+        values = mapOf("Fit video" to "fit", "Fill screen" to "fill"),
         required = false,
     )
 
     execute {
-        val mode = fitMode ?: "off"
-        if (mode == "off") {
-            println("[Video Fit] Skipped: Fit mode is off.")
-            return@execute
-        }
+        val mode = fitMode ?: "fit"
 
         var patched = 0
 

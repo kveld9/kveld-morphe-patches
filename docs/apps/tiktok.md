@@ -59,7 +59,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Usability** | **Enable Profile Banner** | `bytecodePatch` | Unlocks custom profile banner header cover feature and banner editing tools in Edit Profile. |
 | **Usability** | **System Font** | `bytecodePatch` | Forces TikTok to use the Android system font instead of bundled proprietary TikTokSans fonts. |
 | **Usability** | **[Popups & Prompts Suppressor](#23-popups--prompts-suppressor-popupsandpromptssuppressorpatch)** | `bytecodePatch` | Suppresses intrusive popups, dialogs, and modal prompts, including 'Follow your friends' dialogs, contacts sync overlays, multi-account notification guides, 2SV security checkup modals, PopLayer promotional sheets, live stream teaser bubbles, sticker recommendations, and DM streak expiration warnings. |
-| **Usability** | **Video Fit** | `bytecodePatch` | Adjusts video aspect ratio across feeds and story cells: fit video without cropping, fill screen, or off (`fitMode`). |
+| **Usability** | **Video Fit** | `bytecodePatch` | Adjusts video aspect ratio across feeds and story cells: fit video without cropping or fill screen (`fitMode`). |
 | **Privacy** | **Camera & Microphone Indicator** | `bytecodePatch` | Shows an on-screen corner indicator while TikTok holds camera or microphone open. |
 | **Privacy** | **Fix Google Login** | `bytecodePatch` | Restores Google account sign-in via Web OAuth fallback when GMS rejects modified APK signature. |
 | **Privacy** | **Fix Spotify Login** | `bytecodePatch` | Restores 'Add to Spotify' by intercepting the Spotify SDK SSO intent (rejected by the Spotify app for the re-signed APK) and completing Spotify Web OAuth in a WebView hosted over the SDK `LoginActivity`. |
