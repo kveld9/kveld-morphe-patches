@@ -362,6 +362,8 @@ The **`Popups & Prompts Suppressor`** patch suppresses intrusive dialogs, bottom
   - **`hideStoryRings` (default: true)**: Removes profile photo story rings from avatars in the comment section. Stubs `AvatarRing.setMode` with `return-void`, rewrites `AvatarRing.draw` to pass through to `FrameLayout.draw` without rendering ring arcs, and neutralizes `AvatarRing.onInterceptTouchEvent` -> `false`.
   - **`enableVoiceComments` (default: true)**: Forces native voice comment recording buttons in comment input bars, bypassing regional rollout restrictions and remote server blocks (`audio_comment_publish`, `comment_audio_publish_entry_forbidden`, `VEAudioRecorder`).
   - **`autoTranslate` (default: false)**: Automatically dispatches batch translations for incoming comments via TikTok's native engine (`BaseCommentCell`, `CommentList.onLoaded`).
+  - **`commentSendFix` (default: true)**: Fixes silently dropped comments by substituting the null top-page screen with the owning panel screen (`CommentPublishViewModel.kJ1`, event `click_comment_send`).
+  - **`hideCommentPopupAds` (default: true)**: Blocks brand surprise animations over comments via `CommentSurpriseStruct` with path tags (`page/publish/milestone`, self-celebrations are preserved).
 
 ### 3. Device Privacy Guard (`devicePrivacyGuardPatch`)
 > [!NOTE]
@@ -387,6 +389,12 @@ The **`Popups & Prompts Suppressor`** patch suppresses intrusive dialogs, bottom
 - **Contacts Isolation**: Neutralizes BPEA contacts reader `LX/0OFU.LIZ()` to return empty list and `LX/0OFw.LIZ()` to return a null cursor safely.
 - **HAR Motion Sensor Silencing**: Injects `return -1` into `HarSensorManager` init and stubs `onSensorChanged` to stop physical movement fingerprinting.
 - **Clipboard Protection**: Blocks programmatic and BPEA background clipboard reading methods (`LX/01ZZ.LIZ`, `LX/0jUy.LIZIZ`).
+- **Framework Call-Site Filtering (insert-only)**:
+  - `ContentResolver.query` (3 overloads) filtered by URI via `noteUri`/`filterNotedResult` (contacts -> empty cursor).
+  - `queryIntentActivities` filtered via `noteIntent`/`filterNotedIntentResult` (explicit intents pass through, broad queries -> empty list).
+  - `getLastKnownLocation` -> `null`.
+  - `requestSingleUpdate` canceled via `removeUpdates`.
+  - `isProviderEnabled` / `isLocationEnabled` -> `false`.
 
 ### 4. Bypass Screen Capture Detection (`bypassScreenCapturePatch`)
 - Clears `FLAG_SECURE` (`0x2000`) on window layouts via `AntiScreenRecordController.applyFlag(enabled=false)`, `makeScreenProtection(enable=false)`, and neutralizes global Activity `FLAG_SECURE` enforcement (`setFlags(8192, 8192)`), enabling screenshots and screen recordings across restricted views, live courses, and ephemeral chats.
