@@ -3,7 +3,6 @@ package app.morphe.patches.tiktok.privacy
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.PatchException
-import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.sharedExtensionPatch
@@ -33,20 +32,7 @@ val cameraMicIndicatorPatch = bytecodePatch(
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
     dependsOn(sharedExtensionPatch)
 
-    val enabled by booleanOption(
-        key = "enabled",
-        default = true,
-        title = "Enable Indicator",
-        description = "Shows an on-screen corner indicator while TikTok holds camera or microphone open.",
-        required = false,
-    )
-
     execute {
-        if (enabled == false) {
-            println("[Camera Mic Indicator] Skipped: Indicator option is disabled.")
-            return@execute
-        }
-
         // (a) Hook MainActivity.onCreate at index 0 to install the indicator overlay view.
         val mainActivityFp = Fingerprint(
             definingClass = "Lcom/ss/android/ugc/aweme/main/MainActivity;",
