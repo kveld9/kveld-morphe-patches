@@ -3,6 +3,7 @@ package app.morphe.patches.tiktok.usability
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions
 import app.morphe.patcher.patch.BytecodePatchContext
@@ -11,6 +12,7 @@ import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.stringOption
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
+import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.clearTryBlocks
 import app.morphe.patches.shared.ensureRegisterCount
@@ -32,6 +34,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstructio
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 
 private const val COMMENT_CLASS_DESCRIPTOR = "Lcom/ss/android/ugc/aweme/comment/model/Comment;"
@@ -39,6 +42,11 @@ private const val CLIP_DATA_CLASS_DESCRIPTOR = "Landroid/content/ClipData;"
 private const val BASE_COMMENT_CELL_CLASS = "Lcom/ss/android/ugc/aweme/commentv2/commentlist/powercell/BaseCommentCell;"
 private const val COMMENT_LYNX_CELL_CLASS = "Lcom/ss/android/ugc/aweme/commentv2/commentlist/powercell/CommentLynxCell;"
 private const val COMMENT_ITEM_LIST_CLASS = "Lcom/ss/android/ugc/aweme/comment/model/CommentItemList;"
+private const val COMMENT_SURPRISE_STRUCT_CLASS = "Lcom/ss/android/ugc/aweme/comment/model/CommentSurpriseStruct;"
+private const val COMMENT_SURPRISE_CLASS = "Lcom/ss/android/ugc/aweme/comment/model/CommentSurprise;"
+private const val COMMENT_RESPONSE_CLASS = "Lcom/ss/android/ugc/aweme/comment/model/CommentResponse;"
+private const val COMMENT_PUBLISH_VIEW_MODEL_CLASS =
+    "Lcom/ss/android/ugc/aweme/commentv2/commentlist/viewmodel/CommentPublishViewModel;"
 
 private data class MethodSignature(
     val definingClass: String,
@@ -696,9 +704,339 @@ private fun BytecodePatchContext.applyAutoTranslate(excludedLanguages: String): 
     return patched
 }
 
+private fun isSendCheckMethod(ref: MethodReference): Boolean {
+    if (ref.returnType != "Z") return false
+    val params = ref.parameterTypes.map { it.toString() }
+    if (params.size != 5) return false
+    return params[1] == "Lcom/ss/android/ugc/aweme/feed/model/Aweme;" &&
+        params[2] == "Ljava/lang/String;" &&
+        params[3] == "Ljava/lang/String;" &&
+        params[4].endsWith("/CommentContextSource;")
+}
+
+private fun hasClickCommentSendString(method: Method): Boolean {
+    val instructions = method.implementation?.instructions ?: return false
+    for (instruction in instructions) {
+        val ref = (instruction as? ReferenceInstruction)?.reference ?: continue
+        val str = when (ref) {
+            is StringReference -> ref.string
+            else -> ref.toString()
+        }
+        if (str == "click_comment_send") {
+            return true
+        }
+    }
+    return false
+}
+
+private fun BytecodePatchContext.applyCommentSendFix(): Int {
+    var patched = 0
+
+    val publishSendFp = Fingerprint(
+        definingClass = COMMENT_PUBLISH_VIEW_MODEL_CLASS,
+        custom = { method, _ ->
+            val instructions = method.implementation?.instructions ?: return@Fingerprint false
+            hasClickCommentSendString(method) && instructions.any { ins ->
+                val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference ?: return@any false
+                (ins.opcode == Opcode.INVOKE_STATIC || ins.opcode == Opcode.INVOKE_STATIC_RANGE) &&
+                    isSendCheckMethod(ref)
+            }
+        },
+    )
+    val matches = publishSendFp.matchAll()
+    if (matches.size != 1) {
+        throw PatchException(
+            "Comment Customizer: expected exactly 1 publish entry method in CommentPublishViewModel, found ${matches.size}.",
+        )
+    }
+
+    val match = matches.first()
+    val method = match.method
+    val instructions = method.implementation?.instructions?.toList()
+        ?: throw PatchException("Comment Customizer: publish entry method has no implementation.")
+
+    val checkCallMatches = instructions.withIndex().filter { (_, ins) ->
+        val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference ?: return@filter false
+        (ins.opcode == Opcode.INVOKE_STATIC || ins.opcode == Opcode.INVOKE_STATIC_RANGE) &&
+            isSendCheckMethod(ref)
+    }
+    if (checkCallMatches.size != 1) {
+        throw PatchException(
+            "Comment Customizer: expected exactly 1 send-check call in ${method.name}, found ${checkCallMatches.size}.",
+        )
+    }
+    val (checkIndex, _) = checkCallMatches.first()
+
+    // Locate the top-page screen read before the check call
+    val screenReadMatches = instructions.withIndex().filter { (idx, ins) ->
+        if (idx >= checkIndex) return@filter false
+        val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference ?: return@filter false
+        val isScreenMethod = (ins.opcode == Opcode.INVOKE_VIRTUAL || ins.opcode == Opcode.INVOKE_VIRTUAL_RANGE) &&
+            (ref.name == "getActivity" || (ref.name == "LIZIZ" && ref.returnType == "Landroid/app/Activity;" && ref.parameterTypes.isEmpty()))
+        if (!isScreenMethod) return@filter false
+        val nextIdx = idx + 1
+        if (nextIdx >= instructions.size) return@filter false
+        val nextIns = instructions[nextIdx]
+        nextIns.opcode == Opcode.MOVE_RESULT_OBJECT
+    }
+
+    if (screenReadMatches.size != 1) {
+        throw PatchException(
+            "Comment Customizer: expected exactly 1 top-page screen read before check call in ${method.name}, found ${screenReadMatches.size}.",
+        )
+    }
+    val (screenInvokeIndex, _) = screenReadMatches.first()
+    val screenMoveResultIndex = screenInvokeIndex + 1
+    val screenMoveResultIns = instructions[screenMoveResultIndex] as OneRegisterInstruction
+    val screenReg = screenMoveResultIns.registerA
+
+    // Locate Context-derived Activity call (e.g. LX/03o6;.LIZ:(Context)Activity) occurring between screen read and check call
+    val noteActivityMatches = instructions.withIndex().filter { (idx, ins) ->
+        if (idx <= screenMoveResultIndex || idx >= checkIndex) return@filter false
+        val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference ?: return@filter false
+        val isContextToActivity = (ins.opcode == Opcode.INVOKE_STATIC || ins.opcode == Opcode.INVOKE_STATIC_RANGE) &&
+            ref.parameterTypes.size == 1 &&
+            ref.parameterTypes[0].endsWith("Context;") &&
+            ref.returnType == "Landroid/app/Activity;"
+        if (!isContextToActivity) return@filter false
+        val nextIdx = idx + 1
+        if (nextIdx >= instructions.size) return@filter false
+        val nextIns = instructions[nextIdx]
+        nextIns.opcode == Opcode.MOVE_RESULT_OBJECT
+    }
+
+    if (noteActivityMatches.size != 1) {
+        throw PatchException(
+            "Comment Customizer: expected exactly 1 Context-to-Activity call before check call in ${method.name}, found ${noteActivityMatches.size}.",
+        )
+    }
+    val (noteInvokeIndex, _) = noteActivityMatches.first()
+    val noteMoveResultIndex = noteInvokeIndex + 1
+    val noteMoveResultIns = instructions[noteMoveResultIndex] as OneRegisterInstruction
+    val activityReg = noteMoveResultIns.registerA
+
+    // Order: insert at higher index first so preceding indices remain valid
+    // 1. After Context->Activity move-result-object (vAct): noteActivity(vAct)
+    val noteInstructions = if (activityReg <= 15) {
+        "invoke-static {v$activityReg}, ${Constants.TIKTOK_EXTENSION_COMMENT_HOOK}->noteActivity(Landroid/app/Activity;)V"
+    } else {
+        "invoke-static/range {v$activityReg .. v$activityReg}, ${Constants.TIKTOK_EXTENSION_COMMENT_HOOK}->noteActivity(Landroid/app/Activity;)V"
+    }
+    method.addInstructions(noteMoveResultIndex + 1, noteInstructions)
+    patched++
+
+    // 2. After screen move-result-object (vS): null-fill substitution
+    val nullFillInstructions = """
+        if-nez v$screenReg, :has_screen
+        invoke-static {}, ${Constants.TIKTOK_EXTENSION_COMMENT_HOOK}->panelActivity()Landroid/app/Activity;
+        move-result-object v$screenReg
+    """.trimIndent()
+    method.addInstructionsWithLabels(
+        screenMoveResultIndex + 1,
+        nullFillInstructions,
+        ExternalLabel("has_screen", method.getInstruction(screenMoveResultIndex + 1)),
+    )
+    patched++
+
+    println("[Comment Customizer] Comment send fix active.")
+    return patched
+}
+
+private fun isCommentSurpriseStructInit(ref: MethodReference): Boolean =
+    ref.definingClass == COMMENT_SURPRISE_STRUCT_CLASS &&
+        ref.name == "<init>" &&
+        ref.parameterTypes.map { it.toString() } == listOf(
+            COMMENT_CLASS_DESCRIPTOR,
+            COMMENT_SURPRISE_CLASS,
+            "Z",
+        ) &&
+        ref.returnType == "V"
+
+private fun findCommentSurpriseStructInitIndexes(method: Method): List<Int> =
+    method.implementation?.instructions?.withIndex()?.mapNotNull { (index, ins) ->
+        val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference ?: return@mapNotNull null
+        if ((ins.opcode == Opcode.INVOKE_DIRECT || ins.opcode == Opcode.INVOKE_DIRECT_RANGE) &&
+            isCommentSurpriseStructInit(ref)
+        ) {
+            index
+        } else {
+            null
+        }
+    } ?: emptyList()
+
+private fun isPlayMethod(ref: MethodReference): Boolean {
+    if (ref.returnType != "V") return false
+    val params = ref.parameterTypes.map { it.toString() }
+    if (params.size != 3) return false
+    return params[0] == COMMENT_SURPRISE_STRUCT_CLASS &&
+        params[1] == "I" &&
+        params[2] == "Ljava/lang/String;"
+}
+
+private fun readsCommentItemListSurprise(instructions: Iterable<Instruction>): Boolean =
+    instructions.any { ins ->
+        val field = (ins as? ReferenceInstruction)?.reference as? FieldReference ?: return@any false
+        field.definingClass == COMMENT_ITEM_LIST_CLASS && field.name == "commentSurprise"
+    }
+
+private fun readsCommentResponseSurprise(instructions: Iterable<Instruction>): Boolean =
+    instructions.any { ins ->
+        val field = (ins as? ReferenceInstruction)?.reference as? FieldReference ?: return@any false
+        (field.definingClass == COMMENT_RESPONSE_CLASS || field.definingClass.endsWith("/CommentResponse;")) &&
+            field.name == "commentSurprise"
+    }
+
+private fun hasMilestoneMarker(instructions: Iterable<Instruction>): Boolean =
+    instructions.any { ins ->
+        val ref = (ins as? ReferenceInstruction)?.reference
+        val fieldName = (ref as? FieldReference)?.name ?: ""
+        val str = when (ref) {
+            is StringReference -> ref.string
+            else -> ref?.toString() ?: ""
+        }
+        fieldName == "FIRST_COMMENT_MILESTONE" || fieldName.contains("FIRST_COMMENT_MILESTONE") ||
+            str.contains("FIRST_COMMENT_MILESTONE")
+    }
+
+private fun callsLruCacheGet(instructions: Iterable<Instruction>): Boolean =
+    instructions.any { ins ->
+        val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference ?: return@any false
+        ref.definingClass == "Landroid/util/LruCache;" && ref.name == "get"
+    }
+
+private fun BytecodePatchContext.applyHideCommentPopupAds(): Int {
+    var patched = 0
+
+    // Root constructor hook: prepend filterSurprise(p2)
+    val structInitFp = Fingerprint(
+        definingClass = COMMENT_SURPRISE_STRUCT_CLASS,
+        name = "<init>",
+        parameters = listOf(
+            COMMENT_CLASS_DESCRIPTOR,
+            COMMENT_SURPRISE_CLASS,
+            "Z",
+        ),
+        returnType = "V",
+    )
+    val structInitMethod = structInitFp.method
+    structInitMethod.addInstructions(
+        0,
+        """
+            invoke-static/range {p2 .. p2}, ${Constants.TIKTOK_EXTENSION_COMMENT_HOOK}->filterSurprise(Ljava/lang/Object;)Ljava/lang/Object;
+            move-result-object p2
+            check-cast p2, $COMMENT_SURPRISE_CLASS
+        """.trimIndent(),
+    )
+    patched++
+
+    // Path mark (i): page-loader method
+    val pageLoaderFp = Fingerprint(
+        custom = { method, _ ->
+            val instructions = method.implementation?.instructions ?: return@Fingerprint false
+            val hasStructInit = instructions.any { ins ->
+                val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference ?: return@any false
+                isCommentSurpriseStructInit(ref)
+            }
+            hasStructInit &&
+                readsCommentItemListSurprise(instructions) &&
+                instructions.any { ins ->
+                    val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference ?: return@any false
+                    isPlayMethod(ref)
+                }
+        },
+    )
+    val pageLoaderMatches = pageLoaderFp.matchAll()
+    if (pageLoaderMatches.size != 1) {
+        throw PatchException(
+            "Comment Customizer: expected exactly 1 page-loader surprise method, found ${pageLoaderMatches.size}.",
+        )
+    }
+    val pageLoaderMethod = pageLoaderMatches.first().method
+    val pageLoaderInits = findCommentSurpriseStructInitIndexes(pageLoaderMethod)
+    if (pageLoaderInits.size != 1) {
+        throw PatchException(
+            "Comment Customizer: expected exactly 1 CommentSurpriseStruct.<init> invoke in page-loader, found ${pageLoaderInits.size}.",
+        )
+    }
+    pageLoaderMethod.addInstructions(
+        pageLoaderInits.first(),
+        """
+            invoke-static {}, ${Constants.TIKTOK_EXTENSION_COMMENT_HOOK}->markPageLoaderSurprise()V
+        """.trimIndent(),
+    )
+    patched++
+
+    // Path mark (ii): publish-response method
+    val publishResponseFp = Fingerprint(
+        custom = { method, _ ->
+            val instructions = method.implementation?.instructions ?: return@Fingerprint false
+            val hasStructInit = instructions.any { ins ->
+                val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference ?: return@any false
+                isCommentSurpriseStructInit(ref)
+            }
+            hasStructInit && readsCommentResponseSurprise(instructions)
+        },
+    )
+    val publishResponseMatches = publishResponseFp.matchAll()
+    if (publishResponseMatches.size != 1) {
+        throw PatchException(
+            "Comment Customizer: expected exactly 1 publish-response surprise method, found ${publishResponseMatches.size}.",
+        )
+    }
+    val publishResponseMethod = publishResponseMatches.first().method
+    val publishResponseInits = findCommentSurpriseStructInitIndexes(publishResponseMethod)
+    if (publishResponseInits.size != 1) {
+        throw PatchException(
+            "Comment Customizer: expected exactly 1 CommentSurpriseStruct.<init> invoke in publish-response, found ${publishResponseInits.size}.",
+        )
+    }
+    publishResponseMethod.addInstructions(
+        publishResponseInits.first(),
+        """
+            invoke-static {}, ${Constants.TIKTOK_EXTENSION_COMMENT_HOOK}->markPublishResponseSurprise()V
+        """.trimIndent(),
+    )
+    patched++
+
+    // Path mark (iii): milestone method
+    val milestoneFp = Fingerprint(
+        custom = { method, _ ->
+            val instructions = method.implementation?.instructions ?: return@Fingerprint false
+            val hasStructInit = instructions.any { ins ->
+                val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference ?: return@any false
+                isCommentSurpriseStructInit(ref)
+            }
+            hasStructInit && hasMilestoneMarker(instructions) && callsLruCacheGet(instructions)
+        },
+    )
+    val milestoneMatches = milestoneFp.matchAll()
+    if (milestoneMatches.size != 1) {
+        throw PatchException(
+            "Comment Customizer: expected exactly 1 milestone surprise method, found ${milestoneMatches.size}.",
+        )
+    }
+    val milestoneMethod = milestoneMatches.first().method
+    val milestoneInits = findCommentSurpriseStructInitIndexes(milestoneMethod)
+    if (milestoneInits.size != 1) {
+        throw PatchException(
+            "Comment Customizer: expected exactly 1 CommentSurpriseStruct.<init> invoke in milestone, found ${milestoneInits.size}.",
+        )
+    }
+    milestoneMethod.addInstructions(
+        milestoneInits.first(),
+        """
+            invoke-static {}, ${Constants.TIKTOK_EXTENSION_COMMENT_HOOK}->markMilestoneSurprise()V
+        """.trimIndent(),
+    )
+    patched++
+
+    println("[Comment Customizer] Comment popup ads blocked.")
+    return patched
+}
+
 val commentCustomizerPatch = bytecodePatch(
     name = "Comment Customizer",
-    description = "Customizes TikTok's comment section, including native sort controls, clean text copying, disabling suggested emojis bar, hiding comment quick actions, hiding in-comment surveys and feedback cards, hiding profile photo story rings, enabling voice comments, and automatic comment translation.",
+    description = "Customizes TikTok's comment section, including native sort controls, clean text copying, disabling suggested emojis bar, hiding comment quick actions, hiding in-comment surveys and feedback cards, hiding profile photo story rings, enabling voice comments, automatic comment translation, fixing silent comment drops, and hiding comment popup ads.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -709,6 +1047,14 @@ val commentCustomizerPatch = bytecodePatch(
         default = true,
         title = "Comment Sort Controls",
         description = "Unlocks TikTok's native comment sorting menu (Hot, Newest, Creator only, With media) across all posts.",
+        required = false,
+    )
+
+    val commentSendFix by booleanOption(
+        key = "commentSendFix",
+        default = true,
+        title = "Fix Silent Comment Drops",
+        description = "Prevents silent comment publishing drops when the top-page screen context is detached or null.",
         required = false,
     )
 
@@ -760,6 +1106,14 @@ val commentCustomizerPatch = bytecodePatch(
         required = false,
     )
 
+    val hideCommentPopupAds by booleanOption(
+        key = "hideCommentPopupAds",
+        default = true,
+        title = "Hide Comment Popup Ads",
+        description = "Suppresses promotional brand surprise animation popups and commercial campaign effects when loading comments or publishing.",
+        required = false,
+    )
+
     val autoTranslate by booleanOption(
         key = "autoTranslate",
         default = false,
@@ -784,7 +1138,9 @@ val commentCustomizerPatch = bytecodePatch(
             hideCommentSurveys != true &&
             hideStoryRings != true &&
             enableVoiceComments != true &&
-            autoTranslate != true
+            autoTranslate != true &&
+            commentSendFix != true &&
+            hideCommentPopupAds != true
         ) {
             println("[Comment Customizer] Skipped: All comment customization options are disabled.")
             return@execute
@@ -794,6 +1150,10 @@ val commentCustomizerPatch = bytecodePatch(
 
         if (commentSortControls == true) {
             patched += applyCommentSortControls()
+        }
+
+        if (commentSendFix == true) {
+            patched += applyCommentSendFix()
         }
 
         if (copyWithoutUsername == true) {
@@ -818,6 +1178,10 @@ val commentCustomizerPatch = bytecodePatch(
 
         if (enableVoiceComments == true) {
             patched += applyEnableVoiceComments()
+        }
+
+        if (hideCommentPopupAds == true) {
+            patched += applyHideCommentPopupAds()
         }
 
         if (autoTranslate == true) {

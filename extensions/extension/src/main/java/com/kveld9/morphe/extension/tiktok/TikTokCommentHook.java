@@ -1,13 +1,18 @@
 package com.kveld9.morphe.extension.tiktok;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.ContextWrapper;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import java.lang.ref.WeakReference;
 
 /**
  * Runtime hook helper for TikTok comment interactions.
- * Strips creator username prefix from copied comments to copy clean comment text only.
+ * Strips creator username prefix from copied comments to copy clean comment text only,
+ * manages comment send screen resolution, and filters comment surprise popup animations.
  */
 public final class TikTokCommentHook {
     private static final String TAG = "MorpheTikTok";
@@ -15,6 +20,16 @@ public final class TikTokCommentHook {
     private TikTokCommentHook() {}
 
     private static final ThreadLocal<String> capturedCommentText = new ThreadLocal<>();
+
+    // Weak reference for comment panel Activity tracking
+    private static WeakReference<Activity> panelActivityRef = new WeakReference<>(null);
+
+    // Marker tracking for comment popup ads / surprises
+    private static final int PATH_PAGE_LOADER = 1;
+    private static final int PATH_PUBLISH_RESPONSE = 2;
+    private static final int PATH_MILESTONE = 3;
+
+    private static final ThreadLocal<Integer> currentSurprisePath = new ThreadLocal<>();
 
     public static void captureCommentText(String text) {
         capturedCommentText.set(text);
@@ -30,8 +45,70 @@ public final class TikTokCommentHook {
         return commentText;
     }
 
+    public static void setPanelActivity(Activity a) {
+        if (a != null) {
+            panelActivityRef = new WeakReference<>(a);
+        }
+    }
+
+    public static void noteActivity(Activity a) {
+        if (a != null && !a.isFinishing()) {
+            panelActivityRef = new WeakReference<>(a);
+        }
+    }
+
+    public static Activity panelActivity() {
+        Activity act = panelActivityRef.get();
+        if (act != null && !act.isFinishing() && !act.isDestroyed()) {
+            return act;
+        }
+        return null;
+    }
+
+    public static void markPageLoaderSurprise() {
+        currentSurprisePath.set(PATH_PAGE_LOADER);
+    }
+
+    public static void markPublishResponseSurprise() {
+        currentSurprisePath.set(PATH_PUBLISH_RESPONSE);
+    }
+
+    public static void markMilestoneSurprise() {
+        currentSurprisePath.set(PATH_MILESTONE);
+    }
+
+    public static Object filterSurprise(Object surprise) {
+        Integer path = currentSurprisePath.get();
+        currentSurprisePath.remove();
+        if (path != null && path == PATH_MILESTONE) {
+            return surprise;
+        }
+        return null;
+    }
+
+    private static Activity findActivity(Object obj) {
+        if (obj instanceof Activity) {
+            return (Activity) obj;
+        }
+        if (obj instanceof Context) {
+            Context context = (Context) obj;
+            while (context instanceof ContextWrapper) {
+                if (context instanceof Activity) {
+                    return (Activity) context;
+                }
+                context = ((ContextWrapper) context).getBaseContext();
+            }
+            return null;
+        }
+        return null;
+    }
+
     public static void hideCommentQuickActions(final View view) {
         if (view == null) return;
+        Activity act = findActivity(view.getContext());
+        if (act != null) {
+            setPanelActivity(act);
+        }
         try {
             view.setVisibility(View.GONE);
             ViewGroup.LayoutParams lp = view.getLayoutParams();
