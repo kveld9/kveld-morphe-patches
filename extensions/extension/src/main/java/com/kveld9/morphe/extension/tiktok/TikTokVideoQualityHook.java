@@ -839,9 +839,17 @@ public final class TikTokVideoQualityHook {
      * of entering decoder-reject retry loops. Returns null to proceed normally.
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private static List maybeDropUndecodable(List originalList, Object lowestVideoStream, int[] parentSize) {
+    private static List maybeDropUndecodable(List originalList, Object lowestVideoStream, int[] parentSize, boolean failsafeKept) {
         if (!dropUndecodableVideo || lowestVideoStream == null) return null;
-        if (!isUndecodableSize(lowestVideoStream, parentSize)) return null;
+        if (!isUndecodableSize(lowestVideoStream, parentSize)) {
+            if (failsafeKept) {
+                int[] size = resolveBitrateDims(lowestVideoStream);
+                String dims = (size[0] > 0 || size[1] > 0) ? (size[0] + "x" + size[1]) : "unknown-size";
+                String mime = isBytevc2(lowestVideoStream) ? "bytevc2" : (isBytevc1(lowestVideoStream) ? "video/hevc" : "video/avc");
+                Log.i(TAG, "[Video Quality Governor] Ladder floor kept (failsafe): dims=" + dims + " hwMax=" + getHwMaxLongSide(mime) + "px mime=" + mime + ".");
+            }
+            return null;
+        }
         List audioOnly = new ArrayList();
         int dropped = 0;
         for (Object item : originalList) {
@@ -913,13 +921,14 @@ public final class TikTokVideoQualityHook {
         }
 
         // Failsafe: if all video renditions exceeded the cap, keep the lowest available video stream
-        if (!hasVideoInFiltered && lowestVideoStream != null) {
+        boolean failsafeKept = !hasVideoInFiltered && lowestVideoStream != null;
+        if (failsafeKept) {
             filtered.add(lowestVideoStream);
             hasVideoInFiltered = true;
         }
 
         // Undecodable guard: ladder floor exceeds hardware -> audio-only instead of retry loops
-        List undecodableFallback = maybeDropUndecodable(originalList, lowestVideoStream, videoSize(videoObj));
+        List undecodableFallback = maybeDropUndecodable(originalList, lowestVideoStream, videoSize(videoObj), failsafeKept);
         if (undecodableFallback != null) {
             return undecodableFallback;
         }

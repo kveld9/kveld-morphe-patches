@@ -278,6 +278,35 @@ val videoQualityGovernorPatch = bytecodePatch(
             patched++
         }
 
+        // 9-11. Hook codec-specific play address getters with the same enforcement.
+        // Detail playback of HEVC/ ByteVC1 ladders may read these instead of getPlayAddr().
+        val codecPlayAddrMethods = listOf("getPlayAddrBytevc1", "getPlayAddrH264", "getH264PlayAddr")
+        for (getterName in codecPlayAddrMethods) {
+            val getterFp = Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Video;",
+                name = getterName,
+                returnType = "Lcom/ss/android/ugc/aweme/feed/model/VideoUrlModel;",
+            )
+            val getterMethod = getterFp.method
+            val getterReturnIndices = getterMethod.implementation?.instructions?.withIndex()
+                ?.filter { it.value.opcode == Opcode.RETURN_OBJECT }
+                ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
+                ?.toList() ?: emptyList()
+
+            getterReturnIndices.asReversed().forEach { (returnIndex, reg) ->
+                getterMethod.addInstructionsAtControlFlowLabel(
+                    returnIndex,
+                    """
+                        invoke-static {v$reg, p0}, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->enforcePlaybackCap(Ljava/lang/Object;Ljava/lang/Object;)V
+                    """.trimIndent(),
+                )
+            }
+            if (getterReturnIndices.isNotEmpty()) {
+                println("[Video Quality Governor] Hooked Video.$getterName() (${getterReturnIndices.size} return point(s)) -> Codec play address enforcement active.")
+                patched++
+            }
+        }
+
         println("[Video Quality Governor] Applied $patched video resolution capping hook(s) (playback: ${chosenPlaybackRes}p).")
     }
 }
