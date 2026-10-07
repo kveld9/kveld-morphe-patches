@@ -185,63 +185,6 @@ val videoFitPatch = bytecodePatch(
         println("[Video Fit] Hooked static helper (View,Result)Z -> prepended fitted() swap.")
         patched++
 
-        // 6. Story cell: adapt layout dimension writes with :leave label when negative
-        try {
-            val storyCellFp = Fingerprint(
-                returnType = "V",
-                custom = { method, classDef ->
-                    classDef.type.contains("story") &&
-                        method.implementation?.instructions?.any { ins ->
-                            val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference
-                            ref?.name in listOf("setLayoutParams", "setTranslationX", "setTranslationY")
-                        } == true
-                },
-            )
-            val storyMethod = storyCellFp.method
-            storyMethod.ensureRegisterCount(4)
-            // Guard register count <= 16 for non-range invoke
-            val totalRegs = storyMethod.implementation!!.registerCount
-            if (totalRegs <= 16) {
-                storyMethod.addInstructionsWithLabels(
-                    0,
-                    """
-                        const/4 v0, 0x0
-                        const/4 v1, 0x0
-                        const/4 v2, 0x0
-                        invoke-static {v0, v1, v2}, ${Constants.TIKTOK_EXTENSION_VIDEO_FIT_HOOK}->fitWidthFor(IILandroid/view/View;)I
-                        move-result v3
-                        if-gez v3, :leave
-                        invoke-static {v0, v1, v2}, ${Constants.TIKTOK_EXTENSION_VIDEO_FIT_HOOK}->fittedHeightFor(IILandroid/view/View;)I
-                        move-result v3
-                        if-gez v3, :leave
-                        :leave
-                        nop
-                    """.trimIndent(),
-                )
-            } else {
-                storyMethod.addInstructionsWithLabels(
-                    0,
-                    """
-                        const/4 v0, 0x0
-                        const/4 v1, 0x0
-                        const/4 v2, 0x0
-                        invoke-static/range {v0 .. v2}, ${Constants.TIKTOK_EXTENSION_VIDEO_FIT_HOOK}->fitWidthFor(IILandroid/view/View;)I
-                        move-result v3
-                        if-gez v3, :leave
-                        invoke-static/range {v0 .. v2}, ${Constants.TIKTOK_EXTENSION_VIDEO_FIT_HOOK}->fittedHeightFor(IILandroid/view/View;)I
-                        move-result v3
-                        if-gez v3, :leave
-                        :leave
-                        nop
-                    """.trimIndent(),
-                )
-            }
-            println("[Video Fit] Hooked story cell dimensions calculation.")
-            patched++
-        } catch (e: Exception) {
-            println("[Video Fit] Story cell note: ${e.message}")
-        }
-
         println("[Video Fit] Applied $patched video fit hook(s) -> fitMode=$mode.")
     }
 }
