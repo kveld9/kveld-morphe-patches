@@ -153,6 +153,7 @@ object Constants {
         const val KEY_ACCESS_POINTS_REDESIGN = "morphe_access_points_redesign"
         const val KEY_DISMISS_SUGGESTIONS = "morphe_dismiss_suggestions"
         const val KEY_CURSOR_TRACKPAD = "morphe_cursor_trackpad"
+        const val KEY_HIDE_NUMBER_HINTS = "morphe_hide_number_hints"
         const val KEY_CLIPBOARD_EXTENDED_RETENTION = "morphe_clipboard_extended_retention"
         const val KEY_CLIPBOARD_RETENTION_HOURS = "morphe_clipboard_retention_hours"
         const val KEY_CLIPBOARD_RAISE_LIMIT = "morphe_clipboard_raise_limit"

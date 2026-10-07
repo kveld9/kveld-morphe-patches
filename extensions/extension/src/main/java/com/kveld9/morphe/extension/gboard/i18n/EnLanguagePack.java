@@ -33,6 +33,7 @@ public class EnLanguagePack extends BaseLanguagePack {
         titles.put(PREF_KEY_TOOLBAR_ITEM_COUNT, "Toolbar Item Count");
         titles.put(PREF_KEY_DISMISS_SUGGESTIONS, "Dismiss Suggestions Button");
         titles.put(PREF_KEY_CURSOR_TRACKPAD, "Cursor Trackpad Mode");
+        titles.put(PREF_KEY_HIDE_NUMBER_HINTS, "Hide Number Hints");
         titles.put(PREF_KEY_CAT_CLIPBOARD, "Clipboard");
         titles.put(PREF_KEY_CLIPBOARD_EXTENDED_RETENTION, "Extended History Retention");
         titles.put(PREF_KEY_CLIPBOARD_RETENTION_HOURS, "Retention Time Limit (Hours)");
@@ -69,6 +70,7 @@ public class EnLanguagePack extends BaseLanguagePack {
         summaries.put(PREF_KEY_TOOLBAR_ITEM_COUNT, "Maximum number of access point icons displayed on top toolbar (default: 5)");
         summaries.put(PREF_KEY_DISMISS_SUGGESTIONS, "Show close button (X) on proactive suggestions bar");
         summaries.put(PREF_KEY_CURSOR_TRACKPAD, "2D spacebar trackpad cursor navigation and cursor lock mode");
+        summaries.put(PREF_KEY_HIDE_NUMBER_HINTS, "Hide the small number hints above the letter row. Long-press symbols keep working");
         summaries.put(PREF_KEY_CLIPBOARD_EXTENDED_RETENTION, "Enable custom retention time limit for unpinned clips");
         summaries.put(PREF_KEY_CLIPBOARD_RETENTION_HOURS, "Hours to retain unpinned clips in history before cleanup (default: 24h)");
         summaries.put(PREF_KEY_CLIPBOARD_RAISE_LIMIT, "Enable custom limit for unpinned clipboard history items");
