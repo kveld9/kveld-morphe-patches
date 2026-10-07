@@ -1,17 +1,40 @@
 package com.kveld9.morphe.extension.tiktok;
 
 import android.app.Activity;
+import android.content.ContentResolver;
+import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.database.Cursor;
+import android.database.MatrixCursor;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.CancellationSignal;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public final class TikTokPrivacyHook {
     private static final String TAG = "MorpheTikTok";
+
+    private static final Set<String> CONTACTS_AUTHORITIES = new HashSet<>(Arrays.asList(
+        "contacts",
+        "com.android.contacts",
+        "contacts-provider",
+        "call_log"
+    ));
 
     private static final Set<String> BLOCKED_PERMISSIONS = new HashSet<>(Arrays.asList(
         "android.permission.READ_CONTACTS",
@@ -142,5 +165,62 @@ public final class TikTokPrivacyHook {
         }
         Log.w(TAG, "[Device Privacy Guard] Intercepted external package query: " + packageName);
         throw new PackageManager.NameNotFoundException("Package query blocked by Device Privacy Guard: " + packageName);
+    }
+
+    private static boolean isContactsUri(Uri uri) {
+        if (uri == null) return false;
+        String auth = uri.getAuthority();
+        if (auth == null) return false;
+        String lower = auth.toLowerCase();
+        if (lower.contains("contacts") || CONTACTS_AUTHORITIES.contains(lower)) {
+            return true;
+        }
+        return false;
+    }
+
+    public static Cursor interceptQuery(ContentResolver resolver, Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+        if (isContactsUri(uri)) {
+            Log.w(TAG, "[Device Privacy Guard] Intercepted contacts ContentResolver.query(5) -> returning empty cursor.");
+            return new MatrixCursor(projection != null ? projection : new String[0]);
+        }
+        if (resolver == null) return null;
+        return resolver.query(uri, projection, selection, selectionArgs, sortOrder);
+    }
+
+    public static Cursor interceptQuery(ContentResolver resolver, Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder, CancellationSignal cancellationSignal) {
+        if (isContactsUri(uri)) {
+            Log.w(TAG, "[Device Privacy Guard] Intercepted contacts ContentResolver.query(6) -> returning empty cursor.");
+            return new MatrixCursor(projection != null ? projection : new String[0]);
+        }
+        if (resolver == null) return null;
+        return resolver.query(uri, projection, selection, selectionArgs, sortOrder, cancellationSignal);
+    }
+
+    public static Cursor interceptQuery(ContentResolver resolver, Uri uri, String[] projection, Bundle queryArgs, CancellationSignal cancellationSignal) {
+        if (isContactsUri(uri)) {
+            Log.w(TAG, "[Device Privacy Guard] Intercepted contacts ContentResolver.query(4) -> returning empty cursor.");
+            return new MatrixCursor(projection != null ? projection : new String[0]);
+        }
+        if (resolver == null) return null;
+        return resolver.query(uri, projection, queryArgs, cancellationSignal);
+    }
+
+    public static List<ResolveInfo> interceptQueryIntentActivities(PackageManager pm, Intent intent, int flags) {
+        if (intent != null && (intent.getPackage() != null || intent.getComponent() != null)) {
+            if (pm != null) {
+                return pm.queryIntentActivities(intent, flags);
+            }
+        }
+        Log.w(TAG, "[Device Privacy Guard] Intercepted PackageManager.queryIntentActivities(" + intent + ") -> returning empty list.");
+        return Collections.emptyList();
+    }
+
+    public static Location interceptGetLastKnownLocation(LocationManager lm, String provider) {
+        Log.w(TAG, "[Device Privacy Guard] Intercepted LocationManager.getLastKnownLocation(" + provider + ") -> null.");
+        return null;
+    }
+
+    public static void interceptRequestSingleUpdate(LocationManager lm, String provider, LocationListener listener, Looper looper) {
+        Log.w(TAG, "[Device Privacy Guard] Intercepted LocationManager.requestSingleUpdate(String,Listener,Looper) -> suppressed.");
     }
 }
