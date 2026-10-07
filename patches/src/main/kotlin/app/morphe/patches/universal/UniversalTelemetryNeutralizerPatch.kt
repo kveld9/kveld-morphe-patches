@@ -2,11 +2,14 @@ package app.morphe.patches.universal
 
 import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.resourcePatch
+import app.morphe.patches.shared.ANDROID_XML_NAMESPACE
 import app.morphe.patches.shared.childrenNamed
 import app.morphe.patches.shared.disableComponentsWhere
+import app.morphe.patches.shared.removeChildren
 import app.morphe.patches.shared.removeComponentDiscoveryRegistrarsWhere
 import app.morphe.patches.shared.setApplicationMetaData
 import app.morphe.patches.shared.stripPermissionsWhere
+import org.w3c.dom.Element
 
 private val TRACKING_PERMISSIONS = setOf(
     "com.google.android.gms.permission.AD_ID",
@@ -155,6 +158,31 @@ private val DEVICE_ID_RECEIVERS = setOf(
     "com.facebook.secure.usdid.signing.CrossSigningBroadcastReceiver",
 )
 
+private val AD_STARTUP_INITIALIZERS = setOf(
+    "com.unity3d.services.core.configuration.AdsSdkInitializer",
+)
+
+private const val STARTUP_INIT_PROVIDER = "androidx.startup.InitializationProvider"
+
+private fun Element.removeStartupInitializersWhere(predicate: (String) -> Boolean): Int {
+    var removed = 0
+    childrenNamed("provider")
+        .filter {
+            val name = it.getAttribute("android:name").ifBlank { it.getAttributeNS(ANDROID_XML_NAMESPACE, "name") }
+            name == STARTUP_INIT_PROVIDER
+        }
+        .forEach { provider ->
+            val matches = provider.childrenNamed("meta-data")
+                .filter { metaData ->
+                    val name = metaData.getAttribute("android:name").ifBlank { metaData.getAttributeNS(ANDROID_XML_NAMESPACE, "name") }
+                    predicate(name)
+                }
+            provider.removeChildren(matches)
+            removed += matches.size
+        }
+    return removed
+}
+
 private val OPT_OUT_METADATA = listOf(
     "firebase_analytics_collection_enabled" to "false",
     "firebase_analytics_collection_deactivated" to "true",
@@ -268,6 +296,14 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
         required = false,
     )
 
+    val disableAdStartupInitializers by booleanOption(
+        key = "disableAdStartupInitializers",
+        default = false,
+        title = "Disable Ad SDK Startup Initializers",
+        description = "Remove ad SDK auto-init entries (e.g. Unity Ads) from the androidx.startup InitializationProvider. WARNING: may break rewarded ads and ad-gated features; enable only to block SDK auto-initialization.",
+        required = false,
+    )
+
     execute {
         val manifestFile = get("AndroidManifest.xml")
         if (!manifestFile.exists()) {
@@ -286,6 +322,7 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
         val shouldDisableMetaAnalytics = disableMetaAnalytics ?: true
         val shouldDisableCrashDetectors = disableCrashDetectors ?: true
         val shouldDisableDeviceIds = disableDeviceIdProviders ?: false
+        val shouldDisableAdStartup = disableAdStartupInitializers ?: false
 
         var removedPerms: List<String> = emptyList()
         var disabledProvidersCount = 0
@@ -301,6 +338,7 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
         var disabledDeviceIdProvidersCount = 0
         var disabledDeviceIdServicesCount = 0
         var disabledDeviceIdReceiversCount = 0
+        var removedStartupInitCount = 0
         var injectedFlagsCount = 0
         var removedRegistrarsCount = 0
 
@@ -355,6 +393,10 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
                     disabledDeviceIdReceiversCount = application.disableComponentsWhere("receiver") { it in DEVICE_ID_RECEIVERS }
                 }
 
+                if (shouldDisableAdStartup) {
+                    removedStartupInitCount = application.removeStartupInitializersWhere { it in AD_STARTUP_INITIALIZERS }
+                }
+
                 if (shouldInjectOptOut) {
                     OPT_OUT_METADATA.forEach { (name, value) ->
                         application.setApplicationMetaData(name, value)
@@ -375,21 +417,27 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
                             name.contains("Iid", ignoreCase = true) ||
                             name.contains("DynamicLoading", ignoreCase = true) ||
                             name.contains("Transport", ignoreCase = true) ||
-                            name.contains("Installations", ignoreCase = true)
+                            name.contains("Installations", ignoreCase = true) ||
+                            name.contains("RemoteConfig", ignoreCase = true) ||
+                            name.contains("Abt", ignoreCase = true)
                     }
                 }
             }
         }
 
         val totalDisabled = disabledProvidersCount + disabledServicesCount + disabledReceiversCount + disabledPushCount + disabledGaServicesCount + disabledGaReceiversCount + disabledMetaServicesCount + disabledMetaReceiversCount + disabledCrashServicesCount + disabledCrashReceiversCount + disabledDeviceIdProvidersCount + disabledDeviceIdServicesCount + disabledDeviceIdReceiversCount
-        if (removedPerms.isEmpty() && totalDisabled == 0 && injectedFlagsCount == 0 && removedRegistrarsCount == 0) {
+        if (removedPerms.isEmpty() && totalDisabled == 0 && injectedFlagsCount == 0 && removedRegistrarsCount == 0 && removedStartupInitCount == 0) {
             println("[Universal Telemetry Neutralizer] AndroidManifest.xml is already clean (0 tracking elements found).")
             return@execute
         }
 
         val permNames = removedPerms.map { it.substringAfterLast('.') }.distinct()
         val permNote = if (removedPerms.isNotEmpty()) "revoked ${removedPerms.size} permission(s) (${permNames.joinToString(", ")})" else "0 permissions revoked"
-        val regNote = if (removedRegistrarsCount > 0) ", removed $removedRegistrarsCount discovery registrar(s)" else ""
+        val initNote = if (removedStartupInitCount > 0) " (+${removedStartupInitCount} startup initializer(s))" else ""
+        val regNote = if (removedRegistrarsCount > 0 || removedStartupInitCount > 0) {
+            if (removedRegistrarsCount > 0) ", removed $removedRegistrarsCount discovery registrar(s)$initNote"
+            else ", removed $removedStartupInitCount startup initializer(s)"
+        } else ""
         println("[Universal Telemetry Neutralizer] $permNote, disabled $totalDisabled component(s), injected $injectedFlagsCount opt-out flag(s)$regNote.")
     }
 }
