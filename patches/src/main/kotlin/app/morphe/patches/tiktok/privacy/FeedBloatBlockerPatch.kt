@@ -5,6 +5,7 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.addInstructionsAtControlFlowLabel
+import app.morphe.patches.shared.replaceWithReturnEmptyList
 import app.morphe.patches.shared.sharedExtensionPatch
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
@@ -494,6 +495,15 @@ val feedBloatBlockerPatch = bytecodePatch(
         } catch (e: Exception) {
             println("[Feed Bloat Blocker] FriendsV3BottomRecUserListCell note: ${e.message}")
         }
+
+        Fingerprint(
+            definingClass = "Lcom/ss/android/ugc/aweme/relation/feed/v4/RecSwipeCardListAssem;",
+            name = "or",
+            parameters = listOf("Ljava/util/List;"),
+            returnType = "Ljava/util/List;",
+        ).method.replaceWithReturnEmptyList()
+        println("[Feed Bloat Blocker] Emptied RecSwipeCardListAssem.or() -> Friend suggestion swipe cards suppressed.")
+        patched++
 
         try {
             val bigCardConfigFull = Fingerprint(
