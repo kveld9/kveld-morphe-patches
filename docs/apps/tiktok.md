@@ -63,10 +63,11 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Privacy** | **Device Privacy Guard** | `bytecodePatch` | Intercepts runtime permission prompts (contacts, location, nearby devices, AdServices), suppresses in-app permission nag dialogs, settings redirect prompts, and background sync tasks, zeroes Advertising ID, blocks clipboard inspection, isolates package queries, and silences HAR motion sensors. |
 | **Privacy** | **In-App Browser Privacy Guard** | `bytecodePatch` | Redirects external links to default system browser, neutralizes WebView JS tracking injection and AJAX hookers. |
 | **Privacy** | **Client-Side AI & Behavioral Profiling Governor** | `bytecodePatch` | Neutralizes Pitaya on-device ML, Tako AI chatbot entries, and AI search clutter. |
-| **Privacy** | **[SIM Region Selector](#1-sim-region-selector)** | `bytecodePatch` | Spoofs SIM and network country ISO codes to bypass regional restrictions. |
+| **Privacy** | **[SIM Region Selector](#1-sim-region-selector)** | `bytecodePatch` | Spoofs SIM and network country ISO codes, operator numeric codes/names, and cell identity MCC/MNC to bypass regional restrictions. |
 | **Privacy** | **Feed Ad Blocker** | `bytecodePatch` | Filters sponsored cards, brand promotions, commercial audio, and search video scroll advertisements across For You, Following, and Search feeds. |
 | **Privacy** | **Hide TikTok Shop & Mall** | `bytecodePatch` | Removes product anchors, showcase badges, and bottom/top Shop navigation tabs (configurable via `hideShopTab` and `hideVideoAnchors`). |
 | **Privacy** | **Friends Feed Strict Mutuals** | `bytecodePatch` | Filters suggested accounts, recommended videos, and non-mutual profiles (such as 'People you may know') from the Friends feed so it strictly reproduces content from mutual friends. |
+| **Privacy** | **Hide Suggested Accounts** | `bytecodePatch` | Removes suggested-account cards from profile headers and inbox/notification surfaces. |
 | **Privacy** | **Hide AI-Generated Content** | `bytecodePatch` | Filters and skips videos tagged with native AI-generated metadata, C2PA content credentials, or creator AI disclosure tags across the For You, Following, and Friends feeds. |
 | **Privacy** | **Feed Live Stream Blocker** | `bytecodePatch` | Removes live broadcast cards and live recommendations from FYP and Following. |
 | **Privacy** | **Feed Bloat & Distraction Blocker** | `bytecodePatch` | Removes friend suggestions, suggested account carousels, mini-games, CapCut prompts, memories, community/topic cards, post-video evaluation surveys, questionnaires, mini-dramas, Lemon8 promo, in-feed search recommendations/interest cards, and floating rewards pendants across For You, Following, and Friends feeds. |
@@ -99,6 +100,8 @@ The **`SIM Region Selector`** patch bypasses geographic content restrictions, re
 | Option | Key | Type | Default | Range / Format | Description |
 | :--- | :--- | :--- | :---: | :--- | :--- |
 | **Region** | `region` | String | `CH` | 2-letter ISO 3166-1 alpha-2 code | 2-letter ISO country code to spoof for SIM and network country checks. |
+| **Operator Numeric** | `operatorNumeric` | String | _(empty)_ | 5-6 digits (MCC+MNC, e.g. `22801`) | Numeric operator code spoofed at every TelephonyManager operator and CellIdentity MCC/MNC call site. Empty keeps stock values. |
+| **Operator Name** | `operatorName` | String | _(empty)_ | Carrier display name | Name reported for SIM/network operator queries. Empty keeps the stock name. |
 
 #### Region Selection Guide & Operational Trade-Offs
 
