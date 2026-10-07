@@ -26,6 +26,11 @@ private val TELEMETRY_PROVIDERS = setOf(
     "io.branch.referral.BranchInitProvider",
     "com.appsflyer.internal.platform_extension.PluginInfoContentProvider",
     "com.google.firebase.perf.provider.FirebasePerfProvider",
+    "com.facebook.ads.AudienceNetworkContentProvider",
+    "com.facebook.FacebookContentProvider",
+    "com.vungle.ads.VungleProvider",
+    "com.fairtiq.sdk.internal.telemetry.processTime.StartupTimeProvider",
+    "com.google.mlkit.common.internal.MlKitInitProvider",
 )
 
 private const val FIREBASE_INIT_PROVIDER = "com.google.firebase.provider.FirebaseInitProvider"
@@ -37,6 +42,8 @@ private val TELEMETRY_SERVICES = setOf(
     "com.google.android.datatransport.runtime.backends.TransportBackendDiscovery",
     "com.google.firebase.sessions.SessionLifecycleService",
     "com.appsflyer.internal.service.AFJobSchedulerService",
+    "com.google.mlkit.common.internal.MlKitComponentDiscoveryService",
+    "com.fairtiq.sdk.internal.services.tracking.TrackingServiceImpl",
 )
 
 private val TELEMETRY_RECEIVERS = setOf(
@@ -46,6 +53,11 @@ private val TELEMETRY_RECEIVERS = setOf(
     "com.adjust.sdk.AdjustReferrerReceiver",
     "com.appsflyer.SingleInstallBroadcastReceiver",
     "com.appsflyer.MultipleInstallBroadcastReceiver",
+    "com.google.firebase.iid.FirebaseInstanceIdReceiver",
+    "com.braze.push.BrazePushReceiver",
+    "com.braze.BrazeFlushPushDeliveryReceiver",
+    "com.facebook.AuthenticationTokenManager\$CurrentAuthenticationTokenChangedBroadcastReceiver",
+    "com.facebook.CurrentAccessTokenExpirationBroadcastReceiver",
 )
 
 private val PUSH_SERVICES = setOf(
@@ -345,7 +357,17 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
                         name.contains("Analytics", ignoreCase = true) ||
                             name.contains("Crashlytics", ignoreCase = true) ||
                             name.contains("Perf", ignoreCase = true) ||
-                            name.contains("Sessions", ignoreCase = true)
+                            name.contains("Sessions", ignoreCase = true) ||
+                            name.contains("MlKit", ignoreCase = true) ||
+                            name.contains("MLKit", ignoreCase = true) ||
+                            name.contains("Vision", ignoreCase = true) ||
+                            name.contains("Barcode", ignoreCase = true) ||
+                            name.contains("Face", ignoreCase = true) ||
+                            name.contains("Text", ignoreCase = true) ||
+                            name.contains("Iid", ignoreCase = true) ||
+                            name.contains("DynamicLoading", ignoreCase = true) ||
+                            name.contains("Transport", ignoreCase = true) ||
+                            name.contains("Installations", ignoreCase = true)
                     }
                 }
             }

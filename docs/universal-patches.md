@@ -206,8 +206,8 @@ The **`Universal Telemetry Neutralizer`** patch neutralizes pervasive third-part
 
 - **Google & Firebase Measurement**: `AppMeasurementContentProvider`, `AppMeasurementService`, `AppMeasurementJobService`, `AppMeasurementReceiver`.
 - **Google Analytics (legacy)**: `AnalyticsService`, `AnalyticsJobService`, `AnalyticsReceiver`.
-- **Google DataTransport & Firebase Sessions**: `JobInfoSchedulerService`, `TransportBackendDiscovery`, `AlarmManagerSchedulerBroadcastReceiver`, `SessionLifecycleService`.
-- **Firebase ComponentDiscovery Registrars**: Prunes registrar `<meta-data>` tags within `ComponentDiscoveryService` for Analytics, Crashlytics, Performance Monitoring, and Sessions, preventing dependency injection from instantiating tracking classes in memory.
+- **Google DataTransport & Firebase Sessions**: `JobInfoSchedulerService`, `TransportBackendDiscovery`, `AlarmManagerSchedulerBroadcastReceiver`, `SessionLifecycleService`, `FirebaseInstanceIdReceiver`, `MlKitComponentDiscoveryService`.
+- **Firebase ComponentDiscovery Registrars**: Prunes registrar `<meta-data>` tags within `ComponentDiscoveryService` for Analytics, Crashlytics, Performance Monitoring, Sessions, MLKit/vision, IID, DynamicLoading, Transport, and Installations, preventing dependency injection from instantiating tracking classes in memory.
 - **Sentry Crash & Performance**: `SentryInitProvider`, `SentryPerformanceProvider`.
 - **Facebook AppEvents**: `FacebookInitProvider`.
 - **Meta Analytics2 / OneFabric**: `FFAlarmUploadJobService`, `GooglePlayUploadService`, `AlarmBasedUploadService`, `Analytics2UploadService`, `LollipopUploadService`, `LollipopUploadSafeService`, `DelayedWorkerService`, `OneFabricUploadAlarmReceiver`, `HighPriUploadRetryReceiver`, `AnalyticsUploadAlarmReceiver`, `DelayedWorkerServiceReceiver`.
@@ -216,6 +216,7 @@ The **`Universal Telemetry Neutralizer`** patch neutralizes pervasive third-part
 - **AppsFlyer Attribution**: `PluginInfoContentProvider`, `AFJobSchedulerService`, `SingleInstallBroadcastReceiver`, `MultipleInstallBroadcastReceiver`.
 - **Adjust Attribution**: `AdjustReferrerReceiver`.
 - **Flurry & Branch Analytics**: `FlurryContentProvider`, `BranchInitProvider`.
+- **Third-Party Ad & Engagement SDKs**: AudienceNetwork, Vungle, Braze, Fairtiq telemetry (`AudienceNetworkContentProvider`, `FacebookContentProvider`, `VungleProvider`, `StartupTimeProvider`, `TrackingServiceImpl`, `BrazePushReceiver`, `BrazeFlushPushDeliveryReceiver`, `AuthenticationTokenManager$CurrentAuthenticationTokenChangedBroadcastReceiver`, `CurrentAccessTokenExpirationBroadcastReceiver`).
 
 ### Configuration in Morphe Manager
 
