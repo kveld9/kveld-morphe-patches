@@ -55,7 +55,11 @@ public final class TikTokCameraMicHook {
     }
 
     public static void onCameraStop() {
-        int count = cameraCount.updateAndGet(c -> Math.max(0, c - 1));
+        int count = cameraCount.decrementAndGet();
+        if (count < 0) {
+            cameraCount.set(0);
+            count = 0;
+        }
         Log.d(TAG, "[Camera Mic Indicator] Camera stopped (active=" + count + ")");
         updateIndicator();
     }
@@ -67,7 +71,11 @@ public final class TikTokCameraMicHook {
     }
 
     public static void onMicStop() {
-        int count = micCount.updateAndGet(c -> Math.max(0, c - 1));
+        int count = micCount.decrementAndGet();
+        if (count < 0) {
+            micCount.set(0);
+            count = 0;
+        }
         Log.d(TAG, "[Camera Mic Indicator] Mic stopped (active=" + count + ")");
         updateIndicator();
     }
