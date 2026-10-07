@@ -144,7 +144,7 @@ public class GboardExtension {
     // Hot-path cached primitives to avoid reflection/disk lookups during UI measure & layout
     private static volatile boolean cachedZeroInsetEnabled = true;
     private static volatile int cachedBottomPadding = 0;
-    private static volatile boolean cachedHideImeNavBar = true;
+    private static volatile boolean cachedHideImeNavBar = false;
     private static volatile int cachedToolbarItemCount = 5;
     private static volatile int cachedEmojiScale = 100;
     private static volatile boolean cachedDecoupleHaptics = true;
@@ -152,7 +152,7 @@ public class GboardExtension {
 
     private static void refreshHotPathCache() {
         cachedZeroInsetEnabled = getBooleanPref(PREF_KEY_ZERO_BOTTOM_INSET, true);
-        cachedHideImeNavBar = getBooleanPref(PREF_KEY_HIDE_IME_NAV_BAR, true);
+        cachedHideImeNavBar = getBooleanPref(PREF_KEY_HIDE_IME_NAV_BAR, false);
         cachedDecoupleHaptics = getBooleanPref(PREF_KEY_DECOUPLE_TOUCH_FEEDBACK, true);
         int pad = getIntPref(PREF_KEY_BOTTOM_PADDING, DEFAULT_BOTTOM_PADDING);
         cachedBottomPadding = Math.max(MIN_BOTTOM_PADDING, Math.min(MAX_BOTTOM_PADDING, pad));

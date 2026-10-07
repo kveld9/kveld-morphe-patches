@@ -358,7 +358,7 @@ private fun populateMorpheSettingsScreen(doc: Document): Boolean {
             key = Constants.GboardPrefs.KEY_HIDE_IME_NAV_BAR,
             title = "Hide IME Navigation Bar",
             summary = "Hide the system IME navigation bar (keyboard switcher and collapse buttons) on Android 13+ for a flush keyboard. Turn off to keep those buttons",
-            defaultValue = "true",
+            defaultValue = "false",
             dependency = Constants.GboardPrefs.KEY_ZERO_BOTTOM_INSET,
         )
     )
