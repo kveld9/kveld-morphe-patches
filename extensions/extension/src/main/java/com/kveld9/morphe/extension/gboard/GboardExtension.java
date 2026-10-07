@@ -3,8 +3,12 @@ package com.kveld9.morphe.extension.gboard;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.kveld9.morphe.extension.gboard.i18n.GboardI18n;
 import java.lang.reflect.Constructor;
@@ -677,6 +681,11 @@ public class GboardExtension {
         return getBooleanPref(PREF_KEY_HIDE_NUMBER_HINTS, false);
     }
 
+    private static final java.util.Set<Object> sanitizedDefs =
+            java.util.Collections.synchronizedSet(
+                    java.util.Collections.newSetFromMap(new java.util.WeakHashMap<>())
+            );
+
     /**
      * Clears single-digit secondary labels from a SoftKeyDef so the small
      * number hints above the letter row are not rendered. Long-press actions
@@ -688,38 +697,47 @@ public class GboardExtension {
     }
 
     /**
-     * Clears single-digit secondary labels from a SoftKeyDef and collapses
-     * any hint/sub-label view in SoftKeyView to View.GONE so that letter keys
-     * on the top row center vertically without reserving space for an empty hint.
+     * Clears single-digit secondary labels from a SoftKeyDef, collapses
+     * any hint/sub-label view in SoftKeyView to View.GONE, and recenters
+     * the main key label vertically and horizontally.
      * Fail-safe: any reflection mismatch is ignored and hints stay visible.
      */
     public static void sanitizeNumberHints(Object softKeyView, Object def) {
         try {
             if (!isHideNumberHintsEnabled()) return;
             if (def == null) return;
-            Field fHints = findField(def.getClass(), "h");
-            if (fHints == null || fHints.getType() != CharSequence[].class) return;
-            CharSequence[] hints = (CharSequence[]) fHints.get(def);
-            if (hints == null) return;
 
             boolean hasDigit = false;
             boolean hasOther = false;
-            for (int i = 0; i < hints.length; i++) {
-                CharSequence cs = hints[i];
-                if (cs != null && cs.length() == 1 && Character.isDigit(cs.charAt(0))) {
-                    hints[i] = null;
-                    hasDigit = true;
-                } else if (cs == null || cs.length() == 0) {
-                    hasDigit = true;
-                } else {
-                    hasOther = true;
+
+            if (sanitizedDefs.contains(def)) {
+                hasDigit = true;
+            }
+
+            Field fHints = findField(def.getClass(), "h");
+            if (fHints != null && fHints.getType() == CharSequence[].class) {
+                CharSequence[] hints = (CharSequence[]) fHints.get(def);
+                if (hints != null) {
+                    for (int i = 0; i < hints.length; i++) {
+                        CharSequence cs = hints[i];
+                        if (cs != null && cs.length() == 1 && Character.isDigit(cs.charAt(0))) {
+                            hints[i] = null;
+                            hasDigit = true;
+                        } else if (cs != null && cs.length() > 0) {
+                            hasOther = true;
+                        }
+                    }
+
+                    if (hasDigit) {
+                        sanitizedDefs.add(def);
+                        if (!hasOther) {
+                            fHints.set(def, null);
+                        }
+                    }
                 }
             }
 
             if (hasDigit) {
-                if (!hasOther) {
-                    fHints.set(def, null);
-                }
                 if (softKeyView instanceof ViewGroup) {
                     collapseHintViews((ViewGroup) softKeyView);
                 }
@@ -728,7 +746,9 @@ public class GboardExtension {
                     v.post(() -> {
                         try {
                             if (v instanceof ViewGroup) {
-                                collapseHintViews((ViewGroup) v);
+                                ViewGroup vg = (ViewGroup) v;
+                                collapseHintViews(vg);
+                                recenterMainLabel(vg);
                             }
                         } catch (Throwable ignored) {}
                     });
@@ -760,6 +780,13 @@ public class GboardExtension {
 
     private static boolean isHintTextView(TextView tv) {
         if (tv == null) return false;
+        CharSequence text = tv.getText();
+        if (text != null && text.length() > 0) {
+            // Never touch or collapse non-digit hints (symbols, punctuation, accents)
+            if (text.length() != 1 || !Character.isDigit(text.charAt(0))) {
+                return false;
+            }
+        }
         int id = tv.getId();
         if (id != View.NO_ID) {
             try {
@@ -777,11 +804,120 @@ public class GboardExtension {
                 }
             } catch (Throwable ignored) {}
         }
-        CharSequence text = tv.getText();
         if (text != null && text.length() == 1 && Character.isDigit(text.charAt(0))) {
             return true;
         }
         return false;
+    }
+
+    private static void collectTextViews(ViewGroup vg, java.util.List<TextView> out) {
+        if (vg == null || out == null) return;
+        try {
+            int childCount = vg.getChildCount();
+            for (int i = 0; i < childCount; i++) {
+                View child = vg.getChildAt(i);
+                if (child == null) continue;
+                if (child instanceof TextView) {
+                    out.add((TextView) child);
+                } else if (child instanceof ViewGroup) {
+                    collectTextViews((ViewGroup) child, out);
+                }
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    private static TextView findMainLabel(ViewGroup vg) {
+        if (vg == null) return null;
+        try {
+            java.util.List<TextView> textViews = new java.util.ArrayList<>();
+            collectTextViews(vg, textViews);
+            if (textViews.isEmpty()) return null;
+
+            // 1. Look for explicit ID match (label, main_label, key_text)
+            for (TextView tv : textViews) {
+                if (tv == null || isHintTextView(tv)) continue;
+                CharSequence cs = tv.getText();
+                if (cs != null && cs.length() == 1 && Character.isDigit(cs.charAt(0))) continue;
+                int id = tv.getId();
+                if (id != View.NO_ID) {
+                    try {
+                        String entryName = tv.getResources().getResourceEntryName(id);
+                        if (entryName != null) {
+                            String lower = entryName.toLowerCase(java.util.Locale.US);
+                            if (lower.contains("main_label") || lower.contains("key_text")
+                                    || (lower.contains("label") && !lower.contains("sub"))) {
+                                return tv;
+                            }
+                        }
+                    } catch (Throwable ignored) {}
+                }
+            }
+
+            // 2. Fallback: largest non-empty TextView that is not a single digit
+            TextView best = null;
+            float maxSize = -1f;
+            for (TextView tv : textViews) {
+                if (tv == null || isHintTextView(tv)) continue;
+                CharSequence cs = tv.getText();
+                if (cs == null || cs.length() == 0) continue;
+                if (cs.length() == 1 && Character.isDigit(cs.charAt(0))) continue;
+                float size = tv.getTextSize();
+                if (size > maxSize) {
+                    maxSize = size;
+                    best = tv;
+                }
+            }
+            return best;
+        } catch (Throwable ignored) {
+            return null;
+        }
+    }
+
+    private static void recenterMainLabel(ViewGroup vg) {
+        if (vg == null) return;
+        try {
+            TextView tv = findMainLabel(vg);
+            if (tv == null) return;
+
+            // 1. setGravity(CENTER_VERTICAL | CENTER_HORIZONTAL)
+            tv.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);
+
+            // 2. topMargin = 0 if MarginLayoutParams
+            ViewGroup.LayoutParams lp = tv.getLayoutParams();
+            if (lp instanceof ViewGroup.MarginLayoutParams) {
+                ViewGroup.MarginLayoutParams mlp = (ViewGroup.MarginLayoutParams) lp;
+                if (mlp.topMargin != 0) {
+                    mlp.topMargin = 0;
+                    tv.setLayoutParams(mlp);
+                }
+            }
+            if (lp instanceof FrameLayout.LayoutParams) {
+                FrameLayout.LayoutParams flp = (FrameLayout.LayoutParams) lp;
+                if (flp.gravity != (Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL)) {
+                    flp.gravity = Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL;
+                    tv.setLayoutParams(flp);
+                }
+            } else if (lp instanceof LinearLayout.LayoutParams) {
+                LinearLayout.LayoutParams llp = (LinearLayout.LayoutParams) lp;
+                if (llp.gravity != (Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL)) {
+                    llp.gravity = Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL;
+                    tv.setLayoutParams(llp);
+                }
+            }
+
+            // 3. padding top set to 0 preserving left/right/bottom
+            int padLeft = tv.getPaddingLeft();
+            int padTop = tv.getPaddingTop();
+            int padRight = tv.getPaddingRight();
+            int padBottom = tv.getPaddingBottom();
+            if (padTop != 0) {
+                tv.setPadding(padLeft, 0, padRight, padBottom);
+            }
+
+            CharSequence text = tv.getText();
+            String labelStr = text != null ? text.toString() : "";
+            Log.d("Hide Number Hints", "[Hide Number Hints] Recentered main label: '" + labelStr + "'");
+        } catch (Throwable ignored) {}
     }
 
     public static boolean isGrammarCheckerEnabled() {
