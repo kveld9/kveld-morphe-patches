@@ -59,6 +59,15 @@ private val PUSH_SERVICES = setOf(
     "com.google.firebase.messaging.FirebaseMessagingService",
 )
 
+private val GOOGLE_ANALYTICS_SERVICES = setOf(
+    "com.google.android.gms.analytics.AnalyticsService",
+    "com.google.android.gms.analytics.AnalyticsJobService",
+)
+
+private val GOOGLE_ANALYTICS_RECEIVERS = setOf(
+    "com.google.android.gms.analytics.AnalyticsReceiver",
+)
+
 private val OPT_OUT_METADATA = listOf(
     "firebase_analytics_collection_enabled" to "false",
     "firebase_analytics_collection_deactivated" to "true",
@@ -140,6 +149,14 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
         required = false,
     )
 
+    val disableGoogleAnalytics by booleanOption(
+        key = "disableGoogleAnalytics",
+        default = true,
+        title = "Disable Google Analytics Services",
+        description = "Disable legacy Google Analytics background services and receivers (distinct from Firebase AppMeasurement, which is covered by the telemetry toggles above).",
+        required = false,
+    )
+
     execute {
         val manifestFile = get("AndroidManifest.xml")
         if (!manifestFile.exists()) {
@@ -154,12 +171,15 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
         val shouldInjectOptOut = injectOptOutFlags ?: true
         val shouldDisableFirebase = disableFirebaseInit ?: false
         val shouldDisablePush = disablePushServices ?: false
+        val shouldDisableGoogleAnalytics = disableGoogleAnalytics ?: true
 
         var removedPerms: List<String> = emptyList()
         var disabledProvidersCount = 0
         var disabledServicesCount = 0
         var disabledReceiversCount = 0
         var disabledPushCount = 0
+        var disabledGaServicesCount = 0
+        var disabledGaReceiversCount = 0
         var injectedFlagsCount = 0
         var removedRegistrarsCount = 0
 
@@ -193,6 +213,11 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
                     disabledPushCount = application.disableComponentsWhere("service") { it in PUSH_SERVICES }
                 }
 
+                if (shouldDisableGoogleAnalytics) {
+                    disabledGaServicesCount = application.disableComponentsWhere("service") { it in GOOGLE_ANALYTICS_SERVICES }
+                    disabledGaReceiversCount = application.disableComponentsWhere("receiver") { it in GOOGLE_ANALYTICS_RECEIVERS }
+                }
+
                 if (shouldInjectOptOut) {
                     OPT_OUT_METADATA.forEach { (name, value) ->
                         application.setApplicationMetaData(name, value)
@@ -209,7 +234,7 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
             }
         }
 
-        val totalDisabled = disabledProvidersCount + disabledServicesCount + disabledReceiversCount + disabledPushCount
+        val totalDisabled = disabledProvidersCount + disabledServicesCount + disabledReceiversCount + disabledPushCount + disabledGaServicesCount + disabledGaReceiversCount
         if (removedPerms.isEmpty() && totalDisabled == 0 && injectedFlagsCount == 0 && removedRegistrarsCount == 0) {
             println("[Universal Telemetry Neutralizer] AndroidManifest.xml is already clean (0 tracking elements found).")
             return@execute
