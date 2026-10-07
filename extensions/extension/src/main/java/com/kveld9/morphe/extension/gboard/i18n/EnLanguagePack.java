@@ -26,6 +26,7 @@ public class EnLanguagePack extends BaseLanguagePack {
         titles.put(PREF_KEY_AMOLED, "Pure AMOLED Theme");
         titles.put(PREF_KEY_ZERO_BOTTOM_INSET, "Zero Bottom Inset");
         titles.put(PREF_KEY_BOTTOM_PADDING, "Bottom Padding (px)");
+        titles.put(PREF_KEY_HIDE_IME_NAV_BAR, "Hide IME Navigation Bar");
         titles.put(PREF_KEY_KEY_SHAPE_SELECTION, "Key Border Shapes");
         titles.put(PREF_KEY_EMOJI_SCALE, "Emoji Size Scaling");
         titles.put(PREF_KEY_CAT_TOOLBAR, "Toolbar & Navigation");
@@ -64,6 +65,7 @@ public class EnLanguagePack extends BaseLanguagePack {
         summaries.put(PREF_KEY_AMOLED, "Force pure black (#000000) background on dark themes");
         summaries.put(PREF_KEY_ZERO_BOTTOM_INSET, "Eliminate bottom margin chin under keyboard in gesture navigation");
         summaries.put(PREF_KEY_BOTTOM_PADDING, "Forced bottom margin padding in pixels (0 for completely flush, default: 0)");
+        summaries.put(PREF_KEY_HIDE_IME_NAV_BAR, "Hide the system IME navigation bar (keyboard switcher and collapse buttons) on Android 13+ for a flush keyboard. Turn off to keep those buttons");
         summaries.put(PREF_KEY_KEY_SHAPE_SELECTION, "Enable rounded and borderless key styles in themes");
         summaries.put(PREF_KEY_EMOJI_SCALE, "Adjust emoji visual size on the keyboard (50% - 150%)");
         summaries.put(PREF_KEY_ACCESS_POINTS_REDESIGN, "Enable redesigned access points menu bar and panel (Panel V2)");

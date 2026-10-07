@@ -149,6 +149,7 @@ object Constants {
         const val KEY_AMOLED = "morphe_amoled_enabled"
         const val KEY_ZERO_BOTTOM_INSET = "morphe_zero_bottom_inset"
         const val KEY_BOTTOM_PADDING = "morphe_bottom_padding"
+        const val KEY_HIDE_IME_NAV_BAR = "morphe_hide_ime_nav_bar"
         const val KEY_TOOLBAR_ITEM_COUNT = "morphe_toolbar_item_count"
         const val KEY_EMOJI_SCALE = "morphe_emoji_scale"
         const val KEY_KEY_SHAPE_SELECTION = "morphe_key_shape_selection"

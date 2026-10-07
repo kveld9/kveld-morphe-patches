@@ -90,8 +90,9 @@ The settings UI automatically detects the active device system language (`Locale
 - **Key Border Shapes**: Unlocks key shape border selection (Default, Semi-rounded, Round) in theme customization.
 
 ### 3. Layout & Ergonomics
-- **Zero Bottom Inset**: Eliminates or customizes the navigation bar bottom inset padding (bottom chin/blank space) under the keyboard in gesture navigation mode. On Android 13+ it also hides the system-drawn IME navigation bar (hide-keyboard chevron and IME switcher) that the framework reserves under the keyboard, so the keyboard sits flush with the screen edge; use the Bottom Padding slider to add space back.
+- **Zero Bottom Inset**: Eliminates or customizes the navigation bar bottom inset padding (bottom chin/blank space) under the keyboard in gesture navigation mode. On Android 13+ it can also hide the system-drawn IME navigation bar (hide-keyboard chevron and IME switcher) that the framework reserves under the keyboard, so the keyboard sits flush with the screen edge; use the Bottom Padding slider to add space back.
 - **Bottom Padding (px)**: Live slider (0 to 150 px, default: `0 px`) to fine-tune the bottom margin. Formatted with live unit display during slider drag.
+- **Hide IME Navigation Bar**: Toggle (default: on, requires Zero Bottom Inset) controlling the Android 13+ system IME bar hiding. Turn it off to keep the keyboard switcher and collapse buttons visible while retaining Gboard's internal bottom offset removal.
 - **Top Toolbar Item Count**: Live slider (4 to 8, default: `5`) controlling the maximum number of access point icons displayed on the top toolbar before collapsing into the overflow menu.
 - **Dismiss Suggestions Button**: Renders a close button (`X`) on proactive suggestion strips to quickly dismiss recommendations.
 - **Cursor Trackpad Mode**: Unlocks 2D trackpad cursor navigation and cursor lock mode by holding and sliding across the spacebar.

@@ -28,6 +28,7 @@ public class GboardExtension {
     public static final String PREF_KEY_AMOLED = "morphe_amoled_enabled";
     public static final String PREF_KEY_ZERO_BOTTOM_INSET = "morphe_zero_bottom_inset";
     public static final String PREF_KEY_BOTTOM_PADDING = "morphe_bottom_padding";
+    public static final String PREF_KEY_HIDE_IME_NAV_BAR = "morphe_hide_ime_nav_bar";
     public static final String PREF_KEY_TOOLBAR_ITEM_COUNT = "morphe_toolbar_item_count";
     public static final String PREF_KEY_EMOJI_SCALE = "morphe_emoji_scale";
     public static final String PREF_KEY_KEY_SHAPE_SELECTION = "morphe_key_shape_selection";
@@ -143,6 +144,7 @@ public class GboardExtension {
     // Hot-path cached primitives to avoid reflection/disk lookups during UI measure & layout
     private static volatile boolean cachedZeroInsetEnabled = true;
     private static volatile int cachedBottomPadding = 0;
+    private static volatile boolean cachedHideImeNavBar = true;
     private static volatile int cachedToolbarItemCount = 5;
     private static volatile int cachedEmojiScale = 100;
     private static volatile boolean cachedDecoupleHaptics = true;
@@ -150,6 +152,7 @@ public class GboardExtension {
 
     private static void refreshHotPathCache() {
         cachedZeroInsetEnabled = getBooleanPref(PREF_KEY_ZERO_BOTTOM_INSET, true);
+        cachedHideImeNavBar = getBooleanPref(PREF_KEY_HIDE_IME_NAV_BAR, true);
         cachedDecoupleHaptics = getBooleanPref(PREF_KEY_DECOUPLE_TOUCH_FEEDBACK, true);
         int pad = getIntPref(PREF_KEY_BOTTOM_PADDING, DEFAULT_BOTTOM_PADDING);
         cachedBottomPadding = Math.max(MIN_BOTTOM_PADDING, Math.min(MAX_BOTTOM_PADDING, pad));
@@ -320,16 +323,22 @@ public class GboardExtension {
         return cachedBottomPadding;
     }
 
+    public static boolean isHideImeNavBarEnabled() {
+        ensureListeners();
+        return cachedHideImeNavBar;
+    }
+
     private static java.lang.ref.WeakReference<View> imeNavBarFrame = new java.lang.ref.WeakReference<>(null);
 
     /**
      * Since Android 13 the framework draws its own navigation bar inside the IME window
      * (back chevron + IME switcher) and shrinks the IME content above it, so Gboard's own
      * bottom offsets cannot remove that gap. Hide the frame and let the content reach the bottom.
+     * Disabled via Hide IME navigation bar toggle to keep the system switcher/collapse buttons.
      */
     public static void applyImeNavBarInset(android.inputmethodservice.InputMethodService service) {
         try {
-            if (android.os.Build.VERSION.SDK_INT < 33 || getBottomPadding() < 0) return;
+            if (android.os.Build.VERSION.SDK_INT < 33) return;
             android.app.Dialog dialog = service.getWindow();
             if (dialog == null) return;
             android.view.Window window = dialog.getWindow();
@@ -344,6 +353,10 @@ public class GboardExtension {
                 }
             }
             if (frame == null) return;
+            if (getBottomPadding() < 0 || !isHideImeNavBarEnabled()) {
+                restoreImeNavBar(window, frame);
+                return;
+            }
             window.setDecorFitsSystemWindows(false);
             hideImeNavBar(window, frame);
             if (imeNavBarFrame.get() != frame) {
@@ -352,7 +365,11 @@ public class GboardExtension {
                 // every nav button/theme update; re-apply before the frame is drawn.
                 decor.getViewTreeObserver().addOnPreDrawListener(() -> {
                     View f = imeNavBarFrame.get();
-                    if (f == null || getBottomPadding() < 0) return true;
+                    if (f == null) return true;
+                    if (getBottomPadding() < 0 || !isHideImeNavBarEnabled()) {
+                        restoreImeNavBar(window, f);
+                        return true;
+                    }
                     return !hideImeNavBar(window, f);
                 });
             }
@@ -370,6 +387,14 @@ public class GboardExtension {
             changed = true;
         }
         return changed;
+    }
+
+    private static void restoreImeNavBar(android.view.Window window, View frame) {
+        try {
+            if (frame.getVisibility() != View.VISIBLE) {
+                frame.setVisibility(View.VISIBLE);
+            }
+        } catch (Throwable ignored) {}
     }
 
     public static boolean isForceIncognitoEnabled(Context context) {
