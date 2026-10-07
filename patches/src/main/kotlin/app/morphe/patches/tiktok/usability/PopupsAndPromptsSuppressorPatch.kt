@@ -173,6 +173,19 @@ private fun BytecodePatchContext.applyAccountPromptHooks(): Int {
     println("[Popups & Prompts Suppressor] Neutralized Gpppa2svUpsellCampaign.startCampaign() -> GPPPA 2SV security checkup sheet blocked.")
     count++
 
+    Fingerprint(
+        definingClass = "Lcom/ss/android/ugc/awemepushlib/manager/PushPermissionPopupManager;",
+        name = "LJI",
+        parameters = listOf(
+            "Landroid/app/Activity;",
+            "Ljava/lang/String;",
+            "LX/1QQN;",
+        ),
+        returnType = "V",
+    ).method.replaceWithReturnVoid()
+    println("[Popups & Prompts Suppressor] Neutralized PushPermissionPopupManager.LJI() -> Combined push permission popup blocked.")
+    count++
+
     return count
 }
 
