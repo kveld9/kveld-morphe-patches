@@ -261,7 +261,8 @@ val cameraMicIndicatorPatch = bytecodePatch(
         if (totalSites == 0) {
             throw PatchException("Zero camera and microphone call sites found to instrument.")
         }
+        var patched = totalSites
 
-        println("[Camera Mic Indicator] Instrumented $cameraOpens camera opens, $cameraReleases camera releases, $micStarts mic starts, $micStops mic stops across $totalSites call site(s).")
+        println("[Camera Mic Indicator] Instrumented $cameraOpens camera opens, $cameraReleases camera releases, $micStarts mic starts, $micStops mic stops across $totalSites call site(s) -> $patched indicator hook(s) active.")
     }
 }
