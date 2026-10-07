@@ -620,6 +620,15 @@ val feedNavigationDeclutterPatch = bytecodePatch(
             patched++
 
             Fingerprint(
+                definingClass = "LX/0ALx;",
+                name = "onInboxBadgeChanged",
+                parameters = listOf("LX/0716;"),
+                returnType = "V",
+            ).method.replaceWithReturnVoid()
+            println("[Navigation & Header Declutter] Neutralized LX/0ALx.onInboxBadgeChanged() -> Inbox tab badge change events suppressed.")
+            patched++
+
+            Fingerprint(
                 definingClass = presenterClass,
                 name = "LJIJJLI",
                 returnType = "Z",
