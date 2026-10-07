@@ -7,6 +7,7 @@ import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.replaceWithReturnBoolean
+import app.morphe.patches.shared.replaceWithReturnNull
 import app.morphe.patches.shared.replaceWithReturnVoid
 import app.morphe.patches.shared.sharedExtensionPatch
 
@@ -213,6 +214,15 @@ private fun BytecodePatchContext.applyPopLayerFilterHook(): Int {
         returnType = "V",
     ).method.replaceWithReturnVoid()
     println("[Popups & Prompts Suppressor] Neutralized LX/0P2r.LIZ() -> Profile view history turn-on sheet blocked.")
+    count++
+
+    Fingerprint(
+        definingClass = "LX/0OOs;",
+        name = "invoke",
+        parameters = listOf("Ljava/lang/Object;"),
+        returnType = "Ljava/lang/Object;",
+    ).method.replaceWithReturnNull()
+    println("[Popups & Prompts Suppressor] Neutralized LX/0OOs.invoke() -> Profile view history alternate sheet trigger blocked.")
     count++
 
     return count
