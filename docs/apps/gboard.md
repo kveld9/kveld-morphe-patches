@@ -96,7 +96,6 @@ The settings UI automatically detects the active device system language (`Locale
 - **Top Toolbar Item Count**: Live slider (4 to 8, default: `5`) controlling the maximum number of access point icons displayed on the top toolbar before collapsing into the overflow menu.
 - **Dismiss Suggestions Button**: Renders a close button (`X`) on proactive suggestion strips to quickly dismiss recommendations.
 - **Cursor Trackpad Mode**: Unlocks 2D trackpad cursor navigation and cursor lock mode by holding and sliding across the spacebar.
-- **Hide Number Hints**: Hides the small number hints above the letter row without disabling long-press symbols.
 
 ### 4. Clipboard Manager
 - **Extended History Retention**: Enables custom retention duration limit for unpinned clips in history.
