@@ -186,6 +186,8 @@ ByteVC2 is ByteDance's proprietary codec with no hardware decoder, so TikTok dec
 
 Undecodable guard: stream dimensions are resolved from bitrate metadata and compared against the largest long side reported by `MediaCodecList` for the stream codec family (`video/hevc` for ByteVC1/HEVC, `video/avc` otherwise). No orientation is assumed: any single known side above the hardware maximum already proves undecodability. When ladder entries hide their own size, the parent `Video` dimensions (authoritative server metadata) are used as fallback. When even the lowest ladder rendition exceeds it (e.g. `2160x3840` on a decoder topped at `2560x1440`, observed as `C2MtkVdec: BAD VALUE: Resolution not supported` retry loops), video streams are dropped and the audio track is preserved so playback fails fast instead of freezing the device. ByteVC2 is excluded (dedicated CPU decoder) and unknown dimensions or hardware fail open (ladder kept).
 
+Single-rendition 4K limitation: when a video exposes only one rendition above both the playback cap and the hardware decoder capability (observed: 2160x3840 HEVC Main 10 HLG on a decoder topped at 2560x1440, C2MtkVdec BAD VALUE retry loop ending in TikTok's couldn't play this video error), no client-side patch can conjure the missing lower renditions. The Governor still protects every other video in feed, search, profile, and detail pages; this ladder shape remains unplayable on the affected device.
+
 #### Supported Resolution Ceilings
 
 | Option String | Resolution Height | Typical Bitrate Band | Target Profile & Resource Rationale |
