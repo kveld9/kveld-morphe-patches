@@ -170,7 +170,7 @@ For non-trivial logic, Smali hooks, native ARM64 patching (`libchrome.so`), or s
     - Never commit `.env`, `local.properties`, private keys (`*.key`, `*.pem`), or signing keystores.
     - All validation runtime outputs (`validation/runtime/`, `validation/physical_harness/results/`) must remain strictly excluded via `.gitignore` and sanitized by `scripts/clean_workspace.sh`.
 11. **Metadata Synchronization Integrity**:
-    - When patch options, default values, or descriptions are modified in Kotlin source code, verify that patch catalog generator tasks (`./gradlew generatePatchesList`) are synchronized before release packaging.
+    - Do not run `./gradlew generatePatchesList` in the repository checkout: it rewrites the tracked `patches-list.json`, which the release pipeline regenerates (see item 1). When patch names, options, default values, or descriptions change, verify catalog registration by running the patch list generator against the built `.mpp` from a temporary working directory outside the repository, and confirm the expected entries appear.
 12. **DO NOT Declare Patch Tasks Complete Without the In-Situ Patching Gate**: see Section 3, Step 4 (`runPatchTest`, 100% success, zero fingerprint mismatches, zero smali compile errors).
 13. **Strict Prohibition of Emojis in Code, Scripts & Tooling**:
     - Under no circumstances should emojis or unicode pictographs be used anywhere in codebase source files, including Kotlin, Java, Python, Smali, Bash/Shell scripts, Gradle build files, configuration files, test files, diagnostic telemetry, or CLI/runtime logs.
