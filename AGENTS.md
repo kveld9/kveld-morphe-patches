@@ -144,7 +144,7 @@ For non-trivial logic, Smali hooks, native ARM64 patching (`libchrome.so`), or s
 ### Critical Anti-Patterns & Prohibitions
 
 1. **DO NOT Edit Generated Release Artifacts Manually**:
-   - Never manually modify or commit `patches-list.json`, `patches-bundle.json`, or `CHANGELOG.md`. These are automatically managed by `release.yml` and `semantic-release`.
+   - Never manually modify or commit `patches-list.json`, `patches-bundle.json`, `CHANGELOG.md`, or the README patch tables between `<!-- PATCHES_START -->` and `<!-- PATCHES_END -->`. These are automatically managed by `release.yml` and `semantic-release` (`.releaserc.js` regenerates the README tables via `.github/scripts/generate_patches_readme.py`).
 2. **DO NOT Inline Hardcoded `Compatibility` Declarations**:
    - Avoid creating new `Compatibility(...)` blocks inside individual `.kt` patch files. Always reference or extend `app.morphe.patches.shared.Constants`.
 3. **DO NOT Perform Unvalidated Native Binary Writes**:
@@ -159,7 +159,7 @@ For non-trivial logic, Smali hooks, native ARM64 patching (`libchrome.so`), or s
 6. **DO NOT Modify Harness Governance Files Arbitrarily**:
    - `AGENTS.md` and governance contracts cannot be modified as an unintended side effect of a product task.
 7. **Anti-Loop Prohibition**:
-   - If a proposed fix fails two consecutive times, halt immediately, re-evaluate the root cause, or request human decision.
+   - Outside `/audit-stack`: if a proposed fix fails two consecutive times, halt immediately, re-evaluate the root cause, or request human decision. Inside `/audit-stack`, its autonomous remediation loop and circuit breaker (maximum 5 cycles per issue) apply instead.
 8. **DO NOT Hardcode Usernames, Device Serials, Local Paths, or Repository Slugs**:
    - Never embed developer usernames, adb device serials, absolute machine paths, or hardcoded repository slugs. Derive paths and repository slugs dynamically from runtime contexts or environment variables (e.g. `GITHUB_REPOSITORY`), autodetect connected ADB devices when possible, and supply sensible generic fallbacks.
 9. **Strict Privacy, PII & Diagnostic Output Sanitization**:
@@ -176,7 +176,7 @@ For non-trivial logic, Smali hooks, native ARM64 patching (`libchrome.so`), or s
     - Under no circumstances should emojis or unicode pictographs be used anywhere in codebase source files, including Kotlin, Java, Python, Smali, Bash/Shell scripts, Gradle build files, configuration files, test files, diagnostic telemetry, or CLI/runtime logs.
     - All code, logs, comments, and console outputs MUST strictly use clean, standard ASCII / plain-text formatting (e.g. `[INFO]`, `[WARN]`, `[PASS]`, `[FAIL]`, `[AUDIT]`, `[BUILD]`). Emojis are tolerated exclusively in end-user documentation (such as `README.md`) if already present, but are strictly prohibited in codebase implementation files and tooling.
 14. **Mandatory Atomic Commits Policy**:
-    - Every new patch, distinct patch option/toggle, patch update, or bugfix MUST be contained within its own dedicated atomic commit (`feat(<target>): ...` or `fix(<target>): ...`). That single commit MUST encapsulate both the patch implementation code (Kotlin, Smali, resources, ELF) AND its accompanying documentation entries (such as in `README.md` or app-specific docs).
+    - Every new patch, distinct patch option/toggle, patch update, or bugfix MUST be contained within its own dedicated atomic commit (`feat(<target>): ...` or `fix(<target>): ...`). That single commit MUST encapsulate both the patch implementation code (Kotlin, Smali, resources, ELF) AND its accompanying documentation entries in the app-specific docs (`docs/apps/*.md`, `docs/universal-patches.md`) and any hand-maintained `README.md` section outside the generated patch tables.
     - **Strict Prohibition of Multi-Patch & Multi-Feature Grouping & Documentation Batching**:
       a) Never separate patch implementation and patch documentation into separate commits during patch creation, option addition, or updates.
       b) Never bundle multiple independent patches or distinct toggle features together into a single commit. When adding multiple features/toggles to a composite patch, commit each feature/toggle independently along with its documentation to guarantee clean git bisectability and issue tracking.
@@ -187,9 +187,9 @@ For non-trivial logic, Smali hooks, native ARM64 patching (`libchrome.so`), or s
       b) **Cross-Compatibility & Shared Contracts** (`feat(patches): ...` or `feat(shared): ...`): Isolated when bridging shared features across apps outside an individual patch unit.
       c) **Standalone Technical Documentation** (`docs(<app>): ...` or `docs: ...`): Strictly reserved for documentation-only changes that are NOT part of a patch creation or update (e.g. typos, global architecture notes, general README updates).
     - Each commit must adhere strictly to Conventional Commits to ensure clean `@semantic-release` changelog generation and bisectability.
-15. **Mandatory Direct Commit & Strict No-Push / No-PR Policy**:
+15. **Mandatory Direct Commit, Push-on-Request & Strict No-PR Policy**:
     - Automatically commit every completed, verified unit of work as soon as it is finished. Always commit; never ask whether to commit.
-    - **Strict No-Push**: NEVER push to remote (`git push` is strictly prohibited). Pushing is reserved exclusively for the user.
+    - **Push Only on Explicit Request**: Never push autonomously or propose pushing. Run `git push` only when the user explicitly requests it in the current conversation, after verifying that `git log origin/main..HEAD` and `git diff origin/main..HEAD` contain only intended commits and files.
     - **Strict No-PR**: This repository and maintainer DO NOT work with Pull Requests (PRs). Work is committed directly or managed locally without PRs. Under NO circumstances should you ask to proceed with push or PR closing sequences, and NEVER generate PR titles or PR descriptions.
     - Commits MUST strictly be atomic, isolated, independent, clean, and concise.
 16. **Prohibition of Multi-Version Target Retentions**: see the Single Target Version Invariant in Section 2; this also covers `README.md` and every other documentation reference.
