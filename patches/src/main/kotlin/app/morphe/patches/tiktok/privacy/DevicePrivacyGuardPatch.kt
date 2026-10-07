@@ -712,19 +712,131 @@ val devicePrivacyGuardPatch = bytecodePatch(
             if (edits.isNotEmpty()) {
                 edits.sortByDescending { it.first }
                 edits.forEach { (insertIndex, resultReg) ->
+                    val constInsn = if (resultReg <= 15) "const/4 v$resultReg, 0x0" else "const/16 v$resultReg, 0x0"
                     method.addInstructions(
                         insertIndex,
-                        "const/16 v$resultReg, 0x0",
+                        constInsn,
                     )
                     locationSites++
                 }
             }
         }
 
+        // 9.2 requestSingleUpdate(String, LocationListener, Looper) -> cancel via removeUpdates
+        var singleUpdateSites = 0
+        val locRequestSingleUpdateFp = Fingerprint(
+            custom = { method, _ ->
+                method.implementation?.instructions?.any { ins ->
+                    val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference ?: return@any false
+                    ref.definingClass == "Landroid/location/LocationManager;" &&
+                        ref.name == "requestSingleUpdate" &&
+                        ref.returnType == "V" &&
+                        ref.parameterTypes.map { it.toString() } == listOf(
+                            "Ljava/lang/String;",
+                            "Landroid/location/LocationListener;",
+                            "Landroid/os/Looper;",
+                        )
+                } == true
+            },
+        )
+        locRequestSingleUpdateFp.matchAll().forEach { match ->
+            val method = match.method
+            val instructions = method.implementation?.instructions?.toList() ?: return@forEach
+            val edits = mutableListOf<Pair<Int, String>>()
+
+            instructions.forEachIndexed { index, instruction ->
+                val ref = (instruction as? ReferenceInstruction)?.reference as? MethodReference ?: return@forEachIndexed
+                if (ref.definingClass == "Landroid/location/LocationManager;" &&
+                    ref.name == "requestSingleUpdate" &&
+                    ref.returnType == "V" &&
+                    ref.parameterTypes.map { it.toString() } == listOf(
+                        "Ljava/lang/String;",
+                        "Landroid/location/LocationListener;",
+                        "Landroid/os/Looper;",
+                    )
+                ) {
+                    val (managerReg, listenerReg) = when (instruction) {
+                        is FiveRegisterInstruction -> instruction.registerC to instruction.registerE
+                        is RegisterRangeInstruction -> instruction.startRegister to (instruction.startRegister + 2)
+                        else -> -1 to -1
+                    }
+
+                    if (managerReg in 0..15 && listenerReg in 0..15) {
+                        val smali = "invoke-virtual {v$managerReg, v$listenerReg}, Landroid/location/LocationManager;->removeUpdates(Landroid/location/LocationListener;)V"
+                        edits.add(index + 1 to smali)
+                    } else {
+                        println("[Device Privacy Guard] Note: Skipped removeUpdates cancellation for requestSingleUpdate (regs: manager=$managerReg, listener=$listenerReg > 15).")
+                    }
+                }
+            }
+
+            if (edits.isNotEmpty()) {
+                edits.sortByDescending { it.first }
+                edits.forEach { (insertIndex, smali) ->
+                    method.addInstructions(insertIndex, smali)
+                    singleUpdateSites++
+                    locationSites++
+                }
+            }
+        }
+        if (singleUpdateSites == 0) {
+            throw PatchException("Zero LocationManager.requestSingleUpdate call sites found to intercept.")
+        }
+        println("[Device Privacy Guard] Intercepted $singleUpdateSites LocationManager.requestSingleUpdate call site(s) -> cancelled via removeUpdates.")
+
+        // 9.3 isProviderEnabled(String)Z and isLocationEnabled()Z -> force false
+        var providerEnabledSites = 0
+        val locEnabledFp = Fingerprint(
+            custom = { method, _ ->
+                method.implementation?.instructions?.any { ins ->
+                    val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference ?: return@any false
+                    if (ref.definingClass != "Landroid/location/LocationManager;" || ref.returnType != "Z") return@any false
+                    val params = ref.parameterTypes.map { it.toString() }
+                    (ref.name == "isProviderEnabled" && params == listOf("Ljava/lang/String;")) ||
+                        (ref.name == "isLocationEnabled" && params.isEmpty())
+                } == true
+            },
+        )
+        locEnabledFp.matchAll().forEach { match ->
+            val method = match.method
+            val instructions = method.implementation?.instructions?.toList() ?: return@forEach
+            val edits = mutableListOf<Pair<Int, Int>>()
+
+            instructions.forEachIndexed { index, instruction ->
+                val ref = (instruction as? ReferenceInstruction)?.reference as? MethodReference ?: return@forEachIndexed
+                if (ref.definingClass == "Landroid/location/LocationManager;" && ref.returnType == "Z") {
+                    val params = ref.parameterTypes.map { it.toString() }
+                    val matches = (ref.name == "isProviderEnabled" && params == listOf("Ljava/lang/String;")) ||
+                        (ref.name == "isLocationEnabled" && params.isEmpty())
+                    if (matches) {
+                        val nextInsn = instructions.getOrNull(index + 1) ?: return@forEachIndexed
+                        if (nextInsn.opcode == Opcode.MOVE_RESULT) {
+                            val reg = (nextInsn as OneRegisterInstruction).registerA
+                            edits.add(index + 2 to reg)
+                        }
+                    }
+                }
+            }
+
+            if (edits.isNotEmpty()) {
+                edits.sortByDescending { it.first }
+                edits.forEach { (insertIndex, reg) ->
+                    val constInsn = if (reg <= 15) "const/4 v$reg, 0x0" else "const/16 v$reg, 0x0"
+                    method.addInstructions(insertIndex, constInsn)
+                    providerEnabledSites++
+                    locationSites++
+                }
+            }
+        }
+        if (providerEnabledSites == 0) {
+            throw PatchException("Zero LocationManager.isProviderEnabled / isLocationEnabled call sites found to intercept.")
+        }
+        println("[Device Privacy Guard] Intercepted $providerEnabledSites LocationManager.isProviderEnabled/isLocationEnabled call site(s) -> forced false.")
+
         if (locationSites == 0) {
             throw PatchException("Zero LocationManager call sites found to intercept.")
         }
-        println("[Device Privacy Guard] Intercepted $locationSites LocationManager.getLastKnownLocation call site(s) -> forced null.")
+        println("[Device Privacy Guard] Intercepted $locationSites LocationManager call site(s) -> hardware location queries suppressed.")
         patched++
 
         println("[Device Privacy Guard] Applied $patched device privacy protection hook(s).")
