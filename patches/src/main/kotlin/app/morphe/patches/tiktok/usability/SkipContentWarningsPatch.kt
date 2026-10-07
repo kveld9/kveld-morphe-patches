@@ -32,7 +32,13 @@ val skipContentWarningsPatch = bytecodePatch(
             throw PatchException("Anchor VideoAuthorInfoVM.paramSync2StateAccept(VideoItemParams) not found for Skip Content Warnings", e)
         }
 
-        val paramReg = if (AccessFlags.STATIC.isSet(method.accessFlags)) "p0" else "p1"
+        val vipType = "Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"
+        val paramTypeStrings = method.parameterTypes.map { it.toString() }
+        val vipIndex = paramTypeStrings.indexOf(vipType)
+        if (vipIndex < 0) throw PatchException("VideoItemParams parameter not found in VideoAuthorInfoVM.paramSync2StateAccept")
+        var slot = if (AccessFlags.STATIC.isSet(method.accessFlags)) 0 else 1
+        for (i in 0 until vipIndex) { slot += 1; val t = paramTypeStrings[i]; if (t == "J" || t == "D") slot += 1 }
+        val paramReg = "p$slot"
         method.addInstructions(
             0,
             "invoke-static/range {$paramReg .. $paramReg}, ${Constants.TIKTOK_EXTENSION_SENSITIVE_WARNINGS_HOOK}->clear(Ljava/lang/Object;)V",

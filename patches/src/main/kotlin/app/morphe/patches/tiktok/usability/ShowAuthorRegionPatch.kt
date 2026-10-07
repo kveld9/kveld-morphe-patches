@@ -2,6 +2,7 @@ package app.morphe.patches.tiktok.usability
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.sharedExtensionPatch
@@ -26,7 +27,13 @@ val showAuthorRegionPatch = bytecodePatch(
                     "Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;" in method.parameterTypes
             },
         ).method
-        val paramReg = if (AccessFlags.STATIC.isSet(vmMethod.accessFlags)) "p0" else "p1"
+        val vipType = "Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"
+        val paramTypeStrings = vmMethod.parameterTypes.map { it.toString() }
+        val vipIndex = paramTypeStrings.indexOf(vipType)
+        if (vipIndex < 0) throw PatchException("VideoItemParams parameter not found in VideoAuthorInfoVM.paramSync2StateAccept")
+        var slot = if (AccessFlags.STATIC.isSet(vmMethod.accessFlags)) 0 else 1
+        for (i in 0 until vipIndex) { slot += 1; val t = paramTypeStrings[i]; if (t == "J" || t == "D") slot += 1 }
+        val paramReg = "p$slot"
         vmMethod.addInstructions(
             0,
             "invoke-static/range {$paramReg .. $paramReg}, ${Constants.TIKTOK_EXTENSION_AUTHOR_REGION_HOOK}->onVideoItemParams(Ljava/lang/Object;)V",
