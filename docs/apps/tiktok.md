@@ -31,7 +31,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Usability** | **[Comment Customizer](#2-comment-customizer-commentcustomizerpatch)** | `bytecodePatch` | Customizes comment section: native sort controls, clean text copying, disabling suggested emojis bar, hiding comment quick actions, hiding in-comment surveys and feedback cards, hiding profile photo story rings, voice comments, and automatic translation with do-not-translate language exclusions (`translationExcludedLanguages`). |
 | **Usability** | **Disable Double Tap to Like** | `bytecodePatch` | Disables the double tap gesture to like videos in the feed, preventing accidental likes while scrolling or pausing. Videos can still be liked using the like button. |
 | **Usability** | **Playback Speed Persistence** | `bytecodePatch` | Persists user-selected video speed across feed scrolling and restarts, with optional native hold-and-slide 2x speed lock gesture (`enableSpeedLock`). |
-| **Usability** | **[Video Quality Governor](#2-video-quality-governor)** | `bytecodePatch` | Decoupled resolution ceilings for playback (e.g. 480p) and downloads (e.g. 1080p). |
+| **Usability** | **[Video Quality Governor](#2-video-quality-governor)** | `bytecodePatch` | Playback resolution ceiling (e.g. 480p). Download quality lives in Media Usability (`downloadQuality`). |
 | **Usability** | **Skip First-Launch Onboarding** | `bytecodePatch` | Bypasses interest pickers, swipe-up tutorial, language prompts, and consent sheets directly to FYP. |
 | **Usability** | **[Custom Offline Videos Limit](#4-custom-offline-videos-limit)** | `bytecodePatch` | Customizes maximum offline videos download caching limit (~X mins, Y GB/MB). |
 | **Usability** | **[Custom Share Sheet](#5-custom-share-sheet)** | `bytecodePatch` | Customizes and cleans the share menu via individual boolean toggles for third-party apps, essential actions, and direct message friend rows. |
@@ -170,14 +170,13 @@ TH, TR, TW, UA, US, UY, VN, ZA
 
 ### 2. Video Quality Governor
 
-The **`Video Quality Governor`** patch enforces user-configured maximum resolution ceilings (`1080p`, `720p`, `540p`, `480p`, `360p`, or unconstrained) across video feeds while allowing independent configuration of download quality. While standard TikTok features like "Data Saver" only compress network transfers under cellular conditions without capping hardware decoders, this governor caps the actual rendition ladder (`bitRateList` and `SimBitRate`) parsed by PlayerKit/TTPlayer, reducing hardware MediaCodec load, thermals, GraphicBuffers memory consumption, and frame drops on lower-spec or battery-sensitive devices.
+The **`Video Quality Governor`** patch enforces a user-configured maximum playback resolution ceiling (`1080p`, `720p`, `540p`, `480p`, `360p`, or unconstrained) across video feeds. While standard TikTok features like "Data Saver" only compress network transfers under cellular conditions without capping hardware decoders, this governor caps the actual rendition ladder (`bitRateList` and `SimBitRate`) parsed by PlayerKit/TTPlayer, reducing hardware MediaCodec load, thermals, GraphicBuffers memory consumption, and frame drops on lower-spec or battery-sensitive devices.
 
-Crucially, **playback quality and download quality are decoupled**: users can browse their feed in battery-efficient 360p or 480p while downloading clean videos in full 1080p, or set a download ceiling (e.g. 720p or 480p) to conserve bandwidth and storage. Download capping directly hooks `Video.getDownloadNoWatermarkAddr()` and `Video.getDownloadAddr()` with dual H.264/ByteVC1 candidate resolution.
+Download quality is **not** configured here: it lives solely in the Media Usability patch (`downloadQuality`: `high`/`medium`/`low` or a `1080`/`720`/`540`/`480`/`360` ceiling), which always wins for saved files. (The former `maxDownloadQuality` option was retired for exactly this reason: one place for download quality.)
 
 | Option | Key | Type | Default | Supported Ceilings | Description |
 | :--- | :--- | :--- | :---: | :--- | :--- |
 | **Maximum Playback Resolution** | `maxQuality` | String | `480` | `1080`, `720`, `540`, `480`, `360`, `none` | Caps video playback height in vertical pixels. Discards higher rendition profiles in feed. |
-| **Maximum Download Resolution** | `maxDownloadQuality` | String | `1080` | `1080`, `720`, `540`, `480`, `360`, `none` | Sets download resolution ceiling independently of playback, allowing high-fidelity saving. |
 
 #### Supported Resolution Ceilings
 

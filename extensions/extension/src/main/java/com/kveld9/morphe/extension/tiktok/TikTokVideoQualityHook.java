@@ -121,15 +121,10 @@ public final class TikTokVideoQualityHook {
     }
 
     public static int getDownloadResolution() {
+        // Retired: download quality is controlled by Media Usability (downloadQuality).
+        // The patch injects downloadAllowedResolution = 0; ignore any legacy
+        // SharedPreferences value so the old download ceiling cannot come back.
         if (!isGovernorEnabled) return 0;
-        SharedPreferences sp = getPrefs();
-        if (sp != null) {
-            int saved = sp.getInt(KEY_DOWNLOAD_QUALITY, downloadAllowedResolution);
-            if (isValidResolution(saved)) {
-                downloadAllowedResolution = saved;
-                return saved;
-            }
-        }
         return downloadAllowedResolution;
     }
 

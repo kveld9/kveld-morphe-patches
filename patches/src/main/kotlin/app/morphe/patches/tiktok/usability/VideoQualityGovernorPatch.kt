@@ -13,7 +13,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
 val videoQualityGovernorPatch = bytecodePatch(
     name = "Video Quality Governor",
-    description = "Caps video playback and download resolutions (1080p, 720p, 540p, 480p, 360p) independently to conserve battery, GPU/MediaCodec load, and mobile data.",
+    description = "Caps video playback resolution (1080p, 720p, 540p, 480p, 360p) to conserve battery, GPU/MediaCodec load, and mobile data. Download quality is controlled separately by the Media Usability patch (downloadQuality).",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -24,14 +24,6 @@ val videoQualityGovernorPatch = bytecodePatch(
         title = "Maximum Playback Resolution",
         description = "Select maximum video playback resolution ceiling: 1080 (1080p ExtremelyHigh), 720 (720p SuperHigh), 540 (540p H_High), 480 (480p High), or 360 (360p Standard).",
         default = "480",
-        required = false,
-    )
-
-    val maxDownloadQuality by stringOption(
-        key = "maxDownloadQuality",
-        title = "Maximum Download Resolution",
-        description = "Select maximum video download resolution ceiling: 1080 (1080p Maximum Quality), 720 (720p SuperHigh), 540 (540p H_High), 480 (480p High), or 360 (360p Standard).",
-        default = "1080",
         required = false,
     )
 
@@ -50,11 +42,11 @@ val videoQualityGovernorPatch = bytecodePatch(
         }
 
         val chosenPlaybackRes = parseResolution(maxQuality, 480)
-        val chosenDownloadRes = parseResolution(maxDownloadQuality, 1080)
 
         var patched = 0
 
-        // 1. Initialize default maxAllowedResolution & downloadAllowedResolution in TikTokVideoQualityHook.<clinit>
+        // 1. Initialize default maxAllowedResolution in TikTokVideoQualityHook.<clinit> and
+        // retire the legacy download ceiling (download quality lives in Media Usability now).
         val hookClinitFp = Fingerprint(
             definingClass = Constants.TIKTOK_EXTENSION_QUALITY_HOOK,
             name = "<clinit>",
@@ -72,11 +64,11 @@ val videoQualityGovernorPatch = bytecodePatch(
                 sput-boolean v0, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->isGovernorEnabled:Z
                 const/16 v0, $chosenPlaybackRes
                 sput v0, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->maxAllowedResolution:I
-                const/16 v0, $chosenDownloadRes
+                const/4 v0, 0
                 sput v0, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->downloadAllowedResolution:I
             """.trimIndent(),
         )
-        println("[Video Quality Governor] Initialized default caps: playback=${chosenPlaybackRes}p, download=${chosenDownloadRes}p.")
+        println("[Video Quality Governor] Initialized playback cap: playback=${chosenPlaybackRes}p (download ceiling retired).")
         patched++
 
         // 2. Hook Aweme.getVideo() return points to cap Video model and default play addresses
@@ -182,60 +174,6 @@ val videoQualityGovernorPatch = bytecodePatch(
             patched++
         }
 
-        // 6. Hook Video.getDownloadNoWatermarkAddr() to enforce download resolution ceiling
-        val downloadNoWrmkFp = Fingerprint(
-            definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Video;",
-            name = "getDownloadNoWatermarkAddr",
-            returnType = "Lcom/ss/android/ugc/aweme/base/model/UrlModel;",
-        )
-        val downloadNoWrmkMethod = downloadNoWrmkFp.method
-        val downloadNoWrmkIndices = downloadNoWrmkMethod.implementation?.instructions?.withIndex()
-            ?.filter { it.value.opcode == Opcode.RETURN_OBJECT }
-            ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
-            ?.toList() ?: emptyList()
-
-        downloadNoWrmkIndices.asReversed().forEach { (returnIndex, reg) ->
-            downloadNoWrmkMethod.addInstructionsAtControlFlowLabel(
-                returnIndex,
-                """
-                    invoke-static {v$reg, p0}, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->enforceDownloadCap(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
-                    move-result-object v$reg
-                    check-cast v$reg, Lcom/ss/android/ugc/aweme/base/model/UrlModel;
-                """.trimIndent(),
-            )
-        }
-        if (downloadNoWrmkIndices.isNotEmpty()) {
-            println("[Video Quality Governor] Hooked Video.getDownloadNoWatermarkAddr() (${downloadNoWrmkIndices.size} return point(s)) -> Download cap active.")
-            patched++
-        }
-
-        // 7. Hook Video.getDownloadAddr() to enforce download resolution ceiling
-        val downloadAddrFp = Fingerprint(
-            definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Video;",
-            name = "getDownloadAddr",
-            returnType = "Lcom/ss/android/ugc/aweme/base/model/UrlModel;",
-        )
-        val downloadAddrMethod = downloadAddrFp.method
-        val downloadAddrIndices = downloadAddrMethod.implementation?.instructions?.withIndex()
-            ?.filter { it.value.opcode == Opcode.RETURN_OBJECT }
-            ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
-            ?.toList() ?: emptyList()
-
-        downloadAddrIndices.asReversed().forEach { (returnIndex, reg) ->
-            downloadAddrMethod.addInstructionsAtControlFlowLabel(
-                returnIndex,
-                """
-                    invoke-static {v$reg, p0}, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->enforceDownloadCap(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
-                    move-result-object v$reg
-                    check-cast v$reg, Lcom/ss/android/ugc/aweme/base/model/UrlModel;
-                """.trimIndent(),
-            )
-        }
-        if (downloadAddrIndices.isNotEmpty()) {
-            println("[Video Quality Governor] Hooked Video.getDownloadAddr() (${downloadAddrIndices.size} return point(s)) -> Download cap active.")
-            patched++
-        }
-
-        println("[Video Quality Governor] Applied $patched video resolution capping hook(s) (playback: ${chosenPlaybackRes}p, download: ${chosenDownloadRes}p).")
+        println("[Video Quality Governor] Applied $patched video resolution capping hook(s) (playback: ${chosenPlaybackRes}p).")
     }
 }
