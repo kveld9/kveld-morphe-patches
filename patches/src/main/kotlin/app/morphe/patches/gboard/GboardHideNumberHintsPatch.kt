@@ -8,8 +8,6 @@ import app.morphe.patches.shared.cleanClassName
 import app.morphe.patches.shared.sharedExtensionPatch
 
 val gboardHideNumberHintsPatch = bytecodePatch(
-    name = "Hide Number Hints",
-    description = "Hides the small digit labels above the top letter row and re-centers letters vertically by collapsing the empty hint slot.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
