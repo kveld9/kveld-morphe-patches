@@ -53,6 +53,10 @@ upstream rename/obfuscation shift), these external tools speed up
 finding the shifted target. Neither replaces the mandatory
 `./gradlew runPatchTest -Papp=<targetApp>` gate.
 
+Run `scripts/ensure_lab_frida.sh` to idempotently bootstrap host tools and
+ensure `frida-server` is running on the lab device. Availability of both
+tools is reflected by `./venv/bin/python harness/update.py --doctor`.
+
 1. **jadx** (static): open the APK in jadx-gui, follow Xrefs from the
    blocking reason's string constant or caller, and locate the shifted
    obfuscated class/method. Then update the fingerprint query in

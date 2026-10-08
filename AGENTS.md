@@ -271,4 +271,5 @@ blocks installing the test build, never for unrelated packages, never
 factory reset, never touching other apps' data. Prefer reinstall (`-r`) to
 preserve data. Always report device model, package, actions taken, and the
 launch verdict (alive PID vs FATAL) as evidence in the final report.
+Triage lab bootstrap (Frida/JADX) is pre-authorized via `scripts/ensure_lab_frida.sh` (idempotent; supports `ANDROID_SERIAL` override; server does not survive reboot).
 
