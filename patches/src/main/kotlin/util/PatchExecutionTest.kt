@@ -139,6 +139,9 @@ enum class TargetApp(
     }
 }
 
+// Tuning default for the warning only (TikTok's heaviest patch measured ~27 s isolated, the rest under 10 s).
+private const val DEFAULT_SLOW_PATCH_SECONDS = 15.0
+
 private fun getDownloadDirectory(): File? {
     return try {
         val process = ProcessBuilder("xdg-user-dir", "DOWNLOAD").start()
@@ -671,10 +674,19 @@ fun main(args: Array<String>) {
     System.setErr(interceptingErr)
 
     try {
+        val patchTimings = mutableListOf<Pair<String, Long>>()
+        var lastResultNanos = System.nanoTime()
         runBlocking {
             patcher().collect { result ->
                 totalPatches++
                 val patchName = result.patch.name ?: "Unknown"
+                val now = System.nanoTime()
+                // The patcher runs patches sequentially and emits one result per patch,
+                // so the gap between results is that patch's execution time (the first entry also includes pipeline startup,
+                // and an entry also includes any dependency patch that runs for the first time right before it).
+                val elapsedMs = (now - lastResultNanos) / 1_000_000
+                lastResultNanos = now
+                patchTimings.add(patchName to elapsedMs)
                 if (pendingSmaliErrors.isNotEmpty()) {
                     pendingSmaliErrors.forEach { smaliCompileErrors.add("$patchName: $it") }
                     pendingSmaliErrors.clear()
@@ -702,6 +714,7 @@ fun main(args: Array<String>) {
         println("Failed:        $failedPatches")
         println("Detected Fingerprint Failures: ${fingerprintErrors.size}")
         println("Detected Smali Compile Errors: ${smaliCompileErrors.size}")
+        printPatchTimings(patchTimings, resolveSlowPatchThreshold(), patchTimings.firstOrNull()?.first)
 
         if (failedPatches == 0 && fingerprintErrors.isEmpty() && smaliCompileErrors.isEmpty()) {
             println("\n[BUILD] Compiling modified bytecode & assets via patcher.get()...")
@@ -936,3 +949,45 @@ fun main(args: Array<String>) {
         println("\n100% OF ${targetApp.appName.uppercase()} PATCHES APPLIED WITH ZERO ERRORS AND ZERO FINGERPRINT MISMATCHES!")
     }
 }
+
+private fun resolveSlowPatchThreshold(): Double {
+    val raw = System.getProperty("slowPatchSeconds") ?: return DEFAULT_SLOW_PATCH_SECONDS
+    val parsed = raw.toDoubleOrNull()
+    if (parsed == null || parsed <= 0.0) {
+        println("[WARN] Invalid slowPatchSeconds '$raw'; using default $DEFAULT_SLOW_PATCH_SECONDS s.")
+        return DEFAULT_SLOW_PATCH_SECONDS
+    }
+    return parsed
+}
+
+private fun printPatchTimings(
+    timings: List<Pair<String, Long>>,
+    thresholdSeconds: Double,
+    firstPatchName: String? = timings.firstOrNull()?.first,
+) {
+    if (timings.isEmpty()) return
+
+    val sorted = timings.sortedByDescending { it.second }
+    println("Slowest patches:")
+    for ((name, elapsedMs) in sorted.take(5)) {
+        val seconds = elapsedMs / 1000.0
+        val formatted = String.format(java.util.Locale.ROOT, "%.1f", seconds)
+        val startupNote = if (name == firstPatchName) " (includes pipeline startup)" else ""
+        println("  $formatted s  $name$startupNote")
+    }
+
+    val totalSeconds = timings.sumOf { it.second } / 1000.0
+    val formattedTotal = String.format(java.util.Locale.ROOT, "%.1f", totalSeconds)
+    println("Total patch time: $formattedTotal s")
+
+    val formattedThreshold = String.format(java.util.Locale.ROOT, "%.1f", thresholdSeconds)
+    for ((name, elapsedMs) in sorted) {
+        val seconds = elapsedMs / 1000.0
+        if (seconds > thresholdSeconds) {
+            val formattedSeconds = String.format(java.util.Locale.ROOT, "%.1f", seconds)
+            val startupNote = if (name == firstPatchName) " (includes pipeline startup)" else ""
+            println("[WARN] Slow patch: $name took $formattedSeconds s (threshold $formattedThreshold s)$startupNote")
+        }
+    }
+}
+

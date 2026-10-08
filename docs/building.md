@@ -67,6 +67,9 @@ Every patch change must be validated by running the Morphe Patcher against the t
 
 # Also write a signed, installable APK
 ./gradlew runPatchTest -Papp=<targetApp> -Pout=candidate_apks/<app>_<version>_patched.apk
+
+# Warn when a single patch takes longer than N seconds (default 15; timings are always listed)
+./gradlew runPatchTest -Papp=<targetApp> -PslowPatchSeconds=10
 ```
 
 For bundle targets (`.apkm` / `.xapk`), the signed split APKs are written next to the output and prefixed with its name (`<app>_<version>_patched.<split>.apk`), so one glob installs the whole set:
@@ -80,6 +83,8 @@ Or run the unattended smoke installation gate:
 ./venv/bin/python validation/smoke_install.py candidate_apks/<app>_<version>_patched*.apk
 ```
 It automatically selects the target device by matching ABI and minimum SDK (override with `--serial` or `ANDROID_SERIAL`), refuses to replace the active keyboard without `--allow-active-ime`, and prints a machine-readable JSON verdict (exit 0 = PASS).
+
+The `FINAL PATCHING RESULT` block lists the five slowest patches and the total patch time, and prints a `[WARN] Slow patch:` line for every patch above the threshold. The first executed patch also absorbs pipeline startup and is marked as such. The warning is informational and never fails the run.
 
 ---
 

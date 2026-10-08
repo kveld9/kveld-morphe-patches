@@ -72,6 +72,9 @@ tasks {
         if (project.hasProperty("allowVersionMismatch")) {
             systemProperty("allowVersionMismatch", project.property("allowVersionMismatch").toString())
         }
+        if (project.hasProperty("slowPatchSeconds")) {
+            systemProperty("slowPatchSeconds", project.property("slowPatchSeconds").toString())
+        }
         System.getProperty("targetApp")?.let { systemProperty("targetApp", it) }
         System.getProperty("targetApk")?.let { systemProperty("targetApk", it) }
         System.getProperty("outputApk")?.let { systemProperty("outputApk", it) }
@@ -79,6 +82,7 @@ tasks {
         System.getProperty("maxVersionCode")?.let { systemProperty("maxVersionCode", it) }
         System.getProperty("allOptions")?.let { systemProperty("allOptions", it) }
         System.getProperty("allowVersionMismatch")?.let { systemProperty("allowVersionMismatch", it) }
+        System.getProperty("slowPatchSeconds")?.let { systemProperty("slowPatchSeconds", it) }
     }
 
     jar {
