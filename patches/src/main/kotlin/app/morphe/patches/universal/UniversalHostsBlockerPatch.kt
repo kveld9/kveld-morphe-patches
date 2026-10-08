@@ -16,7 +16,6 @@ import java.util.Locale
 
 private const val TAG = "[Universal Hosts Blocker]"
 private const val DEFAULT_SINK_IP = "0.0.0.0"
-private const val MAX_BLOCKLIST_ENTRIES = 20000
 
 private val RESERVED_HOSTS = setOf(
     "localhost",
@@ -121,9 +120,11 @@ private fun parseBlocklistFile(file: File): Set<String> {
     val entries = LinkedHashSet<String>()
     file.useLines { lines ->
         for (rawLine in lines) {
-            if (entries.size >= MAX_BLOCKLIST_ENTRIES) break
             parseBlocklistLine(rawLine, entries)
         }
+    }
+    if (entries.size > 100000) {
+        println("$TAG Large blocklist (${entries.size} entries): expect higher memory use and longer patch time on low-RAM devices.")
     }
     return entries
 }
@@ -138,7 +139,6 @@ private fun parseBlocklistLine(rawLine: String, out: MutableSet<String>) {
     val candidates = dropLeadingAddressToken(tokens)
     for (candidate in candidates) {
         normalizeCandidateHost(candidate)?.let { out.add(it) }
-        if (out.size >= MAX_BLOCKLIST_ENTRIES) break
     }
 }
 
