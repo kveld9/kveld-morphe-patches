@@ -25,6 +25,7 @@ import app.morphe.patches.shared.replaceWithReturnNull
 import app.morphe.patches.shared.replaceWithReturnVoid
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.ReferenceType
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
@@ -743,7 +744,8 @@ private fun BytecodePatchContext.applyCommentSendFix(): Int {
             }
         },
     )
-    val matches = publishSendFp.matchAll()
+    // matchAll() ignores definingClass as an index and scans every class; scoping it to the class gives the same matches.
+    val matches = publishSendFp.matchAll(classDefBy(COMMENT_PUBLISH_VIEW_MODEL_CLASS))
     if (matches.size != 1) {
         throw PatchException(
             "Comment Customizer: expected exactly 1 publish entry method in CommentPublishViewModel, found ${matches.size}.",
@@ -852,6 +854,13 @@ private fun isCommentSurpriseStructInit(ref: MethodReference): Boolean =
         ) &&
         ref.returnType == "V"
 
+private fun isSurpriseStructInitInvoke(ins: Instruction): Boolean {
+    if (ins.opcode.referenceType != ReferenceType.METHOD) return false
+    val ref = (ins as ReferenceInstruction).reference as MethodReference
+    if (ref.name != "<init>") return false
+    return isCommentSurpriseStructInit(ref)
+}
+
 private fun findCommentSurpriseStructInitIndexes(method: Method): List<Int> =
     method.implementation?.instructions?.withIndex()?.mapNotNull { (index, ins) ->
         val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference ?: return@mapNotNull null
@@ -929,29 +938,30 @@ private fun BytecodePatchContext.applyHideCommentPopupAds(): Int {
     )
     patched++
 
+    // One walk over all methods instead of three; each path mark still applies its own predicate at its original point.
+    val surpriseStructCandidates = Fingerprint(custom = { method, _ -> method.implementation?.instructions?.any(::isSurpriseStructInitInvoke) == true }).matchAll().map { it.method }
+
     // Path mark (i): page-loader method
-    val pageLoaderFp = Fingerprint(
-        custom = { method, _ ->
-            val instructions = method.implementation?.instructions ?: return@Fingerprint false
-            val hasStructInit = instructions.any { ins ->
+    val pageLoaderMatchesPredicate: (Method) -> Boolean = pageLoaderMatchesPredicate@{ method ->
+        val instructions = method.implementation?.instructions ?: return@pageLoaderMatchesPredicate false
+        val hasStructInit = instructions.any { ins ->
+            val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference ?: return@any false
+            isCommentSurpriseStructInit(ref)
+        }
+        hasStructInit &&
+            readsCommentItemListSurprise(instructions) &&
+            instructions.any { ins ->
                 val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference ?: return@any false
-                isCommentSurpriseStructInit(ref)
+                isPlayMethod(ref)
             }
-            hasStructInit &&
-                readsCommentItemListSurprise(instructions) &&
-                instructions.any { ins ->
-                    val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference ?: return@any false
-                    isPlayMethod(ref)
-                }
-        },
-    )
-    val pageLoaderMatches = pageLoaderFp.matchAll()
+    }
+    val pageLoaderMatches = surpriseStructCandidates.filter(pageLoaderMatchesPredicate)
     if (pageLoaderMatches.size != 1) {
         throw PatchException(
             "Comment Customizer: expected exactly 1 page-loader surprise method, found ${pageLoaderMatches.size}.",
         )
     }
-    val pageLoaderMethod = pageLoaderMatches.first().method
+    val pageLoaderMethod = pageLoaderMatches.first()
     val pageLoaderInits = findCommentSurpriseStructInitIndexes(pageLoaderMethod)
     if (pageLoaderInits.size != 1) {
         throw PatchException(
@@ -967,23 +977,21 @@ private fun BytecodePatchContext.applyHideCommentPopupAds(): Int {
     patched++
 
     // Path mark (ii): publish-response method
-    val publishResponseFp = Fingerprint(
-        custom = { method, _ ->
-            val instructions = method.implementation?.instructions ?: return@Fingerprint false
-            val hasStructInit = instructions.any { ins ->
-                val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference ?: return@any false
-                isCommentSurpriseStructInit(ref)
-            }
-            hasStructInit && readsCommentResponseSurprise(instructions)
-        },
-    )
-    val publishResponseMatches = publishResponseFp.matchAll()
+    val publishResponseMatchesPredicate: (Method) -> Boolean = publishResponseMatchesPredicate@{ method ->
+        val instructions = method.implementation?.instructions ?: return@publishResponseMatchesPredicate false
+        val hasStructInit = instructions.any { ins ->
+            val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference ?: return@any false
+            isCommentSurpriseStructInit(ref)
+        }
+        hasStructInit && readsCommentResponseSurprise(instructions)
+    }
+    val publishResponseMatches = surpriseStructCandidates.filter(publishResponseMatchesPredicate)
     if (publishResponseMatches.size != 1) {
         throw PatchException(
             "Comment Customizer: expected exactly 1 publish-response surprise method, found ${publishResponseMatches.size}.",
         )
     }
-    val publishResponseMethod = publishResponseMatches.first().method
+    val publishResponseMethod = publishResponseMatches.first()
     val publishResponseInits = findCommentSurpriseStructInitIndexes(publishResponseMethod)
     if (publishResponseInits.size != 1) {
         throw PatchException(
@@ -999,23 +1007,21 @@ private fun BytecodePatchContext.applyHideCommentPopupAds(): Int {
     patched++
 
     // Path mark (iii): milestone method
-    val milestoneFp = Fingerprint(
-        custom = { method, _ ->
-            val instructions = method.implementation?.instructions ?: return@Fingerprint false
-            val hasStructInit = instructions.any { ins ->
-                val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference ?: return@any false
-                isCommentSurpriseStructInit(ref)
-            }
-            hasStructInit && hasMilestoneMarker(instructions) && callsLruCacheGet(instructions)
-        },
-    )
-    val milestoneMatches = milestoneFp.matchAll()
+    val milestoneMatchesPredicate: (Method) -> Boolean = milestoneMatchesPredicate@{ method ->
+        val instructions = method.implementation?.instructions ?: return@milestoneMatchesPredicate false
+        val hasStructInit = instructions.any { ins ->
+            val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference ?: return@any false
+            isCommentSurpriseStructInit(ref)
+        }
+        hasStructInit && hasMilestoneMarker(instructions) && callsLruCacheGet(instructions)
+    }
+    val milestoneMatches = surpriseStructCandidates.filter(milestoneMatchesPredicate)
     if (milestoneMatches.size != 1) {
         throw PatchException(
             "Comment Customizer: expected exactly 1 milestone surprise method, found ${milestoneMatches.size}.",
         )
     }
-    val milestoneMethod = milestoneMatches.first().method
+    val milestoneMethod = milestoneMatches.first()
     val milestoneInits = findCommentSurpriseStructInitIndexes(milestoneMethod)
     if (milestoneInits.size != 1) {
         throw PatchException(
