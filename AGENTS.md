@@ -81,6 +81,15 @@ morphe-patches/
    - **Failure & Guard Transparency**: If an early return occurs (missing feature, unsupported architecture, or optional inputs absent), log an explicit descriptive reason (`println("[Patch Name] Skipped: Reason...")`).
    - **Zero Loop Spam**: Never place `println` inside `walkTopDown()` or high-volume loops; aggregate deltas and report final saved KB/MB, pruned directories, or count metrics.
 
+5. **Fingerprint Scan Cost (Measured Performance Contract)**:
+   A fingerprint without `strings` or an exact `definingClass` lookup walks every method of the APK (TikTok: ~475k classes, ~2M methods), and dexlib2 decodes a DEX string on every `name`, `definingClass`, `parameterTypes` or `type` access. In the TikTok baseline four patches built this way cost ~90 s of a 159 s `runPatchTest`; the rules below brought it to ~100 s with byte-identical output.
+   - **One Walk Per Target Family**: Never run several `custom` + `matchAll()` scans over the whole APK inside one patch. Run one candidate scan whose predicate is the union of the targets, then let each section filter the candidate list with its own unchanged predicate at its original point (`DevicePrivacyGuardPatch`, `CommentCustomizerPatch` popup-ad marks).
+   - **Cheap Checks First**: Inside call-site predicates, reject with `ins.opcode.referenceType != ReferenceType.METHOD` and a `ref.name` check (short string, set lookup) before touching `definingClass`, `parameterTypes` or `returnType` (`CameraMicIndicatorPatch`).
+   - **Iterate Only the Member Kind Needed**: In class-level predicates, iterating `classDef.methods` or `classDef.fields` decodes every member of every class. Use `directMethods` when the predicate requires `STATIC` (static methods are always direct in DEX) and `instanceFields`/`staticFields` when the field kind is known (`DirectMessageDeclutterPatch`).
+   - **`matchAll()` Ignores `definingClass` as an Index**: In Morphe 1.8.0, `match()`/`.method` resolves an exact `definingClass` through a direct class lookup, but `matchAll()` still walks every class. Scope it with `fp.matchAll(classDefBy(TYPE))`.
+   - **Prefer Indexed Filters**: `strings` (and exact `definingClass` with `match()`) use the patcher's indexes; prefer them over `custom` lambdas whenever they express the same target.
+   - **Proof of Equivalence**: A performance-only change to a patch must produce byte-identical DEX output. Patch the same APK with `-Pout=<apk>` before and after the change and compare the SHA-256 of every `classes*.dex` entry; the runner output is deterministic. Profile before optimizing (`JAVA_TOOL_OPTIONS="-XX:StartFlightRecording=..."` with `--no-daemon`): the expensive part is often the member iteration, not the predicate itself.
+
 ---
 
 ## 3. Operational Workflow & Scope Discipline
