@@ -58,16 +58,12 @@ public final class TikTokVideoFitHook {
 
             int newW;
             int newH;
-            float transX;
-            float transY;
 
             if ("fit".equals(fitMode)) {
                 // Entire video visible inside container (pillarbox / letterbox)
                 float scale = Math.min((float) containerW / origW, (float) containerH / origH);
                 newW = Math.round(origW * scale);
                 newH = Math.round(origH * scale);
-                transX = (containerW - newW) / 2.0f;
-                transY = (containerH - newH) / 2.0f;
                 if (!isValidFit(newW, newH, containerW, containerH)) {
                     return originalResult;
                 }
@@ -76,14 +72,20 @@ public final class TikTokVideoFitHook {
                 float scale = Math.max((float) containerW / origW, (float) containerH / origH);
                 newW = Math.round(origW * scale);
                 newH = Math.round(origH * scale);
-                transX = (containerW - newW) / 2.0f;
-                transY = (containerH - newH) / 2.0f;
                 if (!isValidFill(newW, newH, containerW, containerH)) {
                     return originalResult;
                 }
             } else {
                 return originalResult;
             }
+
+            Field transXField = clazz.getDeclaredField("translateX");
+            transXField.setAccessible(true);
+            Object origTransX = transXField.get(originalResult);
+
+            Field transYField = clazz.getDeclaredField("translateY");
+            transYField.setAccessible(true);
+            Object origTransY = transYField.get(originalResult);
 
             // Attempt copy method first (Kotlin data class copy)
             try {
@@ -95,13 +97,11 @@ public final class TikTokVideoFitHook {
                         boolean isPrimitive = pts[0] == int.class && pts[1] == int.class
                                 && pts[2] == float.class && pts[3] == float.class;
                         if (isBoxed || isPrimitive) {
-                            Float boxedX = Float.valueOf(transX);
-                            Float boxedY = Float.valueOf(transY);
                             if (pts.length == 4) {
-                                return m.invoke(originalResult, newW, newH, boxedX, boxedY);
+                                return m.invoke(originalResult, newW, newH, origTransX, origTransY);
                             } else if (pts.length == 6) {
                                 // Default args copy(width, height, transX, transY, mask, marker)
-                                return m.invoke(originalResult, newW, newH, boxedX, boxedY, 0, null);
+                                return m.invoke(originalResult, newW, newH, origTransX, origTransY, 0, null);
                             }
                         }
                     }
@@ -112,15 +112,7 @@ public final class TikTokVideoFitHook {
             widthField.setInt(originalResult, newW);
             heightField.setInt(originalResult, newH);
 
-            Field transXField = clazz.getDeclaredField("translateX");
-            transXField.setAccessible(true);
-            transXField.set(originalResult, Float.valueOf(transX));
-
-            Field transYField = clazz.getDeclaredField("translateY");
-            transYField.setAccessible(true);
-            transYField.set(originalResult, Float.valueOf(transY));
-
-            Log.d(TAG, "[Video Fit] Fitted result: " + newW + "x" + newH + " trans=(" + transX + "," + transY + ")");
+            Log.d(TAG, "[Video Fit] Fitted result: " + newW + "x" + newH + " (translations preserved)");
             return originalResult;
         } catch (Throwable t) {
             Log.w(TAG, "[Video Fit] fitted swap failed: " + t.getMessage());
