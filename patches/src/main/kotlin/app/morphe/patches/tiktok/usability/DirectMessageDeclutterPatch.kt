@@ -127,10 +127,11 @@ val directMessageDeclutterPatch = bytecodePatch(
 
         // 1. Feature: Hide Camera Icon in Chat List (Inbox conversation rows)
         if (hideChatListCamera == true) {
+            // The patch writes these fields with iput-boolean, so they are instance fields; iterating only instance fields skips decoding static fields.
             val chatListItemModelFp = Fingerprint(
                 custom = { _, classDef ->
-                    classDef.fields.any { it.name == "showCameraIcon" } &&
-                        classDef.fields.any { it.name == "showPhotoSwapThumbnail" }
+                    classDef.instanceFields.any { it.name == "showCameraIcon" } &&
+                        classDef.instanceFields.any { it.name == "showPhotoSwapThumbnail" }
                 },
             )
             val modelClass = chatListItemModelFp.classDef
@@ -386,12 +387,13 @@ val directMessageDeclutterPatch = bytecodePatch(
                     } == true
             }
 
+            // isAlbumViewConfigMethod requires STATIC and static methods are always direct methods in DEX, so iterating directMethods gives the same result without decoding virtual methods.
             val redesignedAlbumClassFp = Fingerprint(
                 custom = { _, classDef ->
-                    classDef.methods.any(isAlbumViewConfigMethod)
+                    classDef.directMethods.any(isAlbumViewConfigMethod)
                 },
             )
-            val albumMethods = redesignedAlbumClassFp.classDef.methods.filter(isAlbumViewConfigMethod)
+            val albumMethods = redesignedAlbumClassFp.classDef.directMethods.filter(isAlbumViewConfigMethod)
             var hookedAlbumCount = 0
             for (redesignedMethod in albumMethods) {
                 val instructions = redesignedMethod.implementation?.instructions?.toList()
