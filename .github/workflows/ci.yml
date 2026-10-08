@@ -9,6 +9,7 @@ jobs:
     name: Verify
     permissions:
       contents: read
+      packages: read
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -27,6 +28,8 @@ jobs:
       - name: Install Python dependencies
         run: pip install -r requirements.txt
       - name: Gradle check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./gradlew check --no-daemon
       - name: Harness unit tests
         run: python -m unittest discover harness/tests
