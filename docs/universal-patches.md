@@ -423,7 +423,7 @@ Plain domains (`log.example.com`), classic hosts lines (`0.0.0.0 log.example.com
 - A curated telemetry/ads-only list is required: blocking functional hosts breaks the app. For TikTok, prefer the `log/mon/mcs/mssdk/analytics` subset and leave `frontier/api/stream/open` untouched.
 
 > [!WARNING]
-> No aplicar Universal Hosts Blocker sobre una instalacion limpia de TikTok donde aun no se inicio sesion: bloquear hosts de telemetria/ads antes del primer login dispara el rate-limit del servidor (error 'too many attempts') durante login/registro. Iniciar sesion primero y parchear despues, o usar una lista minima curada.
+> Do not apply Universal Hosts Blocker on a fresh TikTok install where no login has happened yet: blocking telemetry/ads hosts before the first login trips server-side rate limiting ('too many attempts' errors) during login/registration. Log in first and patch afterwards, or use a minimal curated list.
 
 ---
 
