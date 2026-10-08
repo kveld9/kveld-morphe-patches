@@ -42,9 +42,27 @@ Target APK / APKM / XAPK (Brave, Gboard, TikTok, or Xiaomi Earbuds)
 ./venv/bin/python harness/update.py --doctor
 ```
 Checks Python, androguard, Java, the Gradle wrapper, `Constants.kt`,
-and ADB (WARN-only, needed solely for on-device smoke tests).
-Fix any `[FAIL]` line before auditing; it classifies the problem as
-`ENVIRONMENT` instead of a patch regression.
+and ADB (WARN-only, needed solely for on-device smoke tests). It also
+reports `[WARN]` when the optional manual triage aids `jadx` and `frida`
+are absent; those never fail the verdict and are never pipeline
+dependencies.
+
+### Triage aid: resolving a BLOCKED fingerprint (manual, optional)
+When `--audit` reports `BLOCKED` (0 or ambiguous targets after an
+upstream rename/obfuscation shift), these external tools speed up
+finding the shifted target. Neither replaces the mandatory
+`./gradlew runPatchTest -Papp=<targetApp>` gate.
+
+1. **jadx** (static): open the APK in jadx-gui, follow Xrefs from the
+   blocking reason's string constant or caller, and locate the shifted
+   obfuscated class/method. Then update the fingerprint query in
+   `harness/<target>/contracts` and re-run `--audit`.
+2. **frida** (dynamic, lab device only): before writing a Smali hook,
+   confirm the candidate actually does what the patch assumes, e.g.
+   `frida -U -f <package-from-Constants.kt> -l /tmp/probe.js --no-pause`.
+   Use `jnitrace` for the Java-to-native boundary (e.g. telemetry paths
+   reaching into `libchrome.so`). Requires root or Gadget on the attached
+   lab device; the repacked APK smoke test stays the faithful verdict.
 
 ### 1. Audit a Target APK / APKM (Non-destructive inspection)
 Run this command to inspect fingerprints, obfuscated symbol changes, and invariants without modifying code:
