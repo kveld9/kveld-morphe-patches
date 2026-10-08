@@ -1,3 +1,20 @@
+## [2.6.0-experimental.6](https://github.com/kveld9/kveld-morphe-patches/compare/v2.6.0-experimental.5...v2.6.0-experimental.6) (2026-10-08)
+
+### Bug Fixes
+
+* **brave:** list hooked telemetry methods in log ([bfcb6bc](https://github.com/kveld9/kveld-morphe-patches/commit/bfcb6bc483ff2051a81675b492cf4f4eb35bbd61))
+* **hevy:** break down purged components by category in log ([6b6c9ed](https://github.com/kveld9/kveld-morphe-patches/commit/6b6c9ed3a55bd0e80926c88fb55bf3dcee3260cc))
+* **nokoprint:** break down governed ad components by tag in log ([85cb1dd](https://github.com/kveld9/kveld-morphe-patches/commit/85cb1dda694f4d9952958a68db83dcb92434730a))
+* **nokoprint:** break down purged components by category in log ([60f2949](https://github.com/kveld9/kveld-morphe-patches/commit/60f2949dd0b59656c94b55e9cec21cacea390f6a))
+* **universal:** break down neutralized components by category in log ([e3c4487](https://github.com/kveld9/kveld-morphe-patches/commit/e3c4487822fc6a55d8f312040be6b10749c6028d))
+* **universal:** keep push and auth receivers out of default telemetry toggle ([b7afeea](https://github.com/kveld9/kveld-morphe-patches/commit/b7afeea3833f95891056e52c8c05ded902a41c19)), closes [#77](https://github.com/kveld9/kveld-morphe-patches/issues/77)
+* **xiaomi-earbuds:** break down keepalive components by tag in log ([0116df7](https://github.com/kveld9/kveld-morphe-patches/commit/0116df7ff87d34d86ef3389a784f705dfc1efffc))
+* **xiaomi-earbuds:** break down purged components by category in log ([8bed861](https://github.com/kveld9/kveld-morphe-patches/commit/8bed861d15fce6b7ef286379bd081d42f2a74677))
+
+### New Features
+
+* **brave:** preselect previous tab in group when closing selected tab ([91be179](https://github.com/kveld9/kveld-morphe-patches/commit/91be17948defc045d86fbd21449c170d7758872a))
+
 ## [2.6.0-experimental.5](https://github.com/kveld9/kveld-morphe-patches/compare/v2.6.0-experimental.4...v2.6.0-experimental.5) (2026-10-08)
 
 ### New Features

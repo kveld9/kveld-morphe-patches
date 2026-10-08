@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "2.6.0-experimental.5",
+  "version": "2.6.0-experimental.6",
   "patches": [
     {
       "name": "APK Junk Cleaner",
@@ -4216,6 +4216,34 @@
       "options": []
     },
     {
+      "name": "Tab Group Close Selection",
+      "description": "When closing the active tab in a tab group, selects the previous tab in the same group instead of jumping outside the group.",
+      "default": true,
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": [
+        {
+          "packageName": "com.brave.browser",
+          "name": "Brave Private Web Browser, VPN",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": "#FF4500",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "1.97.56",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "TikTok Privacy Permissions Stripper",
       "description": "Selectively strips sensitive privacy, sensor, hardware, and tracking permissions from AndroidManifest.xml via configurable boolean toggles.",
       "default": false,
@@ -4790,7 +4818,7 @@
         {
           "key": "disablePushServices",
           "title": "Disable Push Notification Services",
-          "description": "Disable Meta Fbns, PushLite, and Firebase Cloud Messaging services. WARNING: this breaks push notifications; enable only to fully silence background push delivery.",
+          "description": "Disable Meta Fbns, PushLite, and Firebase Cloud Messaging services plus push receivers (Firebase IID, Braze). WARNING: this breaks push notifications; enable only to fully silence background push delivery.",
           "required": false,
           "type": "kotlin.Boolean",
           "default": false,
