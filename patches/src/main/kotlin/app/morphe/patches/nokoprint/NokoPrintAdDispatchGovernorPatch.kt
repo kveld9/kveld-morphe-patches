@@ -60,7 +60,7 @@ private val nokoPrintAdManifestResourcePatch = resourcePatch(
             "com.ironsource.lifecycle.LevelPlayActivityLifecycleProvider",
         )
 
-        var disabledComponents = 0
+        val tagCounts = mutableMapOf("activity" to 0, "service" to 0, "receiver" to 0)
         var disabledProviders = 0
 
         document(manifestFile.absolutePath).use { doc ->
@@ -72,7 +72,7 @@ private val nokoPrintAdManifestResourcePatch = resourcePatch(
                     val name = comp.getAttribute("android:name")
                     if (adComponentPrefixes.any { name.startsWith(it) }) {
                         comp.setAttribute("android:enabled", "false")
-                        disabledComponents++
+                        tagCounts[tag] = (tagCounts[tag] ?: 0) + 1
                     }
                 }
             }
@@ -99,7 +99,13 @@ private val nokoPrintAdManifestResourcePatch = resourcePatch(
             metaToRemove.forEach { it.parentNode?.removeChild(it) }
         }
 
-        println("[Ad Dispatch Governor] Disabled $disabledComponents ad components, $disabledProviders startup providers.")
+        val disabledComponents = tagCounts.values.sum()
+        val categoryBreakdown = tagCounts.entries
+            .filter { it.value > 0 }
+            .joinToString(", ") { "${it.key}=${it.value}" }
+        val componentDetails = if (categoryBreakdown.isNotEmpty()) " ($categoryBreakdown)" else ""
+
+        println("[Ad Dispatch Governor] Disabled $disabledComponents ad components$componentDetails, $disabledProviders startup providers.")
     }
 }
 
