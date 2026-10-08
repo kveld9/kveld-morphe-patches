@@ -244,6 +244,50 @@ private val APPEVENTS_INSTANCE = setOf(
     "logEvent",
 )
 
+// MANDATORY exclusion: NEVER add run (86x generic workers, roles unverified),
+// onCreate/onActivity*/onNewIntent (component lifecycles, may belong to SDK UI),
+// onResponse and callback-style methods (stall risk), access$* synthetics,
+// loadUrl/showDialog/showOpenHeatMapDialog (functional UI), ignoreView and
+// disableAutoTrack (DIRECTION INVERSION: stubbing keeps collection ON),
+// handleSchemeUrl/mergeJSONObject/d/i (ambiguous internals), and any non-void
+// overloads (out of void-only scope).
+private val SENSORS_STATIC = setOf(
+    "init",
+    "track",
+    "trackMenuItem",
+    "trackViewOnClick",
+    "trackDialog",
+    "trackDrawerClosed",
+    "trackDrawerOpened",
+    "trackExpandableListViewOnChildClick",
+    "trackExpandableListViewOnGroupClick",
+    "trackListView",
+    "trackRadioGroup",
+    "trackTabHost",
+    "trackTabLayoutSelected",
+)
+
+private val SENSORS_INSTANCE = setOf(
+    "track",
+    "trackEvent",
+    "trackViewScreen",
+    "trackViewAppClick",
+    "trackAppInstall",
+    "trackInstallation",
+    "trackDeepLinkLaunch",
+    "login",
+    "loginWithKey",
+    "logout",
+    "identify",
+    "resetAnonymousId",
+    "showUpWebView",
+    "showUpX5WebView",
+    "onClick",
+    "addExposureView",
+    "removeExposureView",
+    "setViewID",
+)
+
 private val REPLAY_STATIC = setOf(
     "init",
     "start",
@@ -353,6 +397,7 @@ private val ANALYTICS_RULES = listOf(
     SdkPrefixRule("Lcom/huawei/hms/analytics", "Huawei Analytics", HUAWEI_STATIC, HUAWEI_INSTANCE),
     SdkPrefixRule("Lcom/yandex/metrica", "Yandex Metrica", METRICA_STATIC, METRICA_INSTANCE),
     SdkPrefixRule("Lcom/facebook/appevents", "Facebook AppEvents", emptySet(), APPEVENTS_INSTANCE),
+    SdkPrefixRule("Lcom/sensorsdata", "Sensors Analytics", SENSORS_STATIC, SENSORS_INSTANCE),
 )
 
 private val ATTRIBUTION_RULES = listOf(
@@ -425,7 +470,7 @@ val universalSdkBlockerPatch = bytecodePatch(
         key = "blockAnalytics",
         default = true,
         title = "Block Analytics SDKs",
-        description = "Neutralize Firebase Analytics, Matomo, Leanplum, Localytics, WebEngage, PostHog, MoEngage, Snowplow, mParticle, Treasure Data, Huawei Analytics, Yandex Metrica, and Facebook AppEvents event tracking, capture, and session logging methods.",
+        description = "Neutralize Firebase Analytics, Matomo, Leanplum, Localytics, WebEngage, PostHog, MoEngage, Snowplow, mParticle, Treasure Data, Huawei Analytics, Yandex Metrica, Facebook AppEvents, and Sensors Analytics event tracking, capture, and session logging methods.",
         required = false,
     )
 
