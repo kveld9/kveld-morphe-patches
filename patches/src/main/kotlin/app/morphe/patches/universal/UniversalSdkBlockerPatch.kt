@@ -251,6 +251,7 @@ private val APPEVENTS_INSTANCE = setOf(
 // disableAutoTrack (DIRECTION INVERSION: stubbing keeps collection ON),
 // handleSchemeUrl/mergeJSONObject/d/i (ambiguous internals), and any non-void
 // overloads (out of void-only scope).
+// logout/resetAnonymousId/removeExposureView/remove excluded (stubbing preserves identity/tracking state: direction inversion).
 private val SENSORS_STATIC = setOf(
     "init",
     "track",
@@ -277,14 +278,11 @@ private val SENSORS_INSTANCE = setOf(
     "trackDeepLinkLaunch",
     "login",
     "loginWithKey",
-    "logout",
     "identify",
-    "resetAnonymousId",
     "showUpWebView",
     "showUpX5WebView",
     "onClick",
     "addExposureView",
-    "removeExposureView",
     "setViewID",
 )
 
