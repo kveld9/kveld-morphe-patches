@@ -40,6 +40,7 @@ Comprehensive technical and configuration guide for **Brave Browser** (`com.brav
 | **Disable Tab Auto-Minimization** | `bytecodePatch` | Debloat & UX | ✅ Yes | Forces `ChromeTabbedActivity.k6 ()Z -> false`, preventing Brave from minimizing active tabs to the background and opening a New Tab Page on resume. |
 | **Disable Content Capture** | `bytecodePatch` | Privacy & Anti-Tracking | ✅ Yes | Forces `OnscreenContentProvider.shouldCapture -> false`. Stops page text/URL streaming to the Android ContentCapture service. |
 | **Skip First Run** | `bytecodePatch` | Usability & UX | ✅ Yes | Skips the welcome screen, search engine selection, and onboarding First Run Experience (FRE) on clean installs. |
+| **Tab Group Close Selection** | `bytecodePatch` | Usability & UX | ✅ Yes | When closing the selected tab in a tab group, selects the previous tab in the same group instead of jumping to a tab outside the group. |
 | **Universal Patches Suite** | Multiple | Optimization & Privacy | Contextual | Compatible with universal slimmers and privacy patches (Telemetry Neutralizer, Native Binary Trimmer, WebP/PNG Optimizers, DPI/Locale Slimmers). See [Universal Patch Reference](../universal-patches.md). |
 
 ---
@@ -189,6 +190,15 @@ ur, uz, vi, zh-CN, zh-HK, zh-TW, zu
 - **Mechanisms**:
   - Forces `OnscreenContentProvider.shouldCapture(String)` to return `false`. The method is JNI-only and gates native capture, so no content is extracted or dispatched while `CompositorViewHolder` keeps a valid provider instance.
   - No effect on devices without a ContentCapture service (`adb shell dumpsys content_capture` reports `Can't find service`).
+
+### 16. Tab Group Close Selection (`braveTabGroupCloseSelectionPatch`)
+- **Objective**: Prevent Brave from kicking the user out of an active tab group when closing the selected tab, ensuring the predecessor tab within the same group is selected instead of jumping to a tab outside the group (GitHub issue #76).
+- **Mechanisms**:
+  - Hooks `TabCollectionTabModelImpl.Z(List, Tab, int, boolean, int, int)V` via companion helper `BraveExtension.preselectPreviousTabInGroup`.
+  - Evaluates whether the closing tab is the currently active/selected tab and belongs to a tab group with a predecessor tab (`currentIndex > firstIndex`).
+  - Pre-selects the predecessor tab via `model.setIndex(predecessorIndex)` before stock selection runs.
+  - When stock `NextTabSelectionUtil.getNextTabIfClosed` executes, it detects that the active tab is not closing, preserving focus within the tab group.
+  - Transparently falls back to stock Chromium selection behavior for single-tab groups, non-selected tab closures, bulk-close / close-all flows, and session restoration.
 
 ---
 
