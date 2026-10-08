@@ -22,7 +22,7 @@ Comprehensive reference for universal optimization and resource slimming patches
 | **[Universal Screen Timeout Enforcer](#12-universal-screen-timeout-enforcer-universalscreentimeoutenforcerpatch)** | `bytecodePatch` | Dalvik Bytecode & Windows | Neutralizes `keepScreenOn(Z)V` view calls and strips `FLAG_KEEP_SCREEN_ON` (`0x80`) | Enforces OS screen timeout and sleep timer during video playback |
 | **[Universal Screen Brightness Governor](#13-universal-screen-brightness-governor-universalscreenbrightnessgovernorpatch)** | `bytecodePatch` | Dalvik Bytecode & Windows | Neutralizes direct writes to `WindowManager.LayoutParams.screenBrightness` (`iput`) | Prevents apps from overriding display brightness via window layout params |
 | **[Universal Hosts Blocker](#14-universal-hosts-blocker-universalhostsblockerpatch)** | `bytecodePatch` | Dalvik `const-string` literals | Rewrites user-blocklisted URL/host literals to a sink IP (`0.0.0.0`) | Silences analytics/ads dispatch without touching native binaries |
-| **[Universal SDK Blocker](#15-universal-sdk-blocker-universalsdkblockerpatch)** | `bytecodePatch` | Dalvik Bytecode Methods | Neutralizes third-party APM, crash, analytics, attribution, and push SDK init/event methods via early `return-void` | Neutralizes runtime SDK execution; companion layer to Universal Telemetry Neutralizer |
+| **[Universal SDK Blocker](#15-universal-sdk-blocker-universalsdkblockerpatch)** | `bytecodePatch` | Dalvik Bytecode Methods | Neutralizes third-party APM, crash, analytics, attribution, session replay, location, and push SDK init/event methods via early `return-void` | Neutralizes runtime SDK execution; companion layer to Universal Telemetry Neutralizer |
 
 ---
 
@@ -429,7 +429,9 @@ Plain domains (`log.example.com`), classic hosts lines (`0.0.0.0 log.example.com
 
 ## 15. Universal SDK Blocker (`universalSdkBlockerPatch`)
 
-The **`Universal SDK Blocker`** patch neutralizes pervasive third-party APM, crash reporting, analytics, attribution, and push engagement SDKs directly at the Dalvik bytecode level (`classes*.dex`). It serves as the runtime execution counterpart to **`Universal Telemetry Neutralizer`** (manifest layer).
+The **`Universal SDK Blocker`** patch neutralizes pervasive third-party APM, crash reporting, analytics, attribution, session replay, location tracking, and push engagement SDKs directly at the Dalvik bytecode level (`classes*.dex`). It serves as the runtime execution counterpart to **`Universal Telemetry Neutralizer`** (manifest layer).
+
+Tracker catalog derived from the Exodus Privacy tracker database (https://exodus-privacy.eu.org), database contents under ODbL 1.0 / DbCL 1.0. Only Analytics, Crash reporting and Profiling category SDKs are covered; advertisement and functional SDKs are excluded or kept behind disabled-by-default toggles.
 
 > [!NOTE]
 > ### Runtime Early Return-Void Neutralization
@@ -441,8 +443,10 @@ The **`Universal SDK Blocker`** patch neutralizes pervasive third-party APM, cra
 
 - **Application Performance Monitoring (APM)**: New Relic (`Lcom/newrelic`), Datadog (`Lcom/datadog`), Dynatrace (`Lcom/dynatrace`).
 - **Crash Reporting**: Raygun (`Lcom/mindscapehq`), Shake (`Lcom/shakebugs`), Embrace (`Lio/embrace`), Splunk Mint (`Lcom/splunk`), Microsoft App Center (`Lcom/microsoft/appcenter`), OpenTelemetry (`Lio/opentelemetry`), ACRA (`Lorg/acra`), Sentry (`Lio/sentry`), Bugsnag (`Lcom/bugsnag`), Crashlytics (legacy `Lcom/crashlytics/android` and modern `Lcom/google/firebase/crashlytics`), Fabric (`Lio/fabric/sdk`), Instabug (`Lcom/instabug`), Countly (`Lly/count/android`), HockeyApp (`Lnet/hockeyapp`).
-- **Analytics**: Firebase Analytics (`Lcom/google/firebase/analytics`; consent and data-clear setters preserved to prevent freezing granted permissions), Matomo (`Lorg/matomo`), Leanplum (`Lcom/leanplum`), Localytics (`Lcom/localytics`), WebEngage (`Lcom/webengage`), PostHog (`Lcom/posthog`), MoEngage (`Lcom/moengage`).
-- **Attribution & Engagement**: AppsFlyer (`Lcom/appsflyer`), Adjust (`Lcom/adjust`), Amplitude (`Lcom/amplitude`), Mixpanel (`Lcom/mixpanel`), CleverTap (`Lcom/clevertap`), Segment (`Lcom/segment`), Branch (`Lio/branch`, `Lcom/branch`), Singular (`Lcom/singular`; partial coverage of void setup and referrer methods; boolean public API out of scope), Unity Analytics (`Lcom/unity3d/services/analytics`), Flurry (`Lcom/flurry`), GameAnalytics (`Lcom/gameanalytics`).
+- **Analytics**: Firebase Analytics (`Lcom/google/firebase/analytics`; consent and data-clear setters preserved to prevent freezing granted permissions), Matomo (`Lorg/matomo`), Leanplum (`Lcom/leanplum`), Localytics (`Lcom/localytics`), WebEngage (`Lcom/webengage`), PostHog (`Lcom/posthog`), MoEngage (`Lcom/moengage`), Snowplow (`Lcom/snowplowanalytics`), mParticle (`Lcom/mparticle`), Treasure Data (`Lcom/treasuredata`), Huawei Analytics (`Lcom/huawei/hms/analytics`; consent and data-clear setters preserved), Yandex Metrica (`Lcom/yandex/metrica`), Facebook AppEvents (`Lcom/facebook/appevents`).
+- **Attribution & Engagement**: AppsFlyer (`Lcom/appsflyer`), Adjust (`Lcom/adjust`), Amplitude (`Lcom/amplitude`), Mixpanel (`Lcom/mixpanel`), CleverTap (`Lcom/clevertap`), Segment (`Lcom/segment`), Branch (`Lio/branch`, `Lcom/branch`), Singular (`Lcom/singular`; partial coverage of void setup and referrer methods; boolean public API out of scope), Kochava (`Lcom/kochava`), Tenjin (`Lcom/tenjin`), Unity Analytics (`Lcom/unity3d/services/analytics`), Flurry (`Lcom/flurry`), GameAnalytics (`Lcom/gameanalytics`).
+- **Session Replay**: UXCam (`Lcom/uxcam`), Smartlook (`Lcom/smartlook`), FullStory (`Lcom/fullstory`), Contentsquare (`Lcom/contentsquare`), Bugsee (`Lcom/bugsee`).
+- **Location & Beacon Tracking**: Radar (`Lio/radar`), Gimbal (`Lcom/gimbal`), Estimote (`Lcom/estimote`).
 - **Legacy Google Analytics**: Pre-Firebase Google Analytics v4 / GMS Analytics (`Lcom/google/analytics`, `Lcom/google/android/gms/analytics`).
 - **Push Engagement**: OneSignal (`Lcom/onesignal`), Airship (`Lcom/urbanairship`), Braze (`Lcom/braze`, `Lcom/appboy`).
 
@@ -450,8 +454,10 @@ The **`Universal SDK Blocker`** patch neutralizes pervasive third-party APM, cra
 
 - **Block APM & Performance Monitoring SDKs (`blockApm`)**: Neutralize New Relic, Datadog, and Dynatrace initialization, metric recording, and HTTP transaction tracing methods (Toggle, default: `true`).
 - **Block Crash Reporting SDKs (`blockCrashReporters`)**: Neutralize Sentry, Bugsnag, Crashlytics (legacy and Firebase), Fabric, Raygun, Shake, Embrace, Splunk Mint, App Center, OpenTelemetry, ACRA, Instabug, Countly, and HockeyApp initialization and exception reporting methods (Toggle, default: `true`).
-- **Block Analytics SDKs (`blockAnalytics`)**: Neutralize Firebase Analytics, Matomo, Leanplum, Localytics, WebEngage, PostHog, and MoEngage event tracking, capture, identification, and session upload methods (Toggle, default: `true`).
-- **Block Attribution & Engagement SDKs (`blockAttribution`)**: Neutralize AppsFlyer, Adjust, Amplitude, Mixpanel, CleverTap, Segment, Branch, Singular, Unity Analytics, Flurry, and GameAnalytics conversion, attribution, and event dispatch methods (Toggle, default: `true`).
+- **Block Analytics SDKs (`blockAnalytics`)**: Neutralize Firebase Analytics, Matomo, Leanplum, Localytics, WebEngage, PostHog, MoEngage, Snowplow, mParticle, Treasure Data, Huawei Analytics, Yandex Metrica, and Facebook AppEvents event tracking, capture, identification, and session upload methods (Toggle, default: `true`).
+- **Block Attribution & Engagement SDKs (`blockAttribution`)**: Neutralize AppsFlyer, Adjust, Amplitude, Mixpanel, CleverTap, Segment, Branch, Singular, Kochava, Tenjin, Unity Analytics, Flurry, and GameAnalytics conversion, attribution, and event dispatch methods (Toggle, default: `true`).
+- **Block Session Replay SDKs (`blockSessionReplay`)**: Neutralize UXCam, Smartlook, FullStory, Contentsquare, and Bugsee screen and session recording methods (Toggle, default: `true`).
+- **Block Location & Beacon Tracking SDKs (`blockLocationTrackers`)**: Neutralize Radar, Gimbal, and Estimote beacon and location tracking methods; note OS location permission controls remain the primary gate (Toggle, default: `true`).
 - **Block Legacy Google Analytics (`blockLegacyAnalytics`)**: Neutralize pre-Firebase Google Analytics tracking, hit dispatching, and activity reporting methods across `com.google.analytics` and `com.google.android.gms.analytics` (Toggle, default: `true`).
 - **Block Push Engagement SDKs (`blockPushEngagement`)**: Neutralize OneSignal, Airship, and Braze push engagement and tagging SDKs (Toggle, default: `false`). *WARNING: this breaks push notifications; enable only to fully silence background push engagement SDK runtimes.*
 

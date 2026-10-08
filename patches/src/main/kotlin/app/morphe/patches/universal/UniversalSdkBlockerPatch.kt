@@ -151,6 +151,140 @@ private val SINGULAR_INSTANCE_METHODS = setOf(
     "setup",
 )
 
+private val ATTRIBUTION_EXTRA_STATIC = setOf(
+    "init",
+    "initialize",
+    "configure",
+    "start",
+    "register",
+    "setup",
+)
+
+private val ATTRIBUTION_EXTRA_INSTANCE = setOf(
+    "connect",
+    "eventWithName",
+    "track",
+    "trackEvent",
+    "logEvent",
+    "sendEvent",
+)
+
+private val SNOWPLOW_STATIC = setOf(
+    "init",
+    "createTracker",
+    "register",
+    "setup",
+    "start",
+)
+
+private val SNOWPLOW_INSTANCE = setOf(
+    "track",
+    "addContext",
+    "setUserId",
+    "setSubject",
+)
+
+private val PIPELINE_STATIC = setOf(
+    "start",
+    "init",
+    "initializeSharedInstance",
+    "register",
+    "setup",
+)
+
+private val PIPELINE_INSTANCE = setOf(
+    "logEvent",
+    "logScreenEvent",
+    "logError",
+    "logException",
+    "logNetworkPerformance",
+    "addEvent",
+    "uploadEvents",
+)
+
+// MANDATORY exclusion: NEVER add setAnalyticsEnabled (direction-sensitive consent setter)
+// nor clearCachedData (discards stored data; stubbing preserves it).
+private val HUAWEI_STATIC = setOf(
+    "init",
+    "setup",
+    "register",
+    "enableLog",
+)
+
+private val HUAWEI_INSTANCE = setOf(
+    "onEvent",
+    "setUserId",
+    "setUserProfile",
+)
+
+private val METRICA_STATIC = setOf(
+    "activate",
+    "activateReporter",
+    "reportEvent",
+    "reportError",
+    "reportRevenue",
+    "resumeSession",
+    "pauseSession",
+    "sendEventsBuffer",
+    "register",
+)
+
+private val METRICA_INSTANCE = setOf(
+    "reportEvent",
+    "reportError",
+    "resumeSession",
+    "pauseSession",
+    "sendEventsBuffer",
+)
+
+// Scoped to appevents subpackage only (never broad com/facebook); flush verified in-repo
+// by Hevy telemetry patch (AppEventQueue.flush), logEvent is the stable public API entry.
+private val APPEVENTS_INSTANCE = setOf(
+    "flush",
+    "logEvent",
+)
+
+private val REPLAY_STATIC = setOf(
+    "init",
+    "start",
+    "startWithKey",
+    "startWithConfiguration",
+    "startNewSession",
+    "setup",
+    "setupAndStartRecording",
+    "register",
+    "initialize",
+    "initializeSdk",
+    "begin",
+    "launch",
+    "configure",
+)
+
+private val REPLAY_INSTANCE = setOf(
+    "startRecording",
+    "startNewSession",
+    "startSession",
+    "event",
+    "identify",
+)
+
+private val LOCATION_STATIC = setOf(
+    "initialize",
+    "init",
+    "start",
+    "register",
+    "setup",
+    "configure",
+)
+
+private val LOCATION_INSTANCE = setOf(
+    "start",
+    "startTracking",
+    "track",
+    "sendLocation",
+    "onLocationChanged",
+)
+
 private val LEGACY_METHODS = setOf(
     "send",
     "activityStart",
@@ -213,6 +347,12 @@ private val ANALYTICS_RULES = listOf(
     SdkPrefixRule("Lcom/webengage", "WebEngage", ANALYTICS_STATIC_METHODS, ANALYTICS_INSTANCE_METHODS),
     SdkPrefixRule("Lcom/posthog", "PostHog", ANALYTICS_STATIC_METHODS, ANALYTICS_INSTANCE_METHODS),
     SdkPrefixRule("Lcom/moengage", "MoEngage", ANALYTICS_STATIC_METHODS, ANALYTICS_INSTANCE_METHODS),
+    SdkPrefixRule("Lcom/snowplowanalytics", "Snowplow", SNOWPLOW_STATIC, SNOWPLOW_INSTANCE),
+    SdkPrefixRule("Lcom/mparticle", "mParticle", PIPELINE_STATIC, PIPELINE_INSTANCE),
+    SdkPrefixRule("Lcom/treasuredata", "Treasure Data", PIPELINE_STATIC, PIPELINE_INSTANCE),
+    SdkPrefixRule("Lcom/huawei/hms/analytics", "Huawei Analytics", HUAWEI_STATIC, HUAWEI_INSTANCE),
+    SdkPrefixRule("Lcom/yandex/metrica", "Yandex Metrica", METRICA_STATIC, METRICA_INSTANCE),
+    SdkPrefixRule("Lcom/facebook/appevents", "Facebook AppEvents", emptySet(), APPEVENTS_INSTANCE),
 )
 
 private val ATTRIBUTION_RULES = listOf(
@@ -225,9 +365,25 @@ private val ATTRIBUTION_RULES = listOf(
     SdkPrefixRule("Lio/branch", "Branch", ATTRIBUTION_STATIC_METHODS, ATTRIBUTION_INSTANCE_METHODS),
     SdkPrefixRule("Lcom/branch", "Branch", ATTRIBUTION_STATIC_METHODS, ATTRIBUTION_INSTANCE_METHODS),
     SdkPrefixRule("Lcom/singular", "Singular", emptySet(), SINGULAR_INSTANCE_METHODS),
+    SdkPrefixRule("Lcom/kochava", "Kochava", ATTRIBUTION_EXTRA_STATIC, ATTRIBUTION_EXTRA_INSTANCE),
+    SdkPrefixRule("Lcom/tenjin", "Tenjin", ATTRIBUTION_EXTRA_STATIC, ATTRIBUTION_EXTRA_INSTANCE),
     SdkPrefixRule("Lcom/unity3d/services/analytics", "Unity Analytics", ATTRIBUTION_STATIC_METHODS, ATTRIBUTION_INSTANCE_METHODS),
     SdkPrefixRule("Lcom/flurry", "Flurry", ATTRIBUTION_STATIC_METHODS, ATTRIBUTION_INSTANCE_METHODS),
     SdkPrefixRule("Lcom/gameanalytics", "GameAnalytics", ATTRIBUTION_STATIC_METHODS, ATTRIBUTION_INSTANCE_METHODS),
+)
+
+private val SESSION_REPLAY_RULES = listOf(
+    SdkPrefixRule("Lcom/uxcam", "UXCam", REPLAY_STATIC, REPLAY_INSTANCE),
+    SdkPrefixRule("Lcom/smartlook", "Smartlook", REPLAY_STATIC, REPLAY_INSTANCE),
+    SdkPrefixRule("Lcom/fullstory", "FullStory", REPLAY_STATIC, REPLAY_INSTANCE),
+    SdkPrefixRule("Lcom/contentsquare", "Contentsquare", REPLAY_STATIC, REPLAY_INSTANCE),
+    SdkPrefixRule("Lcom/bugsee", "Bugsee", REPLAY_STATIC, REPLAY_INSTANCE),
+)
+
+private val LOCATION_RULES = listOf(
+    SdkPrefixRule("Lio/radar", "Radar", LOCATION_STATIC, LOCATION_INSTANCE),
+    SdkPrefixRule("Lcom/gimbal", "Gimbal", LOCATION_STATIC, LOCATION_INSTANCE),
+    SdkPrefixRule("Lcom/estimote", "Estimote", LOCATION_STATIC, LOCATION_INSTANCE),
 )
 
 private val LEGACY_RULES = listOf(
@@ -245,7 +401,7 @@ private val PUSH_RULES = listOf(
 @Suppress("unused")
 val universalSdkBlockerPatch = bytecodePatch(
     name = "Universal SDK Blocker",
-    description = "Neutralizes third-party APM, crash reporting, analytics, attribution, and push engagement SDK init and event methods at DEX level via early return-void; companion runtime layer to Universal Telemetry Neutralizer (manifest layer).",
+    description = "Neutralizes third-party APM, crash reporting, analytics, attribution, session replay, location tracking, and push engagement SDK init and event methods at DEX level via early return-void; companion runtime layer to Universal Telemetry Neutralizer (manifest layer).",
     default = false,
 ) {
     // Universal patch: applies to any target APK in Morphe Manager / CLI (no compatibleWith)
@@ -269,7 +425,7 @@ val universalSdkBlockerPatch = bytecodePatch(
         key = "blockAnalytics",
         default = true,
         title = "Block Analytics SDKs",
-        description = "Neutralize Firebase Analytics, Matomo, Leanplum, Localytics, WebEngage, PostHog, and MoEngage event tracking, capture, and session logging methods.",
+        description = "Neutralize Firebase Analytics, Matomo, Leanplum, Localytics, WebEngage, PostHog, MoEngage, Snowplow, mParticle, Treasure Data, Huawei Analytics, Yandex Metrica, and Facebook AppEvents event tracking, capture, and session logging methods.",
         required = false,
     )
 
@@ -277,7 +433,7 @@ val universalSdkBlockerPatch = bytecodePatch(
         key = "blockAttribution",
         default = true,
         title = "Block Attribution & Engagement SDKs",
-        description = "Neutralize AppsFlyer, Adjust, Amplitude, Mixpanel, CleverTap, Segment, Branch, Singular, Unity Analytics, Flurry, and GameAnalytics conversion, tracking, and attribution SDKs.",
+        description = "Neutralize AppsFlyer, Adjust, Amplitude, Mixpanel, CleverTap, Segment, Branch, Singular, Kochava, Tenjin, Unity Analytics, Flurry, and GameAnalytics conversion, tracking, and attribution SDKs.",
         required = false,
     )
 
@@ -297,6 +453,22 @@ val universalSdkBlockerPatch = bytecodePatch(
         required = false,
     )
 
+    val blockSessionReplay by booleanOption(
+        key = "blockSessionReplay",
+        default = true,
+        title = "Block Session Replay SDKs",
+        description = "Neutralize UXCam, Smartlook, FullStory, Contentsquare, and Bugsee screen and session recording SDK methods.",
+        required = false,
+    )
+
+    val blockLocationTrackers by booleanOption(
+        key = "blockLocationTrackers",
+        default = true,
+        title = "Block Location & Beacon Tracking SDKs",
+        description = "Neutralize Radar, Gimbal, and Estimote beacon and location tracking SDKs; note OS location permission controls remain the primary gate.",
+        required = false,
+    )
+
     execute {
         val activeRules = buildActiveRules(
             blockApm = blockApm ?: true,
@@ -305,6 +477,8 @@ val universalSdkBlockerPatch = bytecodePatch(
             blockAttribution = blockAttribution ?: true,
             blockLegacy = blockLegacyAnalytics ?: true,
             blockPush = blockPushEngagement ?: false,
+            blockSessionReplay = blockSessionReplay ?: true,
+            blockLocationTrackers = blockLocationTrackers ?: true,
         )
 
         if (activeRules.isEmpty()) {
@@ -343,6 +517,8 @@ private fun buildActiveRules(
     blockAttribution: Boolean,
     blockLegacy: Boolean,
     blockPush: Boolean,
+    blockSessionReplay: Boolean,
+    blockLocationTrackers: Boolean,
 ): List<SdkPrefixRule> {
     val categories = listOf(
         blockApm to APM_RULES,
@@ -351,6 +527,8 @@ private fun buildActiveRules(
         blockAttribution to ATTRIBUTION_RULES,
         blockLegacy to LEGACY_RULES,
         blockPush to PUSH_RULES,
+        blockSessionReplay to SESSION_REPLAY_RULES,
+        blockLocationTrackers to LOCATION_RULES,
     )
     return categories.filter { it.first }.flatMap { it.second }
 }
