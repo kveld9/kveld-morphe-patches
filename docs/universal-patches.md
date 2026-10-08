@@ -22,6 +22,7 @@ Comprehensive reference for universal optimization and resource slimming patches
 | **[Universal Screen Timeout Enforcer](#12-universal-screen-timeout-enforcer-universalscreentimeoutenforcerpatch)** | `bytecodePatch` | Dalvik Bytecode & Windows | Neutralizes `keepScreenOn(Z)V` view calls and strips `FLAG_KEEP_SCREEN_ON` (`0x80`) | Enforces OS screen timeout and sleep timer during video playback |
 | **[Universal Screen Brightness Governor](#13-universal-screen-brightness-governor-universalscreenbrightnessgovernorpatch)** | `bytecodePatch` | Dalvik Bytecode & Windows | Neutralizes direct writes to `WindowManager.LayoutParams.screenBrightness` (`iput`) | Prevents apps from overriding display brightness via window layout params |
 | **[Universal Hosts Blocker](#14-universal-hosts-blocker-universalhostsblockerpatch)** | `bytecodePatch` | Dalvik `const-string` literals | Rewrites user-blocklisted URL/host literals to a sink IP (`0.0.0.0`) | Silences analytics/ads dispatch without touching native binaries |
+| **[Universal SDK Blocker](#15-universal-sdk-blocker-universalsdkblockerpatch)** | `bytecodePatch` | Dalvik Bytecode Methods | Neutralizes third-party APM, crash, analytics, attribution, and push SDK init/event methods via early `return-void` | Neutralizes runtime SDK execution; companion layer to Universal Telemetry Neutralizer |
 
 ---
 
@@ -56,6 +57,7 @@ Applying both universal and app-specific patches simultaneously to the same targ
 | **Universal Screen Brightness Governor** | ✅ Yes | Safely neutralizes writes to `WindowManager.LayoutParams.screenBrightness` so display brightness remains strictly under system and user control. |
 | **Universal Offline Mode** | ⚠️ Contextual | **Never apply to web browsers (Brave) or streaming media apps (TikTok)**, as it halts socket creation at the OS kernel level (`AID_INET`). For Gboard Lite and Xiaomi Earbuds, pair with their companion app-specific offline patches for graceful timeout handling. |
 | **Universal Hosts Blocker** | ⚠️ Curated list required | Ships disabled with no bundled blocklist (user supplies the hosts file at patch time). Block only telemetry/ads hosts (e.g. Hagezi `native.tiktok-onlydomains.txt` filtered to `log/mon/mcs/mssdk/analytics`); blocking functional hosts (`frontier/api/stream/open`) breaks feed, login, or CDN playback. |
+| **Universal SDK Blocker** | ✅ Yes | Safely neutralizes APM, crash, analytics, and attribution SDK entrypoints via Dalvik early `return-void`. The optional Push Engagement toggle (`blockPushEngagement`) is disabled by default because silencing push SDKs breaks push notifications. |
 
 ---
 
@@ -419,3 +421,34 @@ Plain domains (`log.example.com`), classic hosts lines (`0.0.0.0 log.example.com
 
 - Rewrites Dex string literals only. Native `.so` endpoint strings (e.g. Brave `libchrome.so` telemetry hosts), dynamically assembled hosts (`StringBuilder` concatenation), encrypted configs, raw IPs, and DoH flows are out of scope.
 - A curated telemetry/ads-only list is required: blocking functional hosts breaks the app. For TikTok, prefer the `log/mon/mcs/mssdk/analytics` subset and leave `frontier/api/stream/open` untouched.
+
+---
+
+## 15. Universal SDK Blocker (`universalSdkBlockerPatch`)
+
+The **`Universal SDK Blocker`** patch neutralizes pervasive third-party APM, crash reporting, analytics, attribution, and push engagement SDKs directly at the Dalvik bytecode level (`classes*.dex`). It serves as the runtime execution counterpart to **`Universal Telemetry Neutralizer`** (manifest layer).
+
+> [!NOTE]
+> ### Runtime Early Return-Void Neutralization
+> While `Universal Telemetry Neutralizer` operates at packaging time by revoking manifest permissions, disabling `ContentProvider` / background `Service` components, and injecting opt-out `<meta-data>`, applications often initialize SDKs programmatically inside `Application.onCreate()` or activity lifecycles.
+>
+> `Universal SDK Blocker` neutralizes programmatic initialization and telemetry dispatch by scanning for known SDK package prefixes and conservative method signatures (such as `init`, `initialize`, `start`, `recordMetric`, `trackEvent`, `reportException`), prepending a zero-register Dalvik `return-void` instruction (`0x0e`) at instruction index 0 of matched void methods. The method returns immediately upon invocation before executing background threads, socket connections, or device profiling loops.
+
+### Neutralized SDKs by Category
+
+- **Application Performance Monitoring (APM)**: New Relic (`Lcom/newrelic`), Datadog (`Lcom/datadog`), Dynatrace (`Lcom/dynatrace`).
+- **Crash Reporting**: Raygun (`Lcom/mindscapehq`), Shake (`Lcom/shakebugs`), Embrace (`Lio/embrace`), Splunk Mint (`Lcom/splunk`), Microsoft App Center (`Lcom/microsoft/appcenter`), OpenTelemetry (`Lio/opentelemetry`), ACRA (`Lorg/acra`), Sentry (`Lio/sentry`), Bugsnag (`Lcom/bugsnag`), Crashlytics (`Lcom/crashlytics/android`), Fabric (`Lio/fabric/sdk`), Instabug (`Lcom/instabug`), Countly (`Lly/count/android`), HockeyApp (`Lnet/hockeyapp`).
+- **Analytics**: Matomo (`Lorg/matomo`), Leanplum (`Lcom/leanplum`), Localytics (`Lcom/localytics`), WebEngage (`Lcom/webengage`), PostHog (`Lcom/posthog`), MoEngage (`Lcom/moengage`).
+- **Attribution & Engagement**: AppsFlyer (`Lcom/appsflyer`), Adjust (`Lcom/adjust`), Amplitude (`Lcom/amplitude`), Mixpanel (`Lcom/mixpanel`), CleverTap (`Lcom/clevertap`), Segment (`Lcom/segment`), Branch (`Lio/branch`, `Lcom/branch`), Unity Analytics (`Lcom/unity3d/services/analytics`), Flurry (`Lcom/flurry`), GameAnalytics (`Lcom/gameanalytics`).
+- **Legacy Google Analytics**: Pre-Firebase Google Analytics v4 / GMS Analytics (`Lcom/google/analytics`, `Lcom/google/android/gms/analytics`).
+- **Push Engagement**: OneSignal (`Lcom/onesignal`), Airship (`Lcom/urbanairship`), Braze (`Lcom/braze`, `Lcom/appboy`).
+
+### Configuration in Morphe Manager
+
+- **Block APM & Performance Monitoring SDKs (`blockApm`)**: Neutralize New Relic, Datadog, and Dynatrace initialization, metric recording, and HTTP transaction tracing methods (Toggle, default: `true`).
+- **Block Crash Reporting SDKs (`blockCrashReporters`)**: Neutralize Sentry, Bugsnag, Crashlytics, Fabric, Raygun, Shake, Embrace, Splunk Mint, App Center, OpenTelemetry, ACRA, Instabug, Countly, and HockeyApp initialization and exception reporting methods (Toggle, default: `true`).
+- **Block Analytics SDKs (`blockAnalytics`)**: Neutralize Matomo, Leanplum, Localytics, WebEngage, PostHog, and MoEngage event tracking, capture, identification, and session upload methods (Toggle, default: `true`).
+- **Block Attribution & Engagement SDKs (`blockAttribution`)**: Neutralize AppsFlyer, Adjust, Amplitude, Mixpanel, CleverTap, Segment, Branch, Unity Analytics, Flurry, and GameAnalytics conversion, attribution, and event dispatch methods (Toggle, default: `true`).
+- **Block Legacy Google Analytics (`blockLegacyAnalytics`)**: Neutralize pre-Firebase Google Analytics tracking, hit dispatching, and activity reporting methods across `com.google.analytics` and `com.google.android.gms.analytics` (Toggle, default: `true`).
+- **Block Push Engagement SDKs (`blockPushEngagement`)**: Neutralize OneSignal, Airship, and Braze push engagement and tagging SDKs (Toggle, default: `false`). *WARNING: this breaks push notifications; enable only to fully silence background push engagement SDK runtimes.*
+
