@@ -95,6 +95,16 @@ def run_doctor(repo_root: Path = REPO_ROOT) -> Tuple[List[DoctorCheck], bool]:
         results.append(DoctorCheck("adb", "ADB (physical-device validation)", "WARN",
                                    "not on PATH (only needed for on-device smoke tests)"))
 
+    for tool, label, version_cmd in (
+        ("jadx", "jadx decompiler (optional BLOCKED triage)", ["jadx", "--version"]),
+        ("frida", "Frida dynamic instrumentation (optional BLOCKED triage)", ["frida", "--version"]),
+    ):
+        if shutil.which(tool):
+            results.append(DoctorCheck(f"opt:{tool}", label, "PASS", _run_version(version_cmd)))
+        else:
+            results.append(DoctorCheck(f"opt:{tool}", label, "WARN",
+                                       f"not on PATH (manual triage aid only, never a pipeline dependency)"))
+
     ok = all(r.status != "FAIL" for r in results)
     return results, ok
 
