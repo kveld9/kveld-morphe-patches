@@ -118,6 +118,9 @@ val universalHostsBlockerPatch = bytecodePatch(
         }
 
         println("$TAG Rewrote $rewrittenStrings const-string literal(s) across $touchedClasses class(es) covering ${blockedRoots.size} blocked host(s) -> $sink.")
+        blockedRoots.sorted().forEach { host ->
+            println("$TAG Blocked host: $host")
+        }
     }
 }
 
