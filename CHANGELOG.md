@@ -1,3 +1,10 @@
+## [2.6.0-experimental.3](https://github.com/kveld9/kveld-morphe-patches/compare/v2.6.0-experimental.2...v2.6.0-experimental.3) (2026-10-08)
+
+### Bug Fixes
+
+* **tiktok:** preserve stock translations in Video Fit to restore centering ([c69c334](https://github.com/kveld9/kveld-morphe-patches/commit/c69c33429d487550b0119de56d00df645ad263b6))
+* **universal:** process full hosts blocklist without entry cap ([db29807](https://github.com/kveld9/kveld-morphe-patches/commit/db29807a20d45a4393fffd525f6d5511ab18693d))
+
 ## [2.6.0-experimental.2](https://github.com/kveld9/kveld-morphe-patches/compare/v2.6.0-experimental.1...v2.6.0-experimental.2) (2026-10-08)
 
 ### New Features
