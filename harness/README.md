@@ -37,6 +37,15 @@ Target APK / APKM / XAPK (Brave, Gboard, TikTok, or Xiaomi Earbuds)
 
 ## 🚀 Daily Operational Procedure
 
+### 0. Preflight readiness (fail fast on environment issues)
+```bash
+./venv/bin/python harness/update.py --doctor
+```
+Checks Python, androguard, Java, the Gradle wrapper, `Constants.kt`,
+and ADB (WARN-only, needed solely for on-device smoke tests).
+Fix any `[FAIL]` line before auditing; it classifies the problem as
+`ENVIRONMENT` instead of a patch regression.
+
 ### 1. Audit a Target APK / APKM (Non-destructive inspection)
 Run this command to inspect fingerprints, obfuscated symbol changes, and invariants without modifying code:
 
