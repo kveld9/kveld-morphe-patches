@@ -1,3 +1,9 @@
+## [2.6.0-experimental.2](https://github.com/kveld9/kveld-morphe-patches/compare/v2.6.0-experimental.1...v2.6.0-experimental.2) (2026-10-08)
+
+### New Features
+
+* **universal:** add opt-in hosts blocklist patch for dex URL literals ([fa1e0ab](https://github.com/kveld9/kveld-morphe-patches/commit/fa1e0ab5e35e46b93f484994c4c9db344c14f6e6))
+
 ## [2.6.0-experimental.1](https://github.com/kveld9/kveld-morphe-patches/compare/v2.5.0...v2.6.0-experimental.1) (2026-10-08)
 
 ### Bug Fixes

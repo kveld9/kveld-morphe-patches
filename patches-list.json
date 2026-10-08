@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "2.6.0-experimental.1",
+  "version": "2.6.0-experimental.2",
   "patches": [
     {
       "name": "APK Junk Cleaner",
@@ -4240,6 +4240,42 @@
         }
       ],
       "options": []
+    },
+    {
+      "name": "Universal Hosts Blocker",
+      "description": "Rewrites Dalvik const-string URL/host literals matching a user-supplied hosts blocklist to a sink IP (default 0.0.0.0). The blocklist file is read at patch time, so daily DNS updates apply without patch releases.",
+      "default": false,
+      "dependencies": [],
+      "compatiblePackages": null,
+      "options": [
+        {
+          "key": "hostsFile",
+          "title": "Hosts blocklist file",
+          "description": "Path to a hosts or plain-domain blocklist file on the patching machine (e.g. Hagezi native.tiktok-onlydomains.txt). Leave empty to skip.",
+          "required": false,
+          "type": "kotlin.String",
+          "default": null,
+          "values": null
+        },
+        {
+          "key": "sinkIp",
+          "title": "Sink IP address",
+          "description": "IPv4 address replacing blocked hosts inside const-string literals (e.g. '0.0.0.0').",
+          "required": false,
+          "type": "kotlin.String",
+          "default": "0.0.0.0",
+          "values": null
+        },
+        {
+          "key": "matchSubdomains",
+          "title": "Match subdomains",
+          "description": "When enabled, a blocklist entry also matches its subdomains (entry 'example.com' matches 'a.example.com').",
+          "required": false,
+          "type": "kotlin.Boolean",
+          "default": true,
+          "values": null
+        }
+      ]
     },
     {
       "name": "Universal Native Binary Trimmer",
