@@ -35,7 +35,7 @@ private val nokoPrintTelemetryResourcePatch = resourcePatch(
         )
 
         var removedPermissions = 0
-        var disabledComponents = 0
+        val tagCounts = mutableMapOf("service" to 0, "receiver" to 0, "provider" to 0)
 
         document(manifestFile.absolutePath).use { doc ->
             // 1. Remove tracking & ads permissions
@@ -62,13 +62,19 @@ private val nokoPrintTelemetryResourcePatch = resourcePatch(
                     val name = elem.getAttribute("android:name")
                     if (name in blockedComponents) {
                         elem.setAttribute("android:enabled", "false")
-                        disabledComponents++
+                        tagCounts[tag] = (tagCounts[tag] ?: 0) + 1
                     }
                 }
             }
         }
 
-        println("[Block Telemetry] Stripped $removedPermissions permissions, disabled $disabledComponents analytics components.")
+        val disabledComponents = tagCounts.values.sum()
+        val categoryBreakdown = tagCounts.entries
+            .filter { it.value > 0 }
+            .joinToString(", ") { "${it.key}=${it.value}" }
+        val componentDetails = if (categoryBreakdown.isNotEmpty()) " ($categoryBreakdown)" else ""
+
+        println("[Block Telemetry] Stripped $removedPermissions permissions, disabled $disabledComponents analytics components$componentDetails.")
     }
 }
 
