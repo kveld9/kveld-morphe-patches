@@ -112,6 +112,45 @@ private val ATTRIBUTION_INSTANCE_METHODS = setOf(
     "sendEvent",
 )
 
+// MANDATORY exclusion: NEVER block consent or clear setters (setConsent, setAdStorage,
+// setAnalyticsStorage, setAdPersonalization, setAdUserData, clearConditionalUserProperty,
+// resetAnalyticsData). Stubbing them would freeze granted consent or preserve stored data.
+private val FIREBASE_ANALYTICS_METHODS = setOf(
+    "logEvent",
+    "setUserProperty",
+    "onEvent",
+    "registerEventNames",
+    "unregisterEventNames",
+    "setConditionalUserProperty",
+)
+
+// MANDATORY exclusion: NEVER block setCrashlyticsCollectionEnabled (direction-sensitive:
+// stubbing a disable call keeps collection ON) nor deleteUnsentReports (it discards
+// queued reports; stubbing preserves them for later upload).
+private val CRASHLYTICS_STATIC = setOf(
+    "recordException",
+    "setCustomKeys",
+)
+
+private val CRASHLYTICS_INSTANCE = setOf(
+    "recordException",
+    "log",
+    "setCustomKey",
+    "setCustomKeys",
+    "setUserId",
+    "sendUnsentReports",
+)
+
+// MANDATORY exclusions: public API event/revenue/customRevenue/init return Z (non-void:
+// out of scope for void-only early-return design); generic worker run->V (32x, class roles
+// unverified) and callbacks onSuccess/onFailure (stubbing could stall retry state machines
+// and increase network traffic) are deliberately excluded.
+private val SINGULAR_INSTANCE_METHODS = setOf(
+    "fetchReferrer",
+    "onInstallReferrerReceived",
+    "setup",
+)
+
 private val LEGACY_METHODS = setOf(
     "send",
     "activityStart",
@@ -159,6 +198,7 @@ private val CRASH_RULES = listOf(
     SdkPrefixRule("Lio/sentry", "Sentry", CRASH_STATIC_METHODS, CRASH_INSTANCE_METHODS),
     SdkPrefixRule("Lcom/bugsnag", "Bugsnag", CRASH_STATIC_METHODS, CRASH_INSTANCE_METHODS),
     SdkPrefixRule("Lcom/crashlytics/android", "Crashlytics", CRASH_STATIC_METHODS, CRASH_INSTANCE_METHODS),
+    SdkPrefixRule("Lcom/google/firebase/crashlytics", "Crashlytics", CRASHLYTICS_STATIC, CRASHLYTICS_INSTANCE),
     SdkPrefixRule("Lio/fabric/sdk", "Fabric", CRASH_STATIC_METHODS, CRASH_INSTANCE_METHODS),
     SdkPrefixRule("Lcom/instabug", "Instabug", CRASH_STATIC_METHODS, CRASH_INSTANCE_METHODS),
     SdkPrefixRule("Lly/count/android", "Countly", CRASH_STATIC_METHODS, CRASH_INSTANCE_METHODS),
@@ -166,6 +206,7 @@ private val CRASH_RULES = listOf(
 )
 
 private val ANALYTICS_RULES = listOf(
+    SdkPrefixRule("Lcom/google/firebase/analytics", "Firebase Analytics", FIREBASE_ANALYTICS_METHODS, FIREBASE_ANALYTICS_METHODS),
     SdkPrefixRule("Lorg/matomo", "Matomo", ANALYTICS_STATIC_METHODS, ANALYTICS_INSTANCE_METHODS),
     SdkPrefixRule("Lcom/leanplum", "Leanplum", ANALYTICS_STATIC_METHODS, ANALYTICS_INSTANCE_METHODS),
     SdkPrefixRule("Lcom/localytics", "Localytics", ANALYTICS_STATIC_METHODS, ANALYTICS_INSTANCE_METHODS),
@@ -183,6 +224,7 @@ private val ATTRIBUTION_RULES = listOf(
     SdkPrefixRule("Lcom/segment", "Segment", ATTRIBUTION_STATIC_METHODS, ATTRIBUTION_INSTANCE_METHODS),
     SdkPrefixRule("Lio/branch", "Branch", ATTRIBUTION_STATIC_METHODS, ATTRIBUTION_INSTANCE_METHODS),
     SdkPrefixRule("Lcom/branch", "Branch", ATTRIBUTION_STATIC_METHODS, ATTRIBUTION_INSTANCE_METHODS),
+    SdkPrefixRule("Lcom/singular", "Singular", emptySet(), SINGULAR_INSTANCE_METHODS),
     SdkPrefixRule("Lcom/unity3d/services/analytics", "Unity Analytics", ATTRIBUTION_STATIC_METHODS, ATTRIBUTION_INSTANCE_METHODS),
     SdkPrefixRule("Lcom/flurry", "Flurry", ATTRIBUTION_STATIC_METHODS, ATTRIBUTION_INSTANCE_METHODS),
     SdkPrefixRule("Lcom/gameanalytics", "GameAnalytics", ATTRIBUTION_STATIC_METHODS, ATTRIBUTION_INSTANCE_METHODS),
@@ -219,7 +261,7 @@ val universalSdkBlockerPatch = bytecodePatch(
         key = "blockCrashReporters",
         default = true,
         title = "Block Crash Reporting SDKs",
-        description = "Neutralize Raygun, Shake, Embrace, Splunk Mint, App Center, OpenTelemetry, ACRA, Sentry, Bugsnag, Crashlytics, Fabric, Instabug, Countly, and HockeyApp crash reporters.",
+        description = "Neutralize Raygun, Shake, Embrace, Splunk Mint, App Center, OpenTelemetry, ACRA, Sentry, Bugsnag, Crashlytics (legacy and Firebase), Fabric, Instabug, Countly, and HockeyApp crash reporters.",
         required = false,
     )
 
@@ -227,7 +269,7 @@ val universalSdkBlockerPatch = bytecodePatch(
         key = "blockAnalytics",
         default = true,
         title = "Block Analytics SDKs",
-        description = "Neutralize Matomo, Leanplum, Localytics, WebEngage, PostHog, and MoEngage event tracking, capture, and session logging methods.",
+        description = "Neutralize Firebase Analytics, Matomo, Leanplum, Localytics, WebEngage, PostHog, and MoEngage event tracking, capture, and session logging methods.",
         required = false,
     )
 
@@ -235,7 +277,7 @@ val universalSdkBlockerPatch = bytecodePatch(
         key = "blockAttribution",
         default = true,
         title = "Block Attribution & Engagement SDKs",
-        description = "Neutralize AppsFlyer, Adjust, Amplitude, Mixpanel, CleverTap, Segment, Branch, Unity Analytics, Flurry, and GameAnalytics conversion, tracking, and attribution SDKs.",
+        description = "Neutralize AppsFlyer, Adjust, Amplitude, Mixpanel, CleverTap, Segment, Branch, Singular, Unity Analytics, Flurry, and GameAnalytics conversion, tracking, and attribution SDKs.",
         required = false,
     )
 
