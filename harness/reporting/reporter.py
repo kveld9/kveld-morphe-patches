@@ -18,13 +18,17 @@ from harness.gboard.themes import ThemeAuditReport
 from harness.migration.validator import PatchAuditResult, PatchStatus
 
 
-def to_jsonable(obj: Any) -> Any:
+_MAX_JSON_DEPTH = 64
+
+
+def to_jsonable(obj: Any, _depth: int = 0, _active: frozenset = frozenset()) -> Any:
     """Recursively converts report dataclasses to JSON-serializable structures.
 
     bytes become lowercase hex, Enums become their values, tuples/sets
     become (sorted) lists, and plain containers fall back to their
-    __dict__. Anything else degrades to str() so serialization of a
-    report never crashes an audit run.
+    __dict__. Cyclic references degrade to a "<cyclic:...>" marker and
+    inputs deeper than _MAX_JSON_DEPTH degrade to str(), so
+    serialization of a report never crashes an audit run.
     """
     if obj is None or isinstance(obj, (bool, int, str)):
         return obj
@@ -32,19 +36,25 @@ def to_jsonable(obj: Any) -> Any:
         return obj.value
     if isinstance(obj, bytes):
         return obj.hex()
+    if _depth > _MAX_JSON_DEPTH:
+        return str(obj)
+    if isinstance(obj, (dict, list, tuple)) or is_dataclass(obj) or hasattr(obj, "__dict__"):
+        if id(obj) in _active:
+            return f"<cyclic:{type(obj).__name__}>"
+        _active = _active | {id(obj)}
     if is_dataclass(obj) and not isinstance(obj, type):
-        return {k: to_jsonable(v) for k, v in obj.__dict__.items() if not k.startswith("_")}
+        return {k: to_jsonable(v, _depth + 1, _active) for k, v in obj.__dict__.items() if not k.startswith("_")}
     if isinstance(obj, dict):
-        return {str(k): to_jsonable(v) for k, v in obj.items()}
+        return {str(k): to_jsonable(v, _depth + 1, _active) for k, v in obj.items()}
     if isinstance(obj, (list, tuple)):
-        return [to_jsonable(v) for v in obj]
+        return [to_jsonable(v, _depth + 1, _active) for v in obj]
     if isinstance(obj, (set, frozenset)):
         try:
-            return sorted(to_jsonable(v) for v in obj)
+            return sorted(to_jsonable(v, _depth + 1, _active) for v in obj)
         except TypeError:
-            return [to_jsonable(v) for v in obj]
+            return [to_jsonable(v, _depth + 1, _active) for v in obj]
     if hasattr(obj, "__dict__"):
-        return {k: to_jsonable(v) for k, v in vars(obj).items() if not k.startswith("_")}
+        return {k: to_jsonable(v, _depth + 1, _active) for k, v in vars(obj).items() if not k.startswith("_")}
     return str(obj)
 
 
