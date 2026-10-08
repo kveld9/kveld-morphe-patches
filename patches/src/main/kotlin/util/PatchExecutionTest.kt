@@ -4,6 +4,7 @@ import app.morphe.patcher.Patcher
 import app.morphe.patcher.PatcherConfig
 import app.morphe.patcher.dex.BytecodeMode
 import app.morphe.patcher.dex.NoOpDexVerifier
+import app.morphe.patcher.patch.Patch
 import app.morphe.patcher.patch.loadPatchesFromJar
 import app.morphe.patcher.resource.CpuArchitecture
 import app.morphe.patches.shared.Constants
@@ -361,6 +362,42 @@ private fun ensurePkcs12KeyStore(keystoreFile: File) {
     }
 }
 
+private fun verifyInputVersion(
+    patcher: Patcher,
+    targetPatches: Set<Patch<*>>,
+    targetApp: TargetApp,
+    inputFile: File,
+) {
+    val packageMetadata = patcher.context.packageMetadata
+    val versionName = packageMetadata.versionName
+    val versionCode = packageMetadata.versionCode
+
+    val expectedVersions = targetPatches
+        .flatMap { it.compatibility.orEmpty() }
+        .filter { it.packageName == targetApp.packageName }
+        .flatMap { it.targets }
+        .mapNotNull { it.version }
+        .toSet()
+
+    if (expectedVersions.isEmpty()) {
+        println("[INFO] Version check skipped: selected patches declare no target version.")
+        return
+    }
+
+    if (versionName in expectedVersions) {
+        println("[INFO] Input version $versionName (versionCode $versionCode) matches target.")
+        return
+    }
+
+    if (System.getProperty("allowVersionMismatch").toBoolean()) {
+        println("[WARN] Version mismatch allowed: input $versionName, expected $expectedVersions.")
+        return
+    }
+
+    patcher.close()
+    error("Input APK ${inputFile.name} version '$versionName' does not match expected target version(s) $expectedVersions. Pass -Papk=<path to the target version> or -PallowVersionMismatch=true for differential runs on other versions.")
+}
+
 fun main(args: Array<String>) {
     val userHome = System.getProperty("user.home") ?: "."
     val searchDirs = getSearchDirectories(userHome)
@@ -557,6 +594,7 @@ fun main(args: Array<String>) {
 
     println("\n[INIT] Initializing Morphe Patcher engine...")
     val patcher = Patcher(config)
+    verifyInputVersion(patcher, targetPatches, targetApp, effectiveApkFile)
     patcher += targetPatches
 
     println("[EXEC] Executing patch pipeline on ${effectiveApkFile.name} (target: ${targetApp.appName})...")

@@ -50,7 +50,7 @@ Execute AGP linting, Kotlin compiler checks, and unit tests:
 ---
 
 ### 3. In-Situ Patching Gate (Mandatory)
-Every patch change must be validated by running the Morphe Patcher against the target APK with all of that app's patches active. The run must finish with 0 failed patches, 0 fingerprint mismatches, and 0 smali compile errors:
+Every patch change must be validated by running the Morphe Patcher against the target APK with all of that app's patches active. The run must finish with 0 failed patches, 0 fingerprint mismatches, and 0 smali compile errors. The runner rejects any input whose version is not a target version declared by the selected patches:
 
 ```bash
 # Patch the target app (brave, gboard, hevy, tiktok, nokoprint, xiaomi_earbuds)
@@ -61,6 +61,9 @@ Every patch change must be validated by running the Morphe Patcher against the t
 
 # Force every boolean patch option on (covers hooks behind disabled-by-default toggles)
 ./gradlew runPatchTest -Papp=<targetApp> -PallOptions=true
+
+# Differential run against another app version (skips the target-version guard)
+./gradlew runPatchTest -Papk=/path/to/other_version.apk -PallowVersionMismatch=true
 
 # Also write a signed, installable APK
 ./gradlew runPatchTest -Papp=<targetApp> -Pout=candidate_apks/<app>_<version>_patched.apk
