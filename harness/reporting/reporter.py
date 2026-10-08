@@ -23,6 +23,13 @@ SYMBOL_ICONS = {
 
 
 @dataclass
+class DexEntryEvidence:
+    name: str
+    sha256: str
+    size: int
+
+
+@dataclass
 class HarnessReportData:
     app_name: str
     package_name: str
@@ -44,6 +51,11 @@ class HarnessReportData:
     build_passed: bool = True
     build_output: str = ""
     final_status: str = "SUCCESS"  # "SUCCESS", "BLOCKED", "FAILED"
+    dex_entries: List[DexEntryEvidence] = field(default_factory=list)
+    libchrome_sha256: str = ""
+    androguard_version: str = ""
+    python_version: str = ""
+    generated_at_utc: str = ""
 
 
 class HarnessReporter:
@@ -60,6 +72,7 @@ class HarnessReporter:
         sections = [
             cls._render_header(data),
             cls._render_metadata(data),
+            cls._render_evidence(data),
             cls._render_patches_matrix(data),
         ]
         if data.theme_report:
@@ -106,6 +119,29 @@ class HarnessReporter:
             "---",
             "",
         ]
+
+    @staticmethod
+    def _render_evidence(data: HarnessReportData) -> List[str]:
+        lines = [
+            "## Analysis Evidence & Reproducibility",
+            "",
+            f"- **Python**: `{data.python_version or 'unknown'}`",
+            f"- **Androguard**: `{data.androguard_version or 'unknown'}`",
+            f"- **Report Generated (UTC)**: `{data.generated_at_utc or 'unknown'}`",
+            f"- **libchrome.so SHA-256**: `{data.libchrome_sha256 or 'absent'}`",
+            "",
+        ]
+        if data.dex_entries:
+            lines.extend([
+                "| DEX Entry | SHA-256 | Size (bytes) |",
+                "| :--- | :--- | ---: |",
+            ])
+            for entry in sorted(data.dex_entries, key=lambda e: e.name):
+                lines.append(f"| `{entry.name}` | `{entry.sha256}` | {entry.size:,} |")
+        else:
+            lines.append("- **DEX Entries**: `none indexed`")
+        lines.extend(["", "---", ""])
+        return lines
 
     @classmethod
     def _render_patches_matrix(cls, data: HarnessReportData) -> List[str]:

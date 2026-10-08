@@ -6,9 +6,12 @@ Provides base lifecycle abstraction, transactional rollback during migrations, a
 from __future__ import annotations
 
 import abc
+import hashlib
+import platform
 import re
 import sys
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Type
 
@@ -17,7 +20,20 @@ from harness.core.dex import DexIndex
 from harness.core.elf import Elf64Analyzer
 from harness.migration.patch_migrator import MigrationPlan, PatchMigrator
 from harness.migration.validator import AdversarialValidator, PatchStatus
-from harness.reporting.reporter import HarnessReportData, HarnessReporter
+from harness.reporting.reporter import DexEntryEvidence, HarnessReportData, HarnessReporter
+
+
+def get_androguard_version() -> str:
+    try:
+        from importlib.metadata import version
+        return version("androguard")
+    except Exception:
+        pass
+    try:
+        import androguard
+        return getattr(androguard, "__version__", "unknown")
+    except Exception:
+        return "unknown"
 
 
 def _safe_print(msg: str, file=None):
@@ -105,6 +121,8 @@ class BaseTargetPipeline(abc.ABC):
         self.migrator = PatchMigrator(self.repo_root)
         self.dex_index: Optional[DexIndex] = None
         self.elf_analyzer: Optional[Elf64Analyzer] = None
+        self.dex_evidence: List[DexEntryEvidence] = []
+        self.libchrome_sha256: str = ""
         self.start_time: float = 0.0
 
     @classmethod
@@ -117,6 +135,10 @@ class BaseTargetPipeline(abc.ABC):
         """Indexes DEX files and parses native ELF libraries if present."""
         _safe_print(f"Extracting and indexing {len(self.meta.dex_files)} DEX files...")
         dex_entries = self.apk_ctx.extract_dex_bytes()
+        self.dex_evidence = [
+            DexEntryEvidence(name=name, sha256=hashlib.sha256(raw).hexdigest(), size=len(raw))
+            for name, raw in dex_entries
+        ]
         self.dex_index = DexIndex()
         self.dex_index.index_dex_files(dex_entries)
         _safe_print(f"Indexed {len(self.dex_index.classes)} classes, {len(self.dex_index.methods)} methods.")
@@ -125,6 +147,8 @@ class BaseTargetPipeline(abc.ABC):
         if libchrome_path:
             _safe_print("Extracting and analyzing libchrome.so...")
             self.elf_analyzer = Elf64Analyzer(libchrome_path)
+            if self.elf_analyzer.data:
+                self.libchrome_sha256 = hashlib.sha256(self.elf_analyzer.data).hexdigest()
             _safe_print(
                 f"ELF parsed: valid={self.elf_analyzer.is_valid}, "
                 f"is_arm={self.elf_analyzer.is_arm} (aarch64={self.elf_analyzer.is_aarch64}, arm32={self.elf_analyzer.is_arm32}), "
@@ -206,6 +230,11 @@ class BaseTargetPipeline(abc.ABC):
             build_passed=build_passed,
             build_output=build_output,
             final_status=final_status,
+            dex_entries=self.dex_evidence,
+            libchrome_sha256=self.libchrome_sha256,
+            androguard_version=get_androguard_version(),
+            python_version=platform.python_version(),
+            generated_at_utc=datetime.now(timezone.utc).isoformat(timespec="seconds"),
         )
 
     def execute(self) -> int:
