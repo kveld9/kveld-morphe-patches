@@ -2,6 +2,7 @@ package app.morphe.patches.brave
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.rawResourcePatch
 import app.morphe.patcher.patch.resourcePatch
@@ -139,7 +140,7 @@ private val LIBCHROME_TRAP_HOOKS = listOf(
     // Constructor 0: __init_cpu_features_constructor detecting LSE atomics. Neutralizing to RET prevents
     // illegal opcode execution on ARMv8.0 cores (e.g. Kryo 240 / Cortex-A73) and forces safe baseline LDXR/STLXR.
     NativeTrapHook(
-        offset = 0x0297b9b4L,
+        offset = 0x029ef9a4L,
         expected = byteArrayOf(0x3f, 0x23, 0x03, 0xd5.toByte()),
         replacement = ARM64_RET,
         description = "LSE atomics feature constructor",
@@ -147,23 +148,23 @@ private val LIBCHROME_TRAP_HOOKS = listOf(
     // Constructor 1: __init_cpu_features detecting ARMv8.1+ extensions. Neutralizing to RET enforces baseline
     // ARMv8.0 dispatch, preventing illegal instruction faults on legacy ARM64 cores.
     NativeTrapHook(
-        offset = 0x0297bcacL,
+        offset = 0x029efbf8L,
         expected = byteArrayOf(0x5f, 0x24, 0x03, 0xd5.toByte()),
         replacement = ARM64_RET,
         description = "CPU extensions feature constructor",
     ),
     // Constructor 2: Brave Promo banner & histogram static initialization calling atomic helpers via range extension thunks.
-    // Neutralizing to RET bypasses the thunk pool (0x0a6a00f0 -> __aarch64_ldadd4_acq_rel), eliminating startup SIGILL.
+    // Neutralizing to RET bypasses the thunk pool, eliminating startup SIGILL.
     NativeTrapHook(
-        offset = 0x08b54240L,
+        offset = 0x08d79388L,
         expected = byteArrayOf(0x3f, 0x23, 0x03, 0xd5.toByte()),
         replacement = ARM64_RET,
         description = "Promo banner static initialization constructor",
     ),
-    // Constructor 10: Brave wallet/rewards fee static initialization calling atomic helpers via range extension thunks.
-    // Neutralizing to RET bypasses the thunk pool (0x0a6a0100 -> __aarch64_cas4_acq_rel), eliminating startup SIGILL.
+    // Constructor 11: Brave wallet/rewards fee static initialization calling atomic helpers via range extension thunks.
+    // Neutralizing to RET bypasses the thunk pool, eliminating startup SIGILL.
     NativeTrapHook(
-        offset = 0x0ababf04L,
+        offset = 0x0afb2fe4L,
         expected = byteArrayOf(0x3f, 0x23, 0x03, 0xd5.toByte()),
         replacement = ARM64_RET,
         description = "Brave wallet fee static initialization constructor",
@@ -223,12 +224,12 @@ internal val braveBtiCompatibilityPatch = rawResourcePatch {
         }
 
         val chromeSo = File(libDir, "libchrome.so")
-        val hooksPatched = patchNativeTrapHooks(chromeSo)
-        if (hooksPatched > 0) {
-            println("[Brave Compatibility] Neutralized $hooksPatched ARMv8.0/GSI illegal opcode trap(s) in libchrome.so -> SIGILL prevented.")
+        if (chromeSo.exists()) {
+            val hooksPatched = patchNativeTrapHooks(chromeSo)
             if (hooksPatched < LIBCHROME_TRAP_HOOKS.size) {
-                println("[WARN] [Brave Compatibility] Incomplete trap coverage: only $hooksPatched of ${LIBCHROME_TRAP_HOOKS.size} constructor traps matched.")
+                throw PatchException("Incomplete trap coverage: only $hooksPatched of ${LIBCHROME_TRAP_HOOKS.size} constructor traps matched in ${chromeSo.name}")
             }
+            println("[Brave Compatibility] Neutralized $hooksPatched ARMv8.0/GSI illegal opcode trap(s) in libchrome.so -> SIGILL prevented.")
         }
     }
 }

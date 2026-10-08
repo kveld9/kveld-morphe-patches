@@ -81,18 +81,18 @@ private val braveHostsBlockerPatch = rawResourcePatch(
         )
 
         val hostEntries = listOf(
-            HostEntry(0x00208fbdL, 0x0059b371L, "star-randsrv.bsg.brave.com"),
-            HostEntry(0x00208feeL, 0x0059b3a2L, "collector.bsg.brave.com"),
-            HostEntry(0x00209025L, 0x0059b3d9L, "usage-ping.brave.com"),
-            HostEntry(0x00208e48L, 0x0059b1fcL, "patterns.wdp.brave.com"),
-            HostEntry(0x00208e5fL, 0x0059b213L, "collector.wdp.brave.com"),
-            HostEntry(0x00208e77L, 0x0059b22bL, "star.wdp.brave.com"),
-            HostEntry(0x00208e8aL, 0x0059b23eL, "quorum.wdp.brave.com"),
-            HostEntry(0x00208e3bL, 0x0059b1efL, "cr.brave.com"),
-            HostEntry(0x0008bd66L, 0x004244ceL, "crashpad.chromium.org"),
-            HostEntry(0x004cc73eL, 0x00852816L, "crashpad.chromium.org"),
-            HostEntry(0x00208ccfL, 0x0059b083L, "variations.brave.com"),
-            HostEntry(0x0034b7ccL, 0x006d4809L, "variations.brave.com"),
+            HostEntry(0x0020d657L, 0x005a14b4L, "star-randsrv.bsg.brave.com"),
+            HostEntry(0x0020d688L, 0x005a14e5L, "collector.bsg.brave.com"),
+            HostEntry(0x0020d6bfL, 0x005a151cL, "usage-ping.brave.com"),
+            HostEntry(0x0020d4e2L, 0x005a133fL, "patterns.wdp.brave.com"),
+            HostEntry(0x0020d4f9L, 0x005a1356L, "collector.wdp.brave.com"),
+            HostEntry(0x0020d511L, 0x005a136eL, "star.wdp.brave.com"),
+            HostEntry(0x0020d524L, 0x005a1381L, "quorum.wdp.brave.com"),
+            HostEntry(0x0020d4d5L, 0x005a1332L, "cr.brave.com"),
+            HostEntry(0x0008ca50L, 0x00426dfbL, "crashpad.chromium.org"),
+            HostEntry(0x004d92bcL, 0x00861123L, "crashpad.chromium.org"),
+            HostEntry(0x0020d369L, 0x005a11c6L, "variations.brave.com"),
+            HostEntry(0x003532a6L, 0x006ddcb2L, "variations.brave.com"),
         )
 
         val targets = listOf(

@@ -10,10 +10,10 @@ Comprehensive technical and configuration guide for **Brave Browser** (`com.brav
 | :--- | :--- |
 | **Target Application** | Brave Private Web Browser, VPN |
 | **Package Name** | `com.brave.browser` |
-| **Supported Target Version** | **`1.96.61`** |
+| **Supported Target Version** | **`1.97.56`** |
 | **Target File Format** | Standalone APK (`APK`) |
 | **Recommended Architecture** | `arm64-v8a` (or `armeabi-v7a` for 32-bit devices) |
-| **Official Download Source** | [GitHub: brave/brave-browser/releases](https://github.com/brave/brave-browser/releases/tag/v1.96.61) |
+| **Official Download Source** | [GitHub: brave/brave-browser/releases](https://github.com/brave/brave-browser/releases/tag/v1.97.56) |
 | **Recommended APK Assets** | `Bravemonoarm64.apk` (64-bit) or `BraveMonoarm.apk` (32-bit) |
 
 > [!IMPORTANT]
@@ -50,7 +50,7 @@ Comprehensive technical and configuration guide for **Brave Browser** (`com.brav
 - **Objective**: Unlock Brave Origin feature toggles and preferences without requiring remote enterprise management profiles.
 - **Mechanisms**:
   - Injects Origin preference switch items into settings layout XML (`xml_0x7f18001a.xml`).
-  - Hooks `BraveOriginPreferences` methods (`k5`, `T3`, `j5`, `X4`) to persist toggles locally in `SharedPreferences`.
+  - Hooks `BraveOriginPreferences` methods (`m5`, `U3`, `l5`, `Z4`) to persist toggles locally in `SharedPreferences`.
   - Stubs subscription check methods (`getIsSubscriptionActive`, `requestCredentialSummary`) to return active credentials.
   - Neutralizes the ARM64 BTI flag across bundled native binaries (`libchrome.so`, `libcrashpad_handler_trampoline.so`) and patches illegal instruction traps in `libchrome.so` to ensure seamless execution on ARMv8.0 and Android 16 devices.
 
