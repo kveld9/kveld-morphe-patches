@@ -16,8 +16,8 @@ When inspecting Brave with package analysis tools, the following components may 
 
 Genuine Brave telemetry is fully neutralized by the **Block Brave Telemetry** patch:
 - **P3A (Privacy-Preserving Product Analytics)**: Preference getters forced to return `false` in Dalvik bytecode (`PrefService.e`).
-- **Brave Stats & Web Discovery Project (WDP)**: Reporting loops disabled and all 7 telemetry endpoints redirected to `0.0.0.0` in `libchrome.so`.
-- **Crashpad & Minidump Uploads**: Upload hooks aborted before dispatch (`MinidumpUploadServiceImpl`, `ChromeMinidumpUploadJobService`) and endpoints zeroed in native binary.
+- **Brave Stats & Web Discovery Project (WDP)**: Reporting loops disabled and 12 native telemetry and diagnostic endpoints redirected to `0.0.0.0` in `libchrome.so` (covering Stats, WDP, Crashpad, and Variations).
+- **Crashpad & Minidump Uploads**: Upload hooks aborted before dispatch (`MinidumpUploadServiceImpl`, `ChromeMinidumpUploadJobService`) and crash reporter endpoints redirected to `0.0.0.0` in `libchrome.so`.
 - **Variations Seed Fetching**: Blocked before HTTP socket creation (`IOException("Blocked by Morphe")`).
 
 ---
@@ -49,7 +49,7 @@ The parameter sanitizer does **not** attempt to match every ad network parameter
 - **Comparison with Domain-Conditional Engines**: Projects like ClearURLs, AdGuard URL Tracking Protection, or Brave's upstream C++ `url_cleaner` maintain hundreds of rules scoped to specific domains (e.g. stripping `tag` only on `amazon.com` or `rdt_cid` only on `reddit.com`). Morphe's lightweight companion runtime prioritizes high-confidence global tokens that can be removed with zero risk of site breakage.
 
 #### Complete Catalog of Filtered Parameters (Chromium Extension)
-Implemented in [`ChromiumExtension.java`](../extensions/extension/src/main/java/com/kveld9/morphe/extension/ChromiumExtension.java#L34-L94) and [`isTrackingParam`](../extensions/extension/src/main/java/com/kveld9/morphe/extension/ChromiumExtension.java#L214-L235):
+Implemented in [`ChromiumExtension.java`](../extensions/extension/src/main/java/com/kveld9/morphe/extension/ChromiumExtension.java#L34-L94) and [`isTrackingParam`](../extensions/extension/src/main/java/com/kveld9/morphe/extension/ChromiumExtension.java#L353-L373):
 - **Prefix Families (Global Dynamic Matching)**:
   - `utm_*`: Urchin Tracking Module / Google Analytics marketing attribution (`utm_source`, `utm_medium`, `utm_campaign`, `utm_term`, `utm_content`).
   - `ga_*`: Google Analytics client parameters.
@@ -74,7 +74,7 @@ Implemented in [`ChromiumExtension.java`](../extensions/extension/src/main/java/
   - *TikTok* (`tiktok.com`): `tt_medium`, `tt_content`
 
 #### Platform-Specific Companion: TikTok URL Sanitization
-In contrast to the browser implementation, the TikTok companion filter ([`TikTokFeedAdFilter.sanitizeShareUrl`](../extensions/extension/src/main/java/com/kveld9/morphe/extension/tiktok/TikTokFeedAdFilter.java#L305-L328)) is domain-scoped (`tiktok.com`) and purges ByteDance-specific user tracking and device fingerprinting keys:
+In contrast to the browser implementation, the TikTok companion filter ([`TikTokFeedAdFilter.sanitizeShareUrl`](../extensions/extension/src/main/java/com/kveld9/morphe/extension/tiktok/TikTokFeedAdFilter.java#L778-L803)) is domain-scoped (`tiktok.com`) and purges ByteDance-specific user tracking and device fingerprinting keys:
 - `user_id`, `sec_user_id`, `u_code` (sender user identification)
 - `sender_device`, `checksum` (device telemetry and verification)
 - `share_link_id`, `share_item_id`, `share_app_id`, `ug_source`, `tt_from`, `timestamp`, `_r`, `source` (viral loop and graph correlation)
