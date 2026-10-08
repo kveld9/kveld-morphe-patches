@@ -8,6 +8,9 @@ import app.morphe.patcher.patch.filePathOption
 import app.morphe.patcher.patch.stringOption
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.ClassDef
+import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
@@ -92,10 +95,12 @@ val universalHostsBlockerPatch = bytecodePatch(
         val blockedRoots = mutableSetOf<String>()
 
         classDefForEach { classDef ->
+            if (!hasAnyTargetInstruction(classDef, blocklist, useSubdomains)) return@classDefForEach
+
             val mutableClass = mutableClassDefBy(classDef)
             var classModified = false
 
-            mutableClass.methods.forEach { method ->
+            for (method in mutableClass.methods) {
                 val rewrites = collectConstStringRewrites(method, blocklist, sink, useSubdomains, blockedRoots)
                 if (rewrites.isNotEmpty()) {
                     applyRewrites(method, rewrites)
@@ -199,6 +204,79 @@ private fun findBlockedRoot(host: String, blocklist: Set<String>, useSubdomains:
     return null
 }
 
+private fun hasAnyTargetInstruction(
+    classDef: ClassDef,
+    blocklist: Set<String>,
+    useSubdomains: Boolean,
+): Boolean {
+    for (method in classDef.methods) {
+        if (hasMethodTargetInstruction(method, blocklist, useSubdomains)) return true
+    }
+    return false
+}
+
+private fun hasMethodTargetInstruction(
+    method: Method,
+    blocklist: Set<String>,
+    useSubdomains: Boolean,
+): Boolean {
+    val instructions = method.instructionsOrNull ?: return false
+    for (instruction in instructions) {
+        if (isTargetInstruction(instruction, blocklist, useSubdomains)) return true
+    }
+    return false
+}
+
+private fun isTargetInstruction(
+    instruction: Instruction,
+    blocklist: Set<String>,
+    useSubdomains: Boolean,
+): Boolean {
+    return resolveBlockedRoot(instruction, blocklist, useSubdomains) != null
+}
+
+private fun isConstStringOpcode(opcode: Opcode): Boolean {
+    return opcode == Opcode.CONST_STRING || opcode == Opcode.CONST_STRING_JUMBO
+}
+
+private fun resolveBlockedRoot(
+    instruction: Instruction,
+    blocklist: Set<String>,
+    useSubdomains: Boolean,
+): Pair<String, String>? {
+    if (!isConstStringOpcode(instruction.opcode)) return null
+    val literal = (instruction as? ReferenceInstruction)?.reference as? StringReference ?: return null
+    val original = literal.string
+    val host = extractLiteralHost(original) ?: return null
+    val root = findBlockedRoot(host, blocklist, useSubdomains) ?: return null
+    return original to root
+}
+
+private fun buildPendingRewrite(
+    instruction: Instruction,
+    index: Int,
+    original: String,
+    root: String,
+    sink: String,
+): PendingRewrite? {
+    val replacement = original.replace(root, sink, ignoreCase = true)
+    if (replacement.equals(original, ignoreCase = true)) return null
+    val register = (instruction as? OneRegisterInstruction)?.registerA ?: return null
+    return PendingRewrite(index, register, replacement)
+}
+
+private fun findPendingRewrite(
+    instruction: Instruction,
+    index: Int,
+    blocklist: Set<String>,
+    sink: String,
+    useSubdomains: Boolean,
+): Pair<PendingRewrite, String>? {
+    val (original, root) = resolveBlockedRoot(instruction, blocklist, useSubdomains) ?: return null
+    val rewrite = buildPendingRewrite(instruction, index, original, root, sink) ?: return null
+    return rewrite to root
+}
+
 private fun collectConstStringRewrites(
     method: MutableMethod,
     blocklist: Set<String>,
@@ -210,18 +288,9 @@ private fun collectConstStringRewrites(
     val rewrites = mutableListOf<PendingRewrite>()
 
     for ((index, instruction) in instructions.withIndex()) {
-        if (instruction.opcode != Opcode.CONST_STRING && instruction.opcode != Opcode.CONST_STRING_JUMBO) continue
-        val literal = (instruction as? ReferenceInstruction)?.reference as? StringReference ?: continue
-        val original = literal.string
-        val host = extractLiteralHost(original) ?: continue
-        val root = findBlockedRoot(host, blocklist, useSubdomains) ?: continue
-
-        val replacement = original.replace(root, sink, ignoreCase = true)
-        if (replacement.equals(original, ignoreCase = true)) continue
-
-        val register = (instruction as? OneRegisterInstruction)?.registerA ?: continue
+        val (rewrite, root) = findPendingRewrite(instruction, index, blocklist, sink, useSubdomains) ?: continue
         blockedRoots.add(root)
-        rewrites.add(PendingRewrite(index, register, replacement))
+        rewrites.add(rewrite)
     }
 
     return rewrites
