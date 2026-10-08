@@ -725,7 +725,7 @@ fun main(args: Array<String>) {
             println("[BUILD] Compiled ${patcherResult.dexFiles.size} DEX files successfully.")
 
             val outPath = System.getProperty("outputApk")
-            val dexDigestOption = System.getProperty("dexDigest")?.takeIf { it.isNotBlank() }
+            val dexDigestOption = resolveDexDigestOption()
             if (outPath != null) {
                 val outFile = resolveOutputPath(outPath)
                 outFile.parentFile?.mkdirs()
@@ -1016,6 +1016,16 @@ private fun writeDexDigestFile(file: File, content: String) {
     println("[DIGEST] Per-file digests written to ${file.absolutePath}")
 }
 
+private fun resolveDexDigestOption(): String? {
+    val raw = System.getProperty("dexDigest") ?: return null
+    if (raw.isBlank()) {
+        println("[WARN] -PdexDigest has no value; use true or a file path. Digest skipped.")
+        return null
+    }
+    if (raw.equals("false", ignoreCase = true)) return null
+    return raw
+}
+
 private fun printDexDigest(apk: File, option: String) {
     val dexPattern = Regex("""^classes\d*\.dex$""")
     val fileDigests = java.util.zip.ZipFile(apk).use { zip ->
@@ -1038,4 +1048,5 @@ private fun printDexDigest(apk: File, option: String) {
         writeDexDigestFile(resolveOutputPath(option), linesText)
     }
 }
+
 
