@@ -27,17 +27,16 @@ private const val PREF_PREFIX = "brave_origin_off_"
 
 /**
  * Switch preference keys present in the Brave Origin settings UI.
+ * Telemetry-owned keys (P3A, Stats, WDP) are excluded: Block Telemetry owns
+ * their defaults (false). Single owner per key, no order dependence.
  */
 private val ORIGIN_SWITCH_KEYS = listOf(
     "rewards_switch",
-    "privacy_preserving_analytics_switch",
     "email_aliases_switch",
     "leo_ai_switch",
     "news_switch",
-    "statistics_reporting_switch",
     "vpn_switch",
     "wallet_switch",
-    "web_discovery_project_switch",
 )
 
 /**
