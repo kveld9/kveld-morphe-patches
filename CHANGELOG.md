@@ -1,3 +1,13 @@
+## [2.6.0-experimental.5](https://github.com/kveld9/kveld-morphe-patches/compare/v2.6.0-experimental.4...v2.6.0-experimental.5) (2026-10-08)
+
+### New Features
+
+* **tiktok:** add TikTok Privacy Permissions Stripper with risk-graded toggles ([2d4ceba](https://github.com/kveld9/kveld-morphe-patches/commit/2d4cebadcdbd22c7919f056ba4d4ab4f11185514))
+* **universal:** add Universal SDK Blocker runtime telemetry patch ([37236b9](https://github.com/kveld9/kveld-morphe-patches/commit/37236b90dc4dc95cbf7a55afcd0382a5ecf068cd))
+* **universal:** expand SDK Blocker with Exodus-catalog vendors and replay/location toggles ([29072ef](https://github.com/kveld9/kveld-morphe-patches/commit/29072efcfb7929d7132f48a79f6e04015794bf5c))
+* **universal:** extend SDK Blocker with Firebase and Singular coverage ([ba14f46](https://github.com/kveld9/kveld-morphe-patches/commit/ba14f46e838f72efd0a82e592cc7b943f23dc7cb))
+* **universal:** log each blocked host on its own line in Hosts Blocker ([6c25876](https://github.com/kveld9/kveld-morphe-patches/commit/6c25876396dbfe603e2b9ce2cdf422644d90bde0))
+
 ## [2.6.0-experimental.4](https://github.com/kveld9/kveld-morphe-patches/compare/v2.6.0-experimental.3...v2.6.0-experimental.4) (2026-10-08)
 
 ### Bug Fixes
