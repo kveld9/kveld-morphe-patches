@@ -37,7 +37,7 @@ private val xiaomiEarbudsTelemetryResourcePatch = resourcePatch(
         )
 
         var removedPermissions = 0
-        var disabledComponents = 0
+        val tagCounts = mutableMapOf("service" to 0, "receiver" to 0, "provider" to 0)
 
         document(manifestFile.absolutePath).use { doc ->
             // 1. Strip tracking and ad-services permissions
@@ -64,13 +64,19 @@ private val xiaomiEarbudsTelemetryResourcePatch = resourcePatch(
                     val name = elem.getAttribute("android:name")
                     if (name in blockedComponents) {
                         elem.setAttribute("android:enabled", "false")
-                        disabledComponents++
+                        tagCounts[tag] = (tagCounts[tag] ?: 0) + 1
                     }
                 }
             }
         }
 
-        println("[Block Telemetry & Trackers] Stripped $removedPermissions permissions, disabled $disabledComponents analytics/logging components.")
+        val disabledComponents = tagCounts.values.sum()
+        val categoryBreakdown = tagCounts.entries
+            .filter { it.value > 0 }
+            .joinToString(", ") { "${it.key}=${it.value}" }
+        val componentDetails = if (categoryBreakdown.isNotEmpty()) " ($categoryBreakdown)" else ""
+
+        println("[Block Telemetry & Trackers] Stripped $removedPermissions permissions, disabled $disabledComponents analytics/logging components$componentDetails.")
     }
 }
 
