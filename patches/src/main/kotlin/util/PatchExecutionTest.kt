@@ -412,6 +412,8 @@ fun main(args: Array<String>) {
         ?: System.getProperty("targetApp")
         ?: System.getProperty("app")
 
+    val explicitTarget = explicitTargetArg?.let { raw -> TargetApp.fromId(raw) ?: error("Unknown target app '$raw'. Valid values: ${TargetApp.entries.joinToString { it.id }}.") }
+
     val explicitApkFile = explicitApkArg?.let { raw ->
         val direct = File(raw)
         if (direct.isFile) direct
@@ -426,11 +428,11 @@ fun main(args: Array<String>) {
 
     if (explicitApkFile != null && explicitApkFile.isFile) {
         apkFile = explicitApkFile
-        targetApp = explicitTargetArg?.let { TargetApp.fromId(it) }
+        targetApp = explicitTarget
             ?: TargetApp.fromFileName(apkFile.name)
             ?: error("Could not infer target app for APK: ${apkFile.name}. Specify app via -Papp=<target> or args.")
     } else {
-        targetApp = explicitTargetArg?.let { TargetApp.fromId(it) }
+        targetApp = explicitTarget
             ?: detectTargetFromGit()
             ?: TargetApp.entries.firstOrNull { findApkForTarget(it, searchDirs) != null }
             ?: TargetApp.TIKTOK
