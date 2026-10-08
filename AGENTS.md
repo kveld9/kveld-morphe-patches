@@ -256,3 +256,19 @@ For non-trivial logic, Smali hooks, native ARM64 patching (`libchrome.so`), or s
 # Run automated on-device test suite (battery, sync, smoke launch)
 ./venv/bin/python validation/physical_harness/run_harness.py
 ```
+
+#### Standing Authorization: Autonomous Physical-Device Smoke Testing
+On-device install/launch verification via attached ADB devices is pre-authorized
+standing (user grant, no per-step confirmation required). When a task requires
+validating a patched APK on hardware, the agent must perform the device test
+itself instead of asking the user to run it. Permitted without asking:
+`adb devices` discovery, pushing test APKs, `adb install` / `install -r`,
+launching the test package (`am start` / `monkey`), `logcat` capture scoped to
+the test package, `dumpsys package` reads, and screenshots of the test app.
+Destructive actions are limited to the package under active validation on the
+attached lab device: `adb uninstall` only when a signature or split conflict
+blocks installing the test build, never for unrelated packages, never
+factory reset, never touching other apps' data. Prefer reinstall (`-r`) to
+preserve data. Always report device model, package, actions taken, and the
+launch verdict (alive PID vs FATAL) as evidence in the final report.
+
