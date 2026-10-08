@@ -64,11 +64,6 @@ private val TELEMETRY_RECEIVERS = setOf(
     "com.adjust.sdk.AdjustReferrerReceiver",
     "com.appsflyer.SingleInstallBroadcastReceiver",
     "com.appsflyer.MultipleInstallBroadcastReceiver",
-    "com.google.firebase.iid.FirebaseInstanceIdReceiver",
-    "com.braze.push.BrazePushReceiver",
-    "com.braze.BrazeFlushPushDeliveryReceiver",
-    "com.facebook.AuthenticationTokenManager\$CurrentAuthenticationTokenChangedBroadcastReceiver",
-    "com.facebook.CurrentAccessTokenExpirationBroadcastReceiver",
 )
 
 private val PUSH_SERVICES = setOf(
@@ -80,6 +75,12 @@ private val PUSH_SERVICES = setOf(
     "com.facebook.pushlite.tokenprovider.fcm.PushLiteFcmListenerService",
     "com.facebook.pushlite.tokenprovider.fcm.PushLiteFirebaseMessagingService",
     "com.google.firebase.messaging.FirebaseMessagingService",
+)
+
+private val PUSH_RECEIVERS = setOf(
+    "com.google.firebase.iid.FirebaseInstanceIdReceiver",
+    "com.braze.push.BrazePushReceiver",
+    "com.braze.BrazeFlushPushDeliveryReceiver",
 )
 
 private val GOOGLE_ANALYTICS_SERVICES = setOf(
@@ -260,7 +261,7 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
         key = "disablePushServices",
         default = false,
         title = "Disable Push Notification Services",
-        description = "Disable Meta Fbns, PushLite, and Firebase Cloud Messaging services. WARNING: this breaks push notifications; enable only to fully silence background push delivery.",
+        description = "Disable Meta Fbns, PushLite, and Firebase Cloud Messaging services plus push receivers (Firebase IID, Braze). WARNING: this breaks push notifications; enable only to fully silence background push delivery.",
         required = false,
     )
 
@@ -329,6 +330,7 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
         var disabledServicesCount = 0
         var disabledReceiversCount = 0
         var disabledPushCount = 0
+        var disabledPushReceiversCount = 0
         var disabledGaServicesCount = 0
         var disabledGaReceiversCount = 0
         var disabledMetaServicesCount = 0
@@ -370,6 +372,7 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
 
                 if (shouldDisablePush) {
                     disabledPushCount = application.disableComponentsWhere("service") { it in PUSH_SERVICES }
+                    disabledPushReceiversCount = application.disableComponentsWhere("receiver") { it in PUSH_RECEIVERS }
                 }
 
                 if (shouldDisableGoogleAnalytics) {
@@ -425,7 +428,7 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
             }
         }
 
-        val totalDisabled = disabledProvidersCount + disabledServicesCount + disabledReceiversCount + disabledPushCount + disabledGaServicesCount + disabledGaReceiversCount + disabledMetaServicesCount + disabledMetaReceiversCount + disabledCrashServicesCount + disabledCrashReceiversCount + disabledDeviceIdProvidersCount + disabledDeviceIdServicesCount + disabledDeviceIdReceiversCount
+        val totalDisabled = disabledProvidersCount + disabledServicesCount + disabledReceiversCount + disabledPushCount + disabledPushReceiversCount + disabledGaServicesCount + disabledGaReceiversCount + disabledMetaServicesCount + disabledMetaReceiversCount + disabledCrashServicesCount + disabledCrashReceiversCount + disabledDeviceIdProvidersCount + disabledDeviceIdServicesCount + disabledDeviceIdReceiversCount
         if (removedPerms.isEmpty() && totalDisabled == 0 && injectedFlagsCount == 0 && removedRegistrarsCount == 0 && removedStartupInitCount == 0) {
             println("[Universal Telemetry Neutralizer] AndroidManifest.xml is already clean (0 tracking elements found).")
             return@execute
@@ -443,7 +446,7 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
             "providers" to disabledProvidersCount,
             "services" to disabledServicesCount,
             "receivers" to disabledReceiversCount,
-            "push" to disabledPushCount,
+            "push" to (disabledPushCount + disabledPushReceiversCount),
             "ga" to (disabledGaServicesCount + disabledGaReceiversCount),
             "meta" to (disabledMetaServicesCount + disabledMetaReceiversCount),
             "crash" to (disabledCrashServicesCount + disabledCrashReceiversCount),
