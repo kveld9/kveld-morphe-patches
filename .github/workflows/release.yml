@@ -1,6 +1,8 @@
 name: Release
 
 on:
+  push:
+    branches: [main, dev]
   workflow_dispatch:
 
 jobs:
@@ -35,7 +37,8 @@ jobs:
         run: npm ci
 
       # Semantic release runs its own Gradle build command.
-      # Only dev and main branch will generate a release as specified by .releaserc
+      # semantic-release publishes experimental pre-releases on dev and clean
+      # releases on main; other branches only compile-verify.
       - name: Release
         uses: cycjimmy/semantic-release-action@v6
         id: release
@@ -50,7 +53,7 @@ jobs:
           subject-path: patches/build/libs/patches-*.mpp
 
       - name: Notify Telegram Channel
-        if: steps.release.outputs.new_release_published == 'true'
+        if: github.ref == 'refs/heads/main' && steps.release.outputs.new_release_published == 'true'
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
