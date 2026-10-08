@@ -39,7 +39,9 @@ private val hevyTelemetryResourcePatch = resourcePatch(
         )
 
         var removedPermissions = 0
-        var disabledComponents = 0
+        var disabledProviders = 0
+        var disabledServices = 0
+        var disabledReceivers = 0
 
         document(manifestFile.absolutePath).use { doc ->
             // 1. Remove tracking & ads permissions
@@ -64,7 +66,7 @@ private val hevyTelemetryResourcePatch = resourcePatch(
                 val name = provider.getAttribute("android:name")
                 if (name in blockedProviders) {
                     provider.setAttribute("android:enabled", "false")
-                    disabledComponents++
+                    disabledProviders++
                 }
             }
 
@@ -75,7 +77,7 @@ private val hevyTelemetryResourcePatch = resourcePatch(
                 val name = service.getAttribute("android:name")
                 if (name == "com.hevy.services.WearListenerService") {
                     service.setAttribute("android:enabled", "false")
-                    disabledComponents++
+                    disabledServices++
                 }
             }
 
@@ -85,12 +87,21 @@ private val hevyTelemetryResourcePatch = resourcePatch(
                 val name = receiver.getAttribute("android:name")
                 if (name == "com.adjust.sdk.AdjustReferrerReceiver") {
                     receiver.setAttribute("android:enabled", "false")
-                    disabledComponents++
+                    disabledReceivers++
                 }
             }
         }
 
-        println("[Block Telemetry & Trackers] Stripped $removedPermissions permissions and disabled $disabledComponents tracking components in AndroidManifest.xml")
+        val disabledComponents = disabledProviders + disabledServices + disabledReceivers
+        val categoryBreakdown = listOf(
+            "providers" to disabledProviders,
+            "services" to disabledServices,
+            "receivers" to disabledReceivers,
+        ).filter { it.second > 0 }
+            .joinToString(", ") { "${it.first}=${it.second}" }
+        val componentDetails = if (categoryBreakdown.isNotEmpty()) " ($categoryBreakdown)" else ""
+
+        println("[Block Telemetry & Trackers] Stripped $removedPermissions permissions and disabled $disabledComponents tracking components$componentDetails in AndroidManifest.xml")
     }
 }
 
