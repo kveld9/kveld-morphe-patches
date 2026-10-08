@@ -422,6 +422,9 @@ Plain domains (`log.example.com`), classic hosts lines (`0.0.0.0 log.example.com
 - Rewrites Dex string literals only. Native `.so` endpoint strings (e.g. Brave `libchrome.so` telemetry hosts), dynamically assembled hosts (`StringBuilder` concatenation), encrypted configs, raw IPs, and DoH flows are out of scope.
 - A curated telemetry/ads-only list is required: blocking functional hosts breaks the app. For TikTok, prefer the `log/mon/mcs/mssdk/analytics` subset and leave `frontier/api/stream/open` untouched.
 
+> [!WARNING]
+> No aplicar Universal Hosts Blocker sobre una instalacion limpia de TikTok donde aun no se inicio sesion: bloquear hosts de telemetria/ads antes del primer login dispara el rate-limit del servidor (error 'too many attempts') durante login/registro. Iniciar sesion primero y parchear despues, o usar una lista minima curada.
+
 ---
 
 ## 15. Universal SDK Blocker (`universalSdkBlockerPatch`)
