@@ -21,6 +21,7 @@ Comprehensive reference for universal optimization and resource slimming patches
 | **[Universal Screenshot Protection Bypass](#11-universal-screenshot-protection-bypass-universalscreenshotprotectionbypasspatch)** | `bytecodePatch` | Dalvik Bytecode & Manifest | Neutralizes `FLAG_SECURE`, unlocks audio playback capture, and suppresses Android 14+ screenshot detection | Allows screenshots, screen recordings, and internal audio capture across protected views |
 | **[Universal Screen Timeout Enforcer](#12-universal-screen-timeout-enforcer-universalscreentimeoutenforcerpatch)** | `bytecodePatch` | Dalvik Bytecode & Windows | Neutralizes `keepScreenOn(Z)V` view calls and strips `FLAG_KEEP_SCREEN_ON` (`0x80`) | Enforces OS screen timeout and sleep timer during video playback |
 | **[Universal Screen Brightness Governor](#13-universal-screen-brightness-governor-universalscreenbrightnessgovernorpatch)** | `bytecodePatch` | Dalvik Bytecode & Windows | Neutralizes direct writes to `WindowManager.LayoutParams.screenBrightness` (`iput`) | Prevents apps from overriding display brightness via window layout params |
+| **[Universal Hosts Blocker](#14-universal-hosts-blocker-universalhostsblockerpatch)** | `bytecodePatch` | Dalvik `const-string` literals | Rewrites user-blocklisted URL/host literals to a sink IP (`0.0.0.0`) | Silences analytics/ads dispatch without touching native binaries |
 
 ---
 
@@ -54,6 +55,7 @@ Applying both universal and app-specific patches simultaneously to the same targ
 | **Universal Screen Timeout Enforcer** | ✅ Yes | Safely neutralizes `FLAG_KEEP_SCREEN_ON` bitwise and silences view `setKeepScreenOn` calls to enforce system sleep timeout. |
 | **Universal Screen Brightness Governor** | ✅ Yes | Safely neutralizes writes to `WindowManager.LayoutParams.screenBrightness` so display brightness remains strictly under system and user control. |
 | **Universal Offline Mode** | ⚠️ Contextual | **Never apply to web browsers (Brave) or streaming media apps (TikTok)**, as it halts socket creation at the OS kernel level (`AID_INET`). For Gboard Lite and Xiaomi Earbuds, pair with their companion app-specific offline patches for graceful timeout handling. |
+| **Universal Hosts Blocker** | ⚠️ Curated list required | Ships disabled with no bundled blocklist (user supplies the hosts file at patch time). Block only telemetry/ads hosts (e.g. Hagezi `native.tiktok-onlydomains.txt` filtered to `log/mon/mcs/mssdk/analytics`); blocking functional hosts (`frontier/api/stream/open`) breaks feed, login, or CDN playback. |
 
 ---
 
@@ -397,4 +399,23 @@ The **`Universal Screen Brightness Governor`** patch prevents applications from 
 
 The patch operates without any manual configuration or boolean options (`default = false`). When enabled in Morphe Manager or CLI, it automatically neutralizes all screen brightness override attempts across all classes in the target APK.
 
+---
 
+## 14. Universal Hosts Blocker (`universalHostsBlockerPatch`)
+
+The **`Universal Hosts Blocker`** patch rewrites Dalvik `const-string` / `const-string/jumbo` URL and host literals whose host matches a user-supplied blocklist, replacing the blocked host in place with a sink IP (default `0.0.0.0`). The blocklist file is read at patch time from the patching machine, so daily DNS-list updates (e.g. Hagezi `native.tiktok`) apply on re-patch without a patch release and without embedding third-party lists in this repository.
+
+### Configuration in Morphe Manager
+
+- **Hosts blocklist file (`hostsFile`)**: File-picker path to a hosts or plain-domain blocklist on the patching machine (e.g. Hagezi `native.tiktok-onlydomains.txt`). Empty by default: the patch logs `Skipped` and changes nothing until a file is selected.
+- **Sink IP address (`sinkIp`)**: IPv4 replacing blocked hosts inside literals (`https://log.example.com/v1` becomes `https://0.0.0.0/v1`). Default: `0.0.0.0`.
+- **Match subdomains (`matchSubdomains`)**: When enabled (default `true`), entry `example.com` also matches `a.example.com`.
+
+### Supported blocklist line formats
+
+Plain domains (`log.example.com`), classic hosts lines (`0.0.0.0 log.example.com`), full URLs (`https://log.example.com/v1`), Hagezi wildcard lines (`*.log.example.com`), and adblock-style rules (`||log.example.com^`). Inline `#` comments and `@@` allowlist lines are ignored. Reserved hosts (`localhost`, `127.0.0.1`, `0.0.0.0`) are never blocked.
+
+### Scope & limits
+
+- Rewrites Dex string literals only. Native `.so` endpoint strings (e.g. Brave `libchrome.so` telemetry hosts), dynamically assembled hosts (`StringBuilder` concatenation), encrypted configs, raw IPs, and DoH flows are out of scope.
+- A curated telemetry/ads-only list is required: blocking functional hosts breaks the app. For TikTok, prefer the `log/mon/mcs/mssdk/analytics` subset and leave `frontier/api/stream/open` untouched.
