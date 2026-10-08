@@ -36,9 +36,10 @@ public final class TikTokVideoFitHook {
         }
 
         try {
-            int viewW = view.getWidth();
-            int viewH = view.getHeight();
-            if (viewW <= 0 || viewH <= 0) {
+            int[] container = resolveContainerSize(view);
+            int containerW = container[0];
+            int containerH = container[1];
+            if (containerW <= 0 || containerH <= 0) {
                 return originalResult;
             }
 
@@ -62,18 +63,24 @@ public final class TikTokVideoFitHook {
 
             if ("fit".equals(fitMode)) {
                 // Entire video visible inside container (pillarbox / letterbox)
-                float scale = Math.min((float) viewW / origW, (float) viewH / origH);
+                float scale = Math.min((float) containerW / origW, (float) containerH / origH);
                 newW = Math.round(origW * scale);
                 newH = Math.round(origH * scale);
-                transX = (viewW - newW) / 2.0f;
-                transY = (viewH - newH) / 2.0f;
+                transX = (containerW - newW) / 2.0f;
+                transY = (containerH - newH) / 2.0f;
+                if (!isValidFit(newW, newH, containerW, containerH)) {
+                    return originalResult;
+                }
             } else if ("fill".equals(fitMode)) {
                 // Video fills container completely (center crop)
-                float scale = Math.max((float) viewW / origW, (float) viewH / origH);
+                float scale = Math.max((float) containerW / origW, (float) containerH / origH);
                 newW = Math.round(origW * scale);
                 newH = Math.round(origH * scale);
-                transX = (viewW - newW) / 2.0f;
-                transY = (viewH - newH) / 2.0f;
+                transX = (containerW - newW) / 2.0f;
+                transY = (containerH - newH) / 2.0f;
+                if (!isValidFill(newW, newH, containerW, containerH)) {
+                    return originalResult;
+                }
             } else {
                 return originalResult;
             }
@@ -173,5 +180,55 @@ public final class TikTokVideoFitHook {
             return translation;
         }
         return translation;
+    }
+
+    private static int[] resolveContainerSize(View view) {
+        int[] maxParent = getLargestParentSize(view);
+        if (maxParent[0] > 0 && maxParent[1] > 0) {
+            return maxParent;
+        }
+        int[] display = getDisplayMetricsSize(view);
+        if (display[0] > 0 && display[1] > 0) {
+            return display;
+        }
+        return new int[]{view.getWidth(), view.getHeight()};
+    }
+
+    private static int[] getLargestParentSize(View view) {
+        int maxW = 0;
+        int maxH = 0;
+        android.view.ViewParent parent = view.getParent();
+        while (parent instanceof View) {
+            View p = (View) parent;
+            int w = p.getWidth();
+            int h = p.getHeight();
+            if (w > 0 && h > 0 && (w * h > maxW * maxH)) {
+                maxW = w;
+                maxH = h;
+            }
+            parent = p.getParent();
+        }
+        return new int[]{maxW, maxH};
+    }
+
+    private static int[] getDisplayMetricsSize(View view) {
+        if (view.getContext() == null || view.getContext().getResources() == null) {
+            return new int[]{0, 0};
+        }
+        android.util.DisplayMetrics metrics = view.getContext().getResources().getDisplayMetrics();
+        if (metrics == null) {
+            return new int[]{0, 0};
+        }
+        return new int[]{metrics.widthPixels, metrics.heightPixels};
+    }
+
+    private static boolean isValidFit(int newW, int newH, int containerW, int containerH) {
+        float ratioW = newW / (float) containerW;
+        float ratioH = newH / (float) containerH;
+        return Math.max(ratioW, ratioH) >= 0.9f;
+    }
+
+    private static boolean isValidFill(int newW, int newH, int containerW, int containerH) {
+        return newW >= containerW * 0.9f && newH >= containerH * 0.9f;
     }
 }
