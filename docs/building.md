@@ -75,6 +75,12 @@ For bundle targets (`.apkm` / `.xapk`), the signed split APKs are written next t
 adb install-multiple -r candidate_apks/<app>_<version>_patched*.apk
 ```
 
+Or run the unattended smoke installation gate:
+```bash
+./venv/bin/python validation/smoke_install.py candidate_apks/<app>_<version>_patched*.apk
+```
+It automatically selects the target device by matching ABI and minimum SDK (override with `--serial` or `ANDROID_SERIAL`), refuses to replace the active keyboard without `--allow-active-ime`, and prints a machine-readable JSON verdict (exit 0 = PASS).
+
 ---
 
 ### 4. Generate Patch Metadata
