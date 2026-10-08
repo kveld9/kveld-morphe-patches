@@ -4,7 +4,7 @@ Morphe Patches Automated Update & Reverse Engineering Harness.
 Modular pipeline orchestrator for Brave Browser, Gboard Lite, Hevy, TikTok, NokoPrint, and Xiaomi Earbuds.
 
 Usage:
-    python harness/update.py <path-to-apk> [--audit | --update | --dry-run] [--output <report.md>]
+    python harness/update.py <path-to-apk> [--audit | --update | --dry-run] [--output <report.md>] [--json]
     python harness/update.py --doctor
 
 Examples:
@@ -43,7 +43,8 @@ from harness.core.pipeline import PipelineRegistry
 import harness.pipelines  # Registers all target pipelines
 
 
-def run_pipeline(apk_path: str, mode: str = "audit", output_report: str | None = None) -> int:
+def run_pipeline(apk_path: str, mode: str = "audit", output_report: str | None = None,
+                 emit_json: bool = False) -> int:
     print(f"[HARNESS] Starting Morphe Patches Update Harness in [{mode.upper()}] mode on '{apk_path}'...")
     with ApkContext(apk_path) as apk_ctx:
         meta = apk_ctx.get_metadata()
@@ -55,6 +56,7 @@ def run_pipeline(apk_path: str, mode: str = "audit", output_report: str | None =
             mode=mode,
             output_report=output_report,
             repo_root=REPO_ROOT,
+            emit_json=emit_json,
         )
 
 
@@ -67,6 +69,8 @@ def main():
     group.add_argument("--dry-run", action="store_true", help="Show proposed changes without writing")
     group.add_argument("--doctor", action="store_true", help="Run toolchain readiness checks only")
     parser.add_argument("--output", help="Save markdown report to file")
+    parser.add_argument("--json", action="store_true",
+                        help="Also write a machine-readable JSON sidecar next to the report")
 
     args = parser.parse_args()
 
@@ -79,7 +83,7 @@ def main():
         parser.error("the following arguments are required: apk (or use --doctor)")
 
     mode = "update" if args.update else ("dry-run" if args.dry_run else "audit")
-    sys.exit(run_pipeline(args.apk, mode=mode, output_report=args.output))
+    sys.exit(run_pipeline(args.apk, mode=mode, output_report=args.output, emit_json=args.json))
 
 
 if __name__ == "__main__":

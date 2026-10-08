@@ -6,7 +6,9 @@ theme invariants, and execution statuses for both Brave Browser and Gboard.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+import json
+from dataclasses import dataclass, field, is_dataclass
+from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from harness.core.symbols import BraveOriginSymbols, SymbolConfidence
@@ -14,6 +16,36 @@ from harness.core.telemetry import TelemetryReport
 from harness.gboard.invariants import InvariantsReport
 from harness.gboard.themes import ThemeAuditReport
 from harness.migration.validator import PatchAuditResult, PatchStatus
+
+
+def to_jsonable(obj: Any) -> Any:
+    """Recursively converts report dataclasses to JSON-serializable structures.
+
+    bytes become lowercase hex, Enums become their values, tuples/sets
+    become (sorted) lists, and plain containers fall back to their
+    __dict__. Anything else degrades to str() so serialization of a
+    report never crashes an audit run.
+    """
+    if obj is None or isinstance(obj, (bool, int, str)):
+        return obj
+    if isinstance(obj, Enum):
+        return obj.value
+    if isinstance(obj, bytes):
+        return obj.hex()
+    if is_dataclass(obj) and not isinstance(obj, type):
+        return {k: to_jsonable(v) for k, v in obj.__dict__.items() if not k.startswith("_")}
+    if isinstance(obj, dict):
+        return {str(k): to_jsonable(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [to_jsonable(v) for v in obj]
+    if isinstance(obj, (set, frozenset)):
+        try:
+            return sorted(to_jsonable(v) for v in obj)
+        except TypeError:
+            return [to_jsonable(v) for v in obj]
+    if hasattr(obj, "__dict__"):
+        return {k: to_jsonable(v) for k, v in vars(obj).items() if not k.startswith("_")}
+    return str(obj)
 
 
 SYMBOL_ICONS = {
@@ -89,6 +121,15 @@ class HarnessReporter:
         for sec in sections:
             flat_lines.extend(sec)
         return "\n".join(flat_lines)
+
+    @staticmethod
+    def render_json(data: HarnessReportData) -> str:
+        """Machine-readable report for agent loops (audit-stack, update-patches).
+
+        Same content as the markdown report, with sorted keys for
+        deterministic output. Never raises on exotic payloads.
+        """
+        return json.dumps(to_jsonable(data), indent=2, sort_keys=True) + "\n"
 
     @staticmethod
     def _render_header(data: HarnessReportData) -> List[str]:

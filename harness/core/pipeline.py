@@ -112,10 +112,12 @@ class BaseTargetPipeline(abc.ABC):
         mode: str = "audit",
         output_report: Optional[str] = None,
         repo_root: Optional[Path] = None,
+        emit_json: bool = False,
     ):
         self.apk_ctx = apk_ctx
         self.mode = mode.lower()
         self.output_report = output_report or self.default_report_filename
+        self.emit_json = emit_json
         self.repo_root = (repo_root or Path(__file__).resolve().parent.parent.parent).resolve()
         self.meta: ApkMetadata = apk_ctx.get_metadata()
         self.migrator = PatchMigrator(self.repo_root)
@@ -301,6 +303,10 @@ class BaseTargetPipeline(abc.ABC):
         _safe_print("\n" + md_report + "\n")
         Path(self.output_report).write_text(md_report, encoding="utf-8")
         _safe_print(f"Report written to {self.output_report}")
+        if self.emit_json:
+            json_path = Path(self.output_report).with_suffix(".json")
+            json_path.write_text(HarnessReporter.render_json(report_data), encoding="utf-8")
+            _safe_print(f"JSON report written to {json_path}")
         elapsed = time.time() - self.start_time
         _safe_print(f"Pipeline completed in {elapsed:.2f}s with status: {final_status}")
 
@@ -331,6 +337,7 @@ class PipelineRegistry:
         mode: str = "audit",
         output_report: Optional[str] = None,
         repo_root: Optional[Path] = None,
+        emit_json: bool = False,
     ) -> int:
         meta = apk_ctx.get_metadata()
         pipeline_cls = cls.find_pipeline(meta.package_name)
@@ -342,5 +349,6 @@ class PipelineRegistry:
             )
             return 2
 
-        pipeline = pipeline_cls(apk_ctx=apk_ctx, mode=mode, output_report=output_report, repo_root=repo_root)
+        pipeline = pipeline_cls(apk_ctx=apk_ctx, mode=mode, output_report=output_report,
+                                  repo_root=repo_root, emit_json=emit_json)
         return pipeline.execute()

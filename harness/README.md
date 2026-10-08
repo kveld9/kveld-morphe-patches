@@ -65,7 +65,11 @@ finding the shifted target. Neither replaces the mandatory
    lab device; the repacked APK smoke test stays the faithful verdict.
 
 ### 1. Audit a Target APK / APKM (Non-destructive inspection)
-Run this command to inspect fingerprints, obfuscated symbol changes, and invariants without modifying code:
+Run this command to inspect fingerprints, obfuscated symbol changes, and invariants without modifying code.
+Append `--json` to also emit a machine-readable sidecar (`<output>.json`)
+with the same content for agent loops (`/audit-stack`, `/update-patches`).
+Point `--output` under `build/` or `/tmp` when the JSON sidecar must not
+pollute the checkout.
 
 ```bash
 # For Gboard
