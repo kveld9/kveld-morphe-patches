@@ -44,7 +44,7 @@ If you perform a clean install of Gboard Lite with background sync debloat patch
 
 > [!NOTE]
 > **Inline Google Translate Tool & Play Services:**
-> Gboard's inline translation tool (*Traductor* on the top toolbar) does not bundle a standalone HTTP stack; it relies on Google Play Services to provide its Cronet network client dynamically (`PlayServicesCronetProvider`).
+> Gboard's inline translation tool (*Translate* / *Traductor* on the top toolbar) does not bundle a standalone HTTP stack; it relies on Google Play Services to provide its Cronet network client dynamically (`PlayServicesCronetProvider`).
 > When **`Disable Play Services Integration`** is enabled, GMS availability is reported as `SERVICE_DISABLED`, skipping GMS background sync and telemetry but also preventing Play Services Cronet from initializing, which deactivates inline translation.
 > If you rely on Gboard's inline translation tool, leave **`Disable Play Services Integration`** unselected when patching.
 
@@ -54,13 +54,13 @@ If you perform a clean install of Gboard Lite with background sync debloat patch
 
 | Patch Name | Type | Category | Default | Primary Mechanism |
 | :--- | :--- | :--- | :---: | :--- |
-| **Gboard Enhancements** | `resourcePatch` + `bytecodePatch` | Customization & Suite | ✅ Yes | Master customization suite bundling in-app toggleable features (Pure AMOLED Theme, Zero Bottom Inset, Independent Keyboard Vibration, Force Incognito, Voice Typing in Incognito, Clipboard Enhancements, Toolbar Item Count, Feature Flags, Onboarding status, and Core Integrity) managed directly from *Ajustes > Morphe Patches*. |
+| **Gboard Enhancements** | `resourcePatch` + `bytecodePatch` | Customization & Suite | ✅ Yes | Master customization suite bundling in-app toggleable features (Pure AMOLED Theme, Zero Bottom Inset, Independent Keyboard Vibration, Force Incognito, Voice Typing in Incognito, Clipboard Enhancements, Toolbar Item Count, Feature Flags, Onboarding status, and Core Integrity) managed directly from *Settings > Morphe Patches*. |
 | **Block Telemetry** | `bytecodePatch` | Privacy & Security | ✅ Yes | Disables background metrics dispatch, event logging, daily pings, Google Primes profiling, crash reporting, AppDoctor diagnostics, and Tenor share tracking. |
 | **Clone Gboard** | `bytecodePatch` + `resourcePatch` | Utility & Modding | ✅ Yes | Appends a custom suffix to the package name to allow installing Gboard alongside the original application. |
 | **Disable Background Sync** | `bytecodePatch` | Battery & Debloat | ❌ No | Neutralizes AndroidX WorkManager schedulers, MDD (Mobile Data Download) periodic sync, and Superpacks eager asset synchronization (opt-in to preserve initial dictionary downloads). |
 | **Disable Cloud Backup** | `resourcePatch` | Privacy & Security | ✅ Yes | Disables Android backup for Gboard (allowBackup=false and backup agent removed) so keyboard settings, learned words, and personal dictionary data are never uploaded to Google Drive backups or copied by device-to-device transfer. Trade-off: Gboard data no longer migrates to a new device through Android backup or restore. |
 | **Disable Remote Configuration** | `bytecodePatch` | Privacy & Stability | ✅ Yes | Disables periodic remote experiment flag synchronization and background updates. |
-| **Disable Play Services Integration** | `bytecodePatch` | Privacy & Battery | ✅ Yes | Makes Gboard's Google Play services availability check always report SERVICE_DISABLED, so GMS-backed code paths (Clearcut logging, Phenotype, account sync, Google Help feedback) are skipped at the source instead of being attempted. SERVICE_DISABLED is used instead of SERVICE_MISSING because GoogleApiAvailability remaps SERVICE_MISSING to SERVICE_UPDATING when the GMS package is installed, which makes GoogleApiManager retry every few seconds. Trade-off: Disables Gboard's inline Google Translate tool, which routes network requests through Play Services' dynamic Cronet provider (`PlayServicesCronetProvider`). If you need inline translation, leave this patch unselected. |
+| **Disable Play Services Integration** | `bytecodePatch` | Privacy & Battery | ❌ No | Makes Gboard's Google Play services availability check always report SERVICE_DISABLED, so GMS-backed code paths (Clearcut logging, Phenotype, account sync, Google Help feedback) are skipped at the source instead of being attempted. SERVICE_DISABLED is used instead of SERVICE_MISSING because GoogleApiAvailability remaps SERVICE_MISSING to SERVICE_UPDATING when the GMS package is installed, which makes GoogleApiManager retry every few seconds. Trade-off: Disables Gboard's inline Google Translate tool, which routes network requests through Play Services' dynamic Cronet provider (`PlayServicesCronetProvider`). If you need inline translation, leave this patch unselected. |
 | **Hardened Intent Security** | `bytecodePatch` + `resourcePatch` | Security & Integrity | ✅ Yes | Enables Gboard internal external intent protection against unauthorized intent hijacking and removes the exported, permissionless web debug bridge content provider. |
 | **Offline Only** | `bytecodePatch` + `resourcePatch` | Privacy & Security | ❌ No | Completely isolates Gboard from network access by purging manifest permissions, disabling foreground sync services, neutralizing HTTP clients (Cronet, OkHttp, Superpacks), and spoofing offline status. |
 | **Resource Slimmer** | `bytecodePatch` | Optimization | ✅ Yes | Strips embedded third-party license text, onboarding tutorial Lottie animations, promotional GIFs, and APK root metadata/junk files. |
@@ -71,7 +71,7 @@ If you perform a clean install of Gboard Lite with background sync debloat patch
 
 ## ⚙️ Gboard Enhancements: In-App Customization Suite
 
-The **`Gboard Enhancements`** patch injects a top-level **Morphe Patches** category directly into Gboard's main settings screen (*Ajustes > Morphe Patches*). All runtime-configurable features are consolidated here, eliminating the need to re-patch the APK to adjust settings. All preference titles, summaries, category headers, status cards, and live slider units dynamically adapt to the active device/app language (supporting Spanish on `es` locales with English fallback).
+The **`Gboard Enhancements`** patch injects a top-level **Morphe Patches** category directly into Gboard's main settings screen (*Settings > Morphe Patches*). All runtime-configurable features are consolidated here, eliminating the need to re-patch the APK to adjust settings. All preference titles, summaries, category headers, status cards, and live slider units dynamically adapt to the active device/app language (supporting Spanish on `es` locales with English fallback).
 
 ### 🌐 Multi-Language Support & Community Contributions
 The settings UI automatically detects the active device system language (`LocaleList` on Android 7+ and legacy `locale`) and routes strings to the corresponding language pack:
@@ -111,8 +111,8 @@ The settings UI automatically detects the active device system language (`Locale
 - **Modern Keypress Haptics**: Gboard ships its haptic-primitive keypress path (`VibrationEffect.Composition`, the crisp system tick) disabled behind `vibration_effect_min_sdk = 1024`, an API level no device reports. When enabled (default: on), the minimum is lowered to API 30 so keypresses use the primitive tick instead of a plain one-shot buzz. Gboard's own `areAllEffectsSupported()` hardware check is untouched, so vibrators without primitive support keep the legacy path. On the primitive path the vibration strength slider maps to intensity rather than milliseconds. Restart Gboard after toggling, since the flag is read once at class initialization.
 
 ### 6. Smart Features & Voice
-- **Grammar Checker & Smart Compose**: Unlocks inline grammar review and Smart Compose predictions under *Correcciones y sugerencias*.
-- **Bluetooth Microphone**: Unlocks Bluetooth microphone audio input for voice typing under *Dictado por voz*.
+- **Grammar Checker & Smart Compose**: Unlocks inline grammar review and Smart Compose predictions under *Text correction* (*Correcciones y sugerencias*).
+- **Bluetooth Microphone**: Unlocks Bluetooth microphone audio input for voice typing under *Voice typing* (*Dictado por voz*).
 
 ### 7. Privacy & Security
 - **Force Incognito Mode**: Always operates in incognito mode (disables personalized learning and persistent input logging).
@@ -126,9 +126,9 @@ The settings UI automatically detects the active device system language (`Locale
 - Neutralizes Phenotype default flag reset assertion crashes.
 
 ### 9. Root Settings Declutter
-- **Privacy Opt-In Removal**: Strips the *Privacidad* header (`PrivacySettingsFragment`) which previously contained telemetry opt-ins and personalized statistics.
-- **Legal & Terms Removal**: Purges the *Información* header (`AboutSettingsFragment`) which only routed to external Google open-source license and terms URLs.
-- **Feedback & Share Dispatchers Removal**: Removes *Ayuda y comentarios* (`help_and_feedback`), *Compartir Gboard* (`sharing`), `RateUsPreference`, and `FooterPreference` from root settings screens (`settings.xml` and `settings_legacy.xml`).
+- **Privacy Opt-In Removal**: Strips the *Privacy* header (*Privacidad* / `PrivacySettingsFragment`) which previously contained telemetry opt-ins and personalized statistics.
+- **Legal & Terms Removal**: Purges the *About* header (*Información* / `AboutSettingsFragment`) which only routed to external Google open-source license and terms URLs.
+- **Feedback & Share Dispatchers Removal**: Removes *Help & feedback* (*Ayuda y comentarios* / `help_and_feedback`), *Share Gboard* (*Compartir Gboard* / `sharing`), `RateUsPreference`, and `FooterPreference` from root settings screens (`settings.xml` and `settings_legacy.xml`).
 - **Clean Container Pruning**: Automatically prunes empty `PreferenceCategory` containers left after child removal, presenting a streamlined, distraction-free root settings menu.
 
 ---
