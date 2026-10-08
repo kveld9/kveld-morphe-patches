@@ -70,6 +70,9 @@ Every patch change must be validated by running the Morphe Patcher against the t
 
 # Warn when a single patch takes longer than N seconds (default 15; timings are always listed)
 ./gradlew runPatchTest -Papp=<targetApp> -PslowPatchSeconds=10
+
+# Print a SHA-256 of the patched DEX set; with a path, also write per-file digests (compare before/after with diff)
+./gradlew runPatchTest -Papp=<targetApp> -PdexDigest=build/dex-before.txt
 ```
 
 For bundle targets (`.apkm` / `.xapk`), the signed split APKs are written next to the output and prefixed with its name (`<app>_<version>_patched.<split>.apk`), so one glob installs the whole set:

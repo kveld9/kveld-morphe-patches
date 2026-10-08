@@ -88,7 +88,7 @@ morphe-patches/
    - **Iterate Only the Member Kind Needed**: In class-level predicates, iterating `classDef.methods` or `classDef.fields` decodes every member of every class. Use `directMethods` when the predicate requires `STATIC` (static methods are always direct in DEX) and `instanceFields`/`staticFields` when the field kind is known (`DirectMessageDeclutterPatch`).
    - **`matchAll()` Ignores `definingClass` as an Index**: In Morphe 1.8.0, `match()`/`.method` resolves an exact `definingClass` through a direct class lookup, but `matchAll()` still walks every class. Scope it with `fp.matchAll(classDefBy(TYPE))`.
    - **Prefer Indexed Filters**: `strings` (and exact `definingClass` with `match()`) use the patcher's indexes; prefer them over `custom` lambdas whenever they express the same target.
-   - **Proof of Equivalence**: A performance-only change to a patch must produce byte-identical DEX output. Patch the same APK with `-Pout=<apk>` before and after the change and compare the SHA-256 of every `classes*.dex` entry; the runner output is deterministic. Profile before optimizing (`JAVA_TOOL_OPTIONS="-XX:StartFlightRecording=..."` with `--no-daemon`): the expensive part is often the member iteration, not the predicate itself.
+   - **Proof of Equivalence**: A performance-only change to a patch must produce byte-identical DEX output. Run `runPatchTest` on the same APK with `-PdexDigest=<file>` before and after the change and `diff` the two files (or compare the printed `[DIGEST]` aggregate); the runner output is deterministic. Profile before optimizing (`JAVA_TOOL_OPTIONS="-XX:StartFlightRecording=..."` with `--no-daemon`): the expensive part is often the member iteration, not the predicate itself.
 
 ---
 

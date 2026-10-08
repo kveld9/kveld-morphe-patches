@@ -15,6 +15,7 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.OutputStream
 import java.io.PrintStream
+import java.security.MessageDigest
 
 enum class TargetApp(
     val id: String,
@@ -724,15 +725,9 @@ fun main(args: Array<String>) {
             println("[BUILD] Compiled ${patcherResult.dexFiles.size} DEX files successfully.")
 
             val outPath = System.getProperty("outputApk")
+            val dexDigestOption = System.getProperty("dexDigest")?.takeIf { it.isNotBlank() }
             if (outPath != null) {
-                val directFile = File(outPath)
-                val outFile = if (directFile.isAbsolute) {
-                    directFile
-                } else {
-                    val fromParent = File("..", outPath)
-                    if (fromParent.parentFile?.isDirectory == true) fromParent.canonicalFile
-                    else directFile.absoluteFile
-                }
+                val outFile = resolveOutputPath(outPath)
                 outFile.parentFile?.mkdirs()
                 val unsignedApk = File(tempDir, "unsigned-work.apk")
                 actualApkFile.copyTo(unsignedApk, overwrite = true)
@@ -773,6 +768,7 @@ fun main(args: Array<String>) {
                     }
                 }
                 println("[PACK] After applyTo: unsignedApk exists=${unsignedApk.exists()}, size=${unsignedApk.length()} bytes")
+                dexDigestOption?.let { printDexDigest(unsignedApk, it) }
                 val zipalignBin = findAndroidBuildTool("zipalign")
                 val apksignerBin = findAndroidBuildTool("apksigner")
                 val buildToolsMajor = zipalignBin?.parentFile?.name?.split('.')?.firstOrNull()?.toIntOrNull() ?: 0
@@ -919,6 +915,13 @@ fun main(args: Array<String>) {
                         }
                     }
                 }
+            } else if (dexDigestOption != null) {
+                // Without -Pout an unsigned work APK is still assembled so the digest covers exactly what -Pout would ship.
+                val digestApk = File(tempDir, "digest-work.apk")
+                actualApkFile.copyTo(digestApk, overwrite = true)
+                patcherResult.applyTo(digestApk)
+                printDexDigest(digestApk, dexDigestOption)
+                digestApk.delete()
             }
         }
     } finally {
@@ -988,6 +991,51 @@ private fun printPatchTimings(
             val startupNote = if (name == firstPatchName) " (includes pipeline startup)" else ""
             println("[WARN] Slow patch: $name took $formattedSeconds s (threshold $formattedThreshold s)$startupNote")
         }
+    }
+}
+
+private fun resolveOutputPath(path: String): File {
+    val directFile = File(path)
+    if (directFile.isAbsolute) return directFile
+    val fromParent = File("..", path)
+    return if (fromParent.parentFile?.isDirectory == true) {
+        fromParent.canonicalFile
+    } else {
+        directFile.absoluteFile
+    }
+}
+
+private fun sha256Hex(bytes: ByteArray): String {
+    val digest = MessageDigest.getInstance("SHA-256").digest(bytes)
+    return digest.joinToString("") { String.format(java.util.Locale.ROOT, "%02x", it) }
+}
+
+private fun writeDexDigestFile(file: File, content: String) {
+    file.parentFile?.mkdirs()
+    file.writeText(content, Charsets.UTF_8)
+    println("[DIGEST] Per-file digests written to ${file.absolutePath}")
+}
+
+private fun printDexDigest(apk: File, option: String) {
+    val dexPattern = Regex("""^classes\d*\.dex$""")
+    val fileDigests = java.util.zip.ZipFile(apk).use { zip ->
+        zip.entries().asSequence()
+            .filter { !it.isDirectory && dexPattern.matches(it.name) }
+            .map { entry ->
+                val bytes = zip.getInputStream(entry).use { it.readBytes() }
+                entry.name to sha256Hex(bytes)
+            }
+            .toList()
+    }
+
+    val linesText = fileDigests
+        .sortedBy { it.first }
+        .joinToString("") { "${it.first} ${it.second}\n" }
+    val aggregate = sha256Hex(linesText.toByteArray(Charsets.UTF_8))
+    println("[DIGEST] Patched DEX set SHA-256: $aggregate (${fileDigests.size} files)")
+
+    if (!option.equals("true", ignoreCase = true)) {
+        writeDexDigestFile(resolveOutputPath(option), linesText)
     }
 }
 
