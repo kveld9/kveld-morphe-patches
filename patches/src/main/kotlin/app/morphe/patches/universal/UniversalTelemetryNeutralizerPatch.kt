@@ -438,6 +438,20 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
             if (removedRegistrarsCount > 0) ", removed $removedRegistrarsCount discovery registrar(s)$initNote"
             else ", removed $removedStartupInitCount startup initializer(s)"
         } else ""
-        println("[Universal Telemetry Neutralizer] $permNote, disabled $totalDisabled component(s), injected $injectedFlagsCount opt-out flag(s)$regNote.")
+
+        val categoryBreakdown = listOf(
+            "providers" to disabledProvidersCount,
+            "services" to disabledServicesCount,
+            "receivers" to disabledReceiversCount,
+            "push" to disabledPushCount,
+            "ga" to (disabledGaServicesCount + disabledGaReceiversCount),
+            "meta" to (disabledMetaServicesCount + disabledMetaReceiversCount),
+            "crash" to (disabledCrashServicesCount + disabledCrashReceiversCount),
+            "deviceid" to (disabledDeviceIdProvidersCount + disabledDeviceIdServicesCount + disabledDeviceIdReceiversCount),
+        ).filter { it.second > 0 }
+            .joinToString(", ") { "${it.first}=${it.second}" }
+        val componentDetails = if (categoryBreakdown.isNotEmpty()) " ($categoryBreakdown)" else ""
+
+        println("[Universal Telemetry Neutralizer] $permNote, disabled $totalDisabled component(s)$componentDetails, injected $injectedFlagsCount opt-out flag(s)$regNote.")
     }
 }
