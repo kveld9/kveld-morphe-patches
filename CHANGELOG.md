@@ -1,3 +1,9 @@
+## [2.6.0-experimental.4](https://github.com/kveld9/kveld-morphe-patches/compare/v2.6.0-experimental.3...v2.6.0-experimental.4) (2026-10-08)
+
+### Bug Fixes
+
+* **universal:** pre-filter immutable dex scan before materializing mutable defs ([96070c0](https://github.com/kveld9/kveld-morphe-patches/commit/96070c0d9501a1b89403eda23b23df9b0bcdfecb))
+
 ## [2.6.0-experimental.3](https://github.com/kveld9/kveld-morphe-patches/compare/v2.6.0-experimental.2...v2.6.0-experimental.3) (2026-10-08)
 
 ### Bug Fixes
