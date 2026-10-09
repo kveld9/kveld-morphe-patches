@@ -195,56 +195,48 @@ val braveBlockTelemetryPatch = bytecodePatch(
         }
 
         // 3. Variations: Abort HTTP connection before socket opens
-        try {
-            val variationsFp = Fingerprint(
-                returnType = "Ljava/net/HttpURLConnection;",
-                strings = listOf("https://variations.brave.com/seed"),
+        val variationsFp = Fingerprint(
+            returnType = "Ljava/net/HttpURLConnection;",
+            strings = listOf("https://variations.brave.com/seed"),
+        )
+        variationsFp.method.apply {
+            addInstructions(
+                0,
+                """
+                    new-instance v0, Ljava/io/IOException;
+                    const-string v1, "Blocked by Morphe"
+                    invoke-direct {v0, v1}, Ljava/io/IOException;-><init>(Ljava/lang/String;)V
+                    throw v0
+                """,
             )
-            variationsFp.method.apply {
-                addInstructions(
-                    0,
-                    """
-                        new-instance v0, Ljava/io/IOException;
-                        const-string v1, "Blocked by Morphe"
-                        invoke-direct {v0, v1}, Ljava/io/IOException;-><init>(Ljava/lang/String;)V
-                        throw v0
-                    """,
-                )
-                val className = variationsFp.originalClassDef.type.substringAfterLast('/').removeSuffix(";")
-                hookedMethods.add("$className.$name")
-            }
-        } catch (e: Exception) {
-            println("[Block Telemetry] Variations hook note: ${e.message}")
+            val className = variationsFp.originalClassDef.type.substringAfterLast('/').removeSuffix(";")
+            hookedMethods.add("$className.$name")
         }
 
         // 4. PrefService.e(String): Filter telemetry preferences (P3A, Stats, WDP) at return
-        try {
-            val prefFp = Fingerprint(
-                definingClass = "Lorg/chromium/components/prefs/PrefService;",
-                name = "e",
-                returnType = "Z",
-                parameters = listOf("Ljava/lang/String;"),
-            )
-            val method = prefFp.method
-            val returnIndices = method.implementation?.instructions?.withIndex()
-                ?.filter { it.value.opcode == Opcode.RETURN }
-                ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
-                ?.toList() ?: emptyList()
+        val prefFp = Fingerprint(
+            definingClass = "Lorg/chromium/components/prefs/PrefService;",
+            name = "e",
+            returnType = "Z",
+            parameters = listOf("Ljava/lang/String;"),
+        )
+        val method = prefFp.method
+        val returnIndices = method.implementation?.instructions?.withIndex()
+            ?.filter { it.value.opcode == Opcode.RETURN }
+            ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
+            ?.toList() ?: emptyList()
 
-            returnIndices.asReversed().forEach { (returnIndex, reg) ->
-                method.addInstructions(
-                    returnIndex,
-                    """
-                        invoke-static {p1, v$reg}, ${Constants.BRAVE_EXTENSION_CLASS}->filterTelemetryPref(Ljava/lang/String;Z)Z
-                        move-result v$reg
-                    """.trimIndent(),
-                )
-            }
-            if (returnIndices.isNotEmpty()) {
-                hookedMethods.add("PrefService.e")
-            }
-        } catch (e: Exception) {
-            println("[Block Telemetry] PrefService.e hook note: ${e.message}")
+        returnIndices.asReversed().forEach { (returnIndex, reg) ->
+            method.addInstructions(
+                returnIndex,
+                """
+                    invoke-static {p1, v$reg}, ${Constants.BRAVE_EXTENSION_CLASS}->filterTelemetryPref(Ljava/lang/String;Z)Z
+                    move-result v$reg
+                """.trimIndent(),
+            )
+        }
+        if (returnIndices.isNotEmpty()) {
+            hookedMethods.add("PrefService.e")
         }
 
         val targetClasses = hookedMethods.map { it.substringBefore('.') }.distinct()
