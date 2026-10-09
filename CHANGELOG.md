@@ -1,3 +1,9 @@
+## [2.6.0-experimental.14](https://github.com/kveld9/kveld-morphe-patches/compare/v2.6.0-experimental.13...v2.6.0-experimental.14) (2026-10-09)
+
+### New Features
+
+* **brave:** add blockOffersHost toggle to Block Brave Telemetry ([6bc1223](https://github.com/kveld9/kveld-morphe-patches/commit/6bc12235fe3db665d51217de03f98994f2877ea3))
+
 ## [2.6.0-experimental.13](https://github.com/kveld9/kveld-morphe-patches/compare/v2.6.0-experimental.12...v2.6.0-experimental.13) (2026-10-09)
 
 ### Bug Fixes
