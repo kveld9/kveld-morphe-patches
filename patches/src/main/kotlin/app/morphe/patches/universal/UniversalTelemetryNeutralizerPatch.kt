@@ -425,7 +425,7 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
                     }
                     injectedFlagsCount = OPT_OUT_METADATA.size
 
-                    removedRegistrarsCount = application.removeComponentDiscoveryRegistrarsWhere { name ->
+                    removedRegistrarsCount += application.removeComponentDiscoveryRegistrarsWhere { name ->
                         name.contains("Analytics", ignoreCase = true) ||
                             name.contains("Crashlytics", ignoreCase = true) ||
                             name.contains("Perf", ignoreCase = true) ||
