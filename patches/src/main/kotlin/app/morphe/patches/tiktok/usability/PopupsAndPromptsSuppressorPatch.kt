@@ -10,6 +10,7 @@ import app.morphe.patches.shared.replaceWithReturnBoolean
 import app.morphe.patches.shared.replaceWithReturnNull
 import app.morphe.patches.shared.replaceWithReturnVoid
 import app.morphe.patches.shared.sharedExtensionPatch
+import com.android.tools.smali.dexlib2.AccessFlags
 
 val popupsAndPromptsSuppressorPatch = bytecodePatch(
     name = "Popups & Prompts Suppressor",
@@ -202,6 +203,8 @@ private fun BytecodePatchContext.applyAccountPromptHooks(): Int {
 }
 
 private fun BytecodePatchContext.applyStickerRecommendationHooks(): Int {
+    var count = 0
+
     // ChatFeatureListConf.featureEnable(TYPING_RECOMMEND) -> false
     val featureEnableMethod = Fingerprint(
         definingClass = "Lcom/ss/android/ugc/aweme/im/strategy/businessconfig/ChatFeatureListConf;",
@@ -220,7 +223,42 @@ private fun BytecodePatchContext.applyStickerRecommendationHooks(): Int {
         """.trimIndent(),
     )
     println("[Popups & Prompts Suppressor] Hooked ChatFeatureListConf.featureEnable() -> Typing recommendations disabled.")
-    return 1
+    count++
+
+    // Dynamically neutralizes the typing strip UI (catches shifted methods)
+    val typingAssemClass = Fingerprint(
+        definingClass = "Lcom/ss/android/ugc/aweme/im/sdk/chat/ui/base/assems/input/typingrecommendation/TypingRecommendationPanelAssem;"
+    ).classDef
+
+    var typingHooks = 0
+
+    typingAssemClass.methods.filter {
+        !AccessFlags.STATIC.isSet(it.accessFlags) &&
+            it.parameterTypes.isEmpty() &&
+            it.returnType == "Z" &&
+            it.name != "<init>"
+    }.forEach { method ->
+        method.replaceWithReturnBoolean(false)
+        typingHooks++
+    }
+
+    typingAssemClass.methods.filter {
+        !AccessFlags.STATIC.isSet(it.accessFlags) &&
+            it.parameterTypes.size == 1 &&
+            it.returnType == "V" &&
+            !it.name.startsWith("on") &&
+            it.name != "<init>"
+    }.forEach { method ->
+        method.replaceWithReturnVoid()
+        typingHooks++
+    }
+
+    if (typingHooks > 0) {
+        println("[Popups & Prompts Suppressor] Hooked TypingRecommendationPanelAssem ($typingHooks dynamic methods) -> typing sticker UI blocked.")
+        count++
+    }
+
+    return count
 }
 
 private fun BytecodePatchContext.applyPopLayerFilterHook(): Int {
