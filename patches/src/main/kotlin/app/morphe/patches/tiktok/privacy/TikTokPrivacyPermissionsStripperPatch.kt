@@ -57,14 +57,6 @@ private val SYSTEM_ALERT_WINDOW_PERMISSIONS = setOf(
     "android.permission.SYSTEM_ALERT_WINDOW",
 )
 
-private val NETWORK_STATE_PERMISSIONS = setOf(
-    "android.permission.ACCESS_NETWORK_STATE",
-    "android.permission.ACCESS_WIFI_STATE",
-    "android.permission.CHANGE_NETWORK_STATE",
-    "android.permission.CHANGE_WIFI_STATE",
-    "android.permission.ACCESS_LOCAL_NETWORK",
-)
-
 private val WAKE_LOCK_PERMISSIONS = setOf(
     "android.permission.WAKE_LOCK",
 )
@@ -119,7 +111,6 @@ private val PERMISSION_GROUPS = mapOf(
     "biometric" to BIOMETRIC_PERMISSIONS,
     "foregroundServices" to FOREGROUND_SERVICES_PERMISSIONS,
     "systemAlertWindow" to SYSTEM_ALERT_WINDOW_PERMISSIONS,
-    "networkState" to NETWORK_STATE_PERMISSIONS,
     "wakeLock" to WAKE_LOCK_PERMISSIONS,
     "screenshotDetection" to SCREENSHOT_DETECTION_PERMISSIONS,
     "miscHardware" to MISC_HARDWARE_PERMISSIONS,
@@ -144,7 +135,7 @@ val tikTokPrivacyPermissionsStripperPatch = resourcePatch(
 
     val stripNotifications by booleanOption(
         key = "stripNotifications",
-        default = true,
+        default = false,
         title = "Strip Notification Permission",
         description = "Remove POST_NOTIFICATIONS permission (Android 13+). Notification channels cannot dispatch push alerts.",
         required = false,
@@ -176,7 +167,7 @@ val tikTokPrivacyPermissionsStripperPatch = resourcePatch(
 
     val stripBluetooth by booleanOption(
         key = "stripBluetooth",
-        default = false,
+        default = true,
         title = "Strip Bluetooth Permissions",
         description = "Remove BLUETOOTH, BLUETOOTH_SCAN, BLUETOOTH_CONNECT, and BLUETOOTH_ADVERTISE permissions. WARNING: Breaks Bluetooth audio accessories, wireless headphones low-latency sync, Cast devices, and external remote controls.",
         required = false,
@@ -192,7 +183,7 @@ val tikTokPrivacyPermissionsStripperPatch = resourcePatch(
 
     val stripBiometric by booleanOption(
         key = "stripBiometric",
-        default = false,
+        default = true,
         title = "Strip Biometric Permissions",
         description = "Remove USE_BIOMETRIC and USE_FINGERPRINT permissions. WARNING: Breaks fingerprint/face biometric unlocking, passkeys, and biometric payment authorization.",
         required = false,
@@ -211,14 +202,6 @@ val tikTokPrivacyPermissionsStripperPatch = resourcePatch(
         default = false,
         title = "Strip System Alert Window Permission",
         description = "Remove SYSTEM_ALERT_WINDOW permission. WARNING: Breaks Picture-in-Picture overlay window outside the app, floating mini-player, and overlay notification heads.",
-        required = false,
-    )
-
-    val stripNetworkState by booleanOption(
-        key = "stripNetworkState",
-        default = false,
-        title = "Strip Network State Permissions",
-        description = "Remove ACCESS_NETWORK_STATE, ACCESS_WIFI_STATE, CHANGE_NETWORK_STATE, CHANGE_WIFI_STATE, and ACCESS_LOCAL_NETWORK permissions. WARNING: May cause SecurityException crashes on startup if network monitoring components query Wi-Fi/cellular state without catch guards.",
         required = false,
     )
 
@@ -278,16 +261,15 @@ val tikTokPrivacyPermissionsStripperPatch = resourcePatch(
         }
 
         val toggleStates = mapOf(
-            "notifications" to (stripNotifications ?: true),
+            "notifications" to (stripNotifications ?: false),
             "camera" to (stripCamera ?: false),
             "microphone" to (stripMicrophone ?: false),
             "storageMedia" to (stripStorageMedia ?: false),
-            "bluetooth" to (stripBluetooth ?: false),
+            "bluetooth" to (stripBluetooth ?: true),
             "nfc" to (stripNfc ?: true),
-            "biometric" to (stripBiometric ?: false),
+            "biometric" to (stripBiometric ?: true),
             "foregroundServices" to (stripForegroundServices ?: false),
             "systemAlertWindow" to (stripSystemAlertWindow ?: false),
-            "networkState" to (stripNetworkState ?: false),
             "wakeLock" to (stripWakeLock ?: false),
             "screenshotDetection" to (stripScreenshotDetection ?: true),
             "miscHardware" to (stripMiscHardware ?: false),

@@ -83,7 +83,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Privacy** | **Non-Personalized Search** | `bytecodePatch` | Forces TikTok's non-personalized search mode instead of the saved account choice. |
 | **Privacy** | **Disable Watch History Recording** | `bytecodePatch` | Prevents viewed videos from being recorded in account watch history, playback duration stores, and local history caches. |
 | **Privacy** | **Update Prompt Suppressor** | `bytecodePatch` | Neutralizes background update polling tasks and version enforcement dialogs. |
-| **Privacy** | **[TikTok Privacy Permissions Stripper](#12-tiktok-privacy-permissions-stripper)** | `resourcePatch` | Selectively strips sensitive privacy, sensor, hardware, and tracking permissions from AndroidManifest.xml via 16 granular opt-in boolean toggles. |
+| **Privacy** | **[TikTok Privacy Permissions Stripper](#12-tiktok-privacy-permissions-stripper)** | `resourcePatch` | Selectively strips sensitive privacy, sensor, hardware, and tracking permissions from AndroidManifest.xml via 15 granular opt-in boolean toggles. |
 | **Performance** | **[Display Refresh Rate Governor](#3-display-refresh-rate-governor)** | `bytecodePatch` | Locks window to peak hardware refresh rate (120Hz/90Hz) and neutralizes playback downclocking. |
 | **Performance** | **[Disable HDR Video Playback](#26-disable-hdr-video-playback-disablehdrvideopatch)** | `bytecodePatch` | Forces the video playback engine to select standard SDR bitrates instead of HDR (HDR10/PQ/HLG). |
 | **Performance** | **Instant Launch & Splash Blocker** | `bytecodePatch` | Eliminates cold startup delays, real-time splash advertisements, and background TopView ad preloading. |
@@ -343,23 +343,22 @@ The **`Popups & Prompts Suppressor`** patch suppresses intrusive dialogs, bottom
 
 ### 12. TikTok Privacy Permissions Stripper
 
-The **`TikTok Privacy Permissions Stripper`** patch selectively strips sensitive privacy, sensor, hardware, and tracking permissions from `AndroidManifest.xml` via 16 granular boolean toggles. Low-risk, non-essential background signals and notification toggles default to `true` while high-impact capabilities remain `false` to guarantee zero regressions out-of-the-box.
+The **`TikTok Privacy Permissions Stripper`** patch selectively strips sensitive privacy, sensor, hardware, and tracking permissions from `AndroidManifest.xml` via 15 granular boolean toggles. Five toggles default to `true` (`nfc`, `screenshotDetection`, `oemSignals`, `bluetooth`, `biometric`), while the remaining 10 toggles default to `false`.
 
 > [!WARNING]
 > Stripping permissions at the manifest level completely revokes the capability for the application at the OS package level. While notification, NFC, and OEM signal removals are safe, stripping hardware or media permissions will disable respective features (camera, microphone, gallery, background sync) or cause crashes if components lack graceful permission guards.
 
 | Toggle Option | Key | Type | Default | Risk Level | Description |
 | :--- | :--- | :---: | :---: | :---: | :--- |
-| **Strip Notification Permission** | `stripNotifications` | Boolean | `true` | **Safe** | Remove `POST_NOTIFICATIONS` permission (Android 13+). Notification channels cannot dispatch push alerts. |
+| **Strip Notification Permission** | `stripNotifications` | Boolean | `false` | **Safe** | Remove `POST_NOTIFICATIONS` permission (Android 13+). Notification channels cannot dispatch push alerts. |
 | **Strip Camera Permission** | `stripCamera` | Boolean | `false` | **Risk** | Remove `CAMERA`. WARNING: Breaks camera recording, photo capturing, QR scanning, LIVE broadcasting, and video creation. |
 | **Strip Microphone Permissions** | `stripMicrophone` | Boolean | `false` | **Risk** | Remove `RECORD_AUDIO`, `FOREGROUND_SERVICE_MICROPHONE`, and `FOREGROUND_SERVICE_CAMERA`. WARNING: Breaks video voice recording, LIVE audio broadcasting, audio comments, and voice/video calling. |
 | **Strip Storage & Media Permissions** | `stripStorageMedia` | Boolean | `false` | **Risk** | Remove external storage (`READ`/`WRITE_EXTERNAL_STORAGE`) and media permissions (`READ_MEDIA_IMAGES`, `READ_MEDIA_VIDEO`, `READ_MEDIA_AUDIO`, `READ_MEDIA_VISUAL_USER_SELECTED`, `ACCESS_MEDIA_LOCATION`). WARNING: Breaks local gallery picker, drafts, and video/photo saving. |
-| **Strip Bluetooth Permissions** | `stripBluetooth` | Boolean | `false` | **Risk** | Remove `BLUETOOTH`, `BLUETOOTH_SCAN`, `BLUETOOTH_CONNECT`, and `BLUETOOTH_ADVERTISE`. WARNING: Breaks Bluetooth audio accessories, wireless headphones low-latency sync, Cast devices, and external remote controls. |
+| **Strip Bluetooth Permissions** | `stripBluetooth` | Boolean | `true` | **Risk** | Remove `BLUETOOTH`, `BLUETOOTH_SCAN`, `BLUETOOTH_CONNECT`, and `BLUETOOTH_ADVERTISE`. WARNING: Breaks Bluetooth audio accessories, wireless headphones low-latency sync, Cast devices, and external remote controls. |
 | **Strip NFC Permission** | `stripNfc` | Boolean | `true` | **Safe\*** | Remove `NFC`. WARNING: Disables NFC tag interactions and NFC-based hardware authentication tokens. Safe unless using NFC hardware keys/login. |
-| **Strip Biometric Permissions** | `stripBiometric` | Boolean | `false` | **Risk** | Remove `USE_BIOMETRIC` and `USE_FINGERPRINT`. WARNING: Breaks fingerprint/face biometric unlocking, passkeys, and biometric payment authorization. |
+| **Strip Biometric Permissions** | `stripBiometric` | Boolean | `true` | **Risk** | Remove `USE_BIOMETRIC` and `USE_FINGERPRINT`. WARNING: Breaks fingerprint/face biometric unlocking, passkeys, and biometric payment authorization. |
 | **Strip Foreground Service Permissions** | `stripForegroundServices` | Boolean | `false` | **High Risk** | Remove generic `FOREGROUND_SERVICE` and specialized types (`DATA_SYNC`, `MEDIA_PLAYBACK`, `MEDIA_PROJECTION`, `PHONE_CALL`). WARNING: HIGH RISK. Breaks background video uploads, offline caching, media playback notification services, screen sharing, and background VoIP calls. |
 | **Strip System Alert Window Permission** | `stripSystemAlertWindow` | Boolean | `false` | **Risk** | Remove `SYSTEM_ALERT_WINDOW`. WARNING: Breaks Picture-in-Picture overlay window outside the app, floating mini-player, and overlay notification heads. |
-| **Strip Network State Permissions** | `stripNetworkState` | Boolean | `false` | **Risk** | Remove `ACCESS_NETWORK_STATE`, `ACCESS_WIFI_STATE`, `CHANGE_NETWORK_STATE`, `CHANGE_WIFI_STATE`, and `ACCESS_LOCAL_NETWORK`. WARNING: May cause `SecurityException` crashes on startup if network monitoring components query Wi-Fi/cellular state without catch guards. |
 | **Strip Wake Lock Permission** | `stripWakeLock` | Boolean | `false` | **Risk** | Remove `WAKE_LOCK`. WARNING: Device CPU may sleep during media playback or long video uploads/downloads when screen turns off, suspending progress. |
 | **Strip Screenshot Detection Permissions** | `stripScreenshotDetection` | Boolean | `true` | **Safe** | Remove `DETECT_SCREEN_CAPTURE` and `DETECT_SCREEN_RECORDING` to neutralize OS-level capture detection callbacks. Complements Universal Screenshot Protection Bypass. |
 | **Strip Miscellaneous Hardware Permissions** | `stripMiscHardware` | Boolean | `false` | **Low/Med** | Remove `VIBRATE`, `MODIFY_AUDIO_SETTINGS`, `MANAGE_OWN_CALLS`, `REORDER_TASKS`, `SET_WALLPAPER`, and `USE_FULL_SCREEN_INTENT`. WARNING: Disables haptic feedback vibration, volume adjustments, alarm priority intents, and live wallpaper export. |
@@ -628,7 +627,7 @@ Certain permissions are intentionally excluded from this manifest stripper becau
   - Guarantees zero resource re-encoding regressions (unlike full ARSC recompilation).
 - **Comprehensive Manifest Coverage & Pruning Discipline**:
   - Covers all 64 unique permissions extracted from TikTok 47.1.4 standalone manifest (`tiktok_47.1.4_orig.apk`).
-  - 56 permissions mapped into 16 categorized boolean toggle switches (4 default `true`, 12 default `false`).
+  - 51 permissions mapped into 15 categorized boolean toggle switches (5 default `true`: `nfc`, `screenshotDetection`, `oemSignals`, `bluetooth`, `biometric`; 10 default `false`).
   - 7 non-negotiable permissions pruned from manifest stripping and delegated to specialized runtime governors (**Universal Telemetry Neutralizer** and **Device Privacy Guard**).
   - 1 kernel-critical permission (`android.permission.INTERNET`) explicitly excluded to prevent cold startup socket allocation aborts.
 - **Dynamic Mutation & Telemetry Summary**:
