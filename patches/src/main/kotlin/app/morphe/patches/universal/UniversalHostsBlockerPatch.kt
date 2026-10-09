@@ -95,15 +95,16 @@ val universalHostsBlockerPatch = bytecodePatch(
         val blockedRoots = mutableSetOf<String>()
 
         classDefForEach { classDef ->
-            if (!hasAnyTargetInstruction(classDef, blocklist, useSubdomains)) return@classDefForEach
-
-            val mutableClass = mutableClassDefBy(classDef)
+            var mutableMethods: List<MutableMethod>? = null
             var classModified = false
 
-            for (method in mutableClass.methods) {
+            for ((methodIndex, method) in classDef.methods.withIndex()) {
                 val rewrites = collectConstStringRewrites(method, blocklist, sink, useSubdomains, blockedRoots)
                 if (rewrites.isNotEmpty()) {
-                    applyRewrites(method, rewrites)
+                    val methods = mutableMethods ?: mutableClassDefBy(classDef).methods.toList().also {
+                        mutableMethods = it
+                    }
+                    applyRewrites(methods[methodIndex], rewrites)
                     rewrittenStrings += rewrites.size
                     classModified = true
                 }
@@ -207,37 +208,6 @@ private fun findBlockedRoot(host: String, blocklist: Set<String>, useSubdomains:
     return null
 }
 
-private fun hasAnyTargetInstruction(
-    classDef: ClassDef,
-    blocklist: Set<String>,
-    useSubdomains: Boolean,
-): Boolean {
-    for (method in classDef.methods) {
-        if (hasMethodTargetInstruction(method, blocklist, useSubdomains)) return true
-    }
-    return false
-}
-
-private fun hasMethodTargetInstruction(
-    method: Method,
-    blocklist: Set<String>,
-    useSubdomains: Boolean,
-): Boolean {
-    val instructions = method.instructionsOrNull ?: return false
-    for (instruction in instructions) {
-        if (isTargetInstruction(instruction, blocklist, useSubdomains)) return true
-    }
-    return false
-}
-
-private fun isTargetInstruction(
-    instruction: Instruction,
-    blocklist: Set<String>,
-    useSubdomains: Boolean,
-): Boolean {
-    return resolveBlockedRoot(instruction, blocklist, useSubdomains) != null
-}
-
 private fun isConstStringOpcode(opcode: Opcode): Boolean {
     return opcode == Opcode.CONST_STRING || opcode == Opcode.CONST_STRING_JUMBO
 }
@@ -281,7 +251,7 @@ private fun findPendingRewrite(
 }
 
 private fun collectConstStringRewrites(
-    method: MutableMethod,
+    method: Method,
     blocklist: Set<String>,
     sink: String,
     useSubdomains: Boolean,
