@@ -1252,6 +1252,18 @@ public final class TikTokFeedAdFilter {
         try {
             if (TikTokMediaHook.isPhotoMode(aweme)) return true;
         } catch (Throwable ignored) {}
+        try {
+            if (getAwemeTypeMethod != null) {
+                Object type = getAwemeTypeMethod.invoke(aweme);
+                if (type instanceof Integer) {
+                    int t = ((Integer) type).intValue();
+                    // 0 = Normal video, 51 = Image video, 54 = Live video, 61 = Long video, 68/69 = Photo mode, 150 = Story
+                    if (t == 0 || t == 51 || t == 54 || t == 61 || t == 68 || t == 69 || t == 150) {
+                        return true;
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
         return false;
     }
 
@@ -1264,21 +1276,40 @@ public final class TikTokFeedAdFilter {
             } else if (withSurveyField != null) {
                 if (withSurveyField.getBoolean(aweme)) return true;
             }
-            if (getSurveyInfoMethod != null && getSurveyInfoMethod.invoke(aweme) != null) return true;
-            if (surveyInfoField != null && surveyInfoField.get(aweme) != null) return true;
-            if (surveyInfoAltField != null && surveyInfoAltField.get(aweme) != null) return true;
-            if (getSurveyInfosMethod != null) {
-                Object infos = getSurveyInfosMethod.invoke(aweme);
-                if (infos instanceof List && !((List<?>) infos).isEmpty()) return true;
-            } else if (surveyInfosField != null) {
-                Object infos = surveyInfosField.get(aweme);
-                if (infos instanceof List && !((List<?>) infos).isEmpty()) return true;
+            
+            boolean hasSurveyObj = false;
+            if (getSurveyInfoMethod != null && getSurveyInfoMethod.invoke(aweme) != null) hasSurveyObj = true;
+            else if (surveyInfoField != null && surveyInfoField.get(aweme) != null) hasSurveyObj = true;
+            else if (surveyInfoAltField != null && surveyInfoAltField.get(aweme) != null) hasSurveyObj = true;
+            
+            if (!hasSurveyObj) {
+                if (getSurveyInfosMethod != null) {
+                    Object infos = getSurveyInfosMethod.invoke(aweme);
+                    if (infos instanceof List && !((List<?>) infos).isEmpty()) hasSurveyObj = true;
+                } else if (surveyInfosField != null) {
+                    Object infos = surveyInfosField.get(aweme);
+                    if (infos instanceof List && !((List<?>) infos).isEmpty()) hasSurveyObj = true;
+                }
             }
-            if (mPersonalizedSurveyUIField != null && mPersonalizedSurveyUIField.get(aweme) != null) return true;
-            if (mOnboardingSurveyField != null && mOnboardingSurveyField.get(aweme) != null) return true;
-            if (mPersonalizedOnboardingSurveyField != null && mPersonalizedOnboardingSurveyField.get(aweme) != null) return true;
-            if (questionInfoField != null && questionInfoField.get(aweme) != null) return true;
-            if (ueFeedInfoField != null && ueFeedInfoField.get(aweme) != null) return true;
+            if (!hasSurveyObj) {
+                if (mPersonalizedSurveyUIField != null && mPersonalizedSurveyUIField.get(aweme) != null) hasSurveyObj = true;
+                else if (mOnboardingSurveyField != null && mOnboardingSurveyField.get(aweme) != null) hasSurveyObj = true;
+                else if (mPersonalizedOnboardingSurveyField != null && mPersonalizedOnboardingSurveyField.get(aweme) != null) hasSurveyObj = true;
+                else if (questionInfoField != null && questionInfoField.get(aweme) != null) hasSurveyObj = true;
+                else if (ueFeedInfoField != null && ueFeedInfoField.get(aweme) != null) hasSurveyObj = true;
+            }
+            
+            if (hasSurveyObj) {
+                Object key = null;
+                if (getSurveyKeyMethod != null) {
+                    key = getSurveyKeyMethod.invoke(aweme);
+                } else if (surveyKeyField != null) {
+                    key = surveyKeyField.get(aweme);
+                }
+                if (key instanceof String && !((String) key).isEmpty()) {
+                    return true;
+                }
+            }
         } catch (Throwable ignored) {}
         return false;
     }
@@ -1342,16 +1373,28 @@ public final class TikTokFeedAdFilter {
             // 3. CardInsertInfo checks:
             // Any CardInsertInfo attached to Aweme indicates an inserted non-video card
             // (Explore Community/Topic Lynx cards, RecUser, Instant Games, Search Interest, etc.)
+            Object cardInfo = null;
             if (getCardInsertInfoMethod != null) {
-                Object cardInfo = getCardInsertInfoMethod.invoke(aweme);
-                if (cardInfo != null) {
-                    return true;
-                }
+                cardInfo = getCardInsertInfoMethod.invoke(aweme);
             } else if (cardInsertInfoField != null) {
-                Object cardInfo = cardInsertInfoField.get(aweme);
-                if (cardInfo != null) {
-                    return true;
-                }
+                cardInfo = cardInsertInfoField.get(aweme);
+            }
+            if (cardInfo != null) {
+                boolean isCard = false;
+                try {
+                    if (getCardTypeMethod != null) {
+                        Object type = getCardTypeMethod.invoke(cardInfo);
+                        if (type instanceof Number && ((Number) type).intValue() > 0) {
+                            isCard = true;
+                        }
+                    } else if (cardTypeField != null) {
+                        Object type = cardTypeField.get(cardInfo);
+                        if (type instanceof Number && ((Number) type).intValue() > 0) {
+                            isCard = true;
+                        }
+                    }
+                } catch (Throwable ignored) {}
+                if (isCard) return true;
             }
 
             // 4. In-Feed Recommendation Cards
