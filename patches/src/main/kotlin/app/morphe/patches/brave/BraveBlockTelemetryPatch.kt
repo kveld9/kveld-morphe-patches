@@ -2,15 +2,25 @@ package app.morphe.patches.brave
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.extensions.InstructionExtensions.instructionsOrNull
+import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
+import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.rawResourcePatch
 import app.morphe.patcher.patch.resourcePatch
+import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.shared.Constants
-import app.morphe.patches.shared.sharedExtensionPatch
 import app.morphe.patches.shared.findXmlContaining
+import app.morphe.patches.shared.sharedExtensionPatch
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.ClassDef
+import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import org.w3c.dom.Element
 import java.io.RandomAccessFile
 
@@ -165,6 +175,14 @@ val braveBlockTelemetryPatch = bytecodePatch(
         braveBtiCompatibilityPatch,
     )
 
+    val blockOffersHost by booleanOption(
+        key = "blockOffersHost",
+        default = true,
+        title = "Block Offers host",
+        description = "Rewrites DEX const-string literals containing offers.brave.com to 0.0.0.0. Enabled by default; disable to keep commercial offers endpoint.",
+        required = false,
+    )
+
     // Note: Google Privacy Sandbox APIs (Topics, Protected Audience) and upstream UKM metric
     // reporting to Google servers are already stripped/disabled by Brave at the C++ engine level
     // (brave-core). Upstream UkmRecorder hooks and dat zeroing are omitted here as Brave routes
@@ -241,6 +259,117 @@ val braveBlockTelemetryPatch = bytecodePatch(
 
         val targetClasses = hookedMethods.map { it.substringBefore('.') }.distinct()
         println("[Block Telemetry] Hooked ${hookedMethods.size} bytecode telemetry methods across ${targetClasses.size} classes (${hookedMethods.joinToString(", ")})")
+
+        // 5. Offers host: Rewrite const-string literals containing offers.brave.com to 0.0.0.0
+        if (blockOffersHost == true) {
+            blockOffersHostInDex()
+        } else {
+            println("[Block Telemetry] Offers host blocking disabled by option.")
+        }
     }
 }
+
+private const val OFFERS_HOST = "offers.brave.com"
+private const val SINK_HOST = "0.0.0.0"
+
+private data class PendingOffersRewrite(
+    val index: Int,
+    val register: Int,
+    val replacement: String,
+)
+
+private fun BytecodePatchContext.blockOffersHostInDex() {
+    var rewrittenStrings = 0
+    var touchedClasses = 0
+
+    classDefForEach { classDef ->
+        if (!hasOffersLiteral(classDef)) return@classDefForEach
+
+        val mutableClass = mutableClassDefBy(classDef)
+        var classModified = false
+
+        for (method in mutableClass.methods) {
+            val count = rewriteOffersInMethod(method)
+            if (count > 0) {
+                rewrittenStrings += count
+                classModified = true
+            }
+        }
+
+        if (classModified) touchedClasses++
+    }
+
+    logOffersResult(rewrittenStrings, touchedClasses)
+}
+
+private fun logOffersResult(rewrittenStrings: Int, touchedClasses: Int) {
+    if (rewrittenStrings == 0) {
+        println("[Block Telemetry] No offers.brave.com literals found.")
+    } else {
+        println("[Block Telemetry] Rewrote $rewrittenStrings offers.brave.com literal(s) across $touchedClasses class(es) -> 0.0.0.0.")
+    }
+}
+
+private fun rewriteOffersInMethod(method: MutableMethod): Int {
+    val rewrites = collectOffersRewrites(method)
+    if (rewrites.isEmpty()) return 0
+    applyOffersRewrites(method, rewrites)
+    return rewrites.size
+}
+
+private fun hasOffersLiteral(classDef: ClassDef): Boolean =
+    classDef.methods.any { methodHasOffersLiteral(it) }
+
+private fun methodHasOffersLiteral(method: Method): Boolean {
+    val instructions = method.instructionsOrNull ?: return false
+    return instructions.any { isOffersConstString(it) }
+}
+
+private fun isConstStringOpcode(opcode: Opcode): Boolean =
+    opcode == Opcode.CONST_STRING || opcode == Opcode.CONST_STRING_JUMBO
+
+private fun extractOffersLiteral(instruction: Instruction): String? {
+    if (!isConstStringOpcode(instruction.opcode)) return null
+    val ref = (instruction as? ReferenceInstruction)?.reference as? StringReference ?: return null
+    val original = ref.string
+    return if (original.contains(OFFERS_HOST, ignoreCase = true)) original else null
+}
+
+private fun isOffersConstString(instruction: Instruction): Boolean =
+    extractOffersLiteral(instruction) != null
+
+private fun buildOffersRewrite(instruction: Instruction, index: Int): PendingOffersRewrite? {
+    val original = extractOffersLiteral(instruction) ?: return null
+    val replacement = original.replace(OFFERS_HOST, SINK_HOST, ignoreCase = true)
+    val register = (instruction as? OneRegisterInstruction)?.registerA ?: return null
+    return PendingOffersRewrite(index, register, replacement)
+}
+
+private fun collectOffersRewrites(method: MutableMethod): List<PendingOffersRewrite> {
+    val instructions = method.instructionsOrNull?.toList() ?: return emptyList()
+    val rewrites = mutableListOf<PendingOffersRewrite>()
+    for ((index, instruction) in instructions.withIndex()) {
+        val rewrite = buildOffersRewrite(instruction, index) ?: continue
+        rewrites.add(rewrite)
+    }
+    return rewrites
+}
+
+private fun applyOffersRewrites(method: MutableMethod, rewrites: List<PendingOffersRewrite>) {
+    for (rewrite in rewrites.sortedByDescending { it.index }) {
+        val opcode = if (rewrite.register > 255) "const-string/jumbo" else "const-string"
+        method.replaceInstruction(
+            rewrite.index,
+            "$opcode v${rewrite.register}, \"${escapeSmaliLiteral(rewrite.replacement)}\"",
+        )
+    }
+}
+
+private fun escapeSmaliLiteral(value: String): String =
+    value.replace("\\", "\\\\")
+        .replace("\"", "\\\"")
+        .replace("\n", "\\n")
+        .replace("\r", "\\r")
+        .replace("\t", "\\t")
+
 

@@ -61,7 +61,10 @@ Comprehensive technical and configuration guide for **Brave Browser** (`com.brav
   - **Bytecode Neutralization**: Intercepts `PrefService.e` queries for P3A (*Privacy-Preserving Product Analytics*), Brave Stats, and WDP (*Web Discovery Project*).
   - **Variations Connection Abort**: Injects early returns into HTTP loaders fetching experimentation variations seeds.
   - **Native Socket Redirection**: In `libchrome.so`, redirects 12 native telemetry endpoints (`*.bsg.brave.com`, `*.wdp.brave.com`, `usage-ping.brave.com`, `crashpad.chromium.org`, `variations.brave.com`) to `0.0.0.0`.
+  - **DEX Offers Host Neutralization**: Rewrites `const-string` literals containing `offers.brave.com` to `0.0.0.0` in Dalvik bytecode.
   - **Packaging Invariants**: Encapsulates multi-binary ARM64 BTI neutralization and trap patching dependencies.
+- **Options**:
+  - `blockOffersHost` (boolean, default: `true`): Rewrites DEX `const-string` literals containing `offers.brave.com` to `0.0.0.0`. Enabled by default; disable to keep commercial offers endpoint.
 
 ### 3. Clean New Tab Page (`braveCleanNewTabPagePatch`)
 - **Objective**: Completely eliminate sponsored advertising wallpapers, background campaign asset downloads, Brave News/Today promotional cards, and Brave Shields stats cards.
