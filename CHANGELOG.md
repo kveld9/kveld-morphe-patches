@@ -1,3 +1,9 @@
+## [2.6.0-experimental.11](https://github.com/kveld9/kveld-morphe-patches/compare/v2.6.0-experimental.10...v2.6.0-experimental.11) (2026-10-09)
+
+### Bug Fixes
+
+* **tiktok:** retune privacy stripper defaults and drop network-state group ([1bfa48b](https://github.com/kveld9/kveld-morphe-patches/commit/1bfa48b2ee08681e52fe695b4873501198217333))
+
 ## [2.6.0-experimental.10](https://github.com/kveld9/kveld-morphe-patches/compare/v2.6.0-experimental.9...v2.6.0-experimental.10) (2026-10-09)
 
 ### Bug Fixes
