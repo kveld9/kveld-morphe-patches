@@ -1,3 +1,21 @@
+## [2.6.0-experimental.7](https://github.com/kveld9/kveld-morphe-patches/compare/v2.6.0-experimental.6...v2.6.0-experimental.7) (2026-10-09)
+
+### Bug Fixes
+
+* **universal:** drop direction-inverted methods from Sensors block set ([24f5900](https://github.com/kveld9/kveld-morphe-patches/commit/24f5900e024f975f4ddf068dae9e943728857676))
+
+### New Features
+
+* **universal:** add Sensors Analytics coverage to SDK Blocker ([24caebe](https://github.com/kveld9/kveld-morphe-patches/commit/24caebe3e8e6602e15499d0d5bc3d79f71a0cb61))
+* **validation:** add unattended smoke install gate with JSON verdict ([bd01dcd](https://github.com/kveld9/kveld-morphe-patches/commit/bd01dcdbde7d1b952a06e7e515be489f70ac82b8))
+
+### Improvements
+
+* **tiktok:** avoid redundant full-dex scans in Comment Customizer ([48c6d1f](https://github.com/kveld9/kveld-morphe-patches/commit/48c6d1fd8bc3317f955a7c06f9305441986e6fcf))
+* **tiktok:** instrument camera and mic call sites in a single scan ([9cc6c55](https://github.com/kveld9/kveld-morphe-patches/commit/9cc6c552cbc902ef936238b3635d4c452d5a7e89))
+* **tiktok:** narrow DM Declutter class scans to the member kind they need ([27314b6](https://github.com/kveld9/kveld-morphe-patches/commit/27314b6f7799dfbdb9197a5ecbd8b1e41ddbe03e))
+* **tiktok:** share one candidate scan across Device Privacy Guard call sites ([d43645f](https://github.com/kveld9/kveld-morphe-patches/commit/d43645ff517de713e858cef12e233c3c5ba92e5a))
+
 ## [2.6.0-experimental.6](https://github.com/kveld9/kveld-morphe-patches/compare/v2.6.0-experimental.5...v2.6.0-experimental.6) (2026-10-08)
 
 ### Bug Fixes
