@@ -72,7 +72,7 @@
 </details>
 
 <details>
-<summary>TikTok&nbsp;&nbsp;•&nbsp;&nbsp;<b>71 patches</b></summary>
+<summary>TikTok&nbsp;&nbsp;•&nbsp;&nbsp;<b>72 patches</b></summary>
 <br>
 
 **Supported versions:**
@@ -121,6 +121,7 @@
 | **Hide Inbox Promos & Alerts** | Hides promotional banners, streak mascot cards, contact sync suggestions, friend recommendations, and migration guide tooltips in the inbox and direct messages. | • Hide Top Promotional Banners<br>• Hide Contact & Friend Recommendations<br>• Hide Navigation Notices & Tooltips |
 | **Hide Inbox Story & Status Tray** | Hides the horizontal story, notes, and status tray (Skylight) displayed at the top of direct messages and the inbox. |  |
 | **Hide Popular Lives In Search** | Removes the Popular LIVEs recommendation card and live stream broadcasts from the search discovery page. |  |
+| **Hide Promotional Content** | Filters videos disclosing branded/paid-promotional content (Contenido Promocional tag) from For You, Following and Friends feeds. |  |
 | **Hide Seen Videos** | Filters previously watched videos from incoming For You feed batches. |  |
 | **Hide Suggested Accounts** | Removes suggested-account cards from profile headers and inbox surfaces. |  |
 | **Hide Suggested Searches** | Removes the suggested search keywords section ('You may like' / 'Search suggestions') from the search discovery page. |  |

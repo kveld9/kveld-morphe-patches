@@ -1,3 +1,13 @@
+## [2.6.0-experimental.9](https://github.com/kveld9/kveld-morphe-patches/compare/v2.6.0-experimental.8...v2.6.0-experimental.9) (2026-10-09)
+
+### Bug Fixes
+
+* **tiktok:** suppress inbox badge cache-restore path in navigation declutter ([9c72ffb](https://github.com/kveld9/kveld-morphe-patches/commit/9c72ffb5b4876318863116f7715135f628afcff3))
+
+### New Features
+
+* **tiktok:** hide promotional tagged feed videos ([5b8b522](https://github.com/kveld9/kveld-morphe-patches/commit/5b8b5225f57860cf27153478fd88d5987ce009dc))
+
 ## [2.6.0-experimental.8](https://github.com/kveld9/kveld-morphe-patches/compare/v2.6.0-experimental.7...v2.6.0-experimental.8) (2026-10-09)
 
 ### Bug Fixes
