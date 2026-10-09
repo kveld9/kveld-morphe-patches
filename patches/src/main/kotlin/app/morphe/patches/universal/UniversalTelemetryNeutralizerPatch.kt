@@ -303,6 +303,14 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
         required = false,
     )
 
+    val disableRemoteConfig by booleanOption(
+        key = "disableRemoteConfig",
+        default = false,
+        title = "Disable Firebase Remote Config",
+        description = "Prune Firebase RemoteConfig, DynamicLoading, and AB testing (Abt) discovery registrars. WARNING: May break dynamic backend configuration and remote feature flags.",
+        required = false,
+    )
+
     val disableAdStartupInitializers by booleanOption(
         key = "disableAdStartupInitializers",
         default = false,
@@ -330,6 +338,7 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
         val shouldDisableCrashDetectors = disableCrashDetectors ?: true
         val shouldDisableDeviceIds = disableDeviceIdProviders ?: false
         val shouldDisableMlKit = disableMlKit ?: false
+        val shouldDisableRemoteConfig = disableRemoteConfig ?: false
         val shouldDisableAdStartup = disableAdStartupInitializers ?: false
 
         var removedPerms: List<String> = emptyList()
@@ -380,6 +389,11 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
                 if (shouldDisablePush) {
                     disabledPushCount = application.disableComponentsWhere("service") { it in PUSH_SERVICES }
                     disabledPushReceiversCount = application.disableComponentsWhere("receiver") { it in PUSH_RECEIVERS }
+                    removedRegistrarsCount += application.removeComponentDiscoveryRegistrarsWhere { name ->
+                        name.contains("Installations", ignoreCase = true) ||
+                            name.contains("Transport", ignoreCase = true) ||
+                            name.contains("Iid", ignoreCase = true)
+                    }
                 }
 
                 if (shouldDisableGoogleAnalytics) {
@@ -415,6 +429,14 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
                     }
                 }
 
+                if (shouldDisableRemoteConfig) {
+                    removedRegistrarsCount += application.removeComponentDiscoveryRegistrarsWhere { name ->
+                        name.contains("RemoteConfig", ignoreCase = true) ||
+                            name.contains("Abt", ignoreCase = true) ||
+                            name.contains("DynamicLoading", ignoreCase = true)
+                    }
+                }
+
                 if (shouldDisableAdStartup) {
                     removedStartupInitCount = application.removeStartupInitializersWhere { it in AD_STARTUP_INITIALIZERS }
                 }
@@ -430,12 +452,7 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
                             name.contains("Crashlytics", ignoreCase = true) ||
                             name.contains("Perf", ignoreCase = true) ||
                             name.contains("Sessions", ignoreCase = true) ||
-                            name.contains("Iid", ignoreCase = true) ||
-                            name.contains("DynamicLoading", ignoreCase = true) ||
-                            name.contains("Transport", ignoreCase = true) ||
-                            name.contains("Installations", ignoreCase = true) ||
-                            name.contains("RemoteConfig", ignoreCase = true) ||
-                            name.contains("Abt", ignoreCase = true)
+                            name.contains("Measurement", ignoreCase = true)
                     }
                 }
             }
