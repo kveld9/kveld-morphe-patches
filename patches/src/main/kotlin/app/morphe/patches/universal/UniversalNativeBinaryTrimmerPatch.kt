@@ -51,7 +51,7 @@ private fun zeroBinaryFile(file: File): Long {
 @Suppress("unused")
 val universalNativeBinaryTrimmerPatch = rawResourcePatch(
     name = "Universal Native Binary Trimmer",
-    description = "Strips non-essential tracking, crash reporting, and debug companion native libraries in lib/** (e.g. libcrashlytics, libsentry, libbugly, libgwp-asan) by zeroing bytes in-situ.",
+    description = "Strips non-essential tracking, crash reporting, and debug companion native libraries in lib/** (e.g. libcrashlytics, libsentry, libbugly, libgwp-asan) by zeroing bytes in-situ. Requires SDK Blocker pairing when the app eagerly loads these libs.",
     default = false,
 ) {
     // Universal patch: applies to any target APK in Morphe Manager / CLI (no compatibleWith)
@@ -117,5 +117,6 @@ val universalNativeBinaryTrimmerPatch = rawResourcePatch(
 
         val savedFormatted = LocaleUtils.formatBytes(savedBytes)
         println("[Universal Native Binary Trimmer] Trimmed ${strippedLibs.size} companion native libraries (${strippedLibs.joinToString(", ")}) -> Saved $savedFormatted")
+        println("[Universal Native Binary Trimmer] Warning: trimmed libs are only safe if nothing loads them eagerly; pair with Universal SDK Blocker (blockCrashReporters) or verify no System.loadLibrary references, otherwise UnsatisfiedLinkError boot crashes follow.")
     }
 }

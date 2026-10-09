@@ -257,6 +257,7 @@ The **`Universal Native Binary Trimmer`** patch inspects native architecture dir
 ### 🛡️ In-Situ Zeroing vs. File Deletion
 - **ZIP Central Directory Invariant**: In Morphe's patching pipeline, deleting native `.so` files from the resource tree can break APK alignment and trigger `UnsatisfiedLinkError` if the application's Java/Kotlin code contains strict class-level `System.loadLibrary(...)` calls without exception handlers.
 - **Empty Stub Execution**: By replacing the payload of tracking `.so` files with a 0-byte stub directly in the APK, APK storage is fully reclaimed while eliminating native crash reporting background threads, memory dump scanners, and watchdog sidecars.
+- **Eager Loading Warning**: Trimmed libraries are only safe if not loaded eagerly by bytecode. Pair with Universal SDK Blocker (`blockCrashReporters`) or verify no `System.loadLibrary` calls to avoid `UnsatisfiedLinkError` boot crashes.
 
 ### Targeted Native Libraries
 
