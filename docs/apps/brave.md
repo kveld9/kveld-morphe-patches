@@ -41,7 +41,7 @@ Comprehensive technical and configuration guide for **Brave Browser** (`com.brav
 | **Disable Content Capture** | `bytecodePatch` | Privacy & Anti-Tracking | ✅ Yes | Forces `OnscreenContentProvider.shouldCapture -> false`. Stops page text/URL streaming to the Android ContentCapture service. |
 | **Skip First Run** | `bytecodePatch` | Usability & UX | ✅ Yes | Skips the welcome screen, search engine selection, and onboarding First Run Experience (FRE) on clean installs. |
 | **Tab Group Close Selection** | `bytecodePatch` | Usability & UX | ✅ Yes | When closing the selected tab in a tab group, selects the previous tab in the same group instead of jumping to a tab outside the group. |
-| **Universal Patches Suite** | Multiple | Optimization & Privacy | Contextual | Compatible with universal slimmers and privacy patches (Telemetry Neutralizer, Native Binary Trimmer, WebP/PNG Optimizers, DPI/Locale Slimmers). See [Universal Patch Reference](../universal-patches.md). |
+| **Universal Patches Suite** | Multiple | Optimization & Privacy | Contextual | Do not stack universal slimmers or privacy patches on maintained apps. Only the curated Universal Hosts Blocker may be applied. See [Universal Patch Reference](../universal-patches.md). |
 
 ---
 
