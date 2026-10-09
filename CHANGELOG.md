@@ -1,3 +1,9 @@
+## [2.6.0-experimental.8](https://github.com/kveld9/kveld-morphe-patches/compare/v2.6.0-experimental.7...v2.6.0-experimental.8) (2026-10-09)
+
+### Bug Fixes
+
+* **tiktok:** block DM typing sticker strip via signature-based hooks ([f24c023](https://github.com/kveld9/kveld-morphe-patches/commit/f24c0233e8f52a2455a0ad145c6f4b52b75d2841))
+
 ## [2.6.0-experimental.7](https://github.com/kveld9/kveld-morphe-patches/compare/v2.6.0-experimental.6...v2.6.0-experimental.7) (2026-10-09)
 
 ### Bug Fixes
