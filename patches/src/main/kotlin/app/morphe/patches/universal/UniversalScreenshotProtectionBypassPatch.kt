@@ -70,6 +70,7 @@ val universalScreenshotProtectionBypassPatch = bytecodePatch(
         var surfaceHooks = 0
         var audioHooks = 0
         var detectionHooks = 0
+        var skippedFlags = 0
         var touchedClasses = 0
 
         classDefForEach { classDef ->
@@ -97,7 +98,7 @@ val universalScreenshotProtectionBypassPatch = bytecodePatch(
                 val mutations = mutableListOf<PendingMutation>()
 
                 for ((index, inst) in instructions.withIndex()) {
-                    val windowMutation = checkWindowInstruction(inst, index)
+                    val windowMutation = checkWindowInstruction(inst, index) { skippedFlags++ }
                     if (windowMutation != null) {
                         mutations.add(windowMutation)
                         windowHooks++
@@ -161,6 +162,9 @@ val universalScreenshotProtectionBypassPatch = bytecodePatch(
             "[Universal Screenshot Protection Bypass] Applied $totalHooks bypass hook(s) across $touchedClasses class(es) " +
                 "($windowHooks window/layout flags, $surfaceHooks SurfaceView, $audioHooks audio capture, $detectionHooks detection/recents)."
         )
+        if (skippedFlags > 0) {
+            println("[Universal Screenshot Protection Bypass] Skipped $skippedFlags flag site(s) with registers >= 16 (assembler addressing limit).")
+        }
     }
 }
 
@@ -288,23 +292,33 @@ private fun isRemoveScreenRecordingCallback(inst: Instruction): Boolean {
         methodRef.returnType == "V"
 }
 
-private fun checkWindowInstruction(inst: Instruction, index: Int): PendingMutation? {
+private fun checkWindowInstruction(
+    inst: Instruction,
+    index: Int,
+    onSkippedFlag: () -> Unit = {},
+): PendingMutation? {
     if (isWindowAddFlags(inst)) {
         val flagsReg = extractRegisterAt(inst, argIndex = 1) ?: return null
-        if (flagsReg < 16) {
-            return PendingMutation.PrependInstructions(index, "and-int/lit16 v$flagsReg, v$flagsReg, $MASK_CLEAR_FLAG_SECURE")
+        if (flagsReg >= 16) {
+            onSkippedFlag()
+            return null
         }
+        return PendingMutation.PrependInstructions(index, "and-int/lit16 v$flagsReg, v$flagsReg, $MASK_CLEAR_FLAG_SECURE")
     } else if (isWindowSetFlags(inst)) {
         val flagsReg = extractRegisterAt(inst, argIndex = 1) ?: return null
-        if (flagsReg < 16) {
-            return PendingMutation.PrependInstructions(index, "and-int/lit16 v$flagsReg, v$flagsReg, $MASK_CLEAR_FLAG_SECURE")
+        if (flagsReg >= 16) {
+            onSkippedFlag()
+            return null
         }
+        return PendingMutation.PrependInstructions(index, "and-int/lit16 v$flagsReg, v$flagsReg, $MASK_CLEAR_FLAG_SECURE")
     } else if (isLayoutParamsFlagsPut(inst)) {
         val twoReg = inst as? TwoRegisterInstruction ?: return null
         val flagsReg = twoReg.registerA
-        if (flagsReg < 16) {
-            return PendingMutation.PrependInstructions(index, "and-int/lit16 v$flagsReg, v$flagsReg, $MASK_CLEAR_FLAG_SECURE")
+        if (flagsReg >= 16) {
+            onSkippedFlag()
+            return null
         }
+        return PendingMutation.PrependInstructions(index, "and-int/lit16 v$flagsReg, v$flagsReg, $MASK_CLEAR_FLAG_SECURE")
     }
     return null
 }
@@ -346,25 +360,16 @@ private fun checkDetectionInstruction(instructions: List<Instruction>, index: In
     }
 
     if (isAddScreenRecordingCallback(inst)) {
-        val mutations = mutableListOf<PendingMutation>()
-        var canNeutralize = true
-        if (index + 1 < instructions.size) {
-            val next = instructions[index + 1]
-            if (next.opcode == Opcode.MOVE_RESULT) {
-                val reg = (next as? OneRegisterInstruction)?.registerA
-                if (reg != null && reg < 256) {
-                    val smaliConst = if (reg < 16) "const/4 v$reg, 0x0" else "const/16 v$reg, 0x0"
-                    mutations.add(PendingMutation.ReplaceInstruction(index + 1, smaliConst))
-                } else {
-                    canNeutralize = false
-                }
-            }
-        }
-        if (canNeutralize) {
-            mutations.add(PendingMutation.ReplaceWithNop(index))
-            return mutations
-        }
-        return emptyList()
+        if (index + 1 >= instructions.size) return emptyList()
+        val next = instructions[index + 1]
+        if (next.opcode != Opcode.MOVE_RESULT) return emptyList()
+        val reg = (next as? OneRegisterInstruction)?.registerA ?: return emptyList()
+        if (reg >= 256) return emptyList()
+        val smaliConst = if (reg < 16) "const/4 v$reg, 0x0" else "const/16 v$reg, 0x0"
+        return listOf(
+            PendingMutation.ReplaceWithNop(index),
+            PendingMutation.ReplaceInstruction(index + 1, smaliConst),
+        )
     }
 
     return emptyList()
