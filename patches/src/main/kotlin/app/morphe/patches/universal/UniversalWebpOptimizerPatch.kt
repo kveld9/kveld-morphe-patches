@@ -1,5 +1,6 @@
 package app.morphe.patches.universal
 
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.rawResourcePatch
 import app.morphe.patches.shared.LocaleUtils
@@ -134,7 +135,7 @@ private fun optimizeWebpBytes(
 @Suppress("unused")
 val universalWebpOptimizerPatch = rawResourcePatch(
     name = "Universal WebP Asset Optimizer",
-    description = "Losslessly strips non-rendering metadata and ancillary chunks (EXIF, XMP, ICCP) from WebP assets across res/ and assets/ to reduce APK size.",
+    description = "Losslessly strips non-rendering metadata and ancillary chunks (EXIF, XMP, ICCP) from WebP assets across res/ and assets/ to reduce APK size. In raw-only pipeline mode, optimizes assets/ only as res/ is not decoded.",
     default = false,
 ) {
     // Universal patch: applies to any target APK in Morphe Manager / CLI (no compatibleWith)
@@ -170,12 +171,18 @@ val universalWebpOptimizerPatch = rawResourcePatch(
             if (assetsDir.exists() && assetsDir.isDirectory) rootDirs.add(assetsDir)
         } catch (_: Throwable) {}
 
+        var resNotDecoded = false
         try {
             val resDir = get("res")
             if (resDir.exists() && resDir.isDirectory) rootDirs.add(resDir)
+        } catch (e: PatchException) {
+            resNotDecoded = true
         } catch (_: Throwable) {}
 
         if (rootDirs.isEmpty()) {
+            if (resNotDecoded) {
+                println("[Universal WebP Asset Optimizer] Skipped res/: resources not decoded in current pipeline mode (processed 0 file(s) in assets/).")
+            }
             println("[Universal WebP Asset Optimizer] Neither res/ nor assets/ directory found - skipping safely.")
             return@execute
         }
@@ -187,7 +194,11 @@ val universalWebpOptimizerPatch = rawResourcePatch(
         }
 
         if (webpFiles.isEmpty()) {
-            println("[Universal WebP Asset Optimizer] No candidate WebP assets found in res/ or assets/ - skipping.")
+            if (resNotDecoded) {
+                println("[Universal WebP Asset Optimizer] Skipped res/: resources not decoded in current pipeline mode (processed 0 file(s) in assets/).")
+            }
+            val scopeDesc = if (resNotDecoded) "assets/" else "res/ or assets/"
+            println("[Universal WebP Asset Optimizer] No candidate WebP assets found in $scopeDesc - skipping.")
             return@execute
         }
 
@@ -220,7 +231,12 @@ val universalWebpOptimizerPatch = rawResourcePatch(
             }
         }
 
+        if (resNotDecoded) {
+            println("[Universal WebP Asset Optimizer] Skipped res/: resources not decoded in current pipeline mode (processed ${webpFiles.size} file(s) in assets/).")
+        }
+
         val savedFormatted = LocaleUtils.formatBytes(savedBytes.get())
-        println("[Universal WebP Asset Optimizer] Stripped metadata from ${optimizedCount.get()} / ${webpFiles.size} WebP assets (${alreadyOptimalCount.get()} already optimal) -> Saved $savedFormatted")
+        val scopeLabel = if (resNotDecoded) "assets/ WebPs" else "WebP assets"
+        println("[Universal WebP Asset Optimizer] Stripped metadata from ${optimizedCount.get()} / ${webpFiles.size} $scopeLabel (${alreadyOptimalCount.get()} already optimal) -> Saved $savedFormatted")
     }
 }

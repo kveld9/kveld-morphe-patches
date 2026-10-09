@@ -279,6 +279,10 @@ The **`Universal Native Binary Trimmer`** patch inspects native architecture dir
 
 The **`Universal WebP Asset Optimizer`** losslessly strips non-rendering metadata chunks (`EXIF`, `XMP `, `ICCP`) from WebP images located in `res/**` and `assets/**` across any Android application.
 
+> [!NOTE]
+> **Pipeline Scope**: In full pipeline mode (with resource decoding), optimization covers both `res/` and `assets/`.
+> In raw-only pipeline mode (where resources are not decoded), `res/` is safely skipped and optimization applies exclusively to `assets/`.
+
 ### 🛡️ RFC 9649 / libwebp Bitstream Safety
 - **Extended Header Recalculation**: WebP files using the extended `VP8X` chunk format store feature flags in byte 0 of their payload. When `EXIF`, `XMP `, or `ICCP` chunks are stripped, `Universal WebP Asset Optimizer` updates the bitmask to clear the corresponding flag bits (`0x08` for EXIF, `0x04` for XMP, `0x20` for ICCP) while strictly preserving image dimensions, the alpha channel bit (`0x10`), and the animation flag (`0x02`).
 - **Container Simplification**: If an extended WebP contains only a single visual frame (`VP8 ` lossy or `VP8L` lossless) and no alpha or animation data after metadata stripping, the patch downgrades the file to a standard simple WebP container (`RIFF....WEBPVP8 ...`), eliminating the unnecessary 18-byte `VP8X` header entirely.
