@@ -81,7 +81,7 @@ object Constants {
     val COMPATIBILITY_NOKOPRINT = Compatibility(
         name = "NokoPrint - WiFi, Bluetooth, USB",
         packageName = NOKOPRINT_PACKAGE_NAME,
-        apkFileType = ApkFileType.APK,
+        apkFileType = ApkFileType.XAPK,
         appIconColor = 0x0288D1,
         targets = listOf(
             AppTarget(
@@ -97,7 +97,7 @@ object Constants {
     val COMPATIBILITY_XIAOMI_EARBUDS = Compatibility(
         name = "Xiaomi Earbuds",
         packageName = XIAOMI_EARBUDS_PACKAGE_NAME,
-        apkFileType = ApkFileType.APKM,
+        apkFileType = ApkFileType.XAPK,
         appIconColor = 0xFF6700,
         targets = listOf(
             AppTarget(
