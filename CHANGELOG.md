@@ -1,3 +1,11 @@
+## [2.6.0-experimental.10](https://github.com/kveld9/kveld-morphe-patches/compare/v2.6.0-experimental.9...v2.6.0-experimental.10) (2026-10-09)
+
+### Bug Fixes
+
+* **tiktok:** drop isPaidContent signal from promotional filter ([4a55916](https://github.com/kveld9/kveld-morphe-patches/commit/4a55916b689094c0b2dbff32ba367b7fbe5c1109))
+* **tiktok:** starve friends-tab rec-swipe stack at backing-list source ([cf931c6](https://github.com/kveld9/kveld-morphe-patches/commit/cf931c6637cee6e50925691c21b6f4606c9a291d))
+* **tiktok:** stop feed bloat filter purging normal videos in 47.1.4 ([1434e58](https://github.com/kveld9/kveld-morphe-patches/commit/1434e58edb3fa57e8d4ad2fd3a12c885eaceca80))
+
 ## [2.6.0-experimental.9](https://github.com/kveld9/kveld-morphe-patches/compare/v2.6.0-experimental.8...v2.6.0-experimental.9) (2026-10-09)
 
 ### Bug Fixes
