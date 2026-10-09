@@ -39,7 +39,7 @@ val gboardResourceSlimmerPatch = resourcePatch(
 
         // 1. Clean up APK root metadata, build properties, and compiler junk
         val apkRoot = get("AndroidManifest.xml").parentFile ?: get(".")
-        val protectedPrefixes = listOf("assets", "res", "smali", "lib")
+        val protectedPrefixes = listOf("assets", "res", "smali", "lib", "kotlin")
         var junkFilesCount = 0
 
         apkRoot.walkTopDown().filter { it.isFile }.forEach { file ->
@@ -71,14 +71,7 @@ val gboardResourceSlimmerPatch = resourcePatch(
             }
         }
 
-        val kotlinDir = get("kotlin")
-        if (kotlinDir.exists() && kotlinDir.isDirectory) {
-            val kSize = kotlinDir.walkTopDown().filter { it.isFile }.sumOf { it.length() }
-            if (kotlinDir.deleteRecursively()) {
-                junkFilesCount++
-                totalSavedBytes += kSize
-            }
-        }
+
 
         // 2. Resource & Asset heuristic slimming
         val targetDirs = listOfNotNull(
