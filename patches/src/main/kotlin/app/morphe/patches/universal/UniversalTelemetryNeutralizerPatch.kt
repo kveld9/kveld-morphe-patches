@@ -5,6 +5,7 @@ import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patches.shared.ANDROID_XML_NAMESPACE
 import app.morphe.patches.shared.childrenNamed
 import app.morphe.patches.shared.disableComponentsWhere
+import app.morphe.patches.shared.getAttributeValue
 import app.morphe.patches.shared.removeChildren
 import app.morphe.patches.shared.removeComponentDiscoveryRegistrarsWhere
 import app.morphe.patches.shared.setApplicationMetaData
@@ -442,10 +443,16 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
                 }
 
                 if (shouldInjectOptOut) {
+                    val existingMetaData = application.childrenNamed("meta-data")
                     OPT_OUT_METADATA.forEach { (name, value) ->
-                        application.setApplicationMetaData(name, value)
+                        val existing = existingMetaData.firstOrNull {
+                            getAttributeValue(it, "name") == name
+                        }
+                        if (existing == null || getAttributeValue(existing, "value") != value) {
+                            application.setApplicationMetaData(name, value)
+                            injectedFlagsCount++
+                        }
                     }
-                    injectedFlagsCount = OPT_OUT_METADATA.size
 
                     removedRegistrarsCount += application.removeComponentDiscoveryRegistrarsWhere { name ->
                         name.contains("Analytics", ignoreCase = true) ||
