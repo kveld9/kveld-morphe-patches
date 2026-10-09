@@ -1,3 +1,11 @@
+## [2.6.0-experimental.12](https://github.com/kveld9/kveld-morphe-patches/compare/v2.6.0-experimental.11...v2.6.0-experimental.12) (2026-10-09)
+
+### Bug Fixes
+
+* **brave:** fail hard on telemetry fingerprint misses ([6fb8e66](https://github.com/kveld9/kveld-morphe-patches/commit/6fb8e662d29d60060b3633f7c9cb8ed659dfd312))
+* **shared:** declare XAPK bundle file types for nokoprint and xiaomi targets ([acd89ef](https://github.com/kveld9/kveld-morphe-patches/commit/acd89ef3b28f794a2964b904fc5a7b6436ec8ed5))
+* **universal:** preserve ML Kit on-device components by default ([5221830](https://github.com/kveld9/kveld-morphe-patches/commit/5221830adab569e081716f570c11118eb0104104))
+
 ## [2.6.0-experimental.11](https://github.com/kveld9/kveld-morphe-patches/compare/v2.6.0-experimental.10...v2.6.0-experimental.11) (2026-10-09)
 
 ### Bug Fixes
