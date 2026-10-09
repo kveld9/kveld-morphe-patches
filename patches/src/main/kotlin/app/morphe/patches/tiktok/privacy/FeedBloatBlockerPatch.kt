@@ -606,6 +606,84 @@ val feedBloatBlockerPatch = bytecodePatch(
             println("[Feed Bloat Blocker] TTRecUserBigCardViewHolder.B1 note: ${e.message}")
         }
 
+        try {
+            Fingerprint(
+                definingClass = "LX/0FL0;",
+                name = "LIZIZ",
+                parameters = listOf("LX/0E1W;", "Ljava/lang/String;"),
+                returnType = "Ljava/util/concurrent/CopyOnWriteArrayList;",
+            ).method.addInstructions(
+                0,
+                """
+                    new-instance v0, Ljava/util/concurrent/CopyOnWriteArrayList;
+                    invoke-direct {v0}, Ljava/util/concurrent/CopyOnWriteArrayList;-><init>()V
+                    return-object v0
+                """.trimIndent(),
+            )
+            println("[Feed Bloat Blocker] Emptied RecSwipe backing list source (LX/0FL0;->LIZIZ) -> Friend suggestion swipe cards starved.")
+            patched++
+        } catch (e: Exception) {
+            println("[Feed Bloat Blocker] LX/0FL0.LIZIZ note: ${e.message}")
+        }
+
+        try {
+            Fingerprint(
+                definingClass = "LX/0FL0;",
+                name = "LIZ",
+                parameters = listOf("LX/0E1W;", "Ljava/util/List;"),
+                returnType = "V",
+            ).method.addInstructions(
+                0,
+                """
+                    return-void
+                """.trimIndent(),
+            )
+            println("[Feed Bloat Blocker] Neutralized RecSwipe backing list loader (LX/0FL0;->LIZ).")
+            patched++
+        } catch (e: Exception) {
+            println("[Feed Bloat Blocker] LX/0FL0.LIZ note: ${e.message}")
+        }
+
+        try {
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/relation/feed/v4/RecSwipeViewModel;",
+                name = "md",
+                parameters = listOf("Ljava/lang/String;"),
+                returnType = "Z",
+            ).method.addInstructions(
+                0,
+                """
+                    const/4 v0, 0x0
+                    return v0
+                """.trimIndent(),
+            )
+            println("[Feed Bloat Blocker] Neutralized RecSwipeViewModel.md() -> has-data gate forced false.")
+            patched++
+        } catch (e: Exception) {
+            println("[Feed Bloat Blocker] RecSwipeViewModel.md note: ${e.message}")
+        }
+
+        try {
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/relation/feed/v4/RecSwipeCardListAssem;",
+                name = "onViewCreated",
+                parameters = listOf("Landroid/view/View;"),
+                returnType = "V",
+            ).method.addInstructions(
+                0,
+                """
+                    const/16 v0, 0x8
+                    move-object/from16 v1, p1
+                    invoke-virtual {v1, v0}, Landroid/view/View;->setVisibility(I)V
+                    return-void
+                """.trimIndent(),
+            )
+            println("[Feed Bloat Blocker] Collapsed RecSwipeCardListAssem.onViewCreated() -> swipe stack container hidden.")
+            patched++
+        } catch (e: Exception) {
+            println("[Feed Bloat Blocker] RecSwipeCardListAssem.onViewCreated note: ${e.message}")
+        }
+
         // 8. Neutralize In-Feed Search Recommendations & Trending Search Cards
         try {
             Fingerprint(
