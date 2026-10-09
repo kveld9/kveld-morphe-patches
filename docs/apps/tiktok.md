@@ -75,6 +75,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Privacy** | **Friends Feed Strict Mutuals** | `bytecodePatch` | Filters suggested accounts, recommended videos, and non-mutual profiles (such as 'People you may know') from the Friends feed so it strictly reproduces content from mutual friends. |
 | **Privacy** | **Hide Suggested Accounts** | `bytecodePatch` | Removes suggested-account cards from profile headers and inbox/notification surfaces. |
 | **Privacy** | **Hide AI-Generated Content** | `bytecodePatch` | Filters and skips videos tagged with native AI-generated metadata, C2PA content credentials, or creator AI disclosure tags across the For You, Following, and Friends feeds. |
+| **Privacy** | **Hide Promotional Content** | `bytecodePatch` | Filters and skips videos disclosing branded or paid-promotional content ('Contenido Promocional' / paid partnership tags, StarAtlas orders, branded content accounts) across the For You, Following, and Friends feeds. |
 | **Privacy** | **Feed Live Stream Blocker** | `bytecodePatch` | Removes live broadcast cards and live recommendations from FYP and Following. |
 | **Privacy** | **Feed Bloat & Distraction Blocker** | `bytecodePatch` | Removes friend suggestions, suggested account carousels, mini-games, CapCut prompts, memories, community/topic cards, post-video evaluation surveys, questionnaires, mini-dramas, Lemon8 promo, in-feed search recommendations/interest cards, and floating rewards pendants across For You, Following, and Friends feeds. |
 | **Privacy** | **Unified Telemetry & Tracker Silencer** | `bytecodePatch` | Neutralizes ByteDance AppLog, APM/Npth/Heimdallr crash telemetry, and AppsFlyer. |
@@ -635,3 +636,16 @@ Certain permissions are intentionally excluded from this manifest stripper becau
   - Aggregates enabled toggles into a single pass predicate to prune elements efficiently.
   - Emits concise ASCII telemetry (`[TikTok Privacy Permissions Stripper] Stripped N permission(s) from AndroidManifest.xml: ...`) with clean short names.
 
+### 28. Hide Promotional Content (`hidePromotionalContentPatch`)
+- Filters and skips videos disclosing branded or paid-promotional content ("Contenido Promocional" / paid partnership disclosure tags) across the For You, Following, and Friends feeds.
+- **Feed API Response Interception**: Hooks `FeedApiService.fetchFeedList` to filter incoming items at the network response boundary before model mapping.
+- **Feed Item Model Interception**: Hooks `FeedItemList.getItems()` and `FollowFeedList.getItems()` to sanitize feed collections in-situ.
+- **Friends Feed Network Interception**: Hooks `FriendsV3FeedNetworkSource.LJ` (V3 response handler) and the friend feed request `LX/06CX;->LIZLLL` (`/tiktok/v1/friend/friend_feed`, V2) return points to filter `friendsV3Feeds` / `friendFeedData` after deserialization.
+- **Multi-Vector Commercial & Branded Metadata Inspection**: Inspects `Aweme` for:
+  - `AwemeCommerceStruct` (`bcHashtag` tag disclosure text, `isBrandedContent` / `brandedContentType > 0`, `isBrandOrganicContent` / `brandOrganicType > 0`, `CommerceLabelInfo.bcLabelDisplayType == 1`, `ecSearchBoBcLabelText`).
+  - `brandContentAccounts` (tagged sponsor accounts list).
+  - `starAtlasOrderId` (ByteDance Star Atlas commercial order ID).
+  - `commercialVideoInfo` (commercial video payload marker).
+  - `promoteModel` and `promoteIconText` (native in-feed promotion triggers).
+  - `isPaidContent` (creator paid series / paywalled content).
+  - Multi-locale description, caption, banner, and anchor fallback pattern matching (`#paidpartnership`, `#brandedcontent`, `#contenidopromocional`, `[Contenido Promocional]`, `[Paid partnership]`, `[Contenu sponsorisé]`, `[Colaboración pagada]`, `[Parceria paga]`, etc.).
