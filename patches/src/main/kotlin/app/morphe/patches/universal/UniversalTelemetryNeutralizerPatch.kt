@@ -33,7 +33,6 @@ private val TELEMETRY_PROVIDERS = setOf(
     "com.facebook.FacebookContentProvider",
     "com.vungle.ads.VungleProvider",
     "com.fairtiq.sdk.internal.telemetry.processTime.StartupTimeProvider",
-    "com.google.mlkit.common.internal.MlKitInitProvider",
     "com.google.android.gms.ads.MobileAdsInitProvider",
     "com.applovin.sdk.AppLovinInitProvider",
     "com.ironsource.lifecycle.IronsourceLifecycleProvider",
@@ -51,7 +50,6 @@ private val TELEMETRY_SERVICES = setOf(
     "com.google.android.datatransport.runtime.backends.TransportBackendDiscovery",
     "com.google.firebase.sessions.SessionLifecycleService",
     "com.appsflyer.internal.service.AFJobSchedulerService",
-    "com.google.mlkit.common.internal.MlKitComponentDiscoveryService",
     "com.fairtiq.sdk.internal.services.tracking.TrackingServiceImpl",
     "com.google.android.gms.ads.AdService",
     "com.applovin.impl.adview.activity.FullscreenAdService",
@@ -297,6 +295,14 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
         required = false,
     )
 
+    val disableMlKit by booleanOption(
+        key = "disableMlKit",
+        default = false,
+        title = "Disable ML Kit On-Device Vision",
+        description = "Disable Google ML Kit InitProvider, ComponentDiscoveryService, and prune related registrars. WARNING: Breaks on-device barcode scanning, face detection, and text recognition.",
+        required = false,
+    )
+
     val disableAdStartupInitializers by booleanOption(
         key = "disableAdStartupInitializers",
         default = false,
@@ -323,6 +329,7 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
         val shouldDisableMetaAnalytics = disableMetaAnalytics ?: true
         val shouldDisableCrashDetectors = disableCrashDetectors ?: true
         val shouldDisableDeviceIds = disableDeviceIdProviders ?: false
+        val shouldDisableMlKit = disableMlKit ?: false
         val shouldDisableAdStartup = disableAdStartupInitializers ?: false
 
         var removedPerms: List<String> = emptyList()
@@ -396,6 +403,18 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
                     disabledDeviceIdReceiversCount = application.disableComponentsWhere("receiver") { it in DEVICE_ID_RECEIVERS }
                 }
 
+                if (shouldDisableMlKit) {
+                    disabledProvidersCount += application.disableComponentsWhere("provider") { it == "com.google.mlkit.common.internal.MlKitInitProvider" }
+                    disabledServicesCount += application.disableComponentsWhere("service") { it == "com.google.mlkit.common.internal.MlKitComponentDiscoveryService" }
+                    removedRegistrarsCount += application.removeComponentDiscoveryRegistrarsWhere { name ->
+                        name == "com.google.mlkit.vision.barcode.internal.BarcodeRegistrar" ||
+                        name == "com.google.mlkit.vision.face.internal.FaceRegistrar" ||
+                        name == "com.google.mlkit.vision.text.internal.TextRegistrar" ||
+                        name == "com.google.mlkit.vision.common.internal.VisionCommonRegistrar" ||
+                        name == "com.google.mlkit.common.internal.CommonComponentRegistrar"
+                    }
+                }
+
                 if (shouldDisableAdStartup) {
                     removedStartupInitCount = application.removeStartupInitializersWhere { it in AD_STARTUP_INITIALIZERS }
                 }
@@ -411,12 +430,6 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
                             name.contains("Crashlytics", ignoreCase = true) ||
                             name.contains("Perf", ignoreCase = true) ||
                             name.contains("Sessions", ignoreCase = true) ||
-                            name.contains("MlKit", ignoreCase = true) ||
-                            name.contains("MLKit", ignoreCase = true) ||
-                            name.contains("Vision", ignoreCase = true) ||
-                            name.contains("Barcode", ignoreCase = true) ||
-                            name.contains("Face", ignoreCase = true) ||
-                            name.contains("Text", ignoreCase = true) ||
                             name.contains("Iid", ignoreCase = true) ||
                             name.contains("DynamicLoading", ignoreCase = true) ||
                             name.contains("Transport", ignoreCase = true) ||
