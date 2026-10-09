@@ -153,6 +153,10 @@ The **`DPI Resource Slimmer`** patch strips unselected screen density asset dire
 
 The **`PNG Asset Optimizer`** losslessly recompresses PNG assets inside `res/` and `assets/` with maximum zlib compression (`BEST_COMPRESSION`, level 9) and strips non-rendering metadata chunks (`pHYs`, `tEXt`, `tIME`).
 
+> [!NOTE]
+> **Pipeline Scope**: In full pipeline mode (with resource decoding), optimization covers both `res/` and `assets/`.
+> In raw-only pipeline mode (where resources are not decoded), `res/` is safely skipped and optimization applies exclusively to `assets/`.
+
 ### 🛡️ Pixel Safety & 9-Patch Invariants
 - **9-Patch Protection**: Files named `*.9.png` or files containing the Android compiled 9-patch chunk `npTc` are **strictly preserved** to prevent UI stretching distortion.
 - **Decompression Verification**: Every recompressed PNG stream is inflated and compared in-memory against original raw RGBA pixel buffers prior to writing to disk, guaranteeing zero visual degradation.
