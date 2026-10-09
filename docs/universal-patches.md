@@ -167,7 +167,8 @@ The **`APK Junk Cleaner`** strips non-functional build metadata, compiler proper
 ### 🛡️ Protected Core Invariants
 - **Critical Extensions**: `.dex`, `.arsc`, `.xml`, `.so`, `.rsa`, `.sf`, `.dsa` are strictly protected.
 - **Service Loader Integrations**: `META-INF/services/` and `META-INF/MANIFEST.MF` are strictly preserved to maintain dynamic dependency injection.
-- **Root Whitelist**: Core root directories (`assets`, `res`, `lib`, `smali`) are protected from accidental pruning.
+- **Root Whitelist**: Core root directories (`assets`, `res`, `lib`, `smali`, `kotlin`) are protected from accidental pruning.
+- **Kotlin Runtime Descriptors**: APK-root `kotlin/` (`*.kotlin_builtins`, `kotlin-reflect` runtime descriptors) is strictly preserved.
 
 ---
 
