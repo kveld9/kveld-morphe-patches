@@ -4,10 +4,10 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableClass
-import app.morphe.patches.shared.findMutableMethodOf
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.util.MethodUtil
 
 private const val TAG = "[Universal SDK Blocker]"
 
@@ -530,6 +530,7 @@ val universalSdkBlockerPatch = bytecodePatch(
         }
 
         var totalHooked = 0
+        var totalSkipped = 0
         var touchedClasses = 0
         val sdkHookCounts = mutableMapOf<String, Int>()
 
@@ -539,7 +540,9 @@ val universalSdkBlockerPatch = bytecodePatch(
             if (targetMethods.isEmpty()) return@classDefForEach
 
             val mutableClass = mutableClassDefBy(classDef)
-            totalHooked += applyBlockHooks(mutableClass, targetMethods, rule, sdkHookCounts)
+            val (hooked, skipped) = applyBlockHooks(mutableClass, targetMethods, rule, sdkHookCounts)
+            totalHooked += hooked
+            totalSkipped += skipped
             touchedClasses++
         }
 
@@ -549,7 +552,8 @@ val universalSdkBlockerPatch = bytecodePatch(
         }
 
         val summary = formatSummary(sdkHookCounts)
-        println("$TAG Applied $totalHooked hook(s) across $touchedClasses class(es) ($summary).")
+        val skippedSuffix = if (totalSkipped > 0) " ($totalSkipped skipped)" else ""
+        println("$TAG Applied $totalHooked hook(s) across $touchedClasses class(es) ($summary)$skippedSuffix.")
     }
 }
 
@@ -621,15 +625,20 @@ private fun applyBlockHooks(
     targetMethods: List<Method>,
     rule: SdkPrefixRule,
     counts: MutableMap<String, Int>,
-): Int {
+): Pair<Int, Int> {
     var hooked = 0
+    var skipped = 0
     for (targetMethod in targetMethods) {
-        val mutableMethod = mutableClass.findMutableMethodOf(targetMethod)
+        val mutableMethod = mutableClass.methods.firstOrNull { MethodUtil.methodSignaturesMatch(it, targetMethod) }
+        if (mutableMethod == null) {
+            skipped++
+            continue
+        }
         mutableMethod.addInstruction(0, "return-void")
         counts[rule.label] = (counts[rule.label] ?: 0) + 1
         hooked++
     }
-    return hooked
+    return Pair(hooked, skipped)
 }
 
 private fun formatSummary(counts: Map<String, Int>): String {
