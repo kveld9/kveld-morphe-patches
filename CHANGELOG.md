@@ -1,3 +1,9 @@
+## [2.6.0-experimental.13](https://github.com/kveld9/kveld-morphe-patches/compare/v2.6.0-experimental.12...v2.6.0-experimental.13) (2026-10-09)
+
+### Bug Fixes
+
+* **universal:** accumulate ML Kit registrar count with opt-out removals ([f839f3c](https://github.com/kveld9/kveld-morphe-patches/commit/f839f3c845483933009c8de704f88f854811e29b))
+
 ## [2.6.0-experimental.12](https://github.com/kveld9/kveld-morphe-patches/compare/v2.6.0-experimental.11...v2.6.0-experimental.12) (2026-10-09)
 
 ### Bug Fixes
