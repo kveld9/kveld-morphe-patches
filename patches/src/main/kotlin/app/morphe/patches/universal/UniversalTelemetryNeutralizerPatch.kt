@@ -312,6 +312,14 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
         required = false,
     )
 
+    val disableCrashlyticsRegistrars by booleanOption(
+        key = "disableCrashlyticsRegistrars",
+        default = false,
+        title = "Disable Firebase Crashlytics Registrars",
+        description = "Prune Firebase Crashlytics discovery registrars. WARNING: Pruning breaks apps hard-requiring the Crashlytics component at startup.",
+        required = false,
+    )
+
     val disableAdStartupInitializers by booleanOption(
         key = "disableAdStartupInitializers",
         default = false,
@@ -340,6 +348,7 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
         val shouldDisableDeviceIds = disableDeviceIdProviders ?: false
         val shouldDisableMlKit = disableMlKit ?: false
         val shouldDisableRemoteConfig = disableRemoteConfig ?: false
+        val shouldDisableCrashlyticsRegistrars = disableCrashlyticsRegistrars ?: false
         val shouldDisableAdStartup = disableAdStartupInitializers ?: false
 
         var removedPerms: List<String> = emptyList()
@@ -438,6 +447,12 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
                     }
                 }
 
+                if (shouldDisableCrashlyticsRegistrars) {
+                    removedRegistrarsCount += application.removeComponentDiscoveryRegistrarsWhere { name ->
+                        name.contains("Crashlytics", ignoreCase = true)
+                    }
+                }
+
                 if (shouldDisableAdStartup) {
                     removedStartupInitCount = application.removeStartupInitializersWhere { it in AD_STARTUP_INITIALIZERS }
                 }
@@ -456,7 +471,6 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
 
                     removedRegistrarsCount += application.removeComponentDiscoveryRegistrarsWhere { name ->
                         name.contains("Analytics", ignoreCase = true) ||
-                            name.contains("Crashlytics", ignoreCase = true) ||
                             name.contains("Perf", ignoreCase = true) ||
                             name.contains("Sessions", ignoreCase = true) ||
                             name.contains("Measurement", ignoreCase = true)
