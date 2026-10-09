@@ -105,7 +105,7 @@ private val braveHostsBlockerPatch = rawResourcePatch(
             .filter { (_, file, _) -> file.exists() && file.isFile }
 
         if (existingTargets.isEmpty()) {
-            println("[BraveBlockTelemetry] Skipped: no arm64-v8a or armeabi-v7a libchrome.so found.")
+            println("[Block Telemetry] Skipped: no arm64-v8a or armeabi-v7a libchrome.so found.")
             return@execute
         }
 
