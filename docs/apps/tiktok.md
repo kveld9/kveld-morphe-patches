@@ -647,5 +647,4 @@ Certain permissions are intentionally excluded from this manifest stripper becau
   - `starAtlasOrderId` (ByteDance Star Atlas commercial order ID).
   - `commercialVideoInfo` (commercial video payload marker).
   - `promoteModel` and `promoteIconText` (native in-feed promotion triggers).
-  - `isPaidContent` (creator paid series / paywalled content).
   - Multi-locale description, caption, banner, and anchor fallback pattern matching (`#paidpartnership`, `#brandedcontent`, `#contenidopromocional`, `[Contenido Promocional]`, `[Paid partnership]`, `[Contenu sponsorisé]`, `[Colaboración pagada]`, `[Parceria paga]`, etc.).

@@ -189,8 +189,6 @@ public final class TikTokFeedAdFilter {
     private static Field promoteIconTextField;
     private static Method getPromoteModelMethod;
     private static Field promoteModelField;
-    private static Method isPaidContentMethod;
-    private static Field isPaidContentField;
 
     private static Method getBCHashtagMethod;
     private static Field bcHashtagField;
@@ -578,8 +576,6 @@ public final class TikTokFeedAdFilter {
             try { promoteIconTextField = awemeClass.getDeclaredField("promoteIconText"); promoteIconTextField.setAccessible(true); } catch (Throwable ignored) {}
             try { getPromoteModelMethod = awemeClass.getMethod("getPromoteModel"); getPromoteModelMethod.setAccessible(true); } catch (Throwable ignored) {}
             try { promoteModelField = awemeClass.getDeclaredField("promoteModel"); promoteModelField.setAccessible(true); } catch (Throwable ignored) {}
-            try { isPaidContentMethod = awemeClass.getMethod("isPaidContent"); isPaidContentMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { isPaidContentField = awemeClass.getDeclaredField("isPaidContent"); isPaidContentField.setAccessible(true); } catch (Throwable ignored) {}
 
             try {
                 ClassLoader loader = awemeClass != null ? awemeClass.getClassLoader() : classLoader;
@@ -2478,25 +2474,7 @@ public final class TikTokFeedAdFilter {
                 } catch (Throwable ignored) {}
             }
 
-            // 6. Paid Content
-            if (isPaidContentMethod != null) {
-                try {
-                    if (Boolean.TRUE.equals(isPaidContentMethod.invoke(aweme))) {
-                        Log.i(TAG, "[Hide Promotional Content] Match [isPaidContent=true] on aid=" + aid);
-                        return true;
-                    }
-                } catch (Throwable ignored) {}
-            }
-            if (isPaidContentField != null) {
-                try {
-                    if (isPaidContentField.getBoolean(aweme)) {
-                        Log.i(TAG, "[Hide Promotional Content] Match [isPaidContentField=true] on aid=" + aid);
-                        return true;
-                    }
-                } catch (Throwable ignored) {}
-            }
-
-            // 7. Fallback: Secondary multi-locale description & content description pattern matching
+            // 6. Fallback: Secondary multi-locale description & content description pattern matching
             Object descObj = null;
             if (getDescMethod != null) {
                 try { descObj = getDescMethod.invoke(aweme); } catch (Throwable ignored) {}
@@ -2521,7 +2499,7 @@ public final class TikTokFeedAdFilter {
                 return true;
             }
 
-            // 8. Fallback: Banners and Anchors
+            // 7. Fallback: Banners and Anchors
             Object banners = null;
             if (getBannersMethod != null) {
                 try { banners = getBannersMethod.invoke(aweme); } catch (Throwable ignored) {}
