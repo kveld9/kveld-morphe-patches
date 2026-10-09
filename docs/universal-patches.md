@@ -39,11 +39,18 @@ Applying both universal and app-specific patches simultaneously to the same targ
 2. **Permission Revocation**: If a permission node is pruned by an earlier patch pass, subsequent passes skip the missing node without throwing exceptions.
 3. **Binary Trimming**: Universal native trimmers zero only standard crash/telemetry libraries without colliding with app-specific bloat trimmers (such as `Brave Native Bloat Slimmer` or `TikTok Core Asset De-bloat`).
 
+### Do Not Stack Universals on Maintained Apps
+Dedicated app patches (Brave, Gboard Lite, Hevy, TikTok, NokoPrint, Xiaomi Earbuds) are a strict precision superset for their respective targets. Enabling Universal Telemetry Neutralizer or Universal SDK Blocker on top of dedicated patches adds no extra protection.
+
+If patcher logs report components already clean or 0 methods hooked, that is the expected outcome, not a failure. Stacking these universals on maintained apps only adds patch execution time (such as expensive full-DEX scans on large targets like TikTok) and risks breaking features like login, account sync, or push notifications if optional toggles (e.g., device-ID providers, Firebase init, or push engagement) are enabled. To cover a newly discovered generic SDK in a maintained app, port the rule into that app's dedicated patch instead of enabling the universal patch.
+
+Exception: Universal Hosts Blocker remains a valid opt-in patch on maintained apps when using a curated host blocklist.
+
 ### Patch Selection Matrix: Universal Suitability
 
 | Universal Patch | Safe Across Any APK? | Notes & Usage Guidelines |
 | :--- | :---: | :--- |
-| **Universal Telemetry Neutralizer** | ✅ Yes | Strips advertising IDs and disables third-party analytics providers/receivers without impacting app functionality. |
+| **Universal Telemetry Neutralizer** | ✅ Yes | Strips advertising IDs and disables third-party analytics providers/receivers without impacting app functionality. Not recommended on maintained apps (Brave, Gboard Lite, Hevy, TikTok, NokoPrint, Xiaomi Earbuds): dedicated telemetry patch already covers them; stacking adds no protection. |
 | **Universal Native Binary Trimmer** | ✅ Yes | Zeroes standard crash reporting and profiler `.so` files (`libcrashlytics`, `libsentry`, `libgwp-asan`). |
 | **Universal WebP Asset Optimizer** | ✅ Yes | Lossless metadata stripping adhering strictly to RFC 9649 / libwebp bitstream specification. |
 | **PNG Asset Optimizer** | ✅ Yes | Lossless RGBA-verified zlib recompression and chunk stripping. |
@@ -57,7 +64,7 @@ Applying both universal and app-specific patches simultaneously to the same targ
 | **Universal Screen Brightness Governor** | ✅ Yes | Safely neutralizes writes to `WindowManager.LayoutParams.screenBrightness` so display brightness remains strictly under system and user control. |
 | **Universal Offline Mode** | ⚠️ Contextual | **Never apply to web browsers (Brave) or streaming media apps (TikTok)**, as it halts socket creation at the OS kernel level (`AID_INET`). For Gboard Lite and Xiaomi Earbuds, pair with their companion app-specific offline patches for graceful timeout handling. |
 | **Universal Hosts Blocker** | ⚠️ Curated list required | Ships disabled with no bundled blocklist (user supplies the hosts file at patch time). Block only telemetry/ads hosts (e.g. Hagezi `native.tiktok-onlydomains.txt` filtered to `log/mon/mcs/mssdk/analytics`); blocking functional hosts (`frontier/api/stream/open`) breaks feed, login, or CDN playback. |
-| **Universal SDK Blocker** | ✅ Yes | Safely neutralizes APM, crash, analytics, and attribution SDK entrypoints via Dalvik early `return-void`. The optional Push Engagement toggle (`blockPushEngagement`) is disabled by default because silencing push SDKs breaks push notifications. |
+| **Universal SDK Blocker** | ✅ Yes | Safely neutralizes APM, crash, analytics, and attribution SDK entrypoints via Dalvik early `return-void`. The optional Push Engagement toggle (`blockPushEngagement`) is disabled by default because silencing push SDKs breaks push notifications. Not recommended on maintained apps (Brave, Gboard Lite, Hevy, TikTok, NokoPrint, Xiaomi Earbuds): dedicated telemetry patch already covers them; stacking adds no protection. |
 
 ---
 
@@ -197,7 +204,7 @@ All options in **`Universal Offline Mode`** are declared as native boolean switc
 
 ## 6. Universal Telemetry Neutralizer (`universalTelemetryNeutralizerPatch`)
 
-The **`Universal Telemetry Neutralizer`** patch neutralizes pervasive third-party tracking, ad-attribution SDKs, and crash analytics frameworks at the Android application manifest level (`AndroidManifest.xml`). It combines permission revocation, component deactivation, and declarative metadata opt-out injection.
+The **`Universal Telemetry Neutralizer`** patch neutralizes pervasive third-party tracking, ad-attribution SDKs, and crash analytics frameworks at the Android application manifest level (`AndroidManifest.xml`). It combines permission revocation, component deactivation, and declarative metadata opt-out injection. On repo-maintained apps, do not stack this patch on top of dedicated telemetry patches; see [Do Not Stack Universals on Maintained Apps](#do-not-stack-universals-on-maintained-apps).
 
 > [!NOTE]
 > ### The Multi-Layer Telemetry Defense
@@ -430,7 +437,7 @@ Plain domains (`log.example.com`), classic hosts lines (`0.0.0.0 log.example.com
 
 ## 15. Universal SDK Blocker (`universalSdkBlockerPatch`)
 
-The **`Universal SDK Blocker`** patch neutralizes pervasive third-party APM, crash reporting, analytics, attribution, session replay, location tracking, and push engagement SDKs directly at the Dalvik bytecode level (`classes*.dex`). It serves as the runtime execution counterpart to **`Universal Telemetry Neutralizer`** (manifest layer).
+The **`Universal SDK Blocker`** patch neutralizes pervasive third-party APM, crash reporting, analytics, attribution, session replay, location tracking, and push engagement SDKs directly at the Dalvik bytecode level (`classes*.dex`). It serves as the runtime execution counterpart to **`Universal Telemetry Neutralizer`** (manifest layer). On repo-maintained apps, do not stack this patch on top of dedicated telemetry patches; see [Do Not Stack Universals on Maintained Apps](#do-not-stack-universals-on-maintained-apps).
 
 Tracker catalog derived from the Exodus Privacy tracker database (https://exodus-privacy.eu.org), database contents under ODbL 1.0 / DbCL 1.0. Only Analytics, Crash reporting and Profiling category SDKs are covered; advertisement and functional SDKs are excluded or kept behind disabled-by-default toggles.
 
