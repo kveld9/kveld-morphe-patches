@@ -21,7 +21,6 @@ private val BOOT_AND_WAKEUP_ACTIONS = setOf(
 private val BACKGROUND_SYNC_SERVICES = setOf(
     "androidx.work.impl.background.systemalarm.SystemAlarmService",
     "androidx.work.impl.background.systemjob.SystemJobService",
-    "androidx.work.impl.foreground.SystemForegroundService",
     "com.google.android.datatransport.runtime.scheduling.jobscheduling.JobInfoSchedulerService",
     "com.google.android.datatransport.runtime.backends.TransportBackendDiscovery",
 )
