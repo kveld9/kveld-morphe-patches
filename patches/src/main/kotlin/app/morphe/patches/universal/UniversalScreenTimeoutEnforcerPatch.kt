@@ -40,6 +40,7 @@ val universalScreenTimeoutEnforcerPatch = bytecodePatch(
         var viewHooks = 0
         var windowHooks = 0
         var layoutParamHooks = 0
+        var skippedFlags = 0
         var touchedClasses = 0
 
         classDefForEach { classDef ->
@@ -49,13 +50,17 @@ val universalScreenTimeoutEnforcerPatch = bytecodePatch(
             var classModified = false
 
             mutableClass.methods.forEach { method ->
-                val mutations = scanMethodMutations(method) { category ->
-                    when (category) {
-                        MutationCategory.VIEW -> viewHooks++
-                        MutationCategory.WINDOW -> windowHooks++
-                        MutationCategory.LAYOUT_PARAMS -> layoutParamHooks++
-                    }
-                }
+                val mutations = scanMethodMutations(
+                    method = method,
+                    onCategory = { category ->
+                        when (category) {
+                            MutationCategory.VIEW -> viewHooks++
+                            MutationCategory.WINDOW -> windowHooks++
+                            MutationCategory.LAYOUT_PARAMS -> layoutParamHooks++
+                        }
+                    },
+                    onSkippedFlag = { skippedFlags++ },
+                )
 
                 if (mutations.isNotEmpty()) {
                     classModified = true
@@ -78,6 +83,9 @@ val universalScreenTimeoutEnforcerPatch = bytecodePatch(
             "[Universal Screen Timeout Enforcer] Applied $totalHooks screen timeout hook(s) across $touchedClasses class(es) " +
                 "($viewHooks View/SurfaceHolder setKeepScreenOn, $windowHooks Window addFlags/setFlags, $layoutParamHooks LayoutParams flags)."
         )
+        if (skippedFlags > 0) {
+            println("[Universal Screen Timeout Enforcer] Skipped $skippedFlags flag site(s) with registers >= 16 (assembler addressing limit).")
+        }
     }
 }
 
@@ -145,21 +153,35 @@ private fun checkViewInstruction(inst: Instruction, index: Int): Pair<ScreenTime
     return ScreenTimeoutMutation.ReplaceWithNop(index) to MutationCategory.VIEW
 }
 
-private fun checkWindowInstruction(inst: Instruction, index: Int): Pair<ScreenTimeoutMutation, MutationCategory>? {
+private fun checkWindowInstruction(
+    inst: Instruction,
+    index: Int,
+    onSkippedFlag: () -> Unit = {},
+): Pair<ScreenTimeoutMutation, MutationCategory>? {
     if (!isWindowAddFlags(inst) && !isWindowSetFlags(inst)) return null
     val flagsReg = extractRegisterAt(inst, argIndex = 1) ?: return null
-    if (flagsReg >= 16) return null
+    if (flagsReg >= 16) {
+        onSkippedFlag()
+        return null
+    }
     return ScreenTimeoutMutation.PrependInstructions(
         index,
         "and-int/lit16 v$flagsReg, v$flagsReg, $MASK_CLEAR_FLAG_KEEP_SCREEN_ON"
     ) to MutationCategory.WINDOW
 }
 
-private fun checkLayoutParamsInstruction(inst: Instruction, index: Int): Pair<ScreenTimeoutMutation, MutationCategory>? {
+private fun checkLayoutParamsInstruction(
+    inst: Instruction,
+    index: Int,
+    onSkippedFlag: () -> Unit = {},
+): Pair<ScreenTimeoutMutation, MutationCategory>? {
     if (!isLayoutParamsFlagsPut(inst)) return null
     val twoReg = inst as? TwoRegisterInstruction ?: return null
     val flagsReg = twoReg.registerA
-    if (flagsReg >= 16) return null
+    if (flagsReg >= 16) {
+        onSkippedFlag()
+        return null
+    }
     return ScreenTimeoutMutation.PrependInstructions(
         index,
         "and-int/lit16 v$flagsReg, v$flagsReg, $MASK_CLEAR_FLAG_KEEP_SCREEN_ON"
@@ -169,14 +191,15 @@ private fun checkLayoutParamsInstruction(inst: Instruction, index: Int): Pair<Sc
 private fun scanMethodMutations(
     method: Method,
     onCategory: (MutationCategory) -> Unit,
+    onSkippedFlag: () -> Unit = {},
 ): List<ScreenTimeoutMutation> {
     val instructions = method.instructionsOrNull?.toList() ?: return emptyList()
     val mutations = mutableListOf<ScreenTimeoutMutation>()
 
     for ((index, inst) in instructions.withIndex()) {
         val match = checkViewInstruction(inst, index)
-            ?: checkWindowInstruction(inst, index)
-            ?: checkLayoutParamsInstruction(inst, index)
+            ?: checkWindowInstruction(inst, index, onSkippedFlag)
+            ?: checkLayoutParamsInstruction(inst, index, onSkippedFlag)
             ?: continue
 
         mutations.add(match.first)
