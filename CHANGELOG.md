@@ -1,3 +1,10 @@
+## [2.6.0-experimental.15](https://github.com/kveld9/kveld-morphe-patches/compare/v2.6.0-experimental.14...v2.6.0-experimental.15) (2026-10-09)
+
+### Bug Fixes
+
+* **gboard:** preserve APK-root kotlin runtime descriptors in resource slimmer ([72a41b1](https://github.com/kveld9/kveld-morphe-patches/commit/72a41b12016c5edd765593cb4982afd66d00b714))
+* **universal:** preserve APK-root kotlin runtime descriptors in junk cleaner ([4de6642](https://github.com/kveld9/kveld-morphe-patches/commit/4de6642dff81dd1f7949874f5725b32b5e2ac377))
+
 ## [2.6.0-experimental.14](https://github.com/kveld9/kveld-morphe-patches/compare/v2.6.0-experimental.13...v2.6.0-experimental.14) (2026-10-09)
 
 ### New Features

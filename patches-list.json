@@ -1,10 +1,10 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "2.6.0-experimental.14",
+  "version": "2.6.0-experimental.15",
   "patches": [
     {
       "name": "APK Junk Cleaner",
-      "description": "Strips non-functional build metadata, compiler properties, Kotlin coroutines debug tables, and duplicate license texts from META-INF and APK root.",
+      "description": "Strips non-functional build metadata, compiler properties, Kotlin coroutines debug tables, and duplicate license texts from META-INF and APK root while preserving kotlin/*.kotlin_builtins runtime descriptors.",
       "default": false,
       "dependencies": [],
       "compatiblePackages": null,
