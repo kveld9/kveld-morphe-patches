@@ -132,6 +132,7 @@ private data class NativeTrapHook(
     val expected: ByteArray,
     val replacement: ByteArray,
     val description: String,
+    val required: Boolean = true,
 )
 
 private val ARM64_RET = byteArrayOf(0xc0.toByte(), 0x03, 0x5f.toByte(), 0xd6.toByte())
@@ -144,6 +145,7 @@ private val LIBCHROME_TRAP_HOOKS = listOf(
         expected = byteArrayOf(0x3f, 0x23, 0x03, 0xd5.toByte()),
         replacement = ARM64_RET,
         description = "LSE atomics feature constructor",
+        required = true,
     ),
     // Constructor 1: __init_cpu_features detecting ARMv8.1+ extensions. Neutralizing to RET enforces baseline
     // ARMv8.0 dispatch, preventing illegal instruction faults on legacy ARM64 cores.
@@ -152,6 +154,7 @@ private val LIBCHROME_TRAP_HOOKS = listOf(
         expected = byteArrayOf(0x5f, 0x24, 0x03, 0xd5.toByte()),
         replacement = ARM64_RET,
         description = "CPU extensions feature constructor",
+        required = true,
     ),
     // Constructor 2: Brave Promo banner & histogram static initialization calling atomic helpers via range extension thunks.
     // Neutralizing to RET bypasses the thunk pool, eliminating startup SIGILL.
@@ -160,6 +163,7 @@ private val LIBCHROME_TRAP_HOOKS = listOf(
         expected = byteArrayOf(0x3f, 0x23, 0x03, 0xd5.toByte()),
         replacement = ARM64_RET,
         description = "Promo banner static initialization constructor",
+        required = false,
     ),
     // Constructor 11: Brave wallet/rewards fee static initialization calling atomic helpers via range extension thunks.
     // Neutralizing to RET bypasses the thunk pool, eliminating startup SIGILL.
@@ -168,6 +172,7 @@ private val LIBCHROME_TRAP_HOOKS = listOf(
         expected = byteArrayOf(0x3f, 0x23, 0x03, 0xd5.toByte()),
         replacement = ARM64_RET,
         description = "Brave wallet fee static initialization constructor",
+        required = false,
     ),
 )
 
@@ -191,6 +196,10 @@ private fun patchNativeTrapHooks(soFile: File): Int {
         for (hook in LIBCHROME_TRAP_HOOKS) {
             if (applyTrapHook(raf, hook)) {
                 patched++
+            } else if (hook.required) {
+                throw PatchException("Required trap missing: ${hook.description} at offset 0x${java.lang.Long.toHexString(hook.offset)} in ${soFile.name}")
+            } else {
+                println("[Brave Compatibility] Optional trap skipped (not found): ${hook.description}")
             }
         }
     }
@@ -226,9 +235,6 @@ internal val braveBtiCompatibilityPatch = rawResourcePatch {
         val chromeSo = File(libDir, "libchrome.so")
         if (chromeSo.exists()) {
             val hooksPatched = patchNativeTrapHooks(chromeSo)
-            if (hooksPatched < LIBCHROME_TRAP_HOOKS.size) {
-                throw PatchException("Incomplete trap coverage: only $hooksPatched of ${LIBCHROME_TRAP_HOOKS.size} constructor traps matched in ${chromeSo.name}")
-            }
             println("[Brave Compatibility] Neutralized $hooksPatched ARMv8.0/GSI illegal opcode trap(s) in libchrome.so -> SIGILL prevented.")
         }
     }
