@@ -150,9 +150,9 @@ Fingerprints locate target methods across obfuscated versions without hardcoding
 
    > **Runtime safety (device-proven):** never `remove`+`replace` a lone invoke and never grow the register frame. Both cause device-only `VerifyError` boot crashes that a green `runPatchTest` does not catch. Insert-only after `move-result`, reusing existing registers. See `agy-orchestrator` `references/observations.md:40-41`.
 
-   ---
+---
 
-   ## 5. Metadata Contracts (`Constants.kt`)
+## 5. Metadata Contracts (`Constants.kt`)
 
 Every patch must reference the shared compatibility object defined centrally in `Constants.kt`. Never inline `Compatibility(...)` objects.
 
