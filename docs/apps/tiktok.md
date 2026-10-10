@@ -409,6 +409,7 @@ Certain permissions are intentionally excluded from this manifest stripper becau
   - **`autoTranslate` (default: false)**: Automatically dispatches batch translations for incoming comments via TikTok's native engine (`BaseCommentCell`, `CommentList.onLoaded`).
   - **`commentSendFix` (default: true)**: Fixes silently dropped comments by substituting the null top-page screen with the owning panel screen (`CommentPublishViewModel.kJ1`, event `click_comment_send`).
   - **`hideCommentPopupAds` (default: true)**: Blocks brand surprise animations over comments via `CommentSurpriseStruct` with path tags (`page/publish/milestone`, self-celebrations are preserved).
+  - **`showFlaggedComments` (default: true)**: Automatically expands community-flagged comments inline without requiring manual taps or displaying the collapsed warning banner. Hooks `FoldFooterCell.onViewAttachedToWindow` to trigger debounced auto-expansion on the cell entrance (`TikTokCommentHook.autoExpandFoldEntrance`), dispatching native `QU` expansion without re-implementing viewmodel logic.
 
 ### 3. Device Privacy Guard (`devicePrivacyGuardPatch`)
 > [!NOTE]

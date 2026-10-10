@@ -3,6 +3,7 @@ package com.kveld9.morphe.extension.tiktok;
 import android.app.Activity;
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +21,9 @@ public final class TikTokCommentHook {
     private TikTokCommentHook() {}
 
     private static final ThreadLocal<String> capturedCommentText = new ThreadLocal<>();
+
+    // Global debounce timestamp for community-flagged fold entrance auto-expansion
+    private static long lastFoldAutoExpandMs = 0L;
 
     // Weak reference for comment panel Activity tracking
     private static WeakReference<Activity> panelActivityRef = new WeakReference<>(null);
@@ -159,5 +163,25 @@ public final class TikTokCommentHook {
         } catch (Throwable t) {
             Log.e(TAG, "[CommentQuickActions] Failed to hide quick action bar: " + t.getMessage());
         }
+    }
+
+    public static void autoExpandFoldEntrance(final View view) {
+        if (view == null) return;
+        long now = SystemClock.uptimeMillis();
+        if (now - lastFoldAutoExpandMs < 2000L) {
+            return;
+        }
+        lastFoldAutoExpandMs = now;
+        view.post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    view.performClick();
+                    Log.d(TAG, "[FoldAutoExpand] Dispatched click to auto-expand community-flagged comments entrance.");
+                } catch (Throwable t) {
+                    Log.e(TAG, "[FoldAutoExpand] Failed to auto-expand fold entrance: " + t.getMessage());
+                }
+            }
+        });
     }
 }
