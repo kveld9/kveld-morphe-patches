@@ -43,7 +43,14 @@ Run in-situ gates sending output to `build/` (gitignored):
 Injection proof via output-APK manifest dump (`build/test-<app_id>.apk`), never counters alone.
 
 ### Step 4 — Device (standing authorization confirmed)
-`validation/smoke_install.py` on ABI-matched device points to base plus generated splits for APKM/XAPK targets (glob `build/test-<app_id>*.apk` via `install-multiple`, never base alone when splits exist; `.apk` extension on every split); traffic audit via on-device tcpdump (verifying binary first, packet limit `-c`, non-empty pcap check) with TLS SNI + QUIC Initial inspection; uninstall after. Report hosts + caveats (abort if capture empty, never report false-negative silent telemetry).
+`validation/smoke_install.py` on ABI-matched device points to base plus generated splits for APKM/XAPK targets (glob `build/test-<app_id>*.apk` via `install-multiple`, never base alone when splits exist; `.apk` extension on every split); uninstall after.
+Traffic audit (mandatory analysis, never a strings-only pass):
+1. Capture with on-device tcpdump (verify binary first, packet limit `-c`, SLL2/linktype-aware parsing). Two windows: baseline (app force-stopped, 30 s) and exercise (launch + monkey/clicks through first-run screens, 2-3 min, fresh install so TLS hellos fall inside the window).
+2. Per-UID attribution via `/proc/net/xt_qtaguid/stats` (root) before/after exercise; report the target UID byte delta.
+3. Flow table with IN/OUT packet+byte counts per remote peer:port (direction from SLL ptype, never guessed). TLS SNI per flow via ClientHello extension 0x0000 parsing of reassembled client streams; QUIC (UDP/443) Initial count when present.
+4. DNS blind-spot check: state whether port 53 or DoT/DoH (853/443) carried resolution; names resolved under Private DNS are unobservable and must be reported as such.
+5. Verdict only on observed flows: contacted hosts + owning evidence (SNI/DNS/IP-range), explicit caveats (window length, guest vs logged-in state, ECH/DoH limits). Abort (never a silent-telemetry claim) if the capture is empty or the hellos predate the window.
+A `strings` hostname grep alone is NOT an audit and never closes this step.
 
 ### Step 5 — Close
 One atomic commit per patch/toggle (`feat(<app>)`/`fix(<app>)`, plain ASCII English, no emojis, no attribution), registration and doc guide folded into the first patch commit. Before closing the task, run `audit-stack` over the pending range (e.g. `origin/<base>..HEAD`, never per-commit auto-audit), verifying `git status` clean of task scope while preserving foreign files. NEVER push or open PRs without explicit user instruction.
