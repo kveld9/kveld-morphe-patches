@@ -7,8 +7,13 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patcher.string
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.childrenNamed
 import app.morphe.patches.shared.cleanClassName
+import app.morphe.patches.shared.disableComponentsByName
 import app.morphe.patches.shared.getAttributeValue
+import app.morphe.patches.shared.removeChildren
+import app.morphe.patches.shared.removeComponentDiscoveryRegistrarsWhere
+import app.morphe.patches.shared.setApplicationMetaData
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import org.w3c.dom.Element
 
@@ -57,6 +62,11 @@ private val gboardRemoveWebDebugBridgePatch = resourcePatch {
         var removedComponents = 0
         var removedQueries = 0
         var removedMetaData = 0
+
+        var disabledMetricsServices = 0
+        var removedInitializers = 0
+        var removedRegistrars = 0
+
         val foundComponentNames = mutableSetOf<String>()
 
         document(manifestFile.absolutePath).use { doc ->
@@ -102,6 +112,34 @@ private val gboardRemoveWebDebugBridgePatch = resourcePatch {
             val appNodes = doc.getElementsByTagName("application")
             for (a in 0 until appNodes.length) {
                 val application = appNodes.item(a) as? Element ?: continue
+
+                // (a) Opt-out declarativo de Cronet
+                application.setApplicationMetaData("android.net.http.EnableTelemetry", "false")
+
+                // (d) Deshabilitar FeatureSplitMultiprocessMetricsService
+                disabledMetricsServices += application.disableComponentsByName(
+                    "com.google.android.libraries.inputmethod.featuresplit.metrics.FeatureSplitMultiprocessMetricsService"
+                )
+
+                // (b) Remover initializers de telemetria
+                val initializersToRemove = setOf(
+                    "com.google.android.libraries.inputmethod.appdoctor.initializer.AppDoctorInitializer",
+                    "com.google.android.libraries.inputmethod.appstart.initializer.AppStartTrackerInitializer",
+                    "com.google.android.libraries.inputmethod.metrics.initializer.MetricsManagerInitializer",
+                    "com.google.android.libraries.inputmethod.flogger.initializer.FloggerInitializer",
+                )
+                application.childrenNamed("provider").forEach { provider ->
+                    val metas = provider.childrenNamed("meta-data")
+                    val toRemove = metas.filter { getAttributeValue(it, "name") in initializersToRemove }
+                    provider.removeChildren(toRemove)
+                    removedInitializers += toRemove.size
+                }
+
+                // (c) Remover registrars excepto mlkit
+                removedRegistrars += application.removeComponentDiscoveryRegistrarsWhere {
+                    !it.contains("mlkit", ignoreCase = true)
+                }
+
                 val childNodes = application.childNodes
                 for (i in childNodes.length - 1 downTo 0) {
                     val child = childNodes.item(i) as? Element ?: continue
@@ -125,6 +163,7 @@ private val gboardRemoveWebDebugBridgePatch = resourcePatch {
 
         val skippedComponents = BRELLA_COMPONENTS_TO_REMOVE.size - foundComponentNames.size
         println("[Hardened Intent Security] Removed $removedComponents Brella components ($skippedComponents skipped/absent), $removedQueries queries, $removedMetaData metadata entries.")
+        println("[Hardened Intent Security] Hardened manifest: set EnableTelemetry=false, disabled $disabledMetricsServices metrics service(s), removed $removedInitializers telemetry initializer(s) and $removedRegistrars discovery registrar(s).")
     }
 }
 
