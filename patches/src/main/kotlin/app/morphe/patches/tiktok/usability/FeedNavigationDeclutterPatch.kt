@@ -6,6 +6,7 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.numberOfParameterRegisters
 import app.morphe.patches.shared.replaceWithReturnBoolean
 import app.morphe.patches.shared.replaceWithReturnNull
 import app.morphe.patches.shared.replaceWithReturnVoid
@@ -548,107 +549,61 @@ val feedNavigationDeclutterPatch = bytecodePatch(
 
         // 7. Feature: Hide Inbox Notification Badge
         if (hideInboxBadge == true) {
-            val noticeServiceImplClass = "Lcom/ss/android/ugc/aweme/notification/service/NoticeCountTabBadgePresentServiceImpl;"
+            val managerMethodsToGuard = listOf("LJIIL", "LJJL", "LJIIJJI", "LJJIIJ")
+            var guardedMethods = 0
+            val guardedManagers = mutableSetOf<String>()
 
-            listOf("onResume", "onReset", "LIZ", "LJ", "LJFF").forEach { name ->
-                Fingerprint(
-                    definingClass = noticeServiceImplClass,
-                    name = name,
-                    parameters = emptyList(),
-                ).method.replaceWithReturnVoid()
-                patched++
+            for (managerClass in tabManagerClasses) {
+                val cls = classDefByOrNull(managerClass) ?: continue
+                for (method in cls.methods) {
+                    if (method.name in managerMethodsToGuard) {
+                        val paramTypes = method.parameterTypes
+                        val fpParams: List<String> = paramTypes.map { it.toString() }
+                        val stringIdx = fpParams.indexOf("Ljava/lang/String;")
+                        if (stringIdx != -1) {
+                            val isStatic = method.accessFlags and 0x0008 != 0
+                            val pStart = if (isStatic) 0 else 1
+                            var pString = pStart
+                            for (i in 0 until stringIdx) {
+                                pString += if (fpParams[i] == "J" || fpParams[i] == "D") 2 else 1
+                            }
+                            
+                            val localsCount = (method.implementation?.registerCount ?: 0) - method.numberOfParameterRegisters
+                            if (localsCount >= 1) {
+                                val fpRet: String = method.returnType
+                                Fingerprint(
+                                    definingClass = managerClass,
+                                    name = method.name,
+                                    returnType = fpRet,
+                                    parameters = fpParams,
+                                ).method.apply {
+                                    val returnInst = if (method.returnType == "V") "return-void" else if (method.returnType == "Z" || method.returnType == "I") "const/4 v0, 0\nreturn v0" else "const/4 v0, 0\nreturn-object v0"
+                                    addInstructions(
+                                        0,
+                                        """
+                                        const-string v0, "NOTIFICATION"
+                                        invoke-virtual {p$pString, v0}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+                                        move-result v0
+                                        if-eqz v0, :cond_skip_badge
+                                        $returnInst
+                                        :cond_skip_badge
+                                        """.trimIndent()
+                                    )
+                                    patched++
+                                    guardedMethods++
+                                    guardedManagers.add(managerClass)
+                                }
+                            }
+                        }
+                    }
+                }
             }
 
-            listOf("LIZIZ", "LIZLLL").forEach { name ->
-                Fingerprint(
-                    definingClass = noticeServiceImplClass,
-                    name = name,
-                    parameters = listOf("Z"),
-                ).method.replaceWithReturnVoid()
-                patched++
+            if (guardedMethods > 0) {
+                println("[Navigation & Header Declutter] Inbox bottom tab guarded on $guardedMethods method(s) across ${guardedManagers.size} manager(s).")
+            } else {
+                println("[Navigation & Header Declutter] Inbox bottom tab badge guard failed: Feature became no-op (no methods found with locals).")
             }
-
-            Fingerprint(
-                definingClass = noticeServiceImplClass,
-                name = "isShowing",
-                returnType = "Z",
-                parameters = emptyList(),
-            ).method.replaceWithReturnBoolean(false)
-            patched++
-
-            val serviceDef = classDefByOrNull(noticeServiceImplClass)
-            val presenterClass = serviceDef?.fields?.firstOrNull { it.name == "LIZ" }?.type ?: "LX/0CxD;"
-
-            Fingerprint(
-                definingClass = presenterClass,
-                name = "onNoticeCountChangedEvent",
-                parameters = listOf("LX/0716;"),
-                returnType = "V",
-            ).method.replaceWithReturnVoid()
-            patched++
-
-            Fingerprint(
-                definingClass = presenterClass,
-                name = "LJJIJIIJI",
-                parameters = listOf("LX/0716;"),
-                returnType = "V",
-            ).method.replaceWithReturnVoid()
-            patched++
-
-            Fingerprint(
-                definingClass = presenterClass,
-                name = "LJIILIIL",
-                parameters = emptyList(),
-                returnType = "V",
-            ).method.replaceWithReturnVoid()
-            patched++
-
-            Fingerprint(
-                definingClass = presenterClass,
-                name = "LJIILL",
-                parameters = emptyList(),
-                returnType = "V",
-            ).method.replaceWithReturnVoid()
-            patched++
-
-            Fingerprint(
-                definingClass = presenterClass,
-                name = "LJJIIJZLJL",
-                parameters = listOf("Z"),
-                returnType = "V",
-            ).method.replaceWithReturnVoid()
-            patched++
-
-            Fingerprint(
-                definingClass = "LX/0ALx;",
-                name = "onInboxBadgeChanged",
-                parameters = listOf("LX/0716;"),
-                returnType = "V",
-            ).method.replaceWithReturnVoid()
-            println("[Navigation & Header Declutter] Neutralized LX/0ALx.onInboxBadgeChanged() -> Inbox tab badge change events suppressed.")
-            patched++
-
-            Fingerprint(
-                definingClass = presenterClass,
-                name = "LJIJJLI",
-                returnType = "Z",
-                parameters = emptyList(),
-            ).method.replaceWithReturnBoolean(false)
-            patched++
-
-            // Cache-restore path: the presenter re-applies the badge from KV
-            // cache at construction (LJJIJLIJ -> LX/0Cxt.updateTabBadgeByCache)
-            // on every cold start, bypassing all event suppression above.
-            // Neutralize the executor itself so cached counts never reach the tab.
-            Fingerprint(
-                definingClass = "LX/0Cxt;",
-                name = "LIZ",
-                parameters = emptyList(),
-                returnType = "V",
-            ).method.replaceWithReturnVoid()
-            patched++
-
-            println("[Navigation & Header Declutter] Inbox notification badge and unread counters suppressed.")
         }
 
         println("[Navigation & Header Declutter] Applied $patched navigation & header declutter hook(s).")
