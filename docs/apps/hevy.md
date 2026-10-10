@@ -68,9 +68,9 @@ Because remote database records on `api.hevyapp.com` are not modified, features 
 
 ### 1. Unlocked Capabilities (Client-Side Gated)
 
-1. **Unlimited Workout Routines (Bypass 4-Routine Cap):**
+1. **Workout Routines (Bypass 4-Routine Client Paywall - Partial):**
    - Free accounts are strictly capped at **4 routine templates**.
-   - Navigate to the **Workout** tab and create a **5th routine**. On Free, a blocking paywall appears (*"You've reached the 4 routine limit"*). With the patch, you can create, save, and sync unlimited routines.
+   - Navigate to the **Workout** tab and create a **5th routine**. On Free, a blocking paywall appears (*"You've reached the 4 routine limit"*). The patch bypasses this local paywall modal so a 5th routine can be created locally, but the backend enforces the 4-routine quota on sync: the 5th routine disappears after syncing (~2 seconds) and Hevy Web displays only 4 routines (see [issue #82](https://github.com/kveld9/kveld-morphe-patches/issues/82)).
 2. **Routine Folders:**
    - Go to **Workout > Routines** and tap **New Folder**. In Free, folder creation is locked behind Pro. With the patch, you can create and organize folders freely.
 3. **Advanced Progress Graphs & Exercise History:**
@@ -82,6 +82,8 @@ Because remote database records on `api.hevyapp.com` are not modified, features 
 
 | Feature / Behavior | Technical Reason | User Experience / Error |
 | :--- | :--- | :--- |
+| **Workout Routines (> 4)** | Routine sync endpoint validated against free tier quota; 5th routine pruned on sync ([issue #82](https://github.com/kveld9/kveld-morphe-patches/issues/82)). | 5th routine visible ~2s then disappears; Hevy Web shows 4. |
+| **Hevy Trainer Program Save** | Server-side entitlement check on save ([issue #82](https://github.com/kveld9/kveld-morphe-patches/issues/82)). | Personalized program generates but saving fails with network error on Free accounts. |
 | **Custom Exercises (> 7)** | `POST https://api.hevyapp.com/custom_exercise_template` is strictly validated by the backend database against free tier quotas. | Shows **`Failed to save exercise`** popup dialog. |
 | **Profile "Free" Badge** | User profile status is returned directly in backend session JSON payloads. | Profile and settings show "Free" / "Get Hevy Pro". |
 | **Deep Server Sync Features** | Server-side background jobs that query account entitlement tables. | Governed by remote database records. |
