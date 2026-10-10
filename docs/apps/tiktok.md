@@ -48,7 +48,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Usability** | **Disable Search Video Autoplay** | `bytecodePatch` | Disables automatic video playback in search results. Videos only play when tapped to view in detail. |
 | **Usability** | **Auto-Pause First Video** | `bytecodePatch` | Automatically pauses the initial video on startup (frame 0) with center play icon; resumes upon screen tap or feed scroll. |
 | **Usability** | **Hide Seen Videos** | `bytecodePatch` | Filters previously watched videos from incoming For You feed batches based on playback progress. |
-| **Usability** | **Feed Content Filter** | `bytecodePatch` | Hides stories, photo posts, and videos outside configured view or like ranges from feeds (`minViews`/`maxViews`/`minLikes`/`maxLikes`/`hideStories`/`hidePhotoPosts`). |
+| **Usability** | **Feed Content Filter** | `bytecodePatch` | Hides stories, photo posts, and videos outside configured view or like ranges from the For You feed only; Following, Friends, profiles, search and other surfaces are never filtered (`minViews`/`maxViews`/`minLikes`/`maxLikes`/`hideStories`/`hidePhotoPosts`). |
 | **Usability** | **Resume Video After Scroll** | `bytecodePatch` | Resumes video playback from previous playback position when returning to a video in the feed. |
 | **Usability** | **Remember Clear Display** | `bytecodePatch` | Remembers TikTok's clear-display state between videos and re-applies it when new videos start. |
 | **Usability** | **Stop Video Looping** | `bytecodePatch` | Prevents videos from looping continuously on playback completion. |

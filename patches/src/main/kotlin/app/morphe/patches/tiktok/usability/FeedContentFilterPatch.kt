@@ -14,7 +14,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
 val feedContentFilterPatch = bytecodePatch(
     name = "Feed Content Filter",
-    description = "Hides stories, photo posts, and videos outside configured view or like ranges from feeds.",
+    description = "Hides stories, photo posts, and videos outside configured view or like ranges from the For You feed only. Following, Friends, profiles, search and other surfaces are never filtered.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -56,7 +56,7 @@ val feedContentFilterPatch = bytecodePatch(
         key = "hideStories",
         default = true,
         title = "Hide Stories",
-        description = "Removes story posts from video feeds.",
+        description = "Removes story posts from the For You feed.",
         required = false,
     )
 
@@ -64,7 +64,7 @@ val feedContentFilterPatch = bytecodePatch(
         key = "hidePhotoPosts",
         default = false,
         title = "Hide Photo Posts",
-        description = "Removes photo-mode posts from video feeds.",
+        description = "Removes photo-mode posts from the For You feed.",
         required = false,
     )
 
@@ -132,56 +132,6 @@ val feedContentFilterPatch = bytecodePatch(
             }
         } catch (e: Exception) {
             println("[Feed Content Filter] FeedApiService note: ${e.message}")
-        }
-
-        // 3. Hook FeedItemList.getItems (covers cached, offline, and UI consumers).
-        try {
-            val method = Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;",
-                name = "getItems",
-                returnType = "Ljava/util/List;",
-            ).method
-            val returnIndices = method.implementation?.instructions?.withIndex()
-                ?.filter { it.value.opcode == Opcode.RETURN_OBJECT }
-                ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
-                ?.toList() ?: emptyList()
-            returnIndices.asReversed().forEach { (returnIndex, reg) ->
-                method.addInstructionsAtControlFlowLabel(
-                    returnIndex,
-                    "invoke-static {v$reg}, $hook->filterContentInList(Ljava/lang/Object;)V",
-                )
-            }
-            if (returnIndices.isNotEmpty()) {
-                println("[Feed Content Filter] Hooked FeedItemList.getItems (${returnIndices.size} return(s)).")
-                patched++
-            }
-        } catch (e: Exception) {
-            println("[Feed Content Filter] FeedItemList.getItems note: ${e.message}")
-        }
-
-        // 4. Hook FollowFeedList.getItems (Following feed consumers).
-        try {
-            val method = Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;",
-                name = "getItems",
-                returnType = "Ljava/util/List;",
-            ).method
-            val returnIndices = method.implementation?.instructions?.withIndex()
-                ?.filter { it.value.opcode == Opcode.RETURN_OBJECT }
-                ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
-                ?.toList() ?: emptyList()
-            returnIndices.asReversed().forEach { (returnIndex, reg) ->
-                method.addInstructionsAtControlFlowLabel(
-                    returnIndex,
-                    "invoke-static {v$reg}, $hook->filterContentInList(Ljava/lang/Object;)V",
-                )
-            }
-            if (returnIndices.isNotEmpty()) {
-                println("[Feed Content Filter] Hooked FollowFeedList.getItems (${returnIndices.size} return(s)).")
-                patched++
-            }
-        } catch (e: Exception) {
-            println("[Feed Content Filter] FollowFeedList.getItems note: ${e.message}")
         }
 
         println("[Feed Content Filter] Applied $patched content filter hook(s).")
