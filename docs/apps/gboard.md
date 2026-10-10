@@ -56,7 +56,7 @@ If you perform a clean install of Gboard Lite with background sync debloat patch
 | :--- | :--- | :--- | :---: | :--- |
 | **Gboard Enhancements** | `resourcePatch` + `bytecodePatch` | Customization & Suite | ✅ Yes | Master customization suite bundling in-app toggleable features (Pure AMOLED Theme, Zero Bottom Inset, Independent Keyboard Vibration, Force Incognito, Voice Typing in Incognito, Clipboard Enhancements, Toolbar Item Count, Feature Flags, Onboarding status, and Core Integrity) managed directly from *Settings > Morphe Patches*. |
 | **Block Telemetry** | `bytecodePatch` | Privacy & Security | ✅ Yes | Disables background metrics dispatch, event logging, daily pings, Google Primes profiling, crash reporting, AppDoctor diagnostics, and Tenor share tracking. |
-| **Clone Gboard** | `bytecodePatch` + `resourcePatch` | Utility & Modding | ✅ Yes | Appends a custom suffix to the package name to allow installing Gboard alongside the original application. |
+| **Clone Gboard** | `bytecodePatch` + `resourcePatch` | Utility & Modding | ✅ Yes | Appends a custom suffix to the package name and optionally customizes the application display label to allow installing Gboard alongside the original application. |
 | **Disable Background Sync** | `bytecodePatch` | Battery & Debloat | ❌ No | Neutralizes AndroidX WorkManager schedulers, MDD (Mobile Data Download) periodic sync, and Superpacks eager asset synchronization (opt-in to preserve initial dictionary downloads). |
 | **Disable Cloud Backup** | `resourcePatch` | Privacy & Security | ✅ Yes | Disables Android backup for Gboard (allowBackup=false and backup agent removed) so keyboard settings, learned words, and personal dictionary data are never uploaded to Google Drive backups or copied by device-to-device transfer. Trade-off: Gboard data no longer migrates to a new device through Android backup or restore. |
 | **Disable Remote Configuration** | `bytecodePatch` | Privacy & Stability | ✅ Yes | Disables periodic remote experiment flag synchronization and background updates. |
@@ -164,4 +164,5 @@ The **`Clone Gboard`** patch allows running a patched build alongside stock Gboa
 | Option | Key | Type | Default | Description |
 | :--- | :--- | :--- | :---: | :--- |
 | **Package Suffix** | `packageSuffix` | String | `clone` | Suffix appended after the original package name (e.g., `clone` -> `com.google.android.inputmethod.latin.clone`). |
+| **App Label** | `appLabel` | String | _(empty)_ | Replaces the launcher and keyboard-list name (`<application android:label>`) so the clone is visually distinguishable from stock Gboard. Leave blank to keep the original label. |
 
