@@ -120,6 +120,12 @@ method.addInstructionsWithLabels(0, """
 """.trimIndent())
 ```
 
+### Branch Polarity Rule (blocking correctness invariant)
+- `if-eqz vX, :label` jumps when the value is 0/null; `if-nez vX, :label` jumps when non-zero/non-null. Suppress-on-PRESENT means `if-nez → suppress`; skip-on-ABSENT means `if-eqz → continue`.
+- Null receivers must never enter check blocks: restructure `if-eqz v1, :check` + `goto :continue` into `if-eqz v1, :continue` with fall-through into the checks (a `contains()`/`invoke` on null throws NPE at runtime).
+- Prefer branchless designs (const-zeroing before `iput`, early `return` with verified return type); they are immune to this bug class.
+- Evidence (X 12.33.0, 2026-10-10): a full filter layer shipped with systematically inverted branches; `runPatchTest` (assembly-only) and process-alive smoke both passed. Polarity must be verified by reading, never inferred from green gates.
+
 ---
 
 ## 5. Dynamic Reflection Bridges & Obfuscation Caveats
