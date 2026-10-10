@@ -96,7 +96,8 @@ class FingerprintResolver:
         candidate_pool = self._search_structural_candidates(query)
         evidence_notes = [f"0 exact matches found for fingerprint '{query.name_id}'."]
         if candidate_pool:
-            evidence_notes.append(f"Found {len(candidate_pool)} structural candidates: " +
+            evidence_notes.append(f"Found {len(candidate_pool)} structural candidates " +
+                                  f"(showing first {min(3, len(candidate_pool))}): " +
                                  ", ".join([c.full_name for c in candidate_pool[:3]]))
         return FingerprintResolution(
             query=query,
@@ -110,7 +111,8 @@ class FingerprintResolver:
         query: FingerprintQuery,
         matches: List[IndexedMethod]
     ) -> FingerprintResolution:
-        evidence_notes = [f"Multiple candidate matches found ({len(matches)}) for '{query.name_id}':"]
+        evidence_notes = [f"Multiple candidate matches found ({len(matches)}) for '{query.name_id}' " +
+                          f"(showing first {min(5, len(matches))}):"]
         for m in matches[:5]:
             evidence_notes.append(f"  - {m.full_name} ({m.dex_name})")
         return FingerprintResolution(
