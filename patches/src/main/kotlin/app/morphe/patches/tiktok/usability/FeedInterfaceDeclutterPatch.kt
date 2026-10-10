@@ -204,20 +204,21 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
                 parameters = listOf("Landroid/view/View;"),
             ).method
             descOnViewCreated.clearTryBlocks()
-            descOnViewCreated.ensureRegisterCount(4)
-            val descCount = descOnViewCreated.implementation!!.instructions.count()
-            descOnViewCreated.removeInstructions(0, descCount)
-            descOnViewCreated.addInstructions(
-                0,
-                """
-                    invoke-super/range {p0 .. p1}, Lcom/ss/android/ugc/feed/platform/cell/BaseCellSlotComponent;->onViewCreated(Landroid/view/View;)V
-                    move-object/from16 v1, p1
-                    const/16 v0, 0x8
-                    invoke-virtual {v1, v0}, Landroid/view/View;->setVisibility(I)V
-                    return-void
-                """.trimIndent(),
-            )
-            println("[Feed Interface Declutter] Hooked VideoDescAssem.onViewCreated() -> setVisibility(GONE).")
+            descOnViewCreated.ensureRegisterCount(2)
+            val descReturns = descOnViewCreated.implementation!!.instructions.mapIndexedNotNull { index, instr ->
+                if (instr.opcode.name == "return-void") index else null
+            }.reversed()
+            for (index in descReturns) {
+                descOnViewCreated.addInstructions(
+                    index,
+                    """
+                        move-object/from16 v0, p1
+                        const/16 v1, 0x8
+                        invoke-virtual {v0, v1}, Landroid/view/View;->setVisibility(I)V
+                    """.trimIndent(),
+                )
+            }
+            println("[Feed Interface Declutter] Hooked VideoDescAssem.onViewCreated() -> appended setVisibility(GONE).")
             patched++
 
             val descZ4 = Fingerprint(
@@ -228,30 +229,52 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
             ).method
             descZ4.clearTryBlocks()
             descZ4.ensureRegisterCount(2)
-            val z4Count = descZ4.implementation!!.instructions.count()
-            descZ4.removeInstructions(0, z4Count)
-            descZ4.addInstructions(
-                0,
-                """
-                    invoke-virtual {p0}, Lcom/ss/android/ugc/aweme/feed/assem/desc/VideoDescAssem;->qc()Landroid/view/View;
-                    move-result-object v0
-                    if-eqz v0, :cond_skip
-                    const/16 v1, 0x8
-                    invoke-virtual {v0, v1}, Landroid/view/View;->setVisibility(I)V
-                    :cond_skip
-                    return-void
-                """.trimIndent(),
-            )
-            println("[Feed Interface Declutter] Hooked VideoDescAssem.z4() -> enforce GONE and suppress binding.")
+            val z4Returns = descZ4.implementation!!.instructions.mapIndexedNotNull { index, instr ->
+                if (instr.opcode.name == "return-void") index else null
+            }.reversed()
+            for ((i, index) in z4Returns.withIndex()) {
+                descZ4.addInstructions(
+                    index,
+                    """
+                        move-object/from16 v0, p0
+                        invoke-virtual {v0}, Lcom/ss/android/ugc/aweme/feed/assem/desc/VideoDescAssem;->qc()Landroid/view/View;
+                        move-result-object v0
+                        if-eqz v0, :cond_skip_z4_$i
+                        const/16 v1, 0x8
+                        invoke-virtual {v0, v1}, Landroid/view/View;->setVisibility(I)V
+                        :cond_skip_z4_$i
+                    """.trimIndent(),
+                )
+            }
+            println("[Feed Interface Declutter] Hooked VideoDescAssem.z4() -> appended GONE enforcement.")
             patched++
 
-            Fingerprint(
+            val descJs = Fingerprint(
                 definingClass = descTargetClass,
                 name = "js",
                 returnType = "V",
                 parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"),
-            ).method.replaceWithReturnVoid()
-            println("[Feed Interface Declutter] Hooked VideoDescAssem.js() -> return-void.")
+            ).method
+            descJs.clearTryBlocks()
+            descJs.ensureRegisterCount(2)
+            val jsReturns = descJs.implementation!!.instructions.mapIndexedNotNull { index, instr ->
+                if (instr.opcode.name == "return-void") index else null
+            }.reversed()
+            for ((i, index) in jsReturns.withIndex()) {
+                descJs.addInstructions(
+                    index,
+                    """
+                        move-object/from16 v0, p0
+                        invoke-virtual {v0}, Lcom/ss/android/ugc/aweme/feed/assem/desc/VideoDescAssem;->qc()Landroid/view/View;
+                        move-result-object v0
+                        if-eqz v0, :cond_skip_js_$i
+                        const/16 v1, 0x8
+                        invoke-virtual {v0, v1}, Landroid/view/View;->setVisibility(I)V
+                        :cond_skip_js_$i
+                    """.trimIndent(),
+                )
+            }
+            println("[Feed Interface Declutter] Hooked VideoDescAssem.js() -> appended GONE enforcement.")
             patched++
 
             val friendsDescClass = "Lcom/ss/android/ugc/aweme/friendstab/ui/feed/cell/component/desc/FriendsV3DescAssem;"
@@ -282,17 +305,20 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
             ).method
             friendsOnViewCreated.clearTryBlocks()
             friendsOnViewCreated.ensureRegisterCount(2)
-            val friendsCount = friendsOnViewCreated.implementation!!.instructions.count()
-            friendsOnViewCreated.removeInstructions(0, friendsCount)
-            friendsOnViewCreated.addInstructions(
-                0,
-                """
-                    const/16 v0, 0x8
-                    invoke-virtual {p1, v0}, Landroid/view/View;->setVisibility(I)V
-                    return-void
-                """.trimIndent(),
-            )
-            println("[Feed Interface Declutter] Hooked FriendsV3DescAssem.onViewCreated() -> setVisibility(GONE).")
+            val friendsReturns = friendsOnViewCreated.implementation!!.instructions.mapIndexedNotNull { index, instr ->
+                if (instr.opcode.name == "return-void") index else null
+            }.reversed()
+            for (index in friendsReturns) {
+                friendsOnViewCreated.addInstructions(
+                    index,
+                    """
+                        move-object/from16 v0, p1
+                        const/16 v1, 0x8
+                        invoke-virtual {v0, v1}, Landroid/view/View;->setVisibility(I)V
+                    """.trimIndent(),
+                )
+            }
+            println("[Feed Interface Declutter] Hooked FriendsV3DescAssem.onViewCreated() -> appended setVisibility(GONE).")
             patched++
 
             Fingerprint(
@@ -326,20 +352,21 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
                     parameters = listOf("Landroid/view/View;"),
                 ).method
                 transOnViewCreated.clearTryBlocks()
-                transOnViewCreated.ensureRegisterCount(4)
-                val count = transOnViewCreated.implementation!!.instructions.count()
-                transOnViewCreated.removeInstructions(0, count)
-                transOnViewCreated.addInstructions(
-                    0,
-                    """
-                        invoke-super/range {p0 .. p1}, Lcom/ss/android/ugc/feed/platform/cell/BaseCellSlotComponent;->onViewCreated(Landroid/view/View;)V
-                        move-object/from16 v1, p1
-                        const/16 v0, 0x8
-                        invoke-virtual {v1, v0}, Landroid/view/View;->setVisibility(I)V
-                        return-void
-                    """.trimIndent(),
-                )
-                println("[Feed Interface Declutter] Hooked $transClass onViewCreated() -> setVisibility(GONE).")
+                transOnViewCreated.ensureRegisterCount(2)
+                val transReturns = transOnViewCreated.implementation!!.instructions.mapIndexedNotNull { index, instr ->
+                    if (instr.opcode.name == "return-void") index else null
+                }.reversed()
+                for (index in transReturns) {
+                    transOnViewCreated.addInstructions(
+                        index,
+                        """
+                            move-object/from16 v0, p1
+                            const/16 v1, 0x8
+                            invoke-virtual {v0, v1}, Landroid/view/View;->setVisibility(I)V
+                        """.trimIndent(),
+                    )
+                }
+                println("[Feed Interface Declutter] Hooked $transClass onViewCreated() -> appended setVisibility(GONE).")
                 patched++
 
                 Fingerprint(
