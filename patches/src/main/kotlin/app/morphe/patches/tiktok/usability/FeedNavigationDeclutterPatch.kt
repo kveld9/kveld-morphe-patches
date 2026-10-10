@@ -603,6 +603,7 @@ val feedNavigationDeclutterPatch = bytecodePatch(
                 println("[Navigation & Header Declutter] Inbox bottom tab guarded on $guardedMethods method(s) across ${guardedManagers.size} manager(s).")
             } else {
                 println("[Navigation & Header Declutter] Inbox bottom tab badge guard failed: Feature became no-op (no methods found with locals).")
+                require(guardedMethods > 0) { "No inbox badge guard target resolved for NOTIFICATION tab" }
             }
         }
 
