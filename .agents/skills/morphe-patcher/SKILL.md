@@ -109,11 +109,7 @@ val targetLocales by stringOption(
 ```
 
 ### Metadata Synchronization Rule
-Whenever patch options, descriptions, titles, or defaults are added or modified in Kotlin code, always synchronize the patch catalog before committing:
-```bash
-./gradlew generatePatchesList
-```
-This updates the local build catalog and validates schema conformance.
+When patch options, descriptions, titles, or defaults are added or modified in Kotlin code, verify catalog registration by running the patch list generator against the built `.mpp` from a temporary working directory outside the repository, and confirm the expected entries appear. Do NOT run `./gradlew generatePatchesList` in the repository checkout: it rewrites the tracked `patches-list.json`, which the release pipeline regenerates (see `AGENTS.md`, rule 11).
 
 ---
 
