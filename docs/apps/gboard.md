@@ -54,7 +54,7 @@ If you perform a clean install of Gboard Lite with background sync debloat patch
 
 | Patch Name | Type | Category | Default | Primary Mechanism |
 | :--- | :--- | :--- | :---: | :--- |
-| **Gboard Enhancements** | `resourcePatch` + `bytecodePatch` | Customization & Suite | ✅ Yes | Master customization suite bundling in-app toggleable features (Pure AMOLED Theme, Zero Bottom Inset, Independent Keyboard Vibration, Force Incognito, Voice Typing in Incognito, Clipboard Enhancements, Toolbar Item Count, Feature Flags including Quick Insert, Onboarding status, and Core Integrity) managed directly from *Settings > Morphe Patches*. |
+| **Gboard Enhancements** | `resourcePatch` + `bytecodePatch` | Customization & Suite | ✅ Yes | Master customization suite bundling in-app toggleable features (Pure AMOLED Theme, Zero Bottom Inset, Independent Keyboard Vibration, Force Incognito, Voice Typing in Incognito, Clipboard Enhancements, Toolbar Item Count, Feature Flags, Onboarding status, and Core Integrity) managed directly from *Settings > Morphe Patches*. |
 | **Block Telemetry** | `bytecodePatch` | Privacy & Security | ✅ Yes | Disables background metrics dispatch, event logging, daily pings, Google Primes profiling, crash reporting, AppDoctor diagnostics, and Tenor share tracking. |
 | **Clone Gboard** | `bytecodePatch` + `resourcePatch` | Utility & Modding | ✅ Yes | Appends a custom suffix to the package name and optionally customizes the application display label to allow installing Gboard alongside the original application. |
 | **Disable Background Sync** | `bytecodePatch` | Battery & Debloat | ❌ No | Neutralizes AndroidX WorkManager schedulers, MDD (Mobile Data Download) periodic sync, and Superpacks eager asset synchronization (opt-in to preserve initial dictionary downloads). |
@@ -113,7 +113,6 @@ The settings UI automatically detects the active device system language (`Locale
 ### 6. Smart Features & Voice
 - **Grammar Checker & Smart Compose**: Unlocks inline grammar review and Smart Compose predictions under *Text correction* (*Correcciones y sugerencias*).
 - **Bluetooth Microphone**: Unlocks Bluetooth microphone audio input for voice typing under *Voice typing* (*Dictado por voz*).
-- **Quick Insert**: Unlocks the Quick Insert candidate insertion feature.
 
 ### 7. Privacy & Security
 - **Force Incognito Mode**: Always operates in incognito mode (disables personalized learning and persistent input logging).
@@ -166,15 +165,4 @@ The **`Clone Gboard`** patch allows running a patched build alongside stock Gboa
 | :--- | :--- | :--- | :---: | :--- |
 | **Package Suffix** | `packageSuffix` | String | `clone` | Suffix appended after the original package name (e.g., `clone` -> `com.google.android.inputmethod.latin.clone`). |
 | **App Label** | `appLabel` | String | _(empty)_ | Replaces the launcher and keyboard-list name (`<application android:label>`) so the clone is visually distinguishable from stock Gboard. Leave blank to keep the original label. |
-
----
-
-## 🚩 Configurable Options: Feature Flags
-
-The **`Feature Flags`** suite provides compile-time toggles for experimental Gboard capabilities:
-
-| Option | Key | Type | Default | Description |
-| :--- | :--- | :--- | :---: | :--- |
-| **Quick Insert** | `enableQuickInsert` | Boolean | `true` | Enables the Quick Insert candidate insertion feature. |
-
 

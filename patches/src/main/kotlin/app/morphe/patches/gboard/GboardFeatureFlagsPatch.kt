@@ -76,15 +76,6 @@ val gboardFeatureFlagsPatch = bytecodePatch(
         required = false,
     )
 
-    // Ported concept from jasonwu1994/Gboard-patches via ImNoammm/Noams-Morphe-Patches, GPLv3
-    val enableQuickInsert by booleanOption(
-        key = "enableQuickInsert",
-        default = true,
-        title = "Quick Insert",
-        description = "Enables the Quick Insert candidate insertion feature.",
-        required = false,
-    )
-
     execute {
         var patched = 0
 
@@ -141,12 +132,7 @@ val gboardFeatureFlagsPatch = bytecodePatch(
             hookFlag("enable_use_bluetooth_setting", "isBluetoothMicEnabled", "Bluetooth Microphone")
         }
 
-        // 7. Quick Insert
-        if (enableQuickInsert == true) {
-            hookFlag("super_insert", "isQuickInsertEnabled", "Quick Insert")
-        }
-
-        // 8. Emoji Scale Setting (enables keyboard engine support for emoji scaling)
+        // 7. Emoji Scale Setting (enables keyboard engine support for emoji scaling)
         val fpEmoji = flagFingerprint("emoji_scale_supported")
         fpEmoji.method.overrideFlagDefault(fpEmoji.instructionMatches.first().index, "emoji_scale_supported") { reg ->
             "const/4 v$reg, 0x1"
@@ -155,7 +141,7 @@ val gboardFeatureFlagsPatch = bytecodePatch(
         println("[Feature Flags] Emoji Scale Setting: Injected isolated flag override into $targetClassEmoji.<clinit>()")
         patched++
 
-        // 9. Hook EmojiKeyboardUtils.getPrefKeyboardEmojiScale to return dynamic Morphe scale
+        // 8. Hook EmojiKeyboardUtils.getPrefKeyboardEmojiScale to return dynamic Morphe scale
         val fpEmojiScale = Fingerprint(
             strings = listOf("EmojiKeyboardUtils.java", "Failed to parse emoji scale setting!"),
             returnType = "F",
