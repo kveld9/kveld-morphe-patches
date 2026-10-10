@@ -3,6 +3,8 @@ name: release-conventions
 description: Semantic release and CI/CD lifecycle, conventional commit standards, release pipeline chain (release.yml and .releaserc), and git branching strategy.
 ---
 
+<!-- Mirror: this skill also exists in kveld-extra-morphe-patches/.agents/skills (hardlinked to its .claude/skills). When editing shared core guidance, replicate the change there. -->
+
 # Semantic Release & CI/CD Lifecycle
 
 ## 1. Conventional Commits Standard

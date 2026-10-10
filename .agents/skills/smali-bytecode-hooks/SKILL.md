@@ -3,6 +3,8 @@ name: smali-bytecode-hooks
 description: Smali and Dalvik bytecode hooking guidelines, register architecture conventions, multi-return reverse traversal, TwoRegisterInstruction extraction, reflection bridges, and obfuscation guidelines.
 ---
 
+<!-- Mirror: this skill also exists in kveld-extra-morphe-patches/.agents/skills (hardlinked to its .claude/skills). When editing shared core guidance, replicate the change there. -->
+
 # Smali & Dalvik Bytecode Hooking Guidelines
 
 ## 1. Register Architecture & Essential Extension Imports

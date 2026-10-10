@@ -3,6 +3,8 @@ name: morphe-patcher
 description: Architecture, patch typology (bytecodePatch, resourcePatch, rawResourcePatch), universal patches, stringOption DSL, fingerprint resolution, compatibility contracts (Constants.kt), and diagnostic telemetry invariants.
 ---
 
+<!-- Mirror: this skill also exists in kveld-extra-morphe-patches/.agents/skills (hardlinked to its .claude/skills). When editing shared core guidance, replicate the change there. -->
+
 # Morphe Patcher Architectural Guidelines
 
 ## 1. Patch DSL & Typology
