@@ -598,4 +598,16 @@ public final class TikTokMediaHook {
             view.setClickable(false);
         }
     }
+
+    public static void forceGoneViewLast(android.view.View view, int visibility) {
+        if (view != null) {
+            view.setVisibility(android.view.View.GONE);
+        }
+    }
+
+    public static void forceGoneViewFirst(int visibility, android.view.View view) {
+        if (view != null) {
+            view.setVisibility(android.view.View.GONE);
+        }
+    }
 }
