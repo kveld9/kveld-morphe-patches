@@ -14,6 +14,14 @@ directly, never use another harness's subagents for implementation). Execute:
 1. Record `git status --short`. Isolate any pre-existing dirty files or untracked changes as `FOREIGN_IN_PROGRESS_WORK` (do not require working tree to be clean; never stage or commit foreign files). APK must exist under `candidate_apks/` (gitignored, runner resolves only this directory name without explicit `-Papk`; never commit).
 2. Recon (orchestrator shell, read-only): run `mkdir -p scratch` for raw recon dumps, `unzip -l`, badging dump via `${AAPT2:-aapt2}`, manifest xmltree to `$AGY_TMP` (`/tmp/opencode`), telemetry component inventory. Save evidence paths for workers.
 
+### Step 0b — Already-onboarded app (automatic differential mode, never ask)
+If Step 0 recon shows the target package is already registered (`Constants.COMPATIBILITY_*` + `TargetApp` entry + existing `patches/.../<app>/` suite for the same version), DO NOT ask the user what to do and DO NOT re-run Step 1. Proceed automatically in differential-audit mode:
+1. Run Step 3 gates against the existing suite to establish the green baseline.
+2. Differential recon: DEX telemetry-class inventory vs hooked methods, manifest components vs blocked lists, native `.so` strings vs redirections, behavioral checklist (`new-telemetry-app` section 3.J) vs existing patches. Every gap needs file:line evidence before delegating.
+3. Launch Step 2 workers ONLY for confirmed gaps (exclusive paths, same rules); skip workers entirely when no gap survives evidence.
+4. Continue with Step 4 (device + traffic) and Step 5 (atomic `fix(<app>)` commits only for applied gaps, `audit-stack` over the pending range).
+Report `no gaps found` with gate evidence when the suite already covers the surface.
+
 ### Step 1 — Registration (one AGY worker, `accept-edits`)
 New `agy` conversation: add `Constants` entry inside `object Constants` + `TargetApp` entry + README row (matching repository column schema) + `docs/apps/<app_id>.md` skeleton (with mandatory Behavioral Hazards Warning) per `AGENTS.md` section 2. Folding documentation skeleton here avoids Worker A/B collision on docs. Uncommitted; orchestrator commits with the first patch.
 
