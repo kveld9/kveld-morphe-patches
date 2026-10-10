@@ -34,6 +34,9 @@ private val xiaomiEarbudsTelemetryResourcePatch = resourcePatch(
             "com.google.android.gms.measurement.AppMeasurementReceiver",
             "com.xiaomi.fitness.feedback.bugreport.FeedBackDumpLogReceiver",
             "com.miui.bugreport.logprovider.DumpLogProvider",
+            "com.google.android.datatransport.runtime.scheduling.jobscheduling.JobInfoSchedulerService",
+            "com.google.android.datatransport.runtime.scheduling.jobscheduling.AlarmManagerSchedulerBroadcastReceiver",
+            "com.google.android.datatransport.runtime.backends.TransportBackendDiscovery",
         )
 
         var removedPermissions = 0
