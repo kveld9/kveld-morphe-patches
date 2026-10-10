@@ -44,6 +44,7 @@ public class GboardExtension {
     public static final String PREF_KEY_CLIPBOARD_CHAR_LIMIT = "morphe_clipboard_char_limit";
     public static final String PREF_KEY_GRAMMAR_CHECKER = "morphe_grammar_checker";
     public static final String PREF_KEY_BLUETOOTH_MIC = "morphe_bluetooth_mic";
+    public static final String PREF_KEY_QUICK_INSERT = "morphe_quick_insert";
     public static final String PREF_KEY_FORCE_INCOGNITO = "morphe_force_incognito";
     public static final String PREF_KEY_HIDE_INCOGNITO_ICON = "morphe_hide_incognito_icon";
     public static final String PREF_KEY_VOICE_INCOGNITO = "morphe_voice_typing_incognito";
@@ -686,6 +687,10 @@ public class GboardExtension {
 
     public static boolean isBluetoothMicEnabled() {
         return getBooleanPref(PREF_KEY_BLUETOOTH_MIC, true);
+    }
+
+    public static boolean isQuickInsertEnabled() {
+        return getBooleanPref(PREF_KEY_QUICK_INSERT, true);
     }
 
     public static float getEmojiScale(Context context) {
