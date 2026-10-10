@@ -1,3 +1,23 @@
+## [2.7.0-experimental.1](https://github.com/kveld9/kveld-morphe-patches/compare/v2.6.0...v2.7.0-experimental.1) (2026-10-10)
+
+### Bug Fixes
+
+* **brave:** resolve variations seed hook on Universal variant ([2caffd3](https://github.com/kveld9/kveld-morphe-patches/commit/2caffd33dadf68d9af9f1f728aa2b322bf68f816))
+* **brave:** tolerate missing optional libchrome trap hooks ([35ab382](https://github.com/kveld9/kveld-morphe-patches/commit/35ab38251a0b4d852597e00e51cfdbe54e915cc9))
+* **gboard:** add missing isQuickInsertEnabled extension method ([aeb48f3](https://github.com/kveld9/kveld-morphe-patches/commit/aeb48f3bf08b03009f9754926c71340073ddd75e))
+* **tiktok:** fail hard on ambiguous login-page overload resolution ([1ded2e2](https://github.com/kveld9/kveld-morphe-patches/commit/1ded2e2a2a959d5e8bd6f18ea3c218503d54c3f3))
+* **tiktok:** fail hard when inbox badge guard resolves zero targets ([5f97eca](https://github.com/kveld9/kveld-morphe-patches/commit/5f97eca54698faf382246f2ed65f53c630a6baa8))
+* **tiktok:** preserve desc assem init to prevent exit/profile crash ([c1f1bb0](https://github.com/kveld9/kveld-morphe-patches/commit/c1f1bb07a417b66ca7ac6e4050c2223b936258ea))
+* **tiktok:** require explicit singleton on overload-prone fingerprint fallbacks ([f1af558](https://github.com/kveld9/kveld-morphe-patches/commit/f1af558f18147b6fae71b68020121370e53684d2))
+* **tiktok:** scope inbox badge hide to bottom tab, preserve interior unread ([7c5cec7](https://github.com/kveld9/kveld-morphe-patches/commit/7c5cec7a8db5a6528d20a9c940a63b700a8a1af1))
+
+### New Features
+
+* **gboard:** add optional app label toggle to Clone Gboard ([63bd904](https://github.com/kveld9/kveld-morphe-patches/commit/63bd904468a739c8e1a8146d96d8a5d54a9ee37c))
+* **gboard:** add Quick Insert flag unlock to Feature Flags ([9099594](https://github.com/kveld9/kveld-morphe-patches/commit/9099594ccd04f5dc4549a49cf7152b5230f142c7))
+* **gboard:** purge Brella federated-learning components from manifest ([e5af1fc](https://github.com/kveld9/kveld-morphe-patches/commit/e5af1fc330ae7ac7072055ba49b97d7a61dc7481))
+* **tiktok:** auto-expand community-flagged comments in drawer ([ac261d1](https://github.com/kveld9/kveld-morphe-patches/commit/ac261d1a02ae7db52fd104075f0e74ffae7cebe8))
+
 ## [2.6.0-experimental.17](https://github.com/kveld9/kveld-morphe-patches/compare/v2.6.0-experimental.16...v2.6.0-experimental.17) (2026-10-10)
 
 ### Bug Fixes
