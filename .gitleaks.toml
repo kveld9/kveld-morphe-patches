@@ -1,0 +1,11 @@
+# Gitleaks overrides for this repository.
+#
+# patches-list.json / patches-bundle.json are fully generated catalogs whose
+# patch-option entries use "key" as a field name (e.g. "key": "avoidByteVC2"),
+# which trips the generic-api-key rule. Those values are UI identifiers, not
+# secrets, so the rule is scoped out for these two files only. Every other
+# rule still scans them.
+[[allowlists]]
+description = "patch option keys in generated catalogs are not secrets"
+paths = ['''patches-list\.json''', '''patches-bundle\.json''']
+rules = ["generic-api-key"]
