@@ -1,0 +1,167 @@
+name: Guard Pre-Release Channel
+
+on:
+  workflow_run:
+    workflows: ["Release"]
+    types:
+      - completed
+    branches:
+      - dev
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-channel:
+    name: Verify Pre-Release Channel Precedence
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.head_branch == 'dev'
+    steps:
+      - name: Checkout dev branch
+        uses: actions/checkout@v7
+        with:
+          ref: dev
+          fetch-depth: 0
+
+      - name: Fetch origin main branch
+        run: |
+          git fetch origin +refs/heads/main:refs/remotes/origin/main || true
+
+      - name: Compare pre-release and stable channel versions
+        run: |
+          python3 - << 'EOF'
+          import json
+          import re
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          SEMVER_REGEX = re.compile(
+              r"^v?(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)"
+              r"(?:-(?P<prerelease>[0-9A-Za-z.-]+))?"
+              r"(?:\+[0-9A-Za-z.-]+)?$"
+          )
+
+          class SemVer:
+              def __init__(self, raw: str):
+                  self.raw = raw.strip()
+                  match = SEMVER_REGEX.match(self.raw)
+                  if not match:
+                      raise ValueError(f"Invalid SemVer string: {self.raw!r}")
+                  self.major = int(match.group("major"))
+                  self.minor = int(match.group("minor"))
+                  self.patch = int(match.group("patch"))
+                  self.prerelease = match.group("prerelease")
+
+              @property
+              def core(self):
+                  return (self.major, self.minor, self.patch)
+
+              def __lt__(self, other: "SemVer") -> bool:
+                  if self.core != other.core:
+                      return self.core < other.core
+                  if self.prerelease is not None and other.prerelease is None:
+                      return True
+                  if self.prerelease is None and other.prerelease is not None:
+                      return False
+                  if self.prerelease is None and other.prerelease is None:
+                      return False
+
+                  p1 = self.prerelease.split(".")
+                  p2 = other.prerelease.split(".")
+                  for a, b in zip(p1, p2):
+                      if a == b:
+                          continue
+                      a_is_digit, b_is_digit = a.isdigit(), b.isdigit()
+                      if a_is_digit and b_is_digit:
+                          return int(a) < int(b)
+                      if a_is_digit and not b_is_digit:
+                          return True
+                      if not a_is_digit and b_is_digit:
+                          return False
+                      return a < b
+                  return len(p1) < len(p2)
+
+              def __eq__(self, other: object) -> bool:
+                  if not isinstance(other, SemVer):
+                      return False
+                  return self.core == other.core and self.prerelease == other.prerelease
+
+              def __le__(self, other: "SemVer") -> bool:
+                  return self < other or self == other
+
+              def __gt__(self, other: "SemVer") -> bool:
+                  return not (self <= other)
+
+          def load_json_from_file(path: Path):
+              if not path.is_file():
+                  return None
+              try:
+                  return json.loads(path.read_text(encoding="utf-8"))
+              except Exception as exc:
+                  sys.exit(f"ERROR: Failed to parse JSON from {path}: {exc}")
+
+          def load_json_from_git(ref_path: str):
+              proc = subprocess.run(
+                  ["git", "show", ref_path],
+                  capture_output=True,
+                  text=True,
+              )
+              if proc.returncode != 0:
+                  return None
+              try:
+                  return json.loads(proc.stdout)
+              except Exception as exc:
+                  sys.exit(f"ERROR: Failed to parse JSON from {ref_path}: {exc}")
+
+          # 1. Load bundle from dev branch (workspace checkout or git HEAD)
+          dev_bundle = load_json_from_file(Path("patches-bundle.json"))
+          if dev_bundle is None:
+              dev_bundle = load_json_from_git("HEAD:patches-bundle.json")
+
+          if dev_bundle is None:
+              sys.exit("ERROR: patches-bundle.json not found on dev branch.")
+
+          dev_version_raw = dev_bundle.get("version")
+          if not dev_version_raw or not isinstance(dev_version_raw, str):
+              sys.exit("ERROR: patches-bundle.json on dev does not contain a valid 'version' field.")
+
+          # 2. Load bundle from origin/main branch
+          main_bundle = load_json_from_git("origin/main:patches-bundle.json")
+          if main_bundle is None:
+              main_bundle = load_json_from_git("refs/remotes/origin/main:patches-bundle.json")
+
+          if main_bundle is None:
+              print("OK: patches-bundle.json not found on origin/main; no stable release to shadow dev.")
+              sys.exit(0)
+
+          main_version_raw = main_bundle.get("version")
+          if not main_version_raw or not isinstance(main_version_raw, str):
+              print("OK: patches-bundle.json on origin/main has no 'version' field; cannot shadow dev.")
+              sys.exit(0)
+
+          # 3. Parse SemVer versions
+          try:
+              dev_ver = SemVer(dev_version_raw)
+          except ValueError as exc:
+              sys.exit(f"ERROR: Invalid SemVer in dev bundle: {exc}")
+
+          try:
+              main_ver = SemVer(main_version_raw)
+          except ValueError as exc:
+              sys.exit(f"ERROR: Invalid SemVer in main bundle: {exc}")
+
+          # 4. Enforce dev > main precedence
+          if dev_ver <= main_ver:
+              sys.exit(
+                  f"ERROR: pre-release channel shadowed by stable {main_ver.raw}: "
+                  f"merge main into dev or promote; "
+                  f"dev ({dev_ver.raw}) <= main ({main_ver.raw}). "
+                  f"Morphe Manager selects max(bundle dev, bundle main) by semver (upstream MorpheApp/morphe-manager#569). "
+                  f"When dev <= main, pre-release users stop receiving experimental updates."
+              )
+
+          print(f"OK: dev ({dev_ver.raw}) > main ({main_ver.raw})")
+          sys.exit(0)
+          EOF
