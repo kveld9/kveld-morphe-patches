@@ -1,3 +1,15 @@
+## [2.7.0-experimental.2](https://github.com/kveld9/kveld-morphe-patches/compare/v2.7.0-experimental.1...v2.7.0-experimental.2) (2026-10-10)
+
+### Bug Fixes
+
+* **tiktok:** gate promotional filter on active promote signals to stop feed wipe ([59b1d1b](https://github.com/kveld9/kveld-morphe-patches/commit/59b1d1b1ab30e84d46def908346b20a423c92456))
+* **tiktok:** hide feed descriptions via desc visibility call redirect ([86f4fee](https://github.com/kveld9/kveld-morphe-patches/commit/86f4feed0d20fd32ef2d12ce46809f9a6c1b1e86))
+
+### New Features
+
+* **gboard:** add adwords and reporting widget host blocking to Block Telemetry ([cf80fae](https://github.com/kveld9/kveld-morphe-patches/commit/cf80fae0759727072052468ed52c14aa3b8a13d6))
+* **gboard:** harden manifest with cronet opt-out, metrics service disable and initializer purge ([3cda29a](https://github.com/kveld9/kveld-morphe-patches/commit/3cda29a2a8e844681ee98890db4898e1ff12e352))
+
 ## [2.7.0-experimental.1](https://github.com/kveld9/kveld-morphe-patches/compare/v2.6.0...v2.7.0-experimental.1) (2026-10-10)
 
 ### Bug Fixes

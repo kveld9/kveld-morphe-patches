@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "2.7.0-experimental.1",
+  "version": "2.7.0-experimental.2",
   "patches": [
     {
       "name": "APK Junk Cleaner",
@@ -348,7 +348,17 @@
           ]
         }
       ],
-      "options": []
+      "options": [
+        {
+          "key": "blockAdwordsHost",
+          "title": "Block Adwords Host",
+          "description": "Rewrites DEX const-string literals containing adwords.google.com and reportingwidget.google.com to 0.0.0.0. Enabled by default.",
+          "required": false,
+          "type": "kotlin.Boolean",
+          "default": true,
+          "values": null
+        }
+      ]
     },
     {
       "name": "Block Telemetry & Trackers",

@@ -241,7 +241,7 @@
 
 | Patch | Description | Options |
 |----------|----------------|-----------|
-| **Block Telemetry** | Disables background metrics dispatch, event logging, daily pings, Google Primes profiling, crash reporting, AppDoctor diagnostics, and Tenor share tracking. |  |
+| **Block Telemetry** | Disables background metrics dispatch, event logging, daily pings, Google Primes profiling, crash reporting, AppDoctor diagnostics, and Tenor share tracking. | • Block Adwords Host |
 | **Clone Gboard** | Changes the package name by appending a dot and custom suffix (defaults to 'clone') and optionally customizes the app label to allow installing Gboard alongside the original application. | • Package name suffix<br>• App label |
 | **Disable Background Sync** | Neutralizes AndroidX WorkManager schedulers, MDD (Mobile Data Download) periodic sync, and Superpacks eager asset synchronization (opt-in to preserve initial dictionary downloads). |  |
 | **Disable Cloud Backup** | Disables Android backup for Gboard (allowBackup=false and backup agent removed) so keyboard settings, learned words, and personal dictionary data are never uploaded to Google Drive backups or copied by device-to-device transfer. |  |
