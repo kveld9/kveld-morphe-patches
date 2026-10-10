@@ -9,7 +9,7 @@ description: Technical methodology and implementation patterns for telemetry, tr
 
 ## 0. Repository Adaptation Notes (Shared Canonical Copy)
 
-- **Sync invariant**: this file is canonical and byte-identical in both sibling repos. Edit in either repo, then run `scripts/sync_shared_skills.sh` (or `--check` in CI) to propagate. Never create per-repo forks.
+- **Sync invariant**: this file is canonical and byte-identical in both sibling repos. Edits propagate automatically via the `scripts/hooks/post-commit` hook (enabled per clone with `git config core.hooksPath scripts/hooks`); `scripts/sync_shared_skills.sh --check` verifies. Never create per-repo forks.
 - **Helpers**: manifestening helpers live in `app.morphe.patches.shared` (`ManifestXml.kt`, `BytecodeUtils.kt`) in both repos with the same API (`stripPermissionsWhere`, `disableComponentsByName`, `setApplicationMetaData`, `replaceWithReturnVoid`, `clearTryBlocks`).
 - **Extension wiring**: companion runtime filters (e.g. preference-gate filters) follow the local repo convention: `dependsOn(sharedExtensionPatch)` in kveld-extra, `extendWith("extensions/extension.mpe")` in brave-origin.
 

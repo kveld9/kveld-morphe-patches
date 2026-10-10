@@ -9,7 +9,7 @@ description: End-to-end workflow for onboarding a new target app and authoring t
 
 ## 0. Repository Adaptation Notes (Shared Canonical Copy)
 
-- **Sync invariant**: this file is canonical and byte-identical in both sibling repos. Edit in either repo, then run `scripts/sync_shared_skills.sh` (or `--check` in CI) to propagate. Never create per-repo forks.
+- **Sync invariant**: this file is canonical and byte-identical in both sibling repos. Edits propagate automatically via the `scripts/hooks/post-commit` hook (enabled per clone with `git config core.hooksPath scripts/hooks`); `scripts/sync_shared_skills.sh --check` verifies. Never create per-repo forks.
 - **README**: update only the hand-maintained Supported Targets table above `PATCHES_START`/`PATCHES_END`. Never edit the generated Patch Catalog block, `patches-list.json`, `patches-bundle.json`, or `CHANGELOG.md`; the release pipeline regenerates them. Verify catalog registration from a temporary directory outside the checkout; never run `generatePatchesList` in the checkout.
 - **Registry**: register the app in `util/PatchExecutionTest.kt` (`id`, `packageName` from `Constants.kt`, `candidateFilenames`, `filePattern`, `patchDirectoryPart`). Known divergence: id `xiaomi_earbuds` uses `patchDirectoryPart` `xiaomi` and guide `docs/apps/xiaomi-earbuds.md`.
 - **Extension wiring**: in kveld-extra link companion runtime via `dependsOn(sharedExtensionPatch)` (direct `extendWith` calls cost redundant `ClassMerger` passes); in brave-origin declare `extendWith("extensions/extension.mpe")` per its `AGENTS.md`. Follow the local repo convention.

@@ -2,7 +2,8 @@
 # sync_shared_skills.sh - keep canonical shared skills byte-identical across sibling repos.
 #
 # Canonical skills: new-telemetry-app, telemetry-blocking.
-# Edit in either repo, then run this script from either repo to propagate.
+# Runs automatically via scripts/hooks/post-commit after every commit
+# (enabled per clone with: git config core.hooksPath scripts/hooks).
 # Newest copy (mtime) wins per file. No absolute paths or machine names:
 # the sibling repo resolves via --with, SIBLING_REPO, or the default
 # sibling directory layout.

@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# post-commit: propagate canonical shared skills to the sibling repo working tree.
+# Automatic, commit-scoped, non-destructive: copies files only, never commits,
+# never pushes. The sibling repo shows pending modifications to review and
+# commit with its normal workflow. Silent when skills are already in sync.
+# Enabled per clone with: git config core.hooksPath scripts/hooks
+set -euo pipefail
+ROOT="$(git rev-parse --show-toplevel)"
+if ! "$ROOT/scripts/sync_shared_skills.sh" --check >/dev/null 2>&1; then
+    "$ROOT/scripts/sync_shared_skills.sh" || true
+fi
