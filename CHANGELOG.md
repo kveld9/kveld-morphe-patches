@@ -1,3 +1,9 @@
+## [2.6.0-experimental.16](https://github.com/kveld9/kveld-morphe-patches/compare/v2.6.0-experimental.15...v2.6.0-experimental.16) (2026-10-10)
+
+### Bug Fixes
+
+* **skills:** unindent section break after runtime safety note in morphe-patcher ([d2a7dbe](https://github.com/kveld9/kveld-morphe-patches/commit/d2a7dbe9f889c797d5975a71afeea54bd494362b))
+
 ## [2.6.0-experimental.15](https://github.com/kveld9/kveld-morphe-patches/compare/v2.6.0-experimental.14...v2.6.0-experimental.15) (2026-10-09)
 
 ### Bug Fixes
