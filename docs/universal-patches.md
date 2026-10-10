@@ -218,8 +218,8 @@ The **`Universal Telemetry Neutralizer`** patch neutralizes pervasive third-part
 
 - **Google & Firebase Measurement**: `AppMeasurementContentProvider`, `AppMeasurementService`, `AppMeasurementJobService`, `AppMeasurementReceiver`.
 - **Google Analytics (legacy)**: `AnalyticsService`, `AnalyticsJobService`, `AnalyticsReceiver`.
-- **Google DataTransport & Firebase Sessions**: `JobInfoSchedulerService`, `TransportBackendDiscovery`, `AlarmManagerSchedulerBroadcastReceiver`, `SessionLifecycleService`, `MlKitComponentDiscoveryService`.
-- **Firebase ComponentDiscovery Registrars**: Prunes registrar `<meta-data>` tags within `ComponentDiscoveryService` for Analytics, Crashlytics, Performance Monitoring, Sessions, MLKit/vision, IID, DynamicLoading, Transport, Installations, RemoteConfig, and AB testing (Abt), preventing dependency injection from instantiating tracking classes in memory.
+- **Google DataTransport & Firebase Sessions**: `JobInfoSchedulerService`, `TransportBackendDiscovery`, `AlarmManagerSchedulerBroadcastReceiver`, `SessionLifecycleService`.
+- **Firebase ComponentDiscovery Registrars**: Prunes registrar `<meta-data>` tags within `ComponentDiscoveryService` for Analytics, Crashlytics, Performance Monitoring, Sessions, IID, DynamicLoading, Transport, Installations, RemoteConfig, and AB testing (Abt), preventing dependency injection from instantiating tracking classes in memory. ML Kit registrars (vision/barcode/face/text) are only pruned when the `disableMlKit` toggle is enabled.
 - **Sentry Crash & Performance**: `SentryInitProvider`, `SentryPerformanceProvider`.
 - **Facebook AppEvents**: `FacebookInitProvider`.
 - **Meta Analytics2 / OneFabric**: `FFAlarmUploadJobService`, `GooglePlayUploadService`, `AlarmBasedUploadService`, `Analytics2UploadService`, `LollipopUploadService`, `LollipopUploadSafeService`, `DelayedWorkerService`, `OneFabricUploadAlarmReceiver`, `HighPriUploadRetryReceiver`, `AnalyticsUploadAlarmReceiver`, `DelayedWorkerServiceReceiver`.
@@ -246,6 +246,7 @@ The **`Universal Telemetry Neutralizer`** patch neutralizes pervasive third-part
 - **Disable Crash Detectors & Dump Upload (`disableCrashDetectors`)**: Sets `android:enabled="false"` on Lacrima lock-screen/shutdown crash detectors, crash-loop state trackers, and background crash-dump upload services (Toggle, default: `true`).
 - **Disable Device-ID & Cross-App Identity Providers (`disableDeviceIdProviders`)**: Sets `android:enabled="false"` on attribution, FDID/PhoneId/USDiD, and FamilyApps cross-app identity providers plus referrer and cross-signing components (Toggle, default: `false`). *WARNING: may break login, account switching, and deferred deep links; enable only to fully silence device-identity collection.*
 - **Disable Ad SDK Startup Initializers (`disableAdStartupInitializers`)**: Removes ad SDK auto-init entries (`AdsSdkInitializer` / Unity Ads) from `androidx.startup.InitializationProvider` (Toggle, default: `false`). *WARNING: may break rewarded ads and ad-gated features; enable only to block SDK auto-initialization.*
+- **Disable ML Kit On-Device Vision (`disableMlKit`)**: Sets `android:enabled="false"` on `MlKitInitProvider` and `MlKitComponentDiscoveryService`, and prunes ML Kit vision registrars (barcode, face, text) (Toggle, default: `false`). *WARNING: breaks on-device barcode scanning, face detection, and text recognition.*
 
 ---
 
