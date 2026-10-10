@@ -2,15 +2,25 @@ package app.morphe.patches.brave
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.extensions.InstructionExtensions.instructionsOrNull
+import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
+import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.rawResourcePatch
 import app.morphe.patcher.patch.resourcePatch
+import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.shared.Constants
-import app.morphe.patches.shared.sharedExtensionPatch
 import app.morphe.patches.shared.findXmlContaining
+import app.morphe.patches.shared.sharedExtensionPatch
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.ClassDef
+import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import org.w3c.dom.Element
 import java.io.RandomAccessFile
 
@@ -81,18 +91,18 @@ private val braveHostsBlockerPatch = rawResourcePatch(
         )
 
         val hostEntries = listOf(
-            HostEntry(0x00208fbdL, 0x0059b371L, "star-randsrv.bsg.brave.com"),
-            HostEntry(0x00208feeL, 0x0059b3a2L, "collector.bsg.brave.com"),
-            HostEntry(0x00209025L, 0x0059b3d9L, "usage-ping.brave.com"),
-            HostEntry(0x00208e48L, 0x0059b1fcL, "patterns.wdp.brave.com"),
-            HostEntry(0x00208e5fL, 0x0059b213L, "collector.wdp.brave.com"),
-            HostEntry(0x00208e77L, 0x0059b22bL, "star.wdp.brave.com"),
-            HostEntry(0x00208e8aL, 0x0059b23eL, "quorum.wdp.brave.com"),
-            HostEntry(0x00208e3bL, 0x0059b1efL, "cr.brave.com"),
-            HostEntry(0x0008bd66L, 0x004244ceL, "crashpad.chromium.org"),
-            HostEntry(0x004cc73eL, 0x00852816L, "crashpad.chromium.org"),
-            HostEntry(0x00208ccfL, 0x0059b083L, "variations.brave.com"),
-            HostEntry(0x0034b7ccL, 0x006d4809L, "variations.brave.com"),
+            HostEntry(0x0020d657L, 0x005a14b4L, "star-randsrv.bsg.brave.com"),
+            HostEntry(0x0020d688L, 0x005a14e5L, "collector.bsg.brave.com"),
+            HostEntry(0x0020d6bfL, 0x005a151cL, "usage-ping.brave.com"),
+            HostEntry(0x0020d4e2L, 0x005a133fL, "patterns.wdp.brave.com"),
+            HostEntry(0x0020d4f9L, 0x005a1356L, "collector.wdp.brave.com"),
+            HostEntry(0x0020d511L, 0x005a136eL, "star.wdp.brave.com"),
+            HostEntry(0x0020d524L, 0x005a1381L, "quorum.wdp.brave.com"),
+            HostEntry(0x0020d4d5L, 0x005a1332L, "cr.brave.com"),
+            HostEntry(0x0008ca50L, 0x00426dfbL, "crashpad.chromium.org"),
+            HostEntry(0x004d92bcL, 0x00861123L, "crashpad.chromium.org"),
+            HostEntry(0x0020d369L, 0x005a11c6L, "variations.brave.com"),
+            HostEntry(0x003532a6L, 0x006ddcb2L, "variations.brave.com"),
         )
 
         val targets = listOf(
@@ -105,7 +115,7 @@ private val braveHostsBlockerPatch = rawResourcePatch(
             .filter { (_, file, _) -> file.exists() && file.isFile }
 
         if (existingTargets.isEmpty()) {
-            println("[BraveBlockTelemetry] Skipped: no arm64-v8a or armeabi-v7a libchrome.so found.")
+            println("[Block Telemetry] Skipped: no arm64-v8a or armeabi-v7a libchrome.so found.")
             return@execute
         }
 
@@ -165,6 +175,14 @@ val braveBlockTelemetryPatch = bytecodePatch(
         braveBtiCompatibilityPatch,
     )
 
+    val blockOffersHost by booleanOption(
+        key = "blockOffersHost",
+        default = true,
+        title = "Block Offers host",
+        description = "Rewrites DEX const-string literals containing offers.brave.com to 0.0.0.0. Enabled by default; disable to keep commercial offers endpoint.",
+        required = false,
+    )
+
     // Note: Google Privacy Sandbox APIs (Topics, Protected Audience) and upstream UKM metric
     // reporting to Google servers are already stripped/disabled by Brave at the C++ engine level
     // (brave-core). Upstream UkmRecorder hooks and dat zeroing are omitted here as Brave routes
@@ -195,60 +213,163 @@ val braveBlockTelemetryPatch = bytecodePatch(
         }
 
         // 3. Variations: Abort HTTP connection before socket opens
-        try {
-            val variationsFp = Fingerprint(
-                returnType = "Ljava/net/HttpURLConnection;",
-                strings = listOf("https://variations.brave.com/seed"),
+        val variationsFp = Fingerprint(
+            returnType = "Ljava/net/HttpURLConnection;",
+            strings = listOf("https://variations.brave.com/seed"),
+        )
+        variationsFp.method.apply {
+            addInstructions(
+                0,
+                """
+                    new-instance v0, Ljava/io/IOException;
+                    const-string v1, "Blocked by Morphe"
+                    invoke-direct {v0, v1}, Ljava/io/IOException;-><init>(Ljava/lang/String;)V
+                    throw v0
+                """,
             )
-            variationsFp.method.apply {
-                addInstructions(
-                    0,
-                    """
-                        new-instance v0, Ljava/io/IOException;
-                        const-string v1, "Blocked by Morphe"
-                        invoke-direct {v0, v1}, Ljava/io/IOException;-><init>(Ljava/lang/String;)V
-                        throw v0
-                    """,
-                )
-                val className = variationsFp.originalClassDef.type.substringAfterLast('/').removeSuffix(";")
-                hookedMethods.add("$className.$name")
-            }
-        } catch (e: Exception) {
-            println("[Block Telemetry] Variations hook note: ${e.message}")
+            val className = variationsFp.originalClassDef.type.substringAfterLast('/').removeSuffix(";")
+            hookedMethods.add("$className.$name")
         }
 
         // 4. PrefService.e(String): Filter telemetry preferences (P3A, Stats, WDP) at return
-        try {
-            val prefFp = Fingerprint(
-                definingClass = "Lorg/chromium/components/prefs/PrefService;",
-                name = "e",
-                returnType = "Z",
-                parameters = listOf("Ljava/lang/String;"),
-            )
-            val method = prefFp.method
-            val returnIndices = method.implementation?.instructions?.withIndex()
-                ?.filter { it.value.opcode == Opcode.RETURN }
-                ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
-                ?.toList() ?: emptyList()
+        val prefFp = Fingerprint(
+            definingClass = "Lorg/chromium/components/prefs/PrefService;",
+            name = "e",
+            returnType = "Z",
+            parameters = listOf("Ljava/lang/String;"),
+        )
+        val method = prefFp.method
+        val returnIndices = method.implementation?.instructions?.withIndex()
+            ?.filter { it.value.opcode == Opcode.RETURN }
+            ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
+            ?.toList() ?: emptyList()
 
-            returnIndices.asReversed().forEach { (returnIndex, reg) ->
-                method.addInstructions(
-                    returnIndex,
-                    """
-                        invoke-static {p1, v$reg}, ${Constants.BRAVE_EXTENSION_CLASS}->filterTelemetryPref(Ljava/lang/String;Z)Z
-                        move-result v$reg
-                    """.trimIndent(),
-                )
-            }
-            if (returnIndices.isNotEmpty()) {
-                hookedMethods.add("PrefService.e")
-            }
-        } catch (e: Exception) {
-            println("[Block Telemetry] PrefService.e hook note: ${e.message}")
+        returnIndices.asReversed().forEach { (returnIndex, reg) ->
+            method.addInstructions(
+                returnIndex,
+                """
+                    invoke-static {p1, v$reg}, ${Constants.BRAVE_EXTENSION_CLASS}->filterTelemetryPref(Ljava/lang/String;Z)Z
+                    move-result v$reg
+                """.trimIndent(),
+            )
+        }
+        if (returnIndices.isNotEmpty()) {
+            hookedMethods.add("PrefService.e")
         }
 
         val targetClasses = hookedMethods.map { it.substringBefore('.') }.distinct()
-        println("[Block Telemetry] Hooked ${hookedMethods.size} bytecode telemetry methods across ${targetClasses.size} classes")
+        println("[Block Telemetry] Hooked ${hookedMethods.size} bytecode telemetry methods across ${targetClasses.size} classes (${hookedMethods.joinToString(", ")})")
+
+        // 5. Offers host: Rewrite const-string literals containing offers.brave.com to 0.0.0.0
+        if (blockOffersHost == true) {
+            blockOffersHostInDex()
+        } else {
+            println("[Block Telemetry] Offers host blocking disabled by option.")
+        }
     }
 }
+
+private const val OFFERS_HOST = "offers.brave.com"
+private const val SINK_HOST = "0.0.0.0"
+
+private data class PendingOffersRewrite(
+    val index: Int,
+    val register: Int,
+    val replacement: String,
+)
+
+private fun BytecodePatchContext.blockOffersHostInDex() {
+    var rewrittenStrings = 0
+    var touchedClasses = 0
+
+    classDefForEach { classDef ->
+        if (!hasOffersLiteral(classDef)) return@classDefForEach
+
+        val mutableClass = mutableClassDefBy(classDef)
+        var classModified = false
+
+        for (method in mutableClass.methods) {
+            val count = rewriteOffersInMethod(method)
+            if (count > 0) {
+                rewrittenStrings += count
+                classModified = true
+            }
+        }
+
+        if (classModified) touchedClasses++
+    }
+
+    logOffersResult(rewrittenStrings, touchedClasses)
+}
+
+private fun logOffersResult(rewrittenStrings: Int, touchedClasses: Int) {
+    if (rewrittenStrings == 0) {
+        println("[Block Telemetry] No offers.brave.com literals found.")
+    } else {
+        println("[Block Telemetry] Rewrote $rewrittenStrings offers.brave.com literal(s) across $touchedClasses class(es) -> 0.0.0.0.")
+    }
+}
+
+private fun rewriteOffersInMethod(method: MutableMethod): Int {
+    val rewrites = collectOffersRewrites(method)
+    if (rewrites.isEmpty()) return 0
+    applyOffersRewrites(method, rewrites)
+    return rewrites.size
+}
+
+private fun hasOffersLiteral(classDef: ClassDef): Boolean =
+    classDef.methods.any { methodHasOffersLiteral(it) }
+
+private fun methodHasOffersLiteral(method: Method): Boolean {
+    val instructions = method.instructionsOrNull ?: return false
+    return instructions.any { isOffersConstString(it) }
+}
+
+private fun isConstStringOpcode(opcode: Opcode): Boolean =
+    opcode == Opcode.CONST_STRING || opcode == Opcode.CONST_STRING_JUMBO
+
+private fun extractOffersLiteral(instruction: Instruction): String? {
+    if (!isConstStringOpcode(instruction.opcode)) return null
+    val ref = (instruction as? ReferenceInstruction)?.reference as? StringReference ?: return null
+    val original = ref.string
+    return if (original.contains(OFFERS_HOST, ignoreCase = true)) original else null
+}
+
+private fun isOffersConstString(instruction: Instruction): Boolean =
+    extractOffersLiteral(instruction) != null
+
+private fun buildOffersRewrite(instruction: Instruction, index: Int): PendingOffersRewrite? {
+    val original = extractOffersLiteral(instruction) ?: return null
+    val replacement = original.replace(OFFERS_HOST, SINK_HOST, ignoreCase = true)
+    val register = (instruction as? OneRegisterInstruction)?.registerA ?: return null
+    return PendingOffersRewrite(index, register, replacement)
+}
+
+private fun collectOffersRewrites(method: MutableMethod): List<PendingOffersRewrite> {
+    val instructions = method.instructionsOrNull?.toList() ?: return emptyList()
+    val rewrites = mutableListOf<PendingOffersRewrite>()
+    for ((index, instruction) in instructions.withIndex()) {
+        val rewrite = buildOffersRewrite(instruction, index) ?: continue
+        rewrites.add(rewrite)
+    }
+    return rewrites
+}
+
+private fun applyOffersRewrites(method: MutableMethod, rewrites: List<PendingOffersRewrite>) {
+    for (rewrite in rewrites.sortedByDescending { it.index }) {
+        val opcode = if (rewrite.register > 255) "const-string/jumbo" else "const-string"
+        method.replaceInstruction(
+            rewrite.index,
+            "$opcode v${rewrite.register}, \"${escapeSmaliLiteral(rewrite.replacement)}\"",
+        )
+    }
+}
+
+private fun escapeSmaliLiteral(value: String): String =
+    value.replace("\\", "\\\\")
+        .replace("\"", "\\\"")
+        .replace("\n", "\\n")
+        .replace("\r", "\\r")
+        .replace("\t", "\\t")
+
 

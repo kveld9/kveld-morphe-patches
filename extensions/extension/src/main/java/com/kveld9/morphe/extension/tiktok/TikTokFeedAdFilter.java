@@ -178,8 +178,36 @@ public final class TikTokFeedAdFilter {
     private static Method getContentDescMethod;
     private static Field contentDescField;
 
+    private static Method getCommerceVideoAuthInfoMethod;
+    private static Field mCommerceVideoAuthInfoField;
+    private static Field commerceVideoAuthInfoAltField;
+    private static Method getBrandContentAccountsMethod;
+    private static Field brandContentAccountsField;
+    private static Method getStarAtlasOrderIdMethod;
+    private static Field starAtlasOrderIdField;
+    private static Method getPromoteIconTextMethod;
+    private static Field promoteIconTextField;
+    private static Method getPromoteModelMethod;
+    private static Field promoteModelField;
+
+    private static Method getBCHashtagMethod;
+    private static Field bcHashtagField;
+    private static Method isBrandedContentMethod;
+    private static Field brandedContentTypeField;
+    private static Method isBrandOrganicContentMethod;
+    private static Field brandOrganicTypeField;
+    private static Method getCommerceLabelInfoMethod;
+    private static Field commerceLabelInfoField;
+    private static Field bcLabelDisplayTypeField;
+    private static Method getEcSearchBoBcLabelTextMethod;
+    private static Field ecSearchBoBcLabelTextField;
+
     private static final java.util.regex.Pattern AI_TAG_PATTERN = java.util.regex.Pattern.compile(
         "(?i)(?:#(?:aigenerated|ai_generated|aigc|generadoporia|generado_por_ia|generadoconia|aiart|aivideo|iaart|iavideo|midjourney|sora|stable_diffusion|stablediffusion|dalle|chatgpt|runwayml|klingai|lumaai)\\b|\\[(?:ai[-_ ]?generated|generado por ia|aigc)\\]|\\b(?:ai[-_ ]generated|generado por ia|generado con ia)\\b)"
+    );
+
+    private static final java.util.regex.Pattern PROMOTIONAL_TAG_PATTERN = java.util.regex.Pattern.compile(
+        "(?i)(?:#(?:paidpartnership|paid_partnership|brandedcontent|branded_content|contenidopromocional|contenido_promocional|promocional|colaboracionpagada|colaboracion_pagada|parceriapaga|parceria_paga|ad|publicidad|werbung|gesponsert|publi)\\b|\\[(?:paid partnership|branded content|contenido promocional|contenu sponsorisé|contenu sponsorise|colaboración pagada|colaboracion pagada|parceria paga|werbung|gesponsert)\\]|\\b(?:paid partnership|branded content|contenido promocional|contenu sponsorisé|contenu sponsorise|colaboración pagada|colaboracion pagada|parceria paga)\\b)"
     );
 
     private static final String SHOP_PROMO_MARKER = "placeholder_product_id";
@@ -534,6 +562,57 @@ public final class TikTokFeedAdFilter {
                     try { c2paAigcSrcField = c2paClass.getDeclaredField("aigcSrc"); c2paAigcSrcField.setAccessible(true); } catch (Throwable ignored) {}
                     try { c2paFirstAigcSrcField = c2paClass.getDeclaredField("firstAigcSrc"); c2paFirstAigcSrcField.setAccessible(true); } catch (Throwable ignored) {}
                     try { c2paLastAigcSrcField = c2paClass.getDeclaredField("lastAigcSrc"); c2paLastAigcSrcField.setAccessible(true); } catch (Throwable ignored) {}
+                }
+            } catch (Throwable ignored) {}
+
+            try { getCommerceVideoAuthInfoMethod = awemeClass.getMethod("getCommerceVideoAuthInfo"); getCommerceVideoAuthInfoMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { mCommerceVideoAuthInfoField = awemeClass.getDeclaredField("mCommerceVideoAuthInfo"); mCommerceVideoAuthInfoField.setAccessible(true); } catch (Throwable ignored) {}
+            try { commerceVideoAuthInfoAltField = awemeClass.getDeclaredField("commerceVideoAuthInfo"); commerceVideoAuthInfoAltField.setAccessible(true); } catch (Throwable ignored) {}
+            try { getBrandContentAccountsMethod = awemeClass.getMethod("getBrandContentAccounts"); getBrandContentAccountsMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { brandContentAccountsField = awemeClass.getDeclaredField("brandContentAccounts"); brandContentAccountsField.setAccessible(true); } catch (Throwable ignored) {}
+            try { getStarAtlasOrderIdMethod = awemeClass.getMethod("getStarAtlasOrderId"); getStarAtlasOrderIdMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { starAtlasOrderIdField = awemeClass.getDeclaredField("starAtlasOrderId"); starAtlasOrderIdField.setAccessible(true); } catch (Throwable ignored) {}
+            try { getPromoteIconTextMethod = awemeClass.getMethod("getPromoteIconText"); getPromoteIconTextMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { promoteIconTextField = awemeClass.getDeclaredField("promoteIconText"); promoteIconTextField.setAccessible(true); } catch (Throwable ignored) {}
+            try { getPromoteModelMethod = awemeClass.getMethod("getPromoteModel"); getPromoteModelMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { promoteModelField = awemeClass.getDeclaredField("promoteModel"); promoteModelField.setAccessible(true); } catch (Throwable ignored) {}
+
+            try {
+                ClassLoader loader = awemeClass != null ? awemeClass.getClassLoader() : classLoader;
+                Class<?> commerceStructClass = null;
+                try {
+                    commerceStructClass = loader.loadClass("com.ss.android.ugc.aweme.commerce.AwemeCommerceStruct");
+                } catch (Throwable t) {
+                    if (classLoader != loader) {
+                        commerceStructClass = classLoader.loadClass("com.ss.android.ugc.aweme.commerce.AwemeCommerceStruct");
+                    }
+                }
+                if (commerceStructClass != null) {
+                    try { getBCHashtagMethod = commerceStructClass.getMethod("getBCHashtag"); getBCHashtagMethod.setAccessible(true); } catch (Throwable ignored) {}
+                    try { bcHashtagField = commerceStructClass.getDeclaredField("bcHashtag"); bcHashtagField.setAccessible(true); } catch (Throwable ignored) {}
+                    try { isBrandedContentMethod = commerceStructClass.getMethod("isBrandedContent"); isBrandedContentMethod.setAccessible(true); } catch (Throwable ignored) {}
+                    try { brandedContentTypeField = commerceStructClass.getDeclaredField("brandedContentType"); brandedContentTypeField.setAccessible(true); } catch (Throwable ignored) {}
+                    try { isBrandOrganicContentMethod = commerceStructClass.getMethod("isBrandOrganicContent"); isBrandOrganicContentMethod.setAccessible(true); } catch (Throwable ignored) {}
+                    try { brandOrganicTypeField = commerceStructClass.getDeclaredField("brandOrganicType"); brandOrganicTypeField.setAccessible(true); } catch (Throwable ignored) {}
+                    try { getCommerceLabelInfoMethod = commerceStructClass.getMethod("getCommerceLabelInfo"); getCommerceLabelInfoMethod.setAccessible(true); } catch (Throwable ignored) {}
+                    try { commerceLabelInfoField = commerceStructClass.getDeclaredField("commerceLabelInfo"); commerceLabelInfoField.setAccessible(true); } catch (Throwable ignored) {}
+                    try { getEcSearchBoBcLabelTextMethod = commerceStructClass.getMethod("getEcSearchBoBcLabelText"); getEcSearchBoBcLabelTextMethod.setAccessible(true); } catch (Throwable ignored) {}
+                    try { ecSearchBoBcLabelTextField = commerceStructClass.getDeclaredField("ecSearchBoBcLabelText"); ecSearchBoBcLabelTextField.setAccessible(true); } catch (Throwable ignored) {}
+                }
+            } catch (Throwable ignored) {}
+
+            try {
+                ClassLoader loader = awemeClass != null ? awemeClass.getClassLoader() : classLoader;
+                Class<?> labelInfoClass = null;
+                try {
+                    labelInfoClass = loader.loadClass("com.ss.android.ugc.aweme.commerce.CommerceLabelInfo");
+                } catch (Throwable t) {
+                    if (classLoader != loader) {
+                        labelInfoClass = classLoader.loadClass("com.ss.android.ugc.aweme.commerce.CommerceLabelInfo");
+                    }
+                }
+                if (labelInfoClass != null) {
+                    try { bcLabelDisplayTypeField = labelInfoClass.getDeclaredField("bcLabelDisplayType"); bcLabelDisplayTypeField.setAccessible(true); } catch (Throwable ignored) {}
                 }
             } catch (Throwable ignored) {}
 
@@ -1173,6 +1252,18 @@ public final class TikTokFeedAdFilter {
         try {
             if (TikTokMediaHook.isPhotoMode(aweme)) return true;
         } catch (Throwable ignored) {}
+        try {
+            if (getAwemeTypeMethod != null) {
+                Object type = getAwemeTypeMethod.invoke(aweme);
+                if (type instanceof Integer) {
+                    int t = ((Integer) type).intValue();
+                    // 0 = Normal video, 51 = Image video, 54 = Live video, 61 = Long video, 68/69 = Photo mode, 150 = Story
+                    if (t == 0 || t == 51 || t == 54 || t == 61 || t == 68 || t == 69 || t == 150) {
+                        return true;
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
         return false;
     }
 
@@ -1185,21 +1276,40 @@ public final class TikTokFeedAdFilter {
             } else if (withSurveyField != null) {
                 if (withSurveyField.getBoolean(aweme)) return true;
             }
-            if (getSurveyInfoMethod != null && getSurveyInfoMethod.invoke(aweme) != null) return true;
-            if (surveyInfoField != null && surveyInfoField.get(aweme) != null) return true;
-            if (surveyInfoAltField != null && surveyInfoAltField.get(aweme) != null) return true;
-            if (getSurveyInfosMethod != null) {
-                Object infos = getSurveyInfosMethod.invoke(aweme);
-                if (infos instanceof List && !((List<?>) infos).isEmpty()) return true;
-            } else if (surveyInfosField != null) {
-                Object infos = surveyInfosField.get(aweme);
-                if (infos instanceof List && !((List<?>) infos).isEmpty()) return true;
+            
+            boolean hasSurveyObj = false;
+            if (getSurveyInfoMethod != null && getSurveyInfoMethod.invoke(aweme) != null) hasSurveyObj = true;
+            else if (surveyInfoField != null && surveyInfoField.get(aweme) != null) hasSurveyObj = true;
+            else if (surveyInfoAltField != null && surveyInfoAltField.get(aweme) != null) hasSurveyObj = true;
+            
+            if (!hasSurveyObj) {
+                if (getSurveyInfosMethod != null) {
+                    Object infos = getSurveyInfosMethod.invoke(aweme);
+                    if (infos instanceof List && !((List<?>) infos).isEmpty()) hasSurveyObj = true;
+                } else if (surveyInfosField != null) {
+                    Object infos = surveyInfosField.get(aweme);
+                    if (infos instanceof List && !((List<?>) infos).isEmpty()) hasSurveyObj = true;
+                }
             }
-            if (mPersonalizedSurveyUIField != null && mPersonalizedSurveyUIField.get(aweme) != null) return true;
-            if (mOnboardingSurveyField != null && mOnboardingSurveyField.get(aweme) != null) return true;
-            if (mPersonalizedOnboardingSurveyField != null && mPersonalizedOnboardingSurveyField.get(aweme) != null) return true;
-            if (questionInfoField != null && questionInfoField.get(aweme) != null) return true;
-            if (ueFeedInfoField != null && ueFeedInfoField.get(aweme) != null) return true;
+            if (!hasSurveyObj) {
+                if (mPersonalizedSurveyUIField != null && mPersonalizedSurveyUIField.get(aweme) != null) hasSurveyObj = true;
+                else if (mOnboardingSurveyField != null && mOnboardingSurveyField.get(aweme) != null) hasSurveyObj = true;
+                else if (mPersonalizedOnboardingSurveyField != null && mPersonalizedOnboardingSurveyField.get(aweme) != null) hasSurveyObj = true;
+                else if (questionInfoField != null && questionInfoField.get(aweme) != null) hasSurveyObj = true;
+                else if (ueFeedInfoField != null && ueFeedInfoField.get(aweme) != null) hasSurveyObj = true;
+            }
+            
+            if (hasSurveyObj) {
+                Object key = null;
+                if (getSurveyKeyMethod != null) {
+                    key = getSurveyKeyMethod.invoke(aweme);
+                } else if (surveyKeyField != null) {
+                    key = surveyKeyField.get(aweme);
+                }
+                if (key instanceof String && !((String) key).isEmpty()) {
+                    return true;
+                }
+            }
         } catch (Throwable ignored) {}
         return false;
     }
@@ -1263,16 +1373,28 @@ public final class TikTokFeedAdFilter {
             // 3. CardInsertInfo checks:
             // Any CardInsertInfo attached to Aweme indicates an inserted non-video card
             // (Explore Community/Topic Lynx cards, RecUser, Instant Games, Search Interest, etc.)
+            Object cardInfo = null;
             if (getCardInsertInfoMethod != null) {
-                Object cardInfo = getCardInsertInfoMethod.invoke(aweme);
-                if (cardInfo != null) {
-                    return true;
-                }
+                cardInfo = getCardInsertInfoMethod.invoke(aweme);
             } else if (cardInsertInfoField != null) {
-                Object cardInfo = cardInsertInfoField.get(aweme);
-                if (cardInfo != null) {
-                    return true;
-                }
+                cardInfo = cardInsertInfoField.get(aweme);
+            }
+            if (cardInfo != null) {
+                boolean isCard = false;
+                try {
+                    if (getCardTypeMethod != null) {
+                        Object type = getCardTypeMethod.invoke(cardInfo);
+                        if (type instanceof Number && ((Number) type).intValue() > 0) {
+                            isCard = true;
+                        }
+                    } else if (cardTypeField != null) {
+                        Object type = cardTypeField.get(cardInfo);
+                        if (type instanceof Number && ((Number) type).intValue() > 0) {
+                            isCard = true;
+                        }
+                    }
+                } catch (Throwable ignored) {}
+                if (isCard) return true;
             }
 
             // 4. In-Feed Recommendation Cards
@@ -2172,6 +2294,458 @@ public final class TikTokFeedAdFilter {
                 insertedResultsField = field;
             }
             field.set(response, null);
+        } catch (Throwable ignored) {}
+    }
+
+    // =========================================================================
+    // 6. HIDE / FILTER PROMOTIONAL CONTENT (Independent Patch)
+    // =========================================================================
+
+    public static boolean isPromotionalDescription(String text) {
+        if (text == null || text.isEmpty()) return false;
+        try {
+            return PROMOTIONAL_TAG_PATTERN.matcher(text).find();
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
+    public static boolean isPromotionalContent(Object aweme) {
+        if (aweme == null) return false;
+        if (!initialized) {
+            ensureInitialized(aweme.getClass().getClassLoader());
+        }
+        if (awemeClass != null && !awemeClass.isInstance(aweme)) {
+            return false;
+        }
+        try {
+            String aid = null;
+            try {
+                Method getAid = aweme.getClass().getMethod("getAid");
+                Object idObj = getAid.invoke(aweme);
+                if (idObj != null) aid = idObj.toString();
+            } catch (Throwable ignored) {}
+
+            // 1. Native AwemeCommerceStruct metadata (bCHashtag, brandedContentType, brandOrganicType, etc.)
+            Object commerceAuth = null;
+            if (getCommerceVideoAuthInfoMethod != null) {
+                try { commerceAuth = getCommerceVideoAuthInfoMethod.invoke(aweme); } catch (Throwable ignored) {}
+            }
+            if (commerceAuth == null && mCommerceVideoAuthInfoField != null) {
+                try { commerceAuth = mCommerceVideoAuthInfoField.get(aweme); } catch (Throwable ignored) {}
+            }
+            if (commerceAuth == null && commerceVideoAuthInfoAltField != null) {
+                try { commerceAuth = commerceVideoAuthInfoAltField.get(aweme); } catch (Throwable ignored) {}
+            }
+            if (commerceAuth != null) {
+                if (getBCHashtagMethod != null) {
+                    try {
+                        Object tag = getBCHashtagMethod.invoke(commerceAuth);
+                        if (tag instanceof String && !((String) tag).trim().isEmpty()) {
+                            Log.i(TAG, "[Hide Promotional Content] Match [AwemeCommerceStruct.bCHashtag=" + tag + "] on aid=" + aid);
+                            return true;
+                        }
+                    } catch (Throwable ignored) {}
+                }
+                if (bcHashtagField != null) {
+                    try {
+                        Object tag = bcHashtagField.get(commerceAuth);
+                        if (tag instanceof String && !((String) tag).trim().isEmpty()) {
+                            Log.i(TAG, "[Hide Promotional Content] Match [AwemeCommerceStruct.bcHashtagField=" + tag + "] on aid=" + aid);
+                            return true;
+                        }
+                    } catch (Throwable ignored) {}
+                }
+                if (isBrandedContentMethod != null) {
+                    try {
+                        if (Boolean.TRUE.equals(isBrandedContentMethod.invoke(commerceAuth))) {
+                            Log.i(TAG, "[Hide Promotional Content] Match [AwemeCommerceStruct.isBrandedContent=true] on aid=" + aid);
+                            return true;
+                        }
+                    } catch (Throwable ignored) {}
+                }
+                if (brandedContentTypeField != null) {
+                    try {
+                        long bct = brandedContentTypeField.getLong(commerceAuth);
+                        if (bct > 0) {
+                            Log.i(TAG, "[Hide Promotional Content] Match [AwemeCommerceStruct.brandedContentType=" + bct + "] on aid=" + aid);
+                            return true;
+                        }
+                    } catch (Throwable ignored) {}
+                }
+                if (isBrandOrganicContentMethod != null) {
+                    try {
+                        if (Boolean.TRUE.equals(isBrandOrganicContentMethod.invoke(commerceAuth))) {
+                            Log.i(TAG, "[Hide Promotional Content] Match [AwemeCommerceStruct.isBrandOrganicContent=true] on aid=" + aid);
+                            return true;
+                        }
+                    } catch (Throwable ignored) {}
+                }
+                if (brandOrganicTypeField != null) {
+                    try {
+                        long bot = brandOrganicTypeField.getLong(commerceAuth);
+                        if (bot > 0) {
+                            Log.i(TAG, "[Hide Promotional Content] Match [AwemeCommerceStruct.brandOrganicType=" + bot + "] on aid=" + aid);
+                            return true;
+                        }
+                    } catch (Throwable ignored) {}
+                }
+                if (getCommerceLabelInfoMethod != null || commerceLabelInfoField != null) {
+                    Object labelInfo = null;
+                    if (getCommerceLabelInfoMethod != null) {
+                        try { labelInfo = getCommerceLabelInfoMethod.invoke(commerceAuth); } catch (Throwable ignored) {}
+                    }
+                    if (labelInfo == null && commerceLabelInfoField != null) {
+                        try { labelInfo = commerceLabelInfoField.get(commerceAuth); } catch (Throwable ignored) {}
+                    }
+                    if (labelInfo != null && bcLabelDisplayTypeField != null) {
+                        try {
+                            int dt = bcLabelDisplayTypeField.getInt(labelInfo);
+                            if (dt == 1) {
+                                Log.i(TAG, "[Hide Promotional Content] Match [CommerceLabelInfo.bcLabelDisplayType=1] on aid=" + aid);
+                                return true;
+                            }
+                        } catch (Throwable ignored) {}
+                    }
+                }
+                if (getEcSearchBoBcLabelTextMethod != null) {
+                    try {
+                        Object txt = getEcSearchBoBcLabelTextMethod.invoke(commerceAuth);
+                        if (txt instanceof String && !((String) txt).trim().isEmpty()) {
+                            Log.i(TAG, "[Hide Promotional Content] Match [AwemeCommerceStruct.ecSearchBoBcLabelText=" + txt + "] on aid=" + aid);
+                            return true;
+                        }
+                    } catch (Throwable ignored) {}
+                }
+                if (ecSearchBoBcLabelTextField != null) {
+                    try {
+                        Object txt = ecSearchBoBcLabelTextField.get(commerceAuth);
+                        if (txt instanceof String && !((String) txt).trim().isEmpty()) {
+                            Log.i(TAG, "[Hide Promotional Content] Match [AwemeCommerceStruct.ecSearchBoBcLabelTextField=" + txt + "] on aid=" + aid);
+                            return true;
+                        }
+                    } catch (Throwable ignored) {}
+                }
+            }
+
+            // 2. Tagged Brand Accounts list (getBrandContentAccounts())
+            Object brandAccounts = null;
+            if (getBrandContentAccountsMethod != null) {
+                try { brandAccounts = getBrandContentAccountsMethod.invoke(aweme); } catch (Throwable ignored) {}
+            }
+            if (brandAccounts == null && brandContentAccountsField != null) {
+                try { brandAccounts = brandContentAccountsField.get(aweme); } catch (Throwable ignored) {}
+            }
+            if (brandAccounts instanceof List && !((List<?>) brandAccounts).isEmpty()) {
+                Log.i(TAG, "[Hide Promotional Content] Match [brandContentAccounts.count=" + ((List<?>) brandAccounts).size() + "] on aid=" + aid);
+                return true;
+            }
+
+            // 3. Star Atlas commercial order ID
+            if (getStarAtlasOrderIdMethod != null) {
+                try {
+                    Object orderId = getStarAtlasOrderIdMethod.invoke(aweme);
+                    if (orderId instanceof Number && ((Number) orderId).longValue() > 0) {
+                        Log.i(TAG, "[Hide Promotional Content] Match [starAtlasOrderId=" + orderId + "] on aid=" + aid);
+                        return true;
+                    }
+                } catch (Throwable ignored) {}
+            }
+            if (starAtlasOrderIdField != null) {
+                try {
+                    long orderId = starAtlasOrderIdField.getLong(aweme);
+                    if (orderId > 0) {
+                        Log.i(TAG, "[Hide Promotional Content] Match [starAtlasOrderIdField=" + orderId + "] on aid=" + aid);
+                        return true;
+                    }
+                } catch (Throwable ignored) {}
+            }
+
+            // 4. Commercial Video Info
+            if (getCommercialVideoInfoMethod != null) {
+                try {
+                    Object cvi = getCommercialVideoInfoMethod.invoke(aweme);
+                    if (cvi instanceof String && !((String) cvi).trim().isEmpty()) {
+                        Log.i(TAG, "[Hide Promotional Content] Match [commercialVideoInfo=" + cvi + "] on aid=" + aid);
+                        return true;
+                    }
+                } catch (Throwable ignored) {}
+            }
+            if (commercialVideoInfoField != null) {
+                try {
+                    Object cvi = commercialVideoInfoField.get(aweme);
+                    if (cvi instanceof String && !((String) cvi).trim().isEmpty()) {
+                        Log.i(TAG, "[Hide Promotional Content] Match [commercialVideoInfoField=" + cvi + "] on aid=" + aid);
+                        return true;
+                    }
+                } catch (Throwable ignored) {}
+            }
+
+            // 5. Promote Model / Icon
+            if (getPromoteIconTextMethod != null) {
+                try {
+                    Object pit = getPromoteIconTextMethod.invoke(aweme);
+                    if (pit instanceof String && !((String) pit).trim().isEmpty()) {
+                        Log.i(TAG, "[Hide Promotional Content] Match [promoteIconText=" + pit + "] on aid=" + aid);
+                        return true;
+                    }
+                } catch (Throwable ignored) {}
+            }
+            if (promoteIconTextField != null) {
+                try {
+                    Object pit = promoteIconTextField.get(aweme);
+                    if (pit instanceof String && !((String) pit).trim().isEmpty()) {
+                        Log.i(TAG, "[Hide Promotional Content] Match [promoteIconTextField=" + pit + "] on aid=" + aid);
+                        return true;
+                    }
+                } catch (Throwable ignored) {}
+            }
+            if (getPromoteModelMethod != null) {
+                try {
+                    if (getPromoteModelMethod.invoke(aweme) != null) {
+                        Log.i(TAG, "[Hide Promotional Content] Match [promoteModel] on aid=" + aid);
+                        return true;
+                    }
+                } catch (Throwable ignored) {}
+            }
+            if (promoteModelField != null) {
+                try {
+                    if (promoteModelField.get(aweme) != null) {
+                        Log.i(TAG, "[Hide Promotional Content] Match [promoteModelField] on aid=" + aid);
+                        return true;
+                    }
+                } catch (Throwable ignored) {}
+            }
+
+            // 6. Fallback: Secondary multi-locale description & content description pattern matching
+            Object descObj = null;
+            if (getDescMethod != null) {
+                try { descObj = getDescMethod.invoke(aweme); } catch (Throwable ignored) {}
+            }
+            if (descObj == null && descField != null) {
+                try { descObj = descField.get(aweme); } catch (Throwable ignored) {}
+            }
+            if (descObj instanceof String && isPromotionalDescription((String) descObj)) {
+                Log.i(TAG, "[Hide Promotional Content] Match [Desc=" + descObj + "] on aid=" + aid);
+                return true;
+            }
+
+            Object contentDescObj = null;
+            if (getContentDescMethod != null) {
+                try { contentDescObj = getContentDescMethod.invoke(aweme); } catch (Throwable ignored) {}
+            }
+            if (contentDescObj == null && contentDescField != null) {
+                try { contentDescObj = contentDescField.get(aweme); } catch (Throwable ignored) {}
+            }
+            if (contentDescObj instanceof String && isPromotionalDescription((String) contentDescObj)) {
+                Log.i(TAG, "[Hide Promotional Content] Match [ContentDesc=" + contentDescObj + "] on aid=" + aid);
+                return true;
+            }
+
+            // 7. Fallback: Banners and Anchors
+            Object banners = null;
+            if (getBannersMethod != null) {
+                try { banners = getBannersMethod.invoke(aweme); } catch (Throwable ignored) {}
+            }
+            if (banners == null && bannersField != null) {
+                try { banners = bannersField.get(aweme); } catch (Throwable ignored) {}
+            }
+            if (banners instanceof List) {
+                for (Object b : (List<?>) banners) {
+                    if (b != null && isPromotionalDescription(b.toString())) {
+                        Log.i(TAG, "[Hide Promotional Content] Match [Banner=" + b + "] on aid=" + aid);
+                        return true;
+                    }
+                }
+            }
+
+            Object anchors = null;
+            if (getAnchorsMethod != null) {
+                try { anchors = getAnchorsMethod.invoke(aweme); } catch (Throwable ignored) {}
+            }
+            if (anchors == null && anchorsField != null) {
+                try { anchors = anchorsField.get(aweme); } catch (Throwable ignored) {}
+            }
+            if (anchors instanceof List) {
+                for (Object a : (List<?>) anchors) {
+                    if (a != null && isPromotionalDescription(a.toString())) {
+                        Log.i(TAG, "[Hide Promotional Content] Match [Anchor=" + a + "] on aid=" + aid);
+                        return true;
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
+        return false;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static void filterPromotionalInList(Object listObj) {
+        if (!(listObj instanceof List)) return;
+        List<Object> items = (List<Object>) listObj;
+        if (items.isEmpty()) return;
+
+        synchronized (items) {
+            try {
+                if (!initialized) {
+                    for (Object item : items) {
+                        if (item != null) {
+                            ensureInitialized(item.getClass().getClassLoader());
+                            break;
+                        }
+                    }
+                }
+
+                int removed = 0;
+                Iterator<Object> iterator = items.iterator();
+                while (iterator.hasNext()) {
+                    Object item = iterator.next();
+                    if (isPromotionalContent(item)) {
+                        iterator.remove();
+                        removed++;
+                    }
+                }
+                if (removed > 0) {
+                    Log.i(TAG, "[Hide Promotional Content] Pruned " + removed + " promotional/branded video(s) from feed.");
+                }
+            } catch (Throwable ignored) {}
+        }
+    }
+
+    public static void filterPromotionalInFeedItemList(Object feedItemList) {
+        if (feedItemList == null) return;
+        try {
+            ensureInitialized(feedItemList.getClass().getClassLoader());
+            List<Object> items = extractFeedItems(feedItemList);
+            if (items != null) {
+                filterPromotionalInList(items);
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    public static void filterPromotionalInFollowFeedList(Object followFeedList) {
+        if (followFeedList == null) return;
+        try {
+            List<Object> items = extractFollowList(followFeedList);
+            if (items == null || items.isEmpty()) return;
+
+            synchronized (items) {
+                if (!initialized) {
+                    for (Object followItem : items) {
+                        if (followItem != null) {
+                            ensureInitialized(followItem.getClass().getClassLoader());
+                            break;
+                        }
+                    }
+                }
+
+                int removed = 0;
+                Iterator<Object> iterator = items.iterator();
+                while (iterator.hasNext()) {
+                    Object followItem = iterator.next();
+                    Object aweme = extractAwemeFromFollowItem(followItem);
+                    if (isPromotionalContent(aweme)) {
+                        iterator.remove();
+                        removed++;
+                    }
+                }
+                if (removed > 0) {
+                    Log.i(TAG, "[Hide Promotional Content] Pruned " + removed + " promotional/branded video(s) from Following feed.");
+                }
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    @SuppressWarnings("unchecked")
+    public static void filterPromotionalInFriendsV3Feeds(Object listObj) {
+        if (!(listObj instanceof List)) return;
+        List<Object> items = (List<Object>) listObj;
+        if (items.isEmpty()) return;
+
+        synchronized (items) {
+            try {
+                if (!initialized) {
+                    for (Object item : items) {
+                        if (item != null) {
+                            ensureInitialized(item.getClass().getClassLoader());
+                            break;
+                        }
+                    }
+                }
+
+                int removed = 0;
+                Iterator<Object> iterator = items.iterator();
+                while (iterator.hasNext()) {
+                    Object item = iterator.next();
+                    Object aweme = extractAwemeFromFriendsV3FeedModel(item);
+                    if (isPromotionalContent(aweme)) {
+                        iterator.remove();
+                        removed++;
+                    }
+                }
+                if (removed > 0) {
+                    Log.i(TAG, "[Hide Promotional Content] Pruned " + removed + " promotional/branded video(s) from Friends V3 feed.");
+                }
+            } catch (Throwable ignored) {}
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static void filterPromotionalInFriendsFeedData(Object listObj) {
+        if (!(listObj instanceof List)) return;
+        List<Object> items = (List<Object>) listObj;
+        if (items.isEmpty()) return;
+
+        synchronized (items) {
+            try {
+                if (!initialized) {
+                    for (Object item : items) {
+                        if (item != null) {
+                            ensureInitialized(item.getClass().getClassLoader());
+                            break;
+                        }
+                    }
+                }
+
+                int removed = 0;
+                Iterator<Object> iterator = items.iterator();
+                while (iterator.hasNext()) {
+                    Object item = iterator.next();
+                    Object aweme = extractAwemeFromFriendsFeed(item);
+                    if (isPromotionalContent(aweme)) {
+                        iterator.remove();
+                        removed++;
+                    }
+                }
+                if (removed > 0) {
+                    Log.i(TAG, "[Hide Promotional Content] Pruned " + removed + " promotional/branded video(s) from Friends feed.");
+                }
+            } catch (Throwable ignored) {}
+        }
+    }
+
+    public static void filterPromotionalInFriendsV3Response(Object response) {
+        if (response == null) return;
+        try {
+            Field field = friendsV3FeedsField;
+            if (field == null) {
+                field = response.getClass().getDeclaredField("friendsV3Feeds");
+                field.setAccessible(true);
+                friendsV3FeedsField = field;
+            }
+            filterPromotionalInFriendsV3Feeds(field.get(response));
+        } catch (Throwable ignored) {}
+    }
+
+    public static void filterPromotionalInFriendsFeedResponse(Object response) {
+        if (response == null) return;
+        try {
+            Field field = friendFeedDataField;
+            if (field == null) {
+                field = response.getClass().getDeclaredField("friendFeedData");
+                field.setAccessible(true);
+                friendFeedDataField = field;
+            }
+            filterPromotionalInFriendsFeedData(field.get(response));
         } catch (Throwable ignored) {}
     }
 

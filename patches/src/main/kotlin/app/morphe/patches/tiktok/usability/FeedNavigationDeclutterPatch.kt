@@ -620,11 +620,32 @@ val feedNavigationDeclutterPatch = bytecodePatch(
             patched++
 
             Fingerprint(
+                definingClass = "LX/0ALx;",
+                name = "onInboxBadgeChanged",
+                parameters = listOf("LX/0716;"),
+                returnType = "V",
+            ).method.replaceWithReturnVoid()
+            println("[Navigation & Header Declutter] Neutralized LX/0ALx.onInboxBadgeChanged() -> Inbox tab badge change events suppressed.")
+            patched++
+
+            Fingerprint(
                 definingClass = presenterClass,
                 name = "LJIJJLI",
                 returnType = "Z",
                 parameters = emptyList(),
             ).method.replaceWithReturnBoolean(false)
+            patched++
+
+            // Cache-restore path: the presenter re-applies the badge from KV
+            // cache at construction (LJJIJLIJ -> LX/0Cxt.updateTabBadgeByCache)
+            // on every cold start, bypassing all event suppression above.
+            // Neutralize the executor itself so cached counts never reach the tab.
+            Fingerprint(
+                definingClass = "LX/0Cxt;",
+                name = "LIZ",
+                parameters = emptyList(),
+                returnType = "V",
+            ).method.replaceWithReturnVoid()
             patched++
 
             println("[Navigation & Header Declutter] Inbox notification badge and unread counters suppressed.")

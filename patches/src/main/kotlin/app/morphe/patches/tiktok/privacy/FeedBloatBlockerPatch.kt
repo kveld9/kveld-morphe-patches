@@ -5,6 +5,7 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.addInstructionsAtControlFlowLabel
+import app.morphe.patches.shared.replaceWithReturnEmptyList
 import app.morphe.patches.shared.sharedExtensionPatch
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
@@ -495,6 +496,15 @@ val feedBloatBlockerPatch = bytecodePatch(
             println("[Feed Bloat Blocker] FriendsV3BottomRecUserListCell note: ${e.message}")
         }
 
+        Fingerprint(
+            definingClass = "Lcom/ss/android/ugc/aweme/relation/feed/v4/RecSwipeCardListAssem;",
+            name = "or",
+            parameters = listOf("Ljava/util/List;"),
+            returnType = "Ljava/util/List;",
+        ).method.replaceWithReturnEmptyList()
+        println("[Feed Bloat Blocker] Emptied RecSwipeCardListAssem.or() -> Friend suggestion swipe cards suppressed.")
+        patched++
+
         try {
             val bigCardConfigFull = Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/relation/feed/RecUserBigCardConfig;",
@@ -539,41 +549,139 @@ val feedBloatBlockerPatch = bytecodePatch(
         }
 
         try {
-            Fingerprint(
+            val methodLJIIIIZZ = Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/relation/feed/TTRecUserBigCardViewHolder;",
                 name = "LJIIIIZZ",
                 parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;"),
                 returnType = "V",
-            ).method.addInstructions(
-                0,
-                """
-                    invoke-static/range {p0 .. p0}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->collapseRecUserCardCell(Ljava/lang/Object;)V
-                    return-void
-                """.trimIndent(),
-            )
-            println("[Feed Bloat Blocker] Collapsed TTRecUserBigCardViewHolder.LJIIIIZZ(Aweme).")
-            patched++
+            ).method
+            val returnsLJIIIIZZ = methodLJIIIIZZ.implementation?.instructions?.withIndex()
+                ?.filter { it.value.opcode == Opcode.RETURN_VOID }
+                ?.map { it.index }
+                ?.toList() ?: emptyList()
+            returnsLJIIIIZZ.asReversed().forEach { returnIndex ->
+                methodLJIIIIZZ.addInstructionsAtControlFlowLabel(
+                    returnIndex,
+                    """
+                        invoke-static/range {p0 .. p0}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->collapseRecUserCardCell(Ljava/lang/Object;)V
+                    """.trimIndent(),
+                )
+            }
+            if (returnsLJIIIIZZ.isNotEmpty()) {
+                println("[Feed Bloat Blocker] Collapsed TTRecUserBigCardViewHolder.LJIIIIZZ(Aweme).")
+                patched++
+            } else {
+                println("[Feed Bloat Blocker] TTRecUserBigCardViewHolder.LJIIIIZZ note: No RETURN_VOID found")
+            }
         } catch (e: Exception) {
             println("[Feed Bloat Blocker] TTRecUserBigCardViewHolder.LJIIIIZZ note: ${e.message}")
         }
 
         try {
-            Fingerprint(
+            val methodB1 = Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/relation/feed/TTRecUserBigCardViewHolder;",
                 name = "B1",
+                parameters = listOf("Landroid/view/View;"),
+                returnType = "V",
+            ).method
+            val returnsB1 = methodB1.implementation?.instructions?.withIndex()
+                ?.filter { it.value.opcode == Opcode.RETURN_VOID }
+                ?.map { it.index }
+                ?.toList() ?: emptyList()
+            returnsB1.asReversed().forEach { returnIndex ->
+                methodB1.addInstructionsAtControlFlowLabel(
+                    returnIndex,
+                    """
+                        invoke-static/range {p0 .. p0}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->collapseRecUserCardCell(Ljava/lang/Object;)V
+                    """.trimIndent(),
+                )
+            }
+            if (returnsB1.isNotEmpty()) {
+                println("[Feed Bloat Blocker] Collapsed TTRecUserBigCardViewHolder.B1(View).")
+                patched++
+            } else {
+                println("[Feed Bloat Blocker] TTRecUserBigCardViewHolder.B1 note: No RETURN_VOID found")
+            }
+        } catch (e: Exception) {
+            println("[Feed Bloat Blocker] TTRecUserBigCardViewHolder.B1 note: ${e.message}")
+        }
+
+        try {
+            Fingerprint(
+                definingClass = "LX/0FL0;",
+                name = "LIZIZ",
+                parameters = listOf("LX/0E1W;", "Ljava/lang/String;"),
+                returnType = "Ljava/util/concurrent/CopyOnWriteArrayList;",
+            ).method.addInstructions(
+                0,
+                """
+                    new-instance v0, Ljava/util/concurrent/CopyOnWriteArrayList;
+                    invoke-direct {v0}, Ljava/util/concurrent/CopyOnWriteArrayList;-><init>()V
+                    return-object v0
+                """.trimIndent(),
+            )
+            println("[Feed Bloat Blocker] Emptied RecSwipe backing list source (LX/0FL0;->LIZIZ) -> Friend suggestion swipe cards starved.")
+            patched++
+        } catch (e: Exception) {
+            println("[Feed Bloat Blocker] LX/0FL0.LIZIZ note: ${e.message}")
+        }
+
+        try {
+            Fingerprint(
+                definingClass = "LX/0FL0;",
+                name = "LIZ",
+                parameters = listOf("LX/0E1W;", "Ljava/util/List;"),
+                returnType = "V",
+            ).method.addInstructions(
+                0,
+                """
+                    return-void
+                """.trimIndent(),
+            )
+            println("[Feed Bloat Blocker] Neutralized RecSwipe backing list loader (LX/0FL0;->LIZ).")
+            patched++
+        } catch (e: Exception) {
+            println("[Feed Bloat Blocker] LX/0FL0.LIZ note: ${e.message}")
+        }
+
+        try {
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/relation/feed/v4/RecSwipeViewModel;",
+                name = "md",
+                parameters = listOf("Ljava/lang/String;"),
+                returnType = "Z",
+            ).method.addInstructions(
+                0,
+                """
+                    const/4 v0, 0x0
+                    return v0
+                """.trimIndent(),
+            )
+            println("[Feed Bloat Blocker] Neutralized RecSwipeViewModel.md() -> has-data gate forced false.")
+            patched++
+        } catch (e: Exception) {
+            println("[Feed Bloat Blocker] RecSwipeViewModel.md note: ${e.message}")
+        }
+
+        try {
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/relation/feed/v4/RecSwipeCardListAssem;",
+                name = "onViewCreated",
                 parameters = listOf("Landroid/view/View;"),
                 returnType = "V",
             ).method.addInstructions(
                 0,
                 """
-                    invoke-static/range {p0 .. p0}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->collapseRecUserCardCell(Ljava/lang/Object;)V
+                    const/16 v0, 0x8
+                    move-object/from16 v1, p1
+                    invoke-virtual {v1, v0}, Landroid/view/View;->setVisibility(I)V
                     return-void
                 """.trimIndent(),
             )
-            println("[Feed Bloat Blocker] Collapsed TTRecUserBigCardViewHolder.B1(View).")
+            println("[Feed Bloat Blocker] Collapsed RecSwipeCardListAssem.onViewCreated() -> swipe stack container hidden.")
             patched++
         } catch (e: Exception) {
-            println("[Feed Bloat Blocker] TTRecUserBigCardViewHolder.B1 note: ${e.message}")
+            println("[Feed Bloat Blocker] RecSwipeCardListAssem.onViewCreated note: ${e.message}")
         }
 
         // 8. Neutralize In-Feed Search Recommendations & Trending Search Cards

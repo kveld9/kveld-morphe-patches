@@ -17,7 +17,7 @@ import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 val videoFitPatch = bytecodePatch(
     name = "Video Fit",
-    description = "Adjusts video display aspect ratio across feeds and story cells: 'fit' ensures the entire video is visible without cropping, 'fill' expands the video to fill the screen, or 'off' preserves stock aspect ratio.",
+    description = "Adjusts video display aspect ratio across feeds and story cells: 'fit' ensures the entire video is visible without cropping, or 'fill' expands the video to fill the screen.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -26,18 +26,14 @@ val videoFitPatch = bytecodePatch(
     val fitMode by stringOption(
         key = "fitMode",
         title = "Video Fit Mode",
-        description = "Aspect ratio mode for feed and story videos: 'fit' (entire video visible without crop), 'fill' (crop to fill screen), or 'off' (stock behavior).",
-        default = "off",
-        values = mapOf("Fit video" to "fit", "Fill screen" to "fill", "Off" to "off"),
+        description = "Aspect ratio mode for feed and story videos: 'fit' (entire video visible without crop), or 'fill' (crop to fill screen).",
+        default = "fit",
+        values = mapOf("Fit video" to "fit", "Fill screen" to "fill"),
         required = false,
     )
 
     execute {
-        val mode = fitMode ?: "off"
-        if (mode == "off") {
-            println("[Video Fit] Skipped: Fit mode is off.")
-            return@execute
-        }
+        val mode = fitMode ?: "fit"
 
         var patched = 0
 
@@ -75,11 +71,11 @@ val videoFitPatch = bytecodePatch(
         if (fieldMap["height"] != "I") {
             throw PatchException("Expected field height:I in $resultClass, found: ${fieldMap["height"]}")
         }
-        if (fieldMap["translateX"] != "F") {
-            throw PatchException("Expected field translateX:Float in $resultClass, found: ${fieldMap["translateX"]}")
+        if (fieldMap["translateX"] != "Ljava/lang/Float;") {
+            throw PatchException("Expected field translateX:Ljava/lang/Float; in $resultClass, found: ${fieldMap["translateX"]}")
         }
-        if (fieldMap["translateY"] != "F") {
-            throw PatchException("Expected field translateY:Float in $resultClass, found: ${fieldMap["translateY"]}")
+        if (fieldMap["translateY"] != "Ljava/lang/Float;") {
+            throw PatchException("Expected field translateY:Ljava/lang/Float; in $resultClass, found: ${fieldMap["translateY"]}")
         }
 
         val hasCopyMethod = resultClassDef.methods.any { method ->
@@ -87,11 +83,11 @@ val videoFitPatch = bytecodePatch(
                 method.parameterTypes.size >= 4 &&
                 method.parameterTypes[0] == "I" &&
                 method.parameterTypes[1] == "I" &&
-                method.parameterTypes[2] == "F" &&
-                method.parameterTypes[3] == "F"
+                method.parameterTypes[2] == "Ljava/lang/Float;" &&
+                method.parameterTypes[3] == "Ljava/lang/Float;"
         }
         if (!hasCopyMethod) {
-            throw PatchException("Method copy(I,I,Float,Float,...) not found in $resultClass")
+            throw PatchException("Method copy(I,I,Ljava/lang/Float;,Ljava/lang/Float;,...) not found in $resultClass")
         }
         println("[Video Fit] Validated VideoAdaptionResult structure (width, height, translateX, translateY, copy).")
 

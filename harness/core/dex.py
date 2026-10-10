@@ -19,7 +19,86 @@ except Exception:
 
 logging.getLogger("androguard").setLevel(logging.ERROR)
 
-from androguard.core.dex import DEX, EncodedMethod, ClassDefItem
+from androguard.core.dex import DEX, EncodedMethod, ClassDefItem, ClassManager
+try:
+    from androguard.core.dex import TypeMapItem
+except ImportError:
+    from androguard.core.dex.dex_types import TypeMapItem
+
+
+# Androguard 4.1.4 ClassManager resolves items by offset using a linear scan
+# over internal lists (O(classes x items)), causing quadratic DEX build cost.
+# Replace those scans with an on-demand offset dictionary cache:
+# - setdefault preserves first-match semantics and returns None when absent.
+# - Cache rebuilds if list identity or length changes.
+# - If _ClassManager__manage_item is missing or lacks the key, delegates to the
+#   original method so layout changes degrade gracefully.
+
+_FAST_LOOKUP_TARGETS = (
+    ("ENCODED_ARRAY_ITEM", "get_encoded_array_item"),
+    ("ANNOTATIONS_DIRECTORY_ITEM", "get_annotations_directory_item"),
+    ("ANNOTATION_SET_ITEM", "get_annotation_set_item"),
+    ("ANNOTATION_ITEM", "get_annotation_item"),
+    ("HIDDENAPI_CLASS_DATA_ITEM", "get_hiddenapi_class_data_item"),
+)
+
+
+def _build_offset_table(items: Any) -> Dict[int, Any]:
+    table: Dict[int, Any] = {}
+    for item in items:
+        table.setdefault(item.get_off(), item)
+    return table
+
+
+def _get_or_build_offset_table(
+    cache: Dict[Any, Tuple[int, int, Dict[int, Any]]],
+    item_kind: Any,
+    items: Any,
+) -> Dict[int, Any]:
+    cached = cache.get(item_kind)
+    if cached is not None and cached[0] == id(items) and cached[1] == len(items):
+        return cached[2]
+    table = _build_offset_table(items)
+    cache[item_kind] = (id(items), len(items), table)
+    return table
+
+
+def _make_fast_lookup(item_kind: Any, method_name: str, original_method: Any = None) -> Any:
+    if original_method is None:
+        original_method = getattr(ClassManager, method_name)
+
+    def replacement(self: Any, off: int) -> Any:
+        manage_items = self.__dict__.get("_ClassManager__manage_item")
+        if not isinstance(manage_items, dict) or item_kind not in manage_items:
+            return original_method(self, off)
+
+        items = manage_items[item_kind]
+        cache = self.__dict__.setdefault("_morphe_offset_cache", {})
+        table = _get_or_build_offset_table(cache, item_kind, items)
+        return table.get(off)
+
+    replacement.__name__ = method_name
+    replacement._morphe_fast_lookup = True  # type: ignore[attr-defined]
+    return replacement
+
+
+def _patch_class_manager_method(item_attr: str, method_name: str) -> None:
+    item_kind = getattr(TypeMapItem, item_attr, None)
+    original_method = getattr(ClassManager, method_name, None)
+    if item_kind is None or original_method is None:
+        return
+    if getattr(original_method, "_morphe_fast_lookup", False):
+        return
+    replacement = _make_fast_lookup(item_kind, method_name, original_method)
+    setattr(ClassManager, method_name, replacement)
+
+
+def _install_fast_class_manager_lookups() -> None:
+    for item_attr, method_name in _FAST_LOOKUP_TARGETS:
+        _patch_class_manager_method(item_attr, method_name)
+
+
+_install_fast_class_manager_lookups()
 
 
 @dataclass

@@ -27,17 +27,16 @@ private const val PREF_PREFIX = "brave_origin_off_"
 
 /**
  * Switch preference keys present in the Brave Origin settings UI.
+ * Telemetry-owned keys (P3A, Stats, WDP) are excluded: Block Telemetry owns
+ * their defaults (false). Single owner per key, no order dependence.
  */
 private val ORIGIN_SWITCH_KEYS = listOf(
     "rewards_switch",
-    "privacy_preserving_analytics_switch",
     "email_aliases_switch",
     "leo_ai_switch",
     "news_switch",
-    "statistics_reporting_switch",
     "vpn_switch",
     "wallet_switch",
-    "web_discovery_project_switch",
 )
 
 /**
@@ -131,7 +130,7 @@ private val braveOriginResourcePatch = resourcePatch(
 
     execute {
         val targetFile = get("res").findXmlContaining(listOf("rewards_switch")).firstOrNull() ?: run {
-                println("[BraveOrigin] Skipped: rewards_switch XML preference not found.")
+                println("[Brave Origin] Skipped: rewards_switch XML preference not found.")
                 return@execute
             }
 
@@ -157,7 +156,7 @@ private val braveOriginResourcePatch = resourcePatch(
             }
         }
 
-        println("[Brave Origin] Injected $modifiedAttrs Origin preference switches in ${targetFile.name}")
+        println("[Brave Origin] Set $modifiedAttrs Origin preference defaults to true across 1 XML layout files")
     }
 }
 
@@ -180,6 +179,7 @@ val braveOriginPatch = bytecodePatch(
     )
 
     execute {
+        val hookedMethods = mutableListOf<String>()
 
         // ── Phase A: Subscription Helper Mocking ───────────────────────────────────────
 
@@ -192,6 +192,7 @@ val braveOriginPatch = bytecodePatch(
                 "brave.origin.subscription_active_android",
             ),
         ).method.addInstructions(0, "const/4 v0, 0x1\nreturn v0")
+        hookedMethods.add("SubscriptionHelper.isSubscriptionActive")
 
         // 2. hasValidSubscriptionTokens(Profile) -> true
         val validSubscriptionFingerprint = Fingerprint(
@@ -203,6 +204,7 @@ val braveOriginPatch = bytecodePatch(
             ),
         )
         validSubscriptionFingerprint.method.addInstructions(0, "const/4 v0, 0x1\nreturn v0")
+        hookedMethods.add("SubscriptionHelper.hasValidSubscriptionTokens")
 
         // 3. isCredentialSummaryCached() -> true
         Fingerprint(
@@ -210,6 +212,7 @@ val braveOriginPatch = bytecodePatch(
             parameters = emptyList(),
             strings = listOf("brave_origin_credential_summary_cached"),
         ).method.addInstructions(0, "const/4 v0, 0x1\nreturn v0")
+        hookedMethods.add("SubscriptionHelper.isCredentialSummaryCached")
 
         // 4. syncOriginPackageProduct(String, Profile) -> no-op
         Fingerprint(
@@ -223,6 +226,7 @@ val braveOriginPatch = bytecodePatch(
                 "brave.origin.product_id_android",
             ),
         ).method.addInstructions(0, "return-void")
+        hookedMethods.add("SubscriptionHelper.syncOriginPackageProduct")
 
         // 5. showOriginSettingsForRestart() -> no-op
         Fingerprint(
@@ -231,6 +235,7 @@ val braveOriginPatch = bytecodePatch(
             returnType = "V",
             parameters = emptyList(),
         ).method.addInstructions(0, "return-void")
+        hookedMethods.add("BraveOriginSettingsLauncherHelper.showOriginSettingsForRestart")
 
         // 6. requestCredentialSummary(Profile, Callback) -> fire Boolean.TRUE callback
         Fingerprint(
@@ -251,6 +256,7 @@ val braveOriginPatch = bytecodePatch(
                 return-void
             """,
         )
+        hookedMethods.add("SubscriptionHelper.requestCredentialSummary")
 
         // ── Phase B: BraveOriginPreferences UI Fragment Controls ───────────────────────
 
@@ -276,6 +282,7 @@ val braveOriginPatch = bytecodePatch(
         val resultReg = initFragmentFingerprint.method
             .getInstruction<OneRegisterInstruction>(validCheckIndex + 1).registerA
         initFragmentFingerprint.method.addInstructions(validCheckIndex + 2, "const/4 v$resultReg, 0x0")
+        hookedMethods.add("BraveOriginPreferences.onCreatePreferences#validCheck")
 
         // 8. Neutralize show_restart_prompt boolean flag in onCreatePreferences
         val restartPromptFingerprint = Fingerprint(
@@ -291,6 +298,7 @@ val braveOriginPatch = bytecodePatch(
         val restartPutReg = restartPromptFingerprint.method
             .getInstruction<TwoRegisterInstruction>(restartPutIndex).registerA
         restartPromptFingerprint.method.addInstructions(restartPutIndex, "const/4 v$restartPutReg, 0x0")
+        hookedMethods.add("BraveOriginPreferences.onCreatePreferences#restartPrompt")
 
         // 9. onPreferenceChange(Preference, Object): Route switch state to SharedPreferences
         val onPrefChangeFingerprint = Fingerprint(
@@ -315,14 +323,14 @@ val braveOriginPatch = bytecodePatch(
                     return v0
                     :not_locked
                     iget-object v0, p1, Landroidx/preference/Preference;->$prefKeyField:Ljava/lang/String;
-                    invoke-static {v0}, Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;->k5(Ljava/lang/String;)Ljava/lang/String;
+                    invoke-static {v0}, Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;->m5(Ljava/lang/String;)Ljava/lang/String;
                     move-result-object v0
                     if-eqz v0, :no_key
                     check-cast p2, Ljava/lang/Boolean;
                     invoke-virtual {p2}, Ljava/lang/Boolean;->booleanValue()Z
                     move-result v1
                     xor-int/lit8 v1, v1, 0x1
-                    invoke-virtual {p0}, Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;->T3()Landroid/content/Context;
+                    invoke-virtual {p0}, Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;->U3()Landroid/content/Context;
                     move-result-object v2
                     invoke-virtual {v2}, Landroid/content/Context;->getApplicationContext()Landroid/content/Context;
                     move-result-object v2
@@ -342,13 +350,14 @@ val braveOriginPatch = bytecodePatch(
                     move-result-object v2
                     :write_done
                     invoke-interface {v2}, Landroid/content/SharedPreferences${'$'}Editor;->apply()V
-                    invoke-virtual {p0}, Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;->j5()V
+                    invoke-virtual {p0}, Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;->l5()V
                     :no_key
                     const/4 v0, 0x1
                     return v0
                 """,
             )
         }
+        hookedMethods.add("BraveOriginPreferences.onPreferenceChange")
 
         // 10. setupPreference(String): Bind listener via reflection to avoid cross-DEX issues
         val setupPrefFingerprint = Fingerprint(
@@ -359,7 +368,7 @@ val braveOriginPatch = bytecodePatch(
         setupPrefFingerprint.method.addInstructionsWithLabels(
             0,
             """
-                invoke-virtual {p0, p1}, Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;->X4(Ljava/lang/CharSequence;)Landroidx/preference/Preference;
+                invoke-virtual {p0, p1}, Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;->Z4(Ljava/lang/CharSequence;)Landroidx/preference/Preference;
                 move-result-object v0
                 if-eqz v0, :setup_done
                 move-object v3, p0
@@ -374,6 +383,7 @@ val braveOriginPatch = bytecodePatch(
                 return-void
             """,
         )
+        hookedMethods.add("BraveOriginPreferences.setupPreference")
 
         // ── Phase C: Feature Policy Gatekeepers ────────────────────────────────────────
 
@@ -399,7 +409,10 @@ val braveOriginPatch = bytecodePatch(
             addInstructionsWithLabels(0, buildLeoFeatureFlagHook())
         }
 
-        val totalGatekeepers = GATEKEEPER_POLICIES.size + 1
-        println("[Brave Origin] Hooked 10 core methods & configured $totalGatekeepers policy gatekeepers in Brave Origin UI")
+        val configuredGatekeepers = GATEKEEPER_POLICIES.map { it.name } + "Leo Flag"
+        val targetClasses = hookedMethods.map { it.substringBefore('.') }.distinct()
+        println(
+            "[Brave Origin] Hooked ${hookedMethods.size} core methods across ${targetClasses.size} classes (${hookedMethods.joinToString(", ")}) & configured ${configuredGatekeepers.size} policy gatekeepers (${configuredGatekeepers.joinToString(", ")})"
+        )
     }
 }

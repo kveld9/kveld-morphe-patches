@@ -127,10 +127,11 @@ val directMessageDeclutterPatch = bytecodePatch(
 
         // 1. Feature: Hide Camera Icon in Chat List (Inbox conversation rows)
         if (hideChatListCamera == true) {
+            // The patch writes these fields with iput-boolean, so they are instance fields; iterating only instance fields skips decoding static fields.
             val chatListItemModelFp = Fingerprint(
                 custom = { _, classDef ->
-                    classDef.fields.any { it.name == "showCameraIcon" } &&
-                        classDef.fields.any { it.name == "showPhotoSwapThumbnail" }
+                    classDef.instanceFields.any { it.name == "showCameraIcon" } &&
+                        classDef.instanceFields.any { it.name == "showPhotoSwapThumbnail" }
                 },
             )
             val modelClass = chatListItemModelFp.classDef
@@ -386,12 +387,13 @@ val directMessageDeclutterPatch = bytecodePatch(
                     } == true
             }
 
+            // isAlbumViewConfigMethod requires STATIC and static methods are always direct methods in DEX, so iterating directMethods gives the same result without decoding virtual methods.
             val redesignedAlbumClassFp = Fingerprint(
                 custom = { _, classDef ->
-                    classDef.methods.any(isAlbumViewConfigMethod)
+                    classDef.directMethods.any(isAlbumViewConfigMethod)
                 },
             )
-            val albumMethods = redesignedAlbumClassFp.classDef.methods.filter(isAlbumViewConfigMethod)
+            val albumMethods = redesignedAlbumClassFp.classDef.directMethods.filter(isAlbumViewConfigMethod)
             var hookedAlbumCount = 0
             for (redesignedMethod in albumMethods) {
                 val instructions = redesignedMethod.implementation?.instructions?.toList()
@@ -661,58 +663,37 @@ val directMessageDeclutterPatch = bytecodePatch(
                 patched++
             }
 
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/im/sdk/chat/ui/base/assems/input/typingrecommendation/TypingRecommendationPanelAssem;",
-                returnType = "Z",
-                parameters = emptyList(),
-            ).method.replaceWithReturnBoolean(false)
-            println("[Direct Message Declutter] Hooked TypingRecommendationPanelAssem.Kq -> typing sticker recommendations disabled.")
-            patched++
+            val typingAssemClass = Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/im/sdk/chat/ui/base/assems/input/typingrecommendation/TypingRecommendationPanelAssem;"
+            ).classDef
 
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/im/sdk/chat/ui/base/assems/input/typingrecommendation/TypingRecommendationPanelAssem;",
-                name = "Aq",
-                returnType = "V",
-                parameters = listOf("LX/0XIS;"),
-            ).method.replaceWithReturnVoid()
-            println("[Direct Message Declutter] Hooked TypingRecommendationPanelAssem.Aq -> typing state reducer stubbed.")
-            patched++
+            var typingHooks = 0
 
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/im/sdk/chat/ui/base/assems/input/typingrecommendation/TypingRecommendationPanelAssem;",
-                name = "Rq",
-                returnType = "V",
-                parameters = listOf("LX/0pPl;"),
-            ).method.replaceWithReturnVoid()
-            println("[Direct Message Declutter] Hooked TypingRecommendationPanelAssem.Rq -> sticker data push suppressed.")
-            patched++
+            typingAssemClass.methods.filter {
+                !AccessFlags.STATIC.isSet(it.accessFlags) &&
+                    it.parameterTypes.isEmpty() &&
+                    it.returnType == "Z" &&
+                    it.name != "<init>"
+            }.forEach { method ->
+                method.replaceWithReturnBoolean(false)
+                typingHooks++
+            }
 
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/im/sdk/chat/ui/base/assems/input/typingrecommendation/TypingRecommendationPanelAssem;",
-                name = "Sq",
-                returnType = "V",
-                parameters = listOf("Ljava/util/List;"),
-            ).method.replaceWithReturnVoid()
-            println("[Direct Message Declutter] Hooked TypingRecommendationPanelAssem.Sq -> GIF/sticker list processing suppressed.")
-            patched++
+            typingAssemClass.methods.filter {
+                !AccessFlags.STATIC.isSet(it.accessFlags) &&
+                    it.parameterTypes.size == 1 &&
+                    it.returnType == "V" &&
+                    !it.name.startsWith("on") &&
+                    it.name != "<init>"
+            }.forEach { method ->
+                method.replaceWithReturnVoid()
+                typingHooks++
+            }
 
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/im/sdk/chat/ui/base/assems/input/typingrecommendation/TypingRecommendationPanelAssem;",
-                name = "rq",
-                returnType = "V",
-                parameters = listOf("LX/0pPl;"),
-            ).method.replaceWithReturnVoid()
-            println("[Direct Message Declutter] Hooked TypingRecommendationPanelAssem.rq -> floating banner path suppressed.")
-            patched++
-
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/im/sdk/chat/ui/base/assems/input/typingrecommendation/TypingRecommendationPanelAssem;",
-                name = "uq",
-                returnType = "V",
-                parameters = listOf("LX/0pPl;"),
-            ).method.replaceWithReturnVoid()
-            println("[Direct Message Declutter] Hooked TypingRecommendationPanelAssem.uq -> inline suggestion path suppressed.")
-            patched++
+            if (typingHooks > 0) {
+                println("[Direct Message Declutter] Hooked TypingRecommendationPanelAssem ($typingHooks dynamic methods) -> typing sticker recommendations disabled.")
+                patched++
+            }
         }
 
         println("[Direct Message Declutter] Applied $patched hooks -> direct messages decluttered.")

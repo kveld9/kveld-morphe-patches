@@ -11,7 +11,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 val enableLiveSearchPatch = bytecodePatch(
     name = "Enable Live Search",
     description = "Shows TikTok's search entry in the Live drawer where supported.",
-    default = true,
+    default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
     dependsOn(sharedExtensionPatch)

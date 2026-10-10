@@ -33,7 +33,6 @@ private val TELEMETRY_PROVIDERS = setOf(
     "com.facebook.FacebookContentProvider",
     "com.vungle.ads.VungleProvider",
     "com.fairtiq.sdk.internal.telemetry.processTime.StartupTimeProvider",
-    "com.google.mlkit.common.internal.MlKitInitProvider",
     "com.google.android.gms.ads.MobileAdsInitProvider",
     "com.applovin.sdk.AppLovinInitProvider",
     "com.ironsource.lifecycle.IronsourceLifecycleProvider",
@@ -51,7 +50,6 @@ private val TELEMETRY_SERVICES = setOf(
     "com.google.android.datatransport.runtime.backends.TransportBackendDiscovery",
     "com.google.firebase.sessions.SessionLifecycleService",
     "com.appsflyer.internal.service.AFJobSchedulerService",
-    "com.google.mlkit.common.internal.MlKitComponentDiscoveryService",
     "com.fairtiq.sdk.internal.services.tracking.TrackingServiceImpl",
     "com.google.android.gms.ads.AdService",
     "com.applovin.impl.adview.activity.FullscreenAdService",
@@ -64,11 +62,6 @@ private val TELEMETRY_RECEIVERS = setOf(
     "com.adjust.sdk.AdjustReferrerReceiver",
     "com.appsflyer.SingleInstallBroadcastReceiver",
     "com.appsflyer.MultipleInstallBroadcastReceiver",
-    "com.google.firebase.iid.FirebaseInstanceIdReceiver",
-    "com.braze.push.BrazePushReceiver",
-    "com.braze.BrazeFlushPushDeliveryReceiver",
-    "com.facebook.AuthenticationTokenManager\$CurrentAuthenticationTokenChangedBroadcastReceiver",
-    "com.facebook.CurrentAccessTokenExpirationBroadcastReceiver",
 )
 
 private val PUSH_SERVICES = setOf(
@@ -80,6 +73,12 @@ private val PUSH_SERVICES = setOf(
     "com.facebook.pushlite.tokenprovider.fcm.PushLiteFcmListenerService",
     "com.facebook.pushlite.tokenprovider.fcm.PushLiteFirebaseMessagingService",
     "com.google.firebase.messaging.FirebaseMessagingService",
+)
+
+private val PUSH_RECEIVERS = setOf(
+    "com.google.firebase.iid.FirebaseInstanceIdReceiver",
+    "com.braze.push.BrazePushReceiver",
+    "com.braze.BrazeFlushPushDeliveryReceiver",
 )
 
 private val GOOGLE_ANALYTICS_SERVICES = setOf(
@@ -260,7 +259,7 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
         key = "disablePushServices",
         default = false,
         title = "Disable Push Notification Services",
-        description = "Disable Meta Fbns, PushLite, and Firebase Cloud Messaging services. WARNING: this breaks push notifications; enable only to fully silence background push delivery.",
+        description = "Disable Meta Fbns, PushLite, and Firebase Cloud Messaging services plus push receivers (Firebase IID, Braze). WARNING: this breaks push notifications; enable only to fully silence background push delivery.",
         required = false,
     )
 
@@ -296,6 +295,14 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
         required = false,
     )
 
+    val disableMlKit by booleanOption(
+        key = "disableMlKit",
+        default = false,
+        title = "Disable ML Kit On-Device Vision",
+        description = "Disable Google ML Kit InitProvider, ComponentDiscoveryService, and prune related registrars. WARNING: Breaks on-device barcode scanning, face detection, and text recognition.",
+        required = false,
+    )
+
     val disableAdStartupInitializers by booleanOption(
         key = "disableAdStartupInitializers",
         default = false,
@@ -322,6 +329,7 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
         val shouldDisableMetaAnalytics = disableMetaAnalytics ?: true
         val shouldDisableCrashDetectors = disableCrashDetectors ?: true
         val shouldDisableDeviceIds = disableDeviceIdProviders ?: false
+        val shouldDisableMlKit = disableMlKit ?: false
         val shouldDisableAdStartup = disableAdStartupInitializers ?: false
 
         var removedPerms: List<String> = emptyList()
@@ -329,6 +337,7 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
         var disabledServicesCount = 0
         var disabledReceiversCount = 0
         var disabledPushCount = 0
+        var disabledPushReceiversCount = 0
         var disabledGaServicesCount = 0
         var disabledGaReceiversCount = 0
         var disabledMetaServicesCount = 0
@@ -370,6 +379,7 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
 
                 if (shouldDisablePush) {
                     disabledPushCount = application.disableComponentsWhere("service") { it in PUSH_SERVICES }
+                    disabledPushReceiversCount = application.disableComponentsWhere("receiver") { it in PUSH_RECEIVERS }
                 }
 
                 if (shouldDisableGoogleAnalytics) {
@@ -393,6 +403,18 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
                     disabledDeviceIdReceiversCount = application.disableComponentsWhere("receiver") { it in DEVICE_ID_RECEIVERS }
                 }
 
+                if (shouldDisableMlKit) {
+                    disabledProvidersCount += application.disableComponentsWhere("provider") { it == "com.google.mlkit.common.internal.MlKitInitProvider" }
+                    disabledServicesCount += application.disableComponentsWhere("service") { it == "com.google.mlkit.common.internal.MlKitComponentDiscoveryService" }
+                    removedRegistrarsCount += application.removeComponentDiscoveryRegistrarsWhere { name ->
+                        name == "com.google.mlkit.vision.barcode.internal.BarcodeRegistrar" ||
+                        name == "com.google.mlkit.vision.face.internal.FaceRegistrar" ||
+                        name == "com.google.mlkit.vision.text.internal.TextRegistrar" ||
+                        name == "com.google.mlkit.vision.common.internal.VisionCommonRegistrar" ||
+                        name == "com.google.mlkit.common.internal.CommonComponentRegistrar"
+                    }
+                }
+
                 if (shouldDisableAdStartup) {
                     removedStartupInitCount = application.removeStartupInitializersWhere { it in AD_STARTUP_INITIALIZERS }
                 }
@@ -403,17 +425,11 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
                     }
                     injectedFlagsCount = OPT_OUT_METADATA.size
 
-                    removedRegistrarsCount = application.removeComponentDiscoveryRegistrarsWhere { name ->
+                    removedRegistrarsCount += application.removeComponentDiscoveryRegistrarsWhere { name ->
                         name.contains("Analytics", ignoreCase = true) ||
                             name.contains("Crashlytics", ignoreCase = true) ||
                             name.contains("Perf", ignoreCase = true) ||
                             name.contains("Sessions", ignoreCase = true) ||
-                            name.contains("MlKit", ignoreCase = true) ||
-                            name.contains("MLKit", ignoreCase = true) ||
-                            name.contains("Vision", ignoreCase = true) ||
-                            name.contains("Barcode", ignoreCase = true) ||
-                            name.contains("Face", ignoreCase = true) ||
-                            name.contains("Text", ignoreCase = true) ||
                             name.contains("Iid", ignoreCase = true) ||
                             name.contains("DynamicLoading", ignoreCase = true) ||
                             name.contains("Transport", ignoreCase = true) ||
@@ -425,7 +441,7 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
             }
         }
 
-        val totalDisabled = disabledProvidersCount + disabledServicesCount + disabledReceiversCount + disabledPushCount + disabledGaServicesCount + disabledGaReceiversCount + disabledMetaServicesCount + disabledMetaReceiversCount + disabledCrashServicesCount + disabledCrashReceiversCount + disabledDeviceIdProvidersCount + disabledDeviceIdServicesCount + disabledDeviceIdReceiversCount
+        val totalDisabled = disabledProvidersCount + disabledServicesCount + disabledReceiversCount + disabledPushCount + disabledPushReceiversCount + disabledGaServicesCount + disabledGaReceiversCount + disabledMetaServicesCount + disabledMetaReceiversCount + disabledCrashServicesCount + disabledCrashReceiversCount + disabledDeviceIdProvidersCount + disabledDeviceIdServicesCount + disabledDeviceIdReceiversCount
         if (removedPerms.isEmpty() && totalDisabled == 0 && injectedFlagsCount == 0 && removedRegistrarsCount == 0 && removedStartupInitCount == 0) {
             println("[Universal Telemetry Neutralizer] AndroidManifest.xml is already clean (0 tracking elements found).")
             return@execute
@@ -438,6 +454,20 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
             if (removedRegistrarsCount > 0) ", removed $removedRegistrarsCount discovery registrar(s)$initNote"
             else ", removed $removedStartupInitCount startup initializer(s)"
         } else ""
-        println("[Universal Telemetry Neutralizer] $permNote, disabled $totalDisabled component(s), injected $injectedFlagsCount opt-out flag(s)$regNote.")
+
+        val categoryBreakdown = listOf(
+            "providers" to disabledProvidersCount,
+            "services" to disabledServicesCount,
+            "receivers" to disabledReceiversCount,
+            "push" to (disabledPushCount + disabledPushReceiversCount),
+            "ga" to (disabledGaServicesCount + disabledGaReceiversCount),
+            "meta" to (disabledMetaServicesCount + disabledMetaReceiversCount),
+            "crash" to (disabledCrashServicesCount + disabledCrashReceiversCount),
+            "deviceid" to (disabledDeviceIdProvidersCount + disabledDeviceIdServicesCount + disabledDeviceIdReceiversCount),
+        ).filter { it.second > 0 }
+            .joinToString(", ") { "${it.first}=${it.second}" }
+        val componentDetails = if (categoryBreakdown.isNotEmpty()) " ($categoryBreakdown)" else ""
+
+        println("[Universal Telemetry Neutralizer] $permNote, disabled $totalDisabled component(s)$componentDetails, injected $injectedFlagsCount opt-out flag(s)$regNote.")
     }
 }

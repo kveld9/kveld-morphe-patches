@@ -21,6 +21,8 @@ Comprehensive reference for universal optimization and resource slimming patches
 | **[Universal Screenshot Protection Bypass](#11-universal-screenshot-protection-bypass-universalscreenshotprotectionbypasspatch)** | `bytecodePatch` | Dalvik Bytecode & Manifest | Neutralizes `FLAG_SECURE`, unlocks audio playback capture, and suppresses Android 14+ screenshot detection | Allows screenshots, screen recordings, and internal audio capture across protected views |
 | **[Universal Screen Timeout Enforcer](#12-universal-screen-timeout-enforcer-universalscreentimeoutenforcerpatch)** | `bytecodePatch` | Dalvik Bytecode & Windows | Neutralizes `keepScreenOn(Z)V` view calls and strips `FLAG_KEEP_SCREEN_ON` (`0x80`) | Enforces OS screen timeout and sleep timer during video playback |
 | **[Universal Screen Brightness Governor](#13-universal-screen-brightness-governor-universalscreenbrightnessgovernorpatch)** | `bytecodePatch` | Dalvik Bytecode & Windows | Neutralizes direct writes to `WindowManager.LayoutParams.screenBrightness` (`iput`) | Prevents apps from overriding display brightness via window layout params |
+| **[Universal Hosts Blocker](#14-universal-hosts-blocker-universalhostsblockerpatch)** | `bytecodePatch` | Dalvik `const-string` literals | Rewrites user-blocklisted URL/host literals to a sink IP (`0.0.0.0`) | Silences analytics/ads dispatch without touching native binaries |
+| **[Universal SDK Blocker](#15-universal-sdk-blocker-universalsdkblockerpatch)** | `bytecodePatch` | Dalvik Bytecode Methods | Neutralizes third-party APM, crash, analytics, attribution, session replay, location, and push SDK init/event methods via early `return-void` | Neutralizes runtime SDK execution; companion layer to Universal Telemetry Neutralizer |
 
 ---
 
@@ -37,11 +39,18 @@ Applying both universal and app-specific patches simultaneously to the same targ
 2. **Permission Revocation**: If a permission node is pruned by an earlier patch pass, subsequent passes skip the missing node without throwing exceptions.
 3. **Binary Trimming**: Universal native trimmers zero only standard crash/telemetry libraries without colliding with app-specific bloat trimmers (such as `Brave Native Bloat Slimmer` or `TikTok Core Asset De-bloat`).
 
+### Do Not Stack Universals on Maintained Apps
+Dedicated app patches (Brave, Gboard Lite, Hevy, TikTok, NokoPrint, Xiaomi Earbuds) are a strict precision superset for their respective targets. Enabling Universal Telemetry Neutralizer or Universal SDK Blocker on top of dedicated patches adds no extra protection.
+
+If patcher logs report components already clean or 0 methods hooked, that is the expected outcome, not a failure. Stacking these universals on maintained apps only adds patch execution time (such as expensive full-DEX scans on large targets like TikTok) and risks breaking features like login, account sync, or push notifications if optional toggles (e.g., device-ID providers, Firebase init, or push engagement) are enabled. To cover a newly discovered generic SDK in a maintained app, port the rule into that app's dedicated patch instead of enabling the universal patch.
+
+Exception: Universal Hosts Blocker remains a valid opt-in patch on maintained apps when using a curated host blocklist.
+
 ### Patch Selection Matrix: Universal Suitability
 
 | Universal Patch | Safe Across Any APK? | Notes & Usage Guidelines |
 | :--- | :---: | :--- |
-| **Universal Telemetry Neutralizer** | ✅ Yes | Strips advertising IDs and disables third-party analytics providers/receivers without impacting app functionality. |
+| **Universal Telemetry Neutralizer** | ✅ Yes | Strips advertising IDs and disables third-party analytics providers/receivers without impacting app functionality. Not recommended on maintained apps (Brave, Gboard Lite, Hevy, TikTok, NokoPrint, Xiaomi Earbuds): dedicated telemetry patch already covers them; stacking adds no protection. |
 | **Universal Native Binary Trimmer** | ✅ Yes | Zeroes standard crash reporting and profiler `.so` files (`libcrashlytics`, `libsentry`, `libgwp-asan`). |
 | **Universal WebP Asset Optimizer** | ✅ Yes | Lossless metadata stripping adhering strictly to RFC 9649 / libwebp bitstream specification. |
 | **PNG Asset Optimizer** | ✅ Yes | Lossless RGBA-verified zlib recompression and chunk stripping. |
@@ -54,6 +63,8 @@ Applying both universal and app-specific patches simultaneously to the same targ
 | **Universal Screen Timeout Enforcer** | ✅ Yes | Safely neutralizes `FLAG_KEEP_SCREEN_ON` bitwise and silences view `setKeepScreenOn` calls to enforce system sleep timeout. |
 | **Universal Screen Brightness Governor** | ✅ Yes | Safely neutralizes writes to `WindowManager.LayoutParams.screenBrightness` so display brightness remains strictly under system and user control. |
 | **Universal Offline Mode** | ⚠️ Contextual | **Never apply to web browsers (Brave) or streaming media apps (TikTok)**, as it halts socket creation at the OS kernel level (`AID_INET`). For Gboard Lite and Xiaomi Earbuds, pair with their companion app-specific offline patches for graceful timeout handling. |
+| **Universal Hosts Blocker** | ⚠️ Curated list required | Ships disabled with no bundled blocklist (user supplies the hosts file at patch time). Block only telemetry/ads hosts (e.g. Hagezi `native.tiktok-onlydomains.txt` filtered to `log/mon/mcs/mssdk/analytics`); blocking functional hosts (`frontier/api/stream/open`) breaks feed, login, or CDN playback. |
+| **Universal SDK Blocker** | ✅ Yes | Safely neutralizes APM, crash, analytics, and attribution SDK entrypoints via Dalvik early `return-void`. The optional Push Engagement toggle (`blockPushEngagement`) is disabled by default because silencing push SDKs breaks push notifications. Not recommended on maintained apps (Brave, Gboard Lite, Hevy, TikTok, NokoPrint, Xiaomi Earbuds): dedicated telemetry patch already covers them; stacking adds no protection. |
 
 ---
 
@@ -62,7 +73,7 @@ Applying both universal and app-specific patches simultaneously to the same targ
 The **`Locale Resource Slimmer`** patch strips unselected language translation directories from `res/` (such as `values-*`, `raw-*`, `xml-*`) across any supported target APK (Gboard Lite, Hevy, Brave, TikTok, NokoPrint, Xiaomi Earbuds) to reduce APK size.
 
 > [!TIP]
-> **Chromium Browsers (Brave)**: While `Locale Resource Slimmer` trims standard Android wrapper resources in `res/values-*`, Chromium browsers store over 95% of their strings (~9.64 MB in Brave 1.96.61) in native binary `.pak` files inside `assets/locales/`. For complete multilingual slimming in Brave, combine this patch with the Brave-specific [**`Locale PAK Slimmer`**](apps/brave.md#11-locale-pak-slimmer-localepakslimmerpatch).
+> **Chromium Browsers (Brave)**: While `Locale Resource Slimmer` trims standard Android wrapper resources in `res/values-*`, Chromium browsers store over 95% of their strings (~9.64 MB in Brave 1.97.56) in native binary `.pak` files inside `assets/locales/`. For complete multilingual slimming in Brave, combine this patch with the Brave-specific [**`Locale PAK Slimmer`**](apps/brave.md#11-locale-pak-slimmer-localepakslimmerpatch).
 
 ### Configuration in Morphe Manager
 
@@ -156,7 +167,8 @@ The **`APK Junk Cleaner`** strips non-functional build metadata, compiler proper
 ### 🛡️ Protected Core Invariants
 - **Critical Extensions**: `.dex`, `.arsc`, `.xml`, `.so`, `.rsa`, `.sf`, `.dsa` are strictly protected.
 - **Service Loader Integrations**: `META-INF/services/` and `META-INF/MANIFEST.MF` are strictly preserved to maintain dynamic dependency injection.
-- **Root Whitelist**: Core root directories (`assets`, `res`, `lib`, `smali`) are protected from accidental pruning.
+- **Root Whitelist**: Core root directories (`assets`, `res`, `lib`, `smali`, `kotlin`) are protected from accidental pruning.
+- **Kotlin Runtime Descriptors**: APK-root `kotlin/` (`*.kotlin_builtins`, `kotlin-reflect` runtime descriptors) is strictly preserved.
 
 ---
 
@@ -193,7 +205,7 @@ All options in **`Universal Offline Mode`** are declared as native boolean switc
 
 ## 6. Universal Telemetry Neutralizer (`universalTelemetryNeutralizerPatch`)
 
-The **`Universal Telemetry Neutralizer`** patch neutralizes pervasive third-party tracking, ad-attribution SDKs, and crash analytics frameworks at the Android application manifest level (`AndroidManifest.xml`). It combines permission revocation, component deactivation, and declarative metadata opt-out injection.
+The **`Universal Telemetry Neutralizer`** patch neutralizes pervasive third-party tracking, ad-attribution SDKs, and crash analytics frameworks at the Android application manifest level (`AndroidManifest.xml`). It combines permission revocation, component deactivation, and declarative metadata opt-out injection. On repo-maintained apps, do not stack this patch on top of dedicated telemetry patches; see [Do Not Stack Universals on Maintained Apps](#do-not-stack-universals-on-maintained-apps).
 
 > [!NOTE]
 > ### The Multi-Layer Telemetry Defense
@@ -206,7 +218,7 @@ The **`Universal Telemetry Neutralizer`** patch neutralizes pervasive third-part
 
 - **Google & Firebase Measurement**: `AppMeasurementContentProvider`, `AppMeasurementService`, `AppMeasurementJobService`, `AppMeasurementReceiver`.
 - **Google Analytics (legacy)**: `AnalyticsService`, `AnalyticsJobService`, `AnalyticsReceiver`.
-- **Google DataTransport & Firebase Sessions**: `JobInfoSchedulerService`, `TransportBackendDiscovery`, `AlarmManagerSchedulerBroadcastReceiver`, `SessionLifecycleService`, `FirebaseInstanceIdReceiver`, `MlKitComponentDiscoveryService`.
+- **Google DataTransport & Firebase Sessions**: `JobInfoSchedulerService`, `TransportBackendDiscovery`, `AlarmManagerSchedulerBroadcastReceiver`, `SessionLifecycleService`, `MlKitComponentDiscoveryService`.
 - **Firebase ComponentDiscovery Registrars**: Prunes registrar `<meta-data>` tags within `ComponentDiscoveryService` for Analytics, Crashlytics, Performance Monitoring, Sessions, MLKit/vision, IID, DynamicLoading, Transport, Installations, RemoteConfig, and AB testing (Abt), preventing dependency injection from instantiating tracking classes in memory.
 - **Sentry Crash & Performance**: `SentryInitProvider`, `SentryPerformanceProvider`.
 - **Facebook AppEvents**: `FacebookInitProvider`.
@@ -216,18 +228,19 @@ The **`Universal Telemetry Neutralizer`** patch neutralizes pervasive third-part
 - **AppsFlyer Attribution**: `PluginInfoContentProvider`, `AFJobSchedulerService`, `SingleInstallBroadcastReceiver`, `MultipleInstallBroadcastReceiver`.
 - **Adjust Attribution**: `AdjustReferrerReceiver`.
 - **Flurry & Branch Analytics**: `FlurryContentProvider`, `BranchInitProvider`.
-- **Third-Party Ad & Engagement SDKs**: AudienceNetwork, Vungle, Braze, Fairtiq telemetry, AdMob (`MobileAdsInitProvider`, `AdService`), and mediation init providers (AppLovin, ironSource/LevelPlay, Mintegral, BidMachine) (`AudienceNetworkContentProvider`, `FacebookContentProvider`, `VungleProvider`, `StartupTimeProvider`, `TrackingServiceImpl`, `BrazePushReceiver`, `BrazeFlushPushDeliveryReceiver`, `AuthenticationTokenManager$CurrentAuthenticationTokenChangedBroadcastReceiver`, `CurrentAccessTokenExpirationBroadcastReceiver`, `AppLovinInitProvider`, `FullscreenAdService`, `IronsourceLifecycleProvider`, `LevelPlayActivityLifecycleProvider`, `MBComponentLifecycleProvider`, `BidMachineInitProvider`).
+- **Third-Party Ad & Engagement SDKs**: AudienceNetwork, Vungle, Fairtiq telemetry, AdMob (`MobileAdsInitProvider`, `AdService`), and mediation init providers (AppLovin, ironSource/LevelPlay, Mintegral, BidMachine) (`AudienceNetworkContentProvider`, `FacebookContentProvider`, `VungleProvider`, `StartupTimeProvider`, `TrackingServiceImpl`, `AppLovinInitProvider`, `FullscreenAdService`, `IronsourceLifecycleProvider`, `LevelPlayActivityLifecycleProvider`, `MBComponentLifecycleProvider`, `BidMachineInitProvider`).
 - **Ad SDK Startup Initializers (`androidx.startup`)**: `AdsSdkInitializer` (Unity Ads auto-init entry within `InitializationProvider`).
+- **Push Notification Services & Receivers (optional)**: Meta Fbns (`FbnsService`, `InappFbnsService`), PushLite (`PushLiteFallbackJobService`, `PushLiteGCMJobService`, `PushLiteLollipopJobService`, `PushLiteFcmListenerService`, `PushLiteFirebaseMessagingService`), Firebase Cloud Messaging (`FirebaseMessagingService`, `FirebaseInstanceIdReceiver`), and Braze push receivers (`BrazePushReceiver`, `BrazeFlushPushDeliveryReceiver`).
 
 ### Configuration in Morphe Manager
 
 - **Revoke Advertising & Tracking Permissions (`revokePermissions`)**: Strips `com.google.android.gms.permission.AD_ID`, Android Privacy Sandbox permissions (`ACCESS_ADSERVICES_ATTRIBUTION`, `ACCESS_ADSERVICES_AD_ID`, `ACCESS_ADSERVICES_CUSTOM_AUDIENCE`, `ACCESS_ADSERVICES_TOPICS`), and install referrer permissions (Toggle, default: `true`).
 - **Disable Telemetry ContentProviders (`disableProviders`)**: Sets `android:enabled="false"` on analytics and tracker ContentProviders (Toggle, default: `true`).
 - **Disable Telemetry Background Services (`disableServices`)**: Sets `android:enabled="false"` on telemetry upload, JobScheduler, DataTransport, and Firebase session background services (Toggle, default: `true`).
-- **Disable Telemetry Receivers (`disableReceivers`)**: Sets `android:enabled="false"` on campaign, install referrer, and measurement broadcast receivers (Toggle, default: `true`).
+- **Disable Telemetry Receivers (`disableReceivers`)**: Sets `android:enabled="false"` on campaign, install referrer, and measurement broadcast receivers (Adjust, AppsFlyer, AppMeasurement, DataTransport Alarm) (Toggle, default: `true`).
 - **Inject Telemetry Opt-Out Flags & Prune Registrars (`injectOptOutFlags`)**: Injects declarative opt-out `<meta-data>` tags into `<application>` for Firebase Analytics, Crashlytics, Performance, Google Analytics, Sentry, AppsFlyer, and the Facebook SDK (`AutoLogAppEventsEnabled`, `AdvertiserIDCollectionEnabled`), and prunes Firebase discovery registrars (Toggle, default: `true`).
 - **Disable Firebase Init Provider (`disableFirebaseInit`)**: Sets `android:enabled="false"` on `FirebaseInitProvider` (Toggle, default: `false`). *Keep disabled if the target app relies on Firebase Core, Auth, or Cloud Messaging (FCM).*
-- **Disable Push Notification Services (`disablePushServices`)**: Sets `android:enabled="false"` on Meta Fbns, PushLite, and Firebase Cloud Messaging services (Toggle, default: `false`). *WARNING: this breaks push notifications; enable only to fully silence background push delivery.*
+- **Disable Push Notification Services (`disablePushServices`)**: Sets `android:enabled="false"` on Meta Fbns, PushLite, and Firebase Cloud Messaging services plus push receivers (`FirebaseInstanceIdReceiver`, Braze push receivers) (Toggle, default: `false`). *WARNING: this breaks push notifications; enable only to fully silence background push delivery.*
 - **Disable Google Analytics Services (`disableGoogleAnalytics`)**: Sets `android:enabled="false"` on legacy Google Analytics background services (`AnalyticsService`, `AnalyticsJobService`) and receivers (`AnalyticsReceiver`) (Toggle, default: `true`).
 - **Disable Meta Analytics Upload Pipeline (`disableMetaAnalytics`)**: Sets `android:enabled="false"` on Meta Analytics2/OneFabric upload services, Instagram upload scheduler receiver, and deferred analytics worker components (Toggle, default: `true`).
 - **Disable Crash Detectors & Dump Upload (`disableCrashDetectors`)**: Sets `android:enabled="false"` on Lacrima lock-screen/shutdown crash detectors, crash-loop state trackers, and background crash-dump upload services (Toggle, default: `true`).
@@ -397,4 +410,63 @@ The **`Universal Screen Brightness Governor`** patch prevents applications from 
 
 The patch operates without any manual configuration or boolean options (`default = false`). When enabled in Morphe Manager or CLI, it automatically neutralizes all screen brightness override attempts across all classes in the target APK.
 
+---
+
+## 14. Universal Hosts Blocker (`universalHostsBlockerPatch`)
+
+The **`Universal Hosts Blocker`** patch rewrites Dalvik `const-string` / `const-string/jumbo` URL and host literals whose host matches a user-supplied blocklist, replacing the blocked host in place with a sink IP (default `0.0.0.0`). The blocklist file is read at patch time from the patching machine, so daily DNS-list updates (e.g. Hagezi `native.tiktok`) apply on re-patch without a patch release and without embedding third-party lists in this repository.
+
+### Configuration in Morphe Manager
+
+- **Hosts blocklist file (`hostsFile`)**: File-picker path to a hosts or plain-domain blocklist on the patching machine (e.g. Hagezi `native.tiktok-onlydomains.txt`). Empty by default: the patch logs `Skipped` and changes nothing until a file is selected.
+- **Sink IP address (`sinkIp`)**: IPv4 replacing blocked hosts inside literals (`https://log.example.com/v1` becomes `https://0.0.0.0/v1`). Default: `0.0.0.0`.
+- **Match subdomains (`matchSubdomains`)**: When enabled (default `true`), entry `example.com` also matches `a.example.com`.
+
+### Supported blocklist line formats
+
+Plain domains (`log.example.com`), classic hosts lines (`0.0.0.0 log.example.com`), full URLs (`https://log.example.com/v1`), Hagezi wildcard lines (`*.log.example.com`), and adblock-style rules (`||log.example.com^`). Inline `#` comments and `@@` allowlist lines are ignored. Reserved hosts (`localhost`, `127.0.0.1`, `0.0.0.0`) are never blocked.
+
+### Scope & limits
+
+- Rewrites Dex string literals only. Native `.so` endpoint strings (e.g. Brave `libchrome.so` telemetry hosts), dynamically assembled hosts (`StringBuilder` concatenation), encrypted configs, raw IPs, and DoH flows are out of scope.
+- A curated telemetry/ads-only list is required: blocking functional hosts breaks the app. For TikTok, prefer the `log/mon/mcs/mssdk/analytics` subset and leave `frontier/api/stream/open` untouched.
+
+> [!WARNING]
+> Do not apply Universal Hosts Blocker on a fresh TikTok install where no login has happened yet: blocking telemetry/ads hosts before the first login trips server-side rate limiting ('too many attempts' errors) during login/registration. Log in first and patch afterwards, or use a minimal curated list.
+
+---
+
+## 15. Universal SDK Blocker (`universalSdkBlockerPatch`)
+
+The **`Universal SDK Blocker`** patch neutralizes pervasive third-party APM, crash reporting, analytics, attribution, session replay, location tracking, and push engagement SDKs directly at the Dalvik bytecode level (`classes*.dex`). It serves as the runtime execution counterpart to **`Universal Telemetry Neutralizer`** (manifest layer). On repo-maintained apps, do not stack this patch on top of dedicated telemetry patches; see [Do Not Stack Universals on Maintained Apps](#do-not-stack-universals-on-maintained-apps).
+
+Tracker catalog derived from the Exodus Privacy tracker database (https://exodus-privacy.eu.org), database contents under ODbL 1.0 / DbCL 1.0. Only Analytics, Crash reporting and Profiling category SDKs are covered; advertisement and functional SDKs are excluded or kept behind disabled-by-default toggles.
+
+> [!NOTE]
+> ### Runtime Early Return-Void Neutralization
+> While `Universal Telemetry Neutralizer` operates at packaging time by revoking manifest permissions, disabling `ContentProvider` / background `Service` components, and injecting opt-out `<meta-data>`, applications often initialize SDKs programmatically inside `Application.onCreate()` or activity lifecycles.
+>
+> `Universal SDK Blocker` neutralizes programmatic initialization and telemetry dispatch by scanning for known SDK package prefixes and conservative method signatures (such as `init`, `initialize`, `start`, `recordMetric`, `trackEvent`, `reportException`), prepending a zero-register Dalvik `return-void` instruction (`0x0e`) at instruction index 0 of matched void methods. The method returns immediately upon invocation before executing background threads, socket connections, or device profiling loops.
+
+### Neutralized SDKs by Category
+
+- **Application Performance Monitoring (APM)**: New Relic (`Lcom/newrelic`), Datadog (`Lcom/datadog`), Dynatrace (`Lcom/dynatrace`).
+- **Crash Reporting**: Raygun (`Lcom/mindscapehq`), Shake (`Lcom/shakebugs`), Embrace (`Lio/embrace`), Splunk Mint (`Lcom/splunk`), Microsoft App Center (`Lcom/microsoft/appcenter`), OpenTelemetry (`Lio/opentelemetry`), ACRA (`Lorg/acra`), Sentry (`Lio/sentry`), Bugsnag (`Lcom/bugsnag`), Crashlytics (legacy `Lcom/crashlytics/android` and modern `Lcom/google/firebase/crashlytics`), Fabric (`Lio/fabric/sdk`), Instabug (`Lcom/instabug`), Countly (`Lly/count/android`), HockeyApp (`Lnet/hockeyapp`).
+- **Analytics**: Firebase Analytics (`Lcom/google/firebase/analytics`; consent and data-clear setters preserved to prevent freezing granted permissions), Matomo (`Lorg/matomo`), Leanplum (`Lcom/leanplum`), Localytics (`Lcom/localytics`), WebEngage (`Lcom/webengage`), PostHog (`Lcom/posthog`), MoEngage (`Lcom/moengage`), Snowplow (`Lcom/snowplowanalytics`), mParticle (`Lcom/mparticle`), Treasure Data (`Lcom/treasuredata`), Huawei Analytics (`Lcom/huawei/hms/analytics`; consent and data-clear setters preserved), Yandex Metrica (`Lcom/yandex/metrica`), Facebook AppEvents (`Lcom/facebook/appevents`), Sensors Analytics (`Lcom/sensorsdata`).
+- **Attribution & Engagement**: AppsFlyer (`Lcom/appsflyer`), Adjust (`Lcom/adjust`), Amplitude (`Lcom/amplitude`), Mixpanel (`Lcom/mixpanel`), CleverTap (`Lcom/clevertap`), Segment (`Lcom/segment`), Branch (`Lio/branch`, `Lcom/branch`), Singular (`Lcom/singular`; partial coverage of void setup and referrer methods; boolean public API out of scope), Kochava (`Lcom/kochava`), Tenjin (`Lcom/tenjin`), Unity Analytics (`Lcom/unity3d/services/analytics`), Flurry (`Lcom/flurry`), GameAnalytics (`Lcom/gameanalytics`).
+- **Session Replay**: UXCam (`Lcom/uxcam`), Smartlook (`Lcom/smartlook`), FullStory (`Lcom/fullstory`), Contentsquare (`Lcom/contentsquare`), Bugsee (`Lcom/bugsee`).
+- **Location & Beacon Tracking**: Radar (`Lio/radar`), Gimbal (`Lcom/gimbal`), Estimote (`Lcom/estimote`).
+- **Legacy Google Analytics**: Pre-Firebase Google Analytics v4 / GMS Analytics (`Lcom/google/analytics`, `Lcom/google/android/gms/analytics`).
+- **Push Engagement**: OneSignal (`Lcom/onesignal`), Airship (`Lcom/urbanairship`), Braze (`Lcom/braze`, `Lcom/appboy`).
+
+### Configuration in Morphe Manager
+
+- **Block APM & Performance Monitoring SDKs (`blockApm`)**: Neutralize New Relic, Datadog, and Dynatrace initialization, metric recording, and HTTP transaction tracing methods (Toggle, default: `true`).
+- **Block Crash Reporting SDKs (`blockCrashReporters`)**: Neutralize Sentry, Bugsnag, Crashlytics (legacy and Firebase), Fabric, Raygun, Shake, Embrace, Splunk Mint, App Center, OpenTelemetry, ACRA, Instabug, Countly, and HockeyApp initialization and exception reporting methods (Toggle, default: `true`).
+- **Block Analytics SDKs (`blockAnalytics`)**: Neutralize Firebase Analytics, Matomo, Leanplum, Localytics, WebEngage, PostHog, MoEngage, Snowplow, mParticle, Treasure Data, Huawei Analytics, Yandex Metrica, Facebook AppEvents, and Sensors Analytics event tracking, capture, identification, and session upload methods (Toggle, default: `true`).
+- **Block Attribution & Engagement SDKs (`blockAttribution`)**: Neutralize AppsFlyer, Adjust, Amplitude, Mixpanel, CleverTap, Segment, Branch, Singular, Kochava, Tenjin, Unity Analytics, Flurry, and GameAnalytics conversion, attribution, and event dispatch methods (Toggle, default: `true`).
+- **Block Session Replay SDKs (`blockSessionReplay`)**: Neutralize UXCam, Smartlook, FullStory, Contentsquare, and Bugsee screen and session recording methods (Toggle, default: `true`).
+- **Block Location & Beacon Tracking SDKs (`blockLocationTrackers`)**: Neutralize Radar, Gimbal, and Estimote beacon and location tracking methods; note OS location permission controls remain the primary gate (Toggle, default: `true`).
+- **Block Legacy Google Analytics (`blockLegacyAnalytics`)**: Neutralize pre-Firebase Google Analytics tracking, hit dispatching, and activity reporting methods across `com.google.analytics` and `com.google.android.gms.analytics` (Toggle, default: `true`).
+- **Block Push Engagement SDKs (`blockPushEngagement`)**: Neutralize OneSignal, Airship, and Braze push engagement and tagging SDKs (Toggle, default: `false`). *WARNING: this breaks push notifications; enable only to fully silence background push engagement SDK runtimes.*
 

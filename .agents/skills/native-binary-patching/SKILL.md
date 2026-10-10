@@ -3,6 +3,8 @@ name: native-binary-patching
 description: ARM64 ELF and binary asset patching guidelines covering libchrome.so host redirection, multi-candidate offset resolution, companion .so trimming, and Hermes bytecode patching.
 ---
 
+<!-- Mirror: this skill also exists in kveld-extra-morphe-patches/.agents/skills (hardlinked to its .claude/skills). When editing shared core guidance, replicate the change there. -->
+
 # Native & Binary Asset Patching Guidelines
 
 ## 1. In-Situ Binary String Redirection (`libchrome.so`)
@@ -23,6 +25,8 @@ data class HostEntry(
     val hostName: String,
 )
 
+// EXAMPLE offsets: version-specific illustration values. Always resolve offsets for the
+// target APK version via pre-patch fingerprint assertion; never copy these literally.
 val hostEntries = listOf(
     HostEntry(0x001f9329L, "star-randsrv.bsg.brave.com"),
     HostEntry(0x001f935aL, "collector.bsg.brave.com"),

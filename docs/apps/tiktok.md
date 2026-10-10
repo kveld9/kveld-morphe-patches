@@ -27,7 +27,9 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Usability** | **Media Usability & Watermark-Free Downloader** | `bytecodePatch` | Unblocks download button in Share panel, extracts clean original streams without watermark stamps, with saved-video quality preference (`downloadQuality`: high/medium/low or 1080/720/540/480/360 ceiling) and watermark toggle (`removeWatermark`). |
 | **Usability** | **Disable Post-Download Share Dialog** | `bytecodePatch` | Suppresses the automatic 'Share to' and friend suggestions bottom sheet that pops up after finishing a download. |
 | **Usability** | **[Show Seekbar](#8-show-seekbar)** | `bytecodePatch` | Restores video seekbar and scrubbing controls where hidden or disabled. |
-| **Usability** | **Always Show Publish Date** | `bytecodePatch` | Forces video publish and upload timestamps to remain permanently visible on feed cards, with optional creator country code tags (`showAuthorRegion`) and sensitive warning suppression (`skipContentWarnings`). |
+| **Usability** | **Always Show Publish Date** | `bytecodePatch` | Forces video publish and upload timestamps to remain permanently visible on feed cards. |
+| **Usability** | **Show Author Region** | `bytecodePatch` | Displays the creator's country or region code next to their username in video author info across feeds and deep-linked detail views. |
+| **Usability** | **Skip Content Warnings** | `bytecodePatch` | Bypasses and clears sensitive content warnings, graphic media blur overlays, and age gates on feed videos. |
 | **Usability** | **[Comment Customizer](#2-comment-customizer-commentcustomizerpatch)** | `bytecodePatch` | Customizes comment section: native sort controls, clean text copying, disabling suggested emojis bar, hiding comment quick actions, hiding in-comment surveys and feedback cards, hiding profile photo story rings, voice comments, automatic translation with do-not-translate language exclusions (`translationExcludedLanguages`), comment send fix, comment popup ad blocking. |
 | **Usability** | **Disable Double Tap to Like** | `bytecodePatch` | Disables the double tap gesture to like videos in the feed, preventing accidental likes while scrolling or pausing. Videos can still be liked using the like button. |
 | **Usability** | **Playback Speed Persistence** | `bytecodePatch` | Persists user-selected video speed across feed scrolling and restarts, with optional native hold-and-slide 2x speed lock gesture (`enableSpeedLock`). |
@@ -56,8 +58,8 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Usability** | **[Disable Feed Long-Press Actions](#7-disable-feed-long-press-actions)** | `bytecodePatch` | Disables long-press action gestures on feed buttons, including Like to repost, Share to quick DMs, and Comment to quick emojis, with optional video-body long-press modes (`longPressVideo`). |
 | **Usability** | **Enable Profile Banner** | `bytecodePatch` | Unlocks custom profile banner header cover feature and banner editing tools in Edit Profile. |
 | **Usability** | **System Font** | `bytecodePatch` | Forces TikTok to use the Android system font instead of bundled proprietary TikTokSans fonts. |
-| **Usability** | **[Popups & Prompts Suppressor](#23-popups--prompts-suppressor-popupsandpromptssuppressorpatch)** | `bytecodePatch` | Suppresses intrusive popups, dialogs, and modal prompts, including 'Follow your friends' dialogs, contacts sync overlays, multi-account notification guides, 2SV security checkup modals, PopLayer promotional sheets, live stream teaser bubbles, sticker recommendations, and DM streak expiration warnings. |
-| **Usability** | **Video Fit** | `bytecodePatch` | Adjusts video aspect ratio across feeds and story cells: fit video without cropping, fill screen, or off (`fitMode`). |
+| **Usability** | **[Popups & Prompts Suppressor](#24-popups--prompts-suppressor-popupsandpromptssuppressorpatch)** | `bytecodePatch` | Suppresses intrusive popups, dialogs, and modal prompts, including 'Follow your friends' dialogs, contacts sync overlays, multi-account notification guides, 2SV security checkup modals, PopLayer promotional sheets, live stream teaser bubbles, sticker recommendations, and DM streak expiration warnings. |
+| **Usability** | **Video Fit** | `bytecodePatch` | Adjusts video aspect ratio across feeds and story cells: fit video without cropping or fill screen (`fitMode`). |
 | **Privacy** | **Camera & Microphone Indicator** | `bytecodePatch` | Shows an on-screen corner indicator while TikTok holds camera or microphone open. |
 | **Privacy** | **Fix Google Login** | `bytecodePatch` | Restores Google account sign-in via Web OAuth fallback when GMS rejects modified APK signature. |
 | **Privacy** | **Fix Spotify Login** | `bytecodePatch` | Restores 'Add to Spotify' by intercepting the Spotify SDK SSO intent (rejected by the Spotify app for the re-signed APK) and completing Spotify Web OAuth in a WebView hosted over the SDK `LoginActivity`. |
@@ -73,6 +75,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Privacy** | **Friends Feed Strict Mutuals** | `bytecodePatch` | Filters suggested accounts, recommended videos, and non-mutual profiles (such as 'People you may know') from the Friends feed so it strictly reproduces content from mutual friends. |
 | **Privacy** | **Hide Suggested Accounts** | `bytecodePatch` | Removes suggested-account cards from profile headers and inbox/notification surfaces. |
 | **Privacy** | **Hide AI-Generated Content** | `bytecodePatch` | Filters and skips videos tagged with native AI-generated metadata, C2PA content credentials, or creator AI disclosure tags across the For You, Following, and Friends feeds. |
+| **Privacy** | **Hide Promotional Content** | `bytecodePatch` | Filters and skips videos disclosing branded or paid-promotional content ('Contenido Promocional' / paid partnership tags, StarAtlas orders, branded content accounts) across the For You, Following, and Friends feeds. |
 | **Privacy** | **Feed Live Stream Blocker** | `bytecodePatch` | Removes live broadcast cards and live recommendations from FYP and Following. |
 | **Privacy** | **Feed Bloat & Distraction Blocker** | `bytecodePatch` | Removes friend suggestions, suggested account carousels, mini-games, CapCut prompts, memories, community/topic cards, post-video evaluation surveys, questionnaires, mini-dramas, Lemon8 promo, in-feed search recommendations/interest cards, and floating rewards pendants across For You, Following, and Friends feeds. |
 | **Privacy** | **Unified Telemetry & Tracker Silencer** | `bytecodePatch` | Neutralizes ByteDance AppLog, APM/Npth/Heimdallr crash telemetry, and AppsFlyer. |
@@ -80,7 +83,9 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Privacy** | **Non-Personalized Search** | `bytecodePatch` | Forces TikTok's non-personalized search mode instead of the saved account choice. |
 | **Privacy** | **Disable Watch History Recording** | `bytecodePatch` | Prevents viewed videos from being recorded in account watch history, playback duration stores, and local history caches. |
 | **Privacy** | **Update Prompt Suppressor** | `bytecodePatch` | Neutralizes background update polling tasks and version enforcement dialogs. |
+| **Privacy** | **[TikTok Privacy Permissions Stripper](#12-tiktok-privacy-permissions-stripper)** | `resourcePatch` | Selectively strips sensitive privacy, sensor, hardware, and tracking permissions from AndroidManifest.xml via 15 granular opt-in boolean toggles. |
 | **Performance** | **[Display Refresh Rate Governor](#3-display-refresh-rate-governor)** | `bytecodePatch` | Locks window to peak hardware refresh rate (120Hz/90Hz) and neutralizes playback downclocking. |
+| **Performance** | **[Disable HDR Video Playback](#26-disable-hdr-video-playback-disablehdrvideopatch)** | `bytecodePatch` | Forces the video playback engine to select standard SDR bitrates instead of HDR (HDR10/PQ/HLG). |
 | **Performance** | **Instant Launch & Splash Blocker** | `bytecodePatch` | Eliminates cold startup delays, real-time splash advertisements, and background TopView ad preloading. |
 | **Performance** | **Resource & Battery Governor** | `bytecodePatch` | Suppresses 3D shake ad sensors and video buffer preloading. |
 | **Performance** | **P2P Video Relay & Mesh CDN Blocker** | `rawResourcePatch` | Strips `libavmdlp2pv2.so` and `libp2plivevdp.so` to stop background P2P CDN seeding. |
@@ -280,13 +285,14 @@ The **`Clean Share Panel`** patch removes clutter from the direct message sharin
 
 ### 7. Disable Feed Long-Press Actions
 
-The **`Disable Feed Long-Press Actions`** patch neutralizes long-press gesture detectors on the primary feed action buttons, preventing accidental menu popups while preserving native single-click interactions. It is governed by three independent boolean toggle switches.
+The **`Disable Feed Long-Press Actions`** patch neutralizes long-press gesture detectors on the primary feed action buttons, preventing accidental menu popups while preserving native single-click interactions. It is governed by three independent boolean toggle switches and a configurable video body long-press action.
 
 | Toggle Option | Key | Type | Default | Description |
 | :--- | :--- | :---: | :---: | :--- |
 | **Disable Long-Press Like (Repost)** | `disableLikeRepost` | Boolean | `true` | Prevents holding the Like button on feed videos from opening the Repost action panel. |
 | **Disable Long-Press Share (Quick DMs)** | `disableShareQuickDms` | Boolean | `true` | Prevents holding the Share button on feed videos from opening the quick share recent contacts tray. |
 | **Disable Long-Press Comment (Quick Emojis)** | `disableCommentReactions` | Boolean | `true` | Prevents holding the Comment button on feed videos from opening the quick reaction emojis picker. |
+| **Long Press Video Action** | `longPressVideo` | String | `nothing` | Action when long pressing feed video body: `nothing` (suppresses menu/repost), `comments`, `copyLink`, or `saveSound`. |
 
 ### 8. Show Seekbar
 
@@ -331,9 +337,48 @@ The **`Popups & Prompts Suppressor`** patch suppresses intrusive dialogs, bottom
 | :--- | :--- | :---: | :---: | :--- |
 | **Suppress Account & Permission Nags** | `suppressAccountPrompts` | Boolean | `true` | Suppresses 'Follow your friends' modals, 'Find contacts' Friends tab sync overlays, multi-account notification guides, and 'Security checkup 2SV' upsells. |
 | **Suppress Sticker Recommendations** | `suppressStickerRecommendations` | Boolean | `true` | Disables personalized sticker suggestion popups and typing recommendations in direct messages. |
-| **Filter PopLayer Prompts & Nags** | `filterPopLayerPrompts` | Boolean | `true` | Suppresses repetitive PopLayer prompts including favorites collection guides, launcher shortcut dialogs, repost newbie sheets, STEM feed prompts, campus education sheets, creator inbox guides, app review dialogs, marketing opt-ins, FYP surveys, CapCut/Lemon8 upsells, profile visitor prompts, and story intro sheets. |
+| **Filter PopLayer Prompts & Nags** | `filterPopLayerPrompts` | Boolean | `true` | Suppresses repetitive PopLayer prompts including favorites collection guides, launcher shortcut dialogs, repost newbie sheets, STEM feed prompts, campus education sheets, creator inbox guides, app review dialogs, marketing opt-ins, FYP surveys, CapCut/Lemon8 upsells, profile visitor prompts, profile view history sheets, message push guides, and story intro sheets. |
 | **Suppress Live Teaser Bubbles** | `suppressLiveTeaserBubble` | Boolean | `true` | Disables floating live stream preview teasers and popup windows from appearing over the video feed. |
 | **Suppress DM Streak Reminders** | `suppressStreakReminders` | Boolean | `true` | Suppresses direct message streak expiration warning banners and inline urgency reminders. |
+
+### 12. TikTok Privacy Permissions Stripper
+
+The **`TikTok Privacy Permissions Stripper`** patch selectively strips sensitive privacy, sensor, hardware, and tracking permissions from `AndroidManifest.xml` via 15 granular boolean toggles. Five toggles default to `true` (`nfc`, `screenshotDetection`, `oemSignals`, `bluetooth`, `biometric`), while the remaining 10 toggles default to `false`.
+
+> [!WARNING]
+> Stripping permissions at the manifest level completely revokes the capability for the application at the OS package level. While notification, NFC, and OEM signal removals are safe, stripping hardware or media permissions will disable respective features (camera, microphone, gallery, background sync) or cause crashes if components lack graceful permission guards.
+
+| Toggle Option | Key | Type | Default | Risk Level | Description |
+| :--- | :--- | :---: | :---: | :---: | :--- |
+| **Strip Notification Permission** | `stripNotifications` | Boolean | `false` | **Safe** | Remove `POST_NOTIFICATIONS` permission (Android 13+). Notification channels cannot dispatch push alerts. |
+| **Strip Camera Permission** | `stripCamera` | Boolean | `false` | **Risk** | Remove `CAMERA`. WARNING: Breaks camera recording, photo capturing, QR scanning, LIVE broadcasting, and video creation. |
+| **Strip Microphone Permissions** | `stripMicrophone` | Boolean | `false` | **Risk** | Remove `RECORD_AUDIO`, `FOREGROUND_SERVICE_MICROPHONE`, and `FOREGROUND_SERVICE_CAMERA`. WARNING: Breaks video voice recording, LIVE audio broadcasting, audio comments, and voice/video calling. |
+| **Strip Storage & Media Permissions** | `stripStorageMedia` | Boolean | `false` | **Risk** | Remove external storage (`READ`/`WRITE_EXTERNAL_STORAGE`) and media permissions (`READ_MEDIA_IMAGES`, `READ_MEDIA_VIDEO`, `READ_MEDIA_AUDIO`, `READ_MEDIA_VISUAL_USER_SELECTED`, `ACCESS_MEDIA_LOCATION`). WARNING: Breaks local gallery picker, drafts, and video/photo saving. |
+| **Strip Bluetooth Permissions** | `stripBluetooth` | Boolean | `true` | **Risk** | Remove `BLUETOOTH`, `BLUETOOTH_SCAN`, `BLUETOOTH_CONNECT`, and `BLUETOOTH_ADVERTISE`. WARNING: Breaks Bluetooth audio accessories, wireless headphones low-latency sync, Cast devices, and external remote controls. |
+| **Strip NFC Permission** | `stripNfc` | Boolean | `true` | **Safe\*** | Remove `NFC`. WARNING: Disables NFC tag interactions and NFC-based hardware authentication tokens. Safe unless using NFC hardware keys/login. |
+| **Strip Biometric Permissions** | `stripBiometric` | Boolean | `true` | **Risk** | Remove `USE_BIOMETRIC` and `USE_FINGERPRINT`. WARNING: Breaks fingerprint/face biometric unlocking, passkeys, and biometric payment authorization. |
+| **Strip Foreground Service Permissions** | `stripForegroundServices` | Boolean | `false` | **High Risk** | Remove generic `FOREGROUND_SERVICE` and specialized types (`DATA_SYNC`, `MEDIA_PLAYBACK`, `MEDIA_PROJECTION`, `PHONE_CALL`). WARNING: HIGH RISK. Breaks background video uploads, offline caching, media playback notification services, screen sharing, and background VoIP calls. |
+| **Strip System Alert Window Permission** | `stripSystemAlertWindow` | Boolean | `false` | **Risk** | Remove `SYSTEM_ALERT_WINDOW`. WARNING: Breaks Picture-in-Picture overlay window outside the app, floating mini-player, and overlay notification heads. |
+| **Strip Wake Lock Permission** | `stripWakeLock` | Boolean | `false` | **Risk** | Remove `WAKE_LOCK`. WARNING: Device CPU may sleep during media playback or long video uploads/downloads when screen turns off, suspending progress. |
+| **Strip Screenshot Detection Permissions** | `stripScreenshotDetection` | Boolean | `true` | **Safe** | Remove `DETECT_SCREEN_CAPTURE` and `DETECT_SCREEN_RECORDING` to neutralize OS-level capture detection callbacks. Complements Universal Screenshot Protection Bypass. |
+| **Strip Miscellaneous Hardware Permissions** | `stripMiscHardware` | Boolean | `false` | **Low/Med** | Remove `VIBRATE`, `MODIFY_AUDIO_SETTINGS`, `MANAGE_OWN_CALLS`, `REORDER_TASKS`, `SET_WALLPAPER`, and `USE_FULL_SCREEN_INTENT`. WARNING: Disables haptic feedback vibration, volume adjustments, alarm priority intents, and live wallpaper export. |
+| **Strip OEM Signals & Telemetry** | `stripOemSignals` | Boolean | `true` | **Safe\*** | Remove vendor diagnostic/attribution tokens (Huawei, Oppo, Orange, Samsung MapsAgent), launcher badge providers, AICore service binding, and internal TikTok IPC permissions. WARNING: Removing `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` may impact dynamic broadcast receivers registered at runtime. |
+| **Strip Push Delivery Permissions** | `stripPushDelivery` | Boolean | `false` | **Risk** | Remove Google C2DM/FCM (`com.google.android.c2dm.permission.RECEIVE`) and Amazon ADM (`com.amazon.device.messaging.permission.RECEIVE`). WARNING: Breaks background push notification reception. |
+| **Strip In-App Billing Permission** | `stripBilling` | Boolean | `false` | **Risk** | Remove Google Play In-App Billing (`com.android.vending.BILLING`). WARNING: Breaks coin purchases and in-app monetization transactions. |
+
+> [!NOTE]
+> `stripScreenshotDetection` provides OS-layer defense-in-depth alongside Universal Screenshot Protection Bypass: while the runtime bypass clears `FLAG_SECURE` and stubs `registerScreenCaptureCallback`, it does not revoke manifest declarations. Stripping `DETECT_*` ensures the OS never dispatches capture callbacks regardless of runtime state. Both can coexist.
+
+#### Non-Negotiables Excluded (Managed by Dedicated Patches)
+
+Certain permissions are intentionally excluded from this manifest stripper because specialized patches handle them at runtime via bytecode hooks without breaking Android manifest contracts:
+
+| Excluded Permissions | Authoritative Handler | Handling Mechanism & Rationale |
+| :--- | :--- | :--- |
+| `com.google.android.gms.permission.AD_ID`<br>`android.permission.ACCESS_ADSERVICES_AD_ID`<br>`android.permission.ACCESS_ADSERVICES_ATTRIBUTION`<br>`com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE` | **Universal Telemetry Neutralizer** + **Device Privacy Guard** | Bytecode hook zeroes GAID (`00000000-0000-0000-0000-000000000000`), drops AdServices attribution tokens, and neutralizes Play Store install referrer receivers in runtime memory. |
+| `android.permission.ACCESS_FINE_LOCATION`<br>`android.permission.ACCESS_COARSE_LOCATION` | **Device Privacy Guard** | Intercepts `LocationManager` and `PowerPermissions` headless dispatcher at the Dalvik layer, returning `PERMISSION_DENIED` and clearing location caches while avoiding manifest-level XML parse shifts. |
+| `android.permission.READ_CONTACTS` | **Device Privacy Guard** | Intercepts `ContentResolver.query` and BPEA contacts reader trampolines (`LX/0OFU`, `LX/0OFw`), returning empty cursors and neutralizing background sync Lego tasks without breaking caller state. |
+| `android.permission.INTERNET` | **Universal Offline Mode** *(Optional)* | **Total Exclusion**: Revoking `INTERNET` at the manifest level causes Linux kernel socket allocation denials (`EPERM` / `socket failed: EACCES`), crashing the process at frame 0. Users requiring total offline isolation should use [Universal Offline Mode](../universal-patches.md#5-universal-offline-mode-universalofflinepatch). |
 
 ---
 
@@ -553,13 +598,14 @@ The **`Popups & Prompts Suppressor`** patch suppresses intrusive dialogs, bottom
   - **Account & Permission Nags (`suppressAccountPrompts`)**:
     - Stubs `RecUserPopupInMainActivityController.LIZLLL()V` with `return-void` to prevent the "Follow your friends" recommendation dialog on startup and navigation.
     - Stubs `LX/0YL4;->LJII(...)V` with `return-void` to suppress "Get notifications from other accounts" prompts when switching accounts.
-    - Suppresses the "Find contacts" sync overlay on the Friends tab by stubbing `LX/0v6A;->canShow()Z` -> `false`, `LX/0v6A;->LJII(...)V` -> `return-void`, and `RelationAuthDialogControl;->LJFF(...)V` -> `return-void`.
-    - Suppresses 2-Step Verification security checkup popups by intercepting `LocalCampaignManager.showLocalCampaign` (`"UPSELL_2SV_POPUP"`) -> `false` and `PopSuiteManagerService.shouldShowPopSuitePopup` -> `false`.
+    - Suppresses the "Find contacts" sync overlay on the Friends tab by stubbing `LX/0v6A;->canShow()Z` -> `false`, `LX/0v6A;->LJII(...)V` -> `return-void`, and `RelationAuthDialogControl;->LJFF(...)V` -> `return-void`. Note: The secondary Find Contacts sync overlay remains pending runtime flow analysis.
+    - Suppresses 2-Step Verification security checkup popups and message push guides by intercepting `LocalCampaignManager.showLocalCampaign` -> `false` and `PopSuiteManagerService.shouldShowPopSuitePopup` -> `false` (generalized to block `UPSELL_2SV_POPUP`, `MESSAGE_REQUEST_PUSH_GUIDE_POPUP`, and `GPPPA` 2SV fullsheet/profile variants).
   - **Sticker Recommendations (`suppressStickerRecommendations`)**:
     - Disables sticker typing recommendations in direct messages by intercepting `ChatFeatureListConf.featureEnable` -> `false` when queried for `TYPING_RECOMMEND`.
   - **PopLayer Prompts & Nags (`filterPopLayerPrompts`)**:
     - Hooks `LX/07Q5;->canShow()Z` (`PopLayerBaseFragment.canShow`) to check against companion extension hook `TikTokPopupHook.shouldSuppressPopLayer()`.
-    - Blocks 18 targeted PopLayer labels and triggers: favorites collections guide, add shortcut nag, repost newbie guide, STEM feed prompt, campus education sheet, creator inbox guide, in-app review prompt, marketing/email opt-ins, FYP survey dialogs, CapCut upsell sheets, Lemon8 promo modals, profile visitor prompts, and story introduction sheets.
+    - Blocks targeted PopLayer labels and triggers: favorites collections guide, add shortcut nag, repost newbie guide, STEM feed prompt, campus education sheet, creator inbox guide, in-app review prompt, marketing/email opt-ins, FYP survey dialogs, CapCut upsell sheets, Lemon8 promo modals, profile visitor prompts, message push guides, and story introduction sheets.
+    - Stubs `LX/0P2r;->LIZ()V` with `return-void` to strictly block the "Profile view history turn-on" PopLayer sheet before it reaches the trigger evaluation.
   - **Live Stream Teaser Bubble (`suppressLiveTeaserBubble`)**:
     - Suppresses floating live stream preview teaser bubbles over feed videos by stubbing `LiveBubbleUtil.LIZ` -> `return-void` and forcing `LiveBubbleUtil.LJIIIIZZ` -> `false`.
   - **DM Streak Reminders (`suppressStreakReminders`)**:
@@ -574,3 +620,30 @@ The **`Popups & Prompts Suppressor`** patch suppresses intrusive dialogs, bottom
 - Stubs `isForceHdrOff()Z` -> `true` across all `ISimPlayerConfig` and `PlayerConfigImpl` implementations to trigger PlayerKit's native HDR rendition filter.
 - Stubs `SimVideoUrlModel.isHaveHdr()Z` -> `false` and `SimBitRate.isHdr()Z` -> `false` to ensure player models report streams strictly as standard dynamic range.
 
+### 27. TikTok Privacy Permissions Stripper (`tikTokPrivacyPermissionsStripperPatch`)
+- **Manifest DOM Transformation**:
+  - Implemented as a clean `resourcePatch` executing directly against `AndroidManifest.xml`.
+  - Uses `Element.stripPermissionsWhere` to query and remove direct children matching `uses-permission` and `uses-permission-sdk-23` without altering unrelated manifest metadata or application attributes.
+  - Guarantees zero resource re-encoding regressions (unlike full ARSC recompilation).
+- **Comprehensive Manifest Coverage & Pruning Discipline**:
+  - Covers all 64 unique permissions extracted from TikTok 47.1.4 standalone manifest (`tiktok_47.1.4_orig.apk`).
+  - 51 permissions mapped into 15 categorized boolean toggle switches (5 default `true`: `nfc`, `screenshotDetection`, `oemSignals`, `bluetooth`, `biometric`; 10 default `false`).
+  - 7 non-negotiable permissions pruned from manifest stripping and delegated to specialized runtime governors (**Universal Telemetry Neutralizer** and **Device Privacy Guard**).
+  - 1 kernel-critical permission (`android.permission.INTERNET`) explicitly excluded to prevent cold startup socket allocation aborts.
+- **Dynamic Mutation & Telemetry Summary**:
+  - Validates manifest existence before execution.
+  - Aggregates enabled toggles into a single pass predicate to prune elements efficiently.
+  - Emits concise ASCII telemetry (`[TikTok Privacy Permissions Stripper] Stripped N permission(s) from AndroidManifest.xml: ...`) with clean short names.
+
+### 28. Hide Promotional Content (`hidePromotionalContentPatch`)
+- Filters and skips videos disclosing branded or paid-promotional content ("Contenido Promocional" / paid partnership disclosure tags) across the For You, Following, and Friends feeds.
+- **Feed API Response Interception**: Hooks `FeedApiService.fetchFeedList` to filter incoming items at the network response boundary before model mapping.
+- **Feed Item Model Interception**: Hooks `FeedItemList.getItems()` and `FollowFeedList.getItems()` to sanitize feed collections in-situ.
+- **Friends Feed Network Interception**: Hooks `FriendsV3FeedNetworkSource.LJ` (V3 response handler) and the friend feed request `LX/06CX;->LIZLLL` (`/tiktok/v1/friend/friend_feed`, V2) return points to filter `friendsV3Feeds` / `friendFeedData` after deserialization.
+- **Multi-Vector Commercial & Branded Metadata Inspection**: Inspects `Aweme` for:
+  - `AwemeCommerceStruct` (`bcHashtag` tag disclosure text, `isBrandedContent` / `brandedContentType > 0`, `isBrandOrganicContent` / `brandOrganicType > 0`, `CommerceLabelInfo.bcLabelDisplayType == 1`, `ecSearchBoBcLabelText`).
+  - `brandContentAccounts` (tagged sponsor accounts list).
+  - `starAtlasOrderId` (ByteDance Star Atlas commercial order ID).
+  - `commercialVideoInfo` (commercial video payload marker).
+  - `promoteModel` and `promoteIconText` (native in-feed promotion triggers).
+  - Multi-locale description, caption, banner, and anchor fallback pattern matching (`#paidpartnership`, `#brandedcontent`, `#contenidopromocional`, `[Contenido Promocional]`, `[Paid partnership]`, `[Contenu sponsorisé]`, `[Colaboración pagada]`, `[Parceria paga]`, etc.).

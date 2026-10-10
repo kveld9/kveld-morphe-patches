@@ -7,6 +7,8 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.sharedExtensionPatch
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.ReferenceType
+import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
@@ -23,6 +25,141 @@ private data class SiteEdit(
     val smali: String,
     val type: SiteType,
 )
+
+private const val HOOK = Constants.TIKTOK_EXTENSION_CAMERA_MIC_HOOK
+
+private data class Target(
+    val definingClass: String,
+    val name: String,
+    val returnType: String,
+    val noParameters: Boolean,
+    val type: SiteType,
+    val isAfterMoveResult: Boolean = false,
+    val smali: String = "",
+)
+
+private val TARGET_TABLE = listOf(
+    Target(
+        definingClass = "Landroid/hardware/Camera;",
+        name = "open",
+        returnType = "Landroid/hardware/Camera;",
+        noParameters = false,
+        type = SiteType.CAMERA_OPEN,
+        isAfterMoveResult = true,
+    ),
+    Target(
+        definingClass = "Landroid/hardware/camera2/CameraManager;",
+        name = "openCamera",
+        returnType = "V",
+        noParameters = false,
+        type = SiteType.CAMERA_OPEN,
+        smali = "invoke-static {}, $HOOK->onCameraStart()V",
+    ),
+    Target(
+        definingClass = "Landroid/hardware/Camera;",
+        name = "release",
+        returnType = "V",
+        noParameters = true,
+        type = SiteType.CAMERA_RELEASE,
+        smali = "invoke-static {}, $HOOK->onCameraStop()V",
+    ),
+    Target(
+        definingClass = "Landroid/hardware/camera2/CameraDevice;",
+        name = "close",
+        returnType = "V",
+        noParameters = true,
+        type = SiteType.CAMERA_RELEASE,
+        smali = "invoke-static {}, $HOOK->onCameraStop()V",
+    ),
+    Target(
+        definingClass = "Landroid/media/AudioRecord;",
+        name = "startRecording",
+        returnType = "V",
+        noParameters = false,
+        type = SiteType.MIC_START,
+        smali = "invoke-static {}, $HOOK->onMicStart()V",
+    ),
+    Target(
+        definingClass = "Landroid/media/MediaRecorder;",
+        name = "start",
+        returnType = "V",
+        noParameters = true,
+        type = SiteType.MIC_START,
+        smali = "invoke-static {}, $HOOK->onMicStart()V",
+    ),
+    Target(
+        definingClass = "Landroid/media/AudioRecord;",
+        name = "stop",
+        returnType = "V",
+        noParameters = true,
+        type = SiteType.MIC_STOP,
+        smali = "invoke-static {}, $HOOK->onMicStop()V",
+    ),
+    Target(
+        definingClass = "Landroid/media/AudioRecord;",
+        name = "release",
+        returnType = "V",
+        noParameters = true,
+        type = SiteType.MIC_STOP,
+        smali = "invoke-static {}, $HOOK->onMicStop()V",
+    ),
+    Target(
+        definingClass = "Landroid/media/MediaRecorder;",
+        name = "stop",
+        returnType = "V",
+        noParameters = true,
+        type = SiteType.MIC_STOP,
+        smali = "invoke-static {}, $HOOK->onMicStop()V",
+    ),
+    Target(
+        definingClass = "Landroid/media/MediaRecorder;",
+        name = "release",
+        returnType = "V",
+        noParameters = true,
+        type = SiteType.MIC_STOP,
+        smali = "invoke-static {}, $HOOK->onMicStop()V",
+    ),
+)
+
+private val TARGET_NAMES = TARGET_TABLE.map { it.name }.toSet()
+
+private fun Target.matches(ref: MethodReference): Boolean {
+    if (ref.definingClass != definingClass) return false
+    if (ref.returnType != returnType) return false
+    if (noParameters && !ref.parameterTypes.isEmpty()) return false
+    return true
+}
+
+private fun matchTarget(instruction: Instruction): Target? {
+    if (instruction.opcode.referenceType != ReferenceType.METHOD) return null
+    val ref = (instruction as ReferenceInstruction).reference as MethodReference
+    if (ref.name !in TARGET_NAMES) return null
+    return TARGET_TABLE.firstOrNull { target ->
+        target.name == ref.name && target.matches(ref)
+    }
+}
+
+private fun computeEdit(
+    target: Target,
+    index: Int,
+    instructions: List<Instruction>,
+): SiteEdit? {
+    if (target.isAfterMoveResult) {
+        val nextInsn = instructions.getOrNull(index + 1) ?: return null
+        if (nextInsn.opcode != Opcode.MOVE_RESULT_OBJECT) return null
+        val cameraReg = (nextInsn as OneRegisterInstruction).registerA
+        return SiteEdit(
+            insertIndex = index + 2,
+            smali = "invoke-static/range {v$cameraReg .. v$cameraReg}, $HOOK->onCameraOpened(Landroid/hardware/Camera;)V",
+            type = target.type,
+        )
+    }
+    return SiteEdit(
+        insertIndex = index + 1,
+        smali = target.smali,
+        type = target.type,
+    )
+}
 
 val cameraMicIndicatorPatch = bytecodePatch(
     name = "Camera & Microphone Indicator",
@@ -48,211 +185,36 @@ val cameraMicIndicatorPatch = bytecodePatch(
         )
 
         // (b) Instrument invoke sites across target methods using Fingerprint + matchAll.
+        // Single scan over all methods instead of five; name check before class check avoids decoding long class strings.
         var cameraOpens = 0
         var cameraReleases = 0
         var micStarts = 0
         var micStops = 0
 
-        // Target API 1: Camera.open() and Camera.open(int)
-        val cameraOpenFp = Fingerprint(
+        val scanFp = Fingerprint(
             custom = { method, _ ->
-                method.implementation?.instructions?.any { ins ->
-                    val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference
-                    ref?.definingClass == "Landroid/hardware/Camera;" && ref.name == "open" && ref.returnType == "Landroid/hardware/Camera;"
-                } == true
+                method.implementation?.instructions?.any { matchTarget(it) != null } == true
             },
         )
-        cameraOpenFp.matchAll().forEach { match ->
+        scanFp.matchAll().forEach { match ->
             val method = match.method
             val instructions = method.implementation?.instructions?.toList() ?: return@forEach
             val edits = mutableListOf<SiteEdit>()
             instructions.forEachIndexed { index, instruction ->
-                val ref = (instruction as? ReferenceInstruction)?.reference as? MethodReference ?: return@forEachIndexed
-                if (ref.definingClass == "Landroid/hardware/Camera;" && ref.name == "open" && ref.returnType == "Landroid/hardware/Camera;") {
-                    val nextInsn = instructions.getOrNull(index + 1)
-                    if (nextInsn?.opcode == Opcode.MOVE_RESULT_OBJECT) {
-                        val cameraReg = (nextInsn as OneRegisterInstruction).registerA
-                        edits.add(
-                            SiteEdit(
-                                insertIndex = index + 2,
-                                smali = "invoke-static/range {v$cameraReg .. v$cameraReg}, ${Constants.TIKTOK_EXTENSION_CAMERA_MIC_HOOK}->onCameraOpened(Landroid/hardware/Camera;)V",
-                                type = SiteType.CAMERA_OPEN,
-                            )
-                        )
+                val target = matchTarget(instruction) ?: return@forEachIndexed
+                val edit = computeEdit(target, index, instructions) ?: return@forEachIndexed
+                edits.add(edit)
+            }
+            if (edits.isNotEmpty()) {
+                edits.sortByDescending { it.insertIndex }
+                edits.forEach { edit ->
+                    method.addInstructions(edit.insertIndex, edit.smali)
+                    when (edit.type) {
+                        SiteType.CAMERA_OPEN -> cameraOpens++
+                        SiteType.CAMERA_RELEASE -> cameraReleases++
+                        SiteType.MIC_START -> micStarts++
+                        SiteType.MIC_STOP -> micStops++
                     }
-                }
-            }
-            if (edits.isNotEmpty()) {
-                edits.sortByDescending { it.insertIndex }
-                edits.forEach { edit ->
-                    method.addInstructions(edit.insertIndex, edit.smali)
-                    cameraOpens++
-                }
-            }
-        }
-
-        // Target API 2: CameraManager.openCamera(...)
-        val cameraManagerOpenFp = Fingerprint(
-            custom = { method, _ ->
-                method.implementation?.instructions?.any { ins ->
-                    val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference
-                    ref?.definingClass == "Landroid/hardware/camera2/CameraManager;" && ref.name == "openCamera" && ref.returnType == "V"
-                } == true
-            },
-        )
-        cameraManagerOpenFp.matchAll().forEach { match ->
-            val method = match.method
-            val instructions = method.implementation?.instructions?.toList() ?: return@forEach
-            val edits = mutableListOf<SiteEdit>()
-            instructions.forEachIndexed { index, instruction ->
-                val ref = (instruction as? ReferenceInstruction)?.reference as? MethodReference ?: return@forEachIndexed
-                if (ref.definingClass == "Landroid/hardware/camera2/CameraManager;" && ref.name == "openCamera" && ref.returnType == "V") {
-                    edits.add(
-                        SiteEdit(
-                            insertIndex = index + 1,
-                            smali = "invoke-static {}, ${Constants.TIKTOK_EXTENSION_CAMERA_MIC_HOOK}->onCameraStart()V",
-                            type = SiteType.CAMERA_OPEN,
-                        )
-                    )
-                }
-            }
-            if (edits.isNotEmpty()) {
-                edits.sortByDescending { it.insertIndex }
-                edits.forEach { edit ->
-                    method.addInstructions(edit.insertIndex, edit.smali)
-                    cameraOpens++
-                }
-            }
-        }
-
-        // Target API 3: Camera.release() and CameraDevice.close()
-        val cameraReleaseFp = Fingerprint(
-            custom = { method, _ ->
-                method.implementation?.instructions?.any { ins ->
-                    val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference ?: return@any false
-                    val defClass = ref.definingClass
-                    val name = ref.name
-                    val params = ref.parameterTypes
-                    val returnType = ref.returnType
-                    ((defClass == "Landroid/hardware/Camera;" && name == "release" && params.isEmpty() && returnType == "V") ||
-                        (defClass == "Landroid/hardware/camera2/CameraDevice;" && name == "close" && params.isEmpty() && returnType == "V"))
-                } == true
-            },
-        )
-        cameraReleaseFp.matchAll().forEach { match ->
-            val method = match.method
-            val instructions = method.implementation?.instructions?.toList() ?: return@forEach
-            val edits = mutableListOf<SiteEdit>()
-            instructions.forEachIndexed { index, instruction ->
-                val ref = (instruction as? ReferenceInstruction)?.reference as? MethodReference ?: return@forEachIndexed
-                val defClass = ref.definingClass
-                val name = ref.name
-                val params = ref.parameterTypes
-                val returnType = ref.returnType
-                if ((defClass == "Landroid/hardware/Camera;" && name == "release" && params.isEmpty() && returnType == "V") ||
-                    (defClass == "Landroid/hardware/camera2/CameraDevice;" && name == "close" && params.isEmpty() && returnType == "V")) {
-                    edits.add(
-                        SiteEdit(
-                            insertIndex = index + 1,
-                            smali = "invoke-static {}, ${Constants.TIKTOK_EXTENSION_CAMERA_MIC_HOOK}->onCameraStop()V",
-                            type = SiteType.CAMERA_RELEASE,
-                        )
-                    )
-                }
-            }
-            if (edits.isNotEmpty()) {
-                edits.sortByDescending { it.insertIndex }
-                edits.forEach { edit ->
-                    method.addInstructions(edit.insertIndex, edit.smali)
-                    cameraReleases++
-                }
-            }
-        }
-
-        // Target API 4: AudioRecord.startRecording and MediaRecorder.start
-        val micStartFp = Fingerprint(
-            custom = { method, _ ->
-                method.implementation?.instructions?.any { ins ->
-                    val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference ?: return@any false
-                    val defClass = ref.definingClass
-                    val name = ref.name
-                    val params = ref.parameterTypes
-                    val returnType = ref.returnType
-                    ((defClass == "Landroid/media/AudioRecord;" && name == "startRecording" && returnType == "V") ||
-                        (defClass == "Landroid/media/MediaRecorder;" && name == "start" && params.isEmpty() && returnType == "V"))
-                } == true
-            },
-        )
-        micStartFp.matchAll().forEach { match ->
-            val method = match.method
-            val instructions = method.implementation?.instructions?.toList() ?: return@forEach
-            val edits = mutableListOf<SiteEdit>()
-            instructions.forEachIndexed { index, instruction ->
-                val ref = (instruction as? ReferenceInstruction)?.reference as? MethodReference ?: return@forEachIndexed
-                val defClass = ref.definingClass
-                val name = ref.name
-                val params = ref.parameterTypes
-                val returnType = ref.returnType
-                if ((defClass == "Landroid/media/AudioRecord;" && name == "startRecording" && returnType == "V") ||
-                    (defClass == "Landroid/media/MediaRecorder;" && name == "start" && params.isEmpty() && returnType == "V")) {
-                    edits.add(
-                        SiteEdit(
-                            insertIndex = index + 1,
-                            smali = "invoke-static {}, ${Constants.TIKTOK_EXTENSION_CAMERA_MIC_HOOK}->onMicStart()V",
-                            type = SiteType.MIC_START,
-                        )
-                    )
-                }
-            }
-            if (edits.isNotEmpty()) {
-                edits.sortByDescending { it.insertIndex }
-                edits.forEach { edit ->
-                    method.addInstructions(edit.insertIndex, edit.smali)
-                    micStarts++
-                }
-            }
-        }
-
-        // Target API 5: AudioRecord.stop/release and MediaRecorder.stop/release
-        val micStopFp = Fingerprint(
-            custom = { method, _ ->
-                method.implementation?.instructions?.any { ins ->
-                    val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference ?: return@any false
-                    val defClass = ref.definingClass
-                    val name = ref.name
-                    val params = ref.parameterTypes
-                    val returnType = ref.returnType
-                    ((defClass == "Landroid/media/AudioRecord;" && (name == "stop" || name == "release") && params.isEmpty() && returnType == "V") ||
-                        (defClass == "Landroid/media/MediaRecorder;" && (name == "stop" || name == "release") && params.isEmpty() && returnType == "V"))
-                } == true
-            },
-        )
-        micStopFp.matchAll().forEach { match ->
-            val method = match.method
-            val instructions = method.implementation?.instructions?.toList() ?: return@forEach
-            val edits = mutableListOf<SiteEdit>()
-            instructions.forEachIndexed { index, instruction ->
-                val ref = (instruction as? ReferenceInstruction)?.reference as? MethodReference ?: return@forEachIndexed
-                val defClass = ref.definingClass
-                val name = ref.name
-                val params = ref.parameterTypes
-                val returnType = ref.returnType
-                if ((defClass == "Landroid/media/AudioRecord;" && (name == "stop" || name == "release") && params.isEmpty() && returnType == "V") ||
-                    (defClass == "Landroid/media/MediaRecorder;" && (name == "stop" || name == "release") && params.isEmpty() && returnType == "V")) {
-                    edits.add(
-                        SiteEdit(
-                            insertIndex = index + 1,
-                            smali = "invoke-static {}, ${Constants.TIKTOK_EXTENSION_CAMERA_MIC_HOOK}->onMicStop()V",
-                            type = SiteType.MIC_STOP,
-                        )
-                    )
-                }
-            }
-            if (edits.isNotEmpty()) {
-                edits.sortByDescending { it.insertIndex }
-                edits.forEach { edit ->
-                    method.addInstructions(edit.insertIndex, edit.smali)
-                    micStops++
                 }
             }
         }
@@ -261,7 +223,8 @@ val cameraMicIndicatorPatch = bytecodePatch(
         if (totalSites == 0) {
             throw PatchException("Zero camera and microphone call sites found to instrument.")
         }
+        var patched = totalSites
 
-        println("[Camera Mic Indicator] Instrumented $cameraOpens camera opens, $cameraReleases camera releases, $micStarts mic starts, $micStops mic stops across $totalSites call site(s).")
+        println("[Camera Mic Indicator] Instrumented $cameraOpens camera opens, $cameraReleases camera releases, $micStarts mic starts, $micStops mic stops across $totalSites call site(s) -> $patched indicator hook(s) active.")
     }
 }

@@ -9,7 +9,8 @@ private val PROTECTED_EXTENSIONS = setOf(
 )
 
 private val PROTECTED_ROOT_DIRS = setOf(
-    "assets", "res", "lib", "smali"
+    "assets", "res", "lib", "smali",
+    "kotlin", // Runtime descriptors for kotlin-reflect, not build junk
 )
 
 private val EXACT_JUNK_NAMES = setOf(
@@ -57,7 +58,7 @@ private fun pruneEmptyDirectories(root: File) {
 @Suppress("unused")
 val apkJunkCleanerPatch = rawResourcePatch(
     name = "APK Junk Cleaner",
-    description = "Strips non-functional build metadata, compiler properties, Kotlin coroutines debug tables, and duplicate license texts from META-INF and APK root.",
+    description = "Strips non-functional build metadata, compiler properties, Kotlin coroutines debug tables, and duplicate license texts from META-INF and APK root while preserving kotlin/*.kotlin_builtins runtime descriptors.",
     default = false,
 ) {
     // Universal patch: applies to any target APK in Morphe Manager / CLI
@@ -98,18 +99,6 @@ val apkJunkCleanerPatch = rawResourcePatch(
                 }
             }
 
-        // Clean up orphan Kotlin build metadata directory if present at root
-        try {
-            val kotlinDir = get("kotlin")
-            if (kotlinDir.exists() && kotlinDir.isDirectory) {
-                val kFiles = kotlinDir.walkTopDown().filter { it.isFile }.toList()
-                val kSize = kFiles.sumOf { it.length() }
-                if (kotlinDir.deleteRecursively()) {
-                    junkFilesCount += kFiles.size
-                    savedBytes += kSize
-                }
-            }
-        } catch (_: Throwable) {}
 
         // Prune empty subdirectories left in META-INF
         try {

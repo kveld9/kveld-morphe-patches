@@ -10,10 +10,10 @@ Comprehensive technical and configuration guide for **Brave Browser** (`com.brav
 | :--- | :--- |
 | **Target Application** | Brave Private Web Browser, VPN |
 | **Package Name** | `com.brave.browser` |
-| **Supported Target Version** | **`1.96.61`** |
+| **Supported Target Version** | **`1.97.56`** |
 | **Target File Format** | Standalone APK (`APK`) |
 | **Recommended Architecture** | `arm64-v8a` (or `armeabi-v7a` for 32-bit devices) |
-| **Official Download Source** | [GitHub: brave/brave-browser/releases](https://github.com/brave/brave-browser/releases/tag/v1.96.61) |
+| **Official Download Source** | [GitHub: brave/brave-browser/releases](https://github.com/brave/brave-browser/releases/tag/v1.97.56) |
 | **Recommended APK Assets** | `Bravemonoarm64.apk` (64-bit) or `BraveMonoarm.apk` (32-bit) |
 
 > [!IMPORTANT]
@@ -34,13 +34,14 @@ Comprehensive technical and configuration guide for **Brave Browser** (`com.brav
 | **Disable Background Sync & Periodic Sync** | `bytecodePatch` | Battery & Performance | ✅ Yes | Eliminates background wakeups, radio modem activity, and battery drain by forcing `GooglePlayServicesChecker.shouldDisableBackgroundSync() -> true` and neutralizing sync tasks. |
 | **Disable Battery Status API & OS Listener** | `bytecodePatch` | Privacy & Anti-Fingerprinting | ✅ Yes | Neutralizes the Battery Status API (`navigator.getBattery`) to prevent cross-site device fingerprinting and drops OS `BATTERY_CHANGED` broadcast events. |
 | **Brave Startup Performance Optimization** | `bytecodePatch` + `resourcePatch` + `rawResourcePatch` | Performance & Startup | ✅ Yes | Optimizes startup time and eliminates background CPU/disk overhead by disabling unused OEM carrier partner customizations (`PartnerBrowserCustomizations`). |
-| **Native Bloat Slimmer** | `rawResourcePatch` | Storage Reclamation | ✅ Yes | Strips 6 unused native companion binaries (Impress Vision AI, WireGuard VPN, and Android XR / ARCore) to reclaim **~22.35 MB** of APK space. |
-| **Locale PAK Slimmer** | `rawResourcePatch` | Storage Reclamation | ✅ Yes | Strips unselected language PAKs from `assets/locales/` (~9.64 MB saved) using zero-crash binary fallback substitution. |
+| **Native Bloat Slimmer** | `rawResourcePatch` | Storage Reclamation | ❌ No | Strips 6 unused native companion binaries (Impress Vision AI, WireGuard VPN, and Android XR / ARCore) to reclaim **~22.35 MB** of APK space. |
+| **Locale PAK Slimmer** | `rawResourcePatch` | Storage Reclamation | ❌ No | Strips unselected language PAKs from `assets/locales/` (~9.64 MB saved) using zero-crash binary fallback substitution. |
 | **Sensor Privacy Guard** | `bytecodePatch` | Privacy & Anti-Fingerprinting | ✅ Yes | Forces `PlatformSensorProvider.hasSensorType -> false` and `PlatformSensor.create -> null`. Neutralizes W3C Generic Sensor APIs. |
 | **Disable Tab Auto-Minimization** | `bytecodePatch` | Debloat & UX | ✅ Yes | Forces `ChromeTabbedActivity.k6 ()Z -> false`, preventing Brave from minimizing active tabs to the background and opening a New Tab Page on resume. |
 | **Disable Content Capture** | `bytecodePatch` | Privacy & Anti-Tracking | ✅ Yes | Forces `OnscreenContentProvider.shouldCapture -> false`. Stops page text/URL streaming to the Android ContentCapture service. |
 | **Skip First Run** | `bytecodePatch` | Usability & UX | ✅ Yes | Skips the welcome screen, search engine selection, and onboarding First Run Experience (FRE) on clean installs. |
-| **Universal Patches Suite** | Multiple | Optimization & Privacy | Contextual | Compatible with universal slimmers and privacy patches (Telemetry Neutralizer, Native Binary Trimmer, WebP/PNG Optimizers, DPI/Locale Slimmers). See [Universal Patch Reference](../universal-patches.md). |
+| **Tab Group Close Selection** | `bytecodePatch` | Usability & UX | ✅ Yes | When closing the selected tab in a tab group, selects the previous tab in the same group instead of jumping to a tab outside the group. |
+| **Universal Patches Suite** | Multiple | Optimization & Privacy | Contextual | Do not stack universal slimmers or privacy patches on maintained apps. Only the curated Universal Hosts Blocker may be applied. See [Universal Patch Reference](../universal-patches.md). |
 
 ---
 
@@ -50,7 +51,7 @@ Comprehensive technical and configuration guide for **Brave Browser** (`com.brav
 - **Objective**: Unlock Brave Origin feature toggles and preferences without requiring remote enterprise management profiles.
 - **Mechanisms**:
   - Injects Origin preference switch items into settings layout XML (`xml_0x7f18001a.xml`).
-  - Hooks `BraveOriginPreferences` methods (`k5`, `T3`, `j5`, `X4`) to persist toggles locally in `SharedPreferences`.
+  - Hooks `BraveOriginPreferences` methods (`m5`, `U3`, `l5`, `Z4`) to persist toggles locally in `SharedPreferences`.
   - Stubs subscription check methods (`getIsSubscriptionActive`, `requestCredentialSummary`) to return active credentials.
   - Neutralizes the ARM64 BTI flag across bundled native binaries (`libchrome.so`, `libcrashpad_handler_trampoline.so`) and patches illegal instruction traps in `libchrome.so` to ensure seamless execution on ARMv8.0 and Android 16 devices.
 
@@ -60,7 +61,10 @@ Comprehensive technical and configuration guide for **Brave Browser** (`com.brav
   - **Bytecode Neutralization**: Intercepts `PrefService.e` queries for P3A (*Privacy-Preserving Product Analytics*), Brave Stats, and WDP (*Web Discovery Project*).
   - **Variations Connection Abort**: Injects early returns into HTTP loaders fetching experimentation variations seeds.
   - **Native Socket Redirection**: In `libchrome.so`, redirects 12 native telemetry endpoints (`*.bsg.brave.com`, `*.wdp.brave.com`, `usage-ping.brave.com`, `crashpad.chromium.org`, `variations.brave.com`) to `0.0.0.0`.
+  - **DEX Offers Host Neutralization**: Rewrites `const-string` literals containing `offers.brave.com` to `0.0.0.0` in Dalvik bytecode.
   - **Packaging Invariants**: Encapsulates multi-binary ARM64 BTI neutralization and trap patching dependencies.
+- **Options**:
+  - `blockOffersHost` (boolean, default: `true`): Rewrites DEX `const-string` literals containing `offers.brave.com` to `0.0.0.0`. Enabled by default; disable to keep commercial offers endpoint.
 
 ### 3. Clean New Tab Page (`braveCleanNewTabPagePatch`)
 - **Objective**: Completely eliminate sponsored advertising wallpapers, background campaign asset downloads, Brave News/Today promotional cards, and Brave Shields stats cards.
@@ -189,6 +193,15 @@ ur, uz, vi, zh-CN, zh-HK, zh-TW, zu
 - **Mechanisms**:
   - Forces `OnscreenContentProvider.shouldCapture(String)` to return `false`. The method is JNI-only and gates native capture, so no content is extracted or dispatched while `CompositorViewHolder` keeps a valid provider instance.
   - No effect on devices without a ContentCapture service (`adb shell dumpsys content_capture` reports `Can't find service`).
+
+### 16. Tab Group Close Selection (`braveTabGroupCloseSelectionPatch`)
+- **Objective**: Prevent Brave from kicking the user out of an active tab group when closing the selected tab, ensuring the predecessor tab within the same group is selected instead of jumping to a tab outside the group (GitHub issue #76).
+- **Mechanisms**:
+  - Hooks `TabCollectionTabModelImpl.Z(List, Tab, int, boolean, int, int)V` via companion helper `BraveExtension.preselectPreviousTabInGroup`.
+  - Evaluates whether the closing tab is the currently active/selected tab and belongs to a tab group with a predecessor tab (`currentIndex > firstIndex`).
+  - Pre-selects the predecessor tab via `model.setIndex(predecessorIndex)` before stock selection runs.
+  - When stock `NextTabSelectionUtil.getNextTabIfClosed` executes, it detects that the active tab is not closing, preserving focus within the tab group.
+  - Transparently falls back to stock Chromium selection behavior for single-tab groups, non-selected tab closures, bulk-close / close-all flows, and session restoration.
 
 ---
 

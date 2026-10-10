@@ -50,7 +50,7 @@ Execute AGP linting, Kotlin compiler checks, and unit tests:
 ---
 
 ### 3. In-Situ Patching Gate (Mandatory)
-Every patch change must be validated by running the Morphe Patcher against the target APK with all of that app's patches active. The run must finish with 0 failed patches, 0 fingerprint mismatches, and 0 smali compile errors:
+Every patch change must be validated by running the Morphe Patcher against the target APK with all of that app's patches active. The run must finish with 0 failed patches, 0 fingerprint mismatches, and 0 smali compile errors. The runner rejects any input whose version is not a target version declared by the selected patches:
 
 ```bash
 # Patch the target app (brave, gboard, hevy, tiktok, nokoprint, xiaomi_earbuds)
@@ -62,8 +62,17 @@ Every patch change must be validated by running the Morphe Patcher against the t
 # Force every boolean patch option on (covers hooks behind disabled-by-default toggles)
 ./gradlew runPatchTest -Papp=<targetApp> -PallOptions=true
 
+# Differential run against another app version (skips the target-version guard)
+./gradlew runPatchTest -Papk=/path/to/other_version.apk -PallowVersionMismatch=true
+
 # Also write a signed, installable APK
 ./gradlew runPatchTest -Papp=<targetApp> -Pout=candidate_apks/<app>_<version>_patched.apk
+
+# Warn when a single patch takes longer than N seconds (default 15; timings are always listed)
+./gradlew runPatchTest -Papp=<targetApp> -PslowPatchSeconds=10
+
+# Print a SHA-256 of the patched DEX set; with a path, also write per-file digests (compare before/after with diff)
+./gradlew runPatchTest -Papp=<targetApp> -PdexDigest=build/dex-before.txt
 ```
 
 For bundle targets (`.apkm` / `.xapk`), the signed split APKs are written next to the output and prefixed with its name (`<app>_<version>_patched.<split>.apk`), so one glob installs the whole set:
@@ -71,6 +80,14 @@ For bundle targets (`.apkm` / `.xapk`), the signed split APKs are written next t
 ```bash
 adb install-multiple -r candidate_apks/<app>_<version>_patched*.apk
 ```
+
+Or run the unattended smoke installation gate:
+```bash
+./venv/bin/python validation/smoke_install.py candidate_apks/<app>_<version>_patched*.apk
+```
+It automatically selects the target device by matching ABI and minimum SDK (override with `--serial` or `ANDROID_SERIAL`), refuses to replace the active keyboard without `--allow-active-ime`, and prints a machine-readable JSON verdict (exit 0 = PASS).
+
+The `FINAL PATCHING RESULT` block lists the five slowest patches and the total patch time, and prints a `[WARN] Slow patch:` line for every patch above the threshold. The first executed patch also absorbs pipeline startup and is marked as such. The warning is informational and never fails the run.
 
 ---
 

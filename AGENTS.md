@@ -81,6 +81,15 @@ morphe-patches/
    - **Failure & Guard Transparency**: If an early return occurs (missing feature, unsupported architecture, or optional inputs absent), log an explicit descriptive reason (`println("[Patch Name] Skipped: Reason...")`).
    - **Zero Loop Spam**: Never place `println` inside `walkTopDown()` or high-volume loops; aggregate deltas and report final saved KB/MB, pruned directories, or count metrics.
 
+5. **Fingerprint Scan Cost (Measured Performance Contract)**:
+   A fingerprint without `strings` or an exact `definingClass` lookup walks every method of the APK (TikTok: ~475k classes, ~2M methods), and dexlib2 decodes a DEX string on every `name`, `definingClass`, `parameterTypes` or `type` access. In the TikTok baseline four patches built this way cost ~90 s of a 159 s `runPatchTest`; the rules below brought it to ~100 s with byte-identical output.
+   - **One Walk Per Target Family**: Never run several `custom` + `matchAll()` scans over the whole APK inside one patch. Run one candidate scan whose predicate is the union of the targets, then let each section filter the candidate list with its own unchanged predicate at its original point (`DevicePrivacyGuardPatch`, `CommentCustomizerPatch` popup-ad marks).
+   - **Cheap Checks First**: Inside call-site predicates, reject with `ins.opcode.referenceType != ReferenceType.METHOD` and a `ref.name` check (short string, set lookup) before touching `definingClass`, `parameterTypes` or `returnType` (`CameraMicIndicatorPatch`).
+   - **Iterate Only the Member Kind Needed**: In class-level predicates, iterating `classDef.methods` or `classDef.fields` decodes every member of every class. Use `directMethods` when the predicate requires `STATIC` (static methods are always direct in DEX) and `instanceFields`/`staticFields` when the field kind is known (`DirectMessageDeclutterPatch`).
+   - **`matchAll()` Ignores `definingClass` as an Index**: In Morphe 1.8.0, `match()`/`.method` resolves an exact `definingClass` through a direct class lookup, but `matchAll()` still walks every class. Scope it with `fp.matchAll(classDefBy(TYPE))`.
+   - **Prefer Indexed Filters**: `strings` (and exact `definingClass` with `match()`) use the patcher's indexes; prefer them over `custom` lambdas whenever they express the same target.
+   - **Proof of Equivalence**: A performance-only change to a patch must produce byte-identical DEX output. Run `runPatchTest` on the same APK with `-PdexDigest=<file>` before and after the change and `diff` the two files (or compare the printed `[DIGEST]` aggregate); the runner output is deterministic. Profile before optimizing (`JAVA_TOOL_OPTIONS="-XX:StartFlightRecording=..."` with `--no-daemon`): the expensive part is often the member iteration, not the predicate itself.
+
 ---
 
 ## 3. Operational Workflow & Scope Discipline
@@ -189,7 +198,10 @@ For non-trivial logic, Smali hooks, native ARM64 patching (`libchrome.so`), or s
     - Each commit must adhere strictly to Conventional Commits to ensure clean `@semantic-release` changelog generation and bisectability.
 15. **Mandatory Direct Commit, Push-on-Request & Strict No-PR Policy**:
     - Automatically commit every completed, verified unit of work as soon as it is finished. Always commit; never ask whether to commit.
-    - **Push Only on Explicit Request**: Never push autonomously or propose pushing. Run `git push` only when the user explicitly requests it in the current conversation, after verifying that `git log origin/main..HEAD` and `git diff origin/main..HEAD` contain only intended commits and files.
+    - **Default Working Branch `dev`**: All routine development happens on `dev`. `main` is the stable release line and is touched ONLY by an explicit user-ordered promotion merge (`dev` into `main`, merge commit, never squash).
+    - **Push Only on Explicit Request**: Never push autonomously or propose pushing. Run `git push` only when the user explicitly requests it in the current conversation, after verifying that `git log origin/dev..HEAD` and `git diff origin/dev..HEAD` contain only intended commits and files (use `origin/main` as the base ONLY when promoting to stable).
+    - **Push Side Effects (CI Releases)**: Pushing `dev` triggers an experimental pre-release (`vX.Y.Z-experimental.N`); pushing `main` triggers a clean stable release. Never push `main` casually. Avoid back-to-back pushes to the same branch: a running Release workflow pushes its own `chore: Release` commit, and a concurrent push fails it with `fetch first` (self-recovers on the next run, but wastes CI).
+    - **Pre-Push Audit Gate**: No push to `origin` without a green `/audit-stack` over the pushed range (`origin/<base>..HEAD`, triaged-pass counts as green). Per-commit auto-audit is prohibited: gate cost (patcher runs on full-size APKs, multi-stage token burn) exceeds its marginal value over the mandatory per-change gates, and auto-remediation commits inside the loop risk audit-commit chains.
     - **Strict No-PR**: This repository and maintainer DO NOT work with Pull Requests (PRs). Work is committed directly or managed locally without PRs. Under NO circumstances should you ask to proceed with push or PR closing sequences, and NEVER generate PR titles or PR descriptions.
     - Commits MUST strictly be atomic, isolated, independent, clean, and concise.
 16. **Prohibition of Multi-Version Target Retentions**: see the Single Target Version Invariant in Section 2; this also covers `README.md` and every other documentation reference.
@@ -254,3 +266,20 @@ For non-trivial logic, Smali hooks, native ARM64 patching (`libchrome.so`), or s
 # Run automated on-device test suite (battery, sync, smoke launch)
 ./venv/bin/python validation/physical_harness/run_harness.py
 ```
+
+#### Standing Authorization: Autonomous Physical-Device Smoke Testing
+On-device install/launch verification via attached ADB devices is pre-authorized
+standing (user grant, no per-step confirmation required). When a task requires
+validating a patched APK on hardware, the agent must perform the device test
+itself instead of asking the user to run it. Permitted without asking:
+`adb devices` discovery, pushing test APKs, `adb install` / `install -r`,
+launching the test package (`am start` / `monkey`), `logcat` capture scoped to
+the test package, `dumpsys package` reads, and screenshots of the test app.
+Destructive actions are limited to the package under active validation on the
+attached lab device: `adb uninstall` only when a signature or split conflict
+blocks installing the test build, never for unrelated packages, never
+factory reset, never touching other apps' data. Prefer reinstall (`-r`) to
+preserve data. Always report device model, package, actions taken, and the
+launch verdict (alive PID vs FATAL) as evidence in the final report.
+Triage lab bootstrap (Frida/JADX) is pre-authorized via `scripts/ensure_lab_frida.sh` (idempotent; supports `ANDROID_SERIAL` override; server does not survive reboot).
+

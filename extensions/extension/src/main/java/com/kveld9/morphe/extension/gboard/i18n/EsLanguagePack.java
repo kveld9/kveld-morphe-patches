@@ -34,7 +34,6 @@ public class EsLanguagePack extends BaseLanguagePack {
         titles.put(PREF_KEY_TOOLBAR_ITEM_COUNT, "Cantidad de elementos en barra");
         titles.put(PREF_KEY_DISMISS_SUGGESTIONS, "Botón de descartar sugerencias");
         titles.put(PREF_KEY_CURSOR_TRACKPAD, "Modo trackpad de cursor");
-        titles.put(PREF_KEY_HIDE_NUMBER_HINTS, "Ocultar números sobre letras");
         titles.put(PREF_KEY_CAT_CLIPBOARD, "Portapapeles");
         titles.put(PREF_KEY_CLIPBOARD_EXTENDED_RETENTION, "Retención extendida de historial");
         titles.put(PREF_KEY_CLIPBOARD_RETENTION_HOURS, "Límite de tiempo de retención (horas)");
@@ -72,7 +71,6 @@ public class EsLanguagePack extends BaseLanguagePack {
         summaries.put(PREF_KEY_TOOLBAR_ITEM_COUNT, "Cantidad máxima de íconos mostrados en la barra superior (predeterminado: 5)");
         summaries.put(PREF_KEY_DISMISS_SUGGESTIONS, "Mostrar botón de cerrar (X) en la barra de sugerencias");
         summaries.put(PREF_KEY_CURSOR_TRACKPAD, "Navegación de cursor bidireccional (2D) en barra espaciadora");
-        summaries.put(PREF_KEY_HIDE_NUMBER_HINTS, "Oculta los números pequeños sobre la fila de letras. La pulsación larga sigue funcionando");
         summaries.put(PREF_KEY_CLIPBOARD_EXTENDED_RETENTION, "Habilitar límite de tiempo personalizado para elementos no fijados");
         summaries.put(PREF_KEY_CLIPBOARD_RETENTION_HOURS, "Horas de retención de elementos no fijados antes de eliminarlos (predeterminado: 24h)");
         summaries.put(PREF_KEY_CLIPBOARD_RAISE_LIMIT, "Habilitar límite personalizado para elementos no fijados en el historial");

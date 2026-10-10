@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.TextView;
 import com.kveld9.morphe.extension.gboard.i18n.GboardI18n;
 import java.lang.reflect.Constructor;
@@ -36,7 +35,6 @@ public class GboardExtension {
     public static final String PREF_KEY_ACCESS_POINTS_REDESIGN = "morphe_access_points_redesign";
     public static final String PREF_KEY_DISMISS_SUGGESTIONS = "morphe_dismiss_suggestions";
     public static final String PREF_KEY_CURSOR_TRACKPAD = "morphe_cursor_trackpad";
-    public static final String PREF_KEY_HIDE_NUMBER_HINTS = "morphe_hide_number_hints";
     public static final String PREF_KEY_CLIPBOARD_EXTENDED_RETENTION = "morphe_clipboard_extended_retention";
     public static final String PREF_KEY_CLIPBOARD_RETENTION_HOURS = "morphe_clipboard_retention_hours";
     public static final String PREF_KEY_CLIPBOARD_RAISE_LIMIT = "morphe_clipboard_raise_limit";
@@ -671,117 +669,6 @@ public class GboardExtension {
 
     public static boolean isCursorTrackpadEnabled() {
         return getBooleanPref(PREF_KEY_CURSOR_TRACKPAD, false);
-    }
-
-    public static boolean isHideNumberHintsEnabled() {
-        return getBooleanPref(PREF_KEY_HIDE_NUMBER_HINTS, false);
-    }
-
-    /**
-     * Clears single-digit secondary labels from a SoftKeyDef so the small
-     * number hints above the letter row are not rendered. Long-press actions
-     * live in a separate field (SoftKeyDef.g) and keep working. Overload for
-     * callers without direct view access.
-     */
-    public static void sanitizeNumberHints(Object def) {
-        sanitizeNumberHints(null, def);
-    }
-
-    /**
-     * Clears single-digit secondary labels from a SoftKeyDef and collapses
-     * any hint/sub-label view in SoftKeyView to View.GONE so that letter keys
-     * on the top row center vertically without reserving space for an empty hint.
-     * Fail-safe: any reflection mismatch is ignored and hints stay visible.
-     */
-    public static void sanitizeNumberHints(Object softKeyView, Object def) {
-        try {
-            if (!isHideNumberHintsEnabled()) return;
-            if (def == null) return;
-            Field fHints = findField(def.getClass(), "h");
-            if (fHints == null || fHints.getType() != CharSequence[].class) return;
-            CharSequence[] hints = (CharSequence[]) fHints.get(def);
-            if (hints == null) return;
-
-            boolean hasDigit = false;
-            boolean hasOther = false;
-            for (int i = 0; i < hints.length; i++) {
-                CharSequence cs = hints[i];
-                if (cs != null && cs.length() == 1 && Character.isDigit(cs.charAt(0))) {
-                    hints[i] = null;
-                    hasDigit = true;
-                } else if (cs == null || cs.length() == 0) {
-                    hasDigit = true;
-                } else {
-                    hasOther = true;
-                }
-            }
-
-            if (hasDigit) {
-                if (!hasOther) {
-                    fHints.set(def, null);
-                }
-                if (softKeyView instanceof ViewGroup) {
-                    collapseHintViews((ViewGroup) softKeyView);
-                }
-                if (softKeyView instanceof View) {
-                    final View v = (View) softKeyView;
-                    v.post(() -> {
-                        try {
-                            if (v instanceof ViewGroup) {
-                                collapseHintViews((ViewGroup) v);
-                            }
-                        } catch (Throwable ignored) {}
-                    });
-                }
-            }
-        } catch (Throwable ignored) {}
-    }
-
-    private static void collapseHintViews(ViewGroup vg) {
-        if (vg == null) return;
-        try {
-            int childCount = vg.getChildCount();
-            for (int i = 0; i < childCount; i++) {
-                View child = vg.getChildAt(i);
-                if (child == null) continue;
-                if (child instanceof ViewGroup) {
-                    collapseHintViews((ViewGroup) child);
-                } else if (child instanceof TextView) {
-                    TextView tv = (TextView) child;
-                    if (isHintTextView(tv)) {
-                        if (tv.getVisibility() != View.GONE) {
-                            tv.setVisibility(View.GONE);
-                        }
-                    }
-                }
-            }
-        } catch (Throwable ignored) {}
-    }
-
-    private static boolean isHintTextView(TextView tv) {
-        if (tv == null) return false;
-        int id = tv.getId();
-        if (id != View.NO_ID) {
-            try {
-                String entryName = tv.getResources().getResourceEntryName(id);
-                if (entryName != null) {
-                    String lower = entryName.toLowerCase(java.util.Locale.US);
-                    if (lower.contains("sub_label") || lower.contains("sublabel")
-                            || lower.contains("hint") || lower.contains("secondary")) {
-                        return true;
-                    }
-                    if (lower.equals("label") || lower.contains("main_label")
-                            || lower.contains("key_text")) {
-                        return false;
-                    }
-                }
-            } catch (Throwable ignored) {}
-        }
-        CharSequence text = tv.getText();
-        if (text != null && text.length() == 1 && Character.isDigit(text.charAt(0))) {
-            return true;
-        }
-        return false;
     }
 
     public static boolean isGrammarCheckerEnabled() {

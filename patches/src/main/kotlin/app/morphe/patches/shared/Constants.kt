@@ -5,7 +5,7 @@ import app.morphe.patcher.patch.AppTarget
 import app.morphe.patcher.patch.Compatibility
 
 object Constants {
-    const val BRAVE_TARGET_VERSION = "1.96.61"
+    const val BRAVE_TARGET_VERSION = "1.97.56"
     const val BRAVE_PACKAGE_NAME = "com.brave.browser"
 
     val COMPATIBILITY_BRAVE = Compatibility(
@@ -16,7 +16,7 @@ object Constants {
         targets = listOf(
             AppTarget(
                 version = BRAVE_TARGET_VERSION,
-                description = "Download Bravemonoarm64.apk or BraveMonoarm.apk (v1.96.61) from github.com/brave/brave-browser/releases"
+                description = "Download Bravemonoarm64.apk or BraveMonoarm.apk (v1.97.56) from github.com/brave/brave-browser/releases"
             )
         )
     )
@@ -81,7 +81,7 @@ object Constants {
     val COMPATIBILITY_NOKOPRINT = Compatibility(
         name = "NokoPrint - WiFi, Bluetooth, USB",
         packageName = NOKOPRINT_PACKAGE_NAME,
-        apkFileType = ApkFileType.APK,
+        apkFileType = ApkFileType.XAPK,
         appIconColor = 0x0288D1,
         targets = listOf(
             AppTarget(
@@ -97,7 +97,7 @@ object Constants {
     val COMPATIBILITY_XIAOMI_EARBUDS = Compatibility(
         name = "Xiaomi Earbuds",
         packageName = XIAOMI_EARBUDS_PACKAGE_NAME,
-        apkFileType = ApkFileType.APKM,
+        apkFileType = ApkFileType.XAPK,
         appIconColor = 0xFF6700,
         targets = listOf(
             AppTarget(
@@ -162,7 +162,6 @@ object Constants {
         const val KEY_ACCESS_POINTS_REDESIGN = "morphe_access_points_redesign"
         const val KEY_DISMISS_SUGGESTIONS = "morphe_dismiss_suggestions"
         const val KEY_CURSOR_TRACKPAD = "morphe_cursor_trackpad"
-        const val KEY_HIDE_NUMBER_HINTS = "morphe_hide_number_hints"
         const val KEY_CLIPBOARD_EXTENDED_RETENTION = "morphe_clipboard_extended_retention"
         const val KEY_CLIPBOARD_RETENTION_HOURS = "morphe_clipboard_retention_hours"
         const val KEY_CLIPBOARD_RAISE_LIMIT = "morphe_clipboard_raise_limit"

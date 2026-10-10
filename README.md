@@ -38,7 +38,7 @@
 
 | Application | Package ID | Target Version | Architecture / Variant | Download Source | Complete Guide |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Brave Browser** | `com.brave.browser` | `1.96.61` | `arm64-v8a`<br>`armeabi-v7a` (Monolithic) | [ARM64](https://github.com/brave/brave-browser/releases/download/v1.96.61/Bravemonoarm64.apk) · [ARM32](https://github.com/brave/brave-browser/releases/download/v1.96.61/BraveMonoarm.apk) | [Brave Guide](docs/apps/brave.md) |
+| **Brave Browser** | `com.brave.browser` | `1.97.56` | `arm64-v8a`<br>`armeabi-v7a` (Monolithic) | [ARM64](https://github.com/brave/brave-browser/releases/download/v1.97.56/Bravemonoarm64.apk) · [ARM32](https://github.com/brave/brave-browser/releases/download/v1.97.56/BraveMonoarm.apk) | [Brave Guide](docs/apps/brave.md) |
 | **Gboard Lite** | `com.google.android.inputmethod.latin` | `18.4.1.985164140` | `arm64-v8a`<br>`armeabi-v7a` (nodpi) | [APKMirror](https://www.apkmirror.com/apk/google-inc/gboard/gboard-the-google-keyboard-18-4-1-985164140-beta/) | [Gboard Lite Guide](docs/apps/gboard.md) |
 | **Hevy** | `com.hevy` | `3.1.14` | `arm64-v8a` (APKM Bundle) | [APKMirror](https://www.apkmirror.com/apk/hevy-gym-workout-tracker/hevy-gym-log-workout-tracker/hevy-gym-log-workout-tracker-3-1-14-release/) | [Hevy Guide](docs/apps/hevy.md) |
 | **NokoPrint** | `com.nokoprint` | `5.28.6` | Universal (nodpi) | [APKPure](https://d.apkpure.com/b/XAPK/com.nokoprint?versionCode=52806) | [NokoPrint Guide](docs/apps/nokoprint.md) |
@@ -72,7 +72,7 @@
 </details>
 
 <details>
-<summary>TikTok&nbsp;&nbsp;•&nbsp;&nbsp;<b>60 patches</b></summary>
+<summary>TikTok&nbsp;&nbsp;•&nbsp;&nbsp;<b>72 patches</b></summary>
 <br>
 
 **Supported versions:**
@@ -86,17 +86,18 @@
 | **Auto-Pause First Video** | Automatically pauses the first video when opening TikTok, allowing the application to finish background initialization and preventing playback lag. |  |
 | **Bypass Mandatory Login** | Neutralizes mandatory login walls, dynamic regional forced login gates, and guest browsing restrictions. |  |
 | **Bypass Screen Capture Detection** | Clears FLAG_SECURE on protected windows, restores Circle to Search / screen translate and recent apps snapshots, and neutralizes screenshot detection listeners and feedback prompts. |  |
+| **Camera & Microphone Indicator** | Shows a corner mark while TikTok holds camera/mic open. |  |
 | **Clean Share Panel** | Removes clutter from the share panel and direct message dialog, including suggested quick emojis and the 'Send to new group' button. | • Hide Quick Emojis<br>• Hide 'Send to New Group' |
-| **Clean Share URL** | Strips tracking parameters, user IDs, device fingerprints, and marketing tokens from shared TikTok links. |  |
+| **Clean Share URL** | Strips tracking parameters, user IDs, device fingerprints, and marketing tokens from shared TikTok links, with optional custom host redirection. | • Custom Share Host |
 | **Client-Side AI & Behavioral Profiling Governor** | Neutralizes on-device machine learning inference (Pitaya), Tako AI chatbot entry points and icons, and AI smart search suggestion clutter. |  |
-| **Comment Customizer** | Customizes TikTok's comment section, including native sort controls, clean text copying, disabling suggested emojis bar, hiding comment quick actions, hiding in-comment surveys and feedback cards, hiding profile photo story rings, enabling voice comments, and automatic comment translation. | • Comment Sort Controls<br>• Copy Comments Without Username<br>• Disable Suggested Emojis<br>• Hide Comment Quick Actions<br>• Hide Comment Surveys & Feedback Cards<br>• Hide Comment Story Rings<br>• Enable Voice Comments<br>• Auto-Translate Comments |
+| **Comment Customizer** | Customizes TikTok's comment section, including native sort controls, clean text copying, disabling suggested emojis bar, hiding comment quick actions, hiding in-comment surveys and feedback cards, hiding profile photo story rings, enabling voice comments, automatic comment translation, fixing silent comment drops, and hiding comment popup ads. | • Comment Sort Controls<br>• Fix Silent Comment Drops<br>• Copy Comments Without Username<br>• Disable Suggested Emojis<br>• Hide Comment Quick Actions<br>• Hide Comment Surveys & Feedback Cards<br>• Hide Comment Story Rings<br>• Enable Voice Comments<br>• Hide Comment Popup Ads<br>• Auto-Translate Comments<br>• Do-Not-Translate Languages |
 | **Core Asset De-bloat** | Strips embedded Microblink/FinTech card scanner models, Pitaya AI & ByteNN LLM engines, C2PA origin verification, DLNA cast scanners, and redundant non-Latin fonts to save APK space. |  |
 | **Custom Offline Videos Limit** | Customizes the maximum number of videos available for offline download caching. | • Custom Offline Videos Limit |
 | **Custom Share Sheet** | Customizes and cleans the native TikTok share sheet via individual toggle switches for third-party apps, essential sharing features, and secondary utility actions. | • Hide WhatsApp<br>• Hide Instagram<br>• Hide Facebook & Messenger<br>• Hide Telegram<br>• Hide X / Twitter<br>• Hide Snapchat<br>• Hide Reddit & Discord<br>• Hide SMS & Messages<br>• Hide Secondary Networks<br>• Hide 'Repost' Button<br>• Hide QR Code<br>• Hide 'Copy Link'<br>• Hide System Share ('More')<br>• Hide Friends / Direct Messages Row<br>• Hide 'Promote' Action<br>• Hide 'Why This Video'<br>• Hide 'Create Group' Action<br>• Hide 'Add to Story'<br>• Hide 'Create Sticker'<br>• Hide 'Duet' Action<br>• Hide 'Stitch' Action<br>• Hide 'Picture-in-Picture' (PiP)<br>• Hide 'Clear Display'<br>• Hide 'Background Audio'<br>• Hide Live Wallpaper & GIF<br>• Hide 'Not Interested'<br>• Hide 'Report' |
-| **Device Privacy Guard** | Neutralizes invasive runtime permissions (contacts sync, location tracking, nearby devices), advertising ID profiling, background clipboard snooping routines, and motion sensor profiling to protect user data. |  |
-| **Direct Message Declutter** | Removes visual clutter in direct messages and chat list, including the call button, reaction tray, message forward button, camera icons, input action buttons, try effect button, and sticker reply suggestions. | • Hide Chat List Camera Button<br>• Hide Header Call Button<br>• Hide Message Forward Button<br>• Hide Reaction and Streak Bar<br>• Hide Input Bar Camera Button<br>• Hide Gallery Button<br>• Hide Emoji/Stickers Button<br>• Hide Voice Recording Button<br>• Hide Try Effect Button<br>• Hide Sticker Reply Suggestions |
-| **Disable Double Tap to Like** | Disables the double tap gesture to like videos in the feed, preventing accidental likes while scrolling or pausing. Videos can still be liked using the like button. |  |
-| **Disable Feed Long-Press Actions** | Disables long-press action gestures on feed buttons, including Like to repost, Share to quick DMs, and Comment to quick emojis. | • Disable Long-Press Like (Repost)<br>• Disable Long-Press Share (Quick DMs)<br>• Disable Long-Press Comment (Quick Emojis) |
+| **Device Privacy Guard** | Neutralizes invasive runtime permissions, contacts queries, package inventory inspection, location hardware tracking, advertising ID profiling, background clipboard snooping routines, and motion sensor profiling to protect user data. |  |
+| **Direct Message Declutter** | Removes visual clutter in direct messages and chat list, including the call button, reaction tray, message forward button, camera icons, input action buttons, try effect button, sticker reply suggestions, and the typing-triggered sticker strip. | • Hide Chat List Camera Button<br>• Hide Header Call Button<br>• Hide Message Forward Button<br>• Hide Reaction and Streak Bar<br>• Hide Input Bar Camera Button<br>• Hide Gallery Button<br>• Hide Emoji/Stickers Button<br>• Hide Voice Recording Button<br>• Hide Try Effect Button<br>• Hide Sticker Reply Suggestions |
+| **Disable Double Tap to Like** | Disables double tap like in the feed. |  |
+| **Disable Feed Long-Press Actions** | Disables long-press action gestures on feed buttons, including Like to repost, Share to quick DMs, and Comment to quick emojis, with optional long-press video body redirection. | • Disable Long-Press Like (Repost)<br>• Disable Long-Press Share (Quick DMs)<br>• Disable Long-Press Comment (Quick Emojis)<br>• Long Press Video Action |
 | **Disable HDR Video Playback** | Forces the video playback engine to select standard SDR bitrates (BT.709/sRGB) instead of HDR (HDR10/PQ/HLG), preventing blinding screen brightness spikes and display thermal throttling while preserving smooth playback. |  |
 | **Disable Post-Download Share Dialog** | Suppresses the automatic 'Share to' and friend suggestions bottom sheet that pops up after finishing a download. |  |
 | **Disable Profile Photo LIVE Status** | Removes the pulsing LIVE ring and badge from creator avatars in the feed and ensures clicking navigates strictly to the user profile instead of launching the live stream. |  |
@@ -105,8 +106,11 @@
 | **Disable Search Video Autoplay** | Disables automatic video playback in search results. Videos only play when tapped to view in detail. |  |
 | **Disable Watch History Recording** | Prevents viewed videos from being recorded in account watch history, playback duration stores, and local history caches. |  |
 | **Display Refresh Rate Governor** | Forces TikTok to run at peak display refresh rate (120Hz/90Hz/60Hz) and neutralizes video playback framerate downclocking routines. | • Target Refresh Rate |
+| **Enable Live Search** | Shows TikTok's search entry in the Live drawer where supported. |  |
 | **Enable Profile Banner** | Unlocks the custom profile banner (background header cover) feature on user profiles and enables the banner selection and editing tools in Edit Profile. |  |
 | **Feed Ad Blocker** | Removes sponsored advertisements, brand promotions, and promotional audio from the For You, Following, and Search feeds. |  |
+| **Feed Bloat & Distraction Blocker** | Removes non-video clutter and floating ad widgets from the For You, Following, and Friends feeds, including Touchpoint Rewards pendants, floating ad stickers, suggested friend cards, mini-games, CapCut/template creation prompts, memories ('On This Day'), community/topic cards, post-video surveys and evaluation questionnaires, mini-drama paywalls, and in-feed search recommendations/interest cards. |  |
+| **Feed Content Filter** | Hides stories, photo posts, and videos outside configured view or like ranges from feeds. | • Minimum Views<br>• Maximum Views<br>• Minimum Likes<br>• Maximum Likes<br>• Hide Stories<br>• Hide Photo Posts |
 | **Feed Interface Declutter** | Customizes and cleans feed video overlay elements, including the full screen button, repost pill, interest feedback pills, video descriptions, profile photo follow badges, story rings, playlist bottom bars, save buttons, and music discs. | • Hide Repost Badge<br>• Hide Video Descriptions<br>• Hide Profile Photo Follow Button<br>• Disable Story Feed Indicators<br>• Hide Playlist Bottom Bar<br>• Hide Save Button<br>• Hide Music Cover Disc<br>• Hide Full Screen Button<br>• Hide Feedback Buttons |
 | **Feed Live Stream Blocker** | Removes live stream broadcast cards and live recommendations from the For You and Following feeds. |  |
 | **Fix Google Login** | Restores Google account sign-in after patching by forcing fallback to Web-based OAuth when Google Play Services rejects the modified APK signature. |  |
@@ -117,30 +121,39 @@
 | **Hide Inbox Promos & Alerts** | Hides promotional banners, streak mascot cards, contact sync suggestions, friend recommendations, and migration guide tooltips in the inbox and direct messages. | • Hide Top Promotional Banners<br>• Hide Contact & Friend Recommendations<br>• Hide Navigation Notices & Tooltips |
 | **Hide Inbox Story & Status Tray** | Hides the horizontal story, notes, and status tray (Skylight) displayed at the top of direct messages and the inbox. |  |
 | **Hide Popular Lives In Search** | Removes the Popular LIVEs recommendation card and live stream broadcasts from the search discovery page. |  |
+| **Hide Promotional Content** | Filters videos disclosing branded/paid-promotional content (Contenido Promocional tag) from For You, Following and Friends feeds. |  |
 | **Hide Seen Videos** | Filters previously watched videos from incoming For You feed batches. |  |
+| **Hide Suggested Accounts** | Removes suggested-account cards from profile headers and inbox surfaces. |  |
 | **Hide Suggested Searches** | Removes the suggested search keywords section ('You may like' / 'Search suggestions') from the search discovery page. |  |
 | **Hide TikTok Shop & Mall** | Removes product showcase badges, shopping cart tags, and the TikTok Shop / Mall tab from navigation bars and video posts. | • Hide Shop Navigation Tab<br>• Hide Video Product Anchors |
 | **In-App Browser Privacy Guard** | Redirects external and third-party web links to the default system browser and neutralizes inline JavaScript tracking, DOM monitoring, and AJAX hooking in residual in-app WebViews. |  |
 | **Instant Launch & Splash Blocker** | Eliminates cold startup delays, background resume splash advertisements, real-time splash requests, and TopView ad preloading. |  |
 | **Language Pack Purger** | Strips unselected language string bundles from assets/strings#lang_* to save APK space. | • Languages to keep |
 | **Live Stream 3D Gift Optimizer** | Disables Live 3D gift particle effect engine and widget rendering lifecycle to eliminate frame drops during live streams. |  |
-| **Live Stream SDK & Minigame De-bloat** | Strips Live link mic SDK (liblink_mic_sdk.so), Lyrax RTC broadcasting engines (liblyrax.so), and live stream interactive minigames to reduce APK size and memory footprint. |  |
-| **Media Usability & Watermark-Free Downloader** | Unblocks the download button on creator-restricted videos inside the Share panel, and routes downloads to clean unwatermarked media streams. |  |
+| **Live Stream SDK & Minigame De-bloat** | Strips Live link mic SDK (liblink_mic_sdk.so), Lyrax RTC broadcasting engines (liblyrax.so), DM voice/video call engine (libvoip.so), live RTM messaging (librtmglobal.so) and live base runtime (libbase_live.so), plus live stream interactive minigames to reduce APK size and memory footprint. Breaks live viewing/broadcasting and direct message calls. |  |
+| **Media Usability & Watermark-Free Downloader** | Unblocks the download button on creator-restricted videos inside the Share panel, and routes downloads to clean unwatermarked media streams. | • Remove Watermark<br>• Saved-Video Quality Preference |
 | **Navigation & Header Declutter** | Removes clutter from the feed navigation and top header bar, including the Nearby feed tab, Community (Explore) tab, top-left LIVE broadcast button, central '+' create content button, in-video bottom search suggestion bar, friend profile photo previews on the bottom Friends tab, and unread notification badges on the bottom Messages (Inbox) tab. | • Hide Nearby Feed Tab<br>• Hide Community Tab<br>• Hide Top-Left LIVE Button<br>• Hide Feed Search Bar<br>• Hide Create / Publish Button<br>• Hide Friends Tab Avatar Preview<br>• Hide Inbox Notification Badge |
+| **Non-Personalized Search** | Forces TikTok's non-personalized search mode instead of the saved account choice. |  |
 | **P2P Video Relay & Mesh CDN Blocker** | Strips background Peer-to-Peer CDN distribution binaries (libavmdlp2pv2.so and libp2plivevdp.so) to prevent battery drain, background data upload, and mesh relay. |  |
-| **Playback Speed Persistence** | Persists selected video playback speed across all feed videos and application restarts. |  |
+| **Playback Speed Persistence** | Persists selected video playback speed across all feed videos and application restarts, and optionally enables the native hold-and-slide 2x speed lock gesture. | • Hold-And-Slide 2x Speed Lock |
 | **Popups & Prompts Suppressor** | Suppresses intrusive popups, dialogs, and modal prompts, including 'Follow your friends' dialogs, contacts sync overlays, multi-account notification guides, 2SV security checkup modals, PopLayer promotional sheets, live stream teaser bubbles, sticker recommendations, and DM streak expiration warnings. | • Suppress Account & Permission Nags<br>• Suppress Sticker Recommendations<br>• Filter PopLayer Prompts & Nags<br>• Suppress Live Teaser Bubbles<br>• Suppress DM Streak Reminders |
+| **Remember Clear Display** | Remembers TikTok's clear-display state between videos and re-applies it when new videos start. |  |
 | **Resource & Battery Governor** | Throttles background sensor polling (gyroscope/accelerometer 3D ads) and prevents aggressive video buffer preloading to conserve battery and CPU resources. |  |
 | **Resume Video After Scroll** | Remembers playback timestamp when scrolling away and resumes from where playback stopped upon returning. |  |
-| **SIM Region Selector** | Spoofs the detected SIM and network country ISO code to bypass regional feed restrictions and catalog blocks. | • Spoofed Region ISO Code |
+| **SIM Region Selector** | Spoofs the detected SIM and network country ISO code, operator numeric codes, operator names, and cell identity MCC/MNC to bypass regional feed restrictions and catalog blocks. | • Spoofed Region ISO Code<br>• Spoofed Operator Numeric Code (MCC+MNC)<br>• Spoofed Operator Name |
+| **Show Author Region** | Displays the creator's country or region code next to their username in video author info across feeds and deep-linked detail views. |  |
 | **Show Seekbar** | Restores TikTok's native video seekbar and scrubbing controls where normally hidden or disabled. | • Show Dragging Thumbnail Preview |
+| **Skip Content Warnings** | Bypasses and clears sensitive content warnings, graphic media blur overlays, and age gates on feed videos. |  |
 | **Skip First-Launch Onboarding** | Bypasses the entire first-run introduction funnel (interest pickers, swipe tutorials, language prompts, and consent sheets) directly to the feed. |  |
 | **Stop Video Looping** | Stops videos at the end instead of replaying them in an infinite loop. |  |
-| **Studio & Creation De-bloat** | Strips heavy video creation plugins, CapCut NLE editor SDKs, effect plugins, and AR camera face models to significantly reduce APK size. |  |
+| **Studio & Creation De-bloat** | Strips heavy video creation plugins, CapCut NLE editor SDKs, effect plugins, camera dynamic features, upload video encoders, on-device AI runtimes (LiteRT), and AR camera face models to significantly reduce APK size. |  |
 | **System Font** | Forces TikTok to use the Android system font instead of bundled proprietary TikTokSans fonts. |  |
+| **TikTok Privacy Permissions Stripper** | Selectively strips sensitive privacy, sensor, hardware, and tracking permissions from AndroidManifest.xml via configurable boolean toggles. | • Strip Notification Permission<br>• Strip Camera Permission<br>• Strip Microphone Permissions<br>• Strip Storage & Media Permissions<br>• Strip Bluetooth Permissions<br>• Strip NFC Permission<br>• Strip Biometric Permissions<br>• Strip Foreground Service Permissions<br>• Strip System Alert Window Permission<br>• Strip Wake Lock Permission<br>• Strip Screenshot & Recording Detection Permissions<br>• Strip Miscellaneous Hardware & System Permissions<br>• Strip OEM Diagnostic & Background Signals<br>• Strip Push Delivery Permissions<br>• Strip In-App Billing Permission |
 | **Unified Telemetry & Tracker Silencer** | Neutralizes ByteDance AppLog user tracking, APM/Npth/Heimdallr crash monitors, AppsFlyer attribution, and Firebase analytics. |  |
 | **Update Prompt Suppressor** | Neutralizes background update polling tasks and device ID check routines to prevent forced update popups. |  |
-| **Video Quality Governor** | Caps video playback and download resolutions (1080p, 720p, 540p, 480p, 360p) independently to conserve battery, GPU/MediaCodec load, and mobile data. | • Maximum Playback Resolution<br>• Maximum Download Resolution |
+| **Video Fit** | Adjusts video display aspect ratio across feeds and story cells: 'fit' ensures the entire video is visible without cropping, or 'fill' expands the video to fill the screen. | • Video Fit Mode |
+| **Video Quality Governor** | Caps video playback resolution (1080p, 720p, 540p, 480p, 360p) to conserve battery, GPU/MediaCodec load, and mobile data. Download quality is controlled separately by the Media Usability patch (downloadQuality). | • Maximum Playback Resolution<br>• Avoid ByteVC2 Software Decoding<br>• Drop Undecodable Video Streams |
+| **Voice & Speech Engine De-bloat** | Strips on-device voice recognition and speech synthesis engines (libspeechspg.so, libspeechsdk.so) and their loader stubs (libspeechengine.so, libspeechepg.so) to save APK space. Breaks voice search (microphone button), voice input, and editor text-to-speech/sing features. |  |
 
 </details>
 
@@ -188,17 +201,17 @@
 </details>
 
 <details>
-<summary>Brave Private Web Browser, VPN&nbsp;&nbsp;•&nbsp;&nbsp;<b>15 patches</b></summary>
+<summary>Brave Private Web Browser, VPN&nbsp;&nbsp;•&nbsp;&nbsp;<b>16 patches</b></summary>
 <br>
 
 **Supported versions:**
 
-| 1.96.61 |
+| 1.97.56 |
 | :---: |
 
 | Patch | Description | Options |
 |----------|----------------|-----------|
-| **Block Brave Telemetry** | Blocks P3A product analytics, Brave Stats usage pings, crash dump uploads, WDP, Chromium UMA metrics, and Variations seed fetching. |  |
+| **Block Brave Telemetry** | Blocks P3A product analytics, Brave Stats usage pings, crash dump uploads, WDP, Chromium UMA metrics, and Variations seed fetching. | • Block Offers host |
 | **Brave In-Product & Commercial Notification Optimizer** | Eliminates background wakeups and notifications from Chromium tips scheduler (Job ID 105), Brave Rewards onboarding promo, and retention marketing campaigns. |  |
 | **Brave Origin** | Unlocks Brave Origin and enables local feature toggle controls. |  |
 | **Brave Startup Performance Optimization** | Optimizes startup time and eliminates background CPU/disk overhead by disabling unused OEM carrier partner customizations. |  |
@@ -213,6 +226,7 @@
 | **Sensor Privacy Guard** | Neutralizes motion, ambient, and orientation sensor providers to prevent hardware fingerprinting and tracking via Generic Sensor APIs. |  |
 | **Skip First Run** | Skips the welcome screen, search engine selection, and onboarding First Run Experience (FRE) on clean installs. |  |
 | **Suppress In-App Promos & Surveys** | Suppresses intrusive in-app rating surveys, Play Store review prompts, and marketing promo popups (YouTube promo, ad-free callouts, and Brave Ads onboarding). |  |
+| **Tab Group Close Selection** | When closing the active tab in a tab group, selects the previous tab in the same group instead of jumping outside the group. |  |
 
 </details>
 
@@ -231,9 +245,9 @@
 | **Clone Gboard** | Changes the package name by appending a dot and custom suffix (defaults to 'clone') to allow installing Gboard alongside the original application. | • Package name suffix |
 | **Disable Background Sync** | Neutralizes AndroidX WorkManager schedulers, MDD (Mobile Data Download) periodic sync, and Superpacks eager asset synchronization (opt-in to preserve initial dictionary downloads). |  |
 | **Disable Cloud Backup** | Disables Android backup for Gboard (allowBackup=false and backup agent removed) so keyboard settings, learned words, and personal dictionary data are never uploaded to Google Drive backups or copied by device-to-device transfer. |  |
-| **Disable Play Services Integration** | Makes Gboard's Google Play services availability check always report SERVICE_DISABLED, so GMS-backed code paths (Clearcut logging, Phenotype, account sync, Google Help feedback) are skipped at the source instead of being attempted. Trade-off: Disables Gboard's inline Google Translate tool, which relies on Play Services Cronet. |  |
+| **Disable Play Services Integration** | Makes Gboard's Google Play services availability check always report SERVICE_DISABLED, so GMS-backed code paths (Clearcut logging, Phenotype, account sync, Google Help feedback) are skipped at the source instead of being attempted. Note: Disables Gboard's inline Google Translate tool, which relies on Play Services Cronet. |  |
 | **Disable Remote Configuration** | Disables periodic remote experiment flag synchronization and background updates. |  |
-| **Gboard Enhancements** | Master customization suite bundling in-app toggleable features (AMOLED Pure Black theme, zero bottom inset, independent keyboard vibration, force incognito, voice typing in incognito, clipboard retention, top toolbar icons count, cursor trackpad, and smart flags) managed directly from a top-level Morphe Patches category in Gboard Settings. |  |
+| **Gboard Enhancements** | Master customization suite bundling in-app toggleable features (AMOLED Pure Black theme, zero bottom inset, independent keyboard vibration, force incognito, voice typing in incognito, clipboard in incognito, clipboard retention, top toolbar icons count, cursor trackpad, and smart flags) managed directly from a top-level Morphe Patches category in Gboard Settings. |  |
 | **Hardened Intent Security** | Enables Gboard internal external intent protection against unauthorized intent hijacking and removes the exported, permissionless web debug bridge content provider. |  |
 | **Offline Only** | Completely isolates Gboard from the network by revoking network permissions, neutralizing HTTP clients (Cronet, OkHttp, Superpacks), and spoofing offline status. |  |
 | **Resource Slimmer** | Strips embedded third-party license text, onboarding tutorial Lottie animations, promotional GIFs, and APK root metadata/junk files. |  |
@@ -242,23 +256,25 @@
 </details>
 
 <details>
-<summary>Universal&nbsp;&nbsp;•&nbsp;&nbsp;<b>13 patches</b></summary>
+<summary>Universal&nbsp;&nbsp;•&nbsp;&nbsp;<b>15 patches</b></summary>
 <br>
 
 | Patch | Description | Options |
 |----------|----------------|-----------|
-| **APK Junk Cleaner** | Strips non-functional build metadata, compiler properties, Kotlin coroutines debug tables, and duplicate license texts from META-INF and APK root. |  |
+| **APK Junk Cleaner** | Strips non-functional build metadata, compiler properties, Kotlin coroutines debug tables, and duplicate license texts from META-INF and APK root while preserving kotlin/*.kotlin_builtins runtime descriptors. |  |
 | **Background Sync & JobScheduler Purge** | Strips RECEIVE_BOOT_COMPLETED and disables boot, package-replacement, and periodic background sync receivers and services in AndroidManifest.xml to eliminate background wakeups and conserve battery. | • Strip RECEIVE_BOOT_COMPLETED Permission<br>• Disable Boot & Package Receivers<br>• Disable WorkManager & Job Schedulers<br>• Strip WAKE_LOCK Permission |
 | **DPI Resource Slimmer** | Strips unselected screen density resource directories from res/ (e.g. drawable-mdpi, drawable-hdpi, mipmap-xhdpi). Density-independent resources (nodpi, anydpi) and orphan resources are safely preserved in-situ. | • DPI densities to keep<br>• Remove smartwatch (Wear OS) resources<br>• Remove Android TV resources<br>• Remove automotive, dock, and VR resources |
 | **Locale Resource Slimmer** | Strips unselected language translation directories from res/ (e.g. values-*, raw-*, xml-*). Base fallback resources with no language qualifiers are always preserved. | • Locales to keep |
 | **PNG Asset Optimizer** | Losslessly recompresses PNG assets with maximum zlib compression and strips non-rendering metadata chunks (pHYs, tEXt, tIME) while preserving 9-patch structures and pixel accuracy. |  |
+| **Universal Hosts Blocker** | Rewrites Dalvik const-string URL/host literals matching a user-supplied hosts blocklist to a sink IP (default 0.0.0.0). The blocklist file is read at patch time, so daily DNS updates apply without patch releases. | • Hosts blocklist file<br>• Sink IP address<br>• Match subdomains |
 | **Universal Native Binary Trimmer** | Strips non-essential tracking, crash reporting, and debug companion native libraries in lib/** (e.g. libcrashlytics, libsentry, libbugly, libgwp-asan) by zeroing bytes in-situ. | • Trim Crash Reporting Libraries<br>• Trim Debug & Profiling Libraries |
 | **Universal Offline Mode** | Forces offline execution across any application by revoking INTERNET and network permissions from AndroidManifest.xml and blocking cleartext HTTP traffic at the OS level. | • Strip Network State Permissions<br>• Strip Wi-Fi Control Permissions<br>• Strip Push Notification Permissions<br>• Strip Google Services Sync Permissions<br>• Block Cleartext Traffic |
 | **Universal Privacy Permissions Stripper** | Selectively strips sensitive privacy, sensor, and hardware permissions from AndroidManifest.xml via configurable boolean toggles. | • Strip Notification Permission<br>• Strip Camera Permission<br>• Strip Microphone Permissions<br>• Strip Storage & Media Permissions<br>• Strip Location Permissions<br>• Strip Contacts & Accounts Permissions<br>• Strip Calendar Permissions<br>• Strip Nearby Devices Permissions<br>• Strip Body Sensors Permissions |
+| **Universal SDK Blocker** | Neutralizes third-party APM, crash reporting, analytics, attribution, session replay, location tracking, and push engagement SDK init and event methods at DEX level via early return-void; companion runtime layer to Universal Telemetry Neutralizer (manifest layer). | • Block APM & Performance Monitoring SDKs<br>• Block Crash Reporting SDKs<br>• Block Analytics SDKs<br>• Block Attribution & Engagement SDKs<br>• Block Legacy Google Analytics<br>• Block Push Engagement SDKs (WARNING: Breaks Push)<br>• Block Session Replay SDKs<br>• Block Location & Beacon Tracking SDKs |
 | **Universal Screen Brightness Governor** | Prevents applications from overriding display brightness (such as in-app brightness sliders, barcode/QR full-screen brightness, or window-level overrides) by neutralizing all direct writes to WindowManager.LayoutParams.screenBrightness. |  |
 | **Universal Screen Timeout Enforcer** | Forces the target application to respect system screen timeout and sleep timers by neutralizing keepScreenOn view calls and stripping FLAG_KEEP_SCREEN_ON from windows and layout parameters. |  |
 | **Universal Screenshot Protection Bypass** | Neutralizes FLAG_SECURE on windows, layout params, and SurfaceViews, unlocks audio playback capture, and suppresses Android 14+ screenshot and screen recording detection callbacks. |  |
-| **Universal Telemetry Neutralizer** | Strips advertising and Privacy Sandbox permissions, disables analytics ContentProviders and telemetry background services (Firebase, Sentry, Adjust, AppsFlyer, DataTransport), prunes ComponentDiscovery registrars, and injects telemetry opt-out metadata. | • Revoke Advertising & Tracking Permissions<br>• Disable Telemetry ContentProviders<br>• Disable Telemetry Background Services<br>• Disable Telemetry Receivers<br>• Inject Telemetry Opt-Out Flags & Prune Registrars<br>• Disable Firebase Init Provider |
+| **Universal Telemetry Neutralizer** | Strips advertising and Privacy Sandbox permissions, disables analytics ContentProviders and telemetry background services (Firebase, Sentry, Adjust, AppsFlyer, DataTransport), prunes ComponentDiscovery registrars, and injects telemetry opt-out metadata. Includes an optional toggle to disable push notification services. | • Revoke Advertising & Tracking Permissions<br>• Disable Telemetry ContentProviders<br>• Disable Telemetry Background Services<br>• Disable Telemetry Receivers<br>• Inject Telemetry Opt-Out Flags & Prune Registrars<br>• Disable Firebase Init Provider<br>• Disable Push Notification Services<br>• Disable Google Analytics Services<br>• Disable Meta Analytics Upload Pipeline<br>• Disable Crash Detectors & Dump Upload<br>• Disable Device-ID & Cross-App Identity Providers<br>• Disable ML Kit On-Device Vision<br>• Disable Ad SDK Startup Initializers |
 | **Universal WebP Asset Optimizer** | Losslessly strips non-rendering metadata and ancillary chunks (EXIF, XMP, ICCP) from WebP assets across res/ and assets/ to reduce APK size. | • Strip EXIF Metadata<br>• Strip XMP Metadata<br>• Strip ICC Color Profiles |
 
 </details>

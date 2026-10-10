@@ -58,7 +58,10 @@ const ignoredScopeRules = ignoredScopes.flatMap((scope) => [
 ]);
 
 module.exports = {
-  branches: ['main'],
+  branches: [
+    'main',
+    { name: 'dev', prerelease: 'experimental' },
+  ],
   plugins: [
     [
       '@semantic-release/commit-analyzer',

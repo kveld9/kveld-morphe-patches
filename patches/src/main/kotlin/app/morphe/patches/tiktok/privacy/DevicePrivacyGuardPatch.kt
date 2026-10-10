@@ -7,11 +7,36 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.sharedExtensionPatch
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.ReferenceType
+import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+
+private val CALL_SITE_TARGET_NAMES = setOf(
+    "query",
+    "queryIntentActivities",
+    "getLastKnownLocation",
+    "requestSingleUpdate",
+    "isProviderEnabled",
+    "isLocationEnabled",
+)
+
+private val CALL_SITE_TARGET_CLASSES = setOf(
+    "Landroid/content/ContentResolver;",
+    "Landroid/content/pm/PackageManager;",
+    "Landroid/location/LocationManager;",
+)
+
+private fun isCallSiteCandidate(ins: Instruction): Boolean {
+    if (ins.opcode.referenceType != ReferenceType.METHOD) return false
+    val ref = (ins as ReferenceInstruction).reference as MethodReference
+    if (ref.name !in CALL_SITE_TARGET_NAMES) return false
+    return ref.definingClass in CALL_SITE_TARGET_CLASSES
+}
 
 val devicePrivacyGuardPatch = bytecodePatch(
     name = "Device Privacy Guard",
@@ -401,6 +426,10 @@ val devicePrivacyGuardPatch = bytecodePatch(
         println("[Device Privacy Guard] Neutralized SmartHARServiceImpl.checkAndInit() -> return-void.")
         patched++
 
+        // Pre-scan candidate methods for sections 7-9 (one walk over all methods instead of seven;
+        // each section below still applies its own exact predicate to the current instructions).
+        val callSiteCandidates = Fingerprint(custom = { method, _ -> method.implementation?.instructions?.any(::isCallSiteCandidate) == true }).matchAll().map { it.method }
+
         // ==========================================
         // 7. CONTENTRESOLVER CONTACTS QUERY ISOLATION
         // ==========================================
@@ -417,25 +446,22 @@ val devicePrivacyGuardPatch = bytecodePatch(
         var querySites = 0
 
         // 7.1 query(Uri, String[], String, String[], String) -> 5 params
-        val query5ParamFp = Fingerprint(
-            custom = { method, _ ->
-                method.implementation?.instructions?.any { ins ->
-                    val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference ?: return@any false
-                    ref.definingClass == "Landroid/content/ContentResolver;" &&
-                        ref.name == "query" &&
-                        ref.returnType == "Landroid/database/Cursor;" &&
-                        ref.parameterTypes.map { it.toString() } == listOf(
-                            "Landroid/net/Uri;",
-                            "[Ljava/lang/String;",
-                            "Ljava/lang/String;",
-                            "[Ljava/lang/String;",
-                            "Ljava/lang/String;",
-                        )
-                } == true
-            },
-        )
-        query5ParamFp.matchAll().forEach { match ->
-            val method = match.method
+        val query5ParamMatches: (Method) -> Boolean = { method ->
+            method.implementation?.instructions?.any { ins ->
+                val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference ?: return@any false
+                ref.definingClass == "Landroid/content/ContentResolver;" &&
+                    ref.name == "query" &&
+                    ref.returnType == "Landroid/database/Cursor;" &&
+                    ref.parameterTypes.map { it.toString() } == listOf(
+                        "Landroid/net/Uri;",
+                        "[Ljava/lang/String;",
+                        "Ljava/lang/String;",
+                        "[Ljava/lang/String;",
+                        "Ljava/lang/String;",
+                    )
+            } == true
+        }
+        callSiteCandidates.filter(query5ParamMatches).forEach { method ->
             val instructions = method.implementation?.instructions?.toList() ?: return@forEach
             val edits = mutableListOf<Triple<Int, Int, Int>>()
             instructions.forEachIndexed { index, instruction ->
@@ -479,26 +505,23 @@ val devicePrivacyGuardPatch = bytecodePatch(
         }
 
         // 7.2 query(Uri, String[], String, String[], String, CancellationSignal) -> 6 params
-        val query6ParamFp = Fingerprint(
-            custom = { method, _ ->
-                method.implementation?.instructions?.any { ins ->
-                    val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference ?: return@any false
-                    ref.definingClass == "Landroid/content/ContentResolver;" &&
-                        ref.name == "query" &&
-                        ref.returnType == "Landroid/database/Cursor;" &&
-                        ref.parameterTypes.map { it.toString() } == listOf(
-                            "Landroid/net/Uri;",
-                            "[Ljava/lang/String;",
-                            "Ljava/lang/String;",
-                            "[Ljava/lang/String;",
-                            "Ljava/lang/String;",
-                            "Landroid/os/CancellationSignal;",
-                        )
-                } == true
-            },
-        )
-        query6ParamFp.matchAll().forEach { match ->
-            val method = match.method
+        val query6ParamMatches: (Method) -> Boolean = { method ->
+            method.implementation?.instructions?.any { ins ->
+                val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference ?: return@any false
+                ref.definingClass == "Landroid/content/ContentResolver;" &&
+                    ref.name == "query" &&
+                    ref.returnType == "Landroid/database/Cursor;" &&
+                    ref.parameterTypes.map { it.toString() } == listOf(
+                        "Landroid/net/Uri;",
+                        "[Ljava/lang/String;",
+                        "Ljava/lang/String;",
+                        "[Ljava/lang/String;",
+                        "Ljava/lang/String;",
+                        "Landroid/os/CancellationSignal;",
+                    )
+            } == true
+        }
+        callSiteCandidates.filter(query6ParamMatches).forEach { method ->
             val instructions = method.implementation?.instructions?.toList() ?: return@forEach
             val edits = mutableListOf<Triple<Int, Int, Int>>()
             instructions.forEachIndexed { index, instruction ->
@@ -543,24 +566,21 @@ val devicePrivacyGuardPatch = bytecodePatch(
         }
 
         // 7.3 query(Uri, String[], Bundle, CancellationSignal) -> 4 params (API 26)
-        val query4ParamFp = Fingerprint(
-            custom = { method, _ ->
-                method.implementation?.instructions?.any { ins ->
-                    val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference ?: return@any false
-                    ref.definingClass == "Landroid/content/ContentResolver;" &&
-                        ref.name == "query" &&
-                        ref.returnType == "Landroid/database/Cursor;" &&
-                        ref.parameterTypes.map { it.toString() } == listOf(
-                            "Landroid/net/Uri;",
-                            "[Ljava/lang/String;",
-                            "Landroid/os/Bundle;",
-                            "Landroid/os/CancellationSignal;",
-                        )
-                } == true
-            },
-        )
-        query4ParamFp.matchAll().forEach { match ->
-            val method = match.method
+        val query4ParamMatches: (Method) -> Boolean = { method ->
+            method.implementation?.instructions?.any { ins ->
+                val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference ?: return@any false
+                ref.definingClass == "Landroid/content/ContentResolver;" &&
+                    ref.name == "query" &&
+                    ref.returnType == "Landroid/database/Cursor;" &&
+                    ref.parameterTypes.map { it.toString() } == listOf(
+                        "Landroid/net/Uri;",
+                        "[Ljava/lang/String;",
+                        "Landroid/os/Bundle;",
+                        "Landroid/os/CancellationSignal;",
+                    )
+            } == true
+        }
+        callSiteCandidates.filter(query4ParamMatches).forEach { method ->
             val instructions = method.implementation?.instructions?.toList() ?: return@forEach
             val edits = mutableListOf<Triple<Int, Int, Int>>()
             instructions.forEachIndexed { index, instruction ->
@@ -615,19 +635,16 @@ val devicePrivacyGuardPatch = bytecodePatch(
         var packageSites = 0
 
         // 8.3 queryIntentActivities(Intent, int)
-        val pkgQueryIntentFp = Fingerprint(
-            custom = { method, _ ->
-                method.implementation?.instructions?.any { ins ->
-                    val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference ?: return@any false
-                    ref.definingClass == "Landroid/content/pm/PackageManager;" &&
-                        ref.name == "queryIntentActivities" &&
-                        ref.returnType == "Ljava/util/List;" &&
-                        ref.parameterTypes.map { it.toString() } == listOf("Landroid/content/Intent;", "I")
-                } == true
-            },
-        )
-        pkgQueryIntentFp.matchAll().forEach { match ->
-            val method = match.method
+        val pkgQueryIntentMatches: (Method) -> Boolean = { method ->
+            method.implementation?.instructions?.any { ins ->
+                val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference ?: return@any false
+                ref.definingClass == "Landroid/content/pm/PackageManager;" &&
+                    ref.name == "queryIntentActivities" &&
+                    ref.returnType == "Ljava/util/List;" &&
+                    ref.parameterTypes.map { it.toString() } == listOf("Landroid/content/Intent;", "I")
+            } == true
+        }
+        callSiteCandidates.filter(pkgQueryIntentMatches).forEach { method ->
             val instructions = method.implementation?.instructions?.toList() ?: return@forEach
             val edits = mutableListOf<Triple<Int, Int, Int>>()
             instructions.forEachIndexed { index, instruction ->
@@ -681,19 +698,16 @@ val devicePrivacyGuardPatch = bytecodePatch(
         var locationSites = 0
 
         // 9.1 getLastKnownLocation(String) -> Location
-        val locGetLastKnownFp = Fingerprint(
-            custom = { method, _ ->
-                method.implementation?.instructions?.any { ins ->
-                    val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference ?: return@any false
-                    ref.definingClass == "Landroid/location/LocationManager;" &&
-                        ref.name == "getLastKnownLocation" &&
-                        ref.returnType == "Landroid/location/Location;" &&
-                        ref.parameterTypes.map { it.toString() } == listOf("Ljava/lang/String;")
-                } == true
-            },
-        )
-        locGetLastKnownFp.matchAll().forEach { match ->
-            val method = match.method
+        val locGetLastKnownMatches: (Method) -> Boolean = { method ->
+            method.implementation?.instructions?.any { ins ->
+                val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference ?: return@any false
+                ref.definingClass == "Landroid/location/LocationManager;" &&
+                    ref.name == "getLastKnownLocation" &&
+                    ref.returnType == "Landroid/location/Location;" &&
+                    ref.parameterTypes.map { it.toString() } == listOf("Ljava/lang/String;")
+            } == true
+        }
+        callSiteCandidates.filter(locGetLastKnownMatches).forEach { method ->
             val instructions = method.implementation?.instructions?.toList() ?: return@forEach
             val edits = mutableListOf<Pair<Int, Int>>()
             instructions.forEachIndexed { index, instruction ->
@@ -724,23 +738,20 @@ val devicePrivacyGuardPatch = bytecodePatch(
 
         // 9.2 requestSingleUpdate(String, LocationListener, Looper) -> cancel via removeUpdates
         var singleUpdateSites = 0
-        val locRequestSingleUpdateFp = Fingerprint(
-            custom = { method, _ ->
-                method.implementation?.instructions?.any { ins ->
-                    val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference ?: return@any false
-                    ref.definingClass == "Landroid/location/LocationManager;" &&
-                        ref.name == "requestSingleUpdate" &&
-                        ref.returnType == "V" &&
-                        ref.parameterTypes.map { it.toString() } == listOf(
-                            "Ljava/lang/String;",
-                            "Landroid/location/LocationListener;",
-                            "Landroid/os/Looper;",
-                        )
-                } == true
-            },
-        )
-        locRequestSingleUpdateFp.matchAll().forEach { match ->
-            val method = match.method
+        val locRequestSingleUpdateMatches: (Method) -> Boolean = { method ->
+            method.implementation?.instructions?.any { ins ->
+                val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference ?: return@any false
+                ref.definingClass == "Landroid/location/LocationManager;" &&
+                    ref.name == "requestSingleUpdate" &&
+                    ref.returnType == "V" &&
+                    ref.parameterTypes.map { it.toString() } == listOf(
+                        "Ljava/lang/String;",
+                        "Landroid/location/LocationListener;",
+                        "Landroid/os/Looper;",
+                    )
+            } == true
+        }
+        callSiteCandidates.filter(locRequestSingleUpdateMatches).forEach { method ->
             val instructions = method.implementation?.instructions?.toList() ?: return@forEach
             val edits = mutableListOf<Pair<Int, String>>()
 
@@ -786,19 +797,16 @@ val devicePrivacyGuardPatch = bytecodePatch(
 
         // 9.3 isProviderEnabled(String)Z and isLocationEnabled()Z -> force false
         var providerEnabledSites = 0
-        val locEnabledFp = Fingerprint(
-            custom = { method, _ ->
-                method.implementation?.instructions?.any { ins ->
-                    val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference ?: return@any false
-                    if (ref.definingClass != "Landroid/location/LocationManager;" || ref.returnType != "Z") return@any false
-                    val params = ref.parameterTypes.map { it.toString() }
-                    (ref.name == "isProviderEnabled" && params == listOf("Ljava/lang/String;")) ||
-                        (ref.name == "isLocationEnabled" && params.isEmpty())
-                } == true
-            },
-        )
-        locEnabledFp.matchAll().forEach { match ->
-            val method = match.method
+        val locEnabledMatches: (Method) -> Boolean = { method ->
+            method.implementation?.instructions?.any { ins ->
+                val ref = (ins as? ReferenceInstruction)?.reference as? MethodReference ?: return@any false
+                if (ref.definingClass != "Landroid/location/LocationManager;" || ref.returnType != "Z") return@any false
+                val params = ref.parameterTypes.map { it.toString() }
+                (ref.name == "isProviderEnabled" && params == listOf("Ljava/lang/String;")) ||
+                    (ref.name == "isLocationEnabled" && params.isEmpty())
+            } == true
+        }
+        callSiteCandidates.filter(locEnabledMatches).forEach { method ->
             val instructions = method.implementation?.instructions?.toList() ?: return@forEach
             val edits = mutableListOf<Pair<Int, Int>>()
 

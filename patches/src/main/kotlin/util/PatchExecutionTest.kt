@@ -4,6 +4,7 @@ import app.morphe.patcher.Patcher
 import app.morphe.patcher.PatcherConfig
 import app.morphe.patcher.dex.BytecodeMode
 import app.morphe.patcher.dex.NoOpDexVerifier
+import app.morphe.patcher.patch.Patch
 import app.morphe.patcher.patch.loadPatchesFromJar
 import app.morphe.patcher.resource.CpuArchitecture
 import app.morphe.patches.shared.Constants
@@ -14,6 +15,7 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.OutputStream
 import java.io.PrintStream
+import java.security.MessageDigest
 
 enum class TargetApp(
     val id: String,
@@ -137,6 +139,9 @@ enum class TargetApp(
         }
     }
 }
+
+// Tuning default for the warning only (TikTok's heaviest patch measured ~27 s isolated, the rest under 10 s).
+private const val DEFAULT_SLOW_PATCH_SECONDS = 15.0
 
 private fun getDownloadDirectory(): File? {
     return try {
@@ -361,6 +366,42 @@ private fun ensurePkcs12KeyStore(keystoreFile: File) {
     }
 }
 
+private fun verifyInputVersion(
+    patcher: Patcher,
+    targetPatches: Set<Patch<*>>,
+    targetApp: TargetApp,
+    inputFile: File,
+) {
+    val packageMetadata = patcher.context.packageMetadata
+    val versionName = packageMetadata.versionName
+    val versionCode = packageMetadata.versionCode
+
+    val expectedVersions = targetPatches
+        .flatMap { it.compatibility.orEmpty() }
+        .filter { it.packageName == targetApp.packageName }
+        .flatMap { it.targets }
+        .mapNotNull { it.version }
+        .toSet()
+
+    if (expectedVersions.isEmpty()) {
+        println("[INFO] Version check skipped: selected patches declare no target version.")
+        return
+    }
+
+    if (versionName in expectedVersions) {
+        println("[INFO] Input version $versionName (versionCode $versionCode) matches target.")
+        return
+    }
+
+    if (System.getProperty("allowVersionMismatch").toBoolean()) {
+        println("[WARN] Version mismatch allowed: input $versionName, expected $expectedVersions.")
+        return
+    }
+
+    patcher.close()
+    error("Input APK ${inputFile.name} version '$versionName' does not match expected target version(s) $expectedVersions. Pass -Papk=<path to the target version> or -PallowVersionMismatch=true for differential runs on other versions.")
+}
+
 fun main(args: Array<String>) {
     val userHome = System.getProperty("user.home") ?: "."
     val searchDirs = getSearchDirectories(userHome)
@@ -374,6 +415,8 @@ fun main(args: Array<String>) {
         ?: System.getenv("TARGET_APP")
         ?: System.getProperty("targetApp")
         ?: System.getProperty("app")
+
+    val explicitTarget = explicitTargetArg?.let { raw -> TargetApp.fromId(raw) ?: error("Unknown target app '$raw'. Valid values: ${TargetApp.entries.joinToString { it.id }}.") }
 
     val explicitApkFile = explicitApkArg?.let { raw ->
         val direct = File(raw)
@@ -389,11 +432,11 @@ fun main(args: Array<String>) {
 
     if (explicitApkFile != null && explicitApkFile.isFile) {
         apkFile = explicitApkFile
-        targetApp = explicitTargetArg?.let { TargetApp.fromId(it) }
+        targetApp = explicitTarget
             ?: TargetApp.fromFileName(apkFile.name)
             ?: error("Could not infer target app for APK: ${apkFile.name}. Specify app via -Papp=<target> or args.")
     } else {
-        targetApp = explicitTargetArg?.let { TargetApp.fromId(it) }
+        targetApp = explicitTarget
             ?: detectTargetFromGit()
             ?: TargetApp.entries.firstOrNull { findApkForTarget(it, searchDirs) != null }
             ?: TargetApp.TIKTOK
@@ -557,6 +600,7 @@ fun main(args: Array<String>) {
 
     println("\n[INIT] Initializing Morphe Patcher engine...")
     val patcher = Patcher(config)
+    verifyInputVersion(patcher, targetPatches, targetApp, effectiveApkFile)
     patcher += targetPatches
 
     println("[EXEC] Executing patch pipeline on ${effectiveApkFile.name} (target: ${targetApp.appName})...")
@@ -631,10 +675,19 @@ fun main(args: Array<String>) {
     System.setErr(interceptingErr)
 
     try {
+        val patchTimings = mutableListOf<Pair<String, Long>>()
+        var lastResultNanos = System.nanoTime()
         runBlocking {
             patcher().collect { result ->
                 totalPatches++
                 val patchName = result.patch.name ?: "Unknown"
+                val now = System.nanoTime()
+                // The patcher runs patches sequentially and emits one result per patch,
+                // so the gap between results is that patch's execution time (the first entry also includes pipeline startup,
+                // and an entry also includes any dependency patch that runs for the first time right before it).
+                val elapsedMs = (now - lastResultNanos) / 1_000_000
+                lastResultNanos = now
+                patchTimings.add(patchName to elapsedMs)
                 if (pendingSmaliErrors.isNotEmpty()) {
                     pendingSmaliErrors.forEach { smaliCompileErrors.add("$patchName: $it") }
                     pendingSmaliErrors.clear()
@@ -662,6 +715,7 @@ fun main(args: Array<String>) {
         println("Failed:        $failedPatches")
         println("Detected Fingerprint Failures: ${fingerprintErrors.size}")
         println("Detected Smali Compile Errors: ${smaliCompileErrors.size}")
+        printPatchTimings(patchTimings, resolveSlowPatchThreshold(), patchTimings.firstOrNull()?.first)
 
         if (failedPatches == 0 && fingerprintErrors.isEmpty() && smaliCompileErrors.isEmpty()) {
             println("\n[BUILD] Compiling modified bytecode & assets via patcher.get()...")
@@ -671,15 +725,9 @@ fun main(args: Array<String>) {
             println("[BUILD] Compiled ${patcherResult.dexFiles.size} DEX files successfully.")
 
             val outPath = System.getProperty("outputApk")
+            val dexDigestOption = resolveDexDigestOption()
             if (outPath != null) {
-                val directFile = File(outPath)
-                val outFile = if (directFile.isAbsolute) {
-                    directFile
-                } else {
-                    val fromParent = File("..", outPath)
-                    if (fromParent.parentFile?.isDirectory == true) fromParent.canonicalFile
-                    else directFile.absoluteFile
-                }
+                val outFile = resolveOutputPath(outPath)
                 outFile.parentFile?.mkdirs()
                 val unsignedApk = File(tempDir, "unsigned-work.apk")
                 actualApkFile.copyTo(unsignedApk, overwrite = true)
@@ -720,6 +768,7 @@ fun main(args: Array<String>) {
                     }
                 }
                 println("[PACK] After applyTo: unsignedApk exists=${unsignedApk.exists()}, size=${unsignedApk.length()} bytes")
+                dexDigestOption?.let { printDexDigest(unsignedApk, it) }
                 val zipalignBin = findAndroidBuildTool("zipalign")
                 val apksignerBin = findAndroidBuildTool("apksigner")
                 val buildToolsMajor = zipalignBin?.parentFile?.name?.split('.')?.firstOrNull()?.toIntOrNull() ?: 0
@@ -866,6 +915,13 @@ fun main(args: Array<String>) {
                         }
                     }
                 }
+            } else if (dexDigestOption != null) {
+                // Without -Pout an unsigned work APK is still assembled so the digest covers exactly what -Pout would ship.
+                val digestApk = File(tempDir, "digest-work.apk")
+                actualApkFile.copyTo(digestApk, overwrite = true)
+                patcherResult.applyTo(digestApk)
+                printDexDigest(digestApk, dexDigestOption)
+                digestApk.delete()
             }
         }
     } finally {
@@ -896,3 +952,101 @@ fun main(args: Array<String>) {
         println("\n100% OF ${targetApp.appName.uppercase()} PATCHES APPLIED WITH ZERO ERRORS AND ZERO FINGERPRINT MISMATCHES!")
     }
 }
+
+private fun resolveSlowPatchThreshold(): Double {
+    val raw = System.getProperty("slowPatchSeconds") ?: return DEFAULT_SLOW_PATCH_SECONDS
+    val parsed = raw.toDoubleOrNull()
+    if (parsed == null || parsed <= 0.0) {
+        println("[WARN] Invalid slowPatchSeconds '$raw'; using default $DEFAULT_SLOW_PATCH_SECONDS s.")
+        return DEFAULT_SLOW_PATCH_SECONDS
+    }
+    return parsed
+}
+
+private fun printPatchTimings(
+    timings: List<Pair<String, Long>>,
+    thresholdSeconds: Double,
+    firstPatchName: String? = timings.firstOrNull()?.first,
+) {
+    if (timings.isEmpty()) return
+
+    val sorted = timings.sortedByDescending { it.second }
+    println("Slowest patches:")
+    for ((name, elapsedMs) in sorted.take(5)) {
+        val seconds = elapsedMs / 1000.0
+        val formatted = String.format(java.util.Locale.ROOT, "%.1f", seconds)
+        val startupNote = if (name == firstPatchName) " (includes pipeline startup)" else ""
+        println("  $formatted s  $name$startupNote")
+    }
+
+    val totalSeconds = timings.sumOf { it.second } / 1000.0
+    val formattedTotal = String.format(java.util.Locale.ROOT, "%.1f", totalSeconds)
+    println("Total patch time: $formattedTotal s")
+
+    val formattedThreshold = String.format(java.util.Locale.ROOT, "%.1f", thresholdSeconds)
+    for ((name, elapsedMs) in sorted) {
+        val seconds = elapsedMs / 1000.0
+        if (seconds > thresholdSeconds) {
+            val formattedSeconds = String.format(java.util.Locale.ROOT, "%.1f", seconds)
+            val startupNote = if (name == firstPatchName) " (includes pipeline startup)" else ""
+            println("[WARN] Slow patch: $name took $formattedSeconds s (threshold $formattedThreshold s)$startupNote")
+        }
+    }
+}
+
+private fun resolveOutputPath(path: String): File {
+    val directFile = File(path)
+    if (directFile.isAbsolute) return directFile
+    val fromParent = File("..", path)
+    return if (fromParent.parentFile?.isDirectory == true) {
+        fromParent.canonicalFile
+    } else {
+        directFile.absoluteFile
+    }
+}
+
+private fun sha256Hex(bytes: ByteArray): String {
+    val digest = MessageDigest.getInstance("SHA-256").digest(bytes)
+    return digest.joinToString("") { String.format(java.util.Locale.ROOT, "%02x", it) }
+}
+
+private fun writeDexDigestFile(file: File, content: String) {
+    file.parentFile?.mkdirs()
+    file.writeText(content, Charsets.UTF_8)
+    println("[DIGEST] Per-file digests written to ${file.absolutePath}")
+}
+
+private fun resolveDexDigestOption(): String? {
+    val raw = System.getProperty("dexDigest") ?: return null
+    if (raw.isBlank()) {
+        println("[WARN] -PdexDigest has no value; use true or a file path. Digest skipped.")
+        return null
+    }
+    if (raw.equals("false", ignoreCase = true)) return null
+    return raw
+}
+
+private fun printDexDigest(apk: File, option: String) {
+    val dexPattern = Regex("""^classes\d*\.dex$""")
+    val fileDigests = java.util.zip.ZipFile(apk).use { zip ->
+        zip.entries().asSequence()
+            .filter { !it.isDirectory && dexPattern.matches(it.name) }
+            .map { entry ->
+                val bytes = zip.getInputStream(entry).use { it.readBytes() }
+                entry.name to sha256Hex(bytes)
+            }
+            .toList()
+    }
+
+    val linesText = fileDigests
+        .sortedBy { it.first }
+        .joinToString("") { "${it.first} ${it.second}\n" }
+    val aggregate = sha256Hex(linesText.toByteArray(Charsets.UTF_8))
+    println("[DIGEST] Patched DEX set SHA-256: $aggregate (${fileDigests.size} files)")
+
+    if (!option.equals("true", ignoreCase = true)) {
+        writeDexDigestFile(resolveOutputPath(option), linesText)
+    }
+}
+
+

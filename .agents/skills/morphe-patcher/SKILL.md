@@ -3,6 +3,8 @@ name: morphe-patcher
 description: Architecture, patch typology (bytecodePatch, resourcePatch, rawResourcePatch), universal patches, stringOption DSL, fingerprint resolution, compatibility contracts (Constants.kt), and diagnostic telemetry invariants.
 ---
 
+<!-- Mirror: this skill also exists in kveld-extra-morphe-patches/.agents/skills (hardlinked to its .claude/skills). When editing shared core guidance, replicate the change there. -->
+
 # Morphe Patcher Architectural Guidelines
 
 ## 1. Patch DSL & Typology
@@ -109,11 +111,7 @@ val targetLocales by stringOption(
 ```
 
 ### Metadata Synchronization Rule
-Whenever patch options, descriptions, titles, or defaults are added or modified in Kotlin code, always synchronize the patch catalog before committing:
-```bash
-./gradlew generatePatchesList
-```
-This updates the local build catalog and validates schema conformance.
+When patch options, descriptions, titles, or defaults are added or modified in Kotlin code, verify catalog registration by running the patch list generator against the built `.mpp` from a temporary working directory outside the repository, and confirm the expected entries appear. Do NOT run `./gradlew generatePatchesList` in the repository checkout: it rewrites the tracked `patches-list.json`, which the release pipeline regenerates (see `AGENTS.md`, rule 11).
 
 ---
 
@@ -151,6 +149,8 @@ Fingerprints locate target methods across obfuscated versions without hardcoding
    val matchIndex = fp.instructionMatches.first().index
    val targetReg = fp.method.getInstruction<OneRegisterInstruction>(matchIndex + 1).registerA
    ```
+
+   > **Runtime safety (device-proven):** never `remove`+`replace` a lone invoke and never grow the register frame. Both cause device-only `VerifyError` boot crashes that a green `runPatchTest` does not catch. Insert-only after `move-result`, reusing existing registers. See `agy-orchestrator` `references/observations.md:40-41`.
 
 ---
 

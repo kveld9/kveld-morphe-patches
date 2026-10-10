@@ -7,8 +7,10 @@ import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.replaceWithReturnBoolean
+import app.morphe.patches.shared.replaceWithReturnNull
 import app.morphe.patches.shared.replaceWithReturnVoid
 import app.morphe.patches.shared.sharedExtensionPatch
+import com.android.tools.smali.dexlib2.AccessFlags
 
 val popupsAndPromptsSuppressorPatch = bytecodePatch(
     name = "Popups & Prompts Suppressor",
@@ -131,6 +133,18 @@ private fun BytecodePatchContext.applyAccountPromptHooks(): Int {
     println("[Popups & Prompts Suppressor] Neutralized RelationAuthDialogControl.LJFF() -> Relation auth trigger blocked.")
     count++
 
+    Fingerprint(
+        definingClass = "LX/0v5r;",
+        name = "LIZIZ",
+        parameters = listOf(
+            "LX/1Gbn;",
+            "[LX/0Se8;",
+        ),
+        returnType = "V",
+    ).method.replaceWithReturnVoid()
+    println("[Popups & Prompts Suppressor] Neutralized LX/0v5r.LIZIZ() -> Find contacts access dialog pipeline blocked.")
+    count++
+
     // 4. "Security checkup 2SV" upsell modal
     Fingerprint(
         definingClass = "Lcom/ss/android/ugc/aweme/services/popsuite/local/LocalCampaignManager;",
@@ -149,8 +163,7 @@ private fun BytecodePatchContext.applyAccountPromptHooks(): Int {
     popSuiteMethod.addInstructions(
         0,
         """
-            const-string v0, "UPSELL_2SV_POPUP"
-            invoke-virtual {v0, p1}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+            invoke-static {p1}, ${Constants.TIKTOK_EXTENSION_POPUP_HOOK}->shouldSuppressPopSuite(Ljava/lang/String;)Z
             move-result v0
             if-eqz v0, :cond_orig
             const/4 v0, 0
@@ -158,13 +171,40 @@ private fun BytecodePatchContext.applyAccountPromptHooks(): Int {
             :cond_orig
         """.trimIndent(),
     )
-    println("[Popups & Prompts Suppressor] Hooked PopSuiteManagerService.shouldShowPopSuitePopup() -> 2SV security checkup popup blocked.")
+    println("[Popups & Prompts Suppressor] Hooked PopSuiteManagerService.shouldShowPopSuitePopup() -> Generalized PopSuite suppression activated.")
+    count++
+
+    Fingerprint(
+        definingClass = "Lcom/ss/android/ugc/aweme/services/popsuite/local/Gpppa2svUpsellCampaign;",
+        name = "startCampaign",
+        parameters = listOf(
+            "Lcom/ss/android/ugc/aweme/IPopSuiteManagerService\$PopupConfigObject;",
+            "LX/0Ck6;",
+        ),
+        returnType = "Z",
+    ).method.replaceWithReturnBoolean(false)
+    println("[Popups & Prompts Suppressor] Neutralized Gpppa2svUpsellCampaign.startCampaign() -> GPPPA 2SV security checkup sheet blocked.")
+    count++
+
+    Fingerprint(
+        definingClass = "Lcom/ss/android/ugc/awemepushlib/manager/PushPermissionPopupManager;",
+        name = "LJI",
+        parameters = listOf(
+            "Landroid/app/Activity;",
+            "Ljava/lang/String;",
+            "LX/1QQN;",
+        ),
+        returnType = "V",
+    ).method.replaceWithReturnVoid()
+    println("[Popups & Prompts Suppressor] Neutralized PushPermissionPopupManager.LJI() -> Combined push permission popup blocked.")
     count++
 
     return count
 }
 
 private fun BytecodePatchContext.applyStickerRecommendationHooks(): Int {
+    var count = 0
+
     // ChatFeatureListConf.featureEnable(TYPING_RECOMMEND) -> false
     val featureEnableMethod = Fingerprint(
         definingClass = "Lcom/ss/android/ugc/aweme/im/strategy/businessconfig/ChatFeatureListConf;",
@@ -183,10 +223,47 @@ private fun BytecodePatchContext.applyStickerRecommendationHooks(): Int {
         """.trimIndent(),
     )
     println("[Popups & Prompts Suppressor] Hooked ChatFeatureListConf.featureEnable() -> Typing recommendations disabled.")
-    return 1
+    count++
+
+    // Dynamically neutralizes the typing strip UI (catches shifted methods)
+    val typingAssemClass = Fingerprint(
+        definingClass = "Lcom/ss/android/ugc/aweme/im/sdk/chat/ui/base/assems/input/typingrecommendation/TypingRecommendationPanelAssem;"
+    ).classDef
+
+    var typingHooks = 0
+
+    typingAssemClass.methods.filter {
+        !AccessFlags.STATIC.isSet(it.accessFlags) &&
+            it.parameterTypes.isEmpty() &&
+            it.returnType == "Z" &&
+            it.name != "<init>"
+    }.forEach { method ->
+        method.replaceWithReturnBoolean(false)
+        typingHooks++
+    }
+
+    typingAssemClass.methods.filter {
+        !AccessFlags.STATIC.isSet(it.accessFlags) &&
+            it.parameterTypes.size == 1 &&
+            it.returnType == "V" &&
+            !it.name.startsWith("on") &&
+            it.name != "<init>"
+    }.forEach { method ->
+        method.replaceWithReturnVoid()
+        typingHooks++
+    }
+
+    if (typingHooks > 0) {
+        println("[Popups & Prompts Suppressor] Hooked TypingRecommendationPanelAssem ($typingHooks dynamic methods) -> typing sticker UI blocked.")
+        count++
+    }
+
+    return count
 }
 
 private fun BytecodePatchContext.applyPopLayerFilterHook(): Int {
+    var count = 0
+
     val method = Fingerprint(
         definingClass = "LX/07Q5;",
         name = "canShow",
@@ -204,7 +281,26 @@ private fun BytecodePatchContext.applyPopLayerFilterHook(): Int {
         """.trimIndent(),
     )
     println("[Popups & Prompts Suppressor] Hooked LX/07Q5.canShow() -> PopLayer semantic label filter activated.")
-    return 1
+    count++
+
+    Fingerprint(
+        definingClass = "LX/0P2r;",
+        name = "LIZ",
+        returnType = "V",
+    ).method.replaceWithReturnVoid()
+    println("[Popups & Prompts Suppressor] Neutralized LX/0P2r.LIZ() -> Profile view history turn-on sheet blocked.")
+    count++
+
+    Fingerprint(
+        definingClass = "LX/0OOs;",
+        name = "invoke",
+        parameters = listOf("Ljava/lang/Object;"),
+        returnType = "Ljava/lang/Object;",
+    ).method.replaceWithReturnNull()
+    println("[Popups & Prompts Suppressor] Neutralized LX/0OOs.invoke() -> Profile view history alternate sheet trigger blocked.")
+    count++
+
+    return count
 }
 
 private fun BytecodePatchContext.applyLiveTeaserBubbleHooks(): Int {

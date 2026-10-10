@@ -3,6 +3,8 @@ name: smali-bytecode-hooks
 description: Smali and Dalvik bytecode hooking guidelines, register architecture conventions, multi-return reverse traversal, TwoRegisterInstruction extraction, reflection bridges, and obfuscation guidelines.
 ---
 
+<!-- Mirror: this skill also exists in kveld-extra-morphe-patches/.agents/skills (hardlinked to its .claude/skills). When editing shared core guidance, replicate the change there. -->
+
 # Smali & Dalvik Bytecode Hooking Guidelines
 
 ## 1. Register Architecture & Essential Extension Imports
@@ -150,3 +152,5 @@ return-void
 ## 6. Mandatory In-Situ Patcher Verification Gate
 
 Any modified Smali hook, register rewrite, or fingerprint must pass the `runPatchTest` gate in `AGENTS.md` (Section 3, Step 4), including its zero-smali-compile-error rule (non-range invokes only address `v0`-`v15`).
+
+> **Runtime safety (device-proven):** a green gate proves assembly only. Never `remove`+`replace` lone invokes and never grow the register frame; both cause device-only `VerifyError` boot crashes. See `agy-orchestrator` `references/observations.md:40-41`.

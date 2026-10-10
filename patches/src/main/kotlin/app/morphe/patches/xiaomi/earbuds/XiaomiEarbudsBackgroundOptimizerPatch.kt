@@ -35,7 +35,7 @@ private val xiaomiEarbudsBackgroundResourcePatch = resourcePatch(
         )
 
         var removedPermissions = 0
-        var disabledComponents = 0
+        val tagCounts = mutableMapOf("service" to 0, "activity" to 0)
 
         document(manifestFile.absolutePath).use { doc ->
             val usesPermissions = doc.getElementsByTagName("uses-permission")
@@ -61,13 +61,19 @@ private val xiaomiEarbudsBackgroundResourcePatch = resourcePatch(
                     if (name in blockedComponents) {
                         elem.setAttribute("android:enabled", "false")
                         elem.setAttribute("android:exported", "false")
-                        disabledComponents++
+                        tagCounts[tag] = (tagCounts[tag] ?: 0) + 1
                     }
                 }
             }
         }
 
-        println("[Background Optimizer] Stripped $removedPermissions permissions, disabled $disabledComponents keepalive components in manifest.")
+        val disabledComponents = tagCounts.values.sum()
+        val categoryBreakdown = tagCounts.entries
+            .filter { it.value > 0 }
+            .joinToString(", ") { "${it.key}=${it.value}" }
+        val componentDetails = if (categoryBreakdown.isNotEmpty()) " ($categoryBreakdown)" else ""
+
+        println("[Background Optimizer] Stripped $removedPermissions permissions, disabled $disabledComponents keepalive components in manifest$componentDetails.")
     }
 }
 

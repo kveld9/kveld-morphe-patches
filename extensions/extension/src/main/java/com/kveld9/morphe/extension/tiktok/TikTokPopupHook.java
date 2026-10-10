@@ -37,7 +37,15 @@ public final class TikTokPopupHook {
             "request_capcut_campaing_popup",
             "show_lemon8_intro_popup",
             "profile_visitor_popup",
-            "profile_view_history_turnon_nscreen"
+            "profile_view_history_turnon_nscreen",
+            "MESSAGE_REQUEST_PUSH_GUIDE_POPUP",
+            "message_request_push_guide_popup",
+            "mandatory_gpppa_2sv_fullsheet",
+            "nonmandatory_gpppa_2sv_fullsheet",
+            "nonmandatory_gpppa_2sv_profile_popup",
+            "nonmandatory_gpppa_2sv_profile_warning",
+            "tt_gpppa_mandatory_2sv_upsell",
+            "tt_gpppa_non_mandatory_2sv_upsell"
         ));
         labels.addAll(classFragments);
         BLACKLISTED_LABELS = Collections.unmodifiableSet(labels);
@@ -98,5 +106,20 @@ public final class TikTokPopupHook {
             } catch (Throwable ignored) {}
         } catch (Throwable ignored) {}
         return false;
+    }
+
+    public static boolean shouldSuppressPopSuite(String key) {
+        if (key == null || key.isEmpty()) {
+            return false;
+        }
+        String lowerKey = key.toLowerCase();
+        return lowerKey.contains("upsell_2sv_popup")
+            || lowerKey.contains("message_request_push_guide_popup")
+            || lowerKey.contains("mandatory_gpppa_2sv_fullsheet")
+            || lowerKey.contains("nonmandatory_gpppa_2sv_fullsheet")
+            || lowerKey.contains("nonmandatory_gpppa_2sv_profile_popup")
+            || lowerKey.contains("nonmandatory_gpppa_2sv_profile_warning")
+            || lowerKey.contains("tt_gpppa_mandatory_2sv_upsell")
+            || lowerKey.contains("tt_gpppa_non_mandatory_2sv_upsell");
     }
 }

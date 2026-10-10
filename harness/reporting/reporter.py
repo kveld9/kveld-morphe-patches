@@ -6,7 +6,9 @@ theme invariants, and execution statuses for both Brave Browser and Gboard.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+import json
+from dataclasses import dataclass, field, is_dataclass
+from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from harness.core.symbols import BraveOriginSymbols, SymbolConfidence
@@ -16,10 +18,57 @@ from harness.gboard.themes import ThemeAuditReport
 from harness.migration.validator import PatchAuditResult, PatchStatus
 
 
+_MAX_JSON_DEPTH = 64
+
+
+def to_jsonable(obj: Any, _depth: int = 0, _active: frozenset = frozenset()) -> Any:
+    """Recursively converts report dataclasses to JSON-serializable structures.
+
+    bytes become lowercase hex, Enums become their values, tuples/sets
+    become (sorted) lists, and plain containers fall back to their
+    __dict__. Cyclic references degrade to a "<cyclic:...>" marker and
+    inputs deeper than _MAX_JSON_DEPTH degrade to str(), so
+    serialization of a report never crashes an audit run.
+    """
+    if obj is None or isinstance(obj, (bool, int, str)):
+        return obj
+    if isinstance(obj, Enum):
+        return obj.value
+    if isinstance(obj, bytes):
+        return obj.hex()
+    if _depth > _MAX_JSON_DEPTH:
+        return str(obj)
+    if isinstance(obj, (dict, list, tuple)) or is_dataclass(obj) or hasattr(obj, "__dict__"):
+        if id(obj) in _active:
+            return f"<cyclic:{type(obj).__name__}>"
+        _active = _active | {id(obj)}
+    if is_dataclass(obj) and not isinstance(obj, type):
+        return {k: to_jsonable(v, _depth + 1, _active) for k, v in obj.__dict__.items() if not k.startswith("_")}
+    if isinstance(obj, dict):
+        return {str(k): to_jsonable(v, _depth + 1, _active) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [to_jsonable(v, _depth + 1, _active) for v in obj]
+    if isinstance(obj, (set, frozenset)):
+        try:
+            return sorted(to_jsonable(v, _depth + 1, _active) for v in obj)
+        except TypeError:
+            return [to_jsonable(v, _depth + 1, _active) for v in obj]
+    if hasattr(obj, "__dict__"):
+        return {k: to_jsonable(v, _depth + 1, _active) for k, v in vars(obj).items() if not k.startswith("_")}
+    return str(obj)
+
+
 SYMBOL_ICONS = {
     SymbolConfidence.VERIFIED: "[PASS]",
     SymbolConfidence.BLOCKED: "[FAIL]",
 }
+
+
+@dataclass
+class DexEntryEvidence:
+    name: str
+    sha256: str
+    size: int
 
 
 @dataclass
@@ -44,6 +93,11 @@ class HarnessReportData:
     build_passed: bool = True
     build_output: str = ""
     final_status: str = "SUCCESS"  # "SUCCESS", "BLOCKED", "FAILED"
+    dex_entries: List[DexEntryEvidence] = field(default_factory=list)
+    libchrome_sha256: str = ""
+    androguard_version: str = ""
+    python_version: str = ""
+    generated_at_utc: str = ""
 
 
 class HarnessReporter:
@@ -60,6 +114,7 @@ class HarnessReporter:
         sections = [
             cls._render_header(data),
             cls._render_metadata(data),
+            cls._render_evidence(data),
             cls._render_patches_matrix(data),
         ]
         if data.theme_report:
@@ -76,6 +131,15 @@ class HarnessReporter:
         for sec in sections:
             flat_lines.extend(sec)
         return "\n".join(flat_lines)
+
+    @staticmethod
+    def render_json(data: HarnessReportData) -> str:
+        """Machine-readable report for agent loops (audit-stack, update-patches).
+
+        Same content as the markdown report, with sorted keys for
+        deterministic output. Never raises on exotic payloads.
+        """
+        return json.dumps(to_jsonable(data), indent=2, sort_keys=True) + "\n"
 
     @staticmethod
     def _render_header(data: HarnessReportData) -> List[str]:
@@ -106,6 +170,29 @@ class HarnessReporter:
             "---",
             "",
         ]
+
+    @staticmethod
+    def _render_evidence(data: HarnessReportData) -> List[str]:
+        lines = [
+            "## Analysis Evidence & Reproducibility",
+            "",
+            f"- **Python**: `{data.python_version or 'unknown'}`",
+            f"- **Androguard**: `{data.androguard_version or 'unknown'}`",
+            f"- **Report Generated (UTC)**: `{data.generated_at_utc or 'unknown'}`",
+            f"- **libchrome.so SHA-256**: `{data.libchrome_sha256 or 'absent'}`",
+            "",
+        ]
+        if data.dex_entries:
+            lines.extend([
+                "| DEX Entry | SHA-256 | Size (bytes) |",
+                "| :--- | :--- | ---: |",
+            ])
+            for entry in sorted(data.dex_entries, key=lambda e: e.name):
+                lines.append(f"| `{entry.name}` | `{entry.sha256}` | {entry.size:,} |")
+        else:
+            lines.append("- **DEX Entries**: `none indexed`")
+        lines.extend(["", "---", ""])
+        return lines
 
     @classmethod
     def _render_patches_matrix(cls, data: HarnessReportData) -> List[str]:
