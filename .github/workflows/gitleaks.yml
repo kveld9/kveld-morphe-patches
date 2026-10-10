@@ -15,4 +15,4 @@ jobs:
         with:
           fetch-depth: 0
       - name: Scan
-        uses: gitleaks/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@v3
