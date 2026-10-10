@@ -189,6 +189,14 @@ public final class TikTokFeedAdFilter {
     private static Field promoteIconTextField;
     private static Method getPromoteModelMethod;
     private static Field promoteModelField;
+    private static Method isPromoteAdLabelMethod;
+    private static Field isPromoteAdLabelField;
+    private static Method getLabelTextMethod;
+    private static Field labelTextField;
+    private static Method getBottomBarButtonTextMethod;
+    private static Field bottomBarButtonTextField;
+    private static Method getHasBottomBarButtonMethod;
+    private static Field hasBottomBarButtonField;
 
     private static Method getBCHashtagMethod;
     private static Field bcHashtagField;
@@ -576,6 +584,28 @@ public final class TikTokFeedAdFilter {
             try { promoteIconTextField = awemeClass.getDeclaredField("promoteIconText"); promoteIconTextField.setAccessible(true); } catch (Throwable ignored) {}
             try { getPromoteModelMethod = awemeClass.getMethod("getPromoteModel"); getPromoteModelMethod.setAccessible(true); } catch (Throwable ignored) {}
             try { promoteModelField = awemeClass.getDeclaredField("promoteModel"); promoteModelField.setAccessible(true); } catch (Throwable ignored) {}
+
+            try {
+                ClassLoader loader = awemeClass != null ? awemeClass.getClassLoader() : classLoader;
+                Class<?> promoteModelClass = null;
+                try {
+                    promoteModelClass = loader.loadClass("com.ss.android.ugc.aweme.commercialize.model.promote.PromoteModel");
+                } catch (Throwable t) {
+                    if (classLoader != loader) {
+                        promoteModelClass = classLoader.loadClass("com.ss.android.ugc.aweme.commercialize.model.promote.PromoteModel");
+                    }
+                }
+                if (promoteModelClass != null) {
+                    try { isPromoteAdLabelMethod = promoteModelClass.getMethod("isPromoteAdLabel"); isPromoteAdLabelMethod.setAccessible(true); } catch (Throwable ignored) {}
+                    try { isPromoteAdLabelField = promoteModelClass.getDeclaredField("isPromoteAdLabel"); isPromoteAdLabelField.setAccessible(true); } catch (Throwable ignored) {}
+                    try { getLabelTextMethod = promoteModelClass.getMethod("getLabelText"); getLabelTextMethod.setAccessible(true); } catch (Throwable ignored) {}
+                    try { labelTextField = promoteModelClass.getDeclaredField("labelText"); labelTextField.setAccessible(true); } catch (Throwable ignored) {}
+                    try { getBottomBarButtonTextMethod = promoteModelClass.getMethod("getBottomBarButtonText"); getBottomBarButtonTextMethod.setAccessible(true); } catch (Throwable ignored) {}
+                    try { bottomBarButtonTextField = promoteModelClass.getDeclaredField("bottomBarButtonText"); bottomBarButtonTextField.setAccessible(true); } catch (Throwable ignored) {}
+                    try { getHasBottomBarButtonMethod = promoteModelClass.getMethod("getHasBottomBarButton"); getHasBottomBarButtonMethod.setAccessible(true); } catch (Throwable ignored) {}
+                    try { hasBottomBarButtonField = promoteModelClass.getDeclaredField("hasBottomBarButton"); hasBottomBarButtonField.setAccessible(true); } catch (Throwable ignored) {}
+                }
+            } catch (Throwable ignored) {}
 
             try {
                 ClassLoader loader = awemeClass != null ? awemeClass.getClassLoader() : classLoader;
@@ -2310,6 +2340,128 @@ public final class TikTokFeedAdFilter {
         }
     }
 
+    private static boolean isPromoteModelPromotional(Object pm) {
+        if (pm == null) return false;
+        try {
+            if (isPromoteAdLabelMethod != null) {
+                try {
+                    if (Boolean.TRUE.equals(isPromoteAdLabelMethod.invoke(pm))) return true;
+                } catch (Throwable ignored) {}
+            }
+            if (isPromoteAdLabelField != null) {
+                try {
+                    if (isPromoteAdLabelField.getBoolean(pm)) return true;
+                } catch (Throwable ignored) {}
+            }
+            if (getLabelTextMethod != null) {
+                try {
+                    Object txt = getLabelTextMethod.invoke(pm);
+                    if (txt instanceof String && !((String) txt).trim().isEmpty()) return true;
+                } catch (Throwable ignored) {}
+            }
+            if (labelTextField != null) {
+                try {
+                    Object txt = labelTextField.get(pm);
+                    if (txt instanceof String && !((String) txt).trim().isEmpty()) return true;
+                } catch (Throwable ignored) {}
+            }
+            if (getBottomBarButtonTextMethod != null) {
+                try {
+                    Object txt = getBottomBarButtonTextMethod.invoke(pm);
+                    if (txt instanceof String && !((String) txt).trim().isEmpty()) return true;
+                } catch (Throwable ignored) {}
+            }
+            if (bottomBarButtonTextField != null) {
+                try {
+                    Object txt = bottomBarButtonTextField.get(pm);
+                    if (txt instanceof String && !((String) txt).trim().isEmpty()) return true;
+                } catch (Throwable ignored) {}
+            }
+            if (getHasBottomBarButtonMethod != null) {
+                try {
+                    if (Boolean.TRUE.equals(getHasBottomBarButtonMethod.invoke(pm))) return true;
+                } catch (Throwable ignored) {}
+            }
+            if (hasBottomBarButtonField != null) {
+                try {
+                    if (Boolean.TRUE.equals(hasBottomBarButtonField.get(pm))) return true;
+                } catch (Throwable ignored) {}
+            }
+
+            Class<?> clazz = pm.getClass();
+            try {
+                Method m = clazz.getMethod("isPromoteAdLabel");
+                if (Boolean.TRUE.equals(m.invoke(pm))) return true;
+            } catch (Throwable ignored) {}
+            try {
+                Field f = clazz.getDeclaredField("isPromoteAdLabel");
+                f.setAccessible(true);
+                if (f.getBoolean(pm)) return true;
+            } catch (Throwable ignored) {}
+            try {
+                Method m = clazz.getMethod("getLabelText");
+                Object txt = m.invoke(pm);
+                if (txt instanceof String && !((String) txt).trim().isEmpty()) return true;
+            } catch (Throwable ignored) {}
+            try {
+                Field f = clazz.getDeclaredField("labelText");
+                f.setAccessible(true);
+                Object txt = f.get(pm);
+                if (txt instanceof String && !((String) txt).trim().isEmpty()) return true;
+            } catch (Throwable ignored) {}
+            try {
+                Method m = clazz.getMethod("getBottomBarButtonText");
+                Object txt = m.invoke(pm);
+                if (txt instanceof String && !((String) txt).trim().isEmpty()) return true;
+            } catch (Throwable ignored) {}
+            try {
+                Field f = clazz.getDeclaredField("bottomBarButtonText");
+                f.setAccessible(true);
+                Object txt = f.get(pm);
+                if (txt instanceof String && !((String) txt).trim().isEmpty()) return true;
+            } catch (Throwable ignored) {}
+            try {
+                Method m = clazz.getMethod("getHasBottomBarButton");
+                if (Boolean.TRUE.equals(m.invoke(pm))) return true;
+            } catch (Throwable ignored) {}
+            try {
+                Field f = clazz.getDeclaredField("hasBottomBarButton");
+                f.setAccessible(true);
+                if (Boolean.TRUE.equals(f.get(pm))) return true;
+            } catch (Throwable ignored) {}
+        } catch (Throwable ignored) {}
+        return false;
+    }
+
+    private static String extractStringContent(Object obj) {
+        if (obj == null) return null;
+        if (obj instanceof String) return (String) obj;
+        try {
+            String[] methodNames = new String[]{"getKeyword", "getDescription", "getText", "getTitle", "getCaption"};
+            for (String methodName : methodNames) {
+                try {
+                    Method m = obj.getClass().getMethod(methodName);
+                    Object res = m.invoke(obj);
+                    if (res instanceof String && !((String) res).trim().isEmpty()) {
+                        return (String) res;
+                    }
+                } catch (Throwable ignored) {}
+            }
+            String[] fieldNames = new String[]{"keyword", "description", "text", "title", "caption"};
+            for (String fieldName : fieldNames) {
+                try {
+                    Field f = obj.getClass().getDeclaredField(fieldName);
+                    f.setAccessible(true);
+                    Object res = f.get(obj);
+                    if (res instanceof String && !((String) res).trim().isEmpty()) {
+                        return (String) res;
+                    }
+                } catch (Throwable ignored) {}
+            }
+        } catch (Throwable ignored) {}
+        return null;
+    }
+
     public static boolean isPromotionalContent(Object aweme) {
         if (aweme == null) return false;
         if (!initialized) {
@@ -2502,7 +2654,8 @@ public final class TikTokFeedAdFilter {
             }
             if (getPromoteModelMethod != null) {
                 try {
-                    if (getPromoteModelMethod.invoke(aweme) != null) {
+                    Object pm = getPromoteModelMethod.invoke(aweme);
+                    if (isPromoteModelPromotional(pm)) {
                         Log.i(TAG, "[Hide Promotional Content] Match [promoteModel] on aid=" + aid);
                         return true;
                     }
@@ -2510,7 +2663,8 @@ public final class TikTokFeedAdFilter {
             }
             if (promoteModelField != null) {
                 try {
-                    if (promoteModelField.get(aweme) != null) {
+                    Object pm = promoteModelField.get(aweme);
+                    if (isPromoteModelPromotional(pm)) {
                         Log.i(TAG, "[Hide Promotional Content] Match [promoteModelField] on aid=" + aid);
                         return true;
                     }
@@ -2552,9 +2706,12 @@ public final class TikTokFeedAdFilter {
             }
             if (banners instanceof List) {
                 for (Object b : (List<?>) banners) {
-                    if (b != null && isPromotionalDescription(b.toString())) {
-                        Log.i(TAG, "[Hide Promotional Content] Match [Banner=" + b + "] on aid=" + aid);
-                        return true;
+                    if (b != null) {
+                        String bText = extractStringContent(b);
+                        if (bText != null && isPromotionalDescription(bText)) {
+                            Log.i(TAG, "[Hide Promotional Content] Match [Banner=" + bText + "] on aid=" + aid);
+                            return true;
+                        }
                     }
                 }
             }
@@ -2568,9 +2725,12 @@ public final class TikTokFeedAdFilter {
             }
             if (anchors instanceof List) {
                 for (Object a : (List<?>) anchors) {
-                    if (a != null && isPromotionalDescription(a.toString())) {
-                        Log.i(TAG, "[Hide Promotional Content] Match [Anchor=" + a + "] on aid=" + aid);
-                        return true;
+                    if (a != null) {
+                        String aText = extractStringContent(a);
+                        if (aText != null && isPromotionalDescription(aText)) {
+                            Log.i(TAG, "[Hide Promotional Content] Match [Anchor=" + aText + "] on aid=" + aid);
+                            return true;
+                        }
                     }
                 }
             }
@@ -2595,14 +2755,21 @@ public final class TikTokFeedAdFilter {
                     }
                 }
 
+                int originalCount = items.size();
+                Object fallback = null;
                 int removed = 0;
                 Iterator<Object> iterator = items.iterator();
                 while (iterator.hasNext()) {
                     Object item = iterator.next();
                     if (isPromotionalContent(item)) {
+                        fallback = item;
                         iterator.remove();
                         removed++;
                     }
+                }
+                if (items.isEmpty() && fallback != null && originalCount > 0) {
+                    items.add(fallback);
+                    removed--;
                 }
                 if (removed > 0) {
                     Log.i(TAG, "[Hide Promotional Content] Pruned " + removed + " promotional/branded video(s) from feed.");
@@ -2638,15 +2805,22 @@ public final class TikTokFeedAdFilter {
                     }
                 }
 
+                int originalCount = items.size();
+                Object fallback = null;
                 int removed = 0;
                 Iterator<Object> iterator = items.iterator();
                 while (iterator.hasNext()) {
                     Object followItem = iterator.next();
                     Object aweme = extractAwemeFromFollowItem(followItem);
                     if (isPromotionalContent(aweme)) {
+                        fallback = followItem;
                         iterator.remove();
                         removed++;
                     }
+                }
+                if (items.isEmpty() && fallback != null && originalCount > 0) {
+                    items.add(fallback);
+                    removed--;
                 }
                 if (removed > 0) {
                     Log.i(TAG, "[Hide Promotional Content] Pruned " + removed + " promotional/branded video(s) from Following feed.");
@@ -2672,15 +2846,22 @@ public final class TikTokFeedAdFilter {
                     }
                 }
 
+                int originalCount = items.size();
+                Object fallback = null;
                 int removed = 0;
                 Iterator<Object> iterator = items.iterator();
                 while (iterator.hasNext()) {
                     Object item = iterator.next();
                     Object aweme = extractAwemeFromFriendsV3FeedModel(item);
                     if (isPromotionalContent(aweme)) {
+                        fallback = item;
                         iterator.remove();
                         removed++;
                     }
+                }
+                if (items.isEmpty() && fallback != null && originalCount > 0) {
+                    items.add(fallback);
+                    removed--;
                 }
                 if (removed > 0) {
                     Log.i(TAG, "[Hide Promotional Content] Pruned " + removed + " promotional/branded video(s) from Friends V3 feed.");
@@ -2706,15 +2887,22 @@ public final class TikTokFeedAdFilter {
                     }
                 }
 
+                int originalCount = items.size();
+                Object fallback = null;
                 int removed = 0;
                 Iterator<Object> iterator = items.iterator();
                 while (iterator.hasNext()) {
                     Object item = iterator.next();
                     Object aweme = extractAwemeFromFriendsFeed(item);
                     if (isPromotionalContent(aweme)) {
+                        fallback = item;
                         iterator.remove();
                         removed++;
                     }
+                }
+                if (items.isEmpty() && fallback != null && originalCount > 0) {
+                    items.add(fallback);
+                    removed--;
                 }
                 if (removed > 0) {
                     Log.i(TAG, "[Hide Promotional Content] Pruned " + removed + " promotional/branded video(s) from Friends feed.");
