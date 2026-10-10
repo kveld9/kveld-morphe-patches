@@ -213,22 +213,57 @@ val braveBlockTelemetryPatch = bytecodePatch(
         }
 
         // 3. Variations: Abort HTTP connection before socket opens
-        val variationsFp = Fingerprint(
+        val monoFp = Fingerprint(
             returnType = "Ljava/net/HttpURLConnection;",
             strings = listOf("https://variations.brave.com/seed"),
         )
-        variationsFp.method.apply {
-            addInstructions(
-                0,
-                """
-                    new-instance v0, Ljava/io/IOException;
-                    const-string v1, "Blocked by Morphe"
-                    invoke-direct {v0, v1}, Ljava/io/IOException;-><init>(Ljava/lang/String;)V
-                    throw v0
-                """,
+        val variationsMethod = try {
+            monoFp.method
+        } catch (e: PatchException) {
+            null
+        }
+
+        if (variationsMethod != null) {
+            variationsMethod.apply {
+                addInstructions(
+                    0,
+                    """
+                        new-instance v0, Ljava/io/IOException;
+                        const-string v1, "Blocked by Morphe"
+                        invoke-direct {v0, v1}, Ljava/io/IOException;-><init>(Ljava/lang/String;)V
+                        throw v0
+                    """,
+                )
+                val className = monoFp.originalClassDef.type.substringAfterLast('/').removeSuffix(";")
+                hookedMethods.add("$className.$name (connection-opener)")
+            }
+        } else {
+            val universalFp = Fingerprint(
+                strings = listOf("https://variations.brave.com/seed"),
             )
-            val className = variationsFp.originalClassDef.type.substringAfterLast('/').removeSuffix(";")
-            hookedMethods.add("$className.$name")
+            val fallbackMethod = try {
+                universalFp.method
+            } catch (e: PatchException) {
+                throw PatchException("Failed to match Variations seed fingerprint in any known variant (Mono/Universal)")
+            }
+
+            if (fallbackMethod.returnType != "Ljava/lang/String;") {
+                throw PatchException("Variations seed fallback matched, but return type is ${fallbackMethod.returnType} (expected Ljava/lang/String;)")
+            }
+
+            fallbackMethod.apply {
+                addInstructions(
+                    0,
+                    """
+                        new-instance v0, Ljava/io/IOException;
+                        const-string v1, "Blocked by Morphe"
+                        invoke-direct {v0, v1}, Ljava/io/IOException;-><init>(Ljava/lang/String;)V
+                        throw v0
+                    """,
+                )
+                val className = universalFp.originalClassDef.type.substringAfterLast('/').removeSuffix(";")
+                hookedMethods.add("$className.$name (universal-url-rewriter)")
+            }
         }
 
         // 4. PrefService.e(String): Filter telemetry preferences (P3A, Stats, WDP) at return
