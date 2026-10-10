@@ -63,33 +63,35 @@ val mandatoryLoginBypassPatch = bytecodePatch(
         }
 
         // 4. MandatoryLoginService.tryShowMandatoryLoginPage(...)V -> notify listener and return-void
-        try {
+        val candidates = try {
             // Explicit overload selection scoped to the class: fail hard on
             // ambiguity instead of silently patching the first match.
-            val candidates = Fingerprint(
+            Fingerprint(
                 definingClass = MANDATORY_LOGIN_SERVICE,
                 name = "tryShowMandatoryLoginPage",
                 returnType = "V",
             ).matchAll(classDefBy(MANDATORY_LOGIN_SERVICE))
                 .map { it.method }
                 .filter { it.parameters.firstOrNull()?.type == "Landroid/app/Activity;" }
-            require(candidates.size == 1) {
-                "Ambiguous tryShowMandatoryLoginPage overloads: ${candidates.size}"
-            }
-            val method = candidates.first()
-            val listenerReg = if (method.parameters.isNotEmpty()) "p${method.parameters.size}" else "p1"
-            method.addInstructions(
-                0,
-                """
-                    invoke-static {$listenerReg}, ${Constants.TIKTOK_EXTENSION_LOGIN_HOOK}->notifyLoginResult(Ljava/lang/Object;)V
-                    return-void
-                """.trimIndent(),
-            )
-            println("[Bypass Mandatory Login] Hooked MandatoryLoginService.tryShowMandatoryLoginPage() -> Notified login completion and suppressed popup.")
-            patched++
         } catch (e: Exception) {
             println("[Bypass Mandatory Login] MandatoryLoginService.tryShowMandatoryLoginPage note: ${e.message}")
+            throw e
         }
+
+        require(candidates.size == 1) {
+            "Ambiguous tryShowMandatoryLoginPage overloads: ${candidates.size}"
+        }
+        val method = candidates.first()
+        val listenerReg = if (method.parameters.isNotEmpty()) "p${method.parameters.size}" else "p1"
+        method.addInstructions(
+            0,
+            """
+                invoke-static {$listenerReg}, ${Constants.TIKTOK_EXTENSION_LOGIN_HOOK}->notifyLoginResult(Ljava/lang/Object;)V
+                return-void
+            """.trimIndent(),
+        )
+        println("[Bypass Mandatory Login] Hooked MandatoryLoginService.tryShowMandatoryLoginPage() -> Notified login completion and suppressed popup.")
+        patched++
 
         // 5. GuestModeServiceImpl.isGuestMode()Z -> delegate to TikTokLoginHook.isGuestMode()
         try {
