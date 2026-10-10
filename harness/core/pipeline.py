@@ -243,9 +243,16 @@ class BaseTargetPipeline(abc.ABC):
         """Full lifecycle execution."""
         self.start_time = time.time()
         _safe_print(f"Running {self.app_name} Pipeline for {self.meta.package_name} v{self.meta.version_name}...")
+        old_version = self.get_old_target_version()
+        try:
+            return self._execute_lifecycle(old_version)
+        except Exception as e:
+            return self._write_failure_report(old_version, e)
+
+    def _execute_lifecycle(self, old_version: str) -> int:
+        """Runs the APK-dependent stages; any crash is reported by execute()."""
         self.validate_apk_sanity()
 
-        old_version = self.get_old_target_version()
         self.extract_and_index()
 
         patch_results, extra_data = self.execute_audit_and_validation()
@@ -311,6 +318,33 @@ class BaseTargetPipeline(abc.ABC):
         _safe_print(f"Pipeline completed in {elapsed:.2f}s with status: {final_status}")
 
         return 0 if final_status == "SUCCESS" else 1
+
+    def _write_failure_report(self, old_version: str, e: Exception) -> int:
+        """Emits a partial FAILED report when the pipeline crashes mid-flight.
+
+        Preserves the APK digest, environment versions, and whatever DEX
+        evidence was indexed before the crash so agent loops can triage
+        without re-running the full scan.
+        """
+        _safe_print(f"Pipeline crashed: {e}")
+        report_data = self.build_report_data(
+            old_version=old_version,
+            patch_results={},
+            extra_data=None,
+            applied_changes=[],
+            rejected_changes=[f"Pipeline failed before completion: {e}"],
+            build_passed=False,
+            build_output="",
+            final_status="FAILED",
+        )
+        md_report = HarnessReporter.render_markdown(report_data)
+        Path(self.output_report).write_text(md_report, encoding="utf-8")
+        _safe_print(f"Partial failure report written to {self.output_report}")
+        if self.emit_json:
+            json_path = Path(self.output_report).with_suffix(".json")
+            json_path.write_text(HarnessReporter.render_json(report_data), encoding="utf-8")
+            _safe_print(f"Partial failure JSON report written to {json_path}")
+        return 1
 
 
 class PipelineRegistry:
