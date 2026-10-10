@@ -2,9 +2,21 @@ package app.morphe.patches.gboard
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.extensions.InstructionExtensions.instructionsOrNull
+import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.patcher.patch.BytecodePatchContext
+import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.cleanClassName
+import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.ClassDef
+import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.iface.instruction.Instruction
+import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.reference.StringReference
 
 val gboardBlockTelemetryPatch = bytecodePatch(
     name = "Block Telemetry",
@@ -12,6 +24,14 @@ val gboardBlockTelemetryPatch = bytecodePatch(
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
+
+    val blockAdwordsHost by booleanOption(
+        key = "blockAdwordsHost",
+        default = true,
+        title = "Block Adwords Host",
+        description = "Rewrites DEX const-string literals containing adwords.google.com and reportingwidget.google.com to 0.0.0.0. Enabled by default.",
+        required = false,
+    )
 
     execute {
         val hookedMethods = mutableListOf<String>()
@@ -147,6 +167,114 @@ val gboardBlockTelemetryPatch = bytecodePatch(
         hookedMethods.add("$cTenor.F")
 
         val targetClasses = hookedMethods.map { it.substringBefore('.') }.distinct()
+
+        if (blockAdwordsHost == true) {
+            blockAdwordsHostInDex()
+        } else {
+            println("[Block Telemetry] Skipped blockAdwordsHost: option is disabled.")
+        }
+
         println("[Block Telemetry] Injected Smali hooks into ${hookedMethods.size} telemetry & diagnostic methods across ${targetClasses.size} classes (${targetClasses.joinToString(", ")})")
     }
 }
+
+private data class PendingAdwordsRewrite(
+    val index: Int,
+    val register: Int,
+    val replacement: String,
+)
+
+private fun BytecodePatchContext.blockAdwordsHostInDex() {
+    var rewrittenStrings = 0
+    var touchedClasses = 0
+
+    classDefForEach { classDef ->
+        if (!hasAdwordsLiteral(classDef)) return@classDefForEach
+
+        val mutableClass = mutableClassDefBy(classDef)
+        var classModified = false
+
+        for (method in mutableClass.methods) {
+            val count = rewriteAdwordsInMethod(method)
+            if (count > 0) {
+                rewrittenStrings += count
+                classModified = true
+            }
+        }
+
+        if (classModified) touchedClasses++
+    }
+
+    logAdwordsResult(rewrittenStrings, touchedClasses)
+}
+
+private fun logAdwordsResult(rewrittenStrings: Int, touchedClasses: Int) {
+    if (rewrittenStrings == 0) {
+        println("[Block Telemetry] No adwords.google.com or reportingwidget.google.com literals found.")
+    } else {
+        println("[Block Telemetry] Rewrote $rewrittenStrings adwords.google.com / reportingwidget.google.com literal(s) across $touchedClasses class(es) -> 0.0.0.0.")
+    }
+}
+
+private fun rewriteAdwordsInMethod(method: MutableMethod): Int {
+    val rewrites = collectAdwordsRewrites(method)
+    if (rewrites.isEmpty()) return 0
+    applyAdwordsRewrites(method, rewrites)
+    return rewrites.size
+}
+
+private fun hasAdwordsLiteral(classDef: ClassDef): Boolean =
+    classDef.methods.any { methodHasAdwordsLiteral(it) }
+
+private fun methodHasAdwordsLiteral(method: Method): Boolean {
+    val instructions = method.instructionsOrNull ?: return false
+    return instructions.any { isAdwordsConstString(it) }
+}
+
+private fun isConstStringOpcode(opcode: Opcode): Boolean =
+    opcode == Opcode.CONST_STRING || opcode == Opcode.CONST_STRING_JUMBO
+
+private fun extractAdwordsLiteral(instruction: Instruction): String? {
+    if (!isConstStringOpcode(instruction.opcode)) return null
+    val ref = (instruction as? ReferenceInstruction)?.reference as? StringReference ?: return null
+    val original = ref.string
+    return if (original.contains("adwords.google.com", ignoreCase = true) || original.contains("reportingwidget.google.com", ignoreCase = true)) original else null
+}
+
+private fun isAdwordsConstString(instruction: Instruction): Boolean =
+    extractAdwordsLiteral(instruction) != null
+
+private fun buildAdwordsRewrite(instruction: Instruction, index: Int): PendingAdwordsRewrite? {
+    val original = extractAdwordsLiteral(instruction) ?: return null
+    var replacement = original.replace("adwords.google.com", "0.0.0.0", ignoreCase = true)
+    replacement = replacement.replace("reportingwidget.google.com", "0.0.0.0", ignoreCase = true)
+    val register = (instruction as? OneRegisterInstruction)?.registerA ?: return null
+    return PendingAdwordsRewrite(index, register, replacement)
+}
+
+private fun collectAdwordsRewrites(method: MutableMethod): List<PendingAdwordsRewrite> {
+    val instructions = method.instructionsOrNull?.toList() ?: return emptyList()
+    val rewrites = mutableListOf<PendingAdwordsRewrite>()
+    for ((index, instruction) in instructions.withIndex()) {
+        val rewrite = buildAdwordsRewrite(instruction, index) ?: continue
+        rewrites.add(rewrite)
+    }
+    return rewrites
+}
+
+private fun applyAdwordsRewrites(method: MutableMethod, rewrites: List<PendingAdwordsRewrite>) {
+    for (rewrite in rewrites.sortedByDescending { it.index }) {
+        val opcode = if (rewrite.register > 255) "const-string/jumbo" else "const-string"
+        method.replaceInstruction(
+            rewrite.index,
+            "$opcode v${rewrite.register}, \"${escapeSmaliLiteral(rewrite.replacement)}\"",
+        )
+    }
+}
+
+private fun escapeSmaliLiteral(value: String): String =
+    value.replace("\\", "\\\\")
+        .replace("\"", "\\\"")
+        .replace("\n", "\\n")
+        .replace("\r", "\\r")
+        .replace("\t", "\\t")
