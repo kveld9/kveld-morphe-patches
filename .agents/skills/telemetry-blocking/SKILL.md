@@ -91,6 +91,11 @@ Inspect DEX bytecodes to locate stable public entrypoints, ad measurement classe
    - Scan for methods retrieving advertising IDs: `getAIFA()`, `getAppSetId()`, `getAdvertisingId()`, `getGaid()`, `getAdvertisingIdInfo()`.
    - Target: `Lcom/microsoft/office/adsmobile_admeasurementpartner/admeasurement/AdMeasurementPlatformData;->getAIFA()Ljava/lang/String;`, `->getAppSetId()Ljava/lang/String;`.
 
+4. **Dynamic Field Resolution via `toString()` (obfuscated data classes)**:
+   - Kotlin data classes keep a `toString()` emitting `ClassName(field=value, ...)` with stable field-name literals even when field identifiers are obfuscated (`a`, `b`, `g`).
+   - Resolve field names by scanning `toString()` for `", <fieldName>="` const-strings and reading the following `iget-object`/`iget-boolean` field reference; then target the matching `iput-object`/`iput-boolean` in `<init>` constructors (insert const-zeroing before the write, descending index order).
+   - Evidence (X 12.33.0, 2026-10-10): resolved `followButtonState`/`isSubscribeEligible` (`FocalPostState`), `recommendedUsers`, `threads` (`FleetlineApiResponse`) without knowing obfuscated names in advance.
+
 ### C. Preservation Rules (Mandatory Invariants)
 Telemetry patches must preserve all functional application systems:
 1. **Push Notifications**:
