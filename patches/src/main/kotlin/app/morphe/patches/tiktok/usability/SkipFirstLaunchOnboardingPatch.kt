@@ -57,21 +57,17 @@ val skipFirstLaunchOnboardingPatch = bytecodePatch(
         patched++
 
         // 5. NewUserJourneyService.LJIJJLI(Lcom/bytedance/ies/foundation/activity/BaseActivity;)Z -> return false
-        val method = try {
-            Fingerprint(
-                definingClass = NEW_USER_JOURNEY_SERVICE,
-                name = "LJIJJLI",
-                returnType = "Z",
-                parameters = listOf("Lcom/bytedance/ies/foundation/activity/BaseActivity;"),
-            ).method
-        } catch (_: Exception) {
-            // Obfuscation fallback for variants
-            Fingerprint(
-                definingClass = NEW_USER_JOURNEY_SERVICE,
-                returnType = "Z",
-                parameters = listOf("Lcom/bytedance/ies/foundation/activity/BaseActivity;"),
-            ).method
+        // Explicit overload selection scoped to the class: fail hard on
+        // ambiguity instead of silently patching the first match.
+        val candidates = Fingerprint(
+            definingClass = NEW_USER_JOURNEY_SERVICE,
+            returnType = "Z",
+            parameters = listOf("Lcom/bytedance/ies/foundation/activity/BaseActivity;"),
+        ).matchAll(classDefBy(NEW_USER_JOURNEY_SERVICE)).map { it.method }
+        require(candidates.size == 1) {
+            "Ambiguous LJIJJLI overloads: ${candidates.size}"
         }
+        val method = candidates.first()
         method.replaceWithReturnBoolean(false)
         println("[SkipFirstLaunchOnboarding] Neutralized NewUserJourneyService.LJIJJLI() -> Container activity launch suppressed.")
         patched++
