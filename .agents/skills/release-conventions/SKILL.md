@@ -28,7 +28,7 @@ Commit granularity (1 patch / 1 option / 1 fix = 1 commit, code and docs togethe
 
 ## 2. Release Pipeline Chain (`release.yml` & `.releaserc`)
 
-When commits are pushed to `main`, the automated release pipeline executes:
+When commits are pushed to `main` (stable release) or `dev` (experimental prerelease `vX.Y.Z-experimental.N`), the automated release pipeline executes:
 
 1. **Commit Analysis**: Evaluates commit log since previous release tag (`@semantic-release/commit-analyzer`).
 2. **Release Notes Generation**: Formats notes into sections based on conventional commit types (`@semantic-release/release-notes-generator`).
@@ -50,6 +50,6 @@ When commits are pushed to `main`, the automated release pipeline executes:
 
 ## 3. Branching Strategy
 
-- Development and releases are anchored on `main`; there is no `dev` branch and no PR workflow (`AGENTS.md`, rule 15).
-- Automated releases trigger exclusively from `main`.
+- Routine development happens on `dev`; `main` is the stable release line, touched ONLY by an explicit user-ordered promotion merge (`dev` into `main`, merge commit, never squash), and there is no PR workflow (`AGENTS.md`, rule 15).
+- Automated stable releases trigger from `main`; pushes to `dev` produce experimental prereleases (`vX.Y.Z-experimental.N`).
 - **Never force-push** after a release tag has been created.
