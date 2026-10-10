@@ -23,6 +23,8 @@ data class HostEntry(
     val hostName: String,
 )
 
+// EXAMPLE offsets: version-specific illustration values. Always resolve offsets for the
+// target APK version via pre-patch fingerprint assertion; never copy these literally.
 val hostEntries = listOf(
     HostEntry(0x001f9329L, "star-randsrv.bsg.brave.com"),
     HostEntry(0x001f935aL, "collector.bsg.brave.com"),
