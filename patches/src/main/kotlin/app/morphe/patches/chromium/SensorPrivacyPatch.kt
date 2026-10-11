@@ -1,6 +1,7 @@
 package app.morphe.patches.chromium
 
 import app.morphe.patcher.Fingerprint
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.replaceWithReturnBoolean
@@ -52,5 +53,6 @@ val sensorPrivacyPatch = bytecodePatch(
         }
 
         println("[Sensor Privacy Guard] Neutralized $patched sensor provider hooks (${hookedMethods.joinToString(", ")}) -> motion/ambient sensor fingerprinting disabled.")
+        if (patched == 0) throw PatchException("Sensor Privacy Guard: no hooks applied, targets shifted.")
     }
 }
