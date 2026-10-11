@@ -6,8 +6,8 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 
 val resourceGovernorPatch = bytecodePatch(
-    name = "Resource & Battery Governor",
-    description = "Throttles background sensor polling (gyroscope/accelerometer 3D ads) and prevents aggressive video buffer preloading to conserve battery and CPU resources.",
+    name = "Battery Saver",
+    description = "Calms sensors and video preloading to save battery.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
