@@ -7,8 +7,8 @@ import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.replaceWithReturnVoid
 
 val disableInAppUpdateNagsPatch = bytecodePatch(
-    name = "Update Prompt Suppressor",
-    description = "Neutralizes background update polling tasks and device ID check routines to prevent forced update popups.",
+    name = "No Update Popups",
+    description = "Stops forced update dialogs.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
