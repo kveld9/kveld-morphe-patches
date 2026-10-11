@@ -11,8 +11,8 @@ import app.morphe.patches.shared.replaceWithReturnIntegerObject
 import app.morphe.patches.shared.sharedExtensionPatch
 
 val disableFeedLongPressActionsPatch = bytecodePatch(
-    name = "Disable Feed Long-Press Actions",
-    description = "Disables long-press action gestures on feed buttons, including Like to repost, Share to quick DMs, and Comment to quick emojis, with optional long-press video body redirection.",
+    name = "No Long-Press Menus",
+    description = "Long press on buttons does nothing.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -20,32 +20,32 @@ val disableFeedLongPressActionsPatch = bytecodePatch(
 
     val disableLikeRepost by booleanOption(
         key = "disableLikeRepost",
-        title = "Disable Long-Press Like (Repost)",
-        description = "Prevents holding the Like button on feed videos from opening the Repost action panel.",
+        title = "Like button",
+        description = "Holding Like does nothing.",
         default = true,
         required = false,
     )
 
     val disableShareQuickDms by booleanOption(
         key = "disableShareQuickDms",
-        title = "Disable Long-Press Share (Quick DMs)",
-        description = "Prevents holding the Share button on feed videos from opening the quick share recent contacts tray.",
+        title = "Share button",
+        description = "Holding Share does nothing.",
         default = true,
         required = false,
     )
 
     val disableCommentReactions by booleanOption(
         key = "disableCommentReactions",
-        title = "Disable Long-Press Comment (Quick Emojis)",
-        description = "Prevents holding the Comment button on feed videos from opening the quick reaction emojis picker.",
+        title = "Comment button",
+        description = "Holding Comment does nothing.",
         default = true,
         required = false,
     )
 
     val longPressVideo by stringOption(
         key = "longPressVideo",
-        title = "Long Press Video Action",
-        description = "Action when long pressing feed video body: 'nothing' (default, suppresses menu/repost), 'comments' (opens comments), 'copyLink' (copies link to clipboard), or 'saveSound' (favorites/saves audio).",
+        title = "Video long-press",
+        description = "nothing, comments, copyLink or saveSound.",
         default = "nothing",
         values = mapOf("Do nothing" to "nothing", "Open comments" to "comments", "Copy link" to "copyLink", "Save sound" to "saveSound"),
         required = false,
