@@ -2,6 +2,7 @@ package app.morphe.patches.tiktok.privacy
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.sharedExtensionPatch
@@ -116,5 +117,6 @@ val mandatoryLoginBypassPatch = bytecodePatch(
         }
 
         println("[Bypass Mandatory Login] Applied $patched hooks -> Mandatory login wall bypassed.")
+        if (patched == 0) throw PatchException("Bypass Mandatory Login: no hooks applied, targets shifted.")
     }
 }
