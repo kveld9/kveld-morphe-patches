@@ -130,6 +130,6 @@ val hideInboxPromosAndAlertsPatch = bytecodePatch(
         }
 
         println("[Hide Inbox Promos & Alerts] Applied $patched inbox promo and alert suppression hook(s).")
-        if (patched == 0) throw PatchException("Hide Inbox Promos & Alerts: no hooks applied, targets shifted.")
+        if (patched == 0 && (hideTopPromosAndBanners != false || hideContactRecommendations != false || hideNavigationNoticesAndTooltips != false)) throw PatchException("Hide Inbox Promos & Alerts: no hooks applied, targets shifted.")
     }
 }
