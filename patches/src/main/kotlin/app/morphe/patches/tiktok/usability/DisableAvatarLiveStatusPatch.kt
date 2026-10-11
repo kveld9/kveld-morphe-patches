@@ -1,6 +1,7 @@
 package app.morphe.patches.tiktok.usability
 
 import app.morphe.patcher.Fingerprint
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.replaceWithReturnBoolean
@@ -99,5 +100,6 @@ val disableAvatarLiveStatusPatch = bytecodePatch(
         patched++
 
         println("[Disable Profile Photo LIVE Status] Successfully applied $patched hook(s).")
+        if (patched == 0) throw PatchException("Disable Profile Photo LIVE Status: no hooks applied, targets shifted.")
     }
 }
