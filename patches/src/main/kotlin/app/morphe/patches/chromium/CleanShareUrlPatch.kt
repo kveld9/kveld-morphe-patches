@@ -2,6 +2,7 @@ package app.morphe.patches.chromium
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.addInstructionsAtControlFlowLabel
@@ -55,8 +56,13 @@ val cleanShareUrlPatch = bytecodePatch(
         // 1. Hook ClipboardImpl.setPrimaryClip so all copied links, URLs, and text are sanitized
         try {
             val fpClipboard = Fingerprint(
+                name = "setPrimaryClip",
                 parameters = listOf("Landroid/content/ClipData;"),
+                returnType = "V",
                 strings = listOf("google"),
+                custom = { _, classDef ->
+                    classDef.type.contains("Clipboard")
+                },
             )
             fpClipboard.method.apply {
                 addInstructions(
@@ -96,5 +102,6 @@ val cleanShareUrlPatch = bytecodePatch(
         }
 
         println("[Clean Share URL] Applied $patched link tracking sanitizer hook(s) across target components (${hookedTargets.joinToString(", ")}).")
+        if (patched == 0) throw PatchException("Clean Share URL: no hooks applied, targets shifted.")
     }
 }
