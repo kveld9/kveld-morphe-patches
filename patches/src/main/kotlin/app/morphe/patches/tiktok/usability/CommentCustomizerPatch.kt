@@ -1065,8 +1065,8 @@ private fun BytecodePatchContext.applyHideCommentPopupAds(): Int {
 }
 
 val commentCustomizerPatch = bytecodePatch(
-    name = "Comment Customizer",
-    description = "Customizes TikTok's comment section, including native sort controls, clean text copying, disabling suggested emojis bar, hiding comment quick actions, hiding in-comment surveys and feedback cards, hiding profile photo story rings, enabling voice comments, automatic comment translation, fixing silent comment drops, and hiding comment popup ads.",
+    name = "Better Comments",
+    description = "Sort, copy, translate and declutter comments.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -1075,95 +1075,95 @@ val commentCustomizerPatch = bytecodePatch(
     val commentSortControls by booleanOption(
         key = "commentSortControls",
         default = true,
-        title = "Comment Sort Controls",
-        description = "Unlocks TikTok's native comment sorting menu (Hot, Newest, Creator only, With media) across all posts.",
+        title = "Sort menu",
+        description = "Unlocks comment sorting.",
         required = false,
     )
 
     val commentSendFix by booleanOption(
         key = "commentSendFix",
         default = true,
-        title = "Fix Silent Comment Drops",
-        description = "Prevents silent comment publishing drops when the top-page screen context is detached or null.",
+        title = "Fix lost comments",
+        description = "Fixes comments that never send.",
         required = false,
     )
 
     val copyWithoutUsername by booleanOption(
         key = "copyWithoutUsername",
         default = true,
-        title = "Copy Comments Without Username",
-        description = "Copies only the comment text without prepending the author username.",
+        title = "Copy text only",
+        description = "Copies text without @username.",
         required = false,
     )
 
     val disableSuggestedEmojis by booleanOption(
         key = "disableSuggestedEmojis",
         default = true,
-        title = "Disable Suggested Emojis",
-        description = "Removes the horizontal bar of suggested quick emojis displayed above the comment input box.",
+        title = "No suggested emojis",
+        description = "Removes emoji bar.",
         required = false,
     )
 
     val hideCommentQuickActions by booleanOption(
         key = "hideCommentQuickActions",
         default = true,
-        title = "Hide Comment Quick Actions",
-        description = "Hides the quick action buttons (photo, emoji, and mention) inside the comment input bar.",
+        title = "No quick buttons",
+        description = "Hides photo/emoji/@ buttons.",
         required = false,
     )
 
     val hideCommentSurveys by booleanOption(
         key = "hideCommentSurveys",
         default = true,
-        title = "Hide Comment Surveys & Feedback Cards",
-        description = "Hides surveys, opinion questionnaires, and feedback cards embedded within comment lists.",
+        title = "No surveys",
+        description = "Hides surveys in comments.",
         required = false,
     )
 
     val hideStoryRings by booleanOption(
         key = "hideStoryRings",
         default = true,
-        title = "Hide Comment Story Rings",
-        description = "Removes profile photo story rings from avatars in the comment section.",
+        title = "No story rings",
+        description = "Removes story rings on avatars.",
         required = false,
     )
 
     val enableVoiceComments by booleanOption(
         key = "enableVoiceComments",
         default = true,
-        title = "Enable Voice Comments",
-        description = "Forces the native voice comment recording button in comment input bars, bypassing regional rollout restrictions and remote server blocks.",
+        title = "Voice comments",
+        description = "Adds voice recording button.",
         required = false,
     )
 
     val hideCommentPopupAds by booleanOption(
         key = "hideCommentPopupAds",
         default = true,
-        title = "Hide Comment Popup Ads",
-        description = "Suppresses promotional brand surprise animation popups and commercial campaign effects when loading comments or publishing.",
+        title = "No popup ads",
+        description = "Blocks promo animations.",
         required = false,
     )
 
     val showFlaggedComments by booleanOption(
         key = "showFlaggedComments",
         default = true,
-        title = "Show Community-Flagged Comments",
-        description = "Automatically expands community-flagged comments inline as normal comments, without showing the warning banner or requiring a tap.",
+        title = "Show flagged",
+        description = "Expands flagged comments directly.",
         required = false,
     )
 
     val autoTranslate by booleanOption(
         key = "autoTranslate",
         default = false,
-        title = "Auto-Translate Comments",
-        description = "Automatically translates comments into your preferred language using TikTok's native translation engine.",
+        title = "Auto-translate",
+        description = "Translates comments automatically.",
         required = false,
     )
 
     val translationExcludedLanguages by stringOption(
         key = "translationExcludedLanguages",
-        title = "Do-Not-Translate Languages",
-        description = "Comma-separated ISO 639 codes (e.g. 'en,es,zh') whose comments keep their original text. Applies on top of TikTok's native do-not-translate list and only matters when Auto-Translate Comments is enabled.",
+        title = "Languages to skip",
+        description = "Codes like en,es,zh. Never translated.",
         default = "",
         required = false,
     )
