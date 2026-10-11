@@ -6,8 +6,8 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 
 val disablePostDownloadDialogPatch = bytecodePatch(
-    name = "Disable Post-Download Share Dialog",
-    description = "Suppresses the automatic 'Share to' and friend suggestions bottom sheet that pops up after finishing a download.",
+    name = "No Share Popup",
+    description = "No popup after saving videos.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
