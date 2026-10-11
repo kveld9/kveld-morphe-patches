@@ -6,8 +6,8 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 
 val unifiedTelemetryTrackerSilencerPatch = bytecodePatch(
-    name = "Unified Telemetry & Tracker Silencer",
-    description = "Neutralizes ByteDance AppLog user tracking, APM/Npth/Heimdallr crash monitors, AppsFlyer attribution, and Firebase analytics.",
+    name = "Block All Tracking",
+    description = "Stops usage tracking and crash reporting.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
