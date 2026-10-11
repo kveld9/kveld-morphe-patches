@@ -162,6 +162,6 @@ val hideTikTokShopAnchorsPatch = bytecodePatch(
         }
 
         println("[Hide TikTok Shop & Mall] Applied $patched TikTok Shop anchor and navigation tab suppression hook(s).")
-        if (patched == 0) throw PatchException("Hide TikTok Shop & Mall: no hooks applied, targets shifted.")
+        if (patched == 0 && (hideShopTab != false || hideVideoAnchors != false)) throw PatchException("Hide TikTok Shop & Mall: no hooks applied, targets shifted.")
     }
 }
