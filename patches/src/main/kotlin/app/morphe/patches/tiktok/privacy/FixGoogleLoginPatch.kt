@@ -7,7 +7,7 @@ import app.morphe.patches.shared.replaceWithReturnBoolean
 
 val fixGoogleLoginPatch = bytecodePatch(
     name = "Fix Google Login",
-    description = "Restores Google account sign-in after patching by forcing fallback to Web-based OAuth when Google Play Services rejects the modified APK signature.",
+    description = "Restores Google sign-in after patching.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
