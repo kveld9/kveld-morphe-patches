@@ -3,6 +3,7 @@ package app.morphe.patches.tiktok.usability
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
@@ -150,5 +151,6 @@ val cleanSharePanelPatch = bytecodePatch(
         }
 
         println("[Clean Share Panel] Applied $patched hooks -> share panel cleaned.")
+        if (patched == 0) throw PatchException("Clean Share Panel: no hooks applied, targets shifted.")
     }
 }
