@@ -1,5 +1,6 @@
 package app.morphe.patches.hevy
 
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.rawResourcePatch
 import app.morphe.patches.shared.Constants
 import java.nio.ByteBuffer
@@ -83,6 +84,14 @@ private fun parseHermesHeader(buffer: ByteBuffer): HermesHeader? {
         overflowStringCount = buffer.getInt(56),
         stringStorageSize = buffer.getInt(60),
     )
+}
+
+private fun describeHermesBundle(buffer: ByteBuffer): String {
+    if (buffer.capacity() < 12) return "too small (${buffer.capacity()}B)"
+    val magic = buffer.getLong(0)
+    val version = buffer.getInt(8)
+    if (magic != HERMES_MAGIC) return "not Hermes (bad magic)"
+    return "HBC$version"
 }
 
 private fun calculateTableOffsets(header: HermesHeader): HermesTableOffsets {
@@ -297,8 +306,7 @@ val hevyUnlockProPatch = rawResourcePatch(
 
         val header = parseHermesHeader(buffer)
         if (header == null) {
-            println("[Unlock Pro] Bundle is not a valid Hermes HBC96 binary - skipping.")
-            return@execute
+            throw PatchException("[Unlock Pro] Unsupported Hermes bundle (${describeHermesBundle(buffer)}). Expected HBC96 for Hevy ${Constants.HEVY_TARGET_VERSION} - update the parser or pin the app version.")
         }
 
         val offsets = calculateTableOffsets(header)
@@ -306,8 +314,7 @@ val hevyUnlockProPatch = rawResourcePatch(
         val falseTargets = resolvePropertyTargets(TARGET_FALSE_PROPERTIES, header, offsets, buffer, bundleBytes)
 
         if (trueTargets.isEmpty() && falseTargets.isEmpty()) {
-            println("[Unlock Pro] No Pro getter or function targets found in Hermes bundle - skipping.")
-            return@execute
+            throw PatchException("[Unlock Pro] No Pro getter or function targets found in Hermes bundle - property names shifted.")
         }
 
         var patchedCount = 0
