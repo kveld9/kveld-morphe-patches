@@ -2,6 +2,7 @@ package app.morphe.patches.tiktok.privacy
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
@@ -351,6 +352,7 @@ val bypassScreenCapturePatch = bytecodePatch(
         }
 
         println("[Bypass Screen Capture Detection] Applied $patched screen capture unrestrict and screenshot detection suppression hook(s).")
+        if (patched == 0) throw PatchException("Bypass Screen Capture Detection: no hooks applied, targets shifted.")
     }
 }
 
