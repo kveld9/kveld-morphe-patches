@@ -1,6 +1,7 @@
 package app.morphe.patches.tiktok.privacy
 
 import app.morphe.patcher.Fingerprint
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.addInstructionsAtControlFlowLabel
@@ -108,5 +109,6 @@ val feedLiveStreamBlockerPatch = bytecodePatch(
         }
 
         println("[Feed Live Stream Blocker] Applied $patched feed live stream filter hooks -> Feed live streams neutralized.")
+        if (patched == 0) throw PatchException("Feed Live Stream Blocker: no hooks applied, targets shifted.")
     }
 }
