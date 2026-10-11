@@ -3,6 +3,7 @@ package app.morphe.patches.tiktok.usability
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.sharedExtensionPatch
@@ -256,5 +257,6 @@ val alwaysShowPublishDatePatch = bytecodePatch(
         }
 
         println("[Always Show Publish Date] Applied $patched publish date visibility hook(s).")
+        if (patched == 0) throw PatchException("Always Show Publish Date: no hooks applied, targets shifted.")
     }
 }
