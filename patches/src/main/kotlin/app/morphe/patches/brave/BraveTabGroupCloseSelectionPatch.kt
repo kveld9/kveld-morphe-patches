@@ -2,6 +2,7 @@ package app.morphe.patches.brave
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.sharedExtensionPatch
@@ -51,5 +52,6 @@ val braveTabGroupCloseSelectionPatch = bytecodePatch(
         patched++
 
         println("[Tab Group Close Selection] Applied $patched hook in TabCollectionTabModelImpl.${closeSelectionFp.method.name} -> previous tab selection in tab group enabled.")
+        if (patched == 0) throw PatchException("Tab Group Close Selection: no hooks applied, targets shifted.")
     }
 }
