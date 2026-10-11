@@ -3,6 +3,7 @@ package app.morphe.patches.tiktok.privacy
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.sharedExtensionPatch
@@ -113,5 +114,6 @@ val inAppBrowserPrivacyGuardPatch = bytecodePatch(
         }
 
         println("[In-App Browser Privacy Guard] Applied $patched in-app browser tracking mitigations & external redirection hooks.")
+        if (patched == 0) throw PatchException("In-App Browser Privacy Guard: no hooks applied, targets shifted.")
     }
 }
