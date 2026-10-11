@@ -13,8 +13,8 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
 val hideSuggestedSearchesPatch = bytecodePatch(
-    name = "Hide Suggested Searches",
-    description = "Removes the suggested search keywords section ('You may like' / 'Search suggestions') from the search discovery page.",
+    name = "No Suggested Searches",
+    description = "Removes suggested keywords.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
