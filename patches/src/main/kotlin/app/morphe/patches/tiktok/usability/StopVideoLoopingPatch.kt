@@ -6,8 +6,8 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 
 val stopVideoLoopingPatch = bytecodePatch(
-    name = "Stop Video Looping",
-    description = "Stops videos at the end instead of replaying them in an infinite loop.",
+    name = "No Auto-Replay",
+    description = "Videos stop at the end.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
