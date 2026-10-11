@@ -15,8 +15,8 @@ import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 
 val alwaysShowPublishDatePatch = bytecodePatch(
-    name = "Always Show Publish Date",
-    description = "Forces video publish/upload date to remain visible in video author information across all feed types.",
+    name = "Show Video Dates",
+    description = "Always shows when videos were posted.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
