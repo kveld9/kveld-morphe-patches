@@ -10,8 +10,8 @@ import app.morphe.patches.shared.replaceWithReturnNull
 import app.morphe.patches.shared.replaceWithReturnVoid
 
 val instantColdStartPatch = bytecodePatch(
-    name = "Instant Launch & Splash Blocker",
-    description = "Eliminates cold startup delays, background resume splash advertisements, real-time splash requests, and TopView ad preloading.",
+    name = "Fast Startup",
+    description = "Skips splash ads for instant launch.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
