@@ -2,6 +2,7 @@ package app.morphe.patches.tiktok.privacy
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.stringOption
 import app.morphe.patches.shared.Constants
@@ -230,5 +231,6 @@ val regionBypassPatch = bytecodePatch(
         }
 
         println("[SIM Region Selector] Applied $patched SIM/Network country spoofing hooks (region: $region).")
+        if (patched == 0) throw PatchException("SIM Region Selector: no hooks applied, targets shifted.")
     }
 }
