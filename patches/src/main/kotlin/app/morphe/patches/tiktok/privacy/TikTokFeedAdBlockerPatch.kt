@@ -1,6 +1,7 @@
 package app.morphe.patches.tiktok.privacy
 
 import app.morphe.patcher.Fingerprint
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.addInstructionsAtControlFlowLabel
@@ -136,5 +137,6 @@ val tikTokFeedAdBlockerPatch = bytecodePatch(
         )
 
         println("[Feed Ad Blocker] Applied $patched feed filter hooks -> Universal ad-free feed active.")
+        if (patched == 0) throw PatchException("Feed Ad Blocker: no hooks applied, targets shifted.")
     }
 }
