@@ -26,18 +26,18 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | :--- | :--- | :--- | :--- |
 | **Usability** | **Save Without Watermark** | `bytecodePatch` | Unblocks download button in Share panel, extracts clean original streams without watermark stamps, with saved-video quality preference (`downloadQuality`: high/medium/low or 1080/720/540/480/360 ceiling) and watermark toggle (`removeWatermark`). |
 | **Usability** | **No Share Popup** | `bytecodePatch` | Suppresses the automatic 'Share to' and friend suggestions bottom sheet that pops up after finishing a download. |
-| **Usability** | **[Video Seekbar](#8-show-seekbar)** | `bytecodePatch` | Restores video seekbar and scrubbing controls where hidden or disabled. |
+| **Usability** | **[Video Seekbar](#8-video-seekbar-showseekbarpatch)** | `bytecodePatch` | Restores video seekbar and scrubbing controls where hidden or disabled. |
 | **Usability** | **Show Video Dates** | `bytecodePatch` | Forces video publish and upload timestamps to remain permanently visible on feed cards. |
 | **Usability** | **Show Creator Country** | `bytecodePatch` | Displays the creator's country or region code next to their username in video author info across feeds and deep-linked detail views. |
 | **Usability** | **Skip Warnings** | `bytecodePatch` | Bypasses and clears sensitive content warnings, graphic media blur overlays, and age gates on feed videos. |
 | **Usability** | **[Better Comments](#2-better-comments-commentcustomizerpatch)** | `bytecodePatch` | Customizes comment section: native sort controls, clean text copying, disabling suggested emojis bar, hiding comment quick actions, hiding in-comment surveys and feedback cards, hiding profile photo story rings, voice comments, automatic translation with do-not-translate language exclusions (`translationExcludedLanguages`), comment send fix, comment popup ad blocking. |
 | **Usability** | **No Accidental Likes** | `bytecodePatch` | Disables the double tap gesture to like videos in the feed, preventing accidental likes while scrolling or pausing. Videos can still be liked using the like button. |
 | **Usability** | **Remember Speed** | `bytecodePatch` | Persists user-selected video speed across feed scrolling and restarts, with optional native hold-and-slide 2x speed lock gesture (`enableSpeedLock`). |
-| **Usability** | **[Limit Video Quality](#2-video-quality-governor)** | `bytecodePatch` | Playback resolution ceiling (e.g. 480p). Download quality lives in Media Usability (`downloadQuality`). |
+| **Usability** | **[Limit Video Quality](#2-limit-video-quality-videoqualitygovernorpatch)** | `bytecodePatch` | Playback resolution ceiling (e.g. 480p). Download quality lives in Media Usability (`downloadQuality`). |
 | **Usability** | **Skip Setup** | `bytecodePatch` | Bypasses interest pickers, swipe-up tutorial, language prompts, and consent sheets directly to FYP. |
-| **Usability** | **[Custom Offline Videos Limit](#4-custom-offline-videos-limit)** | `bytecodePatch` | Customizes maximum offline videos download caching limit (~X mins, Y GB/MB). |
-| **Usability** | **[Tidy Share Menu](#5-custom-share-sheet)** | `bytecodePatch` | Customizes and cleans the share menu via individual boolean toggles for third-party apps, essential actions, and direct message friend rows. |
-| **Usability** | **[Tidy Share Panel](#6-clean-share-panel)** | `bytecodePatch` | Removes suggested quick emojis and the 'Send to new group' button from the direct share dialog. |
+| **Usability** | **[Offline Video Limit](#4-offline-video-limit-customofflinevideoslimitpatch)** | `bytecodePatch` | Customizes maximum offline videos download caching limit (~X mins, Y GB/MB). |
+| **Usability** | **[Tidy Share Menu](#5-tidy-share-menu-customsharesheetpatch)** | `bytecodePatch` | Customizes and cleans the share menu via individual boolean toggles for third-party apps, essential actions, and direct message friend rows. |
+| **Usability** | **[Tidy Share Panel](#6-tidy-share-panel-cleansharepanelpatch)** | `bytecodePatch` | Removes suggested quick emojis and the 'Send to new group' button from the direct share dialog. |
 | **Usability** | **Clean Top Bar** | `bytecodePatch` | Removes clutter from the feed navigation and top header bar, including Nearby and Community tabs, top-left LIVE button, central '+' create content button, in-video bottom search bar, friend profile pictures on the Friends tab, and unread message badges on the Inbox tab. |
 | **Usability** | **[Clean Video Screen](#7-clean-video-screen-feedinterfacedeclutterpatch)** | `bytecodePatch` | Customizes and cleans feed video overlay elements via individual toggles for full screen button, repost pill, interest feedback pills, video descriptions, profile photo follow badges, story rings, playlist bottom bars, save buttons, and music discs. |
 | **Usability** | **No LIVE Rings** | `bytecodePatch` | Removes pulsing LIVE ring/badge from creator avatars in feed and forces clicks directly to user profile. |
@@ -52,10 +52,10 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Usability** | **Resume Videos** | `bytecodePatch` | Resumes video playback from previous playback position when returning to a video in the feed. |
 | **Usability** | **Keep Clear View** | `bytecodePatch` | Remembers TikTok's clear-display state between videos and re-applies it when new videos start. |
 | **Usability** | **No Auto-Replay** | `bytecodePatch` | Prevents videos from looping continuously on playback completion. |
-| **Usability** | **[Clean Inbox](#9-hide-inbox-promos--alerts)** | `bytecodePatch` | Hides promotional banners, streak mascot cards, contact sync suggestions, friend recommendations, and migration guide tooltips in the inbox and direct messages. |
+| **Usability** | **[Clean Inbox](#9-clean-inbox-hideinboxpromosandalertspatch)** | `bytecodePatch` | Hides promotional banners, streak mascot cards, contact sync suggestions, friend recommendations, and migration guide tooltips in the inbox and direct messages. |
 | **Usability** | **[Hide Inbox Stories](#20-hide-inbox-stories-hideinboxstorytraypatch)** | `bytecodePatch` | Removes the horizontal story, notes, and status tray (Skylight) displayed at the top of direct messages and the inbox, with an option to hide only suggested/non-followed stories while keeping followed accounts visible (`hideSuggestedOnly`). |
-| **Usability** | **[Tidy Messages](#10-direct-message-declutter)** | `bytecodePatch` | Cleans direct message conversations and chat list items via individual toggles for chat list camera icons, header voice/video call buttons, message forward buttons, streak mascot and reaction bars, input camera buttons, right-side input action buttons (gallery, emoji, mic), try effect buttons on shared videos, and automatic sticker reply suggestions. |
-| **Usability** | **[No Long-Press Menus](#7-disable-feed-long-press-actions)** | `bytecodePatch` | Disables long-press action gestures on feed buttons, including Like to repost, Share to quick DMs, and Comment to quick emojis, with optional video-body long-press modes (`longPressVideo`). |
+| **Usability** | **[Tidy Messages](#10-tidy-messages-directmessagedeclutterpatch)** | `bytecodePatch` | Cleans direct message conversations and chat list items via individual toggles for chat list camera icons, header voice/video call buttons, message forward buttons, streak mascot and reaction bars, input camera buttons, right-side input action buttons (gallery, emoji, mic), try effect buttons on shared videos, and automatic sticker reply suggestions. |
+| **Usability** | **[No Long-Press Menus](#7-no-long-press-menus-disablefeedlongpressactionspatch)** | `bytecodePatch` | Disables long-press action gestures on feed buttons, including Like to repost, Share to quick DMs, and Comment to quick emojis, with optional video-body long-press modes (`longPressVideo`). |
 | **Usability** | **Profile Banners** | `bytecodePatch` | Unlocks custom profile banner header cover feature and banner editing tools in Edit Profile. |
 | **Usability** | **System Font** | `bytecodePatch` | Forces TikTok to use the Android system font instead of bundled proprietary TikTokSans fonts. |
 | **Usability** | **[Block Popups](#24-block-popups-popupsandpromptssuppressorpatch)** | `bytecodePatch` | Suppresses intrusive popups, dialogs, and modal prompts, including 'Follow your friends' dialogs, contacts sync overlays, multi-account notification guides, 2SV security checkup modals, PopLayer promotional sheets, live stream teaser bubbles, sticker recommendations, and DM streak expiration warnings. |
@@ -69,7 +69,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Privacy** | **Privacy Guard** | `bytecodePatch` | Intercepts runtime permission prompts (contacts, location, nearby devices, AdServices), ContentResolver/PackageManager/LocationManager interception, suppresses in-app permission nag dialogs, settings redirect prompts, and background sync tasks, zeroes Advertising ID, blocks clipboard inspection, isolates package queries, and silences HAR motion sensors. |
 | **Privacy** | **Open Links Outside** | `bytecodePatch` | Redirects external links to default system browser, neutralizes WebView JS tracking injection and AJAX hookers. |
 | **Privacy** | **Turn Off AI Features** | `bytecodePatch` | Neutralizes Pitaya on-device ML, Tako AI chatbot entries, and AI search clutter. |
-| **Privacy** | **[Change Country](#1-sim-region-selector)** | `bytecodePatch` | Spoofs SIM and network country ISO codes, operator numeric codes/names, and cell identity MCC/MNC to bypass regional restrictions. |
+| **Privacy** | **[Change Country](#1-change-country-regionbypasspatch)** | `bytecodePatch` | Spoofs SIM and network country ISO codes, operator numeric codes/names, and cell identity MCC/MNC to bypass regional restrictions. |
 | **Privacy** | **Block Feed Ads** | `bytecodePatch` | Filters sponsored cards, brand promotions, commercial audio, and search video scroll advertisements across For You, Following, and Search feeds. |
 | **Privacy** | **Hide Shop** | `bytecodePatch` | Removes product anchors, showcase badges, and bottom/top Shop navigation tabs (configurable via `hideShopTab` and `hideVideoAnchors`). |
 | **Privacy** | **Only Mutual Friends** | `bytecodePatch` | Filters suggested accounts, recommended videos, and non-mutual profiles (such as 'People you may know') from the Friends feed so it strictly reproduces content from mutual friends. |
@@ -82,9 +82,9 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Privacy** | **Neutral Search** | `bytecodePatch` | Forces TikTok's non-personalized search mode instead of the saved account choice. |
 | **Privacy** | **No Watch History** | `bytecodePatch` | Prevents viewed videos from being recorded in account watch history, playback duration stores, and local history caches. |
 | **Privacy** | **No Update Popups** | `bytecodePatch` | Neutralizes background update polling tasks and version enforcement dialogs. |
-| **Privacy** | **[Remove Permissions](#12-tiktok-privacy-permissions-stripper)** | `resourcePatch` | Selectively strips sensitive privacy, sensor, hardware, and tracking permissions from AndroidManifest.xml via 15 granular opt-in boolean toggles. |
+| **Privacy** | **[Remove Permissions](#12-remove-permissions-tiktokprivacypermissionsstripperpatch)** | `resourcePatch` | Selectively strips sensitive privacy, sensor, hardware, and tracking permissions from AndroidManifest.xml via 15 granular opt-in boolean toggles. |
 | **Privacy** | **[Remove Trackers (Setup)](#28-remove-trackers-setup-telemetrymanifestpurgepatch)** | `resourcePatch` | Strips advertising and attribution permissions, disables telemetry receivers/services (AppLog, AppsFlyer, Measurement, DataTransport), prunes Firebase discovery registrars, and injects analytics opt-out metadata (Firebase, AppsFlyer, Meta AppEvents) into AndroidManifest.xml. |
-| **Performance** | **[Smooth Screen (120Hz)](#3-display-refresh-rate-governor)** | `bytecodePatch` | Locks window to peak hardware refresh rate (120Hz/90Hz) and neutralizes playback downclocking. |
+| **Performance** | **[Smooth Screen (120Hz)](#3-smooth-screen-120hz-displayrefreshrategovernorpatch)** | `bytecodePatch` | Locks window to peak hardware refresh rate (120Hz/90Hz) and neutralizes playback downclocking. |
 | **Performance** | **[No HDR Videos](#26-no-hdr-videos-disablehdrvideopatch)** | `bytecodePatch` | Forces the video playback engine to select standard SDR bitrates instead of HDR (HDR10/PQ/HLG). |
 | **Performance** | **Fast Startup** | `bytecodePatch` | Eliminates cold startup delays, real-time splash advertisements, and background TopView ad preloading. |
 | **Performance** | **Battery Saver** | `bytecodePatch` | Suppresses 3D shake ad sensors and video buffer preloading. |
@@ -102,9 +102,9 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 
 ## ⚙️ Configurable Options in Morphe Manager
 
-### 1. SIM Region Selector
+### 1. Change Country (`regionBypassPatch`)
 
-The **`SIM Region Selector`** patch bypasses geographic content restrictions, regional feed filtering, and country-specific catalog locks by spoofing the SIM and network ISO country codes queried by TikTok.
+The **`Change Country`** patch bypasses geographic content restrictions, regional feed filtering, and country-specific catalog locks by spoofing the SIM and network ISO country codes queried by TikTok.
 
 | Option | Key | Type | Default | Range / Format | Description |
 | :--- | :--- | :--- | :---: | :--- | :--- |
@@ -175,9 +175,9 @@ TH, TR, TW, UA, US, UY, VN, ZA
 
 ---
 
-### 2. Video Quality Governor
+### 2. Limit Video Quality (`videoQualityGovernorPatch`)
 
-The **`Video Quality Governor`** patch enforces a user-configured maximum playback resolution ceiling (`1080p`, `720p`, `540p`, `480p`, `360p`, or unconstrained) across video feeds. While standard TikTok features like "Data Saver" only compress network transfers under cellular conditions without capping hardware decoders, this governor caps the actual rendition ladder (`bitRateList` and `SimBitRate`) parsed by PlayerKit/TTPlayer, reducing hardware MediaCodec load, thermals, GraphicBuffers memory consumption, and frame drops on lower-spec or battery-sensitive devices.
+The **`Limit Video Quality`** patch enforces a user-configured maximum playback resolution ceiling (`1080p`, `720p`, `540p`, `480p`, `360p`, or unconstrained) across video feeds. While standard TikTok features like "Data Saver" only compress network transfers under cellular conditions without capping hardware decoders, this governor caps the actual rendition ladder (`bitRateList` and `SimBitRate`) parsed by PlayerKit/TTPlayer, reducing hardware MediaCodec load, thermals, GraphicBuffers memory consumption, and frame drops on lower-spec or battery-sensitive devices.
 
 Coverage includes the detail page: hooks on `Video.getPlayAddr()` / `getProperPlayAddr()` (plus codec variants `getPlayAddrBytevc1()`, `getPlayAddrH264()`, `getH264PlayAddr()`) and `SimVideoUrlModel.getRawBitRate()` enforce the cap on directly-read play addresses, which the detail view reaches without passing through `Aweme.getVideo()`. Enforcement resolves the best stream at or below the cap from the video's own ladder and rewrites the returned URL model in place; when the ladder offers no stream below the cap, the lowest available stream is kept.
 
@@ -220,9 +220,9 @@ Single-rendition 4K limitation: when a video exposes only one rendition above bo
 
 ---
 
-### 3. Display Refresh Rate Governor
+### 3. Smooth Screen (120Hz) (`displayRefreshRateGovernorPatch`)
 
-The **`Display Refresh Rate Governor`** patch locks TikTok's window rendering frequency to peak hardware refresh rates (120Hz/90Hz) or a user-selected ceiling, neutralizing TikTok's internal refresh rate downclocking mechanisms. Under standard execution, PlayerKit lowers the window refresh rate to match video fps (typically 24–30fps or 60fps), which creates perceptible UI stutter when interacting with comments, scrolling feeds, or viewing overlays.
+The **`Smooth Screen (120Hz)`** patch locks TikTok's window rendering frequency to peak hardware refresh rates (120Hz/90Hz) or a user-selected ceiling, neutralizing TikTok's internal refresh rate downclocking mechanisms. Under standard execution, PlayerKit lowers the window refresh rate to match video fps (typically 24–30fps or 60fps), which creates perceptible UI stutter when interacting with comments, scrolling feeds, or viewing overlays.
 
 | Option | Key | Type | Default | Supported Values | Description |
 | :--- | :--- | :--- | :---: | :--- | :--- |
@@ -233,16 +233,16 @@ In `TikTokRefreshRateHook.resolveTargetRate()`, queries `Display.getSupportedMod
 
 ---
 
-### 4. Custom Offline Videos Limit
+### 4. Offline Video Limit (`customOfflineVideosLimitPatch`)
 
-The **`Custom Offline Videos Limit`** patch customizes the maximum video caching limit available in TikTok's native Offline Mode bottom sheet. While stock TikTok restricts offline download caching to fixed tiers (e.g. 50, 100, 150), this patch injects a user-configurable count into the options list while preserving native Keva persistence and the Auto-adjust option.
+The **`Offline Video Limit`** patch customizes the maximum video caching limit available in TikTok's native Offline Mode bottom sheet. While stock TikTok restricts offline download caching to fixed tiers (e.g. 50, 100, 150), this patch injects a user-configurable count into the options list while preserving native Keva persistence and the Auto-adjust option.
 
 | Option | Key | Type | Default | Supported Values | Description |
 | :--- | :--- | :--- | :---: | :--- | :--- |
 | **Offline Video Limit** | `customLimit` | Integer | `1000` | Any integer `1` to `50000` | Maximum number of offline videos that can be cached for offline playback. |
-### 5. Custom Share Sheet
+### 5. Tidy Share Menu (`customShareSheetPatch`)
 
-The **`Custom Share Sheet`** patch cleans and customizes TikTok's native sharing bottom sheet via granular boolean toggles. It allows disabling third-party apps (WhatsApp, Facebook, Messenger, Instagram, SMS, Twitter, Telegram, Reddit, etc.), suppressing the direct message friends row, protecting or toggling native sharing capabilities (Repost, QR code, Copy link, System share), and hiding individual utility actions (Promote, Why this video, Duet, Stitch, PiP, etc.).
+The **`Tidy Share Menu`** patch cleans and customizes TikTok's native sharing bottom sheet via granular boolean toggles. It allows disabling third-party apps (WhatsApp, Facebook, Messenger, Instagram, SMS, Twitter, Telegram, Reddit, etc.), suppressing the direct message friends row, protecting or toggling native sharing capabilities (Repost, QR code, Copy link, System share), and hiding individual utility actions (Promote, Why this video, Duet, Stitch, PiP, etc.).
 
 | Toggle Option | Key | Type | Default | Description |
 | :--- | :--- | :---: | :---: | :--- |
@@ -274,18 +274,18 @@ The **`Custom Share Sheet`** patch cleans and customizes TikTok's native sharing
 | **Hide 'Not Interested'** | `hideNotInterested` | Boolean | `false` | Hides the 'Not interested' action. |
 | **Hide 'Report'** | `hideReport` | Boolean | `false` | Hides the Report action. |
 
-### 6. Clean Share Panel
+### 6. Tidy Share Panel (`cleanSharePanelPatch`)
 
-The **`Clean Share Panel`** patch removes clutter from the direct message sharing bottom sheet when selecting contacts or composing a message to friends. Governed by two independent toggle switches, it eliminates the suggested horizontal quick emoji bar and the persistent "Send to new group" button.
+The **`Tidy Share Panel`** patch removes clutter from the direct message sharing bottom sheet when selecting contacts or composing a message to friends. Governed by two independent toggle switches, it eliminates the suggested horizontal quick emoji bar and the persistent "Send to new group" button.
 
 | Toggle Option | Key | Type | Default | Description |
 | :--- | :--- | :---: | :---: | :--- |
 | **Quick emojis** | `hideQuickEmojis` | Boolean | `true` | Removes the horizontal row of suggested quick emojis (🥰, 👍, 😂, etc.) from the direct share panel. |
 | **New group button** | `hideSendToNewGroup` | Boolean | `true` | Removes the 'Send to new group' button and hint from the direct share panel. |
 
-### 7. Disable Feed Long-Press Actions
+### 7. No Long-Press Menus (`disableFeedLongPressActionsPatch`)
 
-The **`Disable Feed Long-Press Actions`** patch neutralizes long-press gesture detectors on the primary feed action buttons, preventing accidental menu popups while preserving native single-click interactions. It is governed by three independent boolean toggle switches and a configurable video body long-press action.
+The **`No Long-Press Menus`** patch neutralizes long-press gesture detectors on the primary feed action buttons, preventing accidental menu popups while preserving native single-click interactions. It is governed by three independent boolean toggle switches and a configurable video body long-press action.
 
 | Toggle Option | Key | Type | Default | Description |
 | :--- | :--- | :---: | :---: | :--- |
@@ -294,17 +294,17 @@ The **`Disable Feed Long-Press Actions`** patch neutralizes long-press gesture d
 | **Comment button** | `disableCommentReactions` | Boolean | `true` | Prevents holding the Comment button on feed videos from opening the quick reaction emojis picker. |
 | **Video long-press** | `longPressVideo` | String | `nothing` | Action when long pressing feed video body: `nothing` (suppresses menu/repost), `comments`, `copyLink`, or `saveSound`. |
 
-### 8. Show Seekbar
+### 8. Video Seekbar (`showSeekbarPatch`)
 
-The **`Show Seekbar`** patch restores TikTok's native video seekbar and scrubbing controls on feed videos where they are normally hidden or disabled.
+The **`Video Seekbar`** patch restores TikTok's native video seekbar and scrubbing controls on feed videos where they are normally hidden or disabled.
 
 | Toggle Option | Key | Type | Default | Description |
 | :--- | :--- | :---: | :---: | :--- |
 | **Preview thumbnails** | `showThumbnail` | Boolean | `true` | Displays real-time video frame thumbnail previews while dragging the seekbar thumb. |
 
-### 9. Hide Inbox Promos & Alerts
+### 9. Clean Inbox (`hideInboxPromosAndAlertsPatch`)
 
-The **`Hide Inbox Promos & Alerts`** patch removes promotional and nudge elements from the inbox and direct messages. It is governed by three independent boolean toggles:
+The **`Clean Inbox`** patch removes promotional and nudge elements from the inbox and direct messages. It is governed by three independent boolean toggles:
 
 | Toggle Option | Key | Type | Default | Description |
 | :--- | :--- | :---: | :---: | :--- |
@@ -312,9 +312,9 @@ The **`Hide Inbox Promos & Alerts`** patch removes promotional and nudge element
 | **Friend hints** | `hideContactRecommendations` | Boolean | `true` | Hides user recommendation cards (Chat with contacts / Find and chat with them), suggested accounts, and mutual friends modules in the chatlist. |
 | **Tips & notices** | `hideNavigationNoticesAndTooltips` | Boolean | `true` | Hides UI migration tooltips (e.g. New followers has moved), bulletin board guide banners, and Shop migration notices. |
 
-### 10. Direct Message Declutter
+### 10. Tidy Messages (`directMessageDeclutterPatch`)
 
-The **`Direct Message Declutter`** patch cleans direct message conversations and chat list items via individual boolean toggles:
+The **`Tidy Messages`** patch cleans direct message conversations and chat list items via individual boolean toggles:
 
 | Toggle Option | Key | Type | Default | Description |
 | :--- | :--- | :---: | :---: | :--- |
@@ -329,9 +329,9 @@ The **`Direct Message Declutter`** patch cleans direct message conversations and
 | **Try-effect button** | `hideTryEffectButton` | Boolean | `true` | Removes the 'Try effect' camera button shown on shared videos that use an effect in direct messages. |
 | **Sticker hints** | `hideStickerReplySuggestions` | Boolean | `true` | Removes the automatic 'Tap a sticker to reply' suggestion panel and the typing-triggered sticker/GIF strip above the input bar. The manual sticker reply button keeps working. |
 
-### 11. Popups & Prompts Suppressor
+### 11. Block Popups (`popupsAndPromptsSuppressorPatch`)
 
-The **`Popups & Prompts Suppressor`** patch suppresses intrusive dialogs, bottom sheets, full-screen takeover prompts, and inline nudge banners across TikTok. Governed by 5 independent boolean toggle switches, it eliminates recurring account/contact sync nags, personalized sticker popups, annoying PopLayer promotion sheets, floating live stream teaser bubbles, and DM streak expiration warnings.
+The **`Block Popups`** patch suppresses intrusive dialogs, bottom sheets, full-screen takeover prompts, and inline nudge banners across TikTok. Governed by 5 independent boolean toggle switches, it eliminates recurring account/contact sync nags, personalized sticker popups, annoying PopLayer promotion sheets, floating live stream teaser bubbles, and DM streak expiration warnings.
 
 | Toggle Option | Key | Type | Default | Description |
 | :--- | :--- | :---: | :---: | :--- |
@@ -341,9 +341,9 @@ The **`Popups & Prompts Suppressor`** patch suppresses intrusive dialogs, bottom
 | **Live bubbles** | `suppressLiveTeaserBubble` | Boolean | `true` | Disables floating live stream preview teasers and popup windows from appearing over the video feed. |
 | **Streak warnings** | `suppressStreakReminders` | Boolean | `true` | Suppresses direct message streak expiration warning banners and inline urgency reminders. |
 
-### 12. TikTok Privacy Permissions Stripper
+### 12. Remove Permissions (`tikTokPrivacyPermissionsStripperPatch`)
 
-The **`TikTok Privacy Permissions Stripper`** patch selectively strips sensitive privacy, sensor, hardware, and tracking permissions from `AndroidManifest.xml` via 15 granular boolean toggles. Five toggles default to `true` (`nfc`, `screenshotDetection`, `oemSignals`, `bluetooth`, `biometric`), while the remaining 10 toggles default to `false`.
+The **`Remove Permissions`** patch selectively strips sensitive privacy, sensor, hardware, and tracking permissions from `AndroidManifest.xml` via 15 granular boolean toggles. Five toggles default to `true` (`nfc`, `screenshotDetection`, `oemSignals`, `bluetooth`, `biometric`), while the remaining 10 toggles default to `false`.
 
 > [!WARNING]
 > Stripping permissions at the manifest level completely revokes the capability for the application at the OS package level. While notification, NFC, and OEM signal removals are safe, stripping hardware or media permissions will disable respective features (camera, microphone, gallery, background sync) or cause crashes if components lack graceful permission guards.
