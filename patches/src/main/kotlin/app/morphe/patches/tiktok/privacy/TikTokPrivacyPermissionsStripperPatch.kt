@@ -137,7 +137,7 @@ val tikTokPrivacyPermissionsStripperPatch = resourcePatch(
         key = "stripNotifications",
         default = false,
         title = "Notifications",
-        description = "No push alerts.",
+        description = "No push alerts (POST_NOTIFICATIONS, Android 13+).",
         required = false,
     )
 
@@ -145,7 +145,7 @@ val tikTokPrivacyPermissionsStripperPatch = resourcePatch(
         key = "stripCamera",
         default = false,
         title = "Camera",
-        description = "WARNING: breaks recording and QR scan.",
+        description = "WARNING: breaks recording, photos, QR scan, lives and video creation.",
         required = false,
     )
 
@@ -153,7 +153,7 @@ val tikTokPrivacyPermissionsStripperPatch = resourcePatch(
         key = "stripMicrophone",
         default = false,
         title = "Microphone",
-        description = "WARNING: breaks voice recording.",
+        description = "WARNING: breaks voice recording, lives audio, comments and calls.",
         required = false,
     )
 
@@ -161,7 +161,7 @@ val tikTokPrivacyPermissionsStripperPatch = resourcePatch(
         key = "stripStorageMedia",
         default = false,
         title = "Photos & files",
-        description = "WARNING: breaks gallery and saving.",
+        description = "WARNING: breaks gallery, drafts and saving photos/videos.",
         required = false,
     )
 
@@ -169,7 +169,7 @@ val tikTokPrivacyPermissionsStripperPatch = resourcePatch(
         key = "stripBluetooth",
         default = true,
         title = "Bluetooth",
-        description = "WARNING: breaks headphones and casting.",
+        description = "WARNING: breaks headphones, casting and remote controls.",
         required = false,
     )
 
@@ -185,7 +185,7 @@ val tikTokPrivacyPermissionsStripperPatch = resourcePatch(
         key = "stripBiometric",
         default = true,
         title = "Fingerprint login",
-        description = "WARNING: breaks fingerprint unlock.",
+        description = "WARNING: breaks fingerprint/face unlock, passkeys and payments.",
         required = false,
     )
 
@@ -193,7 +193,7 @@ val tikTokPrivacyPermissionsStripperPatch = resourcePatch(
         key = "stripForegroundServices",
         default = false,
         title = "Background services",
-        description = "WARNING: may break uploads and playback.",
+        description = "WARNING: HIGH RISK. Breaks background uploads, offline caching, playback services and calls.",
         required = false,
     )
 
@@ -201,7 +201,7 @@ val tikTokPrivacyPermissionsStripperPatch = resourcePatch(
         key = "stripSystemAlertWindow",
         default = false,
         title = "Popups overlay",
-        description = "WARNING: breaks mini-player.",
+        description = "WARNING: breaks mini-player, popups and overlay windows.",
         required = false,
     )
 
@@ -209,7 +209,7 @@ val tikTokPrivacyPermissionsStripperPatch = resourcePatch(
         key = "stripWakeLock",
         default = false,
         title = "Keep awake",
-        description = "WARNING: uploads may pause with screen off.",
+        description = "WARNING: CPU may sleep during playback or long uploads with screen off.",
         required = false,
     )
 
@@ -225,7 +225,7 @@ val tikTokPrivacyPermissionsStripperPatch = resourcePatch(
         key = "stripMiscHardware",
         default = false,
         title = "Vibration & more",
-        description = "Disables vibration and extras.",
+        description = "WARNING: disables vibration, volume adjustments and live wallpapers.",
         required = false,
     )
 
@@ -233,7 +233,7 @@ val tikTokPrivacyPermissionsStripperPatch = resourcePatch(
         key = "stripOemSignals",
         default = true,
         title = "Phone signals",
-        description = "Removes maker diagnostic signals.",
+        description = "Removes maker signals. WARNING: may affect dynamic receivers.",
         required = false,
     )
 
