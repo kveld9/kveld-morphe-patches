@@ -18,6 +18,7 @@ Comprehensive technical and configuration guide for **Brave Browser** (`com.brav
 
 > [!IMPORTANT]
 > Always download the official standalone `Bravemonoarm64.apk` or `BraveMonoarm.apk` release builds directly from Brave's GitHub repository. Avoid multi-architecture split bundles or unofficial third-party repacks.
+> Non-Monochrome (Universal) builds are rejected during patching with an explicit error.
 
 ---
 
