@@ -162,7 +162,7 @@ private fun computeEdit(
 }
 
 val cameraMicIndicatorPatch = bytecodePatch(
-    name = "Camera/Mic Dot",
+    name = "Camera & Mic Dot",
     description = "Shows a dot while camera or mic is in use.",
     default = false,
 ) {
