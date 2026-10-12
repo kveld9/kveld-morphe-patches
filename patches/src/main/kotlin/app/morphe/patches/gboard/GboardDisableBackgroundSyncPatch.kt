@@ -2,6 +2,7 @@ package app.morphe.patches.gboard
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.cleanClassName
@@ -285,5 +286,6 @@ val gboardDisableBackgroundSyncPatch = bytecodePatch(
 
         val targetClasses = hookedMethods.map { it.substringBefore('.') }.distinct()
         println("[Disable Background Sync] Neutralized ${hookedMethods.size} background sync methods across ${targetClasses.size} classes (${targetClasses.joinToString(", ")})")
+        if (hookedMethods.isEmpty()) throw PatchException("Disable Background Sync: no hooks applied, targets shifted.")
     }
 }

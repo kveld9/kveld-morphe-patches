@@ -2,6 +2,7 @@ package app.morphe.patches.xiaomi.earbuds
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
@@ -83,5 +84,6 @@ val xiaomiEarbudsGuestOtaUnlockPatch = bytecodePatch(
         }
 
         println("[Guest OTA Unlock] Unlocked guest firmware update checks across ${hookedMethods.size} targets.")
+        if (hookedMethods.isEmpty()) throw PatchException("Guest OTA Unlock: no hooks applied, targets shifted.")
     }
 }

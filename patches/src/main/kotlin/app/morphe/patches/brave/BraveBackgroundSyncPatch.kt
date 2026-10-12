@@ -2,6 +2,7 @@ package app.morphe.patches.brave
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 
@@ -61,5 +62,6 @@ val braveBackgroundSyncPatch = bytecodePatch(
         hookedMethods.add("$c3.${fp3.method.name}()")
 
         println("[Disable Background Sync] Injected Smali hooks into ${hookedMethods.size} methods (${hookedMethods.joinToString(", ")})")
+        if (hookedMethods.isEmpty()) throw PatchException("Disable Background Sync: no hooks applied, targets shifted.")
     }
 }

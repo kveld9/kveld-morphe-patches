@@ -2,6 +2,7 @@ package app.morphe.patches.xiaomi.earbuds
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 
@@ -343,5 +344,6 @@ val xiaomiEarbudsAntiTamperBypassPatch = bytecodePatch(
         }
 
         println("[Anti-Tamper Bypass] Neutralized anti-tamper, root/emulator checks, and JS bridges across ${hookedMethods.size} targets.")
+        if (hookedMethods.isEmpty()) throw PatchException("Anti-Tamper Bypass: no hooks applied, targets shifted.")
     }
 }

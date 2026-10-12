@@ -2,6 +2,7 @@ package app.morphe.patches.gboard
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.cleanClassName
@@ -64,5 +65,6 @@ val gboardDisablePhenotypeSyncPatch = bytecodePatch(
 
         val targetClasses = hookedMethods.map { it.substringBefore('.') }.distinct()
         println("[Disable Remote Config] Neutralized ${hookedMethods.size} Phenotype sync methods across ${targetClasses.size} classes (${targetClasses.joinToString(", ")})")
+        if (hookedMethods.isEmpty()) throw PatchException("Disable Remote Config: no hooks applied, targets shifted.")
     }
 }

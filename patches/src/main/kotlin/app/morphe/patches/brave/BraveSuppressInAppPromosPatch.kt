@@ -3,6 +3,7 @@ package app.morphe.patches.brave
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 
@@ -110,5 +111,6 @@ val braveSuppressInAppPromosPatch = bytecodePatch(
 
         val targetClasses = hookedMethods.map { it.substringBefore('.') }.distinct()
         println("[Suppress In-App Promos] Applied ${hookedMethods.size} hooks across ${targetClasses.size} classes -> in-app surveys & promo dialogs disabled.")
+        if (hookedMethods.isEmpty()) throw PatchException("Suppress In-App Promos: no hooks applied, targets shifted.")
     }
 }
