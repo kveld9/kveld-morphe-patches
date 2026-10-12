@@ -10,7 +10,7 @@ import app.morphe.patches.shared.replaceWithReturnNull
 import app.morphe.patches.shared.replaceWithReturnVoid
 
 val instantColdStartPatch = bytecodePatch(
-    name = "Fast Startup",
+    name = "Skip Splash Ads",
     description = "Skips splash ads for instant launch.",
     default = true,
 ) {
