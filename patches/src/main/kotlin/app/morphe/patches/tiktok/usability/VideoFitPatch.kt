@@ -16,7 +16,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 val videoFitPatch = bytecodePatch(
-    name = "Video Size",
+    name = "Video Fit",
     description = "Fit whole video or fill screen.",
     default = false,
 ) {
