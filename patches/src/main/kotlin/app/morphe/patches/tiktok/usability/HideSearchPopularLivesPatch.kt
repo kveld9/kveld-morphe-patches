@@ -57,7 +57,7 @@ val hideSearchPopularLivesPatch = bytecodePatch(
             method.addInstructionsAtControlFlowLabel(
                 returnIndex,
                 """
-                    invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_SEARCH_HOOK}->filterPopularLivesAbParams(Ljava/util/Map;)Ljava/util/Map;
+                    invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_SEARCH_HOOK}->filterPopularLivesAbParams(Ljava/util/Map;)Ljava/util/Map;
                     move-result-object v$reg
                 """.trimIndent(),
             )
@@ -80,7 +80,7 @@ val hideSearchPopularLivesPatch = bytecodePatch(
             schemaMethod.addInstructionsAtControlFlowLabel(
                 returnIndex,
                 """
-                    invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_SEARCH_HOOK}->filterPopularLivesSchema(Ljava/lang/String;)Ljava/lang/String;
+                    invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_SEARCH_HOOK}->filterPopularLivesSchema(Ljava/lang/String;)Ljava/lang/String;
                     move-result-object v$reg
                 """.trimIndent(),
             )

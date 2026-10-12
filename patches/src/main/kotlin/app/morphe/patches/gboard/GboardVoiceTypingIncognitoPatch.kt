@@ -43,7 +43,7 @@ val gboardVoiceTypingIncognitoPatch = bytecodePatch(
             addInstructions(
                 match.index,
                 """
-                    invoke-static {v$reg}, ${Constants.GBOARD_EXTENSION_CLASS}->overrideVoiceTypingIncognito(Z)Z
+                    invoke-static/range {v$reg .. v$reg}, ${Constants.GBOARD_EXTENSION_CLASS}->overrideVoiceTypingIncognito(Z)Z
                     move-result v$reg
                 """.trimIndent(),
             )

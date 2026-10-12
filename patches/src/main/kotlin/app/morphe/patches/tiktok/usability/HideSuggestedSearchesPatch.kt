@@ -119,7 +119,7 @@ val hideSuggestedSearchesPatch = bytecodePatch(
             method.addInstructionsAtControlFlowLabel(
                 returnIndex,
                 """
-                    invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_SEARCH_HOOK}->filterSuggestedAbParams(Ljava/util/Map;)Ljava/util/Map;
+                    invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_SEARCH_HOOK}->filterSuggestedAbParams(Ljava/util/Map;)Ljava/util/Map;
                     move-result-object v$reg
                 """.trimIndent(),
             )
@@ -142,7 +142,7 @@ val hideSuggestedSearchesPatch = bytecodePatch(
             schemaMethod.addInstructionsAtControlFlowLabel(
                 returnIndex,
                 """
-                    invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_SEARCH_HOOK}->filterSuggestedSchema(Ljava/lang/String;)Ljava/lang/String;
+                    invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_SEARCH_HOOK}->filterSuggestedSchema(Ljava/lang/String;)Ljava/lang/String;
                     move-result-object v$reg
                 """.trimIndent(),
             )

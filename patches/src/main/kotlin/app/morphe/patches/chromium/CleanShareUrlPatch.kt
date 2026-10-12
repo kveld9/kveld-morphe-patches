@@ -38,7 +38,7 @@ val cleanShareUrlPatch = bytecodePatch(
                 method.addInstructionsAtControlFlowLabel(
                     returnIndex,
                     """
-                        invoke-static {v$reg}, ${Constants.CHROMIUM_EXTENSION_CLASS}->cleanShareIntent(Landroid/content/Intent;)Landroid/content/Intent;
+                        invoke-static/range {v$reg .. v$reg}, ${Constants.CHROMIUM_EXTENSION_CLASS}->cleanShareIntent(Landroid/content/Intent;)Landroid/content/Intent;
                         move-result-object v$reg
                     """.trimIndent(),
                 )
