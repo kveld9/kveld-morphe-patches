@@ -39,7 +39,7 @@ private fun isCallSiteCandidate(ins: Instruction): Boolean {
 }
 
 val devicePrivacyGuardPatch = bytecodePatch(
-    name = "Privacy Guard",
+    name = "Block Data Access",
     description = "Blocks access to contacts, location, apps list and sensors.",
     default = true,
 ) {

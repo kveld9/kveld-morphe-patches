@@ -66,7 +66,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Privacy** | **Browse Without Login** | `bytecodePatch` | Neutralizes mandatory login walls, dynamic regional forced login gates, and guest browsing restrictions. |
 | **Privacy** | **Allow Screenshots** | `bytecodePatch` | Clears `FLAG_SECURE` on protected windows, restores Circle to Search / screen translate and recent apps snapshots, and neutralizes screenshot detection listeners and feedback prompts. |
 | **Privacy** | **Clean Shared Links** | `bytecodePatch` | Strips tracking query parameters, user tokens, and campaign IDs from shared links, with optional custom host redirection (`shareHost`). |
-| **Privacy** | **Privacy Guard** | `bytecodePatch` | Intercepts runtime permission prompts (contacts, location, nearby devices, AdServices), ContentResolver/PackageManager/LocationManager interception, suppresses in-app permission nag dialogs, settings redirect prompts, and background sync tasks, zeroes Advertising ID, blocks clipboard inspection, isolates package queries, and silences HAR motion sensors. |
+| **Privacy** | **Block Data Access** | `bytecodePatch` | Intercepts runtime permission prompts (contacts, location, nearby devices, AdServices), ContentResolver/PackageManager/LocationManager interception, suppresses in-app permission nag dialogs, settings redirect prompts, and background sync tasks, zeroes Advertising ID, blocks clipboard inspection, isolates package queries, and silences HAR motion sensors. |
 | **Privacy** | **Open Links In Browser** | `bytecodePatch` | Redirects external links to default system browser, neutralizes WebView JS tracking injection and AJAX hookers. |
 | **Privacy** | **Turn Off AI Features** | `bytecodePatch` | Neutralizes Pitaya on-device ML, Tako AI chatbot entries, and AI search clutter. |
 | **Privacy** | **[Set App Region](#1-sim-region-selector)** | `bytecodePatch` | Spoofs SIM and network country ISO codes, operator numeric codes/names, and cell identity MCC/MNC to bypass regional restrictions. |
@@ -375,9 +375,9 @@ Certain permissions are intentionally excluded from this manifest stripper becau
 
 | Excluded Permissions | Authoritative Handler | Handling Mechanism & Rationale |
 | :--- | :--- | :--- |
-| `com.google.android.gms.permission.AD_ID`<br>`android.permission.ACCESS_ADSERVICES_AD_ID`<br>`android.permission.ACCESS_ADSERVICES_ATTRIBUTION`<br>`com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE` | **Universal Telemetry Neutralizer** + **Privacy Guard** | Bytecode hook zeroes GAID (`00000000-0000-0000-0000-000000000000`), drops AdServices attribution tokens, and neutralizes Play Store install referrer receivers in runtime memory. |
-| `android.permission.ACCESS_FINE_LOCATION`<br>`android.permission.ACCESS_COARSE_LOCATION` | **Privacy Guard** | Intercepts `LocationManager` and `PowerPermissions` headless dispatcher at the Dalvik layer, returning `PERMISSION_DENIED` and clearing location caches while avoiding manifest-level XML parse shifts. |
-| `android.permission.READ_CONTACTS` | **Privacy Guard** | Intercepts `ContentResolver.query` and BPEA contacts reader trampolines (`LX/0OFU`, `LX/0OFw`), returning empty cursors and neutralizing background sync Lego tasks without breaking caller state. |
+| `com.google.android.gms.permission.AD_ID`<br>`android.permission.ACCESS_ADSERVICES_AD_ID`<br>`android.permission.ACCESS_ADSERVICES_ATTRIBUTION`<br>`com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE` | **Universal Telemetry Neutralizer** + **Block Data Access** | Bytecode hook zeroes GAID (`00000000-0000-0000-0000-000000000000`), drops AdServices attribution tokens, and neutralizes Play Store install referrer receivers in runtime memory. |
+| `android.permission.ACCESS_FINE_LOCATION`<br>`android.permission.ACCESS_COARSE_LOCATION` | **Block Data Access** | Intercepts `LocationManager` and `PowerPermissions` headless dispatcher at the Dalvik layer, returning `PERMISSION_DENIED` and clearing location caches while avoiding manifest-level XML parse shifts. |
+| `android.permission.READ_CONTACTS` | **Block Data Access** | Intercepts `ContentResolver.query` and BPEA contacts reader trampolines (`LX/0OFU`, `LX/0OFw`), returning empty cursors and neutralizing background sync Lego tasks without breaking caller state. |
 | `android.permission.INTERNET` | **Universal Offline Mode** *(Optional)* | **Total Exclusion**: Revoking `INTERNET` at the manifest level causes Linux kernel socket allocation denials (`EPERM` / `socket failed: EACCES`), crashing the process at frame 0. Users requiring total offline isolation should use [Universal Offline Mode](../universal-patches.md#5-universal-offline-mode-universalofflinepatch). |
 
 ---
@@ -411,7 +411,7 @@ Certain permissions are intentionally excluded from this manifest stripper becau
   - **`hideCommentPopupAds` (default: true)**: Blocks brand surprise animations over comments via `CommentSurpriseStruct` with path tags (`page/publish/milestone`, self-celebrations are preserved).
   - **`showFlaggedComments` (default: true)**: Automatically expands community-flagged comments inline without requiring manual taps or displaying the collapsed warning banner. Hooks `FoldFooterCell.onViewAttachedToWindow` to trigger debounced auto-expansion on the cell entrance (`TikTokCommentHook.autoExpandFoldEntrance`), dispatching native `QU` expansion without re-implementing viewmodel logic.
 
-### 3. Privacy Guard (`devicePrivacyGuardPatch`)
+### 3. Block Data Access (`devicePrivacyGuardPatch`)
 > [!NOTE]
 > **Bytecode-Only Privacy Architecture (`ResourceMode.RAW`)**:
 > Unlike apps with standard resource structures, TikTok's entire patch suite strictly avoids resource decoding (`resourcePatch`). Re-encoding TikTok's obfuscated resource tree via `arsclib` drops launcher icon drawables (`res/a/aq2.xml`, `res/a/aq3.xml`). Privacy is enforced at the Dalvik bytecode execution layer via runtime permission interception, in-app nag suppression, sensor silencing, and telemetry neutralization while keeping APK resources intact.
@@ -633,7 +633,7 @@ Certain permissions are intentionally excluded from this manifest stripper becau
 - **Comprehensive Manifest Coverage & Pruning Discipline**:
   - Covers 51 unique permissions mapped into 15 categorized boolean toggle switches (see `PERMISSION_GROUPS` in `TikTokPrivacyPermissionsStripperPatch.kt`).
   - 51 permissions mapped into 15 categorized boolean toggle switches (5 default `true`: `nfc`, `screenshotDetection`, `oemSignals`, `bluetooth`, `biometric`; 10 default `false`).
-  - 7 non-negotiable permissions pruned from manifest stripping and delegated to specialized runtime governors (**Universal Telemetry Neutralizer** and **Privacy Guard**).
+  - 7 non-negotiable permissions pruned from manifest stripping and delegated to specialized runtime governors (**Universal Telemetry Neutralizer** and **Block Data Access**).
   - 1 kernel-critical permission (`android.permission.INTERNET`) explicitly excluded to prevent cold startup socket allocation aborts.
 - **Dynamic Mutation & Telemetry Summary**:
   - Validates manifest existence before execution.
