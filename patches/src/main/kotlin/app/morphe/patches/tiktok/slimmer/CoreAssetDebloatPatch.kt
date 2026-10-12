@@ -6,7 +6,7 @@ import app.morphe.patches.shared.Constants
 private val EMPTY_BYTES = byteArrayOf()
 
 val coreAssetDebloatPatch = rawResourcePatch(
-    name = "Remove Extra Files",
+    name = "Remove Scanner & AI Files",
     description = "Deletes scanner models, AI engines and fonts.",
     default = true,
 ) {
