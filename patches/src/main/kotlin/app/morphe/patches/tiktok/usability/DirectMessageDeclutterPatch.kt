@@ -21,7 +21,7 @@ import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 val directMessageDeclutterPatch = bytecodePatch(
-    name = "Tidy Messages",
+    name = "Clean Messages",
     description = "Cleans chat lists and conversations.",
     default = false,
 ) {
