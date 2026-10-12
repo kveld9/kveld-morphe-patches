@@ -9,7 +9,7 @@ import app.morphe.patches.shared.replaceWithReturnVoid
 private const val NEW_USER_JOURNEY_SERVICE = "Lcom/ss/android/ugc/aweme/NewUserJourneyService;"
 
 val skipFirstLaunchOnboardingPatch = bytecodePatch(
-    name = "Skip Setup",
+    name = "Skip Onboarding",
     description = "Goes straight to the feed.",
     default = true,
 ) {
