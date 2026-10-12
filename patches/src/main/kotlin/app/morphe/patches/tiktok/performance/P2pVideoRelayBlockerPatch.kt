@@ -6,8 +6,8 @@ import app.morphe.patches.shared.Constants
 private val EMPTY_BYTES = byteArrayOf()
 
 val p2pVideoRelayBlockerPatch = rawResourcePatch(
-    name = "P2P Video Relay & Mesh CDN Blocker",
-    description = "Strips background Peer-to-Peer CDN distribution binaries (libavmdlp2pv2.so and libp2plivevdp.so) to prevent battery drain, background data upload, and mesh relay.",
+    name = "Stop P2P Uploads",
+    description = "Stops uploading videos for others in the background.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)

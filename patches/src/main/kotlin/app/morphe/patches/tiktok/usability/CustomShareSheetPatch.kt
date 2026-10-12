@@ -13,8 +13,8 @@ import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 
 val customShareSheetPatch = bytecodePatch(
-    name = "Custom Share Sheet",
-    description = "Customizes and cleans the native TikTok share sheet via individual toggle switches for third-party apps, essential sharing features, and secondary utility actions.",
+    name = "Tidy Share Menu",
+    description = "Hide items from the share menu.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)

@@ -11,32 +11,32 @@ import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 val regionBypassPatch = bytecodePatch(
-    name = "SIM Region Selector",
-    description = "Spoofs the detected SIM and network country ISO code, operator numeric codes, operator names, and cell identity MCC/MNC to bypass regional feed restrictions and catalog blocks.",
+    name = "Change Country",
+    description = "Spoofs SIM country to unlock regional feeds.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
 
     val targetRegion by stringOption(
         key = "region",
-        title = "Spoofed Region ISO Code",
-        description = "Two-letter ISO country code for SIM and network country spoofing (e.g. 'CH', 'US', 'JP', 'GB').",
+        title = "Country code",
+        description = "Two letters (e.g. CH, US, JP).",
         default = "CH",
         required = false,
     )
 
     val operatorNumeric by stringOption(
         key = "operatorNumeric",
-        title = "Spoofed Operator Numeric Code (MCC+MNC)",
-        description = "5-6 digit MCC+MNC code (e.g. '22801' for Switzerland/Swisscom) used to spoof TelephonyManager operator queries and CellIdentity MCC/MNC reads. Empty keeps stock operator values.",
+        title = "Network code",
+        description = "Digits like 22801. Empty keeps yours.",
         default = "",
         required = false,
     )
 
     val operatorName by stringOption(
         key = "operatorName",
-        title = "Spoofed Operator Name",
-        description = "Display name reported for SIM/network operator queries (e.g. 'Swisscom'). Empty keeps the stock operator name.",
+        title = "Network name",
+        description = "Name like Swisscom. Empty keeps yours.",
         default = "",
         required = false,
     )

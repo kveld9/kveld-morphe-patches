@@ -10,8 +10,8 @@ import app.morphe.patches.shared.sharedExtensionPatch
 import com.android.tools.smali.dexlib2.AccessFlags
 
 val rememberClearDisplayPatch = bytecodePatch(
-    name = "Remember Clear Display",
-    description = "Remembers TikTok's clear-display state between videos and re-applies it when new videos start.",
+    name = "Keep Clear View",
+    description = "Remembers clean-view mode.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)

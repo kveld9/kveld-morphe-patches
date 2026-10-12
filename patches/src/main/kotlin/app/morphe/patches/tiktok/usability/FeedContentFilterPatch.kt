@@ -13,8 +13,8 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
 val feedContentFilterPatch = bytecodePatch(
-    name = "Feed Content Filter",
-    description = "Hides stories, photo posts, and videos outside configured view or like ranges from the For You feed only. Following, Friends, profiles, search and other surfaces are never filtered.",
+    name = "Filter Feed",
+    description = "Hides stories, photos and videos by views/likes.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -22,32 +22,32 @@ val feedContentFilterPatch = bytecodePatch(
 
     val minViews by intOption(
         key = "minViews",
-        title = "Minimum Views",
-        description = "Hide videos with fewer views than this. 0 disables the minimum.",
+        title = "Min views",
+        description = "Hide below this. 0 = off.",
         default = 0,
         required = false,
     )
 
     val maxViews by intOption(
         key = "maxViews",
-        title = "Maximum Views",
-        description = "Hide videos with more views than this. 0 disables the maximum.",
+        title = "Max views",
+        description = "Hide above this. 0 = off.",
         default = 0,
         required = false,
     )
 
     val minLikes by intOption(
         key = "minLikes",
-        title = "Minimum Likes",
-        description = "Hide videos with fewer likes than this. 0 disables the minimum.",
+        title = "Min likes",
+        description = "Hide below this. 0 = off.",
         default = 0,
         required = false,
     )
 
     val maxLikes by intOption(
         key = "maxLikes",
-        title = "Maximum Likes",
-        description = "Hide videos with more likes than this. 0 disables the maximum.",
+        title = "Max likes",
+        description = "Hide above this. 0 = off.",
         default = 0,
         required = false,
     )
@@ -55,16 +55,16 @@ val feedContentFilterPatch = bytecodePatch(
     val hideStories by booleanOption(
         key = "hideStories",
         default = true,
-        title = "Hide Stories",
-        description = "Removes story posts from the For You feed.",
+        title = "Stories",
+        description = "Hides story posts.",
         required = false,
     )
 
     val hidePhotoPosts by booleanOption(
         key = "hidePhotoPosts",
         default = false,
-        title = "Hide Photo Posts",
-        description = "Removes photo-mode posts from the For You feed.",
+        title = "Photo posts",
+        description = "Hides photo posts.",
         required = false,
     )
 

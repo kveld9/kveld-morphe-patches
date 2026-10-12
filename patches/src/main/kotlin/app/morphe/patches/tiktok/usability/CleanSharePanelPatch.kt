@@ -16,8 +16,8 @@ private const val GROUP_CHAT_HINT_ASSEM_CLASS =
     "Lcom/ss/android/ugc/aweme/internalshare/impl/refactor/assem/SharePanelGroupChatHintAssem;"
 
 val cleanSharePanelPatch = bytecodePatch(
-    name = "Clean Share Panel",
-    description = "Removes clutter from the share panel and direct message dialog, including suggested quick emojis and the 'Send to new group' button.",
+    name = "Tidy Share Panel",
+    description = "Removes emoji row and group button.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -25,16 +25,16 @@ val cleanSharePanelPatch = bytecodePatch(
     val hideQuickEmojis by booleanOption(
         key = "hideQuickEmojis",
         default = true,
-        title = "Hide Quick Emojis",
-        description = "Removes the horizontal row of suggested quick emojis from the direct share panel.",
+        title = "Quick emojis",
+        description = "Removes suggested emojis.",
         required = false,
     )
 
     val hideSendToNewGroup by booleanOption(
         key = "hideSendToNewGroup",
         default = true,
-        title = "Hide 'Send to New Group'",
-        description = "Removes the 'Send to new group' button and hint from the direct share panel.",
+        title = "New group button",
+        description = "Removes the new-group button.",
         required = false,
     )
 

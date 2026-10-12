@@ -6,8 +6,8 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 
 val disableSearchVideoAutoplayPatch = bytecodePatch(
-    name = "Disable Search Video Autoplay",
-    description = "Disables automatic video playback in search results. Videos only play when tapped to view in detail.",
+    name = "No Autoplay in Search",
+    description = "Search videos play only on tap.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)

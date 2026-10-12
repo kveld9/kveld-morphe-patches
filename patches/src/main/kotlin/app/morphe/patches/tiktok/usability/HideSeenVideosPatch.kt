@@ -10,8 +10,8 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
 val hideSeenVideosPatch = bytecodePatch(
-    name = "Hide Seen Videos",
-    description = "Filters previously watched videos from incoming For You feed batches.",
+    name = "Hide Watched Videos",
+    description = "Skips videos you already saw.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)

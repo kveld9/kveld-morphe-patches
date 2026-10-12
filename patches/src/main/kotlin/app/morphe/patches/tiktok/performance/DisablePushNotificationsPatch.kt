@@ -6,8 +6,8 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 
 val disablePushNotificationsPatch = bytecodePatch(
-    name = "Disable Push Notifications",
-    description = "Neutralizes background push notification tasks and persistent socket wake locks to eliminate background battery drain.",
+    name = "No Push Notifications",
+    description = "Stops background push activity.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)

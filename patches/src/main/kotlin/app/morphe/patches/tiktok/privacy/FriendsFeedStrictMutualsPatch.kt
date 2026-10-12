@@ -10,8 +10,8 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
 val friendsFeedStrictMutualsPatch = bytecodePatch(
-    name = "Friends Feed Strict Mutuals",
-    description = "Filters out suggested accounts, recommended videos, and non-mutual profiles (such as 'People you may know') from the Friends feed so it only plays videos from accounts you mutually follow.",
+    name = "Only Mutual Friends",
+    description = "Friends feed shows only mutual friends.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)

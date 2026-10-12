@@ -11,8 +11,8 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
 val hideTikTokShopAnchorsPatch = bytecodePatch(
-    name = "Hide TikTok Shop & Mall",
-    description = "Removes product showcase badges, shopping cart tags, and the TikTok Shop / Mall tab from navigation bars and video posts.",
+    name = "Hide Shop",
+    description = "Removes shop tabs and product tags.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -20,15 +20,15 @@ val hideTikTokShopAnchorsPatch = bytecodePatch(
 
     val hideShopTab by booleanOption(
         key = "hideShopTab",
-        title = "Hide Shop Navigation Tab",
-        description = "Removes the TikTok Shop / Mall navigation tab and indicator from navigation bars. Disable if you want to keep access to your purchases and orders while still hiding video product tags.",
+        title = "Shop tab",
+        description = "Removes the Shop tab.",
         default = true,
     )
 
     val hideVideoAnchors by booleanOption(
         key = "hideVideoAnchors",
-        title = "Hide Video Product Anchors",
-        description = "Removes shopping cart tags, product showcase badges, and commercial anchors from FYP and Following feed videos.",
+        title = "Product tags",
+        description = "Removes product tags on videos.",
         default = true,
     )
 

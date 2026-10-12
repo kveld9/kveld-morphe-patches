@@ -145,7 +145,7 @@ private fun BytecodePatchContext.hookWebViewFontLoader(): Int {
 
 val systemFontPatch = bytecodePatch(
     name = "System Font",
-    description = "Forces TikTok to use the Android system font instead of bundled proprietary TikTokSans fonts.",
+    description = "Uses your phone's font.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)

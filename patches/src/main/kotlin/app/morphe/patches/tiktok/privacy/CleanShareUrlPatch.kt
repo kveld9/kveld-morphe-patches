@@ -10,8 +10,8 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
 val cleanShareUrlPatch = bytecodePatch(
-    name = "Clean Share URL",
-    description = "Strips tracking parameters, user IDs, device fingerprints, and marketing tokens from shared TikTok links, with optional custom host redirection.",
+    name = "Clean Shared Links",
+    description = "Removes tracking from shared links.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -19,8 +19,8 @@ val cleanShareUrlPatch = bytecodePatch(
 
     val shareHost by stringOption(
         key = "shareHost",
-        title = "Custom Share Host",
-        description = "Custom hostname to replace in shared links (e.g. 'vxtiktok.com', 'tiktxk.com', or empty to keep original host).",
+        title = "Custom link host",
+        description = "Replace links host (e.g. vxtiktok.com). Empty keeps it.",
         default = "",
         required = false,
     )

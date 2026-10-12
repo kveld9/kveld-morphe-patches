@@ -19,8 +19,8 @@ private val suggestedAccountInjectors = listOf(
 )
 
 val hideSuggestedAccountsPatch = bytecodePatch(
-    name = "Hide Suggested Accounts",
-    description = "Removes suggested-account cards from profile headers and inbox surfaces.",
+    name = "Hide Suggested People",
+    description = "Removes suggested account cards.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)

@@ -31,8 +31,8 @@ private fun forceBooleanGateTrue(method: MutableMethod, tag: String): Int {
 }
 
 val nonPersonalizedSearchPatch = bytecodePatch(
-    name = "Non-Personalized Search",
-    description = "Forces TikTok's non-personalized search mode instead of the saved account choice.",
+    name = "Neutral Search",
+    description = "Search without personalization.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)

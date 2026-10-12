@@ -12,8 +12,8 @@ import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 val resumeVideoAfterScrollPatch = bytecodePatch(
-    name = "Resume Video After Scroll",
-    description = "Remembers playback timestamp when scrolling away and resumes from where playback stopped upon returning.",
+    name = "Resume Videos",
+    description = "Continues where you left off.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
