@@ -14,7 +14,7 @@ When inspecting Brave with package analysis tools, the following components may 
 
 ---
 
-Genuine Brave telemetry is fully neutralized by the **Block Brave Telemetry** patch:
+Genuine Brave telemetry is fully neutralized by the **Block Tracking** patch:
 - **P3A (Privacy-Preserving Product Analytics)**: Preference getters forced to return `false` in Dalvik bytecode (`PrefService.e`).
 - **Brave Stats & Web Discovery Project (WDP)**: Reporting loops disabled and 12 native telemetry and diagnostic endpoints redirected to `0.0.0.0` in `libchrome.so` (covering Stats, WDP, Crashpad, and Variations).
 - **Crashpad & Minidump Uploads**: Upload hooks aborted before dispatch (`MinidumpUploadServiceImpl`, `ChromeMinidumpUploadJobService`) and crash reporter endpoints redirected to `0.0.0.0` in `libchrome.so`.
@@ -24,8 +24,8 @@ Genuine Brave telemetry is fully neutralized by the **Block Brave Telemetry** pa
 
 ## Brave Browser: Privacy, Debloat & Anti-Fingerprinting Architecture
 
-### 1. Clean New Tab Page (Sponsored Wallpaper & Feed Neutralization)
-Official Brave periodically downloads full-screen sponsored advertising wallpapers and updates the Brave News/Today feed in the background. The **`Clean New Tab Page`** patch enforces a lightweight, zero-ad startup state across three layers:
+### 1. Clean Start Page (Sponsored Wallpaper & Feed Neutralization)
+Official Brave periodically downloads full-screen sponsored advertising wallpapers and updates the Brave News/Today feed in the background. The **`Clean Start Page`** patch enforces a lightweight, zero-ad startup state across three layers:
 - **Asset Schema Sanitization (`rawResourcePatch`)**: Overwrites `assets/brave/sponsored-images/default.json` with an empty campaigns schema (`{"schemaVersion":1,"campaigns":[]}`). Chromium's sponsored image coordinator finds zero campaigns to download, preventing background bandwidth consumption (~15–30 MB/month) and memory allocations.
 - **Preference Defaults Enforcement (`resourcePatch`)**: Sets XML defaults for `show_sponsored_images`, `new_tab_page_show_sponsored_images`, `brave_news_switch`, and `show_brave_news` to `false`.
 - **Dalvik Gatekeeper Interception (`bytecodePatch`)**: Intercepts `PrefService.e` for `brave.new_tab_page.show_sponsored_images`, `brave.today.enabled`, `brave.today.opted_in`, and `brave.new_tab_page.show_brave_news`, returning `false` directly at the preference service layer.
