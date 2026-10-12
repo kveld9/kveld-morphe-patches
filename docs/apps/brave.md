@@ -227,6 +227,6 @@ The following patches present in other Chromium forks are intentionally omitted 
 1. **Google Privacy Sandbox Attestations Zeroing (`privacy-sandbox-attestations.dat`)**:
    - Brave removes and disables Google Privacy Sandbox APIs (Topics API, FLEDGE / Protected Audience, Attribution Reporting) at the C++ level in `brave-core`. The underlying APIs are completely uncallable by web content, making zeroing the `.dat` file redundant.
 2. **UKM (URL-Keyed Metrics) Recorder Neutralization (`UkmRecorder.c()V`)**:
-   - Brave completely removes upstream Google UMA and UKM pipelines in C++ and replaces them with P3A and WDP, which are already fully neutralized by `Block Brave Telemetry`.
+   - Brave completely removes upstream Google UMA and UKM pipelines in C++ and replaces them with P3A and WDP, which are already fully neutralized by `Block Tracking`.
 3. **Close Tabs on Exit (`TabStateFileManager` Hook)**:
    - Brave already provides a native user preference in *Settings -> Close tabs on exit*. Enforcing tab state discard via Dalvik bytecode hooks would override user choice and break intentional session retention.
