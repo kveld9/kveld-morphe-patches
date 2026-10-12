@@ -31,7 +31,7 @@ private fun forceBooleanGateTrue(method: MutableMethod, tag: String): Int {
 }
 
 val nonPersonalizedSearchPatch = bytecodePatch(
-    name = "Neutral Search",
+    name = "No Personalized Search",
     description = "Search without personalization.",
     default = true,
 ) {

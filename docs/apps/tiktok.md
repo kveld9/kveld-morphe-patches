@@ -79,7 +79,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Privacy** | **Clean Feed** | `bytecodePatch` | Removes friend suggestions, suggested account carousels, mini-games, CapCut prompts, memories, community/topic cards, post-video evaluation surveys, questionnaires, mini-dramas, Lemon8 promo, in-feed search recommendations/interest cards, and floating rewards pendants across For You, Following, and Friends feeds. |
 | **Privacy** | **Block All Tracking** | `bytecodePatch` | Neutralizes ByteDance AppLog, APM/Npth/Heimdallr crash telemetry, and AppsFlyer. |
 | **Privacy** | **No Search History** | `bytecodePatch` | Prevents search queries and keywords from being recorded in local history, databases, and analytics stores. |
-| **Privacy** | **Neutral Search** | `bytecodePatch` | Forces TikTok's non-personalized search mode instead of the saved account choice. |
+| **Privacy** | **No Personalized Search** | `bytecodePatch` | Forces TikTok's non-personalized search mode instead of the saved account choice. |
 | **Privacy** | **No Watch History** | `bytecodePatch` | Prevents viewed videos from being recorded in account watch history, playback duration stores, and local history caches. |
 | **Privacy** | **No Update Popups** | `bytecodePatch` | Neutralizes background update polling tasks and version enforcement dialogs. |
 | **Privacy** | **[Remove Permissions](#12-tiktok-privacy-permissions-stripper)** | `resourcePatch` | Selectively strips sensitive privacy, sensor, hardware, and tracking permissions from AndroidManifest.xml via 15 granular opt-in boolean toggles. |
