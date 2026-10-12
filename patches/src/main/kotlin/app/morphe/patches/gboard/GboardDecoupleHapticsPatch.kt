@@ -3,6 +3,7 @@ package app.morphe.patches.gboard
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.addInstructionsAtControlFlowLabel
@@ -249,5 +250,6 @@ val gboardDecoupleHapticsPatch = bytecodePatch(
         }
 
         println("[Decouple Haptics] Injected $patched independent haptics and touch feedback decoupling hook(s).")
+        if (patched == 0) throw PatchException("Decouple Haptics: no hooks applied, targets shifted.")
     }
 }
