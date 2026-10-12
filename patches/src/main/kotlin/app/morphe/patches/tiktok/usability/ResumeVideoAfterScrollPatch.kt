@@ -12,7 +12,7 @@ import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 val resumeVideoAfterScrollPatch = bytecodePatch(
-    name = "Resume Videos",
+    name = "Resume Where You Left Off",
     description = "Continues where you left off.",
     default = false,
 ) {

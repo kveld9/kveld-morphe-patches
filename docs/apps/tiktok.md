@@ -49,7 +49,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Usability** | **Start First Video Paused** | `bytecodePatch` | Automatically pauses the initial video on startup (frame 0) with center play icon; resumes upon screen tap or feed scroll. |
 | **Usability** | **Hide Watched Videos** | `bytecodePatch` | Filters previously watched videos from incoming For You feed batches based on playback progress. |
 | **Usability** | **Filter Feed** | `bytecodePatch` | Hides stories, photo posts, and videos outside configured view or like ranges from the For You feed only; Following, Friends, profiles, search and other surfaces are never filtered (`minViews`/`maxViews`/`minLikes`/`maxLikes`/`hideStories`/`hidePhotoPosts`). |
-| **Usability** | **Resume Videos** | `bytecodePatch` | Resumes video playback from previous playback position when returning to a video in the feed. |
+| **Usability** | **Resume Where You Left Off** | `bytecodePatch` | Resumes video playback from previous playback position when returning to a video in the feed. |
 | **Usability** | **Keep Clear View** | `bytecodePatch` | Remembers TikTok's clear-display state between videos and re-applies it when new videos start. |
 | **Usability** | **No Auto-Replay** | `bytecodePatch` | Prevents videos from looping continuously on playback completion. |
 | **Usability** | **[Clean Inbox](#9-hide-inbox-promos--alerts)** | `bytecodePatch` | Hides promotional banners, streak mascot cards, contact sync suggestions, friend recommendations, and migration guide tooltips in the inbox and direct messages. |
@@ -541,7 +541,7 @@ Certain permissions are intentionally excluded from this manifest stripper becau
 - **Card AutoPlay Ability Inactivation**: Injects `const/4 v0, 0` / `return v0` into `SearchCardVideoPlayerAssem$autoPlayAbility$2$1.l2()Z`, `SearchVideoForLynx$ability$1.l2()Z`, and `SearchCardPhotoPlayerAssem$autoPlayAbility$2$1.l2()Z`, asserting `false` for card autoplay eligibility.
 - **Playback Execution Guard**: Injects `return-void` into `r()V` on all search card `AutoPlayAbility` implementations, preventing any direct invocation from triggering video playback or hiding cover thumbnails. Detail view playback when opening a video remains fully functional via `PlayerController`.
 
-### 16. Resume Videos (`resumeVideoAfterScrollPatch`)
+### 16. Resume Where You Left Off (`resumeVideoAfterScrollPatch`)
 - Persists and restores playback timestamp when scrolling away and returning to feed videos.
 - **Configuration Gate Activation**: Hooks `FeedPlayProgressContinueConfig` gate (`invoke()`), forcing `enable = true`.
 - **Feed Type Restriction Bypass**: Intercepts the event type check matching `landscape_change_keep_tag`, replacing the `MOVE_RESULT` register with `1` to allow timestamp restoration across standard vertical portrait feeds.
