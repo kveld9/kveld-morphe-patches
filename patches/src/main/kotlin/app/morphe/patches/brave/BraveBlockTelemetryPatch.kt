@@ -124,8 +124,29 @@ private val braveHostsBlockerPatch = rawResourcePatch(
         for ((relPath, soFile, offsetSelector) in existingTargets) {
             var writtenHosts = 0
 
+            // Resolve and validate every offset before touching the binary. A zero offset
+            // means the entry has no sibling-ABI value (the harness reports those), and two
+            // entries sharing an offset means the list drifted: writing either would be a
+            // silent no-op or a double write at the same place.
+            val resolved = hostEntries.map { entry -> entry to offsetSelector(entry) }
+            val unresolved = resolved.filter { (_, offset) -> offset == 0L }
+            if (unresolved.isNotEmpty()) {
+                throw PatchException(
+                    "No ${relPath} offset recorded for host(s) " +
+                        unresolved.joinToString { it.first.hostName } +
+                        "; regenerate the offsets with the harness before patching",
+                )
+            }
+            val shared = resolved.groupBy({ it.second }, { it.first.hostName }).filterValues { it.size > 1 }
+            if (shared.isNotEmpty()) {
+                throw PatchException(
+                    "Duplicate host offsets in $relPath: " +
+                        shared.entries.joinToString { "0x${it.key.toString(16)}=${it.value.joinToString("/")}" },
+                )
+            }
+
             RandomAccessFile(soFile, "rw").use { raf ->
-                for (entry in hostEntries) {
+                for (entry in resolved.map { it.first }) {
                     val offset = offsetSelector(entry)
                     val expectedBytes = entry.hostName.toByteArray(Charsets.US_ASCII)
                     val len = expectedBytes.size
@@ -150,6 +171,25 @@ private val braveHostsBlockerPatch = rawResourcePatch(
                     raf.seek(offset)
                     raf.write(replacement)
                     writtenHosts++
+                }
+
+                // Read back what landed on disk instead of trusting the write call: a short
+                // or misaligned write would otherwise leave a live telemetry endpoint behind
+                // while the patch still reports every host as redirected.
+                for (entry in resolved.map { it.first }) {
+                    val offset = offsetSelector(entry)
+                    val len = entry.hostName.length
+                    val written = ByteArray(len)
+                    raf.seek(offset)
+                    raf.readFully(written)
+                    val expectedRedirection = ByteArray(len)
+                    System.arraycopy(redirectionIp, 0, expectedRedirection, 0, redirectionIp.size)
+                    if (!written.contentEquals(expectedRedirection)) {
+                        throw PatchException(
+                            "Redirection verification failed at 0x${offset.toString(16)} in $relPath " +
+                                "for '${entry.hostName}': the endpoint was not overwritten",
+                        )
+                    }
                 }
             }
 
