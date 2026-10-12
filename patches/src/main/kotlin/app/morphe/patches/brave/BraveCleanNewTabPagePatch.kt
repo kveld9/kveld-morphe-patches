@@ -3,6 +3,7 @@ package app.morphe.patches.brave
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.booleanOption
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patches.shared.Constants
@@ -187,5 +188,6 @@ val braveCleanNewTabPagePatch = bytecodePatch(
 
         val targetClasses = hookedMethods.map { it.substringBefore('.') }.distinct()
         println("[Clean New Tab Page] Neutralized ${hookedMethods.size} NTP marketing & layout components across ${targetClasses.size} classes")
+        if (hookedMethods.isEmpty()) throw PatchException("Clean New Tab Page: no hooks applied, targets shifted.")
     }
 }
