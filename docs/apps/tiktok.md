@@ -46,7 +46,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Usability** | **Live Search Entry** | `bytecodePatch` | Shows TikTok's search entry in the Live drawer where supported. |
 | **Usability** | **No Suggested Searches** | `bytecodePatch` | Removes the suggested search keywords section ('You may like' / 'Search suggestions') from the search discovery page. |
 | **Usability** | **No Autoplay in Search** | `bytecodePatch` | Disables automatic video playback in search results. Videos only play when tapped to view in detail. |
-| **Usability** | **Pause First Video** | `bytecodePatch` | Automatically pauses the initial video on startup (frame 0) with center play icon; resumes upon screen tap or feed scroll. |
+| **Usability** | **Start First Video Paused** | `bytecodePatch` | Automatically pauses the initial video on startup (frame 0) with center play icon; resumes upon screen tap or feed scroll. |
 | **Usability** | **Hide Watched Videos** | `bytecodePatch` | Filters previously watched videos from incoming For You feed batches based on playback progress. |
 | **Usability** | **Filter Feed** | `bytecodePatch` | Hides stories, photo posts, and videos outside configured view or like ranges from the For You feed only; Following, Friends, profiles, search and other surfaces are never filtered (`minViews`/`maxViews`/`minLikes`/`maxLikes`/`hideStories`/`hidePhotoPosts`). |
 | **Usability** | **Resume Videos** | `bytecodePatch` | Resumes video playback from previous playback position when returning to a video in the feed. |

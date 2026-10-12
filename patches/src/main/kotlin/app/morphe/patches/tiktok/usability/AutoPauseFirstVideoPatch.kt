@@ -8,7 +8,7 @@ import app.morphe.patches.shared.addInstructionsAtControlFlowLabel
 import app.morphe.patches.shared.sharedExtensionPatch
 
 val autoPauseFirstVideoPatch = bytecodePatch(
-    name = "Pause First Video",
+    name = "Start First Video Paused",
     description = "First video starts paused.",
     default = false,
 ) {
