@@ -7,7 +7,7 @@ import app.morphe.patches.shared.Constants
 
 @Suppress("unused")
 val braveNotificationSchedulerOptimizationPatch = bytecodePatch(
-    name = "Silence Promo Notifications",
+    name = "Stop Promo Notifications",
     description = "Stops tips, reward promos and marketing notifications.",
     default = true,
 ) {

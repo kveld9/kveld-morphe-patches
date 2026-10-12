@@ -8,7 +8,7 @@ import app.morphe.patches.shared.sharedExtensionPatch
 
 @Suppress("unused")
 val braveTabGroupCloseSelectionPatch = bytecodePatch(
-    name = "Better Tab Closing",
+    name = "Close Tab In Group Order",
     description = "Closing a tab picks the previous tab in the same group.",
     default = true,
 ) {

@@ -8,7 +8,7 @@ import app.morphe.patches.shared.Constants
 
 @Suppress("unused")
 val braveSuppressInAppPromosPatch = bytecodePatch(
-    name = "Block Popups & Rating Requests",
+    name = "Block Popups & Ratings",
     description = "Blocks rating popups, review requests and promo dialogs.",
     default = true,
 ) {

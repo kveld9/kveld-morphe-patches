@@ -18,7 +18,7 @@ import org.w3c.dom.Element
 
 // ── Resource Patch: Sets defaultValue="false" for NTP marketing switches in XML ──────────
 private val braveCleanNtpXmlPatch = resourcePatch(
-    name = "Clean Start Page (Setup)",
+    name = "Clean New Tab (Setup)",
     description = "Turns off ads and news switches by default.",
     default = true,
 ) {
@@ -101,7 +101,7 @@ private fun injectPrefGuards(
 // ── Bytecode Patch: Suppresses sponsored wallpaper & news preferences at runtime ────────
 @Suppress("unused")
 val braveCleanNewTabPagePatch = bytecodePatch(
-    name = "Clean Start Page",
+    name = "Clean New Tab",
     description = "Removes sponsored wallpapers, news feed and promo cards.",
     default = true,
 ) {
