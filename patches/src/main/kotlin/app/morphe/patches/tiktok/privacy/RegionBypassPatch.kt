@@ -20,7 +20,7 @@ val regionBypassPatch = bytecodePatch(
     val targetRegion by stringOption(
         key = "region",
         title = "Country code",
-        description = "Two letters (e.g. CH, US, JP).",
+        description = "Two-letter ISO country code for SIM spoofing (e.g. CH, US, JP).",
         default = "CH",
         required = false,
     )
@@ -28,7 +28,7 @@ val regionBypassPatch = bytecodePatch(
     val operatorNumeric by stringOption(
         key = "operatorNumeric",
         title = "Network code",
-        description = "Digits like 22801. Empty keeps yours.",
+        description = "5-6 digit MCC+MNC code (e.g. 22801). Empty keeps yours.",
         default = "",
         required = false,
     )
@@ -36,7 +36,7 @@ val regionBypassPatch = bytecodePatch(
     val operatorName by stringOption(
         key = "operatorName",
         title = "Network name",
-        description = "Name like Swisscom. Empty keeps yours.",
+        description = "Operator display name (e.g. Swisscom). Empty keeps yours.",
         default = "",
         required = false,
     )
