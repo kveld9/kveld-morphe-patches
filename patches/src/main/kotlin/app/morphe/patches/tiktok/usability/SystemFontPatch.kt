@@ -144,7 +144,7 @@ private fun BytecodePatchContext.hookWebViewFontLoader(): Int {
 }
 
 val systemFontPatch = bytecodePatch(
-    name = "System Font",
+    name = "Use System Font",
     description = "Uses your phone's font.",
     default = false,
 ) {
