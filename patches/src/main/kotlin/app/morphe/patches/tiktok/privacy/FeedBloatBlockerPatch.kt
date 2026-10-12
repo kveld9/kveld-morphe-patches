@@ -2,6 +2,7 @@ package app.morphe.patches.tiktok.privacy
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.addInstructionsAtControlFlowLabel
@@ -960,5 +961,6 @@ val feedBloatBlockerPatch = bytecodePatch(
         }
 
         println("[Feed Bloat Blocker] Applied $patched feed bloat blocker hook(s) -> Non-video distractions neutralized.")
+        if (patched == 0) throw PatchException("Feed Bloat Blocker: no hooks applied, targets shifted.")
     }
 }
