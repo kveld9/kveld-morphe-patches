@@ -9,7 +9,7 @@ import app.morphe.patches.shared.sharedExtensionPatch
 import com.android.tools.smali.dexlib2.AccessFlags
 
 val skipContentWarningsPatch = bytecodePatch(
-    name = "Skip Warnings",
+    name = "Skip Content Warnings",
     description = "Bypasses sensitive-content screens.",
     default = false,
 ) {
