@@ -2,12 +2,13 @@ package app.morphe.patches.tiktok.performance
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 
 val liveGiftEffectOptimizerPatch = bytecodePatch(
-    name = "Live Stream 3D Gift Optimizer",
-    description = "Disables Live 3D gift particle effect engine and widget rendering lifecycle to eliminate frame drops during live streams.",
+    name = "Lighter Live Gifts",
+    description = "Turns off heavy 3D gift effects in lives.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -52,5 +53,6 @@ val liveGiftEffectOptimizerPatch = bytecodePatch(
         }
 
         println("[Live Stream 3D Gift Optimizer] Applied $patched live gift engine hook(s).")
+        if (patched == 0) throw PatchException("Live Stream 3D Gift Optimizer: no hooks applied, targets shifted.")
     }
 }

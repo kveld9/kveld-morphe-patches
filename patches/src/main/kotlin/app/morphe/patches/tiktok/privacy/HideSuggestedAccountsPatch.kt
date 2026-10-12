@@ -1,6 +1,7 @@
 package app.morphe.patches.tiktok.privacy
 
 import app.morphe.patcher.Fingerprint
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.replaceWithReturnBoolean
@@ -19,8 +20,8 @@ private val suggestedAccountInjectors = listOf(
 )
 
 val hideSuggestedAccountsPatch = bytecodePatch(
-    name = "Hide Suggested Accounts",
-    description = "Removes suggested-account cards from profile headers and inbox surfaces.",
+    name = "Hide Suggested People",
+    description = "Removes suggested account cards.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -58,5 +59,6 @@ val hideSuggestedAccountsPatch = bytecodePatch(
         }
 
         println("[Hide Suggested Accounts] Applied $patched suggested accounts hook(s).")
+        if (patched == 0) throw PatchException("Hide Suggested Accounts: no hooks applied, targets shifted.")
     }
 }

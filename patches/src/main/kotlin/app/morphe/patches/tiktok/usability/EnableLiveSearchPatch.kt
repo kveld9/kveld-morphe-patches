@@ -1,6 +1,7 @@
 package app.morphe.patches.tiktok.usability
 
 import app.morphe.patcher.Fingerprint
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.addInstructionsAtControlFlowLabel
@@ -9,8 +10,8 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
 val enableLiveSearchPatch = bytecodePatch(
-    name = "Enable Live Search",
-    description = "Shows TikTok's search entry in the Live drawer where supported.",
+    name = "Live Search Entry",
+    description = "Shows search in the Live drawer.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -48,5 +49,6 @@ val enableLiveSearchPatch = bytecodePatch(
         }
 
         println("[Enable Live Search] Applied $patched live search hook(s).")
+        if (patched == 0) throw PatchException("Enable Live Search: no hooks applied, targets shifted.")
     }
 }

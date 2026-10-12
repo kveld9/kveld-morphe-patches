@@ -1,13 +1,14 @@
 package app.morphe.patches.tiktok.usability
 
 import app.morphe.patcher.Fingerprint
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.replaceWithReturnVoid
 
 val disableDoubleTapToLikePatch = bytecodePatch(
-    name = "Disable Double Tap to Like",
-    description = "Disables double tap like in the feed.",
+    name = "No Accidental Likes",
+    description = "Double tap no longer likes videos.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -61,6 +62,7 @@ val disableDoubleTapToLikePatch = bytecodePatch(
         }
 
         println("[Disable Double Tap to Like] Applied $patched gesture customization hook(s).")
+        if (patched == 0) throw PatchException("Disable Double Tap to Like: no hooks applied, targets shifted.")
     }
 }
 

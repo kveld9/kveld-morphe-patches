@@ -2,6 +2,7 @@ package app.morphe.patches.tiktok.privacy
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
@@ -11,8 +12,8 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
 val hideTikTokShopAnchorsPatch = bytecodePatch(
-    name = "Hide TikTok Shop & Mall",
-    description = "Removes product showcase badges, shopping cart tags, and the TikTok Shop / Mall tab from navigation bars and video posts.",
+    name = "Hide Shop",
+    description = "Removes shop tabs and product tags.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -20,15 +21,15 @@ val hideTikTokShopAnchorsPatch = bytecodePatch(
 
     val hideShopTab by booleanOption(
         key = "hideShopTab",
-        title = "Hide Shop Navigation Tab",
-        description = "Removes the TikTok Shop / Mall navigation tab and indicator from navigation bars. Disable if you want to keep access to your purchases and orders while still hiding video product tags.",
+        title = "Shop tab",
+        description = "Removes the Shop tab.",
         default = true,
     )
 
     val hideVideoAnchors by booleanOption(
         key = "hideVideoAnchors",
-        title = "Hide Video Product Anchors",
-        description = "Removes shopping cart tags, product showcase badges, and commercial anchors from FYP and Following feed videos.",
+        title = "Product tags",
+        description = "Removes product tags on videos.",
         default = true,
     )
 
@@ -53,7 +54,7 @@ val hideTikTokShopAnchorsPatch = bytecodePatch(
                 feedApiMethod.addInstructionsAtControlFlowLabel(
                     returnIndex,
                     """
-                        invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->stripShopAnchorsInFeedItemList(Ljava/lang/Object;)V
+                        invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->stripShopAnchorsInFeedItemList(Ljava/lang/Object;)V
                     """,
                 )
             }
@@ -78,7 +79,7 @@ val hideTikTokShopAnchorsPatch = bytecodePatch(
                 feedItemListMethod.addInstructionsAtControlFlowLabel(
                     returnIndex,
                     """
-                        invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->stripShopAnchorsInList(Ljava/lang/Object;)V
+                        invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->stripShopAnchorsInList(Ljava/lang/Object;)V
                     """,
                 )
             }
@@ -103,7 +104,7 @@ val hideTikTokShopAnchorsPatch = bytecodePatch(
                 followFeedListMethod.addInstructionsAtControlFlowLabel(
                     returnIndex,
                     """
-                        invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->stripShopAnchorsInFollowFeedList(Ljava/lang/Object;)V
+                        invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->stripShopAnchorsInFollowFeedList(Ljava/lang/Object;)V
                     """,
                 )
             }
@@ -161,5 +162,6 @@ val hideTikTokShopAnchorsPatch = bytecodePatch(
         }
 
         println("[Hide TikTok Shop & Mall] Applied $patched TikTok Shop anchor and navigation tab suppression hook(s).")
+        if (patched == 0 && (hideShopTab != false || hideVideoAnchors != false)) throw PatchException("Hide TikTok Shop & Mall: no hooks applied, targets shifted.")
     }
 }

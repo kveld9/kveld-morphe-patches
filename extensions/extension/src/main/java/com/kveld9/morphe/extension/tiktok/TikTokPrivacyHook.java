@@ -80,7 +80,6 @@ public final class TikTokPrivacyHook {
             new Handler(Looper.getMainLooper()).post(() -> {
                 try {
                     Method m = Activity.class.getDeclaredMethod("onRequestPermissionsResult", int.class, String[].class, int[].class);
-                    m.setAccessible(true);
                     m.invoke(activity, requestCode, permissions, grantResults);
                 } catch (Throwable ignored) {}
             });
@@ -181,12 +180,18 @@ public final class TikTokPrivacyHook {
         LAST_URI.remove();
         if (isContactsUri(uri)) {
             Log.w(TAG, "[Device Privacy Guard] Filtered contacts query for URI: " + uri);
+            String[] columns = null;
             if (cursor != null) {
+                try {
+                    columns = cursor.getColumnNames();
+                } catch (Throwable ignored) {}
                 try {
                     cursor.close();
                 } catch (Throwable ignored) {}
             }
-            return new MatrixCursor(new String[0]);
+            // Same column shape as the original cursor but zero rows, so callers
+            // using getColumnIndexOrThrow() keep working instead of crashing.
+            return new MatrixCursor(columns != null ? columns : new String[0]);
         }
         return cursor;
     }

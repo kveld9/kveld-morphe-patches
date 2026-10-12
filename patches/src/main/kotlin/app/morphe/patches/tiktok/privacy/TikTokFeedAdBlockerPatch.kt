@@ -1,6 +1,7 @@
 package app.morphe.patches.tiktok.privacy
 
 import app.morphe.patcher.Fingerprint
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.addInstructionsAtControlFlowLabel
@@ -9,8 +10,8 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
 val tikTokFeedAdBlockerPatch = bytecodePatch(
-    name = "Feed Ad Blocker",
-    description = "Removes sponsored advertisements, brand promotions, and promotional audio from the For You, Following, and Search feeds.",
+    name = "Block Feed Ads",
+    description = "Removes sponsored videos from feeds.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -35,7 +36,7 @@ val tikTokFeedAdBlockerPatch = bytecodePatch(
                 method.addInstructionsAtControlFlowLabel(
                     returnIndex,
                     """
-                        invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAdsInList(Ljava/lang/Object;)V
+                        invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAdsInList(Ljava/lang/Object;)V
                     """,
                 )
             }
@@ -61,7 +62,7 @@ val tikTokFeedAdBlockerPatch = bytecodePatch(
             feedApiMethod.addInstructionsAtControlFlowLabel(
                 returnIndex,
                 """
-                    invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAdsInFeedItemList(Ljava/lang/Object;)V
+                    invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAdsInFeedItemList(Ljava/lang/Object;)V
                 """,
             )
         }
@@ -94,7 +95,7 @@ val tikTokFeedAdBlockerPatch = bytecodePatch(
             followMethod.addInstructionsAtControlFlowLabel(
                 returnIndex,
                 """
-                    invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAdsInFollowFeedList(Ljava/lang/Object;)V
+                    invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAdsInFollowFeedList(Ljava/lang/Object;)V
                 """,
             )
         }
@@ -136,5 +137,6 @@ val tikTokFeedAdBlockerPatch = bytecodePatch(
         )
 
         println("[Feed Ad Blocker] Applied $patched feed filter hooks -> Universal ad-free feed active.")
+        if (patched == 0) throw PatchException("Feed Ad Blocker: no hooks applied, targets shifted.")
     }
 }

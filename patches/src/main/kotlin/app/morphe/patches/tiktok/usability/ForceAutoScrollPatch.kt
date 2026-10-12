@@ -3,6 +3,7 @@ package app.morphe.patches.tiktok.usability
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
@@ -11,8 +12,8 @@ import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 
 val forceAutoScrollPatch = bytecodePatch(
-    name = "Force Auto-Scroll",
-    description = "Forces the activation of the native video auto-scroll experiment flag for accounts and regions that lack it due to A/B testing.",
+    name = "Auto-Scroll Videos",
+    description = "Videos scroll automatically.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -154,5 +155,6 @@ val forceAutoScrollPatch = bytecodePatch(
         }
 
         println("[Force Auto-Scroll] Applied $patched auto-scroll hook(s) -> Native auto-scroll permanently forced.")
+        if (patched == 0) throw PatchException("Force Auto-Scroll: no hooks applied, targets shifted.")
     }
 }

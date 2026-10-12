@@ -2,6 +2,7 @@ package app.morphe.patches.tiktok.privacy
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.sharedExtensionPatch
@@ -11,8 +12,8 @@ private const val MANDATORY_LOGIN_SERVICE = "Lcom/ss/android/ugc/aweme/services/
 private const val GUEST_MODE_SERVICE_IMPL = "Lcom/ss/android/ugc/aweme/account/guestmode/GuestModeServiceImpl;"
 
 val mandatoryLoginBypassPatch = bytecodePatch(
-    name = "Bypass Mandatory Login",
-    description = "Neutralizes mandatory login walls, dynamic regional forced login gates, and guest browsing restrictions.",
+    name = "Browse Without Login",
+    description = "Skips forced login walls.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -116,5 +117,6 @@ val mandatoryLoginBypassPatch = bytecodePatch(
         }
 
         println("[Bypass Mandatory Login] Applied $patched hooks -> Mandatory login wall bypassed.")
+        if (patched == 0) throw PatchException("Bypass Mandatory Login: no hooks applied, targets shifted.")
     }
 }

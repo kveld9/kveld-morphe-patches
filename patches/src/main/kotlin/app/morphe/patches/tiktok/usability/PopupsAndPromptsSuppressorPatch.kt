@@ -4,6 +4,7 @@ import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.booleanOption
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.replaceWithReturnBoolean
@@ -13,8 +14,8 @@ import app.morphe.patches.shared.sharedExtensionPatch
 import com.android.tools.smali.dexlib2.AccessFlags
 
 val popupsAndPromptsSuppressorPatch = bytecodePatch(
-    name = "Popups & Prompts Suppressor",
-    description = "Suppresses intrusive popups, dialogs, and modal prompts, including 'Follow your friends' dialogs, contacts sync overlays, multi-account notification guides, 2SV security checkup modals, PopLayer promotional sheets, live stream teaser bubbles, sticker recommendations, and DM streak expiration warnings.",
+    name = "Block Popups",
+    description = "Suppresses dialogs and nags.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -23,40 +24,40 @@ val popupsAndPromptsSuppressorPatch = bytecodePatch(
     val suppressAccountPrompts by booleanOption(
         key = "suppressAccountPrompts",
         default = true,
-        title = "Suppress Account & Permission Nags",
-        description = "Suppresses 'Follow your friends' modals, 'Find contacts' Friends tab sync overlays, multi-account notification guides, and 'Security checkup 2SV' upsells.",
+        title = "Account nags",
+        description = "Blocks follow/contact popups.",
         required = false,
     )
 
     val suppressStickerRecommendations by booleanOption(
         key = "suppressStickerRecommendations",
         default = true,
-        title = "Suppress Sticker Recommendations",
-        description = "Disables personalized sticker suggestion popups and typing recommendations in direct messages.",
+        title = "Sticker popups",
+        description = "Blocks sticker suggestions.",
         required = false,
     )
 
     val filterPopLayerPrompts by booleanOption(
         key = "filterPopLayerPrompts",
         default = true,
-        title = "Filter PopLayer Prompts & Nags",
-        description = "Suppresses repetitive PopLayer prompts including favorites collection guides, launcher shortcut dialogs, repost newbie sheets, STEM feed prompts, campus education sheets, creator inbox guides, app review dialogs, marketing opt-ins, FYP surveys, CapCut/Lemon8 upsells, profile visitor prompts, and story intro sheets.",
+        title = "Promo sheets",
+        description = "Blocks promo sheets.",
         required = false,
     )
 
     val suppressLiveTeaserBubble by booleanOption(
         key = "suppressLiveTeaserBubble",
         default = true,
-        title = "Suppress Live Teaser Bubbles",
-        description = "Disables floating live stream preview teasers and popup windows from appearing over the video feed.",
+        title = "Live bubbles",
+        description = "Blocks live preview bubbles.",
         required = false,
     )
 
     val suppressStreakReminders by booleanOption(
         key = "suppressStreakReminders",
         default = true,
-        title = "Suppress DM Streak Reminders",
-        description = "Suppresses direct message streak expiration warning banners and inline urgency reminders.",
+        title = "Streak warnings",
+        description = "Blocks streak reminders.",
         required = false,
     )
 
@@ -84,6 +85,7 @@ val popupsAndPromptsSuppressorPatch = bytecodePatch(
         }
 
         println("[Popups & Prompts Suppressor] Applied $patched popup and prompt suppression hook(s).")
+        if (patched == 0 && (suppressAccountPrompts == true || suppressStickerRecommendations == true || filterPopLayerPrompts == true || suppressLiveTeaserBubble == true || suppressStreakReminders == true)) throw PatchException("Popups & Prompts Suppressor: no hooks applied, targets shifted.")
     }
 }
 

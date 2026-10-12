@@ -6,6 +6,7 @@ import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
 import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.string
 import app.morphe.patches.shared.Constants
@@ -104,5 +105,6 @@ val gboardTopToolbarItemCountPatch = bytecodePatch(
 
         val targetClass = cleanClassName(fpMax.originalClassDef.type)
         println("[Top Toolbar Item Count] Injected $patched toolbar limit override(s) in $targetClass -> dynamic preference enabled.")
+        if (patched == 0) throw PatchException("Top Toolbar Item Count: no hooks applied, targets shifted.")
     }
 }

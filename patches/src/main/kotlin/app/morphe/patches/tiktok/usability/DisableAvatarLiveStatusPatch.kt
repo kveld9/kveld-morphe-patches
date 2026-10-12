@@ -1,6 +1,7 @@
 package app.morphe.patches.tiktok.usability
 
 import app.morphe.patcher.Fingerprint
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.replaceWithReturnBoolean
@@ -8,8 +9,8 @@ import app.morphe.patches.shared.replaceWithReturnVoid
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 
 val disableAvatarLiveStatusPatch = bytecodePatch(
-    name = "Disable Profile Photo LIVE Status",
-    description = "Removes the pulsing LIVE ring and badge from creator avatars in the feed and ensures clicking navigates strictly to the user profile instead of launching the live stream.",
+    name = "No LIVE Rings",
+    description = "Removes LIVE rings from avatars.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -99,5 +100,6 @@ val disableAvatarLiveStatusPatch = bytecodePatch(
         patched++
 
         println("[Disable Profile Photo LIVE Status] Successfully applied $patched hook(s).")
+        if (patched == 0) throw PatchException("Disable Profile Photo LIVE Status: no hooks applied, targets shifted.")
     }
 }

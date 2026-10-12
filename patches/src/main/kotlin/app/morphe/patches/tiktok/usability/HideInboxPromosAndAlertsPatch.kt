@@ -1,6 +1,7 @@
 package app.morphe.patches.tiktok.usability
 
 import app.morphe.patcher.Fingerprint
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
@@ -9,30 +10,30 @@ import app.morphe.patches.shared.replaceWithReturnNull
 import app.morphe.patches.shared.replaceWithReturnVoid
 
 val hideInboxPromosAndAlertsPatch = bytecodePatch(
-    name = "Hide Inbox Promos & Alerts",
-    description = "Hides promotional banners, streak mascot cards, contact sync suggestions, friend recommendations, and migration guide tooltips in the inbox and direct messages.",
+    name = "Clean Inbox",
+    description = "Hides promos and alerts in inbox.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
 
     val hideTopPromosAndBanners by booleanOption(
         key = "hideTopPromosAndBanners",
-        title = "Hide Top Promotional Banners",
-        description = "Hides header banners including the streak pet / mascot, event announcements, top notice banners, and phone link prompts.",
+        title = "Top banners",
+        description = "Hides promo banners.",
         default = true,
     )
 
     val hideContactRecommendations by booleanOption(
         key = "hideContactRecommendations",
-        title = "Hide Contact & Friend Recommendations",
-        description = "Hides user recommendation cards (Chat with contacts / Find and chat with them), suggested accounts, and mutual friends modules in the chatlist.",
+        title = "Friend hints",
+        description = "Hides suggested people.",
         default = true,
     )
 
     val hideNavigationNoticesAndTooltips by booleanOption(
         key = "hideNavigationNoticesAndTooltips",
-        title = "Hide Navigation Notices & Tooltips",
-        description = "Hides UI migration tooltips (e.g. New followers has moved), bulletin board guide banners, and Shop migration notices.",
+        title = "Tips & notices",
+        description = "Hides guide tooltips.",
         default = true,
     )
 
@@ -129,5 +130,6 @@ val hideInboxPromosAndAlertsPatch = bytecodePatch(
         }
 
         println("[Hide Inbox Promos & Alerts] Applied $patched inbox promo and alert suppression hook(s).")
+        if (patched == 0 && (hideTopPromosAndBanners != false || hideContactRecommendations != false || hideNavigationNoticesAndTooltips != false)) throw PatchException("Hide Inbox Promos & Alerts: no hooks applied, targets shifted.")
     }
 }

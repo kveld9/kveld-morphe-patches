@@ -2,6 +2,7 @@ package app.morphe.patches.tiktok.usability
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.addInstructionsAtControlFlowLabel
@@ -13,8 +14,8 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
 val hideSuggestedSearchesPatch = bytecodePatch(
-    name = "Hide Suggested Searches",
-    description = "Removes the suggested search keywords section ('You may like' / 'Search suggestions') from the search discovery page.",
+    name = "No Suggested Searches",
+    description = "Removes suggested keywords.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -118,7 +119,7 @@ val hideSuggestedSearchesPatch = bytecodePatch(
             method.addInstructionsAtControlFlowLabel(
                 returnIndex,
                 """
-                    invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_SEARCH_HOOK}->filterSuggestedAbParams(Ljava/util/Map;)Ljava/util/Map;
+                    invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_SEARCH_HOOK}->filterSuggestedAbParams(Ljava/util/Map;)Ljava/util/Map;
                     move-result-object v$reg
                 """.trimIndent(),
             )
@@ -141,7 +142,7 @@ val hideSuggestedSearchesPatch = bytecodePatch(
             schemaMethod.addInstructionsAtControlFlowLabel(
                 returnIndex,
                 """
-                    invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_SEARCH_HOOK}->filterSuggestedSchema(Ljava/lang/String;)Ljava/lang/String;
+                    invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_SEARCH_HOOK}->filterSuggestedSchema(Ljava/lang/String;)Ljava/lang/String;
                     move-result-object v$reg
                 """.trimIndent(),
             )
@@ -149,5 +150,6 @@ val hideSuggestedSearchesPatch = bytecodePatch(
         patched++
 
         println("[Hide Suggested Searches] Applied $patched suggested search suppression hook(s) -> 'You may like' neutralized.")
+        if (patched == 0) throw PatchException("Hide Suggested Searches: no hooks applied, targets shifted.")
     }
 }

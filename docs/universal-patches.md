@@ -23,6 +23,7 @@ Comprehensive reference for universal optimization and resource slimming patches
 | **[Universal Screen Brightness Governor](#13-lock-screen-brightness-universalscreenbrightnessgovernorpatch)** | `bytecodePatch` | Dalvik Bytecode & Windows | Neutralizes direct writes to `WindowManager.LayoutParams.screenBrightness` (`iput`) | Prevents apps from overriding display brightness via window layout params |
 | **[Universal Hosts Blocker](#14-block-tracking-servers-universalhostsblockerpatch)** | `bytecodePatch` | Dalvik `const-string` literals | Rewrites user-blocklisted URL/host literals to a sink IP (`0.0.0.0`) | Silences analytics/ads dispatch without touching native binaries |
 | **[Universal SDK Blocker](#15-block-tracking-sdks-universalsdkblockerpatch)** | `bytecodePatch` | Dalvik Bytecode Methods | Neutralizes third-party APM, crash, analytics, attribution, session replay, location, and push SDK init/event methods via early `return-void` | Neutralizes runtime SDK execution; companion layer to Universal Telemetry Neutralizer |
+| **[Disable Browser File Associations](#16-disable-browser-file-associations-universalbrowserassociationpatch)** | `resourcePatch` | Manifest (`AndroidManifest.xml`) | Removes HTTP/HTTPS `data` entries from `VIEW` + `BROWSABLE` intent filters; drops filters left dataless | App no longer appears in the browser chooser for online files; local file handling untouched |
 
 ---
 
@@ -65,6 +66,7 @@ Exception: Universal Hosts Blocker remains a valid opt-in patch on maintained ap
 | **Go Fully Offline** | ⚠️ Contextual | **Never apply to web browsers (Brave) or streaming media apps (TikTok)**, as it halts socket creation at the OS kernel level (`AID_INET`). For Gboard Lite and Xiaomi Earbuds, pair with their companion app-specific offline patches for graceful timeout handling. |
 | **Block Tracking Servers** | ⚠️ Curated list required | Ships disabled with no bundled blocklist (user supplies the hosts file at patch time). Block only telemetry/ads hosts (e.g. Hagezi `native.tiktok-onlydomains.txt` filtered to `log/mon/mcs/mssdk/analytics`); blocking functional hosts (`frontier/api/stream/open`) breaks feed, login, or CDN playback. |
 | **Block Tracking SDKs** | ✅ Yes | Safely neutralizes APM, crash, analytics, and attribution SDK entrypoints via Dalvik early `return-void`. The optional Push Engagement toggle (`blockPushEngagement`) is disabled by default because silencing push SDKs breaks push notifications. Not recommended on maintained apps (Brave, Gboard Lite, Hevy, TikTok, NokoPrint, Xiaomi Earbuds): dedicated telemetry patch already covers them; stacking adds no protection. |
+| **Disable Browser File Associations** | ✅ Yes | Only touches `VIEW` + `BROWSABLE` intent filters carrying `http`/`https` data. Local file handlers (`file`/`content` schemes), launcher entries (`MAIN`) and non-browser actions are never modified. Do not apply to apps that must open web links (browsers, readers). |
 
 ---
 
@@ -481,4 +483,26 @@ Tracker catalog derived from the Exodus Privacy tracker database (https://exodus
 - **Location trackers (`blockLocationTrackers`)**: Neutralize Radar, Gimbal, and Estimote beacon and location tracking methods; note OS location permission controls remain the primary gate (Toggle, default: `true`).
 - **Old Google Analytics (`blockLegacyAnalytics`)**: Neutralize pre-Firebase Google Analytics tracking, hit dispatching, and activity reporting methods across `com.google.analytics` and `com.google.android.gms.analytics` (Toggle, default: `true`).
 - **Push SDKs (breaks push!) (`blockPushEngagement`)**: Neutralize OneSignal, Airship, and Braze push engagement and tagging SDKs (Toggle, default: `false`). *WARNING: this breaks push notifications; enable only to fully silence background push engagement SDK runtimes.*
+
+---
+
+## 16. Disable Browser File Associations (`universalBrowserAssociationPatch`)
+
+The **`Disable Browser File Associations`** patch stops an application from appearing in the Android browser app chooser for online files by pruning web-link intent filters in `AndroidManifest.xml`. It pairs with `Universal Offline Mode` for apps that should neither reach the network nor be reachable from it.
+
+### Surgical Filter Pruning
+
+For every `activity`, `activity-alias`, `service` and `receiver`, each `intent-filter` combining `android.intent.action.VIEW` + `android.intent.category.BROWSABLE` with `http`/`https` `<data>` entries is rewritten:
+
+1. **Web Scheme Stripping**: `http`/`https` `<data>` nodes are removed (scheme match is case-insensitive). Entries with local schemes (`file`, `content`) or other matchers are strictly preserved.
+2. **Emptied Filter Removal**: A filter left with no `<data>` nodes whose only action is `VIEW` existed purely for web links and is dropped entirely. Leaving a dataless `VIEW` + `BROWSABLE` filter would match every `VIEW` intent, so removal is the safe default.
+3. **Untouched by Design**: Launcher entries (`MAIN`), non-`BROWSABLE` filters, and filters without web schemes are never modified.
+
+### Configuration in Morphe Manager
+
+- **Strip HTTP/HTTPS Web Schemes (`stripWebSchemes`)**: Remove `http`/`https` data entries from `VIEW` + `BROWSABLE` intent filters (Toggle, default: `true`). Disable to run a no-op pass.
+- **Remove Emptied Filters (`removeEmptiedFilters`)**: Drop filters left dataless with only `VIEW` actions (Toggle, default: `true`). Disable to keep the emptied filter skeleton.
+
+> [!WARNING]
+> Do not apply to applications that must open web links themselves (web browsers such as Brave, readers, link aggregators): stripping their `BROWSABLE` filters breaks opening links from other apps.
 

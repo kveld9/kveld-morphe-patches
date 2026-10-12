@@ -3,6 +3,7 @@ package app.morphe.patches.tiktok.usability
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.sharedExtensionPatch
@@ -15,8 +16,8 @@ import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 
 val alwaysShowPublishDatePatch = bytecodePatch(
-    name = "Always Show Publish Date",
-    description = "Forces video publish/upload date to remain visible in video author information across all feed types.",
+    name = "Show Video Dates",
+    description = "Always shows when videos were posted.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -256,5 +257,6 @@ val alwaysShowPublishDatePatch = bytecodePatch(
         }
 
         println("[Always Show Publish Date] Applied $patched publish date visibility hook(s).")
+        if (patched == 0) throw PatchException("Always Show Publish Date: no hooks applied, targets shifted.")
     }
 }

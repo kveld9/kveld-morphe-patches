@@ -2,6 +2,7 @@ package app.morphe.patches.tiktok.performance
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.ensureRegisterCount
@@ -10,8 +11,8 @@ import app.morphe.patches.shared.replaceWithReturnNull
 import app.morphe.patches.shared.replaceWithReturnVoid
 
 val instantColdStartPatch = bytecodePatch(
-    name = "Instant Launch & Splash Blocker",
-    description = "Eliminates cold startup delays, background resume splash advertisements, real-time splash requests, and TopView ad preloading.",
+    name = "Fast Startup",
+    description = "Skips splash ads for instant launch.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -166,5 +167,6 @@ val instantColdStartPatch = bytecodePatch(
         patched++
 
         println("[InstantColdStart] Applied $patched startup optimizations -> Instant cold/warm start and zero splash/TopView ads achieved.")
+        if (patched == 0) throw PatchException("InstantColdStart: no hooks applied, targets shifted.")
     }
 }

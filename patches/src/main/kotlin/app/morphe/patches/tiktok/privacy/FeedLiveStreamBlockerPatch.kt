@@ -1,6 +1,7 @@
 package app.morphe.patches.tiktok.privacy
 
 import app.morphe.patcher.Fingerprint
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.addInstructionsAtControlFlowLabel
@@ -9,8 +10,8 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
 val feedLiveStreamBlockerPatch = bytecodePatch(
-    name = "Feed Live Stream Blocker",
-    description = "Removes live stream broadcast cards and live recommendations from the For You and Following feeds.",
+    name = "No Lives in Feed",
+    description = "Removes live videos from feeds.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -37,7 +38,7 @@ val feedLiveStreamBlockerPatch = bytecodePatch(
                 method.addInstructionsAtControlFlowLabel(
                     returnIndex,
                     """
-                        invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterLiveStreamsInFeedItemList(Ljava/lang/Object;)V
+                        invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterLiveStreamsInFeedItemList(Ljava/lang/Object;)V
                     """.trimIndent(),
                 )
             }
@@ -66,7 +67,7 @@ val feedLiveStreamBlockerPatch = bytecodePatch(
                 method.addInstructionsAtControlFlowLabel(
                     returnIndex,
                     """
-                        invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterLiveStreamsInList(Ljava/lang/Object;)V
+                        invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterLiveStreamsInList(Ljava/lang/Object;)V
                     """.trimIndent(),
                 )
             }
@@ -95,7 +96,7 @@ val feedLiveStreamBlockerPatch = bytecodePatch(
                 method.addInstructionsAtControlFlowLabel(
                     returnIndex,
                     """
-                        invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterLiveStreamsInFollowFeedList(Ljava/lang/Object;)V
+                        invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterLiveStreamsInFollowFeedList(Ljava/lang/Object;)V
                     """.trimIndent(),
                 )
             }
@@ -108,5 +109,6 @@ val feedLiveStreamBlockerPatch = bytecodePatch(
         }
 
         println("[Feed Live Stream Blocker] Applied $patched feed live stream filter hooks -> Feed live streams neutralized.")
+        if (patched == 0) throw PatchException("Feed Live Stream Blocker: no hooks applied, targets shifted.")
     }
 }

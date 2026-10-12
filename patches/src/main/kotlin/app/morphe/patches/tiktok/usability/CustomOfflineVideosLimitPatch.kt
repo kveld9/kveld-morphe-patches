@@ -2,6 +2,7 @@ package app.morphe.patches.tiktok.usability
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.intOption
 import app.morphe.patches.shared.Constants
@@ -17,8 +18,8 @@ import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstructio
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 val customOfflineVideosLimitPatch = bytecodePatch(
-    name = "Custom Offline Videos Limit",
-    description = "Customizes the maximum number of videos available for offline download caching.",
+    name = "Offline Video Limit",
+    description = "How many videos to keep offline.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -26,8 +27,8 @@ val customOfflineVideosLimitPatch = bytecodePatch(
 
     val customLimit by intOption(
         key = "customLimit",
-        title = "Custom Offline Videos Limit",
-        description = "Maximum number of offline videos that can be cached for offline playback (default: 1000).",
+        title = "Video count",
+        description = "1 to 50000.",
         default = 1000,
         required = false,
     )
@@ -95,7 +96,7 @@ val customOfflineVideosLimitPatch = bytecodePatch(
                     listProviderMethod.addInstructionsAtControlFlowLabel(
                         returnIndex,
                         """
-                            invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_OFFLINE_VIDEOS_HOOK}->getOfflineLimits(Ljava/util/List;)Ljava/util/List;
+                            invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_OFFLINE_VIDEOS_HOOK}->getOfflineLimits(Ljava/util/List;)Ljava/util/List;
                             move-result-object v$reg
                         """.trimIndent(),
                     )
@@ -309,5 +310,6 @@ val customOfflineVideosLimitPatch = bytecodePatch(
         }
 
         println("[Custom Offline Videos Limit] Applied $patched offline videos limit hook(s).")
+        if (patched == 0) throw PatchException("Custom Offline Videos Limit: no hooks applied, targets shifted.")
     }
 }

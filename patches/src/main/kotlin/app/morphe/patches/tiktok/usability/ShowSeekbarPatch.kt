@@ -3,6 +3,7 @@ package app.morphe.patches.tiktok.usability
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
@@ -14,8 +15,8 @@ import com.android.tools.smali.dexlib2.AccessFlags
 private const val AWEME_CLASS = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;"
 
 val showSeekbarPatch = bytecodePatch(
-    name = "Show Seekbar",
-    description = "Restores TikTok's native video seekbar and scrubbing controls where normally hidden or disabled.",
+    name = "Video Seekbar",
+    description = "Restores the video progress bar.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -24,8 +25,8 @@ val showSeekbarPatch = bytecodePatch(
     val showThumbnailOption = booleanOption(
         key = "showThumbnail",
         default = true,
-        title = "Show Dragging Thumbnail Preview",
-        description = "Displays real-time video frame thumbnail previews while dragging the seekbar thumb.",
+        title = "Preview thumbnails",
+        description = "Shows frame previews while dragging.",
     )
 
     execute {
@@ -104,5 +105,6 @@ val showSeekbarPatch = bytecodePatch(
         }
 
         println("[Show Seekbar] Applied $patched seekbar hook(s).")
+        if (patched == 0) throw PatchException("Show Seekbar: no hooks applied, targets shifted.")
     }
 }

@@ -6,8 +6,8 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 
 val clientAiGovernorPatch = bytecodePatch(
-    name = "Client-Side AI & Behavioral Profiling Governor",
-    description = "Neutralizes on-device machine learning inference (Pitaya), Tako AI chatbot entry points and icons, and AI smart search suggestion clutter.",
+    name = "Turn Off AI Features",
+    description = "Disables on-device AI, chatbot and AI search.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)

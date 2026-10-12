@@ -2,13 +2,14 @@ package app.morphe.patches.tiktok.usability
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.replaceWithReturnBoolean
 
 val profileBannerPatch = bytecodePatch(
-    name = "Enable Profile Banner",
-    description = "Unlocks the custom profile banner (background header cover) feature on user profiles and enables the banner selection and editing tools in Edit Profile.",
+    name = "Profile Banners",
+    description = "Unlocks profile banner covers.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -49,5 +50,6 @@ val profileBannerPatch = bytecodePatch(
         patched++
 
         println("[Enable Profile Banner] Applied $patched hook(s) -> profile banner enabled.")
+        if (patched == 0) throw PatchException("Enable Profile Banner: no hooks applied, targets shifted.")
     }
 }

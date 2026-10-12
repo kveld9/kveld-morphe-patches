@@ -2,6 +2,7 @@ package app.morphe.patches.tiktok.usability
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.stringOption
@@ -13,8 +14,8 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
 val videoQualityGovernorPatch = bytecodePatch(
-    name = "Video Quality Governor",
-    description = "Caps video playback resolution (1080p, 720p, 540p, 480p, 360p) to conserve battery, GPU/MediaCodec load, and mobile data. Download quality is controlled separately by the Media Usability patch (downloadQuality).",
+    name = "Limit Video Quality",
+    description = "Caps playback resolution to save battery.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -22,8 +23,8 @@ val videoQualityGovernorPatch = bytecodePatch(
 
     val maxQuality by stringOption(
         key = "maxQuality",
-        title = "Maximum Playback Resolution",
-        description = "Select maximum video playback resolution ceiling: 1080 (1080p ExtremelyHigh), 720 (720p SuperHigh), 540 (540p H_High), 480 (480p High), or 360 (360p Standard).",
+        title = "Max quality",
+        description = "1080, 720, 540, 480, 360 or none.",
         default = "480",
         required = false,
     )
@@ -31,16 +32,16 @@ val videoQualityGovernorPatch = bytecodePatch(
     val avoidByteVC2 by booleanOption(
         key = "avoidByteVC2",
         default = true,
-        title = "Avoid ByteVC2 Software Decoding",
-        description = "Drops ByteVC2 renditions from playback bitrate lists when an H.264 or ByteVC1 alternative exists, so videos use the hardware decoder instead of TikTok's CPU-bound ByteVC2 software decoder.",
+        title = "Skip software codec",
+        description = "Prefer hardware decoding.",
         required = false,
     )
 
     val dropUndecodableVideo by booleanOption(
         key = "dropUndecodableVideo",
         default = true,
-        title = "Drop Undecodable Video Streams",
-        description = "When the ladder's lowest video stream exceeds the device hardware decoder capability (queried via MediaCodecList), drops video streams and keeps audio-only instead of entering decoder-reject retry loops that freeze the device.",
+        title = "Skip unplayable",
+        description = "Keep audio if video can't play.",
         required = false,
     )
 
@@ -190,7 +191,7 @@ val videoQualityGovernorPatch = bytecodePatch(
             simMethod.addInstructionsAtControlFlowLabel(
                 returnIndex,
                 """
-                    invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->filterBitrates(Ljava/util/List;)Ljava/util/List;
+                    invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->filterBitrates(Ljava/util/List;)Ljava/util/List;
                     move-result-object v$reg
                 """.trimIndent(),
             )
@@ -216,7 +217,7 @@ val videoQualityGovernorPatch = bytecodePatch(
             simRawMethod.addInstructionsAtControlFlowLabel(
                 returnIndex,
                 """
-                    invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->filterBitrates(Ljava/util/List;)Ljava/util/List;
+                    invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->filterBitrates(Ljava/util/List;)Ljava/util/List;
                     move-result-object v$reg
                 """.trimIndent(),
             )
@@ -308,5 +309,6 @@ val videoQualityGovernorPatch = bytecodePatch(
         }
 
         println("[Video Quality Governor] Applied $patched video resolution capping hook(s) (playback: ${chosenPlaybackRes}p).")
+        if (patched == 0) throw PatchException("Video Quality Governor: no hooks applied, targets shifted.")
     }
 }

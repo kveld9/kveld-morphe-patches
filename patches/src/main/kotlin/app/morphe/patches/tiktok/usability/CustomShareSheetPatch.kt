@@ -2,6 +2,7 @@ package app.morphe.patches.tiktok.usability
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
@@ -13,8 +14,8 @@ import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 
 val customShareSheetPatch = bytecodePatch(
-    name = "Custom Share Sheet",
-    description = "Customizes and cleans the native TikTok share sheet via individual toggle switches for third-party apps, essential sharing features, and secondary utility actions.",
+    name = "Tidy Share Menu",
+    description = "Hide items from the share menu.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -350,5 +351,6 @@ val customShareSheetPatch = bytecodePatch(
         }
 
         println("[Custom Share Sheet] Applied $patched hooks -> share sheet customized.")
+        if (patched == 0) throw PatchException("Custom Share Sheet: no hooks applied, targets shifted.")
     }
 }

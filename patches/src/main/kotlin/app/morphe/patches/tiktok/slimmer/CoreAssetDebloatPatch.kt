@@ -6,8 +6,8 @@ import app.morphe.patches.shared.Constants
 private val EMPTY_BYTES = byteArrayOf()
 
 val coreAssetDebloatPatch = rawResourcePatch(
-    name = "Core Asset De-bloat",
-    description = "Strips embedded Microblink/FinTech card scanner models, Pitaya AI & ByteNN LLM engines, C2PA origin verification, DLNA cast scanners, and redundant non-Latin fonts to save APK space.",
+    name = "Remove Extra Files",
+    description = "Deletes scanner models, AI engines and fonts.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)

@@ -2,6 +2,7 @@ package app.morphe.patches.tiktok.usability
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.addInstructionsAtControlFlowLabel
@@ -10,8 +11,8 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
 val hideSearchPopularLivesPatch = bytecodePatch(
-    name = "Hide Popular Lives In Search",
-    description = "Removes the Popular LIVEs recommendation card and live stream broadcasts from the search discovery page.",
+    name = "No Lives in Search",
+    description = "Removes live cards from search.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -56,7 +57,7 @@ val hideSearchPopularLivesPatch = bytecodePatch(
             method.addInstructionsAtControlFlowLabel(
                 returnIndex,
                 """
-                    invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_SEARCH_HOOK}->filterPopularLivesAbParams(Ljava/util/Map;)Ljava/util/Map;
+                    invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_SEARCH_HOOK}->filterPopularLivesAbParams(Ljava/util/Map;)Ljava/util/Map;
                     move-result-object v$reg
                 """.trimIndent(),
             )
@@ -79,7 +80,7 @@ val hideSearchPopularLivesPatch = bytecodePatch(
             schemaMethod.addInstructionsAtControlFlowLabel(
                 returnIndex,
                 """
-                    invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_SEARCH_HOOK}->filterPopularLivesSchema(Ljava/lang/String;)Ljava/lang/String;
+                    invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_SEARCH_HOOK}->filterPopularLivesSchema(Ljava/lang/String;)Ljava/lang/String;
                     move-result-object v$reg
                 """.trimIndent(),
             )
@@ -87,5 +88,6 @@ val hideSearchPopularLivesPatch = bytecodePatch(
         patched++
 
         println("[Hide Popular Lives In Search] Applied $patched popular lives suppression hook(s) -> 'LIVE populares' neutralized.")
+        if (patched == 0) throw PatchException("Hide Popular Lives In Search: no hooks applied, targets shifted.")
     }
 }

@@ -2,6 +2,7 @@ package app.morphe.patches.tiktok.privacy
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
@@ -10,8 +11,8 @@ import com.android.tools.smali.dexlib2.iface.reference.StringReference
 
 
 val bypassScreenCapturePatch = bytecodePatch(
-    name = "Bypass Screen Capture Detection",
-    description = "Clears FLAG_SECURE on protected windows, restores Circle to Search / screen translate and recent apps snapshots, and neutralizes screenshot detection listeners and feedback prompts.",
+    name = "Allow Screenshots",
+    description = "Removes screenshot blocking and detection.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -351,6 +352,7 @@ val bypassScreenCapturePatch = bytecodePatch(
         }
 
         println("[Bypass Screen Capture Detection] Applied $patched screen capture unrestrict and screenshot detection suppression hook(s).")
+        if (patched == 0) throw PatchException("Bypass Screen Capture Detection: no hooks applied, targets shifted.")
     }
 }
 

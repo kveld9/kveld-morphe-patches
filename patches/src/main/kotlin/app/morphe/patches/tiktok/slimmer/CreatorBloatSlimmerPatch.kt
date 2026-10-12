@@ -7,8 +7,8 @@ import java.io.File
 private val EMPTY_BYTES = byteArrayOf()
 
 val creatorBloatSlimmerPatch = rawResourcePatch(
-    name = "Studio & Creation De-bloat",
-    description = "Strips heavy video creation plugins, CapCut NLE editor SDKs, effect plugins, camera dynamic features, upload video encoders, on-device AI runtimes (LiteRT), and AR camera face models to significantly reduce APK size.",
+    name = "Remove Editor Files",
+    description = "Deletes video editor and effect files.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)

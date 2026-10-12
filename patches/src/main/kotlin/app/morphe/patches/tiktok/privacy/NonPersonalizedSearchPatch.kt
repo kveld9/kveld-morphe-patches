@@ -1,6 +1,7 @@
 package app.morphe.patches.tiktok.privacy
 
 import app.morphe.patcher.Fingerprint
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.addInstructionsAtControlFlowLabel
@@ -31,8 +32,8 @@ private fun forceBooleanGateTrue(method: MutableMethod, tag: String): Int {
 }
 
 val nonPersonalizedSearchPatch = bytecodePatch(
-    name = "Non-Personalized Search",
-    description = "Forces TikTok's non-personalized search mode instead of the saved account choice.",
+    name = "Neutral Search",
+    description = "Search without personalization.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -64,5 +65,6 @@ val nonPersonalizedSearchPatch = bytecodePatch(
         }
 
         println("[Non-Personalized Search] Applied $patched non-personalized search hook(s).")
+        if (patched == 0) throw PatchException("Non-Personalized Search: no hooks applied, targets shifted.")
     }
 }
