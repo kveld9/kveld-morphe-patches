@@ -257,7 +257,7 @@ internal val braveNativeExtractionPatch = resourcePatch {
 
 @Suppress("unused")
 val bravePerformanceOptimizationPatch = bytecodePatch(
-    name = "Faster Startup",
+    name = "Faster Launch",
     description = "Speeds up launch by disabling carrier customizations.",
     default = true,
 ) {

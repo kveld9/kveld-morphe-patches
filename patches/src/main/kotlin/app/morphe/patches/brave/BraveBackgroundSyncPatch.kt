@@ -7,7 +7,7 @@ import app.morphe.patches.shared.Constants
 
 @Suppress("unused")
 val braveBackgroundSyncPatch = bytecodePatch(
-    name = "Stop Background Sync",
+    name = "Stop Background Wakeups",
     description = "Stops background wakeups and battery drain.",
     default = true,
 ) {

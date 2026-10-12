@@ -130,7 +130,7 @@ private val braveOriginResourcePatch = resourcePatch(
 
     execute {
         val targetFile = get("res").findXmlContaining(listOf("rewards_switch")).firstOrNull() ?: run {
-                println("[Brave Origin] Skipped: rewards_switch XML preference not found.")
+                println("[Brave Rewards] Skipped: rewards_switch XML preference not found.")
                 return@execute
             }
 
@@ -156,7 +156,7 @@ private val braveOriginResourcePatch = resourcePatch(
             }
         }
 
-        println("[Brave Origin] Set $modifiedAttrs Origin preference defaults to true across 1 XML layout files")
+        println("[Brave Rewards] Set $modifiedAttrs Origin preference defaults to true across 1 XML layout files")
     }
 }
 
@@ -166,8 +166,8 @@ private val braveOriginResourcePatch = resourcePatch(
 
 @Suppress("unused")
 val braveOriginPatch = bytecodePatch(
-    name = "Brave Origin",
-    description = "Unlocks Brave Origin feature switches.",
+    name = "Brave Rewards",
+    description = "Unlocks the Rewards features and their switches.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_BRAVE)
@@ -412,7 +412,7 @@ val braveOriginPatch = bytecodePatch(
         val configuredGatekeepers = GATEKEEPER_POLICIES.map { it.name } + "Leo Flag"
         val targetClasses = hookedMethods.map { it.substringBefore('.') }.distinct()
         println(
-            "[Brave Origin] Hooked ${hookedMethods.size} core methods across ${targetClasses.size} classes (${hookedMethods.joinToString(", ")}) & configured ${configuredGatekeepers.size} policy gatekeepers (${configuredGatekeepers.joinToString(", ")})"
+            "[Brave Rewards] Hooked ${hookedMethods.size} core methods across ${targetClasses.size} classes (${hookedMethods.joinToString(", ")}) & configured ${configuredGatekeepers.size} policy gatekeepers (${configuredGatekeepers.joinToString(", ")})"
         )
     }
 }

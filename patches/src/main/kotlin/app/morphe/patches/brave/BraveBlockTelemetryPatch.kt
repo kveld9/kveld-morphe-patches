@@ -161,7 +161,7 @@ private val braveHostsBlockerPatch = rawResourcePatch(
 // ── Bytecode Patch: Blocks Crash uploads, Variations seed, and forces telemetry gates to false
 @Suppress("unused")
 val braveBlockTelemetryPatch = bytecodePatch(
-    name = "Block Tracking",
+    name = "Block Telemetry",
     description = "Blocks usage analytics, crash uploads and experiment downloads.",
     default = true,
 ) {

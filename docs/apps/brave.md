@@ -25,9 +25,9 @@ Comprehensive technical and configuration guide for **Brave Browser** (`com.brav
 
 | Patch Name | Type | Category | Default | Primary Mechanism |
 | :--- | :--- | :--- | :---: | :--- |
-| **Brave Origin** | `bytecodePatch` + `resourcePatch` + `rawResourcePatch` | Feature Unlock & UI | ✅ Yes | Unlocks Brave Origin preference screens, injects toggle switches for Origin policy gates, and encapsulates native library extraction and ARM64 BTI neutralization across all bundled native binaries. |
-| **Block Tracking** | `bytecodePatch` + `resourcePatch` + `rawResourcePatch` | Privacy & Telemetry | ✅ Yes | Intercepts `PrefService.e` (P3A, stats, WDP), aborts variations seed HTTP connection, redirects 12 native host endpoints to `0.0.0.0` in `libchrome.so`, and encapsulates native library extraction and ARM64 BTI neutralization. |
-| **Clean Start Page** | `bytecodePatch` + `resourcePatch` | Debloat & UX | ✅ Yes | Neutralizes sponsored wallpaper loading via `PrefService.b` and `PrefService.e`, suppresses the Brave Shields stats card, and offers an opt-in toggle to hide top sites shortcuts. |
+| **Brave Rewards** | `bytecodePatch` + `resourcePatch` + `rawResourcePatch` | Feature Unlock & UI | ✅ Yes | Unlocks Brave Rewards preference screens, injects toggle switches for Origin policy gates, and encapsulates native library extraction and ARM64 BTI neutralization across all bundled native binaries. |
+| **Block Telemetry** | `bytecodePatch` + `resourcePatch` + `rawResourcePatch` | Privacy & Telemetry | ✅ Yes | Intercepts `PrefService.e` (P3A, stats, WDP), aborts variations seed HTTP connection, redirects 12 native host endpoints to `0.0.0.0` in `libchrome.so`, and encapsulates native library extraction and ARM64 BTI neutralization. |
+| **Clean New Tab** | `bytecodePatch` + `resourcePatch` | Debloat & UX | ✅ Yes | Neutralizes sponsored wallpaper loading via `PrefService.b` and `PrefService.e`, suppresses the Brave Shields stats card, and offers an opt-in toggle to hide top sites shortcuts. |
 | **Block Popups & Rating Requests** | `bytecodePatch` | Debloat & UX | ✅ Yes | Forces `RateEligibilityGate.d -> false`, neutralizes rating survey bottom sheets (`BraveRateDialogFragment`), drops promotional dialogs (YouTube, ad-free callouts), and disables Brave Ads onboarding. |
 | **Silence Promo Notifications** | `bytecodePatch` | Debloat & Battery | ✅ Yes | Eliminates background wakeups and notifications from Chromium tips scheduler (Job ID 105), Brave Rewards onboarding promo, and retention marketing campaigns. |
 | **Clean Shared Links** | `bytecodePatch` | Privacy & Anti-Tracking | ✅ Yes | Hooks Android share intent builder (`Lcch.a`) and clipboard copy (`Clipboard.setText`) to purge tracking parameters (`utm_*`, `fbclid`, `gclid`, etc.). |
@@ -47,7 +47,7 @@ Comprehensive technical and configuration guide for **Brave Browser** (`com.brav
 
 ## 🔒 Deep Technical Patch Breakdown
 
-### 1. Brave Origin (`braveOriginPatch`)
+### 1. Brave Rewards (`braveOriginPatch`)
 - **Objective**: Unlock Brave Origin feature toggles and preferences without requiring remote enterprise management profiles.
 - **Mechanisms**:
   - Injects Origin preference switch items into settings layout XML (`xml_0x7f18001a.xml`).
@@ -55,7 +55,7 @@ Comprehensive technical and configuration guide for **Brave Browser** (`com.brav
   - Stubs subscription check methods (`getIsSubscriptionActive`, `requestCredentialSummary`) to return active credentials.
   - Neutralizes the ARM64 BTI flag across bundled native binaries (`libchrome.so`, `libcrashpad_handler_trampoline.so`) and patches illegal instruction traps in `libchrome.so` to ensure seamless execution on ARMv8.0 and Android 16 devices.
 
-### 2. Block Tracking (`braveBlockTelemetryPatch`)
+### 2. Block Telemetry (`braveBlockTelemetryPatch`)
 - **Objective**: Halt outbound telemetry pings, usage metrics, and variations seed fetching.
 - **Mechanisms**:
   - **Bytecode Neutralization**: Intercepts `PrefService.e` queries for P3A (*Privacy-Preserving Product Analytics*), Brave Stats, and WDP (*Web Discovery Project*).
@@ -216,7 +216,7 @@ ur, uz, vi, zh-CN, zh-HK, zh-TW, zu
 - **Option Key**: `locales`
 - **Default**: `en-US`
 - **Accepted Format**: Comma-separated list of locale codes (e.g. `es, es-419, pt-BR, fr, de`).
-- **Notes**: English (`en-US`) is always preserved automatically as an essential Chromium fallback. To prevent Chromium startup crashes on devices configured with unselected system languages, stripped language PAKs are safely populated with the base `en-US` resource table fallback rather than empty stubs. For the full list of 81 supported locale codes, consult [Locale PAK Slimmer](#11-locale-pak-slimmer-localepakslimmerpatch).
+- **Notes**: English (`en-US`) is always preserved automatically as an essential Chromium fallback. To prevent Chromium startup crashes on devices configured with unselected system languages, stripped language PAKs are safely populated with the base `en-US` resource table fallback rather than empty stubs. For the full list of 81 supported locale codes, consult [Locale PAK Slimmer](#11-remove-extra-languages-localepakslimmerpatch).
 
 ---
 

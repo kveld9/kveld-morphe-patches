@@ -7,7 +7,7 @@ import app.morphe.patches.shared.Constants
 
 @Suppress("unused")
 val braveDisableTabMinimizationPatch = bytecodePatch(
-    name = "Keep Tabs Open",
+    name = "Keep All Tabs Loaded",
     description = "Stops Brave from minimizing your tabs in the background.",
     default = true,
 ) {

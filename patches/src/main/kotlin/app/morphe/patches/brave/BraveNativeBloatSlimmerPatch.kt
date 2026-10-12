@@ -17,7 +17,7 @@ private val BLOAT_NATIVE_LIBS = listOf(
 
 @Suppress("unused")
 val braveNativeBloatSlimmerPatch = rawResourcePatch(
-    name = "Remove Unused Parts",
+    name = "Remove Unused AI & VPN",
     description = "Deletes unused AI, VPN and AR files to shrink the app.",
     default = false,
 ) {
