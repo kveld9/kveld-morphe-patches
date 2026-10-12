@@ -84,7 +84,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Privacy** | **No Update Popups** | `bytecodePatch` | Neutralizes background update polling tasks and version enforcement dialogs. |
 | **Privacy** | **[Remove Permissions](#12-tiktok-privacy-permissions-stripper)** | `resourcePatch` | Selectively strips sensitive privacy, sensor, hardware, and tracking permissions from AndroidManifest.xml via 15 granular opt-in boolean toggles. |
 | **Privacy** | **[Remove Trackers (Setup)](#28-remove-trackers-setup-telemetrymanifestpurgepatch)** | `resourcePatch` | Strips advertising and attribution permissions, disables telemetry receivers/services (AppLog, AppsFlyer, Measurement, DataTransport), prunes Firebase discovery registrars, and injects analytics opt-out metadata (Firebase, AppsFlyer, Meta AppEvents) into AndroidManifest.xml. |
-| **Performance** | **[Smooth Screen (120Hz)](#3-display-refresh-rate-governor)** | `bytecodePatch` | Locks window to peak hardware refresh rate (120Hz/90Hz) and neutralizes playback downclocking. |
+| **Performance** | **[Smooth Screen](#3-display-refresh-rate-governor)** | `bytecodePatch` | Locks window to peak hardware refresh rate (120Hz/90Hz) and neutralizes playback downclocking. |
 | **Performance** | **[No HDR Videos](#26-no-hdr-videos-disablehdrvideopatch)** | `bytecodePatch` | Forces the video playback engine to select standard SDR bitrates instead of HDR (HDR10/PQ/HLG). |
 | **Performance** | **Fast Startup** | `bytecodePatch` | Eliminates cold startup delays, real-time splash advertisements, and background TopView ad preloading. |
 | **Performance** | **Battery Saver** | `bytecodePatch` | Suppresses 3D shake ad sensors and video buffer preloading. |

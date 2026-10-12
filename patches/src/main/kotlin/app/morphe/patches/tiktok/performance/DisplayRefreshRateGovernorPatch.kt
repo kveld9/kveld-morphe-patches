@@ -9,7 +9,7 @@ import app.morphe.patches.shared.sharedExtensionPatch
 import com.android.tools.smali.dexlib2.Opcode
 
 val displayRefreshRateGovernorPatch = bytecodePatch(
-    name = "Smooth Screen (120Hz)",
+    name = "Smooth Screen",
     description = "Keeps the screen at top refresh rate.",
     default = false,
 ) {
