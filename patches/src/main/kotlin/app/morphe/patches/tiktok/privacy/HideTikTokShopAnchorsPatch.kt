@@ -53,7 +53,7 @@ val hideTikTokShopAnchorsPatch = bytecodePatch(
                 feedApiMethod.addInstructionsAtControlFlowLabel(
                     returnIndex,
                     """
-                        invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->stripShopAnchorsInFeedItemList(Ljava/lang/Object;)V
+                        invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->stripShopAnchorsInFeedItemList(Ljava/lang/Object;)V
                     """,
                 )
             }
@@ -78,7 +78,7 @@ val hideTikTokShopAnchorsPatch = bytecodePatch(
                 feedItemListMethod.addInstructionsAtControlFlowLabel(
                     returnIndex,
                     """
-                        invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->stripShopAnchorsInList(Ljava/lang/Object;)V
+                        invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->stripShopAnchorsInList(Ljava/lang/Object;)V
                     """,
                 )
             }
@@ -103,7 +103,7 @@ val hideTikTokShopAnchorsPatch = bytecodePatch(
                 followFeedListMethod.addInstructionsAtControlFlowLabel(
                     returnIndex,
                     """
-                        invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->stripShopAnchorsInFollowFeedList(Ljava/lang/Object;)V
+                        invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->stripShopAnchorsInFollowFeedList(Ljava/lang/Object;)V
                     """,
                 )
             }

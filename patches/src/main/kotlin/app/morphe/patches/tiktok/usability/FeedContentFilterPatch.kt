@@ -123,7 +123,7 @@ val feedContentFilterPatch = bytecodePatch(
             returnIndices.asReversed().forEach { (returnIndex, reg) ->
                 method.addInstructionsAtControlFlowLabel(
                     returnIndex,
-                    "invoke-static {v$reg}, $hook->filterContentInFeedItemList(Ljava/lang/Object;)V",
+                    "invoke-static/range {v$reg .. v$reg}, $hook->filterContentInFeedItemList(Ljava/lang/Object;)V",
                 )
             }
             if (returnIndices.isNotEmpty()) {

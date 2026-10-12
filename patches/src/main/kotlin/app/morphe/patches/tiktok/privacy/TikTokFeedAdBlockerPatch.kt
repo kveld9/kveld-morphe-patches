@@ -35,7 +35,7 @@ val tikTokFeedAdBlockerPatch = bytecodePatch(
                 method.addInstructionsAtControlFlowLabel(
                     returnIndex,
                     """
-                        invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAdsInList(Ljava/lang/Object;)V
+                        invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAdsInList(Ljava/lang/Object;)V
                     """,
                 )
             }
@@ -61,7 +61,7 @@ val tikTokFeedAdBlockerPatch = bytecodePatch(
             feedApiMethod.addInstructionsAtControlFlowLabel(
                 returnIndex,
                 """
-                    invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAdsInFeedItemList(Ljava/lang/Object;)V
+                    invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAdsInFeedItemList(Ljava/lang/Object;)V
                 """,
             )
         }
@@ -94,7 +94,7 @@ val tikTokFeedAdBlockerPatch = bytecodePatch(
             followMethod.addInstructionsAtControlFlowLabel(
                 returnIndex,
                 """
-                    invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAdsInFollowFeedList(Ljava/lang/Object;)V
+                    invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAdsInFollowFeedList(Ljava/lang/Object;)V
                 """,
             )
         }

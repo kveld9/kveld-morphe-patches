@@ -95,7 +95,7 @@ val customOfflineVideosLimitPatch = bytecodePatch(
                     listProviderMethod.addInstructionsAtControlFlowLabel(
                         returnIndex,
                         """
-                            invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_OFFLINE_VIDEOS_HOOK}->getOfflineLimits(Ljava/util/List;)Ljava/util/List;
+                            invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_OFFLINE_VIDEOS_HOOK}->getOfflineLimits(Ljava/util/List;)Ljava/util/List;
                             move-result-object v$reg
                         """.trimIndent(),
                     )
