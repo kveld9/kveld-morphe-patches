@@ -1163,7 +1163,7 @@ val commentCustomizerPatch = bytecodePatch(
     val translationExcludedLanguages by stringOption(
         key = "translationExcludedLanguages",
         title = "Languages to skip",
-        description = "Codes like en,es,zh. Never translated.",
+        description = "ISO codes like en,es,zh. Only matters when auto-translate is on.",
         default = "",
         required = false,
     )
