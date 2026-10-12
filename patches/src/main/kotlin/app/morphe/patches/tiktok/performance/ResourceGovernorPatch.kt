@@ -2,6 +2,7 @@ package app.morphe.patches.tiktok.performance
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 
@@ -81,5 +82,6 @@ val resourceGovernorPatch = bytecodePatch(
         }
 
         println("[Resource & Battery Governor] Applied $patched hardware and network governor hook(s).")
+        if (patched == 0) throw PatchException("Resource & Battery Governor: no hooks applied, targets shifted.")
     }
 }

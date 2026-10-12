@@ -2,6 +2,7 @@ package app.morphe.patches.tiktok.performance
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 
@@ -71,5 +72,6 @@ val disableHdrVideoPatch = bytecodePatch(
         patched++
 
         println("[Disable HDR Video Playback] Applied $patched HDR suppression hook(s) -> SDR playback enforced.")
+        if (patched == 0) throw PatchException("Disable HDR Video Playback: no hooks applied, targets shifted.")
     }
 }

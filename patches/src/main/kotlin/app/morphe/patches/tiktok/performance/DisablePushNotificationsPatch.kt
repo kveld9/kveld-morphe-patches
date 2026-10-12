@@ -2,6 +2,7 @@ package app.morphe.patches.tiktok.performance
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 
@@ -34,5 +35,6 @@ val disablePushNotificationsPatch = bytecodePatch(
         }
 
         println("[Disable Push Notifications] Applied $patched push notification suppression hook(s).")
+        if (patched == 0) throw PatchException("Disable Push Notifications: no hooks applied, targets shifted.")
     }
 }
