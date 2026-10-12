@@ -76,6 +76,85 @@ private val braveTelemetryResourcePatch = resourcePatch(
 }
 
 // ── Hosts Blocker Patch: Redirects all 12 telemetry domain endpoints to 0.0.0.0 in libchrome.so ─────
+private data class HostEntry(
+    val arm64Offset: Long,
+    val arm32Offset: Long,
+    val hostName: String,
+)
+
+private fun assertNoDuplicateOffsets(
+    relPath: String,
+    hostEntries: List<HostEntry>,
+    offsetSelector: (HostEntry) -> Long,
+) {
+    val seenOffsets = mutableSetOf<Long>()
+    for (entry in hostEntries) {
+        val offset = offsetSelector(entry)
+        if (!seenOffsets.add(offset)) {
+            throw PatchException("Duplicate host offset 0x${offset.toString(16)} in $relPath")
+        }
+    }
+}
+
+private fun validateHostEntries(
+    raf: RandomAccessFile,
+    relPath: String,
+    hostEntries: List<HostEntry>,
+    offsetSelector: (HostEntry) -> Long,
+) {
+    for (entry in hostEntries) {
+        val offset = offsetSelector(entry)
+        val expectedBytes = entry.hostName.toByteArray(Charsets.US_ASCII)
+        val len = expectedBytes.size
+        if (offset + len > raf.length()) {
+            throw PatchException("Host offset 0x${offset.toString(16)} out of bounds in $relPath")
+        }
+        val buf = ByteArray(len)
+        raf.seek(offset)
+        raf.readFully(buf)
+        if (!buf.contentEquals(expectedBytes)) {
+            throw PatchException(
+                "Host fingerprint mismatch at 0x${offset.toString(16)} in $relPath. " +
+                    "Expected: ${entry.hostName}, Found: ${String(buf, Charsets.US_ASCII)}",
+            )
+        }
+    }
+}
+
+private fun buildHostReplacement(redirectionIp: ByteArray, len: Int): ByteArray {
+    val replacement = ByteArray(len)
+    System.arraycopy(redirectionIp, 0, replacement, 0, redirectionIp.size)
+    return replacement
+}
+
+private fun writeHostEntries(
+    raf: RandomAccessFile,
+    relPath: String,
+    hostEntries: List<HostEntry>,
+    offsetSelector: (HostEntry) -> Long,
+    redirectionIp: ByteArray,
+): Int {
+    var writtenHosts = 0
+    for (entry in hostEntries) {
+        val offset = offsetSelector(entry)
+        val len = entry.hostName.toByteArray(Charsets.US_ASCII).size
+        val replacement = buildHostReplacement(redirectionIp, len)
+
+        raf.seek(offset)
+        raf.write(replacement)
+
+        raf.seek(offset)
+        val verifyBuf = ByteArray(len)
+        raf.readFully(verifyBuf)
+        if (!verifyBuf.contentEquals(replacement)) {
+            throw PatchException("Write verification failed at 0x${offset.toString(16)} in $relPath")
+        }
+
+        writtenHosts++
+    }
+    return writtenHosts
+}
+
 private val braveHostsBlockerPatch = rawResourcePatch(
     name = "Block Tracking Servers",
     description = "Redirects tracking servers to nowhere.",
@@ -84,12 +163,6 @@ private val braveHostsBlockerPatch = rawResourcePatch(
     compatibleWith(Constants.COMPATIBILITY_BRAVE)
 
     execute {
-        data class HostEntry(
-            val arm64Offset: Long,
-            val arm32Offset: Long,
-            val hostName: String,
-        )
-
         val hostEntries = listOf(
             HostEntry(0x0020d657L, 0x005a14b4L, "star-randsrv.bsg.brave.com"),
             HostEntry(0x0020d688L, 0x005a14e5L, "collector.bsg.brave.com"),
@@ -119,38 +192,19 @@ private val braveHostsBlockerPatch = rawResourcePatch(
             return@execute
         }
 
-        val redirectionIp = "0.0.0.0".toByteArray(Charsets.US_ASCII)
-
+        // Phase 1: Validate all targets and entries before opening any file for writing
         for ((relPath, soFile, offsetSelector) in existingTargets) {
-            var writtenHosts = 0
+            assertNoDuplicateOffsets(relPath, hostEntries, offsetSelector)
+            RandomAccessFile(soFile, "r").use { raf ->
+                validateHostEntries(raf, relPath, hostEntries, offsetSelector)
+            }
+        }
 
-            RandomAccessFile(soFile, "rw").use { raf ->
-                for (entry in hostEntries) {
-                    val offset = offsetSelector(entry)
-                    val expectedBytes = entry.hostName.toByteArray(Charsets.US_ASCII)
-                    val len = expectedBytes.size
-                    if (offset + len > raf.length()) {
-                        throw PatchException("Host offset 0x${offset.toString(16)} out of bounds in $relPath")
-                    }
-                    val buf = ByteArray(len)
-                    raf.seek(offset)
-                    raf.readFully(buf)
-                    if (!buf.contentEquals(expectedBytes)) {
-                        throw PatchException(
-                            "Host fingerprint mismatch at 0x${offset.toString(16)} in $relPath. " +
-                                "Expected: ${entry.hostName}, Found: ${String(buf, Charsets.US_ASCII)}",
-                        )
-                    }
-
-                    // Construct replacement: "0.0.0.0" + null byte + zero padding to original length
-                    val replacement = ByteArray(len)
-                    System.arraycopy(redirectionIp, 0, replacement, 0, redirectionIp.size)
-                    // remaining bytes are 0x00 (null padded)
-
-                    raf.seek(offset)
-                    raf.write(replacement)
-                    writtenHosts++
-                }
+        // Phase 2: Write replacement bytes and verify each entry in-situ
+        val redirectionIp = "0.0.0.0".toByteArray(Charsets.US_ASCII)
+        for ((relPath, soFile, offsetSelector) in existingTargets) {
+            val writtenHosts = RandomAccessFile(soFile, "rw").use { raf ->
+                writeHostEntries(raf, relPath, hostEntries, offsetSelector, redirectionIp)
             }
 
             println("[Block Telemetry] $relPath: Redirected $writtenHosts / ${hostEntries.size} endpoints to 0.0.0.0 in libchrome.so")
