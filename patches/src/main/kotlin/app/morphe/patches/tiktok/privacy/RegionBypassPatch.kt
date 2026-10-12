@@ -11,7 +11,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 val regionBypassPatch = bytecodePatch(
-    name = "Change Country",
+    name = "Set App Region",
     description = "Spoofs SIM country to unlock regional feeds.",
     default = false,
 ) {
