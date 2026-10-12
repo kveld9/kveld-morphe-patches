@@ -16,7 +16,7 @@ private const val GROUP_CHAT_HINT_ASSEM_CLASS =
     "Lcom/ss/android/ugc/aweme/internalshare/impl/refactor/assem/SharePanelGroupChatHintAssem;"
 
 val cleanSharePanelPatch = bytecodePatch(
-    name = "Tidy Share Panel",
+    name = "Clean Share Panel",
     description = "Removes emoji row and group button.",
     default = true,
 ) {
