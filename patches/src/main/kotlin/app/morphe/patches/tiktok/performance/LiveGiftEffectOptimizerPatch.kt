@@ -6,7 +6,7 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 
 val liveGiftEffectOptimizerPatch = bytecodePatch(
-    name = "Lighter Live Gifts",
+    name = "Simpler Live Gifts",
     description = "Turns off heavy 3D gift effects in lives.",
     default = false,
 ) {

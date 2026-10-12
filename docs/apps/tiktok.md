@@ -90,7 +90,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Performance** | **Battery Saver** | `bytecodePatch` | Suppresses 3D shake ad sensors and video buffer preloading. |
 | **Performance** | **Stop P2P Uploads** | `rawResourcePatch` | Strips `libavmdlp2pv2.so` and `libp2plivevdp.so` to stop background P2P CDN seeding. |
 | **Performance** | **No Push Notifications** | `bytecodePatch` | Neutralizes background push socket polling and persistent wake locks. |
-| **Performance** | **Lighter Live Gifts** | `bytecodePatch` | Disables 3D gift particle effect engine to eliminate live frame drops. |
+| **Performance** | **Simpler Live Gifts** | `bytecodePatch` | Disables 3D gift particle effect engine to eliminate live frame drops. |
 | **Performance** | **Remove Live Extras** | `rawResourcePatch` | Strips `liblink_mic_sdk.so`, Lyrax RTC broadcaster libs, DM call engine (`libvoip.so`), live RTM/base runtimes, and battle minigames. Breaks live viewing/broadcasting and DM voice/video calls. |
 | **Slimmer** | **Remove Voice Files** | `rawResourcePatch` | Strips on-device voice recognition/synthesis engines (`libspeechspg.so`, `libspeechsdk.so`) and their loader stubs (`libspeechengine.so`, `libspeechepg.so`). Breaks voice search, voice input, and editor text-to-speech. |
 | **Slimmer** | **Remove Extra Files** | `rawResourcePatch` | Strips Microblink OCR models, C2PA AI libs, ByteDance TTWebView engine, non-Latin fonts, Python VM (~77 MB saved). |
