@@ -8,7 +8,7 @@ import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.sharedExtensionPatch
 
 val inAppBrowserPrivacyGuardPatch = bytecodePatch(
-    name = "Open Links Outside",
+    name = "Open Links In Browser",
     description = "Opens links in your browser, blocks web tracking.",
     default = true,
 ) {
