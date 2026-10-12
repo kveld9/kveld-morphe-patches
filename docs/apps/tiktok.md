@@ -88,7 +88,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Performance** | **[No HDR Videos](#26-no-hdr-videos-disablehdrvideopatch)** | `bytecodePatch` | Forces the video playback engine to select standard SDR bitrates instead of HDR (HDR10/PQ/HLG). |
 | **Performance** | **Fast Startup** | `bytecodePatch` | Eliminates cold startup delays, real-time splash advertisements, and background TopView ad preloading. |
 | **Performance** | **Battery Saver** | `bytecodePatch` | Suppresses 3D shake ad sensors and video buffer preloading. |
-| **Performance** | **Stop P2P Uploads** | `rawResourcePatch` | Strips `libavmdlp2pv2.so` and `libp2plivevdp.so` to stop background P2P CDN seeding. |
+| **Performance** | **Stop Background Uploads** | `rawResourcePatch` | Strips `libavmdlp2pv2.so` and `libp2plivevdp.so` to stop background P2P CDN seeding. |
 | **Performance** | **No Push Notifications** | `bytecodePatch` | Neutralizes background push socket polling and persistent wake locks. |
 | **Performance** | **Simpler Live Gifts** | `bytecodePatch` | Disables 3D gift particle effect engine to eliminate live frame drops. |
 | **Performance** | **Remove Live Extras** | `rawResourcePatch` | Strips `liblink_mic_sdk.so`, Lyrax RTC broadcaster libs, DM call engine (`libvoip.so`), live RTM/base runtimes, and battle minigames. Breaks live viewing/broadcasting and DM voice/video calls. |

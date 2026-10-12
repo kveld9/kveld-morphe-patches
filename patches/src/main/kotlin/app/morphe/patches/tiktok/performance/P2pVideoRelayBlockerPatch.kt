@@ -6,7 +6,7 @@ import app.morphe.patches.shared.Constants
 private val EMPTY_BYTES = byteArrayOf()
 
 val p2pVideoRelayBlockerPatch = rawResourcePatch(
-    name = "Stop P2P Uploads",
+    name = "Stop Background Uploads",
     description = "Stops uploading videos for others in the background.",
     default = true,
 ) {
