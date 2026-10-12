@@ -45,12 +45,12 @@
 ![](images/divider-purple.svg)
 
 1. Install **Morphe Manager** on your Android device.
-2. Download the target app using the **exact version and variant** listed in [Supported Targets & Downloads](#supported-targets) (a version mismatch makes every fingerprint fail).
+2. Download the target app using the **exact version and variant** listed in [Supported Targets & Downloads](#supported-targets) (wrong version = nothing gets patched).
 3. Add this repository as a patch source with the button above, or add `https://github.com/kveld9/kveld-morphe-patches` manually.
 4. Select the patches, keep a copy of the original APK, run the patcher, and install the rebuilt APK.
 
 > [!NOTE]
-> Requirements: the Morphe patcher on your device (patching happens on-device, no root needed); always use the exact ABI/variant from the table below.
+> Requirements: the Morphe patcher on your device (patching happens on-device, no root needed); always use the exact version and file from the table below.
 
 ---
 
@@ -67,7 +67,7 @@
 ```mermaid
 flowchart TD
     A[Selected APK] --> B[Morphe Patcher<br/>+ this source]
-    B --> C[DEX, XML<br/>and native work]
+    B --> C[App cleaned<br/>inside]
     C --> D[Patched APK<br/>no root, no hooks]
 ```
 
@@ -91,14 +91,14 @@ flowchart TD
 | **TikTok** | `com.zhiliaoapp.musically` | `47.1.4` | `arm64-v8a` (nodpi) | [APKMirror](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-47-1-4-release/) | [TikTok Guide](docs/apps/tiktok.md) |
 | **Xiaomi Earbuds** | `com.mi.earphone` | `1.38.0i` | Universal (XAPK Bundle) | [APKPure](https://d.apkpure.com/b/XAPK/com.mi.earphone?versionCode=138000) | [Xiaomi Earbuds Guide](docs/apps/xiaomi-earbuds.md) |
 
-Legend: `nodpi` = density-independent resources; `APKM`/`XAPK` = bundles that Morphe merges; `Monolithic` = single APK.
+Legend: `nodpi` = works on any screen; `APKM`/`XAPK` = multi-file packages that Morphe joins together; `Monolithic` = one single file.
 
 <details>
 <summary><b>Troubleshooting</b></summary>
 
 - **App not installed / signature conflict**: the patched APK is re-signed; uninstall the original app first (for Gboard, **Install a Copy** installs in parallel).
 - **Google login broken (TikTok)**: enable **Fix Google Login**.
-- **Patcher applies nothing / fingerprint errors**: use the exact version and variant from the table above.
+- **Patcher applies nothing / patching errors**: use the exact version and variant from the table above.
 - **Crash after patching**: disable the last patch you enabled and retry.
 
 </details>
@@ -367,7 +367,7 @@ Technical references, setup manuals, and architecture notes are organized by foc
 | Guide | Description |
 | :--- | :--- |
 | **[Universal Patches & Options](docs/universal-patches.md)** | Works on any app: remove languages, shrink images, go offline, block trackers, allow screenshots. |
-| **[Compatibility Guide](docs/compatibility.md)** | CPU architecture policy (`arm64-v8a` vs `armeabi-v7a`), APK variant requirements, and SHA-256 baseline. |
+| **[Compatibility Guide](docs/compatibility.md)** | Which file to download for your phone and how versions are checked. |
 | **[Project Scope & Out of Scope](docs/out-of-scope.md)** | Non-negotiable design philosophy, compile-time invariants, and rejected feature categories. |
 | **[Architecture & Security Notes](docs/architecture-security.md)** | Static analysis scanner false positives (ML Kit, Play Billing) and native ELF telemetry neutralization. |
 
@@ -375,7 +375,7 @@ Technical references, setup manuals, and architecture notes are organized by foc
 | Guide | Description |
 | :--- | :--- |
 | **[Building & Development](docs/building.md)** | Toolchain prerequisites, Gradle build tasks, test execution, and catalog synchronization. |
-| **[Reverse Engineering & Update Harness](harness/README.md)** | Automated Python pipeline for multi-DEX indexing, obfuscated symbol resolution, and APK audits. |
+| **[Reverse Engineering & Update Harness](harness/README.md)** | Automatic tools that check patches against new app versions. |
 | **[Physical & Runtime ADB Test Suite](validation/physical_harness/README.md)** | Automated on-device validation for battery consumption, ServiceWorker sync, and runtime telemetry. |
 
 <p align="center">
