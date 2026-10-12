@@ -76,7 +76,7 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Privacy** | **Hide Suggested People** | `bytecodePatch` | Removes suggested-account cards from profile headers and inbox/notification surfaces. |
 | **Privacy** | **Hide AI Videos** | `bytecodePatch` | Filters and skips videos tagged with native AI-generated metadata, C2PA content credentials, or creator AI disclosure tags across the For You, Following, and Friends feeds. |
 | **Privacy** | **No Lives in Feed** | `bytecodePatch` | Removes live broadcast cards and live recommendations from FYP and Following. |
-| **Privacy** | **Cleaner Feed** | `bytecodePatch` | Removes friend suggestions, suggested account carousels, mini-games, CapCut prompts, memories, community/topic cards, post-video evaluation surveys, questionnaires, mini-dramas, Lemon8 promo, in-feed search recommendations/interest cards, and floating rewards pendants across For You, Following, and Friends feeds. |
+| **Privacy** | **Clean Feed** | `bytecodePatch` | Removes friend suggestions, suggested account carousels, mini-games, CapCut prompts, memories, community/topic cards, post-video evaluation surveys, questionnaires, mini-dramas, Lemon8 promo, in-feed search recommendations/interest cards, and floating rewards pendants across For You, Following, and Friends feeds. |
 | **Privacy** | **Block All Tracking** | `bytecodePatch` | Neutralizes ByteDance AppLog, APM/Npth/Heimdallr crash telemetry, and AppsFlyer. |
 | **Privacy** | **No Search History** | `bytecodePatch` | Prevents search queries and keywords from being recorded in local history, databases, and analytics stores. |
 | **Privacy** | **Neutral Search** | `bytecodePatch` | Forces TikTok's non-personalized search mode instead of the saved account choice. |
@@ -447,7 +447,7 @@ Certain permissions are intentionally excluded from this manifest stripper becau
 - Neutralizes dynamic Circle to Search and recent apps blocking: stubs `MainContentSecurityAssem` (`dispatchTouchEvent`, `rq`), neutralizes `ContentSecurityHelper` bottom navigation touch listeners (`LIZ(MotionEvent) -> return-void`, `LIZJ() -> false`), and neutralizes the `circle_search_block` experiment to prevent bottom touch interception from injecting `FLAG_SECURE` at navigation gestures (restoring Circle to Search, screen translate, music search, and recent apps preview snapshots).
 - Neutralizes screenshot detection listeners, floating feedback prompts, and telemetry (`ScreenShotFeedbackService` and startup Lego tasks).
 
-### 5. Cleaner Feed (`feedBloatBlockerPatch`)
+### 5. Clean Feed (`feedBloatBlockerPatch`)
 - **Rewards Pendants Suppression**: Injects `return-void` into `SpecActWidget.bind(ViewGroup)` to prevent floating Rewards widgets (countdown coins, soccer ball stickers) from attaching to feed views.
 - **Sticker & Card Stripping**: Nullifies `Aweme.getActivityPendant()`, `getCommerceStickerInfo()`, `getFloatingCardInfo()`, and `getBannerTip()`.
 - **Feed Stream Purge**: Filters suggested accounts, mini-games, CapCut creation prompts, memories recaps, mini-dramas, in-feed search interest cards, and trending search recommendation cards before UI adapter binding via `TikTokFeedAdFilter.isFeedBloat()` (any `CardInsertInfo` with `cardType > 0` or `recommendCardType > 0`).

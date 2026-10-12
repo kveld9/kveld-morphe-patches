@@ -11,7 +11,7 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
 val feedBloatBlockerPatch = bytecodePatch(
-    name = "Cleaner Feed",
+    name = "Clean Feed",
     description = "Removes cards, minigames, surveys and promos from feeds.",
     default = true,
 ) {
