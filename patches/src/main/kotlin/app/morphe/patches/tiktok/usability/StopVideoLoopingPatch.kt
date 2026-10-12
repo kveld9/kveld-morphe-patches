@@ -2,6 +2,7 @@ package app.morphe.patches.tiktok.usability
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 
@@ -30,5 +31,6 @@ val stopVideoLoopingPatch = bytecodePatch(
         println("[Stop Video Looping] Hooked TTVideoEngine.setLooping(Z)V -> Forced isLooping=false.")
         patched++
         println("[Stop Video Looping] Applied $patched video loop suppression hook(s).")
+        if (patched == 0) throw PatchException("Stop Video Looping: no hooks applied, targets shifted.")
     }
 }

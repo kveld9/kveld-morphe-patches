@@ -2,6 +2,7 @@ package app.morphe.patches.tiktok.usability
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.getReference
@@ -74,5 +75,6 @@ val resumeVideoAfterScrollPatch = bytecodePatch(
         patched++
 
         println("[Resume Video After Scroll] Applied $patched resume playback hook(s).")
+        if (patched == 0) throw PatchException("Resume Video After Scroll: no hooks applied, targets shifted.")
     }
 }

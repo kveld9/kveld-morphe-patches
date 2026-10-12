@@ -1,6 +1,7 @@
 package app.morphe.patches.tiktok.privacy
 
 import app.morphe.patcher.Fingerprint
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.addInstructionsAtControlFlowLabel
@@ -64,5 +65,6 @@ val nonPersonalizedSearchPatch = bytecodePatch(
         }
 
         println("[Non-Personalized Search] Applied $patched non-personalized search hook(s).")
+        if (patched == 0) throw PatchException("Non-Personalized Search: no hooks applied, targets shifted.")
     }
 }

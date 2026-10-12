@@ -2,6 +2,7 @@ package app.morphe.patches.tiktok.usability
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
@@ -350,5 +351,6 @@ val customShareSheetPatch = bytecodePatch(
         }
 
         println("[Custom Share Sheet] Applied $patched hooks -> share sheet customized.")
+        if (patched == 0) throw PatchException("Custom Share Sheet: no hooks applied, targets shifted.")
     }
 }

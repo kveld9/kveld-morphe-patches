@@ -4,6 +4,7 @@ import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.stringOption
@@ -390,6 +391,7 @@ val mediaEnhancementsPatch = bytecodePatch(
         }
 
         println("[Media Usability & Watermark-Free Downloader] Applied $patched media usability and watermark-free download hook(s).")
+        if (patched == 0) throw PatchException("Media Usability & Watermark-Free Downloader: no hooks applied, targets shifted.")
     }
 }
 

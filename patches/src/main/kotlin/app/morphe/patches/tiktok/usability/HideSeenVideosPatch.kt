@@ -2,6 +2,7 @@ package app.morphe.patches.tiktok.usability
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.addInstructionsAtControlFlowLabel
@@ -87,5 +88,6 @@ val hideSeenVideosPatch = bytecodePatch(
         }
 
         println("[Hide Seen Videos] Applied $patched seen video filter hook(s).")
+        if (patched == 0) throw PatchException("Hide Seen Videos: no hooks applied, targets shifted.")
     }
 }

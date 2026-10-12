@@ -1,6 +1,7 @@
 package app.morphe.patches.tiktok.usability
 
 import app.morphe.patcher.Fingerprint
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
@@ -129,5 +130,6 @@ val hideInboxPromosAndAlertsPatch = bytecodePatch(
         }
 
         println("[Hide Inbox Promos & Alerts] Applied $patched inbox promo and alert suppression hook(s).")
+        if (patched == 0 && (hideTopPromosAndBanners != false || hideContactRecommendations != false || hideNavigationNoticesAndTooltips != false)) throw PatchException("Hide Inbox Promos & Alerts: no hooks applied, targets shifted.")
     }
 }

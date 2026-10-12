@@ -2,6 +2,7 @@ package app.morphe.patches.tiktok.usability
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 
@@ -119,5 +120,6 @@ val disableSearchVideoAutoplayPatch = bytecodePatch(
         patched++
 
         println("[Disable Search Video Autoplay] Applied $patched search autoplay hook(s) -> Search video autoplay disabled.")
+        if (patched == 0) throw PatchException("Disable Search Video Autoplay: no hooks applied, targets shifted.")
     }
 }
