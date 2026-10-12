@@ -7,7 +7,7 @@ import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.replaceWithReturnBoolean
 
 val profileBannerPatch = bytecodePatch(
-    name = "Profile Banners",
+    name = "Unlock Profile Covers",
     description = "Unlocks profile banner covers.",
     default = true,
 ) {
