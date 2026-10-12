@@ -7,8 +7,8 @@ import app.morphe.patches.shared.Constants
 private val EMPTY_BYTES = byteArrayOf()
 
 val localeSlimmerPatch = rawResourcePatch(
-    name = "Language Pack Purger",
-    description = "Strips unselected language string bundles from assets/strings#lang_* to save APK space.",
+    name = "Remove Extra Languages",
+    description = "Deletes unselected language packs.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -16,7 +16,7 @@ val localeSlimmerPatch = rawResourcePatch(
     val targetLocales by stringOption(
         key = "locales",
         title = "Languages to keep",
-        description = "Comma-separated language codes to keep (e.g. 'en, es, pt, fr, de'). English ('en') is always preserved as safe fallback.",
+        description = "List like en, es, fr. English always stays.",
         default = "en",
         required = false,
     )

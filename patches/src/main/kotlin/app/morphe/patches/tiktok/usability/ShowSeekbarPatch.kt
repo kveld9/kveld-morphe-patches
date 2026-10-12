@@ -14,8 +14,8 @@ import com.android.tools.smali.dexlib2.AccessFlags
 private const val AWEME_CLASS = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;"
 
 val showSeekbarPatch = bytecodePatch(
-    name = "Show Seekbar",
-    description = "Restores TikTok's native video seekbar and scrubbing controls where normally hidden or disabled.",
+    name = "Video Seekbar",
+    description = "Restores the video progress bar.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -24,8 +24,8 @@ val showSeekbarPatch = bytecodePatch(
     val showThumbnailOption = booleanOption(
         key = "showThumbnail",
         default = true,
-        title = "Show Dragging Thumbnail Preview",
-        description = "Displays real-time video frame thumbnail previews while dragging the seekbar thumb.",
+        title = "Preview thumbnails",
+        description = "Shows frame previews while dragging.",
     )
 
     execute {

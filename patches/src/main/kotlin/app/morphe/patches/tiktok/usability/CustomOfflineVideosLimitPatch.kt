@@ -17,8 +17,8 @@ import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstructio
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 val customOfflineVideosLimitPatch = bytecodePatch(
-    name = "Custom Offline Videos Limit",
-    description = "Customizes the maximum number of videos available for offline download caching.",
+    name = "Offline Video Limit",
+    description = "How many videos to keep offline.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -26,8 +26,8 @@ val customOfflineVideosLimitPatch = bytecodePatch(
 
     val customLimit by intOption(
         key = "customLimit",
-        title = "Custom Offline Videos Limit",
-        description = "Maximum number of offline videos that can be cached for offline playback (default: 1000).",
+        title = "Video count",
+        description = "1 to 50000.",
         default = 1000,
         required = false,
     )

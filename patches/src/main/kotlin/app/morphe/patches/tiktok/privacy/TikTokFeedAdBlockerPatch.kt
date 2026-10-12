@@ -9,8 +9,8 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
 val tikTokFeedAdBlockerPatch = bytecodePatch(
-    name = "Feed Ad Blocker",
-    description = "Removes sponsored advertisements, brand promotions, and promotional audio from the For You, Following, and Search feeds.",
+    name = "Block Feed Ads",
+    description = "Removes sponsored videos from feeds.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)

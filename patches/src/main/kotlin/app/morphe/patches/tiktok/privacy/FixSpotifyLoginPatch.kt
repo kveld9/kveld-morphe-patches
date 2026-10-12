@@ -9,7 +9,7 @@ import com.android.tools.smali.dexlib2.AccessFlags
 
 val fixSpotifyLoginPatch = bytecodePatch(
     name = "Fix Spotify Login",
-    description = "Restores the 'Add to Spotify' music button after patching by routing the Spotify app sign-in, which rejects the modified APK signature, through Spotify's Web-based OAuth.",
+    description = "Restores Add to Spotify via web login.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)

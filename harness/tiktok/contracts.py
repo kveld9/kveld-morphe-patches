@@ -28,7 +28,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     # --- Slimmers & Asset De-bloat ---
     PatchContract(
         patch_id="locale_slimmer",
-        name="Language Pack Purger",
+        name="Remove Extra Languages",
         target_type="raw_resource",
         description="Strips unselected language string bundles from assets/strings#lang_*.",
         required_classes=[],
@@ -37,7 +37,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     ),
     PatchContract(
         patch_id="core_asset_debloat",
-        name="Core Asset De-bloat",
+        name="Remove Extra Files",
         target_type="raw_resource",
         description="Strips embedded Microblink card/document OCR scanning models, C2PA AI content origin verification libraries, ByteDance TTWebView engine, non-Latin fonts, and mini-app JavaScript engines (V8 runtimes).",
         required_classes=[],
@@ -46,7 +46,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     ),
     PatchContract(
         patch_id="creator_bloat_slimmer",
-        name="Studio & Creation De-bloat",
+        name="Remove Editor Files",
         target_type="raw_resource",
         description="Strips camera AR effects engine (libeffect_plugin.so), video editor SDK (libttvesdk_plugin.so), and facial recognition models.",
         required_classes=[],
@@ -56,7 +56,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     # --- Privacy & 0 Telemetry ---
     PatchContract(
         patch_id="unified_telemetry_tracker_silencer",
-        name="Unified Telemetry & Tracker Silencer",
+        name="Block All Tracking",
         target_type="bytecode",
         description="Neutralizes ByteDance AppLog, APM/Heimdallr, Npth crash handlers, AppsFlyer, and Firebase telemetry.",
         required_classes=[
@@ -69,7 +69,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     ),
     PatchContract(
         patch_id="device_privacy_guard",
-        name="Device Privacy Guard",
+        name="Privacy Guard",
         target_type="bytecode",
         description="Neutralizes background clipboard snooping routines, purges 33 invasive permissions, blocks screenshot/recording detection, and bypasses Android FLAG_SECURE recording restrictions.",
         required_classes=["Lcom/ss/android/ugc/aweme/feedback/screenshot/ScreenShotFeedbackService;"],
@@ -78,7 +78,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     ),
     PatchContract(
         patch_id="in_app_browser_privacy_guard",
-        name="In-App Browser Privacy Guard",
+        name="Open Links Outside",
         target_type="bytecode",
         description="Redirects external and third-party web links directly to the default system browser and neutralizes inline JavaScript tracking injection, DOM monitoring, and AJAX hooking in residual in-app WebViews.",
         required_classes=[],
@@ -87,7 +87,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     ),
     PatchContract(
         patch_id="disable_in_app_update_nags",
-        name="Update Prompt Suppressor",
+        name="No Update Popups",
         target_type="bytecode",
         description="Neutralizes background update polling tasks and device ID check routines to prevent forced update popups.",
         required_classes=["Lcom/ss/android/ugc/aweme/legoImp/task/CheckUpdateChangeDeviceIDTaskHolder$Background;"],
@@ -96,7 +96,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     ),
     PatchContract(
         patch_id="feed_ad_blocker",
-        name="Feed Ad Blocker",
+        name="Block Feed Ads",
         target_type="bytecode",
         description="Removes sponsored advertisements, brand promotions, and promotional audio from the For You and Following feeds.",
         required_classes=[
@@ -109,7 +109,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     ),
     PatchContract(
         patch_id="hide_tiktok_shop_anchors",
-        name="Hide TikTok Shop & Mall",
+        name="Hide Shop",
         target_type="bytecode",
         description="Removes product showcase badges, shopping cart tags, and TikTok Shop commercial anchors from video posts in the feed.",
         required_classes=[
@@ -122,7 +122,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     ),
     PatchContract(
         patch_id="feed_live_stream_blocker",
-        name="Feed Live Stream Blocker",
+        name="No Lives in Feed",
         target_type="bytecode",
         description="Removes live stream broadcast cards and live recommendations from the For You and Following feeds.",
         required_classes=[
@@ -135,7 +135,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     ),
     PatchContract(
         patch_id="feed_bloat_blocker",
-        name="Feed Bloat & Distraction Blocker",
+        name="Cleaner Feed",
         target_type="bytecode",
         description="Removes non-video clutter from the For You, Following, and Friends feeds, including suggested friend cards, mini-games, CapCut/template creation prompts, memories ('On This Day'), surveys, mini-drama paywalls, and Lemon8 promo tasks.",
         required_classes=[
@@ -148,7 +148,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     ),
     PatchContract(
         patch_id="clean_share_url",
-        name="Clean Share URL",
+        name="Clean Shared Links",
         target_type="bytecode",
         description="Strips tracking parameters, user IDs, device fingerprints, and marketing tokens from shared TikTok links.",
         required_classes=["Lcom/ss/android/ugc/aweme/feed/model/Aweme;"],
@@ -158,7 +158,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     # --- Performance, RAM, Battery & Media ---
     PatchContract(
         patch_id="instant_cold_start",
-        name="Instant Launch & Splash Blocker",
+        name="Fast Startup",
         target_type="bytecode",
         description="Eliminates cold startup delays, real-time splash advertisements, and background TopView preloading (<0.4s launch).",
         required_classes=[
@@ -172,7 +172,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     ),
     PatchContract(
         patch_id="live_stream_suite_optimizer",
-        name="Live Stream SDK & Minigame De-bloat",
+        name="Remove Live Extras",
         target_type="raw_resource",
         description="Strips live co-host interactive streaming SDKs (liblink_mic_sdk.so) and live battle minigames to save APK storage.",
         required_classes=[],
@@ -181,7 +181,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     ),
     PatchContract(
         patch_id="live_gift_effect_optimizer",
-        name="Live Stream 3D Gift Optimizer",
+        name="Lighter Live Gifts",
         target_type="bytecode",
         description="Disables Live 3D gift particle effect engine and widget rendering lifecycle to eliminate frame drops during live streams.",
         required_classes=["Lcom/bytedance/android/livesdk/gift/base/platform/business/effect/LiveGiftEffectWidget;"],
@@ -190,7 +190,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     ),
     PatchContract(
         patch_id="resource_governor",
-        name="Resource & Battery Governor",
+        name="Battery Saver",
         target_type="bytecode",
         description="Throttles background sensor polling (gyroscope/accelerometer 3D ads) and prevents aggressive video buffer preloading.",
         required_classes=[
@@ -201,7 +201,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     ),
     PatchContract(
         patch_id="disable_push_notifications",
-        name="Disable Push Notifications",
+        name="No Push Notifications",
         target_type="bytecode",
         description="Neutralizes background push notification tasks and persistent socket wake locks to eliminate background battery drain.",
         required_classes=["Lcom/ss/android/ugc/aweme/legoImp/task/InitPushTask;"],
@@ -210,7 +210,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     ),
     PatchContract(
         patch_id="media_enhancements",
-        name="Media Usability & Watermark-Free Downloader",
+        name="Save Without Watermark",
         target_type="bytecode",
         description="Unblocks the download button on creator-restricted videos in the Share panel, routing downloads to clean unwatermarked media streams.",
         required_classes=[
@@ -222,7 +222,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     ),
     PatchContract(
         patch_id="disable_post_download_dialog",
-        name="Disable Post-Download Share Dialog",
+        name="No Share Popup",
         target_type="bytecode",
         description="Suppresses the automatic 'Share to' and friend suggestions bottom sheet that pops up after finishing a download.",
         required_classes=[
@@ -233,7 +233,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     ),
     PatchContract(
         patch_id="playback_speed_persistence",
-        name="Playback Speed Persistence",
+        name="Remember Speed",
         target_type="bytecode",
         description="Persists selected video playback speed across all feed videos and application restarts.",
         required_classes=["Lcom/ss/android/ugc/aweme/feed/model/Aweme;"],
@@ -242,7 +242,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     ),
     PatchContract(
         patch_id="video_quality_governor",
-        name="Video Quality Governor",
+        name="Limit Video Quality",
         target_type="bytecode",
         description="Enforces configurable resolution ceilings for video playback and downloads independently (1080p, 720p, 540p, 480p, or uncapped).",
         required_classes=[
@@ -255,7 +255,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     ),
     PatchContract(
         patch_id="mandatory_login_bypass",
-        name="Bypass Mandatory Login",
+        name="Browse Without Login",
         target_type="bytecode",
         description="Neutralizes mandatory login walls, dynamic regional forced login gates, and guest mode browsing restrictions.",
         required_classes=[
@@ -266,7 +266,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     ),
     PatchContract(
         patch_id="skip_first_launch_onboarding",
-        name="Skip First-Launch Onboarding",
+        name="Skip Setup",
         target_type="bytecode",
         description="Bypasses the entire first-run introduction funnel directly to the feed.",
         required_classes=[
@@ -278,7 +278,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     ),
     PatchContract(
         patch_id="client_ai_governor",
-        name="Client-Side AI & Behavioral Profiling Governor",
+        name="Turn Off AI Features",
         target_type="bytecode",
         description="Neutralizes on-device machine learning inference (Pitaya), Tako AI chatbot entry points and icons, and AI smart search suggestion clutter.",
         required_classes=["Lcom/bytedance/pitaya/api/PitayaBootLoader;"],
@@ -287,7 +287,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     ),
     PatchContract(
         patch_id="region_bypass",
-        name="SIM Region Selector",
+        name="Change Country",
         target_type="bytecode",
         description="Spoofs the detected SIM and network country ISO code to bypass regional feed restrictions and catalog blocks.",
         required_classes=[],
@@ -296,7 +296,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     ),
     PatchContract(
         patch_id="p2p_video_relay_blocker",
-        name="P2P Video Relay & Mesh CDN Blocker",
+        name="Stop P2P Uploads",
         target_type="raw_resource",
         description="Strips background Peer-to-Peer CDN distribution binaries (libavmdlp2pv2.so and libp2plivevdp.so) to prevent battery drain, background data upload, and mesh relay.",
         required_classes=[],
@@ -305,7 +305,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     ),
     PatchContract(
         patch_id="fix_google_login",
-        name="Fix Google login",
+        name="Fix Google Login",
         target_type="bytecode",
         description="Restores Google account sign-in after patching by forcing fallback to Web-based OAuth when Google Play Services rejects the modified APK signature.",
         required_classes=["Lcom/bytedance/lobby/google/GoogleAuth;"],
@@ -314,7 +314,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     ),
     PatchContract(
         patch_id="show_seekbar",
-        name="Show seekbar",
+        name="Video Seekbar",
         target_type="bytecode",
         description="Restores TikTok's native video seekbar and scrubbing controls where normally hidden or disabled.",
         required_classes=["Lcom/ss/android/ugc/aweme/feed/model/Aweme;"],
@@ -323,7 +323,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     ),
     PatchContract(
         patch_id="always_show_publish_date",
-        name="Always show publish date",
+        name="Show Video Dates",
         target_type="bytecode",
         description="Forces video publish/upload date to remain visible in video author information across all feed types.",
         required_classes=["Lcom/ss/android/ugc/aweme/feed/assem/videoauthorinfo/VideoAuthorInfoVM;"],
@@ -332,7 +332,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     ),
     PatchContract(
         patch_id="comment_customizer",
-        name="Comment Customizer",
+        name="Better Comments",
         target_type="bytecode",
         description="Customizes TikTok's comment section, including native sort controls, clean text copying, disabling suggested emojis bar, hiding comment quick actions, enabling voice comments, and automatic comment translation.",
         required_classes=[
@@ -345,7 +345,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     ),
     PatchContract(
         patch_id="display_refresh_rate_governor",
-        name="Display Refresh Rate Governor",
+        name="Smooth Screen (120Hz)",
         target_type="bytecode",
         description="Forces TikTok to run at peak display refresh rate (120Hz/90Hz/60Hz) and neutralizes video playback framerate downclocking routines.",
         required_classes=[
@@ -356,7 +356,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     ),
     PatchContract(
         patch_id="custom_offline_videos_limit",
-        name="Custom Offline Videos Limit",
+        name="Offline Video Limit",
         target_type="bytecode",
         description="Customizes the maximum number of videos available for offline download caching.",
         required_classes=[
@@ -368,7 +368,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
 
     PatchContract(
         patch_id="disable_story_feed_indicators",
-        name="Disable Story Feed Indicators",
+        name="Story rings",
         target_type="bytecode",
         description="Removes creator profile photo story rings from feed videos, ensuring avatar photos remain clean without blue story rings.",
         required_classes=[
@@ -381,7 +381,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     ),
     PatchContract(
         patch_id="feed_navigation_declutter",
-        name="Navigation & Header Declutter",
+        name="Clean Top Bar",
         target_type="bytecode",
         description="Removes clutter from the feed navigation and top header bar, including the Nearby feed tab, Community (Explore) tab, top-left LIVE broadcast button, and in-video bottom search suggestion bar.",
         required_classes=[
@@ -395,7 +395,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     ),
     PatchContract(
         patch_id="force_auto_scroll",
-        name="Force auto-scroll",
+        name="Auto-Scroll Videos",
         target_type="bytecode",
         description="Forces the activation of the native video auto-scroll experiment flag for accounts and regions that lack it due to A/B testing.",
         required_classes=[
@@ -412,7 +412,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     ),
     PatchContract(
         patch_id="disable_search_history_recording",
-        name="Disable Search History Recording",
+        name="No Search History",
         target_type="bytecode",
         description="Prevents search queries and keywords from being recorded in local history, databases, and analytics stores.",
         required_classes=[
@@ -424,7 +424,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     ),
     PatchContract(
         patch_id="disable_watch_history_recording",
-        name="Disable Watch History Recording",
+        name="No Watch History",
         target_type="bytecode",
         description="Prevents viewed videos from being recorded in account watch history, playback duration stores, and local history caches.",
         required_classes=[
@@ -437,7 +437,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     ),
     PatchContract(
         patch_id="disable_double_tap_to_like",
-        name="Disable double tap to like",
+        name="No Accidental Likes",
         target_type="bytecode",
         description="Disables the double tap gesture to like videos in the feed, preventing accidental likes while scrolling or pausing. Videos can still be liked using the like button.",
         required_classes=[
@@ -450,7 +450,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     ),
     PatchContract(
         patch_id="hide_suggested_searches",
-        name="Hide Suggested Searches",
+        name="No Suggested Searches",
         target_type="bytecode",
         description="Removes the 'Podría interesarte' (You may like / Guess Search) suggested keywords section from the search intermediate page.",
         required_classes=[
@@ -462,7 +462,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     ),
     PatchContract(
         patch_id="hide_popular_lives_in_search",
-        name="Hide Popular Lives In Search",
+        name="No Lives in Search",
         target_type="bytecode",
         description="Removes the 'LIVE populares' (Popular LIVEs) recommendation card and stream broadcasts from the search intermediate page.",
         required_classes=[
@@ -473,7 +473,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     ),
     PatchContract(
         patch_id="hide_ai_tagged_content",
-        name="Hide AI-Generated Content",
+        name="Hide AI Videos",
         target_type="bytecode",
         description="Filters and skips videos tagged with native AI-generated metadata, C2PA content credentials, or creator AI disclosure tags across the For You, Following, and Friends feeds.",
         required_classes=[
@@ -487,7 +487,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     ),
     PatchContract(
         patch_id="auto_pause_first_video",
-        name="Auto-Pause First Video",
+        name="Pause First Video",
         target_type="bytecode",
         description="Automatically pauses the first video when opening TikTok to allow background initialization.",
         required_classes=[
@@ -498,7 +498,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     ),
     PatchContract(
         patch_id="disable_avatar_live_status",
-        name="Disable Profile Photo LIVE Status",
+        name="No LIVE Rings",
         target_type="bytecode",
         description="Removes the pulsing LIVE ring badge on creator profile avatars in the video feed.",
         required_classes=[
@@ -509,7 +509,7 @@ TIKTOK_PATCH_CONTRACTS: List[PatchContract] = [
     ),
     PatchContract(
         patch_id="hide_avatar_follow_button",
-        name="Hide Profile Photo Follow Button",
+        name="Follow badge",
         target_type="bytecode",
         description="Hides the plus (+) follow badge on creator profile avatars in the feed.",
         required_classes=[

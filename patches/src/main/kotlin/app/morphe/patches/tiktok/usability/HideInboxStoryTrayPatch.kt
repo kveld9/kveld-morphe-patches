@@ -10,8 +10,8 @@ import app.morphe.patches.shared.replaceWithReturnEmptyList
 import app.morphe.patches.shared.sharedExtensionPatch
 
 val hideInboxStoryTrayPatch = bytecodePatch(
-    name = "Hide Inbox Story & Status Tray",
-    description = "Hides the horizontal story, notes, and status tray (Skylight) displayed at the top of direct messages and the inbox.",
+    name = "Hide Inbox Stories",
+    description = "Removes story tray from messages.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -19,8 +19,8 @@ val hideInboxStoryTrayPatch = bytecodePatch(
 
     val hideSuggestedOnly by booleanOption(
         key = "hideSuggestedOnly",
-        title = "Hide Suggested Stories Only",
-        description = "Hides only suggested and non-followed story circles in the inbox tray, preserving followed stories and preventing autoplay into suggested users.",
+        title = "Only suggested",
+        description = "Hide only suggested stories, keep followed.",
         default = true,
     )
 

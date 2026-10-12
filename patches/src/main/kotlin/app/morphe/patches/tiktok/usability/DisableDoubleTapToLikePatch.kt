@@ -6,8 +6,8 @@ import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.replaceWithReturnVoid
 
 val disableDoubleTapToLikePatch = bytecodePatch(
-    name = "Disable Double Tap to Like",
-    description = "Disables double tap like in the feed.",
+    name = "No Accidental Likes",
+    description = "Double tap no longer likes videos.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)

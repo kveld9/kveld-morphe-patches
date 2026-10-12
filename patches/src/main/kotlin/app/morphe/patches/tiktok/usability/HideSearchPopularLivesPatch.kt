@@ -10,8 +10,8 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
 val hideSearchPopularLivesPatch = bytecodePatch(
-    name = "Hide Popular Lives In Search",
-    description = "Removes the Popular LIVEs recommendation card and live stream broadcasts from the search discovery page.",
+    name = "No Lives in Search",
+    description = "Removes live cards from search.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)

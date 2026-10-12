@@ -9,8 +9,8 @@ import app.morphe.patches.shared.sharedExtensionPatch
 import com.android.tools.smali.dexlib2.AccessFlags
 
 val showAuthorRegionPatch = bytecodePatch(
-    name = "Show Author Region",
-    description = "Displays the creator's country or region code next to their username in video author info across feeds and deep-linked detail views.",
+    name = "Show Creator Country",
+    description = "Shows country next to usernames.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)

@@ -15,8 +15,8 @@ import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 
 val mediaEnhancementsPatch = bytecodePatch(
-    name = "Media Usability & Watermark-Free Downloader",
-    description = "Unblocks the download button on creator-restricted videos inside the Share panel, and routes downloads to clean unwatermarked media streams.",
+    name = "Save Without Watermark",
+    description = "Downloads clean videos without watermark.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -25,15 +25,15 @@ val mediaEnhancementsPatch = bytecodePatch(
     val removeWatermark by booleanOption(
         key = "removeWatermark",
         default = true,
-        title = "Remove Watermark",
-        description = "Routes downloads to clean unwatermarked streams and strips client-side watermark overlays. Disable to keep stock watermarked downloads while retaining the unblocked download button.",
+        title = "No watermark",
+        description = "Save clean videos.",
         required = false,
     )
 
     val downloadQuality by stringOption(
         key = "downloadQuality",
-        title = "Saved-Video Quality Preference",
-        description = "Download quality control (the single place for download quality; the Video Quality Governor only caps playback): 'high' (best available stream), 'medium', 'low' (smallest stream), or a fixed resolution ceiling in p (1080, 720, 540, 480, 360 - best stream within the ceiling). Anything else falls back to 'high'.",
+        title = "Save quality",
+        description = "high, medium, low or 1080-360.",
         default = "high",
         required = false,
     )

@@ -9,8 +9,8 @@ import app.morphe.patches.shared.sharedExtensionPatch
 import com.android.tools.smali.dexlib2.Opcode
 
 val displayRefreshRateGovernorPatch = bytecodePatch(
-    name = "Display Refresh Rate Governor",
-    description = "Forces TikTok to run at peak display refresh rate (120Hz/90Hz/60Hz) and neutralizes video playback framerate downclocking routines.",
+    name = "Smooth Screen",
+    description = "Keeps the screen at top refresh rate.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -18,8 +18,8 @@ val displayRefreshRateGovernorPatch = bytecodePatch(
 
     val targetRate by stringOption(
         key = "targetRate",
-        title = "Target Refresh Rate",
-        description = "Select target display refresh rate: max (display peak rate), 120 (120 Hz), 90 (90 Hz), or 60 (60 Hz). Clamped automatically to display maximum.",
+        title = "Screen speed",
+        description = "max, 120, 90 or 60. Auto-limited to your screen.",
         default = "max",
         required = false,
     )

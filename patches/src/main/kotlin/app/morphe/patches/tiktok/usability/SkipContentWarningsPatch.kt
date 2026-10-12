@@ -10,7 +10,7 @@ import com.android.tools.smali.dexlib2.AccessFlags
 
 val skipContentWarningsPatch = bytecodePatch(
     name = "Skip Content Warnings",
-    description = "Bypasses and clears sensitive content warnings, graphic media blur overlays, and age gates on feed videos.",
+    description = "Bypasses sensitive-content screens.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
