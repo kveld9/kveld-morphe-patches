@@ -6,6 +6,7 @@ import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -108,6 +109,12 @@ public final class TikTokSpotifyAuthHook {
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
+        // OAuth page needs no local file/content access.
+        settings.setAllowFileAccess(false);
+        settings.setAllowContentAccess(false);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            settings.setSafeBrowsingEnabled(true);
+        }
         CookieManager.getInstance().setAcceptCookie(true);
 
         webView.setWebViewClient(new WebViewClient() {
@@ -170,6 +177,7 @@ public final class TikTokSpotifyAuthHook {
         Uri expected = Uri.parse(redirectUri);
         return TextUtils.equals(uri.getScheme(), expected.getScheme())
                 && TextUtils.equals(uri.getHost(), expected.getHost())
+                && uri.getPort() == expected.getPort()
                 && TextUtils.equals(uri.getPath(), expected.getPath());
     }
 

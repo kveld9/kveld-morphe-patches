@@ -83,7 +83,9 @@ public final class TikTokCameraMicHook {
     private static void updateIndicator() {
         mainHandler.post(() -> {
             Activity activity = activityRef.get();
-            if (activity == null || activity.isFinishing()) {
+            if (activity == null || activity.isFinishing() || activity.isDestroyed()) {
+                // Drop the stale view so a destroyed Activity can be GC'd.
+                indicatorView = null;
                 return;
             }
             if (indicatorView == null) {
@@ -110,13 +112,19 @@ public final class TikTokCameraMicHook {
             }
 
             IndicatorView view = new IndicatorView(activity);
-            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
-                dpToPx(activity, 48),
-                dpToPx(activity, 24)
-            );
-            lp.gravity = Gravity.TOP | Gravity.END;
-            lp.topMargin = dpToPx(activity, 12);
-            lp.rightMargin = dpToPx(activity, 12);
+            int width = dpToPx(activity, 48);
+            int height = dpToPx(activity, 24);
+            ViewGroup.LayoutParams lp;
+            if (root instanceof FrameLayout) {
+                FrameLayout.LayoutParams flp = new FrameLayout.LayoutParams(width, height);
+                flp.gravity = Gravity.TOP | Gravity.END;
+                flp.topMargin = dpToPx(activity, 12);
+                flp.rightMargin = dpToPx(activity, 12);
+                lp = flp;
+            } else {
+                // Non-FrameLayout decor (exotic OEM skins): plain params, no gravity.
+                lp = new ViewGroup.LayoutParams(width, height);
+            }
             view.setLayoutParams(lp);
 
             root.addView(view);
