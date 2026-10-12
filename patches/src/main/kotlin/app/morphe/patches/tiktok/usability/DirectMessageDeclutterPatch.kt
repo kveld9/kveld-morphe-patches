@@ -4,6 +4,7 @@ import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions
 import app.morphe.patcher.patch.booleanOption
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.clearTryBlocks
@@ -697,5 +698,6 @@ val directMessageDeclutterPatch = bytecodePatch(
         }
 
         println("[Direct Message Declutter] Applied $patched hooks -> direct messages decluttered.")
+        if (patched == 0) throw PatchException("Direct Message Declutter: no hooks applied, targets shifted.")
     }
 }

@@ -4,6 +4,7 @@ import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.booleanOption
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.replaceWithReturnBoolean
@@ -84,6 +85,7 @@ val popupsAndPromptsSuppressorPatch = bytecodePatch(
         }
 
         println("[Popups & Prompts Suppressor] Applied $patched popup and prompt suppression hook(s).")
+        if (patched == 0 && (suppressAccountPrompts == true || suppressStickerRecommendations == true || filterPopLayerPrompts == true || suppressLiveTeaserBubble == true || suppressStreakReminders == true)) throw PatchException("Popups & Prompts Suppressor: no hooks applied, targets shifted.")
     }
 }
 

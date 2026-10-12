@@ -3,6 +3,7 @@ package app.morphe.patches.tiktok.usability
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.booleanOption
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.stringOption
 import app.morphe.patches.shared.Constants
@@ -132,5 +133,6 @@ val disableFeedLongPressActionsPatch = bytecodePatch(
         }
 
         println("[Disable Feed Long-Press Actions] Applied $patched feed long-press action suppression hook(s).")
+        if (patched == 0 && (disableLikeRepost != false || disableShareQuickDms != false || disableCommentReactions != false || lpMode != "nothing")) throw PatchException("Disable Feed Long-Press Actions: no hooks applied, targets shifted.")
     }
 }
