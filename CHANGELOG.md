@@ -1,3 +1,11 @@
+## [2.7.0-experimental.17](https://github.com/kveld9/kveld-morphe-patches/compare/v2.7.0-experimental.16...v2.7.0-experimental.17) (2026-10-12)
+
+### Bug Fixes
+
+* **brave:** show a clear error when patching unsupported Brave builds ([75389cc](https://github.com/kveld9/kveld-morphe-patches/commit/75389cca5412c107df27b1857da0d51d672ec91b))
+* **brave:** verify tracking-server offsets before rewriting system library ([0f084ec](https://github.com/kveld9/kveld-morphe-patches/commit/0f084ec8b60213991a12fdc695ab301b8575642f))
+* **universal:** enable screen-size form-factor stripping by default ([cc05869](https://github.com/kveld9/kveld-morphe-patches/commit/cc0586998f8c95d0ab074c341aeb6643e022c3ad))
+
 ## [2.7.0-experimental.16](https://github.com/kveld9/kveld-morphe-patches/compare/v2.7.0-experimental.15...v2.7.0-experimental.16) (2026-10-12)
 
 ### Bug Fixes
