@@ -13,7 +13,7 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
 val feedContentFilterPatch = bytecodePatch(
-    name = "Filter Feed",
+    name = "Filter Feed Content",
     description = "Hides stories, photos and videos by views/likes.",
     default = true,
 ) {
