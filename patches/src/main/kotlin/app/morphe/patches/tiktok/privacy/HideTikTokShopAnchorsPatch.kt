@@ -2,6 +2,7 @@ package app.morphe.patches.tiktok.privacy
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
@@ -161,5 +162,6 @@ val hideTikTokShopAnchorsPatch = bytecodePatch(
         }
 
         println("[Hide TikTok Shop & Mall] Applied $patched TikTok Shop anchor and navigation tab suppression hook(s).")
+        if (patched == 0 && (hideShopTab != false || hideVideoAnchors != false)) throw PatchException("Hide TikTok Shop & Mall: no hooks applied, targets shifted.")
     }
 }
