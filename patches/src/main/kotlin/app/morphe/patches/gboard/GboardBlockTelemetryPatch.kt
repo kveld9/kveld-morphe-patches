@@ -6,6 +6,7 @@ import app.morphe.patcher.extensions.InstructionExtensions.instructionsOrNull
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.booleanOption
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.shared.Constants
@@ -175,6 +176,7 @@ val gboardBlockTelemetryPatch = bytecodePatch(
         }
 
         println("[Block Telemetry] Injected Smali hooks into ${hookedMethods.size} telemetry & diagnostic methods across ${targetClasses.size} classes (${targetClasses.joinToString(", ")})")
+        if (hookedMethods.isEmpty()) throw PatchException("Block Telemetry: no hooks applied, targets shifted.")
     }
 }
 

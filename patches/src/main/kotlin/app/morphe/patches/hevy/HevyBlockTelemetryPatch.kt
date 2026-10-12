@@ -2,6 +2,7 @@ package app.morphe.patches.hevy
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patches.shared.Constants
@@ -206,5 +207,6 @@ val hevyBlockTelemetryPatch = bytecodePatch(
         hookedMethods.add("AmplitudeReactNativeModule.getLegacyEvents")
 
         println("[Block Telemetry & Trackers] Successfully hooked ${hookedMethods.size} telemetry methods: ${hookedMethods.joinToString(", ")}")
+        if (hookedMethods.isEmpty()) throw PatchException("Block Telemetry & Trackers: no hooks applied, targets shifted.")
     }
 }

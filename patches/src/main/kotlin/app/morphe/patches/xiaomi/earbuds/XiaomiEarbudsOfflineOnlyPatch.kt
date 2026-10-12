@@ -2,6 +2,7 @@ package app.morphe.patches.xiaomi.earbuds
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patches.shared.Constants
@@ -309,5 +310,6 @@ val xiaomiEarbudsOfflineOnlyPatch = bytecodePatch(
         }
 
         println("[Offline Only] Spoofed offline network state across ${hookedMethods.size} targets.")
+        if (hookedMethods.isEmpty()) throw PatchException("Offline Only: no hooks applied, targets shifted.")
     }
 }

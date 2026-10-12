@@ -2,6 +2,7 @@ package app.morphe.patches.xiaomi.earbuds
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 
@@ -68,5 +69,6 @@ val xiaomiEarbudsSoundFeaturesUnlockPatch = bytecodePatch(
         }
 
         println("[Sound Features Unlock] Unlocked sound features and bypassed restrictions across ${hookedMethods.size} targets.")
+        if (hookedMethods.isEmpty()) throw PatchException("Sound Features Unlock: no hooks applied, targets shifted.")
     }
 }

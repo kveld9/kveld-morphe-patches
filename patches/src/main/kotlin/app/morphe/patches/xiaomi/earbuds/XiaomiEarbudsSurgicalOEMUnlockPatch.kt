@@ -3,6 +3,7 @@ package app.morphe.patches.xiaomi.earbuds
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
@@ -80,5 +81,6 @@ val xiaomiEarbudsSurgicalOEMUnlockPatch = bytecodePatch(
         }
 
         println("[Surgical OEM Unlock] Neutralized Xiaomi OEM restrictions across ${hookedMethods.size} targets (SuperAivs 5009 item, voice settings, and SpatialAudio dialog).")
+        if (hookedMethods.isEmpty()) throw PatchException("Surgical OEM Unlock: no hooks applied, targets shifted.")
     }
 }

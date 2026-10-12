@@ -2,6 +2,7 @@ package app.morphe.patches.xiaomi.earbuds
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patches.shared.Constants
@@ -296,5 +297,6 @@ val xiaomiEarbudsDevicePrivacyGuardPatch = bytecodePatch(
         }
 
         println("[Device Privacy Guard] Anonymized device identifiers and blinded hardware privacy getters across ${hookedMethods.size} targets.")
+        if (hookedMethods.isEmpty()) throw PatchException("Device Privacy Guard: no hooks applied, targets shifted.")
     }
 }

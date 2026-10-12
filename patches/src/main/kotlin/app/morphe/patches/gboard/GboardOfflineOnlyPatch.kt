@@ -3,6 +3,7 @@ package app.morphe.patches.gboard
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.BytecodePatch
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patches.shared.ANDROID_XML_NAMESPACE
@@ -305,5 +306,6 @@ val gboardOfflineOnlyPatch: BytecodePatch = bytecodePatch(
         }
 
         println("[Offline Only] Neutralized $hookedMethods network & connectivity methods across 11 classes.")
+        if (hookedMethods == 0) throw PatchException("Offline Only: no hooks applied, targets shifted.")
     }
 }

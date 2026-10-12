@@ -2,6 +2,7 @@ package app.morphe.patches.xiaomi.earbuds
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 
@@ -273,6 +274,7 @@ val xiaomiEarbudsDisablePromosAndNagsPatch = bytecodePatch(
         }
 
         println("[Disable Promos & Nags] Disabled startup privacy agreements, onboarding guides, region selector prompts, promotional banners, Bluetooth permission nags, and review nags across ${hookedMethods.size} targets.")
+        if (hookedMethods.isEmpty()) throw PatchException("Disable Promos & Nags: no hooks applied, targets shifted.")
     }
 }
 

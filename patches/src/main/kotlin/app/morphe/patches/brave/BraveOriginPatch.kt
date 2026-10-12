@@ -7,6 +7,7 @@ import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions
 import app.morphe.patcher.methodCall
 import app.morphe.patcher.opcode
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patcher.string
@@ -414,5 +415,6 @@ val braveOriginPatch = bytecodePatch(
         println(
             "[Brave Origin] Hooked ${hookedMethods.size} core methods across ${targetClasses.size} classes (${hookedMethods.joinToString(", ")}) & configured ${configuredGatekeepers.size} policy gatekeepers (${configuredGatekeepers.joinToString(", ")})"
         )
+        if (hookedMethods.isEmpty()) throw PatchException("Brave Origin: no hooks applied, targets shifted.")
     }
 }

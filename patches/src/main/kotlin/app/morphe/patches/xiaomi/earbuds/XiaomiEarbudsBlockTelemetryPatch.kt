@@ -2,6 +2,7 @@ package app.morphe.patches.xiaomi.earbuds
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patches.shared.Constants
@@ -184,5 +185,6 @@ val xiaomiEarbudsBlockTelemetryPatch = bytecodePatch(
         }
 
         println("[Block Telemetry & Trackers] Neutralized ${hookedMethods.size} telemetry, event tracking, and auto-report hooks.")
+        if (hookedMethods.isEmpty()) throw PatchException("Block Telemetry & Trackers: no hooks applied, targets shifted.")
     }
 }

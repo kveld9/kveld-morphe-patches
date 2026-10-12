@@ -2,6 +2,7 @@ package app.morphe.patches.nokoprint
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patches.shared.Constants
@@ -168,5 +169,6 @@ val nokoPrintBlockTelemetryPatch = bytecodePatch(
         }
 
         println("[Block Telemetry] Neutralized ${hookedMethods.size} telemetry dispatch methods.")
+        if (hookedMethods.isEmpty()) throw PatchException("Block Telemetry: no hooks applied, targets shifted.")
     }
 }
