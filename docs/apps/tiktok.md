@@ -72,8 +72,8 @@ Comprehensive technical, architectural, and configuration guide for **TikTok** (
 | **Slimmer** | **Voice & Speech Engine De-bloat** | `rawResourcePatch` | Strips on-device voice recognition/synthesis engines (`libspeechspg.so`, `libspeechsdk.so`) and their loader stubs (`libspeechengine.so`, `libspeechepg.so`). Breaks voice search, voice input, and editor text-to-speech. |
 | **Slimmer** | **Core Asset De-bloat** | `rawResourcePatch` | Strips Microblink OCR models, C2PA AI libs, ByteDance TTWebView engine, non-Latin fonts, Python VM (~77 MB saved). |
 | **Slimmer** | **Studio & Creation De-bloat** | `rawResourcePatch` | Strips AR camera engine (`libeffect_plugin.so`), video editor SDK (`libttvesdk_plugin.so`), CapCut NLE libs, CutSame/Davinci template engine, camera dynamic features, upload video encoders, and on-device AI runtimes (LiteRT). |
-| **Slimmer** | **Language Pack Purger** | `rawResourcePatch` | Strips unselected language string bundles from `assets/strings#lang_*`. |
-| **Universal Patches Suite** | Multiple | Optimization & Privacy | Do not stack universal telemetry/privacy patches on this maintained app (dedicated patches already cover it). Slimmers + curated Block Tracking Servers only. See [Universal Patch Reference](../universal-patches.md). |
+| **Slimmer** | **Language Pack Purger** | `rawResourcePatch` | Deletes the language bundles you do not keep from `assets/strings#lang_*`. |
+| **Universal Patches Suite** | Multiple | Optimization & Privacy | Do not stack universal telemetry/privacy patches on this maintained app (dedicated patches already cover it). Slimmers + curated Universal Hosts Blocker only. See [Universal Patch Reference](../universal-patches.md). |
 
 ---
 

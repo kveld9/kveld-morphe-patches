@@ -4,8 +4,6 @@ import app.morphe.patcher.patch.rawResourcePatch
 import app.morphe.patcher.patch.stringOption
 import app.morphe.patches.shared.Constants
 
-private val EMPTY_BYTES = byteArrayOf()
-
 val localeSlimmerPatch = rawResourcePatch(
     name = "Language Pack Purger",
     description = "Strips unselected language string bundles from assets/strings#lang_* to save APK space.",
@@ -39,13 +37,16 @@ val localeSlimmerPatch = rawResourcePatch(
             assetsDir.listFiles()?.filter { it.isDirectory && it.name.startsWith("strings#lang_") }?.forEach { langDir ->
                 val langCode = langDir.name.removePrefix("strings#lang_").lowercase()
                 if (langCode !in selectedLangs) {
-                    langDir.walkTopDown().filter { it.isFile }.forEach { file ->
-                        val origSize = file.length()
-                        if (origSize > 0) {
-                            file.writeBytes(EMPTY_BYTES)
-                            savedBytes += origSize
-                        }
+                    // Delete the folder instead of emptying every file inside it.
+                    // Zeroing rewrites hundreds of entries and leaves them behind as
+                    // 0-byte files; deleting is one operation and keeps the rebuilt
+                    // APK free of empty entries. Deletion is already the approach used
+                    // by the universal locale slimmer for the same purpose.
+                    val folderSize = langDir.walkTopDown().filter { it.isFile }.sumOf { it.length() }
+                    if (folderSize > 0) {
+                        savedBytes += folderSize
                     }
+                    langDir.deleteRecursively()
                     strippedFolders++
                 }
             }
