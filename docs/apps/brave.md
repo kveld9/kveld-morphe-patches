@@ -217,7 +217,7 @@ ur, uz, vi, zh-CN, zh-HK, zh-TW, zu
 - **Option Key**: `locales`
 - **Default**: `en-US`
 - **Accepted Format**: Comma-separated list of locale codes (e.g. `es, es-419, pt-BR, fr, de`).
-- **Notes**: English (`en-US`) is always preserved automatically as an essential Chromium fallback. To prevent Chromium startup crashes on devices configured with unselected system languages, stripped language PAKs are safely populated with the base `en-US` resource table fallback rather than empty stubs. For the full list of 81 supported locale codes, consult [Locale PAK Slimmer](#11-locale-pak-slimmer-localepakslimmerpatch).
+- **Notes**: English (`en-US`) is always preserved automatically as an essential Chromium fallback. To prevent Chromium startup crashes on devices configured with unselected system languages, stripped language PAKs are safely populated with the base `en-US` resource table fallback rather than empty stubs. For the full list of 81 supported locale codes, consult [Locale PAK Slimmer](#11-remove-extra-languages-localepakslimmerpatch).
 
 ---
 
