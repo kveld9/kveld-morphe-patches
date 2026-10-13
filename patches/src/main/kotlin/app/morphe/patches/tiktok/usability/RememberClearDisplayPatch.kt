@@ -91,6 +91,10 @@ val rememberClearDisplayPatch = bytecodePatch(
             println("[Remember Clear Display] First-frame replay note: ${e.message}")
         }
 
-        println("[Remember Clear Display] Applied $patched clear-display hook(s).")
+        if (patched == 0) {
+            println("[Remember Clear Display] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Remember Clear Display] Applied $patched clear-display hook(s).")
+        }
     }
 }

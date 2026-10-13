@@ -157,6 +157,10 @@ val systemFontPatch = bytecodePatch(
         patched += hookDynamicFontProvider()
         patched += hookAssetFontLoader()
         patched += hookWebViewFontLoader()
-        println("[System Font] Applied $patched system font hook(s) -> System font active.")
+        if (patched == 0) {
+            println("[System Font] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[System Font] Applied $patched system font hook(s) -> System font active.")
+        }
     }
 }

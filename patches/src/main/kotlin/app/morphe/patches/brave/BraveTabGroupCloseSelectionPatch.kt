@@ -56,6 +56,10 @@ val braveTabGroupCloseSelectionPatch = bytecodePatch(
             throw PatchException(BRAVE_UNSUPPORTED_VARIANT_MESSAGE)
         }
 
-        println("[Tab Group Close Selection] Applied $patched hook in TabCollectionTabModelImpl.${closeSelectionFp.method.name} -> previous tab selection in tab group enabled.")
+        if (patched == 0) {
+            println("[Tab Group Close Selection] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Tab Group Close Selection] Applied $patched hook in TabCollectionTabModelImpl.${closeSelectionFp.method.name} -> previous tab selection in tab group enabled.")
+        }
     }
 }

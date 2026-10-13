@@ -477,6 +477,10 @@ val customShareSheetPatch = bytecodePatch(
             patched++
         }
 
-        println("[Custom Share Sheet] Applied $patched hooks -> share sheet customized.")
+        if (patched == 0) {
+            println("[Custom Share Sheet] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Custom Share Sheet] Applied $patched hooks -> share sheet customized.")
+        }
     }
 }

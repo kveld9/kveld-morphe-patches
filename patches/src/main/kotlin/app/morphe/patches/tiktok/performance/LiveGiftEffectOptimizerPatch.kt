@@ -51,6 +51,10 @@ val liveGiftEffectOptimizerPatch = bytecodePatch(
             println("[Live Stream 3D Gift Optimizer] LiveGiftEffectWidget.onCreate note: ${e.message}")
         }
 
-        println("[Live Stream 3D Gift Optimizer] Applied $patched live gift engine hook(s).")
+        if (patched == 0) {
+            println("[Live Stream 3D Gift Optimizer] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Live Stream 3D Gift Optimizer] Applied $patched live gift engine hook(s).")
+        }
     }
 }

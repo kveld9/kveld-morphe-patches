@@ -227,6 +227,10 @@ val regionBypassPatch = bytecodePatch(
             println("[SIM Region Selector] Operator spoofing note: ${e.message}")
         }
 
-        println("[SIM Region Selector] Applied $patched SIM/Network country spoofing hooks (region: $region).")
+        if (patched == 0) {
+            println("[SIM Region Selector] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[SIM Region Selector] Applied $patched SIM/Network country spoofing hooks (region: $region).")
+        }
     }
 }

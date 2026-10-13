@@ -165,6 +165,10 @@ val instantColdStartPatch = bytecodePatch(
         println("[InstantColdStart] Injected instant finish into NormalSplashAdActivity.onCreate().")
         patched++
 
-        println("[InstantColdStart] Applied $patched startup optimizations -> Instant cold/warm start and zero splash/TopView ads achieved.")
+        if (patched == 0) {
+            println("[InstantColdStart] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[InstantColdStart] Applied $patched startup optimizations -> Instant cold/warm start and zero splash/TopView ads achieved.")
+        }
     }
 }

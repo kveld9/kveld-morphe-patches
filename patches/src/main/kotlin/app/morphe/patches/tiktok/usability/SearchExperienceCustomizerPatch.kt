@@ -223,7 +223,11 @@ val searchExperienceCustomizerPatch = bytecodePatch(
             }
             patched++
 
-            println("[Search Experience] Applied $patched suggested search suppression hook(s) -> 'You may like' neutralized.")
+            if (patched == 0) {
+                println("[Search Experience] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+            } else {
+                println("[Search Experience] Applied $patched suggested search suppression hook(s) -> 'You may like' neutralized.")
+            }
         }
 
         // 2. Hide Popular Lives In Search

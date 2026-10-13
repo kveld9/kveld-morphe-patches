@@ -70,6 +70,10 @@ val showAuthorRegionPatch = bytecodePatch(
         )
         patched++
 
-        println("[Show Author Region] Applied $patched author region hook(s).")
+        if (patched == 0) {
+            println("[Show Author Region] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Show Author Region] Applied $patched author region hook(s).")
+        }
     }
 }

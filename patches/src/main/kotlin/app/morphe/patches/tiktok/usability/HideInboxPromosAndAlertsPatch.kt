@@ -128,6 +128,10 @@ val hideInboxPromosAndAlertsPatch = bytecodePatch(
             println("[Hide Inbox Promos & Alerts] Disabled ${noticeClasses.size} navigation notice injector(s) and 1 follower guide hook.")
         }
 
-        println("[Hide Inbox Promos & Alerts] Applied $patched inbox promo and alert suppression hook(s).")
+        if (patched == 0) {
+            println("[Hide Inbox Promos & Alerts] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Hide Inbox Promos & Alerts] Applied $patched inbox promo and alert suppression hook(s).")
+        }
     }
 }

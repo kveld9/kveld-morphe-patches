@@ -78,6 +78,10 @@ val cleanShareUrlPatch = bytecodePatch(
             patched++
         }
 
-        println("[Clean Share URL] Applied $patched link tracking sanitizer hook(s).")
+        if (patched == 0) {
+            println("[Clean Share URL] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Clean Share URL] Applied $patched link tracking sanitizer hook(s).")
+        }
     }
 }

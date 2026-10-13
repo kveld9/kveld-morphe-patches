@@ -162,7 +162,11 @@ val gboardFeatureFlagsPatch = bytecodePatch(
         println("[Feature Flags] EmojiKeyboardUtils: Hooked getPrefKeyboardEmojiScale to dynamic Morphe scale.")
         patched++
 
-        println("[Feature Flags] Applied $patched feature flag override(s) cleanly (native settings unpolluted).")
+        if (patched == 0) {
+            println("[Feature Flags] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Feature Flags] Applied $patched feature flag override(s) cleanly (native settings unpolluted).")
+        }
     }
 }
 

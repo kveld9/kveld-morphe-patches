@@ -73,6 +73,10 @@ val resumeVideoAfterScrollPatch = bytecodePatch(
         println("[Resume Video After Scroll] Hooked feed event type check in ${positionMethod.definingClass}->${positionMethod.name} -> Allowed across all feeds.")
         patched++
 
-        println("[Resume Video After Scroll] Applied $patched resume playback hook(s).")
+        if (patched == 0) {
+            println("[Resume Video After Scroll] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Resume Video After Scroll] Applied $patched resume playback hook(s).")
+        }
     }
 }

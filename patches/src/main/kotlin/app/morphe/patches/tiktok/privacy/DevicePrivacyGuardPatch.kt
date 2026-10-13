@@ -847,6 +847,10 @@ val devicePrivacyGuardPatch = bytecodePatch(
         println("[Device Privacy Guard] Intercepted $locationSites LocationManager call site(s) -> hardware location queries suppressed.")
         patched++
 
-        println("[Device Privacy Guard] Applied $patched device privacy protection hook(s).")
+        if (patched == 0) {
+            println("[Device Privacy Guard] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Device Privacy Guard] Applied $patched device privacy protection hook(s).")
+        }
     }
 }

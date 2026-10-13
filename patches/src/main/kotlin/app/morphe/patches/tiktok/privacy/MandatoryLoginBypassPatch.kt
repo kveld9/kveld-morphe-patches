@@ -115,6 +115,10 @@ val mandatoryLoginBypassPatch = bytecodePatch(
             println("[Bypass Mandatory Login] GuestModeServiceImpl.isGuestMode note: ${e.message}")
         }
 
-        println("[Bypass Mandatory Login] Applied $patched hooks -> Mandatory login wall bypassed.")
+        if (patched == 0) {
+            println("[Bypass Mandatory Login] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Bypass Mandatory Login] Applied $patched hooks -> Mandatory login wall bypassed.")
+        }
     }
 }

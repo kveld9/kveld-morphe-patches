@@ -60,7 +60,11 @@ val hideInboxStoryTrayPatch = bytecodePatch(
             println("[Hide Inbox Story & Status Tray] Hooked InboxSkylightWidgetV2 display eligibility -> return false.")
             patched++
 
-            println("[Hide Inbox Story & Status Tray] Applied $patched hook(s) -> Inbox story and status tray hidden.")
+            if (patched == 0) {
+                println("[Hide Inbox Story & Status Tray] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+            } else {
+                println("[Hide Inbox Story & Status Tray] Applied $patched hook(s) -> Inbox story and status tray hidden.")
+            }
             return@execute
         }
 

@@ -696,6 +696,10 @@ val directMessageDeclutterPatch = bytecodePatch(
             }
         }
 
-        println("[Direct Message Declutter] Applied $patched hooks -> direct messages decluttered.")
+        if (patched == 0) {
+            println("[Direct Message Declutter] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Direct Message Declutter] Applied $patched hooks -> direct messages decluttered.")
+        }
     }
 }

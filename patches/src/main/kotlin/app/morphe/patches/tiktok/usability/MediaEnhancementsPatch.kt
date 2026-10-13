@@ -389,7 +389,11 @@ val mediaEnhancementsPatch = bytecodePatch(
             println("[Media Usability] Watermark removal disabled -> downloader spec kept stock.")
         }
 
-        println("[Media Usability & Watermark-Free Downloader] Applied $patched media usability and watermark-free download hook(s).")
+        if (patched == 0) {
+            println("[Media Usability & Watermark-Free Downloader] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Media Usability & Watermark-Free Downloader] Applied $patched media usability and watermark-free download hook(s).")
+        }
     }
 }
 

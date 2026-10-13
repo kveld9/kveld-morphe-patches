@@ -1238,6 +1238,10 @@ val commentCustomizerPatch = bytecodePatch(
             patched += applyAutoTranslate(normalizedExclusions)
         }
 
-        println("[Comment Customizer] Applied $patched comment customization hook(s).")
+        if (patched == 0) {
+            println("[Comment Customizer] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Comment Customizer] Applied $patched comment customization hook(s).")
+        }
     }
 }

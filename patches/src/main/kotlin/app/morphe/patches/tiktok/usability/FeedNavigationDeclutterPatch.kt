@@ -666,6 +666,10 @@ val feedNavigationDeclutterPatch = bytecodePatch(
             }
         }
 
-        println("[Navigation & Header Declutter] Applied $patched navigation & header declutter hook(s).")
+        if (patched == 0) {
+            println("[Navigation & Header Declutter] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Navigation & Header Declutter] Applied $patched navigation & header declutter hook(s).")
+        }
     }
 }

@@ -1272,6 +1272,10 @@ val feedAdsContentFilterPatch = bytecodePatch(
             }
         }
 
-        println("[Feed Ads & Content Filter] Applied $patched feed ads and content filter hook(s).")
+        if (patched == 0) {
+            println("[Feed Ads & Content Filter] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Feed Ads & Content Filter] Applied $patched feed ads and content filter hook(s).")
+        }
     }
 }

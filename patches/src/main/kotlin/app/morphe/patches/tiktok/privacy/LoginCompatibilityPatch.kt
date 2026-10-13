@@ -98,6 +98,10 @@ val loginCompatibilityPatch = bytecodePatch(
             patched++
         }
 
-        println("[Login Compatibility Fix] Applied $patched login compatibility hook(s).")
+        if (patched == 0) {
+            println("[Login Compatibility Fix] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Login Compatibility Fix] Applied $patched login compatibility hook(s).")
+        }
     }
 }

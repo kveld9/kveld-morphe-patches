@@ -178,6 +178,10 @@ val videoFitPatch = bytecodePatch(
         println("[Video Fit] Hooked static helper (View,Result)Z -> prepended fitted() swap.")
         patched++
 
-        println("[Video Fit] Applied $patched video fit hook(s) -> fitMode=$mode.")
+        if (patched == 0) {
+            println("[Video Fit] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Video Fit] Applied $patched video fit hook(s) -> fitMode=$mode.")
+        }
     }
 }

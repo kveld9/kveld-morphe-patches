@@ -103,6 +103,10 @@ val showSeekbarPatch = bytecodePatch(
             }
         }
 
-        println("[Show Seekbar] Applied $patched seekbar hook(s).")
+        if (patched == 0) {
+            println("[Show Seekbar] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Show Seekbar] Applied $patched seekbar hook(s).")
+        }
     }
 }

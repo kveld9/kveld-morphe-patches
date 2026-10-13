@@ -116,6 +116,10 @@ val historyRecordingGovernorPatch = bytecodePatch(
             println("[History Recording Governor] Applied search history suppression hooks -> Search history recording neutralized.")
         }
 
-        println("[History Recording Governor] Applied $patched history suppression hook(s).")
+        if (patched == 0) {
+            println("[History Recording Governor] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[History Recording Governor] Applied $patched history suppression hook(s).")
+        }
     }
 }

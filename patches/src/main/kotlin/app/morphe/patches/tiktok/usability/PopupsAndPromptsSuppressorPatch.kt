@@ -134,7 +134,11 @@ val popupsAndPromptsSuppressorPatch = bytecodePatch(
             patched += applySkipContentWarningsHook()
         }
 
-        println("[Popups & Prompts Suppressor] Applied $patched popup and prompt suppression hook(s).")
+        if (patched == 0) {
+            println("[Popups & Prompts Suppressor] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Popups & Prompts Suppressor] Applied $patched popup and prompt suppression hook(s).")
+        }
     }
 }
 

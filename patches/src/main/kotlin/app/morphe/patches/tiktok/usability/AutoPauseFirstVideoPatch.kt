@@ -88,6 +88,10 @@ val autoPauseFirstVideoPatch = bytecodePatch(
         println("[Auto-Pause First Video] Hooked PlayerController.onPageScrollStateChanged -> Feed scroll detection active.")
         patched++
 
-        println("[Auto-Pause First Video] Applied $patched hook(s) -> First video auto-pause active.")
+        if (patched == 0) {
+            println("[Auto-Pause First Video] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Auto-Pause First Video] Applied $patched hook(s) -> First video auto-pause active.")
+        }
     }
 }

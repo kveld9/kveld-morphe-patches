@@ -350,7 +350,11 @@ val bypassScreenCapturePatch = bytecodePatch(
             println("[Bypass Screen Capture Detection] setFlagsSecure(Activity) note: ${e.message}")
         }
 
-        println("[Bypass Screen Capture Detection] Applied $patched screen capture unrestrict and screenshot detection suppression hook(s).")
+        if (patched == 0) {
+            println("[Bypass Screen Capture Detection] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Bypass Screen Capture Detection] Applied $patched screen capture unrestrict and screenshot detection suppression hook(s).")
+        }
     }
 }
 

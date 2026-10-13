@@ -278,6 +278,10 @@ val clientAiGovernorPatch = bytecodePatch(
         )
         patched++
 
-        println("[Client-Side AI & Behavioral Profiling Governor] Applied $patched client-side AI, Tako, and search clutter governors.")
+        if (patched == 0) {
+            println("[Client-Side AI & Behavioral Profiling Governor] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Client-Side AI & Behavioral Profiling Governor] Applied $patched client-side AI, Tako, and search clutter governors.")
+        }
     }
 }

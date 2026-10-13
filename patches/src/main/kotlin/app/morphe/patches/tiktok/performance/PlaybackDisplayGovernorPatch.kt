@@ -542,6 +542,10 @@ val playbackDisplayGovernorPatch = bytecodePatch(
             patched++
         }
 
-        println("[Playback & Display Governor] Applied $patched hook(s) across active playback and display governor feature(s).")
+        if (patched == 0) {
+            println("[Playback & Display Governor] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Playback & Display Governor] Applied $patched hook(s) across active playback and display governor feature(s).")
+        }
     }
 }

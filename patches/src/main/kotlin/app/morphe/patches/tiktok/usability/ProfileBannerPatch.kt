@@ -48,6 +48,10 @@ val profileBannerPatch = bytecodePatch(
         println("[Enable Profile Banner] Hooked ${snapshotClass.type}-><init>(Ljava/lang/String;I)V -> forced allowListValue (p2) to 1.")
         patched++
 
-        println("[Enable Profile Banner] Applied $patched hook(s) -> profile banner enabled.")
+        if (patched == 0) {
+            println("[Enable Profile Banner] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Enable Profile Banner] Applied $patched hook(s) -> profile banner enabled.")
+        }
     }
 }
