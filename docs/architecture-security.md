@@ -74,7 +74,7 @@ Implemented in [`ChromiumExtension.java`](../extensions/extension/src/main/java/
   - *TikTok* (`tiktok.com`): `tt_medium`, `tt_content`
 
 #### Platform-Specific Companion: TikTok URL Sanitization
-In contrast to the browser implementation, the TikTok companion filter ([`TikTokFeedAdFilter.sanitizeShareUrl`](../extensions/extension/src/main/java/com/kveld9/morphe/extension/tiktok/TikTokFeedAdFilter.java#L887-L910)) is domain-scoped (`tiktok.com`) and purges ByteDance-specific user tracking and device fingerprinting keys:
+In contrast to the browser implementation, the TikTok companion filter ([`TikTokShareHostHook.sanitizeShareUrlWithHost`](../extensions/extension/src/main/java/com/kveld9/morphe/extension/tiktok/TikTokShareHostHook.java#L37-L48)) is domain-scoped (`tiktok.com`) and purges ByteDance-specific user tracking and device fingerprinting keys:
 - `user_id`, `sec_user_id`, `u_code` (sender user identification)
 - `sender_device`, `checksum` (device telemetry and verification)
 - `share_link_id`, `share_item_id`, `share_app_id`, `ug_source`, `tt_from`, `timestamp`, `_r`, `source` (viral loop and graph correlation)

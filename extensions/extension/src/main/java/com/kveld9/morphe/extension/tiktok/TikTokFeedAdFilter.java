@@ -1,16 +1,12 @@
 package com.kveld9.morphe.extension.tiktok;
 
-import android.net.Uri;
 import android.util.Log;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 /**
  * High-performance, crash-safe feed ad filter for TikTok (com.zhiliaoapp.musically).
@@ -184,14 +180,6 @@ public final class TikTokFeedAdFilter {
     );
 
     private static final String SHOP_PROMO_MARKER = "placeholder_product_id";
-
-    private static final Set<String> TRACKING_PARAMS = new HashSet<>(Arrays.asList(
-        "is_from_webapp", "sender_device", "_r", "checksum", "sec_user_id",
-        "ug_source", "share_app_id", "share_item_id", "share_link_id",
-        "source", "timestamp", "user_id", "u_code", "tt_from",
-        "utm_source", "utm_campaign", "utm_medium",
-        "share_iid", "sharer_id", "ugbiz_name"
-    ));
 
     private TikTokFeedAdFilter() {}
 
@@ -772,34 +760,6 @@ public final class TikTokFeedAdFilter {
                 setAnchorInfoMethod.invoke(aweme, (Object) null);
             }
         } catch (Throwable ignored) {}
-    }
-
-    /**
-     * Purges ByteDance tracking parameters and campaign telemetry from shared URLs.
-     */
-    public static String sanitizeShareUrl(String originalUrl) {
-        if (originalUrl == null || !originalUrl.contains("tiktok.com")) {
-            return originalUrl;
-        }
-        try {
-            Uri uri = Uri.parse(originalUrl);
-            if (uri.getQuery() == null || uri.getQueryParameterNames().isEmpty()) {
-                return originalUrl;
-            }
-            Uri.Builder builder = uri.buildUpon().clearQuery();
-            for (String param : uri.getQueryParameterNames()) {
-                if (!TRACKING_PARAMS.contains(param.toLowerCase())) {
-                    builder.appendQueryParameter(param, uri.getQueryParameter(param));
-                }
-            }
-            String cleaned = builder.build().toString();
-            if (cleaned.endsWith("?")) {
-                cleaned = cleaned.substring(0, cleaned.length() - 1);
-            }
-            return cleaned;
-        } catch (Throwable t) {
-            return originalUrl;
-        }
     }
 
     @SuppressWarnings("unchecked")
@@ -1970,7 +1930,7 @@ public final class TikTokFeedAdFilter {
                 try { descObj = descField.get(aweme); } catch (Throwable ignored) {}
             }
             if (descObj instanceof String && isAiDescription((String) descObj)) {
-                Log.i(TAG, "[Hide AI-Generated Content] Match [Desc=" + descObj + "] on aid=" + aid);
+                Log.i(TAG, "[Hide AI-Generated Content] Match on aid=" + aid);
                 return true;
             }
 
@@ -1982,7 +1942,7 @@ public final class TikTokFeedAdFilter {
                 try { contentDescObj = contentDescField.get(aweme); } catch (Throwable ignored) {}
             }
             if (contentDescObj instanceof String && isAiDescription((String) contentDescObj)) {
-                Log.i(TAG, "[Hide AI-Generated Content] Match [ContentDesc=" + contentDescObj + "] on aid=" + aid);
+                Log.i(TAG, "[Hide AI-Generated Content] Match on aid=" + aid);
                 return true;
             }
 
@@ -2686,15 +2646,4 @@ public final class TikTokFeedAdFilter {
         }
     }
 
-    public static void filterAwemeList(Object listObj) {
-        filterAdsInList(listObj);
-    }
-
-    public static void filterFeedItemList(Object feedItemList) {
-        filterAdsInFeedItemList(feedItemList);
-    }
-
-    public static void filterFollowFeedList(Object followFeedList) {
-        filterAdsInFollowFeedList(followFeedList);
-    }
 }

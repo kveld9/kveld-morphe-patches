@@ -85,7 +85,7 @@ public final class TikTokShareHostHook {
                 cleaned = cleaned.substring(0, cleaned.length() - 1);
             }
 
-            Log.d(TAG, "[Clean Share URL] Sanitized share link -> " + cleaned);
+            Log.d(TAG, "[Clean Share URL] Sanitized share link.");
             return cleaned;
         } catch (Throwable t) {
             Log.w(TAG, "[Clean Share URL] Failed to sanitize share URL: " + t.getMessage());

@@ -1,14 +1,11 @@
 package com.kveld9.morphe.extension.tiktok;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.net.Uri;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -51,41 +48,6 @@ public final class TikTokPrivacyHook {
     public static boolean isPermissionBlocked(String permission) {
         if (permission == null) return false;
         return BLOCKED_PERMISSIONS.contains(permission);
-    }
-
-    public static boolean interceptPermissionRequest(Activity activity, String[] permissions, int requestCode) {
-        if (permissions == null || permissions.length == 0) {
-            return false;
-        }
-
-        boolean hasBlocked = false;
-        for (String perm : permissions) {
-            if (isPermissionBlocked(perm)) {
-                hasBlocked = true;
-                break;
-            }
-        }
-
-        if (!hasBlocked) {
-            return false;
-        }
-
-        Log.i(TAG, "[Device Privacy Guard] Intercepted runtime permission request for: " + Arrays.toString(permissions));
-
-        recordKevaDenials(permissions);
-
-        if (activity != null) {
-            final int[] grantResults = new int[permissions.length];
-            Arrays.fill(grantResults, PackageManager.PERMISSION_DENIED);
-            new Handler(Looper.getMainLooper()).post(() -> {
-                try {
-                    Method m = Activity.class.getDeclaredMethod("onRequestPermissionsResult", int.class, String[].class, int[].class);
-                    m.invoke(activity, requestCode, permissions, grantResults);
-                } catch (Throwable ignored) {}
-            });
-        }
-
-        return true;
     }
 
     public static boolean interceptPowerPermissions(Object fakeFragment, Set<String> permissions) {
@@ -143,21 +105,6 @@ public final class TikTokPrivacyHook {
                 }
             }
         } catch (Throwable ignored) {}
-    }
-
-    public static void checkPackageAllowed(String packageName) throws PackageManager.NameNotFoundException {
-        if (packageName == null || packageName.isEmpty()) {
-            return;
-        }
-        if (packageName.startsWith("com.zhiliao")
-                || packageName.startsWith("com.ss.android")
-                || packageName.startsWith("android")
-                || packageName.startsWith("com.android.")
-                || packageName.startsWith("com.google.android")) {
-            return;
-        }
-        Log.w(TAG, "[Device Privacy Guard] Intercepted external package query: " + packageName);
-        throw new PackageManager.NameNotFoundException("Package query blocked by Device Privacy Guard: " + packageName);
     }
 
     private static boolean isContactsUri(Uri uri) {

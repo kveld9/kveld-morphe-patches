@@ -8,6 +8,9 @@ on:
 jobs:
   release:
     name: Release
+    concurrency:
+      group: release-${{ github.ref }}
+      cancel-in-progress: false
     permissions:
       contents: write
       packages: write
@@ -47,6 +50,7 @@ jobs:
 
       - name: Attest
         if: steps.release.outputs.new_release_published == 'true'
+        continue-on-error: true
         uses: actions/attest-build-provenance@v4
         with:
           subject-name: 'Morphe Patches ${{ steps.release.outputs.new_release_git_tag }}'
@@ -54,6 +58,7 @@ jobs:
 
       - name: Notify Telegram Channel
         if: github.ref == 'refs/heads/main' && steps.release.outputs.new_release_published == 'true'
+        continue-on-error: true
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}

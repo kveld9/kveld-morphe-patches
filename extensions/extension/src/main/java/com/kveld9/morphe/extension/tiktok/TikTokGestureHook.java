@@ -7,7 +7,6 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
@@ -24,14 +23,6 @@ public final class TikTokGestureHook {
     private static final String TAG = "MorpheTikTok";
 
     private TikTokGestureHook() {}
-
-    /**
-     * Dispatches action when double tap is configured to open comments.
-     */
-    public static void onDoubleTapComments(Object target, MotionEvent event) {
-        Log.d(TAG, "[Disable Double Tap to Like] Double tap redirected -> opening comments.");
-        openCommentsForCurrentVideo();
-    }
 
     /**
      * Handles long-press video body actions ("nothing", "comments", "copyLink", "saveSound").
