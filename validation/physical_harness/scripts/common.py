@@ -87,6 +87,31 @@ class AdbDevice:
         pid = self.shell(f"pidof {PACKAGE_NAME}").strip()
         return pid.split()[0] if pid else None
 
+    def get_pids(self) -> List[str]:
+        """All live PIDs of the target package (main, renderer, gpu, utility...)."""
+        out = self.shell(f"pidof {PACKAGE_NAME}").strip()
+        return [p for p in out.split() if p]
+
+    def filter_logcat_by_pids(self, text: str) -> List[str]:
+        """Keeps only logcat lines emitted by the target package processes.
+
+        `dump_logcat()` returns the whole device buffer. Keywords like
+        ACTION_BATTERY_CHANGED or "sw-sync" are emitted by the system and by other
+        apps too, so counting them unscoped measures the device, not the patch.
+        Logcat lines carry the PID in the third column, which is matched against the
+        package PIDs; when the app is not running nothing is kept, so callers see no
+        evidence instead of foreign evidence.
+        """
+        pids = set(self.get_pids())
+        if not pids:
+            return []
+        kept: List[str] = []
+        for line in text.splitlines():
+            fields = line.split()
+            if len(fields) >= 4 and fields[2] in pids:
+                kept.append(line)
+        return kept
+
     def force_stop(self):
         self.shell(f"am force-stop {PACKAGE_NAME}")
         time.sleep(0.5)
@@ -141,9 +166,11 @@ class AdbDevice:
         self.cmd(["logcat", "-c"], check=False)
 
     def dump_logcat(self, filter_tag: Optional[str] = None) -> str:
+        # threadtime is enforced: filter_logcat_by_pids() reads the PID from the
+        # third column, which only holds in threadtime format.
         if filter_tag:
-            return self.cmd(["logcat", "-d", "-s", filter_tag], check=False).stdout
-        return self.cmd(["logcat", "-d"], check=False).stdout
+            return self.cmd(["logcat", "-d", "-v", "threadtime", "-s", filter_tag], check=False).stdout
+        return self.cmd(["logcat", "-d", "-v", "threadtime"], check=False).stdout
 
 
 class LocalTestServer:
