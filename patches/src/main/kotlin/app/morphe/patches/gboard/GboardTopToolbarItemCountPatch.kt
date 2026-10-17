@@ -103,6 +103,10 @@ val gboardTopToolbarItemCountPatch = bytecodePatch(
         }
 
         val targetClass = cleanClassName(fpMax.originalClassDef.type)
-        println("[Top Toolbar Item Count] Injected $patched toolbar limit override(s) in $targetClass -> dynamic preference enabled.")
+        if (patched == 0) {
+            println("[Top Toolbar Item Count] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Top Toolbar Item Count] Injected $patched toolbar limit override(s) in $targetClass -> dynamic preference enabled.")
+        }
     }
 }

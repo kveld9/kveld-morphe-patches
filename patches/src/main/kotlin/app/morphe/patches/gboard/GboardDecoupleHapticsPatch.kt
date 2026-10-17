@@ -248,6 +248,10 @@ val gboardDecoupleHapticsPatch = bytecodePatch(
             patched++
         }
 
-        println("[Decouple Haptics] Injected $patched independent haptics and touch feedback decoupling hook(s).")
+        if (patched == 0) {
+            println("[Decouple Haptics] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Decouple Haptics] Injected $patched independent haptics and touch feedback decoupling hook(s).")
+        }
     }
 }
