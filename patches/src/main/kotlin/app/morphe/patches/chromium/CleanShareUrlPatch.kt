@@ -55,8 +55,13 @@ val cleanShareUrlPatch = bytecodePatch(
         // 1. Hook ClipboardImpl.setPrimaryClip so all copied links, URLs, and text are sanitized
         try {
             val fpClipboard = Fingerprint(
+                name = "setPrimaryClip",
                 parameters = listOf("Landroid/content/ClipData;"),
+                returnType = "V",
                 strings = listOf("google"),
+                custom = { _, classDef ->
+                    classDef.type.contains("Clipboard")
+                },
             )
             fpClipboard.method.apply {
                 addInstructions(
@@ -95,6 +100,6 @@ val cleanShareUrlPatch = bytecodePatch(
             println("[Clean Shared Links] Clipboard.setText hook note: ${e.message}")
         }
 
-        println("[Clean Shared Links] Applied $patched link tracking sanitizer hook(s) across target components (${hookedTargets.joinToString(", ")}).")
+println("[Clean Shared Links] Applied $patched link tracking sanitizer hook(s) across target components (${hookedTargets.joinToString(", ")}).")
     }
 }
