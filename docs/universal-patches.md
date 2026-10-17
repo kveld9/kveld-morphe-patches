@@ -134,9 +134,9 @@ The **`Remove Unused Screen Sizes`** patch strips unselected screen density asse
   - **Single density (maximum space savings)**: e.g. `xxhdpi` for 1080p devices, or `xxxhdpi` for 1440p / 2K devices.
   - **Multiple densities (broad device compatibility)**: e.g. `xhdpi, xxhdpi`.
   - **Friendly aliases**: Resolution aliases such as `1080p` (`xxhdpi`), `720p` (`xhdpi`), or `1440p` / `2k` (`xxxhdpi`) are supported.
-- **`Watch resources` (`stripSmartwatch`)**: Boolean toggle (`false` by default). Safely purges non-values resources qualified for Wear OS smartwatches (`watch`).
-- **`TV resources` (`stripTelevision`)**: Boolean toggle (`false` by default). Safely purges non-values resources qualified for Android TV / Leanback (`television`).
-- **`Car, dock and VR resources` (`stripOtherFormFactors`)**: Boolean toggle (`false` by default). Safely purges non-values resources qualified for car head units, desk docks, appliances, or VR headsets (`car`, `desk`, `appliance`, `vrheadset`).
+- **`Watch resources` (`stripSmartwatch`)**: Boolean toggle (`true` by default). Safely purges non-values resources qualified for Wear OS smartwatches (`watch`).
+- **`TV resources` (`stripTelevision`)**: Boolean toggle (`true` by default). Safely purges non-values resources qualified for Android TV / Leanback (`television`).
+- **`Car, dock and VR resources` (`stripOtherFormFactors`)**: Boolean toggle (`true` by default). Safely purges non-values resources qualified for car head units, desk docks, appliances, or VR headsets (`car`, `desk`, `appliance`, `vrheadset`).
 - **Multi-Package ARSC Traversal**: Scans across all decoded package resource directories (`resources/<package>/res`) to deduplicate densities and purge device bloat across primary and modularized packages.
 
 ### Screen Density Reference Guide
