@@ -58,25 +58,29 @@ private fun findGnuPropertyOffset(raf: RandomAccessFile, ePhOff: Long, ePhEntSiz
     return -1L
 }
 
-private fun clearBtiInGnuProperty(raf: RandomAccessFile, gnuPropertyOffset: Long): Boolean {
-    if (gnuPropertyOffset + 12 > raf.length()) return false
+/**
+ * Returns 1 when a BTI flag was cleared and verified, -1 when a cleared flag
+ * failed read-back verification, 0 when there was nothing to clear.
+ */
+private fun clearBtiInGnuProperty(raf: RandomAccessFile, gnuPropertyOffset: Long): Int {
+    if (gnuPropertyOffset + 12 > raf.length()) return 0
     raf.seek(gnuPropertyOffset)
     val nameSz = raf.readIntLe()
     val descSz = raf.readIntLe()
     val nType = raf.readIntLe()
-    if (nType != NT_GNU_PROPERTY_TYPE_0 || nameSz < 4 || gnuPropertyOffset + 12 + nameSz > raf.length()) return false
+    if (nType != NT_GNU_PROPERTY_TYPE_0 || nameSz < 4 || gnuPropertyOffset + 12 + nameSz > raf.length()) return 0
 
     val nameBytes = ByteArray(nameSz)
     raf.readFully(nameBytes)
     val name = String(nameBytes).trimEnd('\u0000')
-    if (name != "GNU") return false
+    if (name != "GNU") return 0
 
     val descOffset = gnuPropertyOffset + 12 + ((nameSz + 3) and -4)
-    if (descOffset + descSz > raf.length()) return false
+    if (descOffset + descSz > raf.length()) return 0
 
     var curOffset = descOffset
     val endOffset = descOffset + descSz
-    var modified = false
+    var result = 0
 
     while (curOffset + 8 <= endOffset && curOffset + 8 <= raf.length()) {
         raf.seek(curOffset)
@@ -92,7 +96,13 @@ private fun clearBtiInGnuProperty(raf: RandomAccessFile, gnuPropertyOffset: Long
                 val clearedFlags = flags and GNU_PROPERTY_AARCH64_FEATURE_1_BTI.inv()
                 raf.seek(flagsOffset)
                 raf.writeIntLe(clearedFlags)
-                modified = true
+                raf.seek(flagsOffset)
+                if (raf.readIntLe() != clearedFlags) {
+                    println("[Brave Compatibility] WARNING: BTI flag read-back mismatch at offset $flagsOffset; treating as unmodified.")
+                    result = -1
+                } else if (result == 0) {
+                    result = 1
+                }
             }
         }
 
@@ -101,28 +111,28 @@ private fun clearBtiInGnuProperty(raf: RandomAccessFile, gnuPropertyOffset: Long
         curOffset += itemSize
     }
 
-    return modified
+    return result
 }
 
-private fun patchBtiInElf(raf: RandomAccessFile): Boolean {
-    if (raf.length() < 0x40) return false
+private fun patchBtiInElf(raf: RandomAccessFile): Int {
+    if (raf.length() < 0x40) return 0
     val magic = ByteArray(4)
     raf.seek(0)
     raf.readFully(magic)
     val expectedMagic = byteArrayOf(0x7f, 'E'.code.toByte(), 'L'.code.toByte(), 'F'.code.toByte())
-    if (!magic.contentEquals(expectedMagic)) return false
-    if (raf.readByte().toInt() != 2) return false // 64-bit ELF
+    if (!magic.contentEquals(expectedMagic)) return 0
+    if (raf.readByte().toInt() != 2) return 0 // 64-bit ELF
 
     raf.seek(0x20)
     val ePhOff = raf.readLongLe()
     raf.seek(0x36)
     val ePhEntSize = raf.readShortLe().toInt()
     val ePhNum = raf.readShortLe().toInt()
-    if (ePhOff <= 0 || ePhEntSize < 56 || ePhNum <= 0) return false
-    if (ePhOff + ePhNum.toLong() * ePhEntSize > raf.length()) return false
+    if (ePhOff <= 0 || ePhEntSize < 56 || ePhNum <= 0) return 0
+    if (ePhOff + ePhNum.toLong() * ePhEntSize > raf.length()) return 0
 
     val gnuPropOffset = findGnuPropertyOffset(raf, ePhOff, ePhEntSize, ePhNum)
-    if (gnuPropOffset < 0) return false
+    if (gnuPropOffset < 0) return 0
 
     return clearBtiInGnuProperty(raf, gnuPropOffset)
 }
@@ -181,6 +191,13 @@ private fun applyTrapHook(raf: RandomAccessFile, hook: NativeTrapHook): Boolean 
     if (!buf.contentEquals(hook.expected)) return false
     raf.seek(hook.offset)
     raf.write(hook.replacement)
+    val verify = ByteArray(len)
+    raf.seek(hook.offset)
+    raf.readFully(verify)
+    if (!verify.contentEquals(hook.replacement)) {
+        println("[Brave Compatibility] WARNING: read-back mismatch at offset ${hook.offset} (${hook.description}); not counted.")
+        return false
+    }
     return true
 }
 
@@ -209,10 +226,12 @@ internal val braveBtiCompatibilityPatch = rawResourcePatch {
 
         val soFiles = libDir.listFiles { file -> file.isFile && file.extension == "so" } ?: emptyArray()
         var neutralizedCount = 0
+        var unverifiedCount = 0
         for (soFile in soFiles) {
             RandomAccessFile(soFile, "rw").use { raf ->
-                if (patchBtiInElf(raf)) {
-                    neutralizedCount++
+                when (patchBtiInElf(raf)) {
+                    1 -> neutralizedCount++
+                    -1 -> unverifiedCount++
                 }
             }
         }
@@ -221,6 +240,9 @@ internal val braveBtiCompatibilityPatch = rawResourcePatch {
             println("[Brave Compatibility] Neutralized BTI flag across $neutralizedCount ARM64 native binaries -> Branch Target Exception SIGILL prevented.")
         } else {
             println("[Brave Compatibility] BTI flags in ARM64 native binaries are already clean or absent.")
+        }
+        if (unverifiedCount > 0) {
+            println("[Brave Compatibility] WARNING: $unverifiedCount binary(ies) had BTI writes that failed read-back verification and were left uncounted; check the offsets for this build.")
         }
 
         val chromeSo = File(libDir, "libchrome.so")

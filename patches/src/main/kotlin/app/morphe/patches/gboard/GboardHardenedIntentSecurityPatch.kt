@@ -3,6 +3,7 @@ package app.morphe.patches.gboard
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
+import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patcher.string
@@ -51,6 +52,14 @@ private val BRELLA_METADATA_PREFIXES = listOf(
 private val gboardRemoveWebDebugBridgePatch = resourcePatch {
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
 
+    val stripGoogleQueries by booleanOption(
+        key = "stripGoogleQueries",
+        title = "Remove Google package queries",
+        description = "Removes <queries> visibility into com.google.* packages and the Play Store. Can break features that talk to Google services; off by default.",
+        default = false,
+        required = false,
+    )
+
     execute {
         val manifestFile = get("AndroidManifest.xml")
         if (!manifestFile.exists()) {
@@ -95,18 +104,22 @@ private val gboardRemoveWebDebugBridgePatch = resourcePatch {
                 }
             }
 
-            val queriesNodes = doc.getElementsByTagName("queries")
-            for (q in 0 until queriesNodes.length) {
-                val queriesElem = queriesNodes.item(q) as? Element ?: continue
-                val packageNodes = queriesElem.getElementsByTagName("package")
-                for (i in packageNodes.length - 1 downTo 0) {
-                    val pkgElem = packageNodes.item(i) as? Element ?: continue
-                    val name = getAttributeValue(pkgElem, "name")
-                    if (name.startsWith("com.google.") || name == "com.android.vending") {
-                        pkgElem.parentNode?.removeChild(pkgElem)
-                        removedQueries++
+            if (stripGoogleQueries == true) {
+                val queriesNodes = doc.getElementsByTagName("queries")
+                for (q in 0 until queriesNodes.length) {
+                    val queriesElem = queriesNodes.item(q) as? Element ?: continue
+                    val packageNodes = queriesElem.getElementsByTagName("package")
+                    for (i in packageNodes.length - 1 downTo 0) {
+                        val pkgElem = packageNodes.item(i) as? Element ?: continue
+                        val name = getAttributeValue(pkgElem, "name")
+                        if (name.startsWith("com.google.") || name == "com.android.vending") {
+                            pkgElem.parentNode?.removeChild(pkgElem)
+                            removedQueries++
+                        }
                     }
                 }
+            } else {
+                println("[Block App Hijacking] Kept <queries> package visibility (stripGoogleQueries off).")
             }
 
             val appNodes = doc.getElementsByTagName("application")

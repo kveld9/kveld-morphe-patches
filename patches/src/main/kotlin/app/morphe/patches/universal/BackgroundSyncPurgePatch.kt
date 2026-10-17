@@ -142,7 +142,7 @@ val backgroundSyncPurgePatch = resourcePatch(
         key = "disableBootReceivers",
         default = true,
         title = "Disable Boot Receivers",
-        description = "Disables broadcast receivers that launch the app on device startup.",
+        description = "Disables broadcast receivers that launch the app on device startup (BOOT_COMPLETED, LOCKED_BOOT_COMPLETED, QUICKBOOT_POWERON, REBOOT, MY_PACKAGE_REPLACED and PACKAGE_REPLACED/RESTARTED). Disables the whole receiver, including its non-boot filters.",
         required = false,
     )
 
