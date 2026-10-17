@@ -122,6 +122,18 @@ public final class TikTokVideoFitHook {
                 }
                 newTransX = toFloat(origTransX);
                 newTransY = toFloat(origTransY);
+                // These offsets were computed for the original size, so reusing them
+                // verbatim leaves the resized video misaligned. Re-derive them per axis
+                // and only where the video was genuinely centred before; other offsets
+                // are kept so unknown layouts are never guessed at.
+                if (newTransX != null && newTransY != null) {
+                    if (isCentered(origW, containerW, newTransX)) {
+                        newTransX = (containerW - newW) / 2f;
+                    }
+                    if (isCentered(origH, containerH, newTransY)) {
+                        newTransY = (containerH - newH) / 2f;
+                    }
+                }
             } else if ("fill".equals(fitMode)) {
                 // Video fills container completely (center crop)
                 float scale = Math.max((float) containerW / origW, (float) containerH / origH);
@@ -311,5 +323,15 @@ public final class TikTokVideoFitHook {
 
     private static boolean isValidFill(int newW, int newH, int containerW, int containerH) {
         return newW >= containerW * 0.9f && newH >= containerH * 0.9f;
+    }
+
+    /**
+     * Whether an existing translation for {@code origSize} matches the offset that
+     * centres it in {@code containerSize}. Layout rounding puts real-device offsets
+     * a few pixels off the exact midpoint, so a small slack is tolerated.
+     */
+    private static boolean isCentered(int origSize, int containerSize, float offset) {
+        return origSize == containerSize
+                || Math.abs(offset - (containerSize - origSize) / 2f) <= Math.max(2f, containerSize * 0.02f);
     }
 }
