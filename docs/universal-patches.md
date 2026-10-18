@@ -41,7 +41,7 @@ Morphe Patches uses a multi-tiered **defense-in-depth** model separating generic
 Applying both universal and app-specific patches simultaneously to the same target APK is **completely safe and idempotent**:
 1. **Manifest Operations**: If a universal patch (such as `Block Trackers (Universal)`) and an app-specific patch (such as `Brave Block Telemetry`) both target the same component (e.g., `AppMeasurementService`), assigning `android:enabled="false"` multiple times is idempotent.
 2. **Permission Revocation**: If a permission node is pruned by an earlier patch pass, subsequent passes skip the missing node without throwing exceptions.
-3. **Binary Trimming**: Universal native trimmers zero only standard crash/telemetry libraries without colliding with app-specific bloat trimmers (such as Brave's `Remove Extra Files` or TikTok's `Remove Extra Files`).
+3. **Binary Trimming**: Universal native trimmers zero only standard crash/telemetry libraries without colliding with app-specific bloat trimmers (such as Brave's `Remove Unused AI & VPN` or TikTok's `Remove Extra Files`).
 
 ### Do Not Stack Universals on Maintained Apps
 Dedicated app patches (Brave, Gboard Lite, TikTok) are a strict precision superset for their respective targets. Enabling Block Trackers (Universal) or Block Tracking SDKs on top of dedicated patches adds no extra protection.

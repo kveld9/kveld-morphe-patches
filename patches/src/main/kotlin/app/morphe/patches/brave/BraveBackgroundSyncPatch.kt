@@ -7,7 +7,7 @@ import app.morphe.patches.shared.Constants
 
 @Suppress("unused")
 val braveBackgroundSyncPatch = bytecodePatch(
-    name = "Stop Background Sync",
+    name = "Stop Background Wakeups",
     description = "Stops background wakeups and battery drain.",
     default = true,
 ) {
@@ -61,9 +61,9 @@ val braveBackgroundSyncPatch = bytecodePatch(
         hookedMethods.add("$c3.${fp3.method.name}()")
 
         if (hookedMethods.isEmpty()) {
-            println("[Stop Background Sync] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+            println("[Stop Background Wakeups] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
         } else {
-            println("[Stop Background Sync] Injected Smali hooks into ${hookedMethods.size} methods (${hookedMethods.joinToString(", ")})")
+            println("[Stop Background Wakeups] Injected Smali hooks into ${hookedMethods.size} methods (${hookedMethods.joinToString(", ")})")
         }
     }
 }

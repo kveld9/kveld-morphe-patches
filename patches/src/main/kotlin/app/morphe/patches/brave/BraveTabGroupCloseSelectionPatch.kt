@@ -9,7 +9,7 @@ import app.morphe.patches.shared.sharedExtensionPatch
 
 @Suppress("unused")
 val braveTabGroupCloseSelectionPatch = bytecodePatch(
-    name = "Select Previous Tab on Close",
+    name = "Close Tab In Group Order",
     description = "Selects the previous tab in the tab group when closing a tab.",
     default = true,
 ) {
@@ -57,9 +57,9 @@ val braveTabGroupCloseSelectionPatch = bytecodePatch(
         }
 
         if (patched == 0) {
-            println("[Select Previous Tab on Close] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+            println("[Close Tab In Group Order] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
         } else {
-            println("[Select Previous Tab on Close] Applied $patched hook in TabCollectionTabModelImpl.${closeSelectionFp.method.name} -> previous tab selection in tab group enabled.")
+            println("[Close Tab In Group Order] Applied $patched hook in TabCollectionTabModelImpl.${closeSelectionFp.method.name} -> previous tab selection in tab group enabled.")
         }
     }
 }

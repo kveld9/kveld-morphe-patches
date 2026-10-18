@@ -22,60 +22,60 @@ Technical documentation and patch catalog for Brave Private Web Browser on Andro
 
 | Patch Name | Typology | Default State | Dependencies | Description |
 | :--- | :--- | :--- | :--- | :--- |
-| **Stop Background Sync** | `bytecodePatch` | `true` (Enabled) | None | Stops background wakeups and battery drain. |
-| **Block Trackers (Setup)** | `resourcePatch` | `false` (Opt-in) | None | Turns off analytics switches by default. |
+| **Stop Background Wakeups** | `bytecodePatch` | `true` (Enabled) | None | Stops background wakeups and battery drain. |
+| **Block Telemetry (Setup)** | `resourcePatch` | `false` (Opt-in) | None | Turns off analytics switches by default. |
 | **Block Tracking Servers** | `rawResourcePatch` | `false` (Opt-in) | None | Redirects tracking servers to 0.0.0.0. |
-| **Block Trackers** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch`, `Block Trackers (Setup)`, `Block Tracking Servers` | Blocks usage analytics, crash uploads and experiment downloads. |
-| **Clean Start Page (Setup)** | `resourcePatch` | `true` (Enabled) | None | Turns off ads and news switches by default. |
-| **Clean Start Page** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch`, `Clean Start Page (Setup)` | Removes sponsored wallpapers, news feed and promo cards. |
-| **Keep Tabs Open** | `bytecodePatch` | `true` (Enabled) | None | Stops Brave from minimizing your tabs in the background. |
-| **Remove Extra Files** | `rawResourcePatch` | `false` (Opt-in) | None | Deletes unused AI, VPN and AR files to shrink the app. |
-| **Silence Promo Notifications** | `bytecodePatch` | `true` (Enabled) | None | Stops tips, reward promos and marketing notifications. |
-| **Brave Origin (Setup)** | `resourcePatch` | `false` (Opt-in) | None | Turns on Origin preference switches by default. |
-| **Brave Origin** | `bytecodePatch` | `true` (Enabled) | `Brave Origin (Setup)`, `Faster Startup` (native extraction and BTI patches) | Unlocks Brave Origin feature switches. |
-| **Faster Startup** | `bytecodePatch` | `true` (Enabled) | `braveNativeExtractionPatch`, `braveBtiCompatibilityPatch` | Speeds up launch by disabling carrier customizations. |
-| **Block Popups & Rating Requests** | `bytecodePatch` | `true` (Enabled) | None | Blocks rating popups, review requests and promo dialogs. |
-| **Select Previous Tab on Close** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Selects the previous tab in the tab group when closing a tab. |
+| **Block Telemetry** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch`, `Block Telemetry (Setup)`, `Block Tracking Servers` | Blocks usage analytics, crash uploads and experiment downloads. |
+| **Clean New Tab (Setup)** | `resourcePatch` | `true` (Enabled) | None | Turns off ads and news switches by default. |
+| **Clean New Tab** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch`, `Clean New Tab (Setup)` | Removes sponsored wallpapers, news feed and promo cards. |
+| **Keep All Tabs Loaded** | `bytecodePatch` | `true` (Enabled) | None | Stops Brave from minimizing your tabs in the background. |
+| **Remove Unused AI & VPN** | `rawResourcePatch` | `false` (Opt-in) | None | Deletes unused AI, VPN and AR files to shrink the app. |
+| **Stop Promo Notifications** | `bytecodePatch` | `true` (Enabled) | None | Stops tips, reward promos and marketing notifications. |
+| **Brave Rewards (Setup)** | `resourcePatch` | `false` (Opt-in) | None | Turns on Rewards preference switches by default. |
+| **Brave Rewards** | `bytecodePatch` | `true` (Enabled) | `Brave Rewards (Setup)`, `Faster Launch` (native extraction and BTI patches) | Unlocks Brave Rewards feature switches. |
+| **Faster Launch** | `bytecodePatch` | `true` (Enabled) | `braveNativeExtractionPatch`, `braveBtiCompatibilityPatch` | Speeds up launch by disabling carrier customizations. |
+| **Block Popups & Ratings** | `bytecodePatch` | `true` (Enabled) | None | Blocks rating popups, review requests and promo dialogs. |
+| **Close Tab In Group Order** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Selects the previous tab in the tab group when closing a tab. |
 
 ---
 
 ## 3. Technical Breakdown
 
 ### A. Telemetry & Background Sync Neutralization
-- **Stop Background Sync**:
+- **Stop Background Wakeups**:
   - *Objective*: Stop periodic background wakeups and conserve battery.
   - *How*: Modifies the background sync check to return true, preventing scheduled sync tasks from running.
-- **Block Trackers & Hosts**:
+- **Block Telemetry & Hosts**:
   - *Objective*: Prevent transmission of telemetry, crash reports, and remote experiment metrics.
   - *How*: Disables analytics preference toggles in settings resources, strips Google Play referrer and ad attribution declarations from the manifest, neutralizes crash dump uploads, experiment synchronization, and Google Play install referrer attribution queries, and redirects telemetry server endpoints to 0.0.0.0. Provides the option to also block shopping offer servers.
 
 ### B. Interface & Promo Suppression
-- **Clean Start Page**:
+- **Clean New Tab**:
   - *Objective*: Provide a distraction-free start page free of ads, sponsored cards, and unwanted news.
   - *How*: Disables sponsored background wallpapers, Brave News feeds, and marketing cards by updating default preference resources and feed view models. Includes an option to hide top site tiles.
-- **Silence Promo Notifications**:
+- **Stop Promo Notifications**:
   - *Objective*: Eliminate unsolicited marketing reminders, rewards tips, and onboarding notifications.
   - *How*: Intercepts and neutralizes the scheduling and dispatch routines for promotional alerts and rewards onboarding tips.
-- **Block Popups & Rating Requests**:
+- **Block Popups & Ratings**:
   - *Objective*: Prevent rating prompts, review nag dialogs, and promotional modal interruptions.
   - *How*: Disables in-app review eligibility checks, Play Store rating dialogs, and promotional sign-up modals.
 
 ### C. Browser Navigation & Performance
-- **Keep Tabs Open**:
+- **Keep All Tabs Loaded**:
   - *Objective*: Prevent the browser from discarding or minimizing background tabs unexpectedly.
   - *How*: Disables inactive tab suspension and automatic tab minimization logic.
-- **Select Previous Tab on Close**:
+- **Close Tab In Group Order**:
   - *Objective*: Return directly to the previously viewed tab inside a tab group when closing the active tab.
   - *How*: Alters tab closure selection logic to preselect the predecessor tab within the active tab group.
-- **Faster Startup**:
+- **Faster Launch**:
   - *Objective*: Accelerate cold browser startup and ensure smooth native execution.
   - *How*: Disables partner customization checks during startup, forces native library extraction in the app manifest, and applies branch target identification adjustments to native binaries.
-- **Brave Origin**:
-  - *Objective*: Provide access to internal Brave Origin feature switches and experimental settings.
-  - *How*: Unlocks Origin preference toggles and bypasses internal feature gatekeepers across Rewards, News, Wallet, and VPN settings.
+- **Brave Rewards**:
+  - *Objective*: Provide access to internal Brave Rewards feature switches and experimental settings.
+  - *How*: Unlocks Rewards preference toggles and bypasses internal feature gatekeepers across Rewards, News, Wallet, and VPN settings.
 
 ### D. Resource Debloating
-- **Remove Extra Files**:
+- **Remove Unused AI & VPN**:
   - *Objective*: Reduce overall application size on device storage.
   - *How*: Overwrites unused companion native libraries in place with empty stubs, targeting AI assistants, WireGuard VPN, and augmented reality binaries.
 
