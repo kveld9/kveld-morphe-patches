@@ -28,7 +28,7 @@ Each application has an authoritative, all-in-one guide covering prerequisites, 
 All Gboard Lite patches in this suite operate strictly on Dalvik/ART DEX bytecode and Android XML resources. They contain **zero native `.so` binary dependencies** and run identically on both 64-bit and 32-bit Android runtimes. Consult the [Gboard Lite Guide](apps/gboard.md) for dictionary setup instructions.
 
 ### Why Brave Browser supports both 64-bit and 32-bit:
-Brave Browser provides official Monochrome release APKs for both architectures (`Bravemonoarm64.apk` and `BraveMonoarm.apk`). All Dalvik bytecode and XML resource patches apply identically across ABIs, while native patches (`Block Trackers` and `Remove Extra Files`) maintain deterministic string redirection offsets and companion `.so` pruning across both `lib/arm64-v8a` and `lib/armeabi-v7a` without runtime memory overhead. Consult the [Brave Guide](apps/brave.md).
+Brave Browser provides official Monochrome release APKs for both architectures (`Bravemonoarm64.apk` and `BraveMonoarm.apk`). All Dalvik bytecode and XML resource patches apply identically across ABIs, while native patches (`Block Telemetry` and `Remove Unused AI & VPN`) maintain deterministic string redirection offsets and companion `.so` pruning across both `lib/arm64-v8a` and `lib/armeabi-v7a` without runtime memory overhead. Consult the [Brave Guide](apps/brave.md).
 
 ---
 

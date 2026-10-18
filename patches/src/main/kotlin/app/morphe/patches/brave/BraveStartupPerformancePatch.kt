@@ -257,7 +257,7 @@ internal val braveNativeExtractionPatch = resourcePatch {
 
 @Suppress("unused")
 val bravePerformanceOptimizationPatch = bytecodePatch(
-    name = "Faster Startup",
+    name = "Faster Launch",
     description = "Speeds up launch by disabling carrier customizations.",
     default = true,
 ) {
@@ -289,6 +289,6 @@ val bravePerformanceOptimizationPatch = bytecodePatch(
         )
 
         val targetClass = fp.originalClassDef.type.substringAfterLast('/').removeSuffix(";")
-        println("[Faster Startup] Neutralized async OEM initialization in $targetClass (field $boolField)")
+        println("[Faster Launch] Neutralized async OEM initialization in $targetClass (field $boolField)")
     }
 }

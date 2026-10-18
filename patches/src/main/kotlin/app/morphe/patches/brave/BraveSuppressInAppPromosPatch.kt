@@ -8,7 +8,7 @@ import app.morphe.patches.shared.Constants
 
 @Suppress("unused")
 val braveSuppressInAppPromosPatch = bytecodePatch(
-    name = "Block Popups & Rating Requests",
+    name = "Block Popups & Ratings",
     description = "Blocks rating popups, review requests and promo dialogs.",
     default = true,
 ) {
@@ -110,9 +110,9 @@ val braveSuppressInAppPromosPatch = bytecodePatch(
 
         val targetClasses = hookedMethods.map { it.substringBefore('.') }.distinct()
         if (hookedMethods.isEmpty()) {
-            println("[Block Popups & Rating Requests] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+            println("[Block Popups & Ratings] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
         } else {
-            println("[Block Popups & Rating Requests] Applied ${hookedMethods.size} hooks across ${targetClasses.size} classes -> in-app surveys & promo dialogs disabled.")
+            println("[Block Popups & Ratings] Applied ${hookedMethods.size} hooks across ${targetClasses.size} classes -> in-app surveys & promo dialogs disabled.")
         }
     }
 }

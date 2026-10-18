@@ -7,7 +7,7 @@ import app.morphe.patches.shared.Constants
 
 @Suppress("unused")
 val braveNotificationSchedulerOptimizationPatch = bytecodePatch(
-    name = "Silence Promo Notifications",
+    name = "Stop Promo Notifications",
     description = "Stops tips, reward promos and marketing notifications.",
     default = true,
 ) {
@@ -110,9 +110,9 @@ val braveNotificationSchedulerOptimizationPatch = bytecodePatch(
 
         val targetClasses = hookedMethods.map { it.substringBefore('.') }.distinct()
         if (hookedMethods.isEmpty()) {
-            println("[Silence Promo Notifications] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+            println("[Stop Promo Notifications] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
         } else {
-            println("[Silence Promo Notifications] Injected Smali hooks into ${hookedMethods.size} methods across ${targetClasses.size} classes (${targetClasses.joinToString(", ")})")
+            println("[Stop Promo Notifications] Injected Smali hooks into ${hookedMethods.size} methods across ${targetClasses.size} classes (${targetClasses.joinToString(", ")})")
         }
     }
 }
