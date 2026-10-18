@@ -658,9 +658,11 @@ fun main(args: Array<String>) {
                 } else {
                     failedPatches++
                     val err = result.exception?.message ?: "Unknown error"
-                    println("[FAIL] $patchName -> $err")
+                    val location = result.exception?.let(::patchSourceLocation)
+                    val detail = if (location != null) "$err (at $location)" else err
+                    println("[FAIL] $patchName -> $detail")
                     result.exception?.printStackTrace()
-                    failures.add("$patchName: $err")
+                    failures.add("$patchName: $detail")
                 }
             }
         }
@@ -1019,4 +1021,24 @@ private fun printDexDigest(apk: File, option: String) {
     }
 }
 
+/** Matches a stack frame from a patch and returns its source location. */
+private fun patchFrameLocation(frame: StackTraceElement): String? {
+    if (!frame.className.startsWith("app.morphe.patches.")) return null
+    val file = frame.fileName ?: return null
+    if (frame.lineNumber <= 0) return null
+    return "$file:${frame.lineNumber}"
+}
 
+/** Finds the first patch source location in the error cause chain. */
+private fun patchSourceLocation(error: Throwable): String? {
+    val visited = mutableSetOf<Throwable>()
+    var current: Throwable? = error
+    var depth = 0
+    while (current != null && depth < 10 && visited.add(current)) {
+        val location = current.stackTrace.firstNotNullOfOrNull(::patchFrameLocation)
+        if (location != null) return location
+        current = current.cause
+        depth++
+    }
+    return null
+}
