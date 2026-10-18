@@ -26,8 +26,8 @@ val customOfflineVideosLimitPatch = bytecodePatch(
 
     val customLimit by intOption(
         key = "customLimit",
-        title = "Custom Offline Videos Limit",
-        description = "Maximum number of offline videos that can be cached for offline playback (default: 1000).",
+        title = "Video count",
+        description = "1 to 50000.",
         default = 1000,
         required = false,
     )

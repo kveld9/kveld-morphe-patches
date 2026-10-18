@@ -10,7 +10,7 @@ import app.morphe.patches.shared.sharedExtensionPatch
 import com.android.tools.smali.dexlib2.AccessFlags
 
 val rememberClearDisplayPatch = bytecodePatch(
-    name = "Remember Clear Display",
+    name = "Keep Clear View",
     description = "Keeps clear-display mode active when scrolling to the next video.",
     default = false,
 ) {

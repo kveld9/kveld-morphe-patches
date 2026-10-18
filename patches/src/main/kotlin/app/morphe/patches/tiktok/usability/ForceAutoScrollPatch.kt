@@ -11,7 +11,7 @@ import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 
 val forceAutoScrollPatch = bytecodePatch(
-    name = "Force Auto-Scroll",
+    name = "Auto-Scroll Videos",
     description = "Enables native auto-scrolling to the next video.",
     default = true,
 ) {

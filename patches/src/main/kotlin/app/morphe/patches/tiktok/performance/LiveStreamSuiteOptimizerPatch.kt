@@ -7,7 +7,7 @@ private val EMPTY_BYTES = byteArrayOf()
 
 val liveStreamSuiteOptimizerPatch = rawResourcePatch(
     name = "Remove Live Stream Files",
-    description = "Removes live streaming and minigame files. Breaks lives and video calls.",
+    description = "Deletes live broadcast and minigame files. Breaks lives and video calls.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)

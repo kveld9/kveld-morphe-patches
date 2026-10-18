@@ -7,8 +7,8 @@ import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.replaceWithReturnBoolean
 
 val profileBannerPatch = bytecodePatch(
-    name = "Enable Profile Banner",
-    description = "Unlocks the profile banner and its editing tools.",
+    name = "Unlock Profile Covers",
+    description = "Unlocks profile banner covers.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)

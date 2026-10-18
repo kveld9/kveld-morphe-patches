@@ -25,14 +25,14 @@ val mediaEnhancementsPatch = bytecodePatch(
     val removeWatermark by booleanOption(
         key = "removeWatermark",
         default = true,
-        title = "Remove Watermark",
+        title = "No watermark",
         description = "Saves clean videos without watermark overlays.",
         required = false,
     )
 
     val downloadQuality by stringOption(
         key = "downloadQuality",
-        title = "Saved-Video Quality Preference",
+        title = "Save quality",
         description = "Select download quality: 'high', 'medium', 'low', or a resolution ceiling (e.g. 1080, 720).",
         default = "high",
         required = false,

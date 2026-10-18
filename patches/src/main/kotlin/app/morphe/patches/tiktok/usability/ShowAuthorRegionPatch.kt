@@ -9,7 +9,7 @@ import app.morphe.patches.shared.sharedExtensionPatch
 import com.android.tools.smali.dexlib2.AccessFlags
 
 val showAuthorRegionPatch = bytecodePatch(
-    name = "Show Author Region",
+    name = "Show Creator Country",
     description = "Displays the creator's country code next to their username.",
     default = false,
 ) {

@@ -136,120 +136,120 @@ val tikTokPrivacyPermissionsStripperPatch = resourcePatch(
     val stripNotifications by booleanOption(
         key = "stripNotifications",
         default = false,
-        title = "Strip Notification Permission",
-        description = "Remove POST_NOTIFICATIONS permission (Android 13+). Notification channels cannot dispatch push alerts.",
+        title = "Notifications",
+        description = "No push alerts (POST_NOTIFICATIONS, Android 13+).",
         required = false,
     )
 
     val stripCamera by booleanOption(
         key = "stripCamera",
         default = false,
-        title = "Strip Camera Permission",
-        description = "Remove CAMERA permission. WARNING: Breaks camera recording, photo capturing, QR scanning, LIVE broadcasting, and video creation.",
+        title = "Camera",
+        description = "WARNING: breaks recording, photos, QR scan, lives and video creation.",
         required = false,
     )
 
     val stripMicrophone by booleanOption(
         key = "stripMicrophone",
         default = false,
-        title = "Strip Microphone Permissions",
-        description = "Remove RECORD_AUDIO, FOREGROUND_SERVICE_MICROPHONE, and FOREGROUND_SERVICE_CAMERA permissions. WARNING: Breaks video voice recording, LIVE audio broadcasting, audio comments, and voice/video calling.",
+        title = "Microphone",
+        description = "WARNING: breaks voice recording, lives audio, comments and calls.",
         required = false,
     )
 
     val stripStorageMedia by booleanOption(
         key = "stripStorageMedia",
         default = false,
-        title = "Strip Storage & Media Permissions",
-        description = "Remove external storage (READ/WRITE_EXTERNAL_STORAGE) and media permissions (READ_MEDIA_IMAGES, READ_MEDIA_VIDEO, READ_MEDIA_AUDIO, READ_MEDIA_VISUAL_USER_SELECTED, ACCESS_MEDIA_LOCATION). WARNING: Breaks local gallery picker, drafts, and video/photo saving.",
+        title = "Photos & files",
+        description = "WARNING: breaks gallery, drafts and saving photos/videos.",
         required = false,
     )
 
     val stripBluetooth by booleanOption(
         key = "stripBluetooth",
         default = true,
-        title = "Strip Bluetooth Permissions",
-        description = "Remove BLUETOOTH, BLUETOOTH_SCAN, BLUETOOTH_CONNECT, and BLUETOOTH_ADVERTISE permissions. WARNING: Breaks Bluetooth audio accessories, wireless headphones low-latency sync, Cast devices, and external remote controls.",
+        title = "Bluetooth",
+        description = "WARNING: breaks headphones, casting and remote controls.",
         required = false,
     )
 
     val stripNfc by booleanOption(
         key = "stripNfc",
         default = true,
-        title = "Strip NFC Permission",
-        description = "Remove NFC permission. WARNING: Disables NFC tag interactions and NFC-based hardware authentication tokens.",
+        title = "NFC",
+        description = "Disables tap-to-pay tags.",
         required = false,
     )
 
     val stripBiometric by booleanOption(
         key = "stripBiometric",
         default = true,
-        title = "Strip Biometric Permissions",
-        description = "Remove USE_BIOMETRIC and USE_FINGERPRINT permissions. WARNING: Breaks fingerprint/face biometric unlocking, passkeys, and biometric payment authorization.",
+        title = "Fingerprint login",
+        description = "WARNING: breaks fingerprint/face unlock, passkeys and payments.",
         required = false,
     )
 
     val stripForegroundServices by booleanOption(
         key = "stripForegroundServices",
         default = false,
-        title = "Strip Foreground Service Permissions",
-        description = "Remove generic FOREGROUND_SERVICE and specialized types (DATA_SYNC, MEDIA_PLAYBACK, MEDIA_PROJECTION, PHONE_CALL). WARNING: HIGH RISK. Breaks background video uploads, offline caching, media playback notification services, screen sharing, and VoIP calls in background.",
+        title = "Background services",
+        description = "WARNING: HIGH RISK. Breaks background uploads, offline caching, playback services and calls.",
         required = false,
     )
 
     val stripSystemAlertWindow by booleanOption(
         key = "stripSystemAlertWindow",
         default = false,
-        title = "Strip System Alert Window Permission",
-        description = "Remove SYSTEM_ALERT_WINDOW permission. WARNING: Breaks Picture-in-Picture overlay window outside the app, floating mini-player, and overlay notification heads.",
+        title = "Popups overlay",
+        description = "WARNING: breaks mini-player, popups and overlay windows.",
         required = false,
     )
 
     val stripWakeLock by booleanOption(
         key = "stripWakeLock",
         default = false,
-        title = "Strip Wake Lock Permission",
-        description = "Remove WAKE_LOCK permission. WARNING: Device CPU may sleep during media playback or long video uploads/downloads when screen turns off, suspending progress.",
+        title = "Keep awake",
+        description = "WARNING: CPU may sleep during playback or long uploads with screen off.",
         required = false,
     )
 
     val stripScreenshotDetection by booleanOption(
         key = "stripScreenshotDetection",
         default = true,
-        title = "Strip Screenshot & Recording Detection Permissions",
-        description = "Remove DETECT_SCREEN_CAPTURE and DETECT_SCREEN_RECORDING permissions to neutralize system-level capture callbacks.",
+        title = "Screenshot detection",
+        description = "System will not report captures.",
         required = false,
     )
 
     val stripMiscHardware by booleanOption(
         key = "stripMiscHardware",
         default = false,
-        title = "Strip Miscellaneous Hardware & System Permissions",
-        description = "Remove VIBRATE, MODIFY_AUDIO_SETTINGS, MANAGE_OWN_CALLS, REORDER_TASKS, SET_WALLPAPER, and USE_FULL_SCREEN_INTENT permissions. WARNING: Disables haptic feedback vibration, volume adjustments, alarm priority intents, and live wallpaper export.",
+        title = "Vibration & more",
+        description = "WARNING: disables vibration, volume adjustments and live wallpapers.",
         required = false,
     )
 
     val stripOemSignals by booleanOption(
         key = "stripOemSignals",
         default = true,
-        title = "Strip OEM Diagnostic & Background Signals",
-        description = "Remove OEM attribution, launcher badges, AICore bindings, and proprietary TikTok internal IPC permissions. WARNING: Removing DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION may impact runtime dynamic broadcast receivers.",
+        title = "Phone signals",
+        description = "Removes maker signals. WARNING: may affect dynamic receivers.",
         required = false,
     )
 
     val stripPushDelivery by booleanOption(
         key = "stripPushDelivery",
         default = false,
-        title = "Strip Push Delivery Permissions",
-        description = "Remove Google C2DM/FCM and Amazon ADM push receiver permissions. WARNING: Breaks push notification delivery.",
+        title = "Push delivery",
+        description = "WARNING: breaks push notifications.",
         required = false,
     )
 
     val stripBilling by booleanOption(
         key = "stripBilling",
         default = false,
-        title = "Strip In-App Billing Permission",
-        description = "Remove Google Play in-app billing permission (com.android.vending.BILLING). WARNING: Breaks coin purchases and in-app transactions.",
+        title = "Purchases",
+        description = "WARNING: breaks coin purchases.",
         required = false,
     )
 

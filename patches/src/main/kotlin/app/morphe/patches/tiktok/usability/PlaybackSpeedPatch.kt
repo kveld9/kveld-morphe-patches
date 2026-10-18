@@ -43,7 +43,7 @@ private fun BytecodePatchContext.findAbHelperType(): String? {
 
 val playbackSpeedPatch = bytecodePatch(
     name = "Remember Playback Speed",
-    description = "Keeps your chosen playback speed across videos and restarts.",
+    description = "Keeps your video speed.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -52,8 +52,8 @@ val playbackSpeedPatch = bytecodePatch(
     val enableSpeedLock by booleanOption(
         key = "enableSpeedLock",
         default = true,
-        title = "Hold-And-Slide 2x Speed Lock",
-        description = "Enables TikTok's native hold, slide down, and release gesture for locking playback at 2x speed (140dp slide distance fallback when the server returns no distance).",
+        title = "2x speed lock",
+        description = "Hold and slide for 2x speed.",
         required = false,
     )
 

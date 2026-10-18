@@ -28,87 +28,87 @@ import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 
 val directMessageDeclutterPatch = bytecodePatch(
     name = "Declutter Direct Messages",
-    description = "Cleans up chat and DM screens by hiding extra buttons.",
+    description = "Cleans chat lists and conversations.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
 
     val hideChatListCamera by booleanOption(
         key = "hideChatListCamera",
-        title = "Hide Chat List Camera Button",
-        description = "Removes the camera icon next to chats in the direct messages conversation list.",
+        title = "Chat camera",
+        description = "Removes camera icon on chats.",
         default = true,
         required = false,
     )
 
     val hideCallButton by booleanOption(
         key = "hideCallButton",
-        title = "Hide Header Call Button",
-        description = "Removes the phone receiver (voice/video call) button from the direct message chat header.",
+        title = "Call button",
+        description = "Removes call button in chats.",
         default = true,
         required = false,
     )
 
     val hideMessageForwardButton by booleanOption(
         key = "hideMessageForwardButton",
-        title = "Hide Message Forward Button",
-        description = "Removes the quick forward/share arrow button displayed next to messages and shared videos.",
+        title = "Forward button",
+        description = "Removes forward arrow.",
         default = true,
         required = false,
     )
 
     val hideReactionTray by booleanOption(
         key = "hideReactionTray",
-        title = "Hide Reaction and Streak Bar",
-        description = "Removes the reaction bar and streak mascot banner displayed above the text input bar.",
+        title = "Reaction bar",
+        description = "Removes emoji/streak bar.",
         default = true,
         required = false,
     )
 
     val hideInputCamera by booleanOption(
         key = "hideInputCamera",
-        title = "Hide Input Bar Camera Button",
-        description = "Removes the camera button located to the left of the direct message text input field.",
+        title = "Input camera",
+        description = "Removes camera next to typing.",
         default = true,
         required = false,
     )
 
     val hideGalleryButton by booleanOption(
         key = "hideGalleryButton",
-        title = "Hide Gallery Button",
-        description = "Removes the photo gallery button located inside the right side of the text input field.",
+        title = "Gallery button",
+        description = "Removes gallery button.",
         default = true,
         required = false,
     )
 
     val hideEmojiButton by booleanOption(
         key = "hideEmojiButton",
-        title = "Hide Emoji/Stickers Button",
-        description = "Removes the stickers and emoji button located inside the right side of the text input field.",
+        title = "Emoji button",
+        description = "Removes emoji button.",
         default = true,
         required = false,
     )
 
     val hideVoiceRecordButton by booleanOption(
         key = "hideVoiceRecordButton",
-        title = "Hide Voice Recording Button",
-        description = "Removes the audio recording/microphone button located inside the right side of the text input field.",
+        title = "Voice button",
+        description = "Removes mic button.",
         default = true,
         required = false,
     )
 
     val hideTryEffectButton by booleanOption(
         key = "hideTryEffectButton",
-        title = "Hide Try Effect Button",
-        description = "Removes the 'Try effect' camera button shown on shared videos that use an effect in direct messages.",
+        title = "Try-effect button",
+        description = "Removes try-effect button.",
         default = true,
         required = false,
     )
 
     val hideStickerReplySuggestions by booleanOption(
         key = "hideStickerReplySuggestions",
-        title = "Hide Sticker Reply Suggestions",
-        description = "Removes the automatic 'Tap a sticker to reply' suggestion panel and the typing-triggered sticker/GIF strip above the input bar. The manual sticker reply button keeps working.",
+        title = "Sticker hints",
+        description = "Removes sticker suggestions.",
         default = true,
         required = false,
     )

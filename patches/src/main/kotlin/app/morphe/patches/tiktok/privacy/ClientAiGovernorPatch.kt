@@ -7,7 +7,7 @@ import app.morphe.patches.shared.Constants
 
 val clientAiGovernorPatch = bytecodePatch(
     name = "Disable On-Device AI",
-    description = "Turns off on-device AI, the chatbot and AI search.",
+    description = "Disables on-device AI, chatbot and AI search.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)

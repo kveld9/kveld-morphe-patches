@@ -21,8 +21,8 @@ private const val GROUP_CHAT_HINT_ASSEM_CLASS =
     "Lcom/ss/android/ugc/aweme/internalshare/impl/refactor/assem/SharePanelGroupChatHintAssem;"
 
 val customShareSheetPatch = bytecodePatch(
-    name = "Custom Share Sheet",
-    description = "Lets you hide share menu entries you do not use.",
+    name = "Clean Share Menu",
+    description = "Hide items from the share menu.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)

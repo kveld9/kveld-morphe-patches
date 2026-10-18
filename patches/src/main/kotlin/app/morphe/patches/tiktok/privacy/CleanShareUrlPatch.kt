@@ -19,8 +19,8 @@ val cleanShareUrlPatch = bytecodePatch(
 
     val shareHost by stringOption(
         key = "shareHost",
-        title = "Custom Share Host",
-        description = "Custom hostname to replace in shared links (e.g. 'vxtiktok.com', 'tiktxk.com', or empty to keep original host).",
+        title = "Custom link host",
+        description = "Replace links host (e.g. vxtiktok.com). Empty keeps it.",
         default = "",
         required = false,
     )

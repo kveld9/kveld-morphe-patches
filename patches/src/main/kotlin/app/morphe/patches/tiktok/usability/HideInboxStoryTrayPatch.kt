@@ -19,8 +19,8 @@ val hideInboxStoryTrayPatch = bytecodePatch(
 
     val hideSuggestedOnly by booleanOption(
         key = "hideSuggestedOnly",
-        title = "Hide Suggested Stories Only",
-        description = "Hides only suggested and non-followed story circles in the inbox tray, preserving followed stories and preventing autoplay into suggested users.",
+        title = "Only suggested",
+        description = "Hide only suggested stories, keep followed.",
         default = true,
     )
 

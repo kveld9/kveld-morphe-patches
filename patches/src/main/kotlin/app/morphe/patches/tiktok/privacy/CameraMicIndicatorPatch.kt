@@ -162,8 +162,8 @@ private fun computeEdit(
 }
 
 val cameraMicIndicatorPatch = bytecodePatch(
-    name = "Camera & Microphone Indicator",
-    description = "Shows a corner mark while TikTok holds camera/mic open.",
+    name = "Camera & Mic Dot",
+    description = "Shows a dot while camera or mic is in use.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)

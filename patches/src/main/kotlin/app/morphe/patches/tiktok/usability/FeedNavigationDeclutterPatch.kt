@@ -34,56 +34,56 @@ val feedNavigationDeclutterPatch = bytecodePatch(
     val hideNearbyTab by booleanOption(
         key = "hideNearbyTab",
         default = true,
-        title = "Hide Nearby Feed Tab",
-        description = "Removes the Nearby (local city or region) feed tab from the top navigation feed strip.",
+        title = "Nearby tab",
+        description = "Removes Nearby tab.",
         required = false,
     )
 
     val hideCommunityTab by booleanOption(
         key = "hideCommunityTab",
         default = true,
-        title = "Hide Community Tab",
-        description = "Removes the Community (Explore) tab from the top navigation feed strip and bottom bar.",
+        title = "Community tab",
+        description = "Removes Community tab.",
         required = false,
     )
 
     val hideTopLiveEntrance by booleanOption(
         key = "hideTopLiveEntrance",
         default = false,
-        title = "Hide Top-Left LIVE Button",
-        description = "Removes the top-left LIVE broadcast button and tab entry point from the top navigation bar.",
+        title = "LIVE button",
+        description = "Removes LIVE button.",
         required = false,
     )
 
     val hideFeedSearchBar by booleanOption(
         key = "hideFeedSearchBar",
         default = true,
-        title = "Hide Feed Search Bar",
-        description = "Removes the search suggestion pill and trending bar ('Search · <keyword>') from the bottom of feed videos.",
+        title = "Search bar",
+        description = "Removes search bar on videos.",
         required = false,
     )
 
     val hidePublishTab by booleanOption(
         key = "hidePublishTab",
         default = false,
-        title = "Hide Create / Publish Button",
-        description = "Removes the central '+' create / publish content button from the bottom navigation bar.",
+        title = "Create button",
+        description = "Removes + button.",
         required = false,
     )
 
     val hideFriendsAvatarPreview by booleanOption(
         key = "hideFriendsAvatarPreview",
         default = true,
-        title = "Hide Friends Tab Avatar Preview",
-        description = "Prevents friend profile pictures from replacing the Friends icon on the bottom navigation bar and keeps the standard icon visible.",
+        title = "Friends icon",
+        description = "Keeps standard Friends icon.",
         required = false,
     )
 
     val hideInboxBadge by booleanOption(
         key = "hideInboxBadge",
         default = true,
-        title = "Hide Inbox Notification Badge",
-        description = "Removes the unread message counter badge and notification red dot from the bottom Messages (Inbox) tab.",
+        title = "Inbox badge",
+        description = "Removes unread counter.",
         required = false,
     )
 

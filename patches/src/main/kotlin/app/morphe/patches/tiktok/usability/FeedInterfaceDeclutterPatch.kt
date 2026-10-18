@@ -25,7 +25,7 @@ import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 val feedInterfaceDeclutterPatch = bytecodePatch(
     name = "Declutter Video Interface",
-    description = "Cleans up the buttons and overlays on top of videos.",
+    description = "Hides buttons and overlays on videos.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)
@@ -34,72 +34,72 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
     val hideRepostBadge by booleanOption(
         key = "hideRepostBadge",
         default = true,
-        title = "Hide Repost Badge",
-        description = "Hides the repost and shared-by pill badge ('Shared by' / 'Reposted') above creator details on feed videos.",
+        title = "Repost badge",
+        description = "Hides repost pill.",
         required = false,
     )
 
     val hideVideoDescriptions by booleanOption(
         key = "hideVideoDescriptions",
         default = true,
-        title = "Hide Video Descriptions",
-        description = "Hides video descriptions, captions, and hashtags across feed videos while keeping creator and author title intact.",
+        title = "Descriptions",
+        description = "Hides video text.",
         required = false,
     )
 
     val hideAvatarFollowButton by booleanOption(
         key = "hideAvatarFollowButton",
         default = true,
-        title = "Hide Profile Photo Follow Button",
-        description = "Hides the plus (+) follow badge on creator profile avatars in the feed and disables its touch interaction.",
+        title = "Follow badge",
+        description = "Hides + button on avatars.",
         required = false,
     )
 
     val disableStoryRings by booleanOption(
         key = "disableStoryRings",
         default = true,
-        title = "Disable Story Feed Indicators",
-        description = "Removes creator profile photo story rings from feed videos, ensuring avatar photos remain clean without blue story rings.",
+        title = "Story rings",
+        description = "Removes story rings.",
         required = false,
     )
 
     val hidePlaylistBar by booleanOption(
         key = "hidePlaylistBar",
         default = true,
-        title = "Hide Playlist Bottom Bar",
-        description = "Hides the playlist indicator bar displayed above the bottom navigation when a video is part of a playlist.",
+        title = "Playlist bar",
+        description = "Hides playlist bar.",
         required = false,
     )
 
     val hideSaveButton by booleanOption(
         key = "hideSaveButton",
         default = false,
-        title = "Hide Save Button",
-        description = "Hides the bookmark/favorite save button on the right-side action rail of feed videos.",
+        title = "Save button",
+        description = "Hides bookmark button.",
         required = false,
     )
 
     val hideMusicCover by booleanOption(
         key = "hideMusicCover",
         default = false,
-        title = "Hide Music Cover Disc",
-        description = "Hides the rotating vinyl music album cover disc at the bottom right corner of feed videos.",
+        title = "Music disc",
+        description = "Hides spinning music disc.",
         required = false,
     )
 
     val hideFullscreenButton by booleanOption(
         key = "hideFullscreenButton",
         default = false,
-        title = "Hide Full Screen Button",
-        description = "Hides the floating 'Full screen' landscape orientation button overlay on horizontal feed videos.",
+        title = "Fullscreen button",
+        description = "Hides fullscreen button.",
         required = false,
     )
 
     val hideFeedbackButtons by booleanOption(
         key = "hideFeedbackButtons",
         default = true,
-        title = "Hide Feedback Buttons",
-        description = "Hides the 'Not interested' / 'Interested' feedback pills above the bottom navigation on feed videos.",
+        title = "Feedback pills",
+        description = "Hides interest pills.",
         required = false,
     )
 
@@ -266,11 +266,11 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
                 parameters = listOf("Landroid/view/View;"),
             ).method
             descOnViewCreated.clearTryBlocks()
-            descOnViewCreated.ensureRegisterCount(6)
+            descOnViewCreated.ensureRegisterCount(4)
             val descReturns = descOnViewCreated.implementation!!.instructions.mapIndexedNotNull { index, instr ->
                 if (instr.opcode.name == "return-void") index else null
             }.reversed()
-            for (index in descReturns) {
+            for ((i, index) in descReturns.withIndex()) {
                 descOnViewCreated.addInstructions(
                     index,
                     """
@@ -289,11 +289,11 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
                 parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"),
             ).method
             descJs.clearTryBlocks()
-            descJs.ensureRegisterCount(6)
+            descJs.ensureRegisterCount(2)
             val jsReturns = descJs.implementation!!.instructions.mapIndexedNotNull { index, instr ->
                 if (instr.opcode.name == "return-void") index else null
             }.reversed()
-            for (index in jsReturns) {
+            for ((i, index) in jsReturns.withIndex()) {
                 descJs.addInstructions(
                     index,
                     """

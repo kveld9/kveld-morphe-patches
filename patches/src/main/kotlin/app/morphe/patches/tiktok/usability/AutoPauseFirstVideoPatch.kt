@@ -8,8 +8,8 @@ import app.morphe.patches.shared.addInstructionsAtControlFlowLabel
 import app.morphe.patches.shared.sharedExtensionPatch
 
 val autoPauseFirstVideoPatch = bytecodePatch(
-    name = "Auto-Pause First Video",
-    description = "Pauses the first video on launch so it plays without lag.",
+    name = "Start First Video Paused",
+    description = "First video starts paused.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)

@@ -22,7 +22,7 @@ val videoFitPatch = bytecodePatch(
 
     val fitMode by stringOption(
         key = "fitMode",
-        title = "Video Fit Mode",
+        title = "Mode",
         description = "Choose 'fit' to see the whole video or 'fill' to crop and fill the screen.",
         default = "fit",
         values = mapOf("Fit video" to "fit", "Fill screen" to "fill"),

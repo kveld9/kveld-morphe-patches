@@ -7,7 +7,7 @@ private val EMPTY_BYTES = byteArrayOf()
 
 val speechEngineSlimmerPatch = rawResourcePatch(
     name = "Remove Voice Tools",
-    description = "Removes voice search and text-to-speech to save space. Breaks voice features.",
+    description = "Deletes voice recognition files. Breaks voice search.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK)

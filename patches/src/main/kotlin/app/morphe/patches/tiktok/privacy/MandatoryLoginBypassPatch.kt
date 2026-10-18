@@ -11,7 +11,7 @@ private const val MANDATORY_LOGIN_SERVICE = "Lcom/ss/android/ugc/aweme/services/
 private const val GUEST_MODE_SERVICE_IMPL = "Lcom/ss/android/ugc/aweme/account/guestmode/GuestModeServiceImpl;"
 
 val mandatoryLoginBypassPatch = bytecodePatch(
-    name = "Bypass Mandatory Login",
+    name = "Browse Without Login",
     description = "Lets you browse videos and feeds without creating an account or logging in.",
     default = true,
 ) {

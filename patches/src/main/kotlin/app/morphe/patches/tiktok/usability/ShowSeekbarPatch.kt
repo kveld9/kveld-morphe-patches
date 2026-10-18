@@ -14,7 +14,7 @@ import com.android.tools.smali.dexlib2.AccessFlags
 private const val AWEME_CLASS = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;"
 
 val showSeekbarPatch = bytecodePatch(
-    name = "Show Seekbar",
+    name = "Video Seekbar",
     description = "Restores the video progress seekbar and scrubbing controls.",
     default = true,
 ) {
