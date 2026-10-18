@@ -29,6 +29,8 @@ jobs:
         run: pip install -r requirements.txt
       - name: Check documentation anchors
         run: python3 .github/scripts/check_docs_anchors.py
+      - name: Check documentation patch catalogs
+        run: python3 .github/scripts/check_docs_patch_names.py
       - name: Gradle check
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
