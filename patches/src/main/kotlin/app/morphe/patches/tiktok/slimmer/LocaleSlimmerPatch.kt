@@ -4,8 +4,6 @@ import app.morphe.patcher.patch.rawResourcePatch
 import app.morphe.patcher.patch.stringOption
 import app.morphe.patches.shared.Constants
 
-private val EMPTY_BYTES = byteArrayOf()
-
 val localeSlimmerPatch = rawResourcePatch(
     name = "Remove Extra Languages",
     description = "Deletes unselected language packs.",
@@ -39,14 +37,11 @@ val localeSlimmerPatch = rawResourcePatch(
             assetsDir.listFiles()?.filter { it.isDirectory && it.name.startsWith("strings#lang_") }?.forEach { langDir ->
                 val langCode = langDir.name.removePrefix("strings#lang_").lowercase()
                 if (langCode !in selectedLangs) {
-                    langDir.walkTopDown().filter { it.isFile }.forEach { file ->
-                        val origSize = file.length()
-                        if (origSize > 0) {
-                            file.writeBytes(EMPTY_BYTES)
-                            savedBytes += origSize
-                        }
+                    val dirSize = langDir.walkTopDown().filter { it.isFile }.sumOf { it.length() }
+                    if (langDir.deleteRecursively()) {
+                        savedBytes += dirSize
+                        strippedFolders++
                     }
-                    strippedFolders++
                 }
             }
 
