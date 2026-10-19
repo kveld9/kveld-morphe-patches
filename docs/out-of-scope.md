@@ -60,7 +60,7 @@ Feature requests that fall into any of the following categories will be closed a
 
 ---
 
-### ❌ Arbitrary New Target Applications
-* **What is requested**: Adding new target applications without architectural alignment or maintainability rationale.
+### ❌ New Target Applications
+* **What is requested**: Adding support for a new target application.
 * **Why it is out of scope**:
-  Every supported application requires ongoing maintenance, reverse-engineering tooling, and automated testing pipelines. New targets are added only when they offer clear utility, clean patch boundaries, and sustainable long-term maintenance.
+  Every supported application requires ongoing maintenance, reverse-engineering tooling, and automated testing pipelines. The supported app set is closed: no new target applications are accepted. Any issue requesting a new target will be closed as not planned.
