@@ -12,7 +12,6 @@ import app.morphe.patcher.patch.rawResourcePatch
 import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.shared.Constants
-import app.morphe.patches.shared.findXmlContaining
 import app.morphe.patches.shared.sharedExtensionPatch
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
@@ -24,65 +23,22 @@ import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import org.w3c.dom.Element
 import java.io.RandomAccessFile
 
-// ── Resource Patch: Sets defaultValue="false" on telemetry switches in XML ─────
+// Resource Patch: Strips Play install referrer permission from AndroidManifest.xml
 private val braveTelemetryResourcePatch = resourcePatch(
     name = "Block Trackers (Setup)",
-    description = "Turns off analytics switches by default.",
+    description = "Removes the Play install referrer permission.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_BRAVE)
 
     execute {
-        val telemetrySwitches = listOf(
-            "privacy_preserving_analytics_switch",
-            "statistics_reporting_switch",
-            "web_discovery_project_switch",
-        )
-
-        val targetFiles = get("res").findXmlContaining(telemetrySwitches)
-
-        var modifiedAttrs = 0
-        var modifiedFiles = 0
-
-        for (file in targetFiles) {
-            var fileTouched = false
-            document(file.absolutePath).use { doc ->
-                val elements = doc.getElementsByTagName("*")
-                for (i in 0 until elements.length) {
-                    val node = elements.item(i) as? Element ?: continue
-                    val key = node.getAttribute("android:key").takeIf { it.isNotEmpty() }
-                        ?: node.getAttribute("key")
-                    if (key in telemetrySwitches) {
-                        when {
-                            node.hasAttribute("android:defaultValue") -> {
-                                node.setAttribute("android:defaultValue", "false")
-                                modifiedAttrs++
-                                fileTouched = true
-                            }
-                            node.hasAttribute("defaultValue") -> {
-                                node.setAttribute("defaultValue", "false")
-                                modifiedAttrs++
-                                fileTouched = true
-                            }
-                        }
-                    }
-                }
-            }
-            if (fileTouched) modifiedFiles++
-        }
-
-        println("[Block Trackers] Set $modifiedAttrs preference defaults to false across $modifiedFiles XML layout files")
-
         val manifestFile = get("AndroidManifest.xml")
         if (manifestFile.exists()) {
             var strippedNodes = 0
             document(manifestFile.absolutePath).use { doc ->
-                val tagNames = listOf("uses-permission", "uses-permission-sdk-23", "property", "uses-library")
+                val tagNames = listOf("uses-permission", "uses-permission-sdk-23")
                 val targetNames = setOf(
                     "com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE",
-                    "android.permission.ACCESS_ADSERVICES_ATTRIBUTION",
-                    "android.adservices.AD_SERVICES_CONFIG",
-                    "android.ext.adservices",
                 )
 
                 for (tagName in tagNames) {
@@ -103,7 +59,7 @@ private val braveTelemetryResourcePatch = resourcePatch(
                 }
             }
             if (strippedNodes > 0) {
-                println("[Block Trackers] Stripped $strippedNodes Google Play referrer & AdServices entries from AndroidManifest.xml")
+                println("[Block Trackers] Stripped $strippedNodes Play install referrer entries from AndroidManifest.xml")
             }
         }
     }
@@ -328,40 +284,14 @@ val braveBlockTelemetryPatch = bytecodePatch(
             throw PatchException(BRAVE_UNSUPPORTED_VARIANT_MESSAGE)
         }
 
-        // 4. PrefService.e(String): Filter telemetry preferences (P3A, Stats, WDP) at return
-        val prefFp = Fingerprint(
-            definingClass = "Lorg/chromium/components/prefs/PrefService;",
-            name = "e",
-            returnType = "Z",
-            parameters = listOf("Ljava/lang/String;"),
-        )
-        val method = prefFp.method
-        val returnIndices = method.implementation?.instructions?.withIndex()
-            ?.filter { it.value.opcode == Opcode.RETURN }
-            ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
-            ?.toList() ?: emptyList()
-
-        returnIndices.asReversed().forEach { (returnIndex, reg) ->
-            method.addInstructions(
-                returnIndex,
-                """
-                    invoke-static {p1, v$reg}, ${Constants.BRAVE_EXTENSION_CLASS}->filterTelemetryPref(Ljava/lang/String;Z)Z
-                    move-result v$reg
-                """.trimIndent(),
-            )
-        }
-        if (returnIndices.isNotEmpty()) {
-            hookedMethods.add("PrefService.e")
-        }
-
-        // 5. Offers host: Rewrite const-string literals containing offers.brave.com to 0.0.0.0
+        // 4. Offers host: Rewrite const-string literals containing offers.brave.com to 0.0.0.0
         if (blockOffersHost == true) {
             blockOffersHostInDex()
         } else {
             println("[Block Trackers] Offers host blocking disabled by option.")
         }
 
-        // 6. Play Install Referrer: Neutralize initReferrer() to prevent Play Store attribution binding
+        // 5. Play Install Referrer: Neutralize initReferrer() to prevent Play Store attribution binding
         Fingerprint(
             definingClass = "Lorg/chromium/chrome/browser/referrer/BraveReferrer;",
             name = "initReferrer",

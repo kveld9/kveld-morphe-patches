@@ -10,18 +10,6 @@ import java.util.List;
 @SuppressWarnings("unused")
 public class BraveExtension extends ChromiumExtension {
 
-    public static boolean filterTelemetryPref(String pref, boolean originalValue) {
-        if (pref == null) return originalValue;
-        switch (pref) {
-            case "brave.p3a.enabled":
-            case "brave.stats.reporting_enabled":
-            case "brave.web_discovery_enabled":
-                return false;
-            default:
-                return originalValue;
-        }
-    }
-
     public static boolean filterNtpPref(String pref, boolean originalValue) {
         if (pref == null) return originalValue;
         switch (pref) {

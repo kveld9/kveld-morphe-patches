@@ -23,7 +23,7 @@ Technical documentation and patch catalog for Brave Private Web Browser on Andro
 | Patch Name | Typology | Default State | Dependencies | Description |
 | :--- | :--- | :--- | :--- | :--- |
 | **Stop Background Sync** | `bytecodePatch` | `true` (Enabled) | None | Stops background wakeups and battery drain. |
-| **Block Trackers (Setup)** | `resourcePatch` | `false` (Opt-in) | None | Turns off analytics switches by default. |
+| **Block Trackers (Setup)** | `resourcePatch` | `false` (Opt-in) | None | Removes the Play install referrer permission. |
 | **Block Tracking Servers** | `rawResourcePatch` | `false` (Opt-in) | None | Redirects tracking servers to 0.0.0.0. |
 | **Block Trackers** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch`, `Block Trackers (Setup)`, `Block Tracking Servers` | Blocks usage analytics, crash uploads and experiment downloads. |
 | **Clean Start Page** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Removes sponsored wallpapers, news feed and promo cards. |
@@ -46,7 +46,7 @@ Technical documentation and patch catalog for Brave Private Web Browser on Andro
   - *How*: Modifies the background sync check to return true, preventing scheduled sync tasks from running.
 - **Block Trackers & Hosts**:
   - *Objective*: Prevent transmission of telemetry, crash reports, and remote experiment metrics.
-  - *How*: Disables analytics preference toggles in settings resources, strips Google Play referrer and ad attribution declarations from the manifest, neutralizes crash dump uploads, experiment synchronization, and Google Play install referrer attribution queries, and redirects telemetry server endpoints to 0.0.0.0. Provides the option to also block shopping offer servers.
+  - *How*: Strips the Google Play install referrer permission from the manifest, neutralizes crash dump uploads, experiment synchronization, and Google Play install referrer attribution queries, and redirects telemetry server endpoints to 0.0.0.0. Provides the option to also block shopping offer servers.
 
 ### B. Interface & Promo Suppression
 - **Clean Start Page**:
