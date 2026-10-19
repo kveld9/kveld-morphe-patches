@@ -56,7 +56,7 @@ Technical documentation and patch catalog for Brave Private Web Browser on Andro
   - *How*: Neutralizes tips notification scheduling, rewards onboarding alarm enqueue, and retention marketing broadcast dispatch.
 - **Block Popups & Rating Requests**:
   - *Objective*: Prevent rating prompts, review nag dialogs, and promotional modal interruptions.
-  - *How*: Disables in-app review and promotional sign-up eligibility checks, and drops promotional dialog tags before display.
+  - *How*: Disables in-app review and promotional sign-up eligibility checks, and drops promotional dialog tags before display. Hides the Rate Brave entry and its Support category in Settings.
 
 ### C. Browser Navigation & Performance
 - **Keep Tabs Open**:
