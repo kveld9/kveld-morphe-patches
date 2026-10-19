@@ -32,7 +32,6 @@ private const val PREF_PREFIX = "brave_origin_off_"
  */
 private val ORIGIN_SWITCH_KEYS = listOf(
     "rewards_switch",
-    "email_aliases_switch",
     "leo_ai_switch",
     "news_switch",
     "vpn_switch",
