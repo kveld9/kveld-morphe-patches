@@ -1,7 +1,6 @@
 package app.morphe.patches.chromium
 
 import app.morphe.patcher.Fingerprint
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.addInstructionsAtControlFlowLabel
@@ -12,7 +11,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 @Suppress("unused")
 val cleanShareUrlPatch = bytecodePatch(
     name = "Clean Shared Links",
-    description = "Removes tracking codes from links you share or copy.",
+    description = "Removes tracking codes from links you share.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_BRAVE)
@@ -52,54 +51,6 @@ val cleanShareUrlPatch = bytecodePatch(
             println("[Clean Shared Links] Share Intent builder hook note: ${e.message}")
         }
 
-        // 1. Hook ClipboardImpl.setPrimaryClip so all copied links, URLs, and text are sanitized
-        try {
-            val fpClipboard = Fingerprint(
-                name = "setPrimaryClip",
-                parameters = listOf("Landroid/content/ClipData;"),
-                returnType = "V",
-                strings = listOf("google"),
-                custom = { _, classDef ->
-                    classDef.type.contains("Clipboard")
-                },
-            )
-            fpClipboard.method.apply {
-                addInstructions(
-                    0,
-                    """
-                        invoke-static {p1}, ${Constants.CHROMIUM_EXTENSION_CLASS}->cleanClipData(Landroid/content/ClipData;)Landroid/content/ClipData;
-                        move-result-object p1
-                    """.trimIndent(),
-                )
-                val className = fpClipboard.originalClassDef.type.substringAfterLast('/').removeSuffix(";")
-                hookedTargets.add("$className.$name")
-                patched++
-            }
-        } catch (e: Exception) {
-            println("[Clean Shared Links] ClipboardImpl.setPrimaryClip hook note: ${e.message}")
-        }
-
-        // 2. Fallback hook for Clipboard.setText
-        try {
-            Fingerprint(
-                definingClass = "Lorg/chromium/ui/base/Clipboard;",
-                name = "setText",
-                parameters = listOf("Ljava/lang/String;"),
-            ).method.apply {
-                addInstructions(
-                    0,
-                    """
-                        invoke-static {p1}, ${Constants.CHROMIUM_EXTENSION_CLASS}->cleanShareUrl(Ljava/lang/String;)Ljava/lang/String;
-                        move-result-object p1
-                    """.trimIndent(),
-                )
-                hookedTargets.add("Clipboard.setText")
-                patched++
-            }
-        } catch (e: Exception) {
-            println("[Clean Shared Links] Clipboard.setText hook note: ${e.message}")
-        }
-
-println("[Clean Shared Links] Applied $patched link tracking sanitizer hook(s) across target components (${hookedTargets.joinToString(", ")}).")
+        println("[Clean Shared Links] Applied $patched link tracking sanitizer hook(s) across target components (${hookedTargets.joinToString(", ")}).")
     }
 }
