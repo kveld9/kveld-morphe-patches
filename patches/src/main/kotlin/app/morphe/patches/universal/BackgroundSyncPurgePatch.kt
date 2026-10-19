@@ -48,20 +48,64 @@ private fun disableElement(element: Element): Boolean {
     return true
 }
 
-private fun hasBootAction(receiver: Element): Boolean {
-    val intentFilters = receiver.getElementsByTagName("intent-filter")
-    for (i in 0 until intentFilters.length) {
-        val filter = intentFilters.item(i) as? Element ?: continue
-        val actions = filter.getElementsByTagName("action")
-        for (j in 0 until actions.length) {
-            val action = actions.item(j) as? Element ?: continue
-            val actionName = getAttributeValue(action, "name")
-            if (actionName in BOOT_AND_WAKEUP_ACTIONS) {
-                return true
-            }
-        }
+private fun getElementsByTagNameList(parent: Element, tagName: String): List<Element> {
+    val nodes = parent.getElementsByTagName(tagName)
+    val result = ArrayList<Element>(nodes.length)
+    for (i in 0 until nodes.length) {
+        val element = nodes.item(i) as? Element ?: continue
+        result.add(element)
     }
-    return false
+    return result
+}
+
+private fun stripBootActionsFromFilter(filter: Element): Int {
+    val actions = getElementsByTagNameList(filter, "action")
+    val bootActions = actions.filter { action ->
+        getAttributeValue(action, "name") in BOOT_AND_WAKEUP_ACTIONS
+    }
+    for (action in bootActions) {
+        action.parentNode?.removeChild(action)
+    }
+    val remainingActions = actions.size - bootActions.size
+    if (remainingActions == 0) {
+        filter.parentNode?.removeChild(filter)
+    }
+    return bootActions.size
+}
+
+private fun stripBootActionsFromReceiver(receiver: Element): Int {
+    val filters = getElementsByTagNameList(receiver, "intent-filter")
+    var strippedCount = 0
+    for (filter in filters) {
+        strippedCount += stripBootActionsFromFilter(filter)
+    }
+    return strippedCount
+}
+
+private fun processBootReceiver(receiver: Element): Pair<Boolean, Int> {
+    val stripped = stripBootActionsFromReceiver(receiver)
+    if (stripped == 0) {
+        return Pair(false, 0)
+    }
+    if (receiver.getElementsByTagName("action").length == 0) {
+        return Pair(disableElement(receiver), 0)
+    }
+    return Pair(false, stripped)
+}
+
+private fun handleReceiver(
+    receiver: Element,
+    targetBootActions: Boolean,
+    targetSyncReceivers: Boolean,
+): Pair<Boolean, Int> {
+    val name = getAttributeValue(receiver, "name")
+    if (targetSyncReceivers && name in BACKGROUND_SYNC_RECEIVERS) {
+        return Pair(disableElement(receiver), 0)
+    }
+    if (targetBootActions) {
+        return processBootReceiver(receiver)
+    }
+    return Pair(false, 0)
 }
 
 private fun stripPermissions(doc: Document, permissionsToStrip: Set<String>): List<String> {
@@ -89,23 +133,21 @@ private fun disableReceivers(
     doc: Document,
     targetBootActions: Boolean,
     targetSyncReceivers: Boolean,
-): Int {
-    var disabledCount = 0
+): Pair<Int, Int> {
+    var disabledReceivers = 0
+    var strippedBootActions = 0
     val receivers = doc.getElementsByTagName("receiver")
     for (i in 0 until receivers.length) {
         val receiver = receivers.item(i) as? Element ?: continue
-        val name = getAttributeValue(receiver, "name")
-
-        val matchSync = targetSyncReceivers && name in BACKGROUND_SYNC_RECEIVERS
-        val matchBoot = targetBootActions && hasBootAction(receiver)
-
-        if (matchSync || matchBoot) {
-            if (disableElement(receiver)) {
-                disabledCount++
-            }
-        }
+        val (disabled, stripped) = handleReceiver(
+            receiver = receiver,
+            targetBootActions = targetBootActions,
+            targetSyncReceivers = targetSyncReceivers,
+        )
+        if (disabled) disabledReceivers++
+        strippedBootActions += stripped
     }
-    return disabledCount
+    return Pair(disabledReceivers, strippedBootActions)
 }
 
 private fun disableServices(doc: Document): Int {
@@ -180,29 +222,32 @@ val backgroundSyncPurgePatch = resourcePatch(
 
         var removedPerms: List<String> = emptyList()
         var disabledReceiversCount = 0
+        var strippedBootActionsCount = 0
         var disabledServicesCount = 0
 
         document(manifestFile.absolutePath).use { doc ->
             if (permissionsToStrip.isNotEmpty()) {
                 removedPerms = stripPermissions(doc, permissionsToStrip)
             }
-            disabledReceiversCount = disableReceivers(
+            val (disabledReceivers, strippedBootActions) = disableReceivers(
                 doc = doc,
                 targetBootActions = shouldDisableBoot,
                 targetSyncReceivers = shouldDisableWorkManager,
             )
+            disabledReceiversCount = disabledReceivers
+            strippedBootActionsCount = strippedBootActions
             if (shouldDisableWorkManager) {
                 disabledServicesCount = disableServices(doc)
             }
         }
 
-        if (removedPerms.isEmpty() && disabledReceiversCount == 0 && disabledServicesCount == 0) {
+        if (removedPerms.isEmpty() && disabledReceiversCount == 0 && strippedBootActionsCount == 0 && disabledServicesCount == 0) {
             println("[Stop Background Sync (Universal)] AndroidManifest.xml has no background wakeups or boot receivers.")
             return@execute
         }
 
         val permNames = removedPerms.map { it.substringAfterLast('.') }.distinct()
         val permNote = if (removedPerms.isNotEmpty()) "revoked ${removedPerms.size} permission(s) (${permNames.joinToString(", ")})" else "0 permissions revoked"
-        println("[Stop Background Sync (Universal)] $permNote, disabled $disabledReceiversCount receiver(s) and $disabledServicesCount service(s).")
+        println("[Stop Background Sync (Universal)] $permNote, disabled $disabledReceiversCount receiver(s) and $disabledServicesCount service(s), stripped $strippedBootActionsCount boot action(s) from receivers kept enabled.")
     }
 }
