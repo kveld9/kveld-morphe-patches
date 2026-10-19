@@ -26,8 +26,7 @@ Technical documentation and patch catalog for Brave Private Web Browser on Andro
 | **Block Trackers (Setup)** | `resourcePatch` | `false` (Opt-in) | None | Turns off analytics switches by default. |
 | **Block Tracking Servers** | `rawResourcePatch` | `false` (Opt-in) | None | Redirects tracking servers to 0.0.0.0. |
 | **Block Trackers** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch`, `Block Trackers (Setup)`, `Block Tracking Servers` | Blocks usage analytics, crash uploads and experiment downloads. |
-| **Clean Start Page (Setup)** | `resourcePatch` | `true` (Enabled) | None | Turns off ads and news switches by default. |
-| **Clean Start Page** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch`, `Clean Start Page (Setup)` | Removes sponsored wallpapers, news feed and promo cards. |
+| **Clean Start Page** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Removes sponsored wallpapers, news feed and promo cards. |
 | **Keep Tabs Open** | `bytecodePatch` | `true` (Enabled) | None | Stops Brave from minimizing your tabs in the background. |
 | **Remove Extra Files** | `rawResourcePatch` | `false` (Opt-in) | None | Deletes unused AR and XR files to shrink the app. |
 | **Silence Promo Notifications** | `bytecodePatch` | `true` (Enabled) | None | Stops tips, reward promos and marketing notifications. |
@@ -52,7 +51,7 @@ Technical documentation and patch catalog for Brave Private Web Browser on Andro
 ### B. Interface & Promo Suppression
 - **Clean Start Page**:
   - *Objective*: Provide a distraction-free start page free of ads, sponsored cards, and unwanted news.
-  - *How*: Disables sponsored background wallpapers, Brave News feeds, and marketing cards by updating default preference resources and feed view models. Includes an option to hide top site tiles.
+  - *How*: Disables sponsored background wallpapers, Brave News feeds, and marketing cards by intercepting preference checks and feed view models. Includes an option to hide top site tiles.
 - **Silence Promo Notifications**:
   - *Objective*: Eliminate unsolicited marketing reminders, tips, and rewards onboarding notifications.
   - *How*: Neutralizes tips notification scheduling, rewards onboarding alarm enqueue, and retention marketing broadcast dispatch.
