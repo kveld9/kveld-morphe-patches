@@ -17,7 +17,7 @@ val braveSuppressInAppPromosPatch = bytecodePatch(
     execute {
         val hookedMethods = mutableListOf<String>()
 
-        // 1. Rate Eligibility Gate: Force Lsjf.d(Context) to return false
+        // 1. Force the rate eligibility check (Context) to return false
         Fingerprint(
             returnType = "Z",
             parameters = listOf("Landroid/content/Context;"),
@@ -27,48 +27,7 @@ val braveSuppressInAppPromosPatch = bytecodePatch(
             hookedMethods.add("RateEligibilityGate.d")
         }
 
-        // 2. BraveRateDialogFragment: Neutralize show(FragmentManager, String)
-        Fingerprint(
-            definingClass = "Lorg/chromium/chrome/browser/rate/BraveRateDialogFragment;",
-            strings = listOf("brave_rating_dialog_tag"),
-            returnType = "V",
-        ).method.apply {
-            addInstructions(0, "return-void")
-            hookedMethods.add("BraveRateDialogFragment.show")
-        }
-
-        // 3. BraveAskPlayStoreRatingDialog: Neutralize show(FragmentManager, String)
-        Fingerprint(
-            definingClass = "Lorg/chromium/chrome/browser/rate/BraveAskPlayStoreRatingDialog;",
-            strings = listOf("brave_ask_play_store_rating_dialog_tag"),
-            returnType = "V",
-        ).method.apply {
-            addInstructions(0, "return-void")
-            hookedMethods.add("BraveAskPlayStoreRatingDialog.show")
-        }
-
-        // 4. BraveRateThanksFeedbackDialog: Neutralize show(FragmentManager, String)
-        Fingerprint(
-            definingClass = "Lorg/chromium/chrome/browser/rate/BraveRateThanksFeedbackDialog;",
-            strings = listOf("brave_rate_thanks_feedback_dialog_tag"),
-            returnType = "V",
-        ).method.apply {
-            addInstructions(0, "return-void")
-            hookedMethods.add("BraveRateThanksFeedbackDialog.show")
-        }
-
-        // 5. BraveAdsSignupDialog: Neutralize in-app signup prompt builder
-        Fingerprint(
-            definingClass = "Lorg/chromium/chrome/browser/dialogs/BraveAdsSignupDialog;",
-            name = "b",
-            returnType = "V",
-            parameters = listOf("Landroid/content/Context;"),
-        ).method.apply {
-            addInstructions(0, "return-void")
-            hookedMethods.add("BraveAdsSignupDialog.b")
-        }
-
-        // 6. BraveAdsSignupDialog: Force eligibility check to false
+        // 2. BraveAdsSignupDialog: Force eligibility check to false
         Fingerprint(
             definingClass = "Lorg/chromium/chrome/browser/dialogs/BraveAdsSignupDialog;",
             name = "a",
@@ -79,7 +38,7 @@ val braveSuppressInAppPromosPatch = bytecodePatch(
             hookedMethods.add("BraveAdsSignupDialog.a")
         }
 
-        // 7. BraveDialogFragment: Drop promotional dialog tags before display
+        // 3. BraveDialogFragment: Drop promotional dialog tags before display
         Fingerprint(
             definingClass = "Lorg/chromium/chrome/browser/BraveDialogFragment;",
             returnType = "V",
