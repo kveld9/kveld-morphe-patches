@@ -1,3 +1,27 @@
+## [2.8.0-experimental.3](https://github.com/kveld9/kveld-morphe-patches/compare/v2.8.0-experimental.2...v2.8.0-experimental.3) (2026-10-19)
+
+### Bug Fixes
+
+* **brave:** drop dead and rescheduling hooks from Silence Promo Notifications ([484cb7f](https://github.com/kveld9/kveld-morphe-patches/commit/484cb7f417a0819f110b6c72cfb5da220180d4f1))
+* **brave:** drop dead clipboard hooks from Clean Shared Links ([e9003cc](https://github.com/kveld9/kveld-morphe-patches/commit/e9003cc5423fe4c04dab01733173c06fede3a9b3))
+* **brave:** drop job-hanging wakeup hooks from Stop Background Sync ([6559f54](https://github.com/kveld9/kveld-morphe-patches/commit/6559f54da83e0bd482b8a040934c97fd0f96ebaf))
+* **brave:** hide the Rate Brave settings entry and its empty Support category ([37c6d6a](https://github.com/kveld9/kveld-morphe-patches/commit/37c6d6a186cbf71be07e39505a75038c809eb8d8))
+* **brave:** keep the Rate Brave settings button and drop dead promo hooks ([4934f7b](https://github.com/kveld9/kveld-morphe-patches/commit/4934f7b4b21b2cf2cbda8a7503ca032301bdacb8))
+* **brave:** keep the WireGuard library in Remove Extra Files ([f61d3a1](https://github.com/kveld9/kveld-morphe-patches/commit/f61d3a157ae69b1a2dcb56518265a5f0f2bd6614))
+* **brave:** stop clearing BTI and skipping libchrome constructors ([94993f3](https://github.com/kveld9/kveld-morphe-patches/commit/94993f316bd76e12d5fdd6b5b341f22cc5d301c5))
+* **chromium:** skip locale paks smaller than the replacement ([b67b6af](https://github.com/kveld9/kveld-morphe-patches/commit/b67b6af0e0f9456dcbae20603117f711db6c3f7e))
+* **gboard:** keep classpath resources when cleaning build junk ([89f3cd2](https://github.com/kveld9/kveld-morphe-patches/commit/89f3cd2c905ba4bf924d13dd32456c367605097e))
+* **gboard:** walk the real APK root when pruning build junk ([88eba01](https://github.com/kveld9/kveld-morphe-patches/commit/88eba0129aa1d25bd2132be153e2f865068473d1))
+* **tiktok:** match language packs by base language and ISO aliases ([da67c5a](https://github.com/kveld9/kveld-morphe-patches/commit/da67c5af5fa5440bfb22c85fba9118ea02ade75c))
+* **universal:** keep classpath resources in Clean App Packaging ([2ef3ba5](https://github.com/kveld9/kveld-morphe-patches/commit/2ef3ba5a7acf98e7f01873064caa5cbf8709a5f3))
+* **universal:** keep Clean App Packaging out of protected asset trees ([458c7d1](https://github.com/kveld9/kveld-morphe-patches/commit/458c7d12c4423c8b12dd6654f6b7ffad457aa280))
+* **universal:** strip only boot actions in Stop Background Sync ([8fe88c1](https://github.com/kveld9/kveld-morphe-patches/commit/8fe88c1f35d496c1a7ea0b7347d47a50cc73be15))
+
+### New Features
+
+* **brave:** add opt-in VPN library removal to Remove Extra Files ([09ce40b](https://github.com/kveld9/kveld-morphe-patches/commit/09ce40bd0dd77560fba260a3fd21165cd4653436))
+* **runner:** warn when a passing patch reports skipped steps ([753d544](https://github.com/kveld9/kveld-morphe-patches/commit/753d54480321f96b717e6d01872300fe53e5c368))
+
 ## [2.8.0-experimental.2](https://github.com/kveld9/kveld-morphe-patches/compare/v2.8.0-experimental.1...v2.8.0-experimental.2) (2026-10-18)
 
 ### Bug Fixes

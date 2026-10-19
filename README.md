@@ -196,7 +196,7 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 </details>
 
 <details>
-<summary>Brave Private Web Browser, VPN&nbsp;&nbsp;•&nbsp;&nbsp;<b>16 patches</b></summary>
+<summary>Brave Private Web Browser, VPN&nbsp;&nbsp;•&nbsp;&nbsp;<b>13 patches</b></summary>
 <br>
 
 **Supported versions:**
@@ -210,12 +210,9 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 | **Block Popups & Rating Requests** | Blocks rating popups, review requests and promo dialogs. |  |
 | **Block Trackers** | Blocks usage analytics, crash uploads and experiment downloads. | • Block offers server |
 | **Brave Origin** | Unlocks Brave Origin feature switches. |  |
-| **Clean Shared Links** | Removes tracking codes from links you share or copy. |  |
 | **Clean Start Page** | Removes sponsored wallpapers, news feed and promo cards. | • Hide shortcut tiles |
-| **Faster Startup** | Speeds up launch by disabling carrier customizations. |  |
-| **Hide Battery Status** | Stops sites from reading your battery level to track you. |  |
 | **Keep Tabs Open** | Stops Brave from minimizing your tabs in the background. |  |
-| **Remove Extra Files** | Deletes unused AI, VPN and AR files to shrink the app. |  |
+| **Remove Extra Files** | Deletes unused AR and XR files to shrink the app. | • Remove VPN library |
 | **Remove Extra Languages** | Deletes unselected language packs. | • Languages to keep |
 | **Select Previous Tab on Close** | Selects the previous tab in the tab group when closing a tab. |  |
 | **Silence Promo Notifications** | Stops tips, reward promos and marketing notifications. |  |
