@@ -310,7 +310,7 @@ The **`Shrink WebP Images`** losslessly strips non-rendering metadata chunks (`E
 
 ## 9. Stop Background Sync (Universal) (`backgroundSyncPurgePatch`)
 
-The **`Stop Background Sync (Universal)`** patch stops unneeded background wakeups, radio modem alarms, and persistent standby battery drain by removing startup permissions and disabling boot-triggered broadcast receivers and periodic WorkManager scheduler components in `AndroidManifest.xml`.
+The **`Stop Background Sync (Universal)`** patch stops unneeded background wakeups, radio modem alarms, and persistent standby battery drain by removing startup permissions, pruning boot and package-replaced actions from broadcast receiver intent filters (disabling receivers only when no other action remains), and disabling periodic WorkManager scheduler components in `AndroidManifest.xml`.
 
 > [!NOTE]
 > ### Eliminating Standby Battery Drain
@@ -318,14 +318,14 @@ The **`Stop Background Sync (Universal)`** patch stops unneeded background wakeu
 
 ### Neutralized Components
 
-- **Boot & Restart Receivers**: Receivers listening for `BOOT_COMPLETED`, `LOCKED_BOOT_COMPLETED`, `QUICKBOOT_POWERON`, `REBOOT`, `MY_PACKAGE_REPLACED`, `PACKAGE_REPLACED`, and `PACKAGE_RESTARTED`.
+- **Boot & Restart Receivers**: Removes boot actions (`BOOT_COMPLETED`, `LOCKED_BOOT_COMPLETED`, `QUICKBOOT_POWERON`, `REBOOT`, `MY_PACKAGE_REPLACED`, `PACKAGE_REPLACED`, `PACKAGE_RESTARTED`) from receiver intent filters, and disables the receiver only when no other action remains, so unrelated actions such as `LOCALE_CHANGED` or `TIMEZONE_CHANGED` keep working.
 - **WorkManager & JobScheduler Components**: `SystemJobService`, `SystemAlarmService`, `RescheduleReceiver`, `ForceStopRunnable$BroadcastReceiver`, `ConstraintProxy`, and `DiagnosticsReceiver`.
 - **DataTransport Scheduling**: `JobInfoSchedulerService`, `TransportBackendDiscovery`, `AlarmManagerSchedulerBroadcastReceiver`.
 
 ### Configuration in Morphe Manager
 
 - **Strip RECEIVE_BOOT_COMPLETED Permission (`stripBootPermission`)**: Removes `android.permission.RECEIVE_BOOT_COMPLETED` and HTC/OEM quickboot permissions from `AndroidManifest.xml` (Toggle, default: `true`).
-- **Disable Boot & Package Receivers (`disableBootReceivers`)**: Disables broadcast receivers registered for device startup, reboot, and app replacement events (Toggle, default: `true`).
+- **Disable Boot & Package Receivers (`disableBootReceivers`)**: Removes device startup, reboot, and app replacement actions from broadcast receiver intent filters, disabling the receiver only when no other action remains so unrelated actions keep working (Toggle, default: `true`).
 - **Disable WorkManager & Job Schedulers (`disableWorkManager`)**: Disables WorkManager background services and constraint-checking broadcast receivers (Toggle, default: `true`).
 - **Strip WAKE_LOCK Permission (`stripWakeLock`)**: Removes `android.permission.WAKE_LOCK` from `AndroidManifest.xml` (Toggle, default: `false`). *Keep disabled if the target application requires wake locks for continuous audio playback, video recording, screen-off background downloads (Brave), or foreground navigation.*
 
