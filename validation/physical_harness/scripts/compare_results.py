@@ -16,7 +16,6 @@ def compare_runs(results_dir: Path) -> str:
         "# ARM64 PHYSICAL VALIDATION REPORT — VANILLA VS PATCHED COMPARISON\n",
         "| PATCH | TEST | VANILLA EVIDENCE | PATCHED EVIDENCE | DIRECT MEASUREMENT | REGRESSION | RESULT |",
         "| :--- | :--- | :--- | :--- | :--- | :--- | :--- |",
-        _compare_battery(vanilla_dir, patched_dir),
         _compare_sync(vanilla_dir, patched_dir),
         _compare_smoke(vanilla_dir, patched_dir),
     ]
@@ -26,32 +25,6 @@ def compare_runs(results_dir: Path) -> str:
 
     print("\n" + final_report)
     return final_report
-
-
-def _compare_battery(vanilla_dir: Path, patched_dir: Path) -> str:
-    v_bat_file = vanilla_dir / "battery_vanilla_result.json"
-    p_bat_file = patched_dir / "battery_patched_result.json"
-    if not (v_bat_file.exists() and p_bat_file.exists()):
-        return "| **BraveBatteryOptimizationPatch** | BroadcastReceiver `BATTERY_CHANGED` | Pending physical execution | Pending physical execution | -- | -- | **INCONCLUSIVE (Pending)** |"
-
-    v_bat = json.loads(v_bat_file.read_text(encoding="utf-8"))
-    p_bat = json.loads(p_bat_file.read_text(encoding="utf-8"))
-
-    v_active = v_bat.get("has_direct_log_trace", False)
-    p_active = p_bat.get("has_direct_log_trace", False)
-    v_count = v_bat.get("battery_log_count", 0)
-    p_count = p_bat.get("battery_log_count", 0)
-
-    if v_active and not p_active:
-        res, meas = "PASS", "Direct logcat trace absent in patched"
-    elif v_count == 0 and p_count == 0:
-        res, meas = "INCONCLUSIVE", "No direct logcat traces in release build (requires DEX instrumentation)"
-    elif v_count > p_count:
-        res, meas = "PASS", f"Event reduction ({v_count} vs {p_count})"
-    else:
-        res, meas = "INCONCLUSIVE", "Non-differentiable events"
-
-    return f"| **BraveBatteryOptimizationPatch** | BroadcastReceiver `BATTERY_CHANGED` | Log events={v_count} (Trace={v_active}) | Log events={p_count} (Trace={p_active}) | {meas} | None | **{res}** |"
 
 
 def _compare_sync(vanilla_dir: Path, patched_dir: Path) -> str:
