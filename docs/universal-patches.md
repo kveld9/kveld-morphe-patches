@@ -181,6 +181,7 @@ The **`Clean App Packaging`** strips non-functional build metadata, compiler pro
 - **Service Loader Integrations**: `META-INF/services/` and `META-INF/MANIFEST.MF` are strictly preserved to maintain dynamic dependency injection.
 - **Root Whitelist**: Core root directories (`assets`, `res`, `lib`, `smali`, `kotlin`) are protected from accidental pruning.
 - **Kotlin Runtime Descriptors**: APK-root `kotlin/` (`*.kotlin_builtins`, `kotlin-reflect` runtime descriptors) is strictly preserved.
+- **Classpath Resources**: name-based junk rules apply only at the APK root and under `META-INF/`; files in Java package paths (loaded through `getResourceAsStream`) are never deleted.
 
 ---
 
