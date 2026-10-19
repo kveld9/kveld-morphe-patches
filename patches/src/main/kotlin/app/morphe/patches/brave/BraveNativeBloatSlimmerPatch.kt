@@ -1,5 +1,6 @@
 package app.morphe.patches.brave
 
+import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.rawResourcePatch
 import app.morphe.patches.shared.Constants
 
@@ -14,6 +15,9 @@ private val BLOAT_NATIVE_LIBS = listOf(
     "libarcore_sdk_jni.so",
 )
 
+// WireGuard backend used by Brave VPN
+private val VPN_NATIVE_LIBS = listOf("libwg-go.so")
+
 @Suppress("unused")
 val braveNativeBloatSlimmerPatch = rawResourcePatch(
     name = "Remove Extra Files",
@@ -22,9 +26,19 @@ val braveNativeBloatSlimmerPatch = rawResourcePatch(
 ) {
     compatibleWith(Constants.COMPATIBILITY_BRAVE)
 
+    val removeVpnLibrary by booleanOption(
+        key = "removeVpnLibrary",
+        default = false,
+        title = "Remove VPN library",
+        description = "Also deletes the WireGuard library. Brave VPN stops working.",
+        required = false,
+    )
+
     execute {
         var savedBytes = 0L
         val strippedLibs = mutableListOf<String>()
+
+        val targetLibs = if (removeVpnLibrary == true) BLOAT_NATIVE_LIBS + VPN_NATIVE_LIBS else BLOAT_NATIVE_LIBS
 
         val abis = listOf("lib/arm64-v8a", "lib/armeabi-v7a")
 
@@ -32,7 +46,7 @@ val braveNativeBloatSlimmerPatch = rawResourcePatch(
             val libDir = get(abi)
             if (!libDir.exists() || !libDir.isDirectory) return@forEach
 
-            BLOAT_NATIVE_LIBS.forEach { libName ->
+            targetLibs.forEach { libName ->
                 val libFile = get("$abi/$libName")
                 if (libFile.exists() && libFile.isFile) {
                     val originalSize = libFile.length()

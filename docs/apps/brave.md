@@ -72,11 +72,11 @@ Technical documentation and patch catalog for Brave Private Web Browser on Andro
 ### D. Resource Debloating
 - **Remove Extra Files**:
   - *Objective*: Reduce overall application size on device storage.
-  - *How*: Overwrites unused companion native libraries in place with empty stubs, targeting augmented reality and extended reality binaries.
+  - *How*: Overwrites unused companion native libraries in place with empty stubs, targeting augmented reality and extended reality binaries. Includes an option to also remove the WireGuard VPN library.
 
 ---
 
 ## 4. Known Limitations
 
-- **Binary Stripping**: Applying native file removal zeroes selected components in-situ; features depending on those libraries (e.g. AR or XR) will become unavailable.
+- **Binary Stripping**: Applying native file removal zeroes selected components in-situ; features depending on those libraries (e.g. AR, XR, or Brave VPN when its library is removed) will become unavailable.
 - **Standalone Builds**: Patches target official standalone release APKs (`Bravemonoarm64.apk` or `BraveMonoarm.apk`); split or bundle variants are unsupported.
