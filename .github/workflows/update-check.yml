@@ -19,6 +19,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          # Scheduled runs execute workflow from default branch (main); version bumps land on dev first.
+          ref: dev
 
       - name: Setup Python
         uses: actions/setup-python@v7
@@ -110,4 +113,82 @@ jobs:
                   print(f"[INFO] Issue created successfully: {create_res.stdout.strip()}")
               else:
                   print(f"[WARN] Failed to create issue for {app_name}: {create_res.stderr.strip()}", file=sys.stderr)
+          EOF
+
+      - name: Close stale update issues
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          if [ ! -f updates.json ]; then
+            echo "[WARN] updates.json not found, skipping stale issue cleanup."
+            exit 0
+          fi
+
+          python3 - <<'EOF'
+          import json
+          import os
+          import subprocess
+          import sys
+
+          repo = os.environ.get("GITHUB_REPOSITORY", "")
+          if not os.path.isfile("updates.json"):
+              print("[WARN] updates.json not found, skipping stale issue cleanup.")
+              sys.exit(0)
+
+          with open("updates.json", "r", encoding="utf-8") as f:
+              report = json.load(f)
+
+          apps = report.get("apps", [])
+          for app in apps:
+              if app.get("status") != "current":
+                  continue
+
+              app_name = app.get("name", "")
+              if not app_name:
+                  continue
+
+              print(f"[INFO] Checking stale issues for {app_name}...")
+              list_cmd = [
+                  "gh", "issue", "list",
+                  "--repo", repo,
+                  "--label", "app-update",
+                  "--search", f"{app_name} in:title",
+                  "--state", "open",
+                  "--json", "number,title,url",
+              ]
+              res = subprocess.run(list_cmd, capture_output=True, text=True)
+              if res.returncode != 0:
+                  print(f"[WARN] gh issue list failed for {app_name}: {res.stderr.strip()}", file=sys.stderr)
+                  continue
+
+              try:
+                  open_issues = json.loads(res.stdout) if res.stdout.strip() else []
+              except Exception as exc:
+                  print(f"[WARN] Failed to parse gh issue list output for {app_name}: {exc}", file=sys.stderr)
+                  open_issues = []
+
+              for issue in open_issues:
+                  num = issue.get("number")
+                  title = issue.get("title", "")
+                  if not num:
+                      continue
+                  if app_name.lower() not in title.lower():
+                      continue
+
+                  issue_url = issue.get("url") or f"https://github.com/{repo}/issues/{num}"
+                  comment = f"Tracked version is already supported on dev. Closing as completed [#{num}]({issue_url})."
+                  print(f"[INFO] Closing stale issue #{num} ({title}) for {app_name}...")
+                  close_cmd = [
+                      "gh", "issue", "close",
+                      str(num),
+                      "--repo", repo,
+                      "--reason", "completed",
+                      "--comment", comment,
+                  ]
+                  close_res = subprocess.run(close_cmd, capture_output=True, text=True)
+                  if close_res.returncode == 0:
+                      print(f"[INFO] Issue #{num} closed successfully: {close_res.stdout.strip()}")
+                  else:
+                      print(f"[WARN] Failed to close issue #{num} for {app_name}: {close_res.stderr.strip()}", file=sys.stderr)
           EOF
