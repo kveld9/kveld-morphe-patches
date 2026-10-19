@@ -50,6 +50,7 @@ val gboardResourceSlimmerPatch = resourcePatch(
             // Never delete from protected code/resource trees here
             if (topDir in protectedPrefixes) return@forEach
             if (relativePath == "AndroidManifest.xml" || relativePath.startsWith("META-INF/services/")) return@forEach
+            if ('/' in relativePath && topDir != "META-INF") return@forEach
 
             val name = file.name
             val isJunk = name.endsWith(".properties") ||
