@@ -576,7 +576,9 @@ fun main(args: Array<String>) {
     // to stderr and silently drops the offending instruction, so they must be caught here.
     val smaliErrorPattern = Regex("""^\[\d+,\d+] .+""")
     val pendingSmaliErrors = java.util.concurrent.CopyOnWriteArrayList<String>()
+    val pendingSkipLines = java.util.concurrent.CopyOnWriteArrayList<String>()
     val smaliCompileErrors = mutableListOf<String>()
+    val skipWarnings = mutableListOf<String>()
 
     class InterceptingOutputStream(val delegate: OutputStream) : OutputStream() {
         private val buffer = ByteArrayOutputStream()
@@ -613,6 +615,9 @@ fun main(args: Array<String>) {
             if (line.startsWith("Detected Fingerprint Failures:") || line.startsWith("[ERROR]") || line.startsWith("FINAL PATCHING RESULT")) return
             if (lower.contains("failed to match the fingerprint") || (lower.contains("fingerprint mismatch") && !line.startsWith("Detected Fingerprint Failures:"))) {
                 fingerprintErrors.add(line.trim())
+            }
+            if (isPatchSkipLine(line)) {
+                pendingSkipLines.add(line.trim())
             }
         }
 
@@ -655,6 +660,13 @@ fun main(args: Array<String>) {
                 if (result.exception == null) {
                     successfulPatches++
                     println("[PASS] $patchName")
+                    if (pendingSkipLines.isNotEmpty()) {
+                        println("[WARN] $patchName passed with skipped steps:")
+                        val lines = pendingSkipLines.toList()
+                        lines.forEach { println("    $it") }
+                        val suffix = if (lines.size > 1) " (+${lines.size - 1} more)" else ""
+                        skipWarnings.add("$patchName: ${lines.first()}$suffix")
+                    }
                 } else {
                     failedPatches++
                     val err = result.exception?.message ?: "Unknown error"
@@ -664,6 +676,7 @@ fun main(args: Array<String>) {
                     result.exception?.printStackTrace()
                     failures.add("$patchName: $detail")
                 }
+                pendingSkipLines.clear()
             }
         }
 
@@ -677,6 +690,10 @@ fun main(args: Array<String>) {
         println("Failed:        $failedPatches")
         println("Detected Fingerprint Failures: ${fingerprintErrors.size}")
         println("Detected Smali Compile Errors: ${smaliCompileErrors.size}")
+        println("Patches with skipped steps: ${skipWarnings.size}")
+        if (skipWarnings.isNotEmpty()) {
+            skipWarnings.forEach { println("  - $it") }
+        }
         printPatchTimings(patchTimings, resolveSlowPatchThreshold(), patchTimings.firstOrNull()?.first)
 
         if (failedPatches == 0 && fingerprintErrors.isEmpty() && smaliCompileErrors.isEmpty()) {
@@ -1041,4 +1058,26 @@ private fun patchSourceLocation(error: Throwable): String? {
         depth++
     }
     return null
+}
+
+private val RUNNER_SKIP_PREFIXES = listOf(
+    "[PASS]",
+    "[FAIL]",
+    "[WARN]",
+    "[INFO]",
+    "[EXEC]",
+    "[BUILD]",
+    "[PACK]",
+    "[DONE]",
+    "Loaded ",
+    "Detected ",
+)
+
+private val PATCH_SKIP_PATTERN = Regex("""(?<!\d )\bskipped\b|\bskipping\b|\bnot found\b""", RegexOption.IGNORE_CASE)
+
+private fun isPatchSkipLine(line: String): Boolean {
+    if (RUNNER_SKIP_PREFIXES.any { line.startsWith(it) }) return false
+    val lower = line.lowercase()
+    if (lower.contains("fingerprint")) return false
+    return PATCH_SKIP_PATTERN.containsMatchIn(line)
 }
