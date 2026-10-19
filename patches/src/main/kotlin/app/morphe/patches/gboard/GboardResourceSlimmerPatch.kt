@@ -38,7 +38,7 @@ val gboardResourceSlimmerPatch = resourcePatch(
         var totalSavedBytes = 0L
 
         // 1. Clean up APK root metadata, build properties, and compiler junk
-        val apkRoot = get("AndroidManifest.xml").parentFile ?: get(".")
+        val apkRoot = get(".").absoluteFile.normalize()
         val protectedPrefixes = listOf("assets", "res", "smali", "lib", "kotlin")
         var junkFilesCount = 0
 
