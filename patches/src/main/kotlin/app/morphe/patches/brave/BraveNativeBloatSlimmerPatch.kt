@@ -5,10 +5,9 @@ import app.morphe.patches.shared.Constants
 
 private val EMPTY_STUB_BYTES = byteArrayOf()
 
-// Unused companion native libraries in Brave (Impress Vision AI, WireGuard VPN, Android XR)
+// Unused companion native libraries in Brave (Android XR Impress renderer, Android XR, ARCore)
 private val BLOAT_NATIVE_LIBS = listOf(
     "libimpress_api_jni.so",
-    "libwg-go.so",
     "libandroidx.xr.arcore.openxr.so",
     "libandroidx.xr.runtime.openxr.so",
     "libarcore_sdk_c.so",
@@ -18,7 +17,7 @@ private val BLOAT_NATIVE_LIBS = listOf(
 @Suppress("unused")
 val braveNativeBloatSlimmerPatch = rawResourcePatch(
     name = "Remove Extra Files",
-    description = "Deletes unused AI, VPN and AR files to shrink the app.",
+    description = "Deletes unused AR and XR files to shrink the app.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_BRAVE)

@@ -29,7 +29,7 @@ Technical documentation and patch catalog for Brave Private Web Browser on Andro
 | **Clean Start Page (Setup)** | `resourcePatch` | `true` (Enabled) | None | Turns off ads and news switches by default. |
 | **Clean Start Page** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch`, `Clean Start Page (Setup)` | Removes sponsored wallpapers, news feed and promo cards. |
 | **Keep Tabs Open** | `bytecodePatch` | `true` (Enabled) | None | Stops Brave from minimizing your tabs in the background. |
-| **Remove Extra Files** | `rawResourcePatch` | `false` (Opt-in) | None | Deletes unused AI, VPN and AR files to shrink the app. |
+| **Remove Extra Files** | `rawResourcePatch` | `false` (Opt-in) | None | Deletes unused AR and XR files to shrink the app. |
 | **Silence Promo Notifications** | `bytecodePatch` | `true` (Enabled) | None | Stops tips, reward promos and marketing notifications. |
 | **Brave Origin (Setup)** | `resourcePatch` | `false` (Opt-in) | None | Turns on Origin preference switches by default. |
 | **Brave Origin** | `bytecodePatch` | `true` (Enabled) | `Brave Origin (Setup)`, `Faster Startup` (native extraction and BTI patches) | Unlocks Brave Origin feature switches. |
@@ -77,11 +77,11 @@ Technical documentation and patch catalog for Brave Private Web Browser on Andro
 ### D. Resource Debloating
 - **Remove Extra Files**:
   - *Objective*: Reduce overall application size on device storage.
-  - *How*: Overwrites unused companion native libraries in place with empty stubs, targeting AI assistants, WireGuard VPN, and augmented reality binaries.
+  - *How*: Overwrites unused companion native libraries in place with empty stubs, targeting augmented reality and extended reality binaries.
 
 ---
 
 ## 4. Known Limitations
 
-- **Binary Stripping**: Applying native file removal zeroes selected components in-situ; features depending on those libraries (e.g. Leo AI or VPN) will become unavailable.
+- **Binary Stripping**: Applying native file removal zeroes selected components in-situ; features depending on those libraries (e.g. AR or XR) will become unavailable.
 - **Standalone Builds**: Patches target official standalone release APKs (`Bravemonoarm64.apk` or `BraveMonoarm.apk`); split or bundle variants are unsupported.
