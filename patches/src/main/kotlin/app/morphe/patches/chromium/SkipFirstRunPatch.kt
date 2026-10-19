@@ -28,22 +28,7 @@ val skipFirstRunPatch = bytecodePatch(
             """.trimIndent(),
         )
 
-        // 2. Force FirstRunFlowSequencer.checkIfFirstRunIsNecessary to return false to prevent launching FirstRunActivity
-        val fp2 = Fingerprint(
-            returnType = "Z",
-            parameters = listOf("Z", "Z"),
-            strings = listOf("disable-fre", "Chrome.FirstRun.SkippedByPolicy"),
-        )
-        fp2.method.addInstructions(
-            0,
-            """
-                const/4 v0, 0x0
-                return v0
-            """.trimIndent(),
-        )
-
         val class1 = fp1.originalClassDef.type.substringAfterLast('/').removeSuffix(";")
-        val class2 = fp2.originalClassDef.type.substringAfterLast('/').removeSuffix(";")
-        println("[Skip Welcome Screens] Forced complete in $class1 & bypassed sequencer in $class2")
+        println("[Skip Welcome Screens] Forced complete in $class1")
     }
 }
