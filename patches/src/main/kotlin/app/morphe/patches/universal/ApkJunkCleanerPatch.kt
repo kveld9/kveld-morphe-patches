@@ -64,7 +64,7 @@ val apkJunkCleanerPatch = rawResourcePatch(
     // Universal patch: applies to any target APK in Morphe Manager / CLI
     execute {
         val apkRoot = try {
-            get("AndroidManifest.xml").parentFile ?: get(".")
+            get(".").absoluteFile.normalize()
         } catch (_: Throwable) {
             get(".")
         }
