@@ -4,6 +4,7 @@ import app.morphe.patcher.patch.rawResourcePatch
 import app.morphe.patcher.patch.stringOption
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.LocaleUtils
+import java.io.File
 
 // DataPack v5 minimal valid empty header:
 // version=5 (4B), tables=1 (1B), encoding=1 (1B), num_aliases=0 (2B), num_resources=0 (2B), alias_count=0 (2B)
@@ -60,9 +61,11 @@ val localePakSlimmerPatch = rawResourcePatch(
                         nameWithoutExt.endsWith("_masculine") ||
                         nameWithoutExt.endsWith("_neuter")
                     val replacementBytes = if (isGenderVariant) EMPTY_DATAPACK_V5 else fallbackBytes
-                    pakFile.writeBytes(replacementBytes)
-                    totalSavedBytes += (originalSize - pakFile.length())
-                    removedLocales.add(pakFile.nameWithoutExtension)
+                    val savedBytes = replaceLocalePak(pakFile, replacementBytes)
+                    if (savedBytes > 0L) {
+                        totalSavedBytes += savedBytes
+                        removedLocales.add(pakFile.nameWithoutExtension)
+                    }
                 }
             }
         }
@@ -70,4 +73,13 @@ val localePakSlimmerPatch = rawResourcePatch(
         val totalSavedMb = String.format(java.util.Locale.US, "%.2f", totalSavedBytes.toDouble() / (1024 * 1024))
         println("[Remove Extra Languages] Stripped ${removedLocales.size} PAKs (kept: ${baseLocales.sorted().joinToString(", ")}) -> Saved $totalSavedMb MB")
     }
+}
+
+private fun replaceLocalePak(pakFile: File, replacement: ByteArray): Long {
+    val originalSize = pakFile.length()
+    if (originalSize <= replacement.size) {
+        return 0L
+    }
+    pakFile.writeBytes(replacement)
+    return originalSize - pakFile.length()
 }
