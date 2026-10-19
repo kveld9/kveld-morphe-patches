@@ -5,10 +5,9 @@ import java.util.List;
 
 /**
  * Extension helper class for Morphe Brave patches.
- * Inherits Chromium-wide link sanitization logic from {@link ChromiumExtension}.
  */
 @SuppressWarnings("unused")
-public class BraveExtension extends ChromiumExtension {
+public class BraveExtension {
 
     public static boolean filterNtpPref(String pref, boolean originalValue) {
         if (pref == null) return originalValue;

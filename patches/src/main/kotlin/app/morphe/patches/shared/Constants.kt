@@ -87,7 +87,6 @@ object Constants {
     const val TIKTOK_EXTENSION_VIDEO_FIT_HOOK = "Lcom/kveld9/morphe/extension/tiktok/TikTokVideoFitHook;"
     const val TIKTOK_EXTENSION_SENSITIVE_WARNINGS_HOOK = "Lcom/kveld9/morphe/extension/tiktok/SensitiveWarnings;"
     const val BRAVE_EXTENSION_CLASS = "Lcom/kveld9/morphe/extension/BraveExtension;"
-    const val CHROMIUM_EXTENSION_CLASS = "Lcom/kveld9/morphe/extension/ChromiumExtension;"
     const val GBOARD_EXTENSION_CLASS = "Lcom/kveld9/morphe/extension/gboard/GboardExtension;"
 
     object GboardPrefs {
