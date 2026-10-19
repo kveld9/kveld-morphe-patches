@@ -84,7 +84,7 @@ Or run the unattended smoke installation gate:
 ```
 It automatically selects the target device by matching ABI and minimum SDK (override with `--serial` or `ANDROID_SERIAL`), refuses to replace the active keyboard without `--allow-active-ime`, and prints a machine-readable JSON verdict (exit 0 = PASS).
 
-The `FINAL PATCHING RESULT` block lists the five slowest patches and the total patch time, and prints a `[WARN] Slow patch:` line for every patch above the threshold. The first executed patch also absorbs pipeline startup and is marked as such. The warning is informational and never fails the run.
+The `FINAL PATCHING RESULT` block lists the five slowest patches and the total patch time, and prints a `[WARN] Slow patch:` line for every patch above the threshold. The first executed patch also absorbs pipeline startup and is marked as such. The warning is informational and never fails the run. A patch that passes but prints a line containing `Skipped`, `skipping` or `not found` (counters such as `0 skipped` excluded) gets a `[WARN]` line and is listed under `Patches with skipped steps`; this also never changes the exit code.
 
 ---
 
