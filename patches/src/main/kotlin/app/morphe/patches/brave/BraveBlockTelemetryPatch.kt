@@ -221,7 +221,6 @@ val braveBlockTelemetryPatch = bytecodePatch(
         braveTelemetryResourcePatch,
         braveHostsBlockerPatch,
         braveNativeExtractionPatch,
-        braveBtiCompatibilityPatch,
     )
 
     val blockOffersHost by booleanOption(

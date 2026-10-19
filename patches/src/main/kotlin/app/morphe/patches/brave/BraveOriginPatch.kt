@@ -174,7 +174,6 @@ val braveOriginPatch = bytecodePatch(
     dependsOn(
         braveOriginResourcePatch,
         braveNativeExtractionPatch,
-        braveBtiCompatibilityPatch,
     )
 
     execute {

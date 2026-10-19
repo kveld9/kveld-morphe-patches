@@ -31,8 +31,8 @@ Technical documentation and patch catalog for Brave Private Web Browser on Andro
 | **Remove Extra Files** | `rawResourcePatch` | `false` (Opt-in) | None | Deletes unused AR and XR files to shrink the app. |
 | **Silence Promo Notifications** | `bytecodePatch` | `true` (Enabled) | None | Stops tips, reward promos and marketing notifications. |
 | **Brave Origin (Setup)** | `resourcePatch` | `false` (Opt-in) | None | Turns on Origin preference switches by default. |
-| **Brave Origin** | `bytecodePatch` | `true` (Enabled) | `Brave Origin (Setup)`, `Faster Startup` (native extraction and BTI patches) | Unlocks Brave Origin feature switches. |
-| **Faster Startup** | `bytecodePatch` | `true` (Enabled) | `braveNativeExtractionPatch`, `braveBtiCompatibilityPatch` | Speeds up launch by disabling carrier customizations. |
+| **Brave Origin** | `bytecodePatch` | `true` (Enabled) | `Brave Origin (Setup)`, `Faster Startup` (native extraction patch) | Unlocks Brave Origin feature switches. |
+| **Faster Startup** | `bytecodePatch` | `true` (Enabled) | `braveNativeExtractionPatch` | Speeds up launch by disabling carrier customizations. |
 | **Block Popups & Rating Requests** | `bytecodePatch` | `true` (Enabled) | None | Blocks rating popups, review requests and promo dialogs. |
 | **Select Previous Tab on Close** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Selects the previous tab in the tab group when closing a tab. |
 
@@ -68,7 +68,7 @@ Technical documentation and patch catalog for Brave Private Web Browser on Andro
   - *How*: Alters tab closure selection logic to preselect the predecessor tab within the active tab group.
 - **Faster Startup**:
   - *Objective*: Accelerate cold browser startup and ensure smooth native execution.
-  - *How*: Disables partner customization checks during startup, forces native library extraction in the app manifest, and applies branch target identification adjustments to native binaries.
+  - *How*: Disables partner customization checks during startup and forces native library extraction in the app manifest.
 - **Brave Origin**:
   - *Objective*: Provide access to internal Brave Origin feature switches and experimental settings.
   - *How*: Unlocks Origin preference toggles and bypasses internal feature gatekeepers across Rewards, News, Wallet, and VPN settings.
