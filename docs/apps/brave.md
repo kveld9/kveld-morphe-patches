@@ -54,8 +54,8 @@ Technical documentation and patch catalog for Brave Private Web Browser on Andro
   - *Objective*: Provide a distraction-free start page free of ads, sponsored cards, and unwanted news.
   - *How*: Disables sponsored background wallpapers, Brave News feeds, and marketing cards by updating default preference resources and feed view models. Includes an option to hide top site tiles.
 - **Silence Promo Notifications**:
-  - *Objective*: Eliminate unsolicited marketing reminders, rewards tips, and onboarding notifications.
-  - *How*: Intercepts and neutralizes the scheduling and dispatch routines for promotional alerts and rewards onboarding tips.
+  - *Objective*: Eliminate unsolicited marketing reminders, tips, and rewards onboarding notifications.
+  - *How*: Neutralizes tips notification scheduling, rewards onboarding alarm enqueue, and retention marketing broadcast dispatch.
 - **Block Popups & Rating Requests**:
   - *Objective*: Prevent rating prompts, review nag dialogs, and promotional modal interruptions.
   - *How*: Disables in-app review and promotional sign-up eligibility checks, and drops promotional dialog tags before display.
