@@ -307,12 +307,12 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
 
             // 2b. Redirect feed desc visibility calls to always-GONE wrappers
             // (reactive-proof hiding without touching method bodies).
-            // LX/09Ce is instantiated 1:1 by VideoDescAssem.onViewCreated, and
+            // LX/09Bg is instantiated 1:1 by VideoDescAssem.onViewCreated, and
             // VideoDescAssem itself manages desc container visibility. Neither
-            // VideoDescAssem nor 09Ce ever calls setVisibility directly: every desc
-            // visibility change flows through the LX/00kn visibility helpers below.
+            // VideoDescAssem nor 09Bg ever calls setVisibility directly: every desc
+            // visibility change flows through the LX/00ki visibility helpers below.
             // Redirecting those calls (same invoke shape and width, only the callee changes)
-            // across both VideoDescAssem and LX/09Ce to extension wrappers that force GONE
+            // across both VideoDescAssem and LX/09Bg to extension wrappers that force GONE
             // covers every current and future show path, including see-more expansion flows,
             // with no control-flow disturbance.
             val descVisibilityRedirects = mapOf(
@@ -323,9 +323,9 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
             )
             var redirectedMethods = 0
             var redirectedCallsDescAssem = 0
-            var redirectedCalls09Ce = 0
+            var redirectedCalls09Bg = 0
             var skippedShapes = 0
-            val descRedirectClasses = listOf(descTargetClass, "LX/09Ce;")
+            val descRedirectClasses = listOf(descTargetClass, "LX/09Bg;")
             for (targetClass in descRedirectClasses) {
                 var classRedirectedCalls = 0
                 for (target in mutableClassDefBy(targetClass).methods) {
@@ -333,7 +333,7 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
                     val redirectIndices = mutableListOf<Pair<Int, String>>()
                     for ((index, instruction) in instructions.withIndex()) {
                         val reference = (instruction as? ReferenceInstruction)?.reference as? MethodReference ?: continue
-                        if (reference.definingClass != "LX/00kn;") continue
+                        if (reference.definingClass != "LX/00ki;") continue
                         if (reference.name !in descVisibilityRedirects) continue
                         val newCallee = descVisibilityRedirects[reference.name] ?: continue
                         val registers = extractInstructionRegisters(instruction)
@@ -359,21 +359,21 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
                 if (targetClass == descTargetClass) {
                     redirectedCallsDescAssem = classRedirectedCalls
                 } else {
-                    redirectedCalls09Ce = classRedirectedCalls
+                    redirectedCalls09Bg = classRedirectedCalls
                 }
             }
-            val redirectedCalls = redirectedCallsDescAssem + redirectedCalls09Ce
+            val redirectedCalls = redirectedCallsDescAssem + redirectedCalls09Bg
             if (redirectedCallsDescAssem == 0) {
                 println("[Declutter Video Interface] WARNING: VideoDescAssem contributed 0 redirects")
             }
-            require(redirectedCalls > 0) { "VideoDescAssem/09Ce desc redirect: no visibility helper call found" }
-            println("[Declutter Video Interface] Hooked desc visibility calls -> $redirectedCalls call(s) (VideoDescAssem: $redirectedCallsDescAssem, LX/09Ce: $redirectedCalls09Ce, skippedShapes: $skippedShapes) across $redirectedMethods method(s) forced GONE.")
+            require(redirectedCalls > 0) { "VideoDescAssem/09Bg desc redirect: no visibility helper call found" }
+            println("[Declutter Video Interface] Hooked desc visibility calls -> $redirectedCalls call(s) (VideoDescAssem: $redirectedCallsDescAssem, LX/09Bg: $redirectedCalls09Bg, skippedShapes: $skippedShapes) across $redirectedMethods method(s) forced GONE.")
             patched++
 
-            // 2c. Direct prologue guards on LX/00kn visibility helpers
+            // 2c. Direct prologue guards on LX/00ki visibility helpers
             val descHelpers = listOf(
                 Triple("LLLLLZIL", listOf("Lcom/bytedance/tux/input/TuxTextView;", "I"), "p0"),
-                Triple("LLLLLZ", listOf("LX/09BJ;", "I"), "p0"),
+                Triple("LLLLLZ", listOf("LX/09AL;", "I"), "p0"),
                 Triple("LJLLLLLL", listOf("I", "Landroid/widget/LinearLayout;"), "p1"),
                 Triple("LJLLILLLL", listOf("I", "Landroid/view/View;"), "p1"),
             )
@@ -381,7 +381,7 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
             for ((name, params, viewReg) in descHelpers) {
                 try {
                     val method = Fingerprint(
-                        definingClass = "LX/00kn;",
+                        definingClass = "LX/00ki;",
                         name = name,
                         returnType = "V",
                         parameters = params,
@@ -390,76 +390,14 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
                         0,
                         "invoke-static {$viewReg}, ${Constants.TIKTOK_EXTENSION_MEDIA_HOOK}->hideDescViewIfDesc(Landroid/view/View;)V",
                     )
-                    println("[Declutter Video Interface] Hooked LX/00kn.$name() prologue -> hideDescViewIfDesc($viewReg).")
+                    println("[Declutter Video Interface] Hooked LX/00ki.$name() prologue -> hideDescViewIfDesc($viewReg).")
                     installedHelpers++
                 } catch (e: Exception) {
                     println("[Declutter Video Interface] WARNING: helper $name signature not found, skipped")
                 }
             }
             println("[Declutter Video Interface] Installed desc prologue guards on $installedHelpers / ${descHelpers.size} helper(s).")
-            require(installedHelpers == descHelpers.size) { "LX/00kn desc visibility helpers: expected ${descHelpers.size}, installed $installedHelpers" }
-            patched++
-
-            val friendsDescClass = "Lcom/ss/android/ugc/aweme/friendstab/ui/feed/cell/component/desc/FriendsV3DescAssem;"
-
-            Fingerprint(
-                definingClass = friendsDescClass,
-                name = "tr",
-                returnType = "Z",
-                parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"),
-            ).method.replaceWithReturnBoolean(false)
-            println("[Declutter Video Interface] Hooked FriendsV3DescAssem.tr() -> return false.")
-            patched++
-
-            Fingerprint(
-                definingClass = friendsDescClass,
-                name = "hb",
-                returnType = "Z",
-                parameters = listOf("Ljava/lang/Object;"),
-            ).method.replaceWithReturnBoolean(false)
-            println("[Declutter Video Interface] Hooked FriendsV3DescAssem.hb() -> return false.")
-            patched++
-
-            val friendsOnViewCreated = Fingerprint(
-                definingClass = friendsDescClass,
-                name = "onViewCreated",
-                returnType = "V",
-                parameters = listOf("Landroid/view/View;"),
-            ).method
-            friendsOnViewCreated.clearTryBlocks()
-            friendsOnViewCreated.ensureRegisterCount(2)
-            val friendsReturns = friendsOnViewCreated.implementation!!.instructions.mapIndexedNotNull { index, instr ->
-                if (instr.opcode.name == "return-void") index else null
-            }.reversed()
-            for (index in friendsReturns) {
-                friendsOnViewCreated.addInstructions(
-                    index,
-                    """
-                        move-object/from16 v0, p1
-                        const/16 v1, 0x8
-                        invoke-virtual {v0, v1}, Landroid/view/View;->setVisibility(I)V
-                    """.trimIndent(),
-                )
-            }
-            println("[Declutter Video Interface] Hooked FriendsV3DescAssem.onViewCreated() -> appended setVisibility(GONE).")
-            patched++
-
-            Fingerprint(
-                definingClass = friendsDescClass,
-                name = "z4",
-                returnType = "V",
-                parameters = listOf("Ljava/lang/Object;"),
-            ).method.replaceWithReturnVoid()
-            println("[Declutter Video Interface] Hooked FriendsV3DescAssem.z4() -> return-void.")
-            patched++
-
-            Fingerprint(
-                definingClass = friendsDescClass,
-                name = "js",
-                returnType = "V",
-                parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"),
-            ).method.replaceWithReturnVoid()
-            println("[Declutter Video Interface] Hooked FriendsV3DescAssem.js() -> return-void.")
+            require(installedHelpers == descHelpers.size) { "LX/00ki desc visibility helpers: expected ${descHelpers.size}, installed $installedHelpers" }
             patched++
 
             val translationClasses = listOf(
@@ -494,11 +432,11 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
 
                 Fingerprint(
                     definingClass = transClass,
-                    name = "z4",
+                    name = "l4",
                     returnType = "V",
                     parameters = listOf("Ljava/lang/Object;"),
                 ).method.replaceWithReturnVoid()
-                println("[Declutter Video Interface] Hooked $transClass z4() -> return-void.")
+                println("[Declutter Video Interface] Hooked $transClass l4() -> return-void.")
                 patched++
             }
         }
@@ -606,11 +544,11 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
             val triggerClass = "Lcom/ss/android/ugc/feed/platform/cell/interact/bottom/bar/PlayListBottomBarAssemTrigger;"
             Fingerprint(
                 definingClass = triggerClass,
-                name = "yr",
+                name = "Rp",
                 returnType = "Z",
                 parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"),
             ).method.replaceWithReturnBoolean(false)
-            println("[Declutter Video Interface] Hooked PlayListBottomBarAssemTrigger.yr() -> return false.")
+            println("[Declutter Video Interface] Hooked PlayListBottomBarAssemTrigger.Rp() -> return false.")
             patched++
 
             val bottomBarClass = "Lcom/ss/android/ugc/feed/platform/cell/interact/bottom/bar/InteractPlayListBottomBarAssem;"
@@ -638,11 +576,11 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = bottomBarClass,
-                name = "z4",
+                name = "l4",
                 returnType = "V",
                 parameters = listOf("Ljava/lang/Object;"),
             ).method.replaceWithReturnVoid()
-            println("[Declutter Video Interface] Hooked InteractPlayListBottomBarAssem.z4() -> return-void.")
+            println("[Declutter Video Interface] Hooked InteractPlayListBottomBarAssem.l4() -> return-void.")
             patched++
 
             Fingerprint(
@@ -682,11 +620,11 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = favClass,
-                name = "z4",
+                name = "l4",
                 returnType = "V",
                 parameters = listOf("Ljava/lang/Object;"),
             ).method.replaceWithReturnVoid()
-            println("[Declutter Video Interface] Hooked VideoFavoriteAssem.z4() -> return-void.")
+            println("[Declutter Video Interface] Hooked VideoFavoriteAssem.l4() -> return-void.")
             patched++
         }
 
@@ -719,11 +657,11 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = musicCoverClass,
-                name = "z4",
+                name = "l4",
                 returnType = "V",
                 parameters = listOf("Ljava/lang/Object;"),
             ).method.replaceWithReturnVoid()
-            println("[Declutter Video Interface] Hooked VideoMusicCoverAssem.z4() -> return-void.")
+            println("[Declutter Video Interface] Hooked VideoMusicCoverAssem.l4() -> return-void.")
             patched++
 
             Fingerprint(
@@ -751,29 +689,29 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = landscapeClass,
-                name = "Kr",
+                name = "Fd",
                 returnType = "Z",
                 parameters = emptyList(),
             ).method.replaceWithReturnBoolean(false)
-            println("[Declutter Video Interface] Hooked LandscapeEntranceAssem.Kr() -> return false.")
+            println("[Declutter Video Interface] Hooked LandscapeEntranceAssem.Fd() -> return false.")
             patched++
 
             Fingerprint(
                 definingClass = landscapeClass,
-                name = "Aa",
+                name = "J9",
                 returnType = "Z",
                 parameters = emptyList(),
             ).method.replaceWithReturnBoolean(false)
-            println("[Declutter Video Interface] Hooked LandscapeEntranceAssem.Aa() -> return false.")
+            println("[Declutter Video Interface] Hooked LandscapeEntranceAssem.J9() -> return false.")
             patched++
 
             Fingerprint(
                 definingClass = landscapeClass,
-                name = "bf",
+                name = "fq",
                 returnType = "Z",
                 parameters = emptyList(),
             ).method.replaceWithReturnBoolean(false)
-            println("[Declutter Video Interface] Hooked LandscapeEntranceAssem.bf() -> return false.")
+            println("[Declutter Video Interface] Hooked LandscapeEntranceAssem.fq() -> return false.")
             patched++
 
             val entranceOnViewCreated = Fingerprint(
@@ -800,29 +738,29 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = landscapeClass,
-                name = "z4",
+                name = "l4",
                 returnType = "V",
                 parameters = listOf("Ljava/lang/Object;"),
             ).method.replaceWithReturnVoid()
-            println("[Declutter Video Interface] Hooked LandscapeEntranceAssem.z4() -> return-void.")
+            println("[Declutter Video Interface] Hooked LandscapeEntranceAssem.l4() -> return-void.")
             patched++
 
             Fingerprint(
                 definingClass = landscapeClass,
-                name = "LLLLIILL",
+                name = "LLLJL",
                 returnType = "V",
                 parameters = listOf("I"),
             ).method.replaceWithReturnVoid()
-            println("[Declutter Video Interface] Hooked LandscapeEntranceAssem.LLLLIILL() -> return-void.")
+            println("[Declutter Video Interface] Hooked LandscapeEntranceAssem.LLLJL() -> return-void.")
             patched++
 
             Fingerprint(
                 definingClass = landscapeClass,
-                name = "LLILZ",
+                name = "LLLLII",
                 returnType = "V",
                 parameters = listOf("I"),
             ).method.replaceWithReturnVoid()
-            println("[Declutter Video Interface] Hooked LandscapeEntranceAssem.LLILZ() -> return-void.")
+            println("[Declutter Video Interface] Hooked LandscapeEntranceAssem.LLLLII() -> return-void.")
             patched++
         }
 
@@ -866,11 +804,11 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
 
                 Fingerprint(
                     definingClass = assemClass,
-                    name = "z4",
+                    name = "l4",
                     returnType = "V",
                     parameters = listOf("Ljava/lang/Object;"),
                 ).method.replaceWithReturnVoid()
-                println("[Declutter Video Interface] Hooked $assemClass z4() -> return-void.")
+                println("[Declutter Video Interface] Hooked $assemClass l4() -> return-void.")
                 patched++
             }
 
