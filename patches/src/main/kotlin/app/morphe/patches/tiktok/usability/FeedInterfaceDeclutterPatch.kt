@@ -284,7 +284,7 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
 
             val descJs = Fingerprint(
                 definingClass = descTargetClass,
-                name = "js",
+                name = "bq",
                 returnType = "V",
                 parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"),
             ).method
@@ -302,7 +302,7 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
                     """.trimIndent(),
                 )
             }
-            println("[Declutter Video Interface] Hooked VideoDescAssem.js() -> appended GONE enforcement.")
+            println("[Declutter Video Interface] Hooked VideoDescAssem.bq() -> appended GONE enforcement.")
             patched++
 
             // 2b. Redirect feed desc visibility calls to always-GONE wrappers
