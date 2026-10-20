@@ -166,19 +166,20 @@ private fun BytecodePatchContext.applyAccountPromptHooks(): Int {
 
     // 3. "Find contacts" Friends tab overlay (PopLayer element)
     Fingerprint(
-        definingClass = "LX/0v6A;",
+        definingClass = "LX/0rJh;",
         name = "canShow",
         returnType = "Z",
     ).method.replaceWithReturnBoolean(false)
-    println("[Block Popups & Prompts] Neutralized LX/0v6A.canShow() -> Find contacts PopLayer overlay blocked.")
+    println("[Block Popups & Prompts] Neutralized LX/0rJh.canShow() -> Find contacts PopLayer overlay blocked.")
     count++
 
     Fingerprint(
-        definingClass = "LX/0v6A;",
-        name = "LJII",
+        definingClass = "LX/0rJh;",
+        name = "showPopup",
+        parameters = listOf("LX/06xK;", "LX/0C8j;"),
         returnType = "V",
     ).method.replaceWithReturnVoid()
-    println("[Block Popups & Prompts] Neutralized LX/0v6A.LJII() -> Find contacts dialog inflation blocked.")
+    println("[Block Popups & Prompts] Neutralized LX/0rJh.showPopup() -> Find contacts dialog inflation blocked.")
     count++
 
     Fingerprint(
