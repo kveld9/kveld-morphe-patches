@@ -212,12 +212,12 @@ val directMessageDeclutterPatch = bytecodePatch(
                 for ((index, instruction) in titleBarImpl.instructions.withIndex()) {
                     if (instruction is ReferenceInstruction) {
                         val fieldRef = instruction.reference as? FieldReference
-                        if (fieldRef?.name == "LLLFF") {
+                        if (fieldRef?.name == "LLL") {
                             titleBarMethod.addInstructions(
                                 index + 1,
                                 """
                                     const/4 v0, 0x0
-                                    iput-object v0, p0, Lcom/ss/android/ugc/aweme/im/chatroom/common/titlebar/BaseSingleChatTitleBarRightAssem;->LLLFF:Lcom/bytedance/tux/icon/TuxIconView;
+                                    iput-object v0, p0, Lcom/ss/android/ugc/aweme/im/chatroom/common/titlebar/BaseSingleChatTitleBarRightAssem;->LLL:Lcom/bytedance/tux/icon/TuxIconView;
                                 """.trimIndent(),
                             )
                             break
@@ -353,7 +353,7 @@ val directMessageDeclutterPatch = bytecodePatch(
         if (hideGalleryButton == true) {
             val galleryAssemFp = Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/im/chatroom/input/components/misc/IMImageBtnViewAssem;",
-                name = "Wr",
+                name = "Wq",
                 parameters = listOf("Landroid/view/View;"),
                 returnType = "V",
             )
@@ -637,57 +637,6 @@ val directMessageDeclutterPatch = bytecodePatch(
                 """.trimIndent(),
             )
             println("[Declutter Direct Messages] Hooked ReplyToStickerRecommendationViewModel.${stickerMethod.name} -> automatic sticker reply suggestions disabled.")
-            patched++
-
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/im/sdk/chat/ui/base/assems/preshown/PreshownStickerBannerProtocol;",
-                name = "isEnabled",
-                returnType = "Z",
-                parameters = emptyList(),
-            ).method.replaceWithReturnBoolean(false)
-            println("[Declutter Direct Messages] Hooked PreshownStickerBannerProtocol.isEnabled -> preshown sticker reply banner disabled.")
-            patched++
-
-            val interceptFp = Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/im/sdk/chat/ui/base/assems/preshown/PreshownStickerBannerProtocol;",
-                name = "intercept",
-                returnType = "Ljava/util/List;",
-                parameters = listOf("Ljava/util/List;"),
-            )
-            val interceptMethod = interceptFp.method
-            val interceptImpl = interceptMethod.implementation
-            if (interceptImpl != null) {
-                interceptMethod.clearTryBlocks()
-                interceptMethod.removeInstructions(0, interceptImpl.instructions.count())
-                interceptMethod.addInstructions(
-                    0,
-                    """
-                        return-object p1
-                    """.trimIndent(),
-                )
-                println("[Declutter Direct Messages] Hooked PreshownStickerBannerProtocol.intercept -> passthrough message list.")
-                patched++
-            }
-
-            val typingBannerInterceptMethod = Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/im/sdk/chat/ui/base/assems/input/typingrecommendation/TypingRecommendationBannerProtocol;",
-                name = "intercept",
-                returnType = "Ljava/util/List;",
-                parameters = listOf("Ljava/util/List;"),
-            ).method
-
-            val filterIndex = typingBannerInterceptMethod.implementation?.instructions?.indexOfFirst { instruction ->
-                instruction.opcode == Opcode.NEW_INSTANCE &&
-                    ((instruction as? ReferenceInstruction)?.reference as? TypeReference)?.type == "Ljava/util/ArrayList;"
-            }?.takeIf { it >= 0 }
-                ?: throw PatchException("[Declutter Direct Messages] TypingRecommendationBannerProtocol.intercept: filter branch not found")
-
-            typingBannerInterceptMethod.addInstructionsWithLabels(
-                0,
-                "goto :hide_typing_banner",
-                ExternalLabel("hide_typing_banner", typingBannerInterceptMethod.getInstruction(filterIndex)),
-            )
-            println("[Declutter Direct Messages] Hooked TypingRecommendationBannerProtocol.intercept -> typing sticker banner removed from message list.")
             patched++
 
             val typingAssemClass = Fingerprint(
