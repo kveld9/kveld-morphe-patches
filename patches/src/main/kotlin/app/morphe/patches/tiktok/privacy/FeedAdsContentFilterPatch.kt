@@ -560,27 +560,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 println("[Feed Ads & Content Filter] Aweme.getStandardComponentInfo note: ${e.message}")
             }
 
-            // 2.8 Neutralize In-Feed Search Recommendations & Trending Search Cards
-            try {
-                Fingerprint(
-                    definingClass = "Lcom/ss/android/ugc/aweme/search/common/communicate/AbsSearchService;",
-                    name = "u",
-                    returnType = "Ljava/util/List;",
-                ).method.addInstructions(
-                    0,
-                    """
-                        invoke-static {}, Ljava/util/Collections;->emptyList()Ljava/util/List;
-                        move-result-object v0
-                        return-object v0
-                    """.trimIndent(),
-                )
-                println("[Feed Ads & Content Filter] Neutralized AbsSearchService.u() -> In-feed search recommendation and trending card insertions disabled.")
-                patched++
-            } catch (e: Exception) {
-                println("[Feed Ads & Content Filter] AbsSearchService.u note: ${e.message}")
-            }
-
-            // 2.9 Neutralize In-Feed Safety Surveys, Evaluation Cards & Questionnaires
+            // 2.8 Neutralize In-Feed Safety Surveys, Evaluation Cards & Questionnaires
             try {
                 Fingerprint(
                     definingClass = "Lcom/ss/android/ugc/feed/platform/cell/component/survey/CellSurveyComponent;",
@@ -599,41 +579,33 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 println("[Feed Ads & Content Filter] CellSurveyComponent.onViewCreated note: ${e.message}")
             }
 
-            try {
-                Fingerprint(
-                    definingClass = "Lcom/ss/android/ugc/feed/platform/cell/component/survey/CellSurveyComponent;",
-                    name = "ur",
-                    parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;"),
-                    returnType = "V",
-                ).method.addInstructions(
-                    0,
-                    """
-                        return-void
-                    """.trimIndent(),
-                )
-                println("[Feed Ads & Content Filter] Neutralized CellSurveyComponent.ur(Aweme).")
-                patched++
-            } catch (e: Exception) {
-                println("[Feed Ads & Content Filter] CellSurveyComponent.ur note: ${e.message}")
-            }
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/feed/platform/cell/component/survey/CellSurveyComponent;",
+                name = "Np",
+                parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;"),
+                returnType = "V",
+            ).method.addInstructions(
+                0,
+                """
+                    return-void
+                """.trimIndent(),
+            )
+            println("[Feed Ads & Content Filter] Neutralized CellSurveyComponent.Np(Aweme).")
+            patched++
 
-            try {
-                Fingerprint(
-                    definingClass = "Lcom/ss/android/ugc/feed/platform/cell/component/survey/CellSurveyComponent;",
-                    name = "wr",
-                    parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;", "Z"),
-                    returnType = "V",
-                ).method.addInstructions(
-                    0,
-                    """
-                        return-void
-                    """.trimIndent(),
-                )
-                println("[Feed Ads & Content Filter] Neutralized CellSurveyComponent.wr(Aweme, Z).")
-                patched++
-            } catch (e: Exception) {
-                println("[Feed Ads & Content Filter] CellSurveyComponent.wr note: ${e.message}")
-            }
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/feed/platform/cell/component/survey/CellSurveyComponent;",
+                name = "Op",
+                parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;", "Z"),
+                returnType = "V",
+            ).method.addInstructions(
+                0,
+                """
+                    return-void
+                """.trimIndent(),
+            )
+            println("[Feed Ads & Content Filter] Neutralized CellSurveyComponent.Op(Aweme, Z).")
+            patched++
 
             try {
                 Fingerprint(
@@ -672,24 +644,20 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 println("[Feed Ads & Content Filter] PNSSurveyService.LIZIZ note: ${e.message}")
             }
 
-            try {
-                Fingerprint(
-                    definingClass = "Lcom/ss/android/ugc/aweme/feed/assem/pushsurvey/PushSurveyAssemTrigger;",
-                    name = "yr",
-                    parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"),
-                    returnType = "Z",
-                ).method.addInstructions(
-                    0,
-                    """
-                        const/4 v0, 0x0
-                        return v0
-                    """.trimIndent(),
-                )
-                println("[Feed Ads & Content Filter] Neutralized PushSurveyAssemTrigger.yr(VideoItemParams) -> Push survey triggers disabled.")
-                patched++
-            } catch (e: Exception) {
-                println("[Feed Ads & Content Filter] PushSurveyAssemTrigger.yr note: ${e.message}")
-            }
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/feed/assem/pushsurvey/PushSurveyAssemTrigger;",
+                name = "Rp",
+                parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"),
+                returnType = "Z",
+            ).method.addInstructions(
+                0,
+                """
+                    const/4 v0, 0x0
+                    return v0
+                """.trimIndent(),
+            )
+            println("[Feed Ads & Content Filter] Neutralized PushSurveyAssemTrigger.Rp(VideoItemParams) -> Push survey triggers disabled.")
+            patched++
 
             try {
                 Fingerprint(
