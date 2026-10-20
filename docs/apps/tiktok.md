@@ -10,10 +10,10 @@ Technical documentation and patch catalog for TikTok on Android.
 | :--- | :--- |
 | **Target App** | TikTok |
 | **Package Name** | `com.zhiliaoapp.musically` |
-| **Target Version** | `47.1.4` |
+| **Target Version** | `47.4.3` |
 | **Target Package Format** | standalone APK (nodpi APK) |
 | **Primary Architecture** | `arm64-v8a` / `armeabi-v7a` |
-| **Download Target** | [APKMirror](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-47-1-4-release/tiktok-47-1-4-2-android-apk-download/) |
+| **Download Target** | [APKMirror](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-47-4-3-release/tiktok-47-4-3-android-apk-download/) |
 | **Authoritative Source** | APKMirror |
 
 ---

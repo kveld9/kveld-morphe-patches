@@ -44,7 +44,7 @@ object Constants {
 
 
     const val TIKTOK_PACKAGE_NAME = "com.zhiliaoapp.musically"
-    const val TIKTOK_TARGET_VERSION = "47.1.4"
+    const val TIKTOK_TARGET_VERSION = "47.4.3"
 
     val COMPATIBILITY_TIKTOK = Compatibility(
         name = "TikTok",
@@ -54,7 +54,7 @@ object Constants {
         targets = listOf(
             AppTarget(
                 version = TIKTOK_TARGET_VERSION,
-                description = "Download com.zhiliaoapp.musically v$TIKTOK_TARGET_VERSION (APK) arm64-v8a nodpi versionCode 2024701040 (APK) from APKMirror"
+                description = "Download com.zhiliaoapp.musically v$TIKTOK_TARGET_VERSION (APK) arm64-v8a nodpi versionCode 2024704030 (APK) from APKMirror"
             )
         )
     )
