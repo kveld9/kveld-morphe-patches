@@ -1051,24 +1051,9 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 patched++
             }
 
-            // Hook FriendsV3FeedNetworkSource.LJ (Friends tab V3 network response)
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/friendstab/repo/FriendsV3FeedNetworkSource;",
-                name = "LJ",
-                parameters = listOf("Lcom/ss/android/ugc/aweme/friendstab/repo/FriendsV3FeedResponse;"),
-                returnType = "Ljava/lang/Object;",
-            ).method.addInstructions(
-                0,
-                """
-                    invoke-static {p1}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAiContentInFriendsV3Response(Ljava/lang/Object;)V
-                """.trimIndent(),
-            )
-            println("[Feed Ads & Content Filter] Hooked FriendsV3FeedNetworkSource.LJ -> Friends V3 network responses protected.")
-            patched++
-
-            // Hook FriendsFeedApi network fetch return points (LX/06CX;->LIZLLL in v47.1.4)
+            // Hook FriendsFeedApi network fetch return points (LX/06Bw;->LIZLLL in v47.4.3)
             val friendsFeedApiFingerprint = Fingerprint(
-                definingClass = "LX/06CX;",
+                definingClass = "LX/06Bw;",
                 name = "LIZLLL",
                 parameters = listOf(
                     "I",
