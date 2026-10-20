@@ -247,11 +247,11 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = assemClass,
-                name = "z4",
+                name = "l4",
                 returnType = "V",
                 parameters = listOf("Ljava/lang/Object;"),
             ).method.replaceWithReturnVoid()
-            println("[Declutter Video Interface] Hooked UpvoteVideoAssemNew.z4() -> return-void.")
+            println("[Declutter Video Interface] Hooked UpvoteVideoAssemNew.l4() -> return-void.")
             patched++
         }
 
