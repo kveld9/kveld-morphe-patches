@@ -200,7 +200,7 @@ val directMessageDeclutterPatch = bytecodePatch(
                     0,
                     """
                         move-object/from16 v0, p1
-                        const v1, 0x7f0a39ae
+                        const v1, 0x7f0a39ab
                         invoke-virtual {v0, v1}, Landroid/view/View;->findViewById(I)Landroid/view/View;
                         move-result-object v0
                         if-eqz v0, :cond_skip_call
@@ -335,7 +335,7 @@ val directMessageDeclutterPatch = bytecodePatch(
                     0,
                     """
                         move-object/from16 v0, p1
-                        const v1, 0x7f0a479c
+                        const v1, 0x7f0a4799
                         invoke-virtual {v0, v1}, Landroid/view/View;->findViewById(I)Landroid/view/View;
                         move-result-object v0
                         if-eqz v0, :cond_skip_cam
@@ -479,7 +479,7 @@ val directMessageDeclutterPatch = bytecodePatch(
                 patched++
             }
 
-            val redesignedEmojiBtnId = 0x7f0a3aba
+            val redesignedEmojiBtnId = 0x7f0a3ab7
 
             val isRedesignedEmojiSetId: (Instruction, Instruction) -> Boolean = { a, b ->
                 val isLiteral = (a as? NarrowLiteralInstruction)?.narrowLiteral == redesignedEmojiBtnId ||
