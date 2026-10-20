@@ -113,7 +113,7 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 
 **Supported versions:**
 
-| 47.1.4 |
+| 47.4.3 |
 | :---: |
 
 | Patch | Description | Options |
