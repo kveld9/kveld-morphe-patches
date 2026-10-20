@@ -434,11 +434,11 @@ val customShareSheetPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = CREATE_GROUP_BUTTON_ASSEM_CLASS,
-                name = "ce",
+                name = "Od",
                 returnType = "V",
                 parameters = listOf("Z"),
             ).method.replaceWithReturnVoid()
-            println("[Custom Share Sheet] Hooked SharePanelCreateGroupButtonAssem.ce -> return-void.")
+            println("[Custom Share Sheet] Hooked SharePanelCreateGroupButtonAssem.Od -> return-void.")
             patched++
 
             // 6b. Hide SharePanelGroupChatHintAssem view and neutralize state updates
