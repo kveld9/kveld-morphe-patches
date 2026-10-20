@@ -179,11 +179,11 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
         if (hideRepostBadge == true) {
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/feed/platform/cell/interact/info/UpvoteVideoTrigger;",
-                name = "yr",
+                name = "Rp",
                 returnType = "Z",
                 parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"),
             ).method.replaceWithReturnBoolean(false)
-            println("[Declutter Video Interface] Hooked UpvoteVideoTrigger.yr() -> return false.")
+            println("[Declutter Video Interface] Hooked UpvoteVideoTrigger.Rp() -> return false.")
             patched++
 
             val assemClass = "Lcom/ss/android/ugc/aweme/upvote/detail/whitebar/UpvoteVideoAssemNew;"
@@ -830,11 +830,11 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
         if (hideFeedbackButtons == true) {
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/feed/assem/earlyfeedback/EarlyFeedbackButtonTrigger;",
-                name = "yr",
+                name = "Rp",
                 returnType = "Z",
                 parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"),
             ).method.replaceWithReturnBoolean(false)
-            println("[Declutter Video Interface] Hooked EarlyFeedbackButtonTrigger.yr() -> return false.")
+            println("[Declutter Video Interface] Hooked EarlyFeedbackButtonTrigger.Rp() -> return false.")
             patched++
 
             val feedbackAssems = listOf(
@@ -876,11 +876,11 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/feed/assem/earlyfeedback/EarlyFeedbackStandardButtonAssem;",
-                name = "Mr",
+                name = "hq",
                 returnType = "V",
                 parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"),
             ).method.replaceWithReturnVoid()
-            println("[Declutter Video Interface] Hooked EarlyFeedbackStandardButtonAssem.Mr() -> return-void.")
+            println("[Declutter Video Interface] Hooked EarlyFeedbackStandardButtonAssem.hq() -> return-void.")
             patched++
         }
 
@@ -914,21 +914,6 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
                 patched++
             } catch (e: Exception) {
                 println("[Declutter Video Interface] LandscapeFragmentPanel note: ${e.message}")
-            }
-
-            // Hook FriendsV3GestureDetectorAssem.onDoubleTap(MotionEvent) in friends tab feed
-            try {
-                val method = Fingerprint(
-                    definingClass = "Lcom/ss/android/ugc/aweme/friendstab/ui/feed/cell/component/base/FriendsV3GestureDetectorAssem;",
-                    name = "onDoubleTap",
-                    parameters = listOf("Landroid/view/MotionEvent;"),
-                    returnType = "V",
-                ).method
-                method.replaceWithReturnVoid()
-                println("[Declutter Video Interface] Hooked FriendsV3GestureDetectorAssem.onDoubleTap -> Friends tab double tap like neutralized.")
-                patched++
-            } catch (e: Exception) {
-                println("[Declutter Video Interface] FriendsV3GestureDetectorAssem note: ${e.message}")
             }
         }
 
