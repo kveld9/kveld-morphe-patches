@@ -83,16 +83,16 @@ val hideInboxPromosAndAlertsPatch = bytecodePatch(
             // Suppress contact recommendation cards inside multi-entrance inbox list
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/inbox/widget/multi/MultiViewModel;",
-                name = "D83",
-                returnType = "LX/0Nnc;",
+                name = "p33",
+                returnType = "LX/0NiY;",
                 parameters = emptyList(),
             ).method.replaceWithReturnNull()
             patched++
 
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/inbox/widget/multi/MultiViewModel;",
-                name = "E83",
-                returnType = "LX/0Nnc;",
+                name = "q33",
+                returnType = "LX/0NiY;",
                 parameters = emptyList(),
             ).method.replaceWithReturnNull()
             patched++
