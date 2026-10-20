@@ -469,11 +469,11 @@ val customShareSheetPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = GROUP_CHAT_HINT_ASSEM_CLASS,
-                name = "ce",
+                name = "Od",
                 returnType = "V",
                 parameters = listOf("Z"),
             ).method.replaceWithReturnVoid()
-            println("[Custom Share Sheet] Hooked SharePanelGroupChatHintAssem.ce -> return-void.")
+            println("[Custom Share Sheet] Hooked SharePanelGroupChatHintAssem.Od -> return-void.")
             patched++
         }
 
