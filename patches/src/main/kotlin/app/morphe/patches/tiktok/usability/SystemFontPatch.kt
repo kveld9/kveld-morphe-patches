@@ -111,7 +111,7 @@ private fun BytecodePatchContext.hookDynamicFontProvider(): Int {
 
 private fun BytecodePatchContext.hookAssetFontLoader(): Int {
     val assetFontFp = Fingerprint(
-        definingClass = "LX/00kn;",
+        definingClass = "LX/00ki;",
         name = "s4",
         parameters = listOf("Landroid/content/res/AssetManager;", "Ljava/lang/String;"),
         returnType = "Landroid/graphics/Typeface;",
