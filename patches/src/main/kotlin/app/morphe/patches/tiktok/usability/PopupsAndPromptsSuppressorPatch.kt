@@ -191,15 +191,15 @@ private fun BytecodePatchContext.applyAccountPromptHooks(): Int {
     count++
 
     Fingerprint(
-        definingClass = "LX/0v5r;",
+        definingClass = "LX/0rIq;",
         name = "LIZIZ",
         parameters = listOf(
-            "LX/1Gbn;",
-            "[LX/0Se8;",
+            "LX/1IPf;",
+            "[LX/0Sqb;",
         ),
         returnType = "V",
     ).method.replaceWithReturnVoid()
-    println("[Block Popups & Prompts] Neutralized LX/0v5r.LIZIZ() -> Find contacts access dialog pipeline blocked.")
+    println("[Block Popups & Prompts] Neutralized LX/0rIq.LIZIZ() -> Find contacts access dialog pipeline blocked.")
     count++
 
     // 4. "Security checkup 2SV" upsell modal
