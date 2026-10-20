@@ -275,9 +275,9 @@ val searchExperienceCustomizerPatch = bytecodePatch(
             }
             patched++
 
-            // Sanitize Lynx schema URL to strip intermediate_show_trending_billboard (LX/0HAc; in v47.1.4, was LX/0HAY;)
+            // Sanitize Lynx schema URL to strip intermediate_show_trending_billboard (LX/0H6R; in v47.4.3, was LX/0HAc;)
             val schemaFp = Fingerprint(
-                definingClass = "LX/0HAc;",
+                definingClass = "LX/0H6R;",
                 name = "LIZ",
                 returnType = "Ljava/lang/String;",
             )
