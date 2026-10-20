@@ -921,13 +921,17 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
             println("[Declutter Video Interface] Hooked FeedAvatarLiveAssem.ur() -> false.")
             patched++
 
-            // Hook FeedAvatarLiveAssem.Ar(ZZ)V -> return-void (suppresses live entrance animations)
+            // Hook FeedAvatarLiveAssem.Ep(User, Z, Z)V -> return-void (suppresses live entrance animations)
             Fingerprint(
                 definingClass = liveAssemClass,
                 returnType = "V",
-                parameters = listOf("Z", "Z"),
+                parameters = listOf(
+                    "Lcom/ss/android/ugc/aweme/profile/model/User;",
+                    "Z",
+                    "Z",
+                ),
             ).method.replaceWithReturnVoid()
-            println("[Declutter Video Interface] Hooked FeedAvatarLiveAssem.Ar(ZZ) -> return-void.")
+            println("[Declutter Video Interface] Hooked FeedAvatarLiveAssem.Ep(User, Z, Z) -> return-void.")
             patched++
 
             // Hook FeedAvatarLiveAssem.onBind/z4(Object)V -> return-void (suppresses live UI binding and click redirection)
