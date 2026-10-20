@@ -479,7 +479,7 @@ val directMessageDeclutterPatch = bytecodePatch(
                 patched++
             }
 
-            val redesignedEmojiBtnId = 0x7f0a3ab7
+            val redesignedEmojiBtnId = 0x7f0a3a86
 
             val isRedesignedEmojiSetId: (Instruction, Instruction) -> Boolean = { a, b ->
                 val isLiteral = (a as? NarrowLiteralInstruction)?.narrowLiteral == redesignedEmojiBtnId ||
