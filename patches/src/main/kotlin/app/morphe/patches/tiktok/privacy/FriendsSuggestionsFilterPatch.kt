@@ -69,37 +69,6 @@ val friendsSuggestionsFilterPatch = bytecodePatch(
 
         // 1. Strict Mutuals Friends Feed Hooks (from FriendsFeedStrictMutuals)
         if (strictMutualsOnly == true) {
-            // Hook FriendsV3FeedResponse constructor (p1: List<FriendsV3FeedModel>)
-            try {
-                Fingerprint(
-                    definingClass = "Lcom/ss/android/ugc/aweme/friendstab/repo/FriendsV3FeedResponse;",
-                    name = "<init>",
-                    parameters = listOf(
-                        "Ljava/util/List;",
-                        "Ljava/lang/Boolean;",
-                        "Ljava/lang/String;",
-                        "Ljava/lang/Boolean;",
-                        "Ljava/lang/String;",
-                        "Ljava/lang/String;",
-                        "Lcom/ss/android/ugc/aweme/friendstab/repo/LandingInfo;",
-                        "Ljava/util/List;",
-                        "I",
-                        "I",
-                        "Lcom/ss/android/ugc/aweme/feed/model/LogPbBean;",
-                    ),
-                    returnType = "V",
-                ).method.addInstructions(
-                    0,
-                    """
-                        invoke-static {p1}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterSuggestedVideosInFriendsV3Feeds(Ljava/lang/Object;)V
-                    """.trimIndent(),
-                )
-                println("[Friends & Suggestions Filter] Hooked FriendsV3FeedResponse.<init> -> Friends V3 feed filtered for mutuals only.")
-                patched++
-            } catch (e: Exception) {
-                println("[Friends & Suggestions Filter] FriendsV3FeedResponse note: ${e.message}")
-            }
-
             // Hook FriendsFeedResponse constructor (p3: List<FriendsFeed>)
             try {
                 Fingerprint(
@@ -171,25 +140,6 @@ val friendsSuggestionsFilterPatch = bytecodePatch(
 
         // 2. Friends Feed Bloat, Suggested Friend Cards & Recommended Users (FeedBloat Section 7 blocks)
         if (filterFriendFeedBloat == true) {
-            try {
-                Fingerprint(
-                    definingClass = "Lcom/ss/android/ugc/aweme/friendstab/experiment/FriendsV3RecUserConfig;",
-                    name = "<init>",
-                    parameters = listOf("Z", "Z"),
-                    returnType = "V",
-                ).method.addInstructions(
-                    0,
-                    """
-                        const/4 p1, 0x0
-                        const/4 p2, 0x0
-                    """.trimIndent(),
-                )
-                println("[Friends & Suggestions Filter] Neutralized FriendsV3RecUserConfig.<init>(ZZ) -> Suggested friend card insertions disabled.")
-                patched++
-            } catch (e: Exception) {
-                println("[Friends & Suggestions Filter] FriendsV3RecUserConfig note: ${e.message}")
-            }
-
             // Hook FriendsFeedResponse.<init>
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/friendstab/api/FriendsFeedResponse;",
@@ -256,49 +206,13 @@ val friendsSuggestionsFilterPatch = bytecodePatch(
                 patched++
             }
 
-            try {
-                Fingerprint(
-                    definingClass = "Lcom/ss/android/ugc/aweme/friendstab/ui/feed/cell/component/recuser/FriendsV3HorizontalRecUserCardCell;",
-                    name = "onItemViewCreated",
-                    returnType = "V",
-                ).method.addInstructions(
-                    0,
-                    """
-                        invoke-static {p0}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->collapseRecUserCardCell(Ljava/lang/Object;)V
-                        return-void
-                    """.trimIndent(),
-                )
-                println("[Friends & Suggestions Filter] Collapsed FriendsV3HorizontalRecUserCardCell.onItemViewCreated().")
-                patched++
-            } catch (e: Exception) {
-                println("[Friends & Suggestions Filter] FriendsV3HorizontalRecUserCardCell note: ${e.message}")
-            }
-
-            try {
-                Fingerprint(
-                    definingClass = "Lcom/ss/android/ugc/aweme/friendstab/ui/feed/cell/component/recuser/FriendsV3BottomRecUserListCell;",
-                    name = "onItemViewCreated",
-                    returnType = "V",
-                ).method.addInstructions(
-                    0,
-                    """
-                        invoke-static {p0}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->collapseRecUserCardCell(Ljava/lang/Object;)V
-                        return-void
-                    """.trimIndent(),
-                )
-                println("[Friends & Suggestions Filter] Collapsed FriendsV3BottomRecUserListCell.onItemViewCreated().")
-                patched++
-            } catch (e: Exception) {
-                println("[Friends & Suggestions Filter] FriendsV3BottomRecUserListCell note: ${e.message}")
-            }
-
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/relation/feed/v4/RecSwipeCardListAssem;",
-                name = "or",
+                name = "Dp",
                 parameters = listOf("Ljava/util/List;"),
                 returnType = "Ljava/util/List;",
             ).method.replaceWithReturnEmptyList()
-            println("[Friends & Suggestions Filter] Emptied RecSwipeCardListAssem.or() -> Friend suggestion swipe cards suppressed.")
+            println("[Friends & Suggestions Filter] Emptied RecSwipeCardListAssem.Dp() -> Friend suggestion swipe cards suppressed.")
             patched++
 
             try {
