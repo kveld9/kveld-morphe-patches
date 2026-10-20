@@ -208,20 +208,20 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = assemClass,
-                name = "LLLLIILL",
+                name = "LLLJL",
                 returnType = "V",
                 parameters = listOf("I"),
             ).method.replaceWithReturnVoid()
-            println("[Declutter Video Interface] Hooked UpvoteVideoAssemNew.LLLLIILL() -> return-void.")
+            println("[Declutter Video Interface] Hooked UpvoteVideoAssemNew.LLLJL() -> return-void.")
             patched++
 
             Fingerprint(
                 definingClass = assemClass,
-                name = "LLILZ",
+                name = "LLLLII",
                 returnType = "V",
                 parameters = listOf("I"),
             ).method.replaceWithReturnVoid()
-            println("[Declutter Video Interface] Hooked UpvoteVideoAssemNew.LLILZ() -> return-void.")
+            println("[Declutter Video Interface] Hooked UpvoteVideoAssemNew.LLLLII() -> return-void.")
             patched++
 
             val onViewCreatedMethod = Fingerprint(
