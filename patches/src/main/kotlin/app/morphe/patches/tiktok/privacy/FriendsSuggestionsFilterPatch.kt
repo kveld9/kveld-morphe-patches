@@ -290,7 +290,7 @@ val friendsSuggestionsFilterPatch = bytecodePatch(
             try {
                 val methodB1 = Fingerprint(
                     definingClass = "Lcom/ss/android/ugc/aweme/relation/feed/TTRecUserBigCardViewHolder;",
-                    name = "B1",
+                    name = "LLLLZLLIL",
                     parameters = listOf("Landroid/view/View;"),
                     returnType = "V",
                 ).method
@@ -307,7 +307,7 @@ val friendsSuggestionsFilterPatch = bytecodePatch(
                     )
                 }
                 if (returnsB1.isNotEmpty()) {
-                    println("[Friends & Suggestions Filter] Collapsed TTRecUserBigCardViewHolder.B1(View).")
+                    println("[Friends & Suggestions Filter] Collapsed TTRecUserBigCardViewHolder.LLLLZLLIL(View).")
                     patched++
                 } else {
                     println("[Friends & Suggestions Filter] TTRecUserBigCardViewHolder.B1 note: No RETURN_VOID found")
@@ -318,9 +318,9 @@ val friendsSuggestionsFilterPatch = bytecodePatch(
 
             try {
                 Fingerprint(
-                    definingClass = "LX/0FL0;",
+                    definingClass = "LX/0FI6;",
                     name = "LIZIZ",
-                    parameters = listOf("LX/0E1W;", "Ljava/lang/String;"),
+                    parameters = listOf("LX/0Dym;", "Ljava/lang/String;"),
                     returnType = "Ljava/util/concurrent/CopyOnWriteArrayList;",
                 ).method.addInstructions(
                     0,
@@ -330,7 +330,7 @@ val friendsSuggestionsFilterPatch = bytecodePatch(
                         return-object v0
                     """.trimIndent(),
                 )
-                println("[Friends & Suggestions Filter] Emptied RecSwipe backing list source (LX/0FL0;->LIZIZ) -> Friend suggestion swipe cards starved.")
+                println("[Friends & Suggestions Filter] Emptied RecSwipe backing list source (LX/0FI6;->LIZIZ) -> Friend suggestion swipe cards starved.")
                 patched++
             } catch (e: Exception) {
                 println("[Friends & Suggestions Filter] LX/0FL0.LIZIZ note: ${e.message}")
@@ -338,9 +338,9 @@ val friendsSuggestionsFilterPatch = bytecodePatch(
 
             try {
                 Fingerprint(
-                    definingClass = "LX/0FL0;",
+                    definingClass = "LX/0FI6;",
                     name = "LIZ",
-                    parameters = listOf("LX/0E1W;", "Ljava/util/List;"),
+                    parameters = listOf("LX/0Dym;", "Ljava/util/List;"),
                     returnType = "V",
                 ).method.addInstructions(
                     0,
@@ -348,7 +348,7 @@ val friendsSuggestionsFilterPatch = bytecodePatch(
                         return-void
                     """.trimIndent(),
                 )
-                println("[Friends & Suggestions Filter] Neutralized RecSwipe backing list loader (LX/0FL0;->LIZ).")
+                println("[Friends & Suggestions Filter] Neutralized RecSwipe backing list loader (LX/0FI6;->LIZ).")
                 patched++
             } catch (e: Exception) {
                 println("[Friends & Suggestions Filter] LX/0FL0.LIZ note: ${e.message}")
@@ -357,7 +357,7 @@ val friendsSuggestionsFilterPatch = bytecodePatch(
             try {
                 Fingerprint(
                     definingClass = "Lcom/ss/android/ugc/aweme/relation/feed/v4/RecSwipeViewModel;",
-                    name = "md",
+                    name = "Yc",
                     parameters = listOf("Ljava/lang/String;"),
                     returnType = "Z",
                 ).method.addInstructions(
@@ -367,7 +367,7 @@ val friendsSuggestionsFilterPatch = bytecodePatch(
                         return v0
                     """.trimIndent(),
                 )
-                println("[Friends & Suggestions Filter] Neutralized RecSwipeViewModel.md() -> has-data gate forced false.")
+                println("[Friends & Suggestions Filter] Neutralized RecSwipeViewModel.Yc() -> has-data gate forced false.")
                 patched++
             } catch (e: Exception) {
                 println("[Friends & Suggestions Filter] RecSwipeViewModel.md note: ${e.message}")
