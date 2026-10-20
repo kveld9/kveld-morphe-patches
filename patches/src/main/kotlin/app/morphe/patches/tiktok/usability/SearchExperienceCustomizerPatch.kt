@@ -321,7 +321,7 @@ val searchExperienceCustomizerPatch = bytecodePatch(
 
             val videoCardL2Fp = Fingerprint(
                 definingClass = videoCardAbilityClass,
-                name = "l2",
+                name = "X1",
                 returnType = "Z",
             )
             videoCardL2Fp.method.addInstructions(
@@ -335,7 +335,7 @@ val searchExperienceCustomizerPatch = bytecodePatch(
 
             val videoCardRFp = Fingerprint(
                 definingClass = videoCardAbilityClass,
-                name = "r",
+                name = "l",
                 returnType = "V",
             )
             videoCardRFp.method.addInstructions(
@@ -351,7 +351,7 @@ val searchExperienceCustomizerPatch = bytecodePatch(
 
             val lynxVideoL2Fp = Fingerprint(
                 definingClass = lynxVideoAbilityClass,
-                name = "l2",
+                name = "X1",
                 returnType = "Z",
             )
             lynxVideoL2Fp.method.addInstructions(
@@ -365,7 +365,7 @@ val searchExperienceCustomizerPatch = bytecodePatch(
 
             val lynxVideoRFp = Fingerprint(
                 definingClass = lynxVideoAbilityClass,
-                name = "r",
+                name = "l",
                 returnType = "V",
             )
             lynxVideoRFp.method.addInstructions(
@@ -381,7 +381,7 @@ val searchExperienceCustomizerPatch = bytecodePatch(
 
             val photoCardL2Fp = Fingerprint(
                 definingClass = photoCardAbilityClass,
-                name = "l2",
+                name = "X1",
                 returnType = "Z",
             )
             photoCardL2Fp.method.addInstructions(
@@ -395,7 +395,7 @@ val searchExperienceCustomizerPatch = bytecodePatch(
 
             val photoCardRFp = Fingerprint(
                 definingClass = photoCardAbilityClass,
-                name = "r",
+                name = "l",
                 returnType = "V",
             )
             photoCardRFp.method.addInstructions(
