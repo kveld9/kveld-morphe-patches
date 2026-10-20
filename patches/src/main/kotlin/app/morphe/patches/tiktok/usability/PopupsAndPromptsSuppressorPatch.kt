@@ -234,10 +234,6 @@ private fun BytecodePatchContext.applyAccountPromptHooks(): Int {
     Fingerprint(
         definingClass = "Lcom/ss/android/ugc/aweme/services/popsuite/local/Gpppa2svUpsellCampaign;",
         name = "startCampaign",
-        parameters = listOf(
-            "Lcom/ss/android/ugc/aweme/IPopSuiteManagerService\$PopupConfigObject;",
-            "LX/0Ck6;",
-        ),
         returnType = "Z",
     ).method.replaceWithReturnBoolean(false)
     println("[Block Popups & Prompts] Neutralized Gpppa2svUpsellCampaign.startCampaign() -> GPPPA 2SV security checkup sheet blocked.")
