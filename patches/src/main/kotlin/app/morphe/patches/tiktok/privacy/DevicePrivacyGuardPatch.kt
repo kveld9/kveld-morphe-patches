@@ -178,7 +178,7 @@ val devicePrivacyGuardPatch = bytecodePatch(
         patched++
 
         // 2.5 Neutralize LocationServiceImpl precise and coarse optimization flags
-        listOf("LJIIZILJ", "LJIJ").forEach { methodName ->
+        listOf("LJIJ", "LJIJI").forEach { methodName ->
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/tiktok/location/serviceimpl/LocationServiceImpl;",
                 name = methodName,
