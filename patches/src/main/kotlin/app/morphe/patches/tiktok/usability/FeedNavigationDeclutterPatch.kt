@@ -514,13 +514,6 @@ val feedNavigationDeclutterPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = redDotServiceClass,
-                name = "loadAvatarAbility",
-                returnType = "V",
-            ).method.replaceWithReturnVoid()
-            patched++
-
-            Fingerprint(
-                definingClass = redDotServiceClass,
                 name = "dealWithFriendsAvatar",
                 returnType = "V",
             ).method.replaceWithReturnVoid()
