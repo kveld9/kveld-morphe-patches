@@ -130,24 +130,9 @@ val friendsSuggestionsFilterPatch = bytecodePatch(
                 println("[Friends & Suggestions Filter] FriendsFeedResponse note: ${e.message}")
             }
 
-            // Hook FriendsV3FeedNetworkSource.LJ (Friends V3 network responses)
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/friendstab/repo/FriendsV3FeedNetworkSource;",
-                name = "LJ",
-                parameters = listOf("Lcom/ss/android/ugc/aweme/friendstab/repo/FriendsV3FeedResponse;"),
-                returnType = "Ljava/lang/Object;",
-            ).method.addInstructions(
-                0,
-                """
-                    invoke-static {p1}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterSuggestedVideosInFriendsV3Response(Ljava/lang/Object;)V
-                """.trimIndent(),
-            )
-            println("[Friends & Suggestions Filter] Hooked FriendsV3FeedNetworkSource.LJ -> Friends V3 network responses protected.")
-            patched++
-
-            // Hook FriendsFeedApi network fetch return points (LX/06CX;->LIZLLL in v47.1.4)
+            // Hook FriendsFeedApi network fetch return points (LX/06Bw;->LIZLLL in v47.4.3, was LX/06CX;)
             val friendsFeedApiFingerprint = Fingerprint(
-                definingClass = "LX/06CX;",
+                definingClass = "LX/06Bw;",
                 name = "LIZLLL",
                 parameters = listOf(
                     "I",
@@ -205,88 +190,37 @@ val friendsSuggestionsFilterPatch = bytecodePatch(
                 println("[Friends & Suggestions Filter] FriendsV3RecUserConfig note: ${e.message}")
             }
 
-            // Hook FriendsV3FeedResponse.<init>
-            try {
-                Fingerprint(
-                    definingClass = "Lcom/ss/android/ugc/aweme/friendstab/repo/FriendsV3FeedResponse;",
-                    name = "<init>",
-                    parameters = listOf(
-                        "Ljava/util/List;",
-                        "Ljava/lang/Boolean;",
-                        "Ljava/lang/String;",
-                        "Ljava/lang/Boolean;",
-                        "Ljava/lang/String;",
-                        "Ljava/lang/String;",
-                        "Lcom/ss/android/ugc/aweme/friendstab/repo/LandingInfo;",
-                        "Ljava/util/List;",
-                        "I",
-                        "I",
-                        "Lcom/ss/android/ugc/aweme/feed/model/LogPbBean;",
-                    ),
-                    returnType = "V",
-                ).method.addInstructions(
-                    0,
-                    """
-                        invoke-static {p1}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterFeedBloatInFriendsV3Feeds(Ljava/lang/Object;)V
-                        const/4 p8, 0x0
-                    """.trimIndent(),
-                )
-                println("[Friends & Suggestions Filter] Hooked FriendsV3FeedResponse.<init> -> Friends V3 feed filtered and suggested friends nulled.")
-                patched++
-            } catch (e: Exception) {
-                println("[Friends & Suggestions Filter] FriendsV3FeedResponse note: ${e.message}")
-            }
-
             // Hook FriendsFeedResponse.<init>
-            try {
-                Fingerprint(
-                    definingClass = "Lcom/ss/android/ugc/aweme/friendstab/api/FriendsFeedResponse;",
-                    name = "<init>",
-                    parameters = listOf(
-                        "I",
-                        "Z",
-                        "Ljava/util/List;",
-                        "Ljava/lang/String;",
-                        "Ljava/lang/String;",
-                        "Lcom/ss/android/ugc/aweme/feed/model/LogPbBean;",
-                        "I",
-                        "Ljava/util/List;",
-                        "Ljava/util/List;",
-                        "Ljava/lang/String;",
-                    ),
-                    returnType = "V",
-                ).method.addInstructions(
-                    0,
-                    """
-                        invoke-static {p3}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterFeedBloatInFriendsFeedData(Ljava/lang/Object;)V
-                        const/4 p8, 0x0
-                        const/4 p9, 0x0
-                    """.trimIndent(),
-                )
-                println("[Friends & Suggestions Filter] Hooked FriendsFeedResponse.<init> -> Friends V2 feed filtered and inserted cards nulled.")
-                patched++
-            } catch (e: Exception) {
-                println("[Friends & Suggestions Filter] FriendsFeedResponse note: ${e.message}")
-            }
-
-            // Hook FriendsV3FeedNetworkSource.LJ
             Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/friendstab/repo/FriendsV3FeedNetworkSource;",
-                name = "LJ",
-                parameters = listOf("Lcom/ss/android/ugc/aweme/friendstab/repo/FriendsV3FeedResponse;"),
-                returnType = "Ljava/lang/Object;",
+                definingClass = "Lcom/ss/android/ugc/aweme/friendstab/api/FriendsFeedResponse;",
+                name = "<init>",
+                parameters = listOf(
+                    "I",
+                    "Z",
+                    "Ljava/util/List;",
+                    "Ljava/lang/String;",
+                    "Ljava/lang/String;",
+                    "Lcom/ss/android/ugc/aweme/feed/model/LogPbBean;",
+                    "I",
+                    "Ljava/util/List;",
+                    "Ljava/util/List;",
+                    "Ljava/lang/String;",
+                ),
+                returnType = "V",
             ).method.addInstructions(
                 0,
                 """
-                    invoke-static {p1}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterFeedBloatInFriendsV3Response(Ljava/lang/Object;)V
+                    invoke-static {p3}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterFeedBloatInFriendsFeedData(Ljava/lang/Object;)V
+                    const/4 p8, 0x0
+                    const/4 p9, 0x0
                 """.trimIndent(),
             )
-            println("[Friends & Suggestions Filter] Hooked FriendsV3FeedNetworkSource.LJ -> Friends V3 network responses filtered and suggested friends nulled.")
+            println("[Friends & Suggestions Filter] Hooked FriendsFeedResponse.<init> -> Friends V2 feed filtered and inserted cards nulled.")
             patched++
 
-            // Hook FriendsFeedApi network fetch return points (LX/06CX;->LIZLLL in v47.1.4)
+            // Hook FriendsFeedApi network fetch return points (LX/06Bw;->LIZLLL in v47.4.3, was LX/06CX;)
             val friendsFeedApiFingerprint = Fingerprint(
-                definingClass = "LX/06CX;",
+                definingClass = "LX/06Bw;",
                 name = "LIZLLL",
                 parameters = listOf(
                     "I",
