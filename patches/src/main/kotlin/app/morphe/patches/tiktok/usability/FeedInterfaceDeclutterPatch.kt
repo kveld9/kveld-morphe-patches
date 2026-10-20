@@ -190,20 +190,20 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = assemClass,
-                name = "tr",
+                name = "Tp",
                 returnType = "Z",
                 parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"),
             ).method.replaceWithReturnBoolean(false)
-            println("[Declutter Video Interface] Hooked UpvoteVideoAssemNew.tr() -> return false.")
+            println("[Declutter Video Interface] Hooked UpvoteVideoAssemNew.Tp() -> return false.")
             patched++
 
             Fingerprint(
                 definingClass = assemClass,
-                name = "hb",
+                name = "xa",
                 returnType = "Z",
                 parameters = listOf("Ljava/lang/Object;"),
             ).method.replaceWithReturnBoolean(false)
-            println("[Declutter Video Interface] Hooked UpvoteVideoAssemNew.hb() -> return false.")
+            println("[Declutter Video Interface] Hooked UpvoteVideoAssemNew.xa() -> return false.")
             patched++
 
             Fingerprint(
