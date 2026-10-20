@@ -118,17 +118,17 @@ val searchExperienceCustomizerPatch = bytecodePatch(
             )
             patched++
 
-            // Suppress cached preloaded guess search data (JSONObject) (LX/0HC2; in v47.1.4, was LX/0HBy;)
+            // Suppress cached preloaded guess search data (JSONObject) (LX/0H7r; in v47.4.3, was LX/0HC2;)
             Fingerprint(
-                definingClass = "LX/0HC2;",
+                definingClass = "LX/0H7r;",
                 name = "LIZ",
                 returnType = "Lorg/json/JSONObject;",
             ).method.replaceWithReturnNull()
             patched++
 
-            // Suppress cached preloaded guess search data (String) (LX/0HC2; in v47.1.4, was LX/0HBy;)
+            // Suppress cached preloaded guess search data (String) (LX/0H7r; in v47.4.3, was LX/0HC2;)
             Fingerprint(
-                definingClass = "LX/0HC2;",
+                definingClass = "LX/0H7r;",
                 name = "LIZIZ",
                 returnType = "Ljava/lang/String;",
             ).method.replaceWithReturnNull()
@@ -137,14 +137,14 @@ val searchExperienceCustomizerPatch = bytecodePatch(
             // Force disable native guess search fallback flag in search middle page
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/search/middle/DynamicSingleIntermediateFragmentNew;",
-                name = "pZ",
+                name = "PY",
                 returnType = "Z",
             ).method.replaceWithReturnBoolean(false)
             patched++
 
-            // Force disable show_suggest_search_words in AB evaluator method (LX/0HAX; in v47.1.4, was LX/0HAT;)
+            // Force disable show_suggest_search_words in AB evaluator method (LX/0H6M; in v47.4.3, was LX/0HAX;)
             Fingerprint(
-                definingClass = "LX/0HAX;",
+                definingClass = "LX/0H6M;",
                 name = "LIZ",
                 returnType = "I",
                 parameters = listOf(
@@ -154,9 +154,9 @@ val searchExperienceCustomizerPatch = bytecodePatch(
             ).method.replaceWithReturnInt(0)
             patched++
 
-            // Reset static field in <clinit> to prevent observer initialization (LX/0HAX; in v47.1.4, was LX/0HAT;)
+            // Reset static field in <clinit> to prevent observer initialization (LX/0H6M; in v47.4.3, was LX/0HAX;)
             val hatClinitFp = Fingerprint(
-                definingClass = "LX/0HAX;",
+                definingClass = "LX/0H6M;",
                 name = "<clinit>",
                 returnType = "V",
             )
@@ -200,9 +200,9 @@ val searchExperienceCustomizerPatch = bytecodePatch(
             }
             patched++
 
-            // Sanitize Lynx schema URL to strip show_suggest_search_words (LX/0HAc; in v47.1.4, was LX/0HAY;)
+            // Sanitize Lynx schema URL to strip show_suggest_search_words (LX/0H6R; in v47.4.3, was LX/0HAc;)
             val schemaFp = Fingerprint(
-                definingClass = "LX/0HAc;",
+                definingClass = "LX/0H6R;",
                 name = "LIZ",
                 returnType = "Ljava/lang/String;",
             )
