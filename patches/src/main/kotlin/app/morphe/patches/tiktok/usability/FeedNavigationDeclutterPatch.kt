@@ -483,8 +483,8 @@ val feedNavigationDeclutterPatch = bytecodePatch(
 
         val tabManagerClasses by lazy {
             val avatarAbilityClass = "Lcom/ss/android/ugc/aweme/friendstab/ability/BaseBottomTabAvatarAbility;"
-            val ksMethod = classDefByOrNull(avatarAbilityClass)?.methods?.firstOrNull { it.name == "kS" }
-            val tabManagerBaseType = ksMethod?.returnType ?: "LX/05Ha;"
+            val ksMethod = classDefByOrNull(avatarAbilityClass)?.methods?.firstOrNull { it.name == "uR" || it.name == "kS" }
+            val tabManagerBaseType = ksMethod?.returnType ?: "LX/05HL;"
 
             val managers = mutableListOf<String>()
             classDefForEach { cls ->
@@ -493,7 +493,7 @@ val feedNavigationDeclutterPatch = bytecodePatch(
                 }
             }
             if (managers.isEmpty()) {
-                managers.addAll(listOf("LX/06vO;", "LX/06vG;"))
+                managers.addAll(listOf("LX/06ue;", "LX/06um;"))
             }
             managers
         }
