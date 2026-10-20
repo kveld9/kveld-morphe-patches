@@ -119,7 +119,7 @@ val hideInboxPromosAndAlertsPatch = bytecodePatch(
             // Suppress follower migration guide tooltip ("New followers has moved")
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/inbox/widget/multi/MultiViewModel;",
-                name = "K83",
+                name = "w33",
                 returnType = "V",
                 parameters = listOf("Ljava/util/List;"),
             ).method.replaceWithReturnVoid()
