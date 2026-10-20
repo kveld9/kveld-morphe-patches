@@ -156,11 +156,12 @@ private fun BytecodePatchContext.applyAccountPromptHooks(): Int {
 
     // 2. "Get notifications from other accounts" multi-account push guide
     Fingerprint(
-        definingClass = "LX/0YL4;",
-        name = "LJII",
+        definingClass = "LX/10DR;",
+        name = "showPopup",
+        parameters = listOf("LX/06xK;", "LX/0C8j;"),
         returnType = "V",
     ).method.replaceWithReturnVoid()
-    println("[Block Popups & Prompts] Neutralized LX/0YL4.LJII() -> Multi-account push guide dialog blocked.")
+    println("[Block Popups & Prompts] Neutralized LX/10DR.showPopup() -> Multi-account push guide dialog blocked.")
     count++
 
     // 3. "Find contacts" Friends tab overlay (PopLayer element)
@@ -264,13 +265,13 @@ private fun BytecodePatchContext.applyStickerRecommendationHooks(): Int {
     val featureEnableMethod = Fingerprint(
         definingClass = "Lcom/ss/android/ugc/aweme/im/strategy/businessconfig/ChatFeatureListConf;",
         name = "featureEnable",
-        parameters = listOf("LX/0pdZ;"),
+        parameters = listOf("LX/0dWj;"),
         returnType = "Z",
     ).method
     featureEnableMethod.addInstructions(
         0,
         """
-            sget-object v0, LX/0pdZ;->TYPING_RECOMMEND:LX/0pdZ;
+            sget-object v0, LX/0dWj;->TYPING_RECOMMEND:LX/0dWj;
             if-ne p1, v0, :cond_orig
             const/4 v0, 0
             return v0
