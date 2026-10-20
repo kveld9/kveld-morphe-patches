@@ -666,20 +666,20 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = musicCoverClass,
-                name = "Tr",
+                name = "tq",
                 returnType = "V",
                 parameters = emptyList(),
             ).method.replaceWithReturnVoid()
-            println("[Declutter Video Interface] Hooked VideoMusicCoverAssem.Tr() -> return-void.")
+            println("[Declutter Video Interface] Hooked VideoMusicCoverAssem.tq() -> return-void.")
             patched++
 
             Fingerprint(
                 definingClass = musicCoverClass,
-                name = "Wr",
+                name = "sq",
                 returnType = "V",
                 parameters = emptyList(),
             ).method.replaceWithReturnVoid()
-            println("[Declutter Video Interface] Hooked VideoMusicCoverAssem.Wr() -> return-void.")
+            println("[Declutter Video Interface] Hooked VideoMusicCoverAssem.sq() -> return-void.")
             patched++
         }
 
