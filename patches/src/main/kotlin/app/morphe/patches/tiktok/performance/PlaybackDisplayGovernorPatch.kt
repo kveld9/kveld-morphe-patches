@@ -33,6 +33,7 @@ val playbackDisplayGovernorPatch = bytecodePatch(
         title = "Maximum Playback Resolution",
         description = "Select maximum video playback resolution ceiling: 1080 (1080p ExtremelyHigh), 720 (720p SuperHigh), 540 (540p H_High), 480 (480p High), or 360 (360p Standard).",
         default = "480",
+        values = mapOf("1080p ExtremelyHigh" to "1080", "720p SuperHigh" to "720", "540p H_High" to "540", "480p High" to "480", "360p Standard" to "360"),
         required = false,
     )
 
@@ -73,6 +74,7 @@ val playbackDisplayGovernorPatch = bytecodePatch(
         title = "Target Refresh Rate",
         description = "Select target display refresh rate: max (display peak rate), 120 (120 Hz), 90 (90 Hz), or 60 (60 Hz). Clamped automatically to display maximum.",
         default = "max",
+        values = mapOf("Display peak rate" to "max", "120 Hz" to "120", "90 Hz" to "90", "60 Hz" to "60"),
         required = false,
     )
 
