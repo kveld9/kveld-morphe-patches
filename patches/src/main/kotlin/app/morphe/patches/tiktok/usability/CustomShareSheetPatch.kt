@@ -217,6 +217,14 @@ val customShareSheetPatch = bytecodePatch(
         required = false,
     )
 
+    val hideUseThisEffect by booleanOption(
+        key = "hideUseThisEffect",
+        default = false,
+        title = "Hide 'Use This Effect'",
+        description = "Hides the Use this effect entry from the share sheet.",
+        required = false,
+    )
+
     val hidePip by booleanOption(
         key = "hidePip",
         default = false,
@@ -336,6 +344,7 @@ val customShareSheetPatch = bytecodePatch(
             "hideCreateSticker" to (hideCreateSticker == true),
             "hideDuet" to (hideDuet == true),
             "hideStitch" to (hideStitch == true),
+            "hideUseThisEffect" to (hideUseThisEffect == true),
             "hidePip" to (hidePip == true),
             "hideClearDisplay" to (hideClearDisplay == true),
             "hideListenAudio" to (hideListenAudio == true),
