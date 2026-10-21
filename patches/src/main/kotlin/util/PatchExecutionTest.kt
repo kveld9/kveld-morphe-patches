@@ -438,7 +438,7 @@ fun main(args: Array<String>) {
         var forced = 0
         targetPatches.forEach { patch ->
             patch.options.values.filter { it.default is Boolean }.forEach { option ->
-                patch.options[option.key] = true
+                patch.options[option.name] = true
                 forced++
             }
         }
