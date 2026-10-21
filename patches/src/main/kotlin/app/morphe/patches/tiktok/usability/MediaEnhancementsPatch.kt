@@ -35,6 +35,7 @@ val mediaEnhancementsPatch = bytecodePatch(
         title = "Saved-Video Quality Preference",
         description = "Select download quality: 'high', 'medium', 'low', or a resolution ceiling (e.g. 1080, 720).",
         default = "high",
+        values = mapOf("High" to "high", "Medium" to "medium", "Low" to "low", "1080p" to "1080", "720p" to "720", "540p" to "540", "480p" to "480", "360p" to "360"),
         required = false,
     )
 
