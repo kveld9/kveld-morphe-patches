@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+set -euo pipefail
+export LC_ALL=C
+
+commit_file="${1:-}"
+
+if [[ -z "$commit_file" || ! -f "$commit_file" ]]; then
+    echo "commit-msg: missing or invalid commit message file" >&2
+    exit 1
+fi
+
+if LC_ALL=C grep -q '[^[:cntrl:][:print:]]' "$commit_file"; then
+    echo "commit-msg: commit message contains non-ASCII characters" >&2
+    exit 1
+fi
+
+title=$(head -n 1 "$commit_file")
+title="${title%$'\r'}"
+
+if [[ -z "$title" || -z "${title//[[:space:]]/}" ]]; then
+    echo "commit-msg: commit title cannot be empty" >&2
+    exit 1
+fi
+
+if [[ ${#title} -gt 72 ]]; then
+    echo "commit-msg: commit title exceeds 72 characters" >&2
+    exit 1
+fi
+
+if [[ "$title" =~ [^[:cntrl:][:print:]] ]]; then
+    echo "commit-msg: commit title contains non-ASCII characters" >&2
+    exit 1
+fi
+
+pattern='^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\(.+\))?(!)?: .+'
+if [[ ! "$title" =~ $pattern ]]; then
+    echo "commit-msg: commit title does not follow Conventional Commits pattern" >&2
+    exit 1
+fi
