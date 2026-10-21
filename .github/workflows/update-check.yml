@@ -29,6 +29,8 @@ jobs:
           python-version: '3.x'
 
       - name: Run update check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python3 scripts/check_app_updates.py --check --json updates.json
 
       - name: File update issues
