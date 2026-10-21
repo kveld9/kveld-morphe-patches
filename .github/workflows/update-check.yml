@@ -68,6 +68,7 @@ jobs:
               local_ver = app.get("local_version", "")
               remote_ver = app.get("remote_version", "")
               source_url = app.get("source_url", "")
+              download_url = app.get("download_url", "")
 
               print(f"[INFO] Checking existing issues for {app_name}...")
               list_cmd = [
@@ -101,6 +102,8 @@ jobs:
                   f"Latest upstream version: {remote_ver}\n"
                   f"Source link: {source_url}\n"
               )
+              if download_url:
+                  body += f"Direct download: {download_url}\n"
 
               print(f"[INFO] Creating issue for {app_name}: {title}")
               create_cmd = [
