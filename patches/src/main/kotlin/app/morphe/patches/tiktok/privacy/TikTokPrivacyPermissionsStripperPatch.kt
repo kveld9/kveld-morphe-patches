@@ -86,7 +86,6 @@ private val OEM_SIGNALS_PERMISSIONS = setOf(
     "com.google.android.apps.aicore.service.BIND_SERVICE",
     "com.tiktok.manager.SYS_START_PERMISSION",
     "com.tiktok.preload.permission.IDENTIFY",
-    "com.zhiliaoapp.musically.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION",
     "com.zhiliaoapp.musically.permission.PRF_INTERNAL",
     "com.zhiliaoapp.musically.permission.RECEIVE_ADM_MESSAGE",
     "com.zhiliao.musically.livewallpaper.permission.wallpaperplugin",
@@ -233,7 +232,7 @@ val tikTokPrivacyPermissionsStripperPatch = resourcePatch(
         key = "stripOemSignals",
         default = true,
         title = "Strip OEM Diagnostic & Background Signals",
-        description = "Remove OEM attribution, launcher badges, AICore bindings, and proprietary TikTok internal IPC permissions. WARNING: Removing DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION may impact runtime dynamic broadcast receivers.",
+        description = "Remove OEM attribution, launcher badges, AICore bindings, and proprietary TikTok internal IPC permissions.",
         required = false,
     )
 
