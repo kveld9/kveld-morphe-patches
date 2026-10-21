@@ -1,3 +1,19 @@
+## [2.8.0-experimental.7](https://github.com/kveld9/kveld-morphe-patches/compare/v2.8.0-experimental.6...v2.8.0-experimental.7) (2026-10-21)
+
+### Bug Fixes
+
+* **patches:** stop blocked subdomains from turning into lookups like ads.0.0.0.0 ([ece0e47](https://github.com/kveld9/kveld-morphe-patches/commit/ece0e47d750f3be4d0afc4495ea4931ea31570fb))
+* **tiktok:** prevent a direct message crash when hiding the gallery button ([f2a5246](https://github.com/kveld9/kveld-morphe-patches/commit/f2a52460b23ebfa4c5c008af60c4bc2b66ef82ed))
+* **tiktok:** prevent a feed crash when hiding video descriptions ([0e28885](https://github.com/kveld9/kveld-morphe-patches/commit/0e288851a10137e247adb70ffafa2fc770dd9377))
+* **tiktok:** prevent a startup crash on older Android versions ([bb2310a](https://github.com/kveld9/kveld-morphe-patches/commit/bb2310af7f3565954d6867b727de9da2c7922862))
+* **tiktok:** prevent Android from rejecting the refresh rate setting ([85b7749](https://github.com/kveld9/kveld-morphe-patches/commit/85b774951d9fa209d879f1bf48f163927bdf7255))
+* **tiktok:** prevent Android from rejecting the system font loader ([2f8db0c](https://github.com/kveld9/kveld-morphe-patches/commit/2f8db0cf9728cd1ce60e986126f081bfde03fec8))
+* **tiktok:** show "videos" instead of "comments" for the custom offline limit ([21331b0](https://github.com/kveld9/kveld-morphe-patches/commit/21331b0190b6de4bdf304b9113d7695fa65e7c79))
+
+### New Features
+
+* **gboard:** remove the inline translation character limit ([0b0528b](https://github.com/kveld9/kveld-morphe-patches/commit/0b0528bd8e08ffe5aded7e5059265adee06af44a))
+
 ## [2.8.0-experimental.6](https://github.com/kveld9/kveld-morphe-patches/compare/v2.8.0-experimental.5...v2.8.0-experimental.6) (2026-10-21)
 
 ### New Features

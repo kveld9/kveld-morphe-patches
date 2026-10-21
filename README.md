@@ -171,7 +171,7 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 </details>
 
 <details>
-<summary>Gboard Lite&nbsp;&nbsp;•&nbsp;&nbsp;<b>11 patches</b></summary>
+<summary>Gboard Lite&nbsp;&nbsp;•&nbsp;&nbsp;<b>12 patches</b></summary>
 <br>
 
 **Supported versions:**
@@ -190,6 +190,7 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 | **Offline Only** | Fully disconnects Gboard. Download dictionaries first. |  |
 | **Remove Extra Files** | Deletes licenses, tutorial animations and junk. |  |
 | **Remove Permissions** | Removes permissions you pick below. | • Contacts<br>• Microphone<br>• Photos & files<br>• Dictionary sync<br>• Work profile link |
+| **Remove Translate Limit** | Removes the character limit for inline translation. |  |
 | **Stop Background Sync** | Stops background downloads and sync to save battery. |  |
 | **Stop Remote Updates** | Stops Google from changing settings remotely. |  |
 
