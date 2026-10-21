@@ -8,6 +8,8 @@ import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patcher.resource.ResourceType
+import app.morphe.patcher.resource.resourceId
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.clearTryBlocks
@@ -195,12 +197,13 @@ val directMessageDeclutterPatch = bytecodePatch(
             val titleBarMethod = titleBarFp.method
             val titleBarImpl = titleBarMethod.implementation
             if (titleBarImpl != null) {
+                val callButtonId = resourceId(ResourceType.ID, "kph").toInt()
                 titleBarMethod.ensureRegisterCount(4)
                 titleBarMethod.addInstructions(
                     0,
                     """
                         move-object/from16 v0, p1
-                        const v1, 0x7f0a39ab
+                        const v1, $callButtonId
                         invoke-virtual {v0, v1}, Landroid/view/View;->findViewById(I)Landroid/view/View;
                         move-result-object v0
                         if-eqz v0, :cond_skip_call
@@ -330,12 +333,13 @@ val directMessageDeclutterPatch = bytecodePatch(
             val inputAssemMethod = inputAssemFp.method
             val inputAssemImpl = inputAssemMethod.implementation
             if (inputAssemImpl != null) {
+                val cameraSlotId = resourceId(ResourceType.ID, "nav").toInt()
                 inputAssemMethod.ensureRegisterCount(4)
                 inputAssemMethod.addInstructions(
                     0,
                     """
                         move-object/from16 v0, p1
-                        const v1, 0x7f0a4799
+                        const v1, $cameraSlotId
                         invoke-virtual {v0, v1}, Landroid/view/View;->findViewById(I)Landroid/view/View;
                         move-result-object v0
                         if-eqz v0, :cond_skip_cam
@@ -479,7 +483,7 @@ val directMessageDeclutterPatch = bytecodePatch(
                 patched++
             }
 
-            val redesignedEmojiBtnId = 0x7f0a3a86
+            val redesignedEmojiBtnId = resourceId(ResourceType.ID, "kve").toInt()
 
             val isRedesignedEmojiSetId: (Instruction, Instruction) -> Boolean = { a, b ->
                 val isLiteral = (a as? NarrowLiteralInstruction)?.narrowLiteral == redesignedEmojiBtnId ||
