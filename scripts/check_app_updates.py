@@ -102,6 +102,14 @@ TOOLCHAIN_SPECS: List[Dict[str, Any]] = [
         "api_url": "https://api.github.com/repos/MorpheApp/morphe-patches-gradle-plugin/tags?per_page=100",
         "source_url": "https://github.com/MorpheApp/morphe-patches-gradle-plugin/tags",
     },
+    {
+        "id": "gradle-wrapper",
+        "name": "Gradle Wrapper",
+        "local_file": "gradle/wrapper/gradle-wrapper.properties",
+        "local_pattern": r'^distributionUrl=.*/gradle-(\d+(?:\.\d+)*)-(?:bin|all)\.zip\s*$',
+        "api_url": "https://api.github.com/repos/gradle/gradle/releases/latest",
+        "source_url": "https://github.com/gradle/gradle/releases",
+    },
 ]
 
 
@@ -646,6 +654,14 @@ class TestUpdateChecker(unittest.TestCase):
                 encoding="utf-8",
             )
 
+            wrapper_dir = gradle_dir / "wrapper"
+            wrapper_dir.mkdir(parents=True, exist_ok=True)
+            wrapper_props = wrapper_dir / "gradle-wrapper.properties"
+            wrapper_props.write_text(
+                "distributionUrl=https\\://services.gradle.org/distributions/gradle-9.6.1-bin.zip\n",
+                encoding="utf-8",
+            )
+
             def fake_fetch_success(url: str) -> Optional[str]:
                 if "morphe-patcher" in url:
                     return json.dumps({
@@ -658,10 +674,15 @@ class TestUpdateChecker(unittest.TestCase):
                         {"name": "v1.3.4"},
                         {"name": "v1.3.3"},
                     ])
+                if "gradle/gradle" in url:
+                    return json.dumps({
+                        "tag_name": "v9.8.2",
+                        "name": "9.8.2",
+                    })
                 return None
 
             results = run_toolchain_checks(temp_root, fetch_fn=fake_fetch_success)
-            self.assertEqual(len(results), 2)
+            self.assertEqual(len(results), 3)
 
             patcher_entry = next(r for r in results if r["id"] == "morphe-patcher")
             self.assertEqual(patcher_entry["status"], "update-available")
@@ -675,6 +696,11 @@ class TestUpdateChecker(unittest.TestCase):
             self.assertEqual(plugin_entry["status"], "current")
             self.assertEqual(plugin_entry["local_version"], "1.3.4")
             self.assertEqual(plugin_entry["remote_version"], "1.3.4")
+
+            gradle_entry = next(r for r in results if r["id"] == "gradle-wrapper")
+            self.assertEqual(gradle_entry["status"], "update-available")
+            self.assertEqual(gradle_entry["local_version"], "9.6.1")
+            self.assertEqual(gradle_entry["remote_version"], "9.8.2")
 
             # Fetch returning None -> "unknown"
             unknown_results = run_toolchain_checks(temp_root, fetch_fn=lambda _: None)
