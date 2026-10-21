@@ -422,6 +422,7 @@ val playbackDisplayGovernorPatch = bytecodePatch(
                 name = "<clinit>",
             )
             val method = hookClinitFp.method
+            method.ensureRegisterCount(1)
             val instructions = method.implementation?.instructions?.toList() ?: emptyList()
             val returnIndex = instructions.indexOfLast { it.opcode == Opcode.RETURN_VOID }
             val targetIndex = if (returnIndex >= 0) returnIndex else 0
