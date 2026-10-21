@@ -36,13 +36,6 @@ private val BANDWIDTH_SHARING_LIBS = setOf("libhopmn.so")
 
 private val EMPTY_STUB_BYTES = byteArrayOf()
 
-private fun collectCandidateFiles(libDir: File, targetLibs: Set<String>): List<File> {
-    return libDir.walkTopDown()
-        .filter { it.isFile && it.extension.equals("so", ignoreCase = true) }
-        .filter { it.name.lowercase() in targetLibs }
-        .toList()
-}
-
 private fun zeroBinaryFile(file: File): Long {
     val originalSize = file.length()
     if (originalSize <= 0) return 0L
@@ -82,13 +75,10 @@ val universalNativeBinaryTrimmerPatch = rawResourcePatch(
     )
 
     execute {
-        val libDir = try {
-            get("lib")
-        } catch (_: Throwable) {
-            null
-        }
+        val libEntries = listApkEntries("lib/")
+            .filter { !it.endsWith('/') }
 
-        if (libDir == null || !libDir.exists() || !libDir.isDirectory) {
+        if (libEntries.isEmpty()) {
             println("[Remove Tracking Libraries] lib/ directory not found - skipping safely.")
             return@execute
         }
@@ -103,21 +93,25 @@ val universalNativeBinaryTrimmerPatch = rawResourcePatch(
             return@execute
         }
 
-        val candidateFiles = collectCandidateFiles(libDir, targetLibs)
-        if (candidateFiles.isEmpty()) {
+        val candidateEntries = libEntries.filter { entry ->
+            val name = entry.substringAfterLast('/')
+            name.endsWith(".so", ignoreCase = true) && name.lowercase() in targetLibs
+        }
+
+        if (candidateEntries.isEmpty()) {
             println("[Remove Tracking Libraries] No candidate tracking or debug native libraries found in lib/ - skipping.")
             return@execute
         }
 
         var savedBytes = 0L
         val strippedLibs = mutableListOf<String>()
-        val apkRoot = libDir.parentFile ?: libDir
 
-        for (file in candidateFiles) {
+        for (entry in candidateEntries) {
+            val file = get(entry)
             val freed = zeroBinaryFile(file)
             if (freed > 0) {
                 savedBytes += freed
-                strippedLibs.add(file.relativeTo(apkRoot).path.replace('\\', '/'))
+                strippedLibs.add(entry)
             }
         }
 
