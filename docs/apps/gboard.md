@@ -35,6 +35,7 @@ Technical documentation and patch catalog for Gboard Lite on Android.
 | **Offline Only** | `bytecodePatch` | `false` (Opt-in) | `Go Offline (Setup)` | Fully disconnects Gboard. Download dictionaries first. |
 | **Remove Extra Files** | `resourcePatch` | `true` (Enabled) | None | Deletes licenses, tutorial animations and junk. |
 | **Remove Permissions** | `resourcePatch` | `false` (Opt-in) | None | Removes permissions you pick below. |
+| **Remove Translate Limit** | `bytecodePatch` | `true` (Enabled) | None | Removes the character limit for inline translation. |
 
 ---
 
@@ -91,6 +92,11 @@ The `Keyboard Settings` patch incorporates several internal bytecode and resourc
 - **Remove Extra Files**:
   - *Objective*: Reduce application size.
   - *How*: Purges build properties, tutorial animations, uncompressed GIFs, and embedded open-source license texts.
+
+### D. Usability & Input Enhancements
+- **Remove Translate Limit**:
+  - *Objective*: Allow entering longer text in inline translation without character restrictions.
+  - *How*: Strips length filter caps from the inline translation input field upon keyboard layout inflation while preserving other input filters.
 
 ---
 

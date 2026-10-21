@@ -3,7 +3,9 @@ package com.kveld9.morphe.extension.gboard;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.text.InputFilter;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 import com.kveld9.morphe.extension.gboard.i18n.GboardI18n;
 import java.lang.reflect.Constructor;
@@ -1182,5 +1184,42 @@ public class GboardExtension {
                 System.exit(0);
             }
         }).start();
+    }
+
+    public static void removeTranslateLimit(EditText editText) {
+        if (editText == null) {
+            return;
+        }
+        try {
+            stripFiltersSafe(editText);
+        } catch (Throwable ignored) {}
+    }
+
+    private static void stripFiltersSafe(EditText editText) {
+        InputFilter[] current = editText.getFilters();
+        if (current == null) {
+            return;
+        }
+        InputFilter[] stripped = stripLengthFilters(current);
+        if (stripped != current) {
+            editText.setFilters(stripped);
+        }
+    }
+
+    private static InputFilter[] stripLengthFilters(InputFilter[] filters) {
+        java.util.List<InputFilter> kept = new java.util.ArrayList<>(filters.length);
+        for (InputFilter filter : filters) {
+            if (isNonLengthFilter(filter)) {
+                kept.add(filter);
+            }
+        }
+        if (kept.size() == filters.length) {
+            return filters;
+        }
+        return kept.toArray(new InputFilter[0]);
+    }
+
+    private static boolean isNonLengthFilter(InputFilter filter) {
+        return filter != null && !(filter instanceof InputFilter.LengthFilter);
     }
 }
