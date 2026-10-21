@@ -220,23 +220,23 @@ private fun resolveBlockedRoot(
     instruction: Instruction,
     blocklist: Set<String>,
     useSubdomains: Boolean,
-): Pair<String, String>? {
+): Triple<String, String, String>? {
     if (!isConstStringOpcode(instruction.opcode)) return null
     val literal = (instruction as? ReferenceInstruction)?.reference as? StringReference ?: return null
     val original = literal.string
     val host = extractLiteralHost(original) ?: return null
     val root = findBlockedRoot(host, blocklist, useSubdomains) ?: return null
-    return original to root
+    return Triple(original, host, root)
 }
 
 private fun buildPendingRewrite(
     instruction: Instruction,
     index: Int,
     original: String,
-    root: String,
+    host: String,
     sink: String,
 ): PendingRewrite? {
-    val replacement = original.replace(root, sink, ignoreCase = true)
+    val replacement = original.replaceFirst(host, sink, ignoreCase = true)
     if (replacement.equals(original, ignoreCase = true)) return null
     val register = (instruction as? OneRegisterInstruction)?.registerA ?: return null
     return PendingRewrite(index, register, replacement)
@@ -249,8 +249,8 @@ private fun findPendingRewrite(
     sink: String,
     useSubdomains: Boolean,
 ): Pair<PendingRewrite, String>? {
-    val (original, root) = resolveBlockedRoot(instruction, blocklist, useSubdomains) ?: return null
-    val rewrite = buildPendingRewrite(instruction, index, original, root, sink) ?: return null
+    val (original, host, root) = resolveBlockedRoot(instruction, blocklist, useSubdomains) ?: return null
+    val rewrite = buildPendingRewrite(instruction, index, original, host, sink) ?: return null
     return rewrite to root
 }
 

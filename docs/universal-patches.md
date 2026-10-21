@@ -445,7 +445,7 @@ The **`Block Tracking Servers (Universal)`** patch rewrites Dalvik `const-string
 
 - **Blocklist file (`hostsFile`)**: File-picker path to a hosts or plain-domain blocklist on the patching machine (e.g. Hagezi `native.tiktok-onlydomains.txt`). Empty by default: the patch logs `Skipped` and changes nothing until a file is selected.
 - **Replace with (`sinkIp`)**: IPv4 replacing blocked hosts inside literals (`https://log.example.com/v1` becomes `https://0.0.0.0/v1`). Default: `0.0.0.0`.
-- **Include subdomains (`matchSubdomains`)**: When enabled (default `true`), entry `example.com` also matches `a.example.com`.
+- **Include subdomains (`matchSubdomains`)**: When enabled (default `true`), entry `example.com` also matches `a.example.com`, and the whole host is replaced (`https://a.example.com/v1` becomes `https://0.0.0.0/v1`).
 
 ### Supported blocklist line formats
 
