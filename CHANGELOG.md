@@ -1,3 +1,10 @@
+## [2.8.0-experimental.6](https://github.com/kveld9/kveld-morphe-patches/compare/v2.8.0-experimental.5...v2.8.0-experimental.6) (2026-10-21)
+
+### New Features
+
+* **tiktok:** offer download quality presets in Download Without Watermark ([612953b](https://github.com/kveld9/kveld-morphe-patches/commit/612953bc96e31932550604402480f16959eeee7b))
+* **tiktok:** offer resolution and refresh-rate presets in Playback and Display Governor ([bdee1cc](https://github.com/kveld9/kveld-morphe-patches/commit/bdee1ccac9c7612a1e1d1e1322aed13580d5b30b))
+
 ## [2.8.0-experimental.5](https://github.com/kveld9/kveld-morphe-patches/compare/v2.8.0-experimental.4...v2.8.0-experimental.5) (2026-10-21)
 
 ### New Features
