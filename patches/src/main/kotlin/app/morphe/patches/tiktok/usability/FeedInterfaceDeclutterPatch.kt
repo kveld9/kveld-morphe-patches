@@ -266,7 +266,6 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
                 parameters = listOf("Landroid/view/View;"),
             ).method
             descOnViewCreated.clearTryBlocks()
-            descOnViewCreated.ensureRegisterCount(6)
             val descReturns = descOnViewCreated.implementation!!.instructions.mapIndexedNotNull { index, instr ->
                 if (instr.opcode.name == "return-void") index else null
             }.reversed()
@@ -274,8 +273,7 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
                 descOnViewCreated.addInstructions(
                     index,
                     """
-                        move-object/from16 v0, p0
-                        invoke-static {v0}, ${Constants.TIKTOK_EXTENSION_MEDIA_HOOK}->hideFeedDescForAssem(Ljava/lang/Object;)V
+                        invoke-static/range {p0 .. p0}, ${Constants.TIKTOK_EXTENSION_MEDIA_HOOK}->hideFeedDescForAssem(Ljava/lang/Object;)V
                     """.trimIndent(),
                 )
             }
@@ -289,7 +287,6 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
                 parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"),
             ).method
             descJs.clearTryBlocks()
-            descJs.ensureRegisterCount(6)
             val jsReturns = descJs.implementation!!.instructions.mapIndexedNotNull { index, instr ->
                 if (instr.opcode.name == "return-void") index else null
             }.reversed()
@@ -297,8 +294,7 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
                 descJs.addInstructions(
                     index,
                     """
-                        move-object/from16 v0, p0
-                        invoke-static {v0}, ${Constants.TIKTOK_EXTENSION_MEDIA_HOOK}->hideFeedDescForAssem(Ljava/lang/Object;)V
+                        invoke-static/range {p0 .. p0}, ${Constants.TIKTOK_EXTENSION_MEDIA_HOOK}->hideFeedDescForAssem(Ljava/lang/Object;)V
                     """.trimIndent(),
                 )
             }
