@@ -412,10 +412,14 @@ val directMessageDeclutterPatch = bytecodePatch(
                         ((ins as? ReferenceInstruction)?.reference as? FieldReference)?.definingClass == "Lkotlin/Unit;"
                     }
                     if (unitIndex >= 0) {
-                        redesignedMethod.ensureRegisterCount(6)
+                        val albumParamRegisters = redesignedMethod.parameterTypes.sumOf { type -> if (type == "J" || type == "D") 2 else 1 }
+                        val albumLocals = redesignedMethod.implementation!!.registerCount - albumParamRegisters
+                        if (albumLocals < 2) {
+                            throw PatchException("[Declutter Direct Messages] ${redesignedMethod.definingClass}->${redesignedMethod.name} has $albumLocals local registers; the gallery hook needs 2.")
+                        }
                         val layoutParamsType = "Landroid/view/ViewGroup\$LayoutParams;"
                         val marginLayoutParamsType = "Landroid/view/ViewGroup\$MarginLayoutParams;"
-                        redesignedMethod.addInstructions(
+                        redesignedMethod.addInstructionsWithLabels(
                             unitIndex,
                             """
                                 move-object/from16 v0, p2
@@ -433,17 +437,20 @@ val directMessageDeclutterPatch = bytecodePatch(
                                 invoke-virtual {v0}, Landroid/view/View;->getLayoutParams()$layoutParamsType
                                 move-result-object v1
                                 if-eqz v1, :cond_skip_album
-                                const/4 v2, 0x0
-                                iput v2, v1, $layoutParamsType->width:I
-                                iput v2, v1, $layoutParamsType->height:I
-                                instance-of v2, v1, $marginLayoutParamsType
-                                if-eqz v2, :cond_skip_margin
+                                const/4 v0, 0x0
+                                iput v0, v1, $layoutParamsType->width:I
+                                iput v0, v1, $layoutParamsType->height:I
+                                instance-of v0, v1, $marginLayoutParamsType
+                                if-eqz v0, :cond_skip_margin
                                 check-cast v1, $marginLayoutParamsType
-                                const/4 v2, 0x0
-                                invoke-virtual {v1, v2}, $marginLayoutParamsType->setMarginEnd(I)V
+                                const/4 v0, 0x0
+                                invoke-virtual {v1, v0}, $marginLayoutParamsType->setMarginEnd(I)V
                                 :cond_skip_margin
+                                move-object/from16 v0, p2
+                                check-cast v0, Landroid/view/View;
                                 invoke-virtual {v0, v1}, Landroid/view/View;->setLayoutParams($layoutParamsType)V
                                 :cond_skip_album
+                                nop
                             """.trimIndent(),
                         )
                         hookedAlbumCount++
