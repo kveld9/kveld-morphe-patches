@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "2.8.0-experimental.4",
+  "version": "2.8.0-experimental.5",
   "patches": [
     {
       "name": "Allow Screenshots",
@@ -1293,6 +1293,15 @@
           "key": "hideStitch",
           "title": "Hide 'Stitch' Action",
           "description": "Hides the Stitch action from the bottom utilities row.",
+          "required": false,
+          "type": "kotlin.Boolean",
+          "default": false,
+          "values": null
+        },
+        {
+          "key": "hideUseThisEffect",
+          "title": "Hide 'Use This Effect'",
+          "description": "Hides the Use this effect entry from the share sheet.",
           "required": false,
           "type": "kotlin.Boolean",
           "default": false,

@@ -1,3 +1,9 @@
+## [2.8.0-experimental.5](https://github.com/kveld9/kveld-morphe-patches/compare/v2.8.0-experimental.4...v2.8.0-experimental.5) (2026-10-21)
+
+### New Features
+
+* **tiktok:** add hide use this effect toggle to custom share sheet ([f9e11a3](https://github.com/kveld9/kveld-morphe-patches/commit/f9e11a3a2461db0eb51de575d2e1e86e53ede385))
+
 ## [2.8.0-experimental.4](https://github.com/kveld9/kveld-morphe-patches/compare/v2.8.0-experimental.3...v2.8.0-experimental.4) (2026-10-20)
 
 ### Bug Fixes
