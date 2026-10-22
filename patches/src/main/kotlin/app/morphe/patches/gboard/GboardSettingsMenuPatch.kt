@@ -100,6 +100,7 @@ val gboardSettingsMenuPatch = resourcePatch(
     )
 
     execute {
+        decode("res/xml*")
         val resDir = get("res")
         if (!resDir.exists() || !resDir.isDirectory) {
             println("[Keyboard Settings] Skipped: res directory not found.")

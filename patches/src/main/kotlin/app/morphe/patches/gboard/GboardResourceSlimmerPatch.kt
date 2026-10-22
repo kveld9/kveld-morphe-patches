@@ -75,6 +75,7 @@ val gboardResourceSlimmerPatch = resourcePatch(
 
 
         // 2. Resource & Asset heuristic slimming
+        decode("res/raw*", "res/drawable*")
         val targetDirs = listOfNotNull(
             get("res").takeIf { it.exists() && it.isDirectory },
             get("assets").takeIf { it.exists() && it.isDirectory },

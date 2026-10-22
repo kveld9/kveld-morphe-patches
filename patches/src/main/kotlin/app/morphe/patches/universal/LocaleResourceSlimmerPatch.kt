@@ -20,6 +20,7 @@ val localeResourceSlimmerPatch = resourcePatch(
     )
 
     execute {
+        decode("res/values*")
         val mainRes = get("res")
         val resDirs = LocaleUtils.resolveResourceDirectories(mainRes)
         if (resDirs.isEmpty()) {
