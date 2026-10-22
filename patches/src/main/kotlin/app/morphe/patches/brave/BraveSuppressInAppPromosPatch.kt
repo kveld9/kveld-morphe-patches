@@ -28,7 +28,6 @@ val braveSuppressInAppPromosPatch = bytecodePatch(
         // 1. Force the rate eligibility check (Context) to return false
         Fingerprint(
             returnType = "Z",
-            parameters = listOf("Landroid/content/Context;"),
             strings = listOf("brave_rate_dont_show_again", "qa_force_rate_dialog"),
         ).method.apply {
             addInstructions(0, "const/4 v0, 0x0\nreturn v0")
