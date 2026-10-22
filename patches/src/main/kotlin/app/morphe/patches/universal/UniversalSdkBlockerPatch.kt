@@ -295,8 +295,8 @@ private val METRICA_INSTANCE = setOf(
     "sendEventsBuffer",
 )
 
-// Scoped to appevents subpackage only (never broad com/facebook); flush verified in-repo
-// by Hevy telemetry patch (AppEventQueue.flush), logEvent is the stable public API entry.
+// Scoped to appevents subpackage only (never broad com/facebook); flush verified
+// against AppEventQueue.flush, logEvent is the stable public API entry.
 private val APPEVENTS_INSTANCE = setOf(
     "flush",
     "logEvent",

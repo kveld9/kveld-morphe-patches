@@ -447,7 +447,7 @@ def _split_into_blocks(lines: list[str]) -> list[list[str]]:
 
 def _package_process_pattern(package: str) -> re.Pattern[str]:
     # Package names never contain '-' or '/', so a match followed by those
-    # characters is a different token (e.g. "com.hevy-beta"), not our process.
+    # characters is a different token (e.g. "com.example-beta"), not our process.
     return re.compile(rf"{re.escape(package)}(?::[^\s,]*)?(?![\w.\-/])")
 
 
