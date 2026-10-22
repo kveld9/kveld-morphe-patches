@@ -289,6 +289,10 @@ val gboardOfflineOnlyPatch: BytecodePatch = bytecodePatch(
             hookedMethods++
         }
 
-        println("[Offline Only] Neutralized $hookedMethods network & connectivity methods across 9 classes.")
+        if (hookedMethods == 0) {
+            println("[Offline Only] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Offline Only] Neutralized $hookedMethods network & connectivity methods across 9 classes.")
+        }
     }
 }

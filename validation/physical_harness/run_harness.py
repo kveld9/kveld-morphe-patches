@@ -1,7 +1,7 @@
 """
 Master Physical Test Suite Orchestrator for ARM64 Android Device (Audited).
 Usage:
-    python run_harness.py --mode vanilla --patch battery
+    python run_harness.py --mode vanilla --patch background-sync
     python run_harness.py --mode patched --all
     python run_harness.py --compare
 """
@@ -19,7 +19,6 @@ RESULTS_DIR = Path(__file__).parent / "results"
 sys.path.insert(0, str(SCRIPT_DIR))
 
 from common import AdbDevice, LocalTestServer
-from test_battery import run_battery_test
 from test_background_sync import run_background_sync_test
 from compare_results import compare_runs
 
@@ -27,7 +26,7 @@ def _parse_and_validate_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Morphe Patches Physical ARM64 Validation Suite (Audited)")
     parser.add_argument("--mode", choices=["vanilla", "patched"], help="Target testing mode (vanilla or patched)")
     parser.add_argument("--device", "--serial", dest="serial", default=None, help="Specific ADB device serial (default: autodetect first connected device)")
-    parser.add_argument("--patch", choices=["battery", "background-sync"], help="Specific individual patch to test")
+    parser.add_argument("--patch", choices=["background-sync"], help="Specific individual patch to test")
     parser.add_argument("--all", action="store_true", help="Run all tests sequentially")
     parser.add_argument("--compare", action="store_true", help="Generate strict comparison report (PASS / FAIL / INCONCLUSIVE)")
     args = parser.parse_args()
@@ -41,7 +40,7 @@ def _parse_and_validate_args() -> argparse.Namespace:
         sys.exit(1)
 
     if not args.patch and not args.all:
-        print("ERROR: Please specify either --patch <battery|background-sync> or --all")
+        print("ERROR: Please specify either --patch background-sync or --all")
         parser.print_help()
         sys.exit(1)
 
@@ -49,10 +48,6 @@ def _parse_and_validate_args() -> argparse.Namespace:
 
 
 def _execute_tests(device: AdbDevice, args: argparse.Namespace, mode_out_dir: Path):
-    if args.all or args.patch == "battery":
-        run_battery_test(device, args.mode, mode_out_dir)
-        time.sleep(2)
-
     if args.all or args.patch == "background-sync":
         run_background_sync_test(device, args.mode, mode_out_dir)
         time.sleep(2)

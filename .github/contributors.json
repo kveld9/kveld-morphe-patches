@@ -116,6 +116,37 @@
         {
           "title": "Gboard Lite Decouple keyboard vibration from system touch feedback",
           "issue": 69
+        },
+        {
+          "title": "A Universal Patch to Disable Browser File Associations",
+          "issue": 93
+        }
+      ]
+    },
+    {
+      "username": "nightsper",
+      "contributions": [
+        {
+          "title": "Tab selection after deleting a tab in a tab group",
+          "issue": 76
+        }
+      ]
+    },
+    {
+      "username": "nadr21a21",
+      "contributions": [
+        {
+          "title": "Gboard lite Option to pause automatic deletion in clipboard",
+          "issue": 61
+        }
+      ]
+    },
+    {
+      "username": "polosugars-sketch",
+      "contributions": [
+        {
+          "title": "Include other monetization SDKs in the patches",
+          "issue": 164
         }
       ]
     }

@@ -35,6 +35,8 @@ private fun isProtectedFile(relativePath: String, file: File): Boolean {
 }
 
 private fun isJunkFile(relativePath: String, file: File): Boolean {
+    if ('/' in relativePath && !relativePath.startsWith("META-INF/")) return false
+
     val lowerName = file.name.lowercase()
     if (lowerName in EXACT_JUNK_NAMES) return true
     if (lowerName.endsWith(".version") || lowerName.endsWith("_version")) return true
@@ -64,7 +66,7 @@ val apkJunkCleanerPatch = rawResourcePatch(
     // Universal patch: applies to any target APK in Morphe Manager / CLI
     execute {
         val apkRoot = try {
-            get("AndroidManifest.xml").parentFile ?: get(".")
+            get(".").absoluteFile.normalize()
         } catch (_: Throwable) {
             get(".")
         }

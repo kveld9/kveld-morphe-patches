@@ -32,34 +32,10 @@ val braveBackgroundSyncPatch = bytecodePatch(
         val c1 = fp1.originalClassDef.type.substringAfterLast('/').removeSuffix(";")
         hookedMethods.add("$c1.${fp1.method.name}()")
 
-        // 2. Neutralize PeriodicBackgroundSync wakeup task runner
-        val fp2 = Fingerprint(
-            returnType = "V",
-            strings = listOf("BackgroundSync.Periodic.Wakeup.DelayTime"),
-        )
-        fp2.method.addInstructions(
-            0,
-            """
-                return-void
-            """.trimIndent(),
-        )
-        val c2 = fp2.originalClassDef.type.substringAfterLast('/').removeSuffix(";")
-        hookedMethods.add("$c2.${fp2.method.name}()")
-
-        // 3. Neutralize OneShot BackgroundSync wakeup task runner
-        val fp3 = Fingerprint(
-            returnType = "V",
-            strings = listOf("BackgroundSync.Wakeup.DelayTime"),
-        )
-        fp3.method.addInstructions(
-            0,
-            """
-                return-void
-            """.trimIndent(),
-        )
-        val c3 = fp3.originalClassDef.type.substringAfterLast('/').removeSuffix(";")
-        hookedMethods.add("$c3.${fp3.method.name}()")
-
-        println("[Stop Background Sync] Injected Smali hooks into ${hookedMethods.size} methods (${hookedMethods.joinToString(", ")})")
+        if (hookedMethods.isEmpty()) {
+            println("[Stop Background Sync] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Stop Background Sync] Injected Smali hooks into ${hookedMethods.size} methods (${hookedMethods.joinToString(", ")})")
+        }
     }
 }

@@ -118,17 +118,17 @@ val searchExperienceCustomizerPatch = bytecodePatch(
             )
             patched++
 
-            // Suppress cached preloaded guess search data (JSONObject) (LX/0HC2; in v47.1.4, was LX/0HBy;)
+            // Suppress cached preloaded guess search data (JSONObject) (LX/0H7r; in v47.4.3, was LX/0HC2;)
             Fingerprint(
-                definingClass = "LX/0HC2;",
+                definingClass = "LX/0H7r;",
                 name = "LIZ",
                 returnType = "Lorg/json/JSONObject;",
             ).method.replaceWithReturnNull()
             patched++
 
-            // Suppress cached preloaded guess search data (String) (LX/0HC2; in v47.1.4, was LX/0HBy;)
+            // Suppress cached preloaded guess search data (String) (LX/0H7r; in v47.4.3, was LX/0HC2;)
             Fingerprint(
-                definingClass = "LX/0HC2;",
+                definingClass = "LX/0H7r;",
                 name = "LIZIZ",
                 returnType = "Ljava/lang/String;",
             ).method.replaceWithReturnNull()
@@ -137,14 +137,14 @@ val searchExperienceCustomizerPatch = bytecodePatch(
             // Force disable native guess search fallback flag in search middle page
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/search/middle/DynamicSingleIntermediateFragmentNew;",
-                name = "pZ",
+                name = "PY",
                 returnType = "Z",
             ).method.replaceWithReturnBoolean(false)
             patched++
 
-            // Force disable show_suggest_search_words in AB evaluator method (LX/0HAX; in v47.1.4, was LX/0HAT;)
+            // Force disable show_suggest_search_words in AB evaluator method (LX/0H6M; in v47.4.3, was LX/0HAX;)
             Fingerprint(
-                definingClass = "LX/0HAX;",
+                definingClass = "LX/0H6M;",
                 name = "LIZ",
                 returnType = "I",
                 parameters = listOf(
@@ -154,9 +154,9 @@ val searchExperienceCustomizerPatch = bytecodePatch(
             ).method.replaceWithReturnInt(0)
             patched++
 
-            // Reset static field in <clinit> to prevent observer initialization (LX/0HAX; in v47.1.4, was LX/0HAT;)
+            // Reset static field in <clinit> to prevent observer initialization (LX/0H6M; in v47.4.3, was LX/0HAX;)
             val hatClinitFp = Fingerprint(
-                definingClass = "LX/0HAX;",
+                definingClass = "LX/0H6M;",
                 name = "<clinit>",
                 returnType = "V",
             )
@@ -193,16 +193,16 @@ val searchExperienceCustomizerPatch = bytecodePatch(
                 method.addInstructionsAtControlFlowLabel(
                     returnIndex,
                     """
-                        invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_SEARCH_HOOK}->filterSuggestedAbParams(Ljava/util/Map;)Ljava/util/Map;
+                        invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_SEARCH_HOOK}->filterSuggestedAbParams(Ljava/util/Map;)Ljava/util/Map;
                         move-result-object v$reg
                     """.trimIndent(),
                 )
             }
             patched++
 
-            // Sanitize Lynx schema URL to strip show_suggest_search_words (LX/0HAc; in v47.1.4, was LX/0HAY;)
+            // Sanitize Lynx schema URL to strip show_suggest_search_words (LX/0H6R; in v47.4.3, was LX/0HAc;)
             val schemaFp = Fingerprint(
-                definingClass = "LX/0HAc;",
+                definingClass = "LX/0H6R;",
                 name = "LIZ",
                 returnType = "Ljava/lang/String;",
             )
@@ -216,14 +216,18 @@ val searchExperienceCustomizerPatch = bytecodePatch(
                 schemaMethod.addInstructionsAtControlFlowLabel(
                     returnIndex,
                     """
-                        invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_SEARCH_HOOK}->filterSuggestedSchema(Ljava/lang/String;)Ljava/lang/String;
+                        invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_SEARCH_HOOK}->filterSuggestedSchema(Ljava/lang/String;)Ljava/lang/String;
                         move-result-object v$reg
                     """.trimIndent(),
                 )
             }
             patched++
 
-            println("[Customize Search] Applied $patched suggested search suppression hook(s) -> 'You may like' neutralized.")
+            if (patched == 0) {
+                println("[Customize Search] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+            } else {
+                println("[Customize Search] Applied $patched suggested search suppression hook(s) -> 'You may like' neutralized.")
+            }
         }
 
         // 2. Hide Popular Lives In Search
@@ -264,16 +268,16 @@ val searchExperienceCustomizerPatch = bytecodePatch(
                 method.addInstructionsAtControlFlowLabel(
                     returnIndex,
                     """
-                        invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_SEARCH_HOOK}->filterPopularLivesAbParams(Ljava/util/Map;)Ljava/util/Map;
+                        invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_SEARCH_HOOK}->filterPopularLivesAbParams(Ljava/util/Map;)Ljava/util/Map;
                         move-result-object v$reg
                     """.trimIndent(),
                 )
             }
             patched++
 
-            // Sanitize Lynx schema URL to strip intermediate_show_trending_billboard (LX/0HAc; in v47.1.4, was LX/0HAY;)
+            // Sanitize Lynx schema URL to strip intermediate_show_trending_billboard (LX/0H6R; in v47.4.3, was LX/0HAc;)
             val schemaFp = Fingerprint(
-                definingClass = "LX/0HAc;",
+                definingClass = "LX/0H6R;",
                 name = "LIZ",
                 returnType = "Ljava/lang/String;",
             )
@@ -287,7 +291,7 @@ val searchExperienceCustomizerPatch = bytecodePatch(
                 schemaMethod.addInstructionsAtControlFlowLabel(
                     returnIndex,
                     """
-                        invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_SEARCH_HOOK}->filterPopularLivesSchema(Ljava/lang/String;)Ljava/lang/String;
+                        invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_SEARCH_HOOK}->filterPopularLivesSchema(Ljava/lang/String;)Ljava/lang/String;
                         move-result-object v$reg
                     """.trimIndent(),
                 )
@@ -317,7 +321,7 @@ val searchExperienceCustomizerPatch = bytecodePatch(
 
             val videoCardL2Fp = Fingerprint(
                 definingClass = videoCardAbilityClass,
-                name = "l2",
+                name = "X1",
                 returnType = "Z",
             )
             videoCardL2Fp.method.addInstructions(
@@ -331,7 +335,7 @@ val searchExperienceCustomizerPatch = bytecodePatch(
 
             val videoCardRFp = Fingerprint(
                 definingClass = videoCardAbilityClass,
-                name = "r",
+                name = "l",
                 returnType = "V",
             )
             videoCardRFp.method.addInstructions(
@@ -347,7 +351,7 @@ val searchExperienceCustomizerPatch = bytecodePatch(
 
             val lynxVideoL2Fp = Fingerprint(
                 definingClass = lynxVideoAbilityClass,
-                name = "l2",
+                name = "X1",
                 returnType = "Z",
             )
             lynxVideoL2Fp.method.addInstructions(
@@ -361,7 +365,7 @@ val searchExperienceCustomizerPatch = bytecodePatch(
 
             val lynxVideoRFp = Fingerprint(
                 definingClass = lynxVideoAbilityClass,
-                name = "r",
+                name = "l",
                 returnType = "V",
             )
             lynxVideoRFp.method.addInstructions(
@@ -377,7 +381,7 @@ val searchExperienceCustomizerPatch = bytecodePatch(
 
             val photoCardL2Fp = Fingerprint(
                 definingClass = photoCardAbilityClass,
-                name = "l2",
+                name = "X1",
                 returnType = "Z",
             )
             photoCardL2Fp.method.addInstructions(
@@ -391,7 +395,7 @@ val searchExperienceCustomizerPatch = bytecodePatch(
 
             val photoCardRFp = Fingerprint(
                 definingClass = photoCardAbilityClass,
-                name = "r",
+                name = "l",
                 returnType = "V",
             )
             photoCardRFp.method.addInstructions(

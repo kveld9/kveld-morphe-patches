@@ -197,8 +197,10 @@ validation/combined/
 *.logcat
 *.tombstone
 
-# Local RE harness: untracked by user decision, kept on disk
+# RE harness: mounted via git-ignored symlink to kveld-morphe-harness-private/harness.
+# `harness/` ignores the directory form; `/harness` also covers the symlink itself.
 harness/
+/harness
 
 # --- Private agent skills: nunca publicar (viven en kveld-morphe-skills-private) ---
 .agents/
@@ -209,3 +211,9 @@ CLAUDE.md
 CLAUDE.local.md
 scripts/sync_shared_skills.sh
 scripts/hooks/
+
+# Androguard RE cache (audit tooling artifacts, regenerable)
+androguard.db
+androguard.db-shm
+androguard.db-wal
+

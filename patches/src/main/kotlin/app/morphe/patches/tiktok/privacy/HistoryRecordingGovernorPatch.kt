@@ -56,25 +56,25 @@ val historyRecordingGovernorPatch = bytecodePatch(
             ).method.replaceWithReturnVoid()
             patched++
 
-            // 3. Neutralize PlaybackHistoryManager recordVideoPlayback routine (LX/03l3;->LIZ in v47.1.4, was LX/03kz;)
+            // 3. Neutralize PlaybackHistoryManager recordVideoPlayback routine (LX/03l4;->LIZ in v47.4.3, was LX/03l3;)
             Fingerprint(
-                definingClass = "LX/03l3;",
+                definingClass = "LX/03l4;",
                 name = "LIZ",
                 returnType = "V",
             ).method.replaceWithReturnVoid()
             patched++
 
-            // 4. Neutralize PlaybackHistoryManager recordWatchDuration routine (LX/03l3;->LIZIZ in v47.1.4, was LX/03kz;)
+            // 4. Neutralize PlaybackHistoryManager recordWatchDuration routine (LX/03l4;->LIZIZ in v47.4.3, was LX/03l3;)
             Fingerprint(
-                definingClass = "LX/03l3;",
+                definingClass = "LX/03l4;",
                 name = "LIZIZ",
                 returnType = "V",
             ).method.replaceWithReturnVoid()
             patched++
 
-            // 5. Neutralize fast stats report routine (LX/0aZr;->subscribe in v47.1.4, was LX/0a8D;)
+            // 5. Neutralize fast stats report routine (LX/0bQi;->subscribe in v47.4.3, was LX/0aZr;)
             Fingerprint(
-                definingClass = "LX/0aZr;",
+                definingClass = "LX/0bQi;",
                 name = "subscribe",
                 returnType = "V",
             ).method.replaceWithReturnVoid()
@@ -84,9 +84,9 @@ val historyRecordingGovernorPatch = bytecodePatch(
         }
 
         if (disableSearchHistory == true) {
-            // 1. Neutralize Search History Manager recordSearchHistory routine (LX/0D1m; in v47.1.4, was LX/0D1i;)
+            // 1. Neutralize Search History Manager recordSearchHistory routine (LX/0CzL; in v47.4.3, was LX/0D1m;)
             Fingerprint(
-                definingClass = "LX/0D1m;",
+                definingClass = "LX/0CzL;",
                 name = "LIZ",
                 returnType = "V",
                 parameters = listOf(
@@ -116,6 +116,10 @@ val historyRecordingGovernorPatch = bytecodePatch(
             println("[Disable History Recording] Applied search history suppression hooks -> Search history recording neutralized.")
         }
 
-        println("[Disable History Recording] Applied $patched history suppression hook(s).")
+        if (patched == 0) {
+            println("[Disable History Recording] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Disable History Recording] Applied $patched history suppression hook(s).")
+        }
     }
 }

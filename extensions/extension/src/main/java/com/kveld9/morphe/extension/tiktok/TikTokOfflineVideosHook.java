@@ -20,6 +20,10 @@ import java.util.TreeSet;
 public final class TikTokOfflineVideosHook {
 
     public static int targetLimit = 1000;
+    /** The patch injects the id read from TikTok's own title formatter (0 = unavailable). */
+    public static int titleCountPluralId = 0;
+    /** The patch injects the id read from TikTok's own title formatter (0 = unavailable). */
+    public static int titleStringId = 0;
 
     static {
         targetLimit = 1000;
@@ -79,21 +83,19 @@ public final class TikTokOfflineVideosHook {
     }
 
     private static String resolveTitleFromResources(Activity activity, int count) {
-        try {
-            Resources res = activity.getResources();
-            if (res != null) {
-                return res.getQuantityString(2131755497, count, count);
-            }
-        } catch (Throwable ignored) {}
-        try {
-            Resources res = activity.getResources();
-            if (res != null) {
-                return res.getQuantityString(2131755487, count, count);
-            }
-        } catch (Throwable ignored) {}
-        try {
-            return activity.getString(2131839949, count);
-        } catch (Throwable ignored) {}
+        if (titleCountPluralId != 0) {
+            try {
+                Resources res = activity.getResources();
+                if (res != null) {
+                    return res.getQuantityString(titleCountPluralId, count, count);
+                }
+            } catch (Throwable ignored) {}
+        }
+        if (titleStringId != 0) {
+            try {
+                return activity.getString(titleStringId, count);
+            } catch (Throwable ignored) {}
+        }
         return null;
     }
 

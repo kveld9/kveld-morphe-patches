@@ -48,6 +48,7 @@ public final class TikTokShareHook {
     public static boolean hideCreateSticker = false;
     public static boolean hideDuet = false;
     public static boolean hideStitch = false;
+    public static boolean hideUseThisEffect = false;
     public static boolean hidePip = false;
     public static boolean hideClearDisplay = false;
     public static boolean hideListenAudio = false;
@@ -117,6 +118,11 @@ public final class TikTokShareHook {
             if (hideCreateSticker) { set.add("create_sticker"); set.add("create_stickers"); }
             if (hideDuet) set.add("duet");
             if (hideStitch) set.add("stitch");
+            if (hideUseThisEffect) {
+                set.add("use_this_effect");
+                set.add("use_effect");
+                set.add("useeffect");
+            }
             if (hidePip) { set.add("pip_switch"); set.add("pip"); }
             if (hideClearDisplay) { set.add("clear_display"); set.add("clear_screen"); }
             if (hideListenAudio) { set.add("listen_audio"); set.add("background_play"); }

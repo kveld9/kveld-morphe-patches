@@ -80,6 +80,10 @@ val resourceGovernorPatch = bytecodePatch(
             println("[Battery & Resource Saver] PreloadStrategyConfig note: ${e.message}")
         }
 
-        println("[Battery & Resource Saver] Applied $patched hardware and network governor hook(s).")
+        if (patched == 0) {
+            println("[Battery & Resource Saver] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Battery & Resource Saver] Applied $patched hardware and network governor hook(s).")
+        }
     }
 }

@@ -10,12 +10,9 @@ Each application has an authoritative, all-in-one guide covering prerequisites, 
 
 | Application | Supported Version | Architectures | Target Format | Complete Documentation |
 | :--- | :--- | :--- | :--- | :--- |
-| **Brave Browser** | `1.97.57` | `arm64-v8a`, `armeabi-v7a` | Standalone APK (`Bravemonoarm64.apk` / `BraveMonoarm.apk`) | [Brave Guide](apps/brave.md) |
+| **Brave Browser** | `1.97.59` | `arm64-v8a`, `armeabi-v7a` | Standalone APK (`Bravemonoarm64.apk` / `BraveMonoarm.apk`) | [Brave Guide](apps/brave.md) |
 | **Gboard Lite** | `18.5.1.993608717-lite_beta` | `arm64-v8a`, `armeabi-v7a` | Standalone nodpi APK | [Gboard Lite Guide](apps/gboard.md) |
-| **Hevy** | `3.1.14` | `arm64-v8a` (64-bit only) | Split APK Bundle (`.apkm`) | [Hevy Guide](apps/hevy.md) |
-| **NokoPrint** | `5.28.6` | `arm64-v8a`, `armeabi-v7a`, `universal` | XAPK Bundle (nodpi) | [NokoPrint Guide](apps/nokoprint.md) |
-| **TikTok** | `47.1.4` | `arm64-v8a` | Standalone nodpi APK | [TikTok Guide](apps/tiktok.md) |
-| **Xiaomi Earbuds** | `1.38.0i` | `arm64-v8a`, `armeabi-v7a`, `universal` | Split Bundle (`.xapk` / `.apkm`) | [Xiaomi Earbuds Guide](apps/xiaomi-earbuds.md) |
+| **TikTok** | `47.4.3` | `arm64-v8a` | Standalone nodpi APK | [TikTok Guide](apps/tiktok.md) |
 | **Universal Optimizations** | *Universal* | All Architectures | Any Android APK | [Universal Patches Guide](universal-patches.md) |
 
 ---
@@ -24,21 +21,14 @@ Each application has an authoritative, all-in-one guide covering prerequisites, 
 
 > [!NOTE]
 > **Architecture Matrix Summary:**
-> - **Gboard Lite, Brave Browser, NokoPrint & Xiaomi Earbuds**: Officially support both **`arm64-v8a` (64-bit)** and **`armeabi-v7a` (32-bit)**.
+> - **Gboard Lite & Brave Browser**: Officially support both **`arm64-v8a` (64-bit)** and **`armeabi-v7a` (32-bit)**.
 > - **TikTok**: Officially supports **`arm64-v8a`** (Global APK nodpi). Legacy `armeabi-v7a` libraries in dual-ABI APKs can be purged via debloat patches.
-> - **Hevy**: **`arm64-v8a` (64-bit only)**.
 
 ### Why Gboard Lite supports 32-bit:
 All Gboard Lite patches in this suite operate strictly on Dalvik/ART DEX bytecode and Android XML resources. They contain **zero native `.so` binary dependencies** and run identically on both 64-bit and 32-bit Android runtimes. Consult the [Gboard Lite Guide](apps/gboard.md) for dictionary setup instructions.
 
 ### Why Brave Browser supports both 64-bit and 32-bit:
 Brave Browser provides official Monochrome release APKs for both architectures (`Bravemonoarm64.apk` and `BraveMonoarm.apk`). All Dalvik bytecode and XML resource patches apply identically across ABIs, while native patches (`Block Trackers` and `Remove Extra Files`) maintain deterministic string redirection offsets and companion `.so` pruning across both `lib/arm64-v8a` and `lib/armeabi-v7a` without runtime memory overhead. Consult the [Brave Guide](apps/brave.md).
-
-### Why Hevy is strictly 64-bit:
-Hevy runs on the Meta React Native framework with a pre-compiled 64-bit Hermes JavaScript runtime (`lib/arm64-v8a/libhermes.so`). The `Unlock Pro` patch performs dynamic Hermes Bytecode (HBC96) table parsing and surgical instruction replacement in `assets/index.android.bundle`. Consult the [Hevy Guide](apps/hevy.md).
-
-### Why Xiaomi Earbuds & NokoPrint support both 64-bit and 32-bit:
-All patches for Xiaomi Earbuds and NokoPrint operate strictly on Dalvik/ART MultiDEX bytecode and Android XML resources. They contain **zero native `.so` binary dependencies** and run identically across all Android CPU architectures (`arm64-v8a`, `armeabi-v7a`, `universal`). Consult the [Xiaomi Earbuds Guide](apps/xiaomi-earbuds.md) and [NokoPrint Guide](apps/nokoprint.md).
 
 ---
 
@@ -50,19 +40,6 @@ Download `Bravemonoarm64.apk` (for 64-bit ARM devices) or `BraveMonoarm.apk` (fo
 ### ⌨️ Gboard Lite: Standalone nodpi APK
 Download the standalone `lite` or `lite_beta` APK (nodpi) from [APKMirror](https://www.apkmirror.com/apk/google-inc/gboard/gboard-the-google-keyboard-18-5-1-993608717-beta/). Do **NOT** download split packages or bundle formats. Details in [Gboard Lite Guide](apps/gboard.md).
 
-### 🏋️ Hevy: Gym Log Workout Tracker (`com.hevy`)
-Download the official `arm64-v8a` bundle release from [APKMirror](https://www.apkmirror.com/apk/hevy/hevy-gym-log-workout-tracker/).
-- **Current Target**: `3.1.14` (`com.hevy`, APKM bundle).
-- **Bundle Format**: Distributed as an APKM / split APK set. Morphe fuses split modules into a unified APK. Details in [Hevy Guide](apps/hevy.md).
-
-### 🖨️ NokoPrint: WiFi, Bluetooth, USB (`com.nokoprint`)
-Download the official release from [APKPure](https://d.apkpure.com/b/XAPK/com.nokoprint?versionCode=52806).
-- **Current Target**: `5.28.6` (`com.nokoprint`, XAPK bundle). Details in [NokoPrint Guide](apps/nokoprint.md).
-
 ### 🎵 TikTok (`com.zhiliaoapp.musically`)
 Download the official standalone APK release from [APKMirror (TikTok)](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/).
-- **Current Target**: `47.1.4` (nodpi APK, `arm64-v8a`). Details in [TikTok Guide](apps/tiktok.md).
-
-### 🎧 Xiaomi Earbuds (`com.mi.earphone`)
-Download the official release from [APKPure](https://apkpure.com/xiaomi-earbuds/com.mi.earphone).
-- **Current Target**: `1.38.0i` (`com.mi.earphone`, XAPK bundle or standalone APK). Details in [Xiaomi Earbuds Guide](apps/xiaomi-earbuds.md).
+- **Current Target**: `47.4.3` (nodpi APK, `arm64-v8a`). Details in [TikTok Guide](apps/tiktok.md).

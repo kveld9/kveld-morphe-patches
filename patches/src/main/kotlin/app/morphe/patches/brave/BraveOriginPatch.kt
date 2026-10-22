@@ -32,7 +32,6 @@ private const val PREF_PREFIX = "brave_origin_off_"
  */
 private val ORIGIN_SWITCH_KEYS = listOf(
     "rewards_switch",
-    "email_aliases_switch",
     "leo_ai_switch",
     "news_switch",
     "vpn_switch",
@@ -175,7 +174,6 @@ val braveOriginPatch = bytecodePatch(
     dependsOn(
         braveOriginResourcePatch,
         braveNativeExtractionPatch,
-        braveBtiCompatibilityPatch,
     )
 
     execute {
@@ -411,8 +409,12 @@ val braveOriginPatch = bytecodePatch(
 
         val configuredGatekeepers = GATEKEEPER_POLICIES.map { it.name } + "Leo Flag"
         val targetClasses = hookedMethods.map { it.substringBefore('.') }.distinct()
-        println(
-            "[Brave Origin] Hooked ${hookedMethods.size} core methods across ${targetClasses.size} classes (${hookedMethods.joinToString(", ")}) & configured ${configuredGatekeepers.size} policy gatekeepers (${configuredGatekeepers.joinToString(", ")})"
-        )
+        if (hookedMethods.isEmpty()) {
+            println("[Brave Origin] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println(
+                "[Brave Origin] Hooked ${hookedMethods.size} core methods across ${targetClasses.size} classes (${hookedMethods.joinToString(", ")}) & configured ${configuredGatekeepers.size} policy gatekeepers (${configuredGatekeepers.joinToString(", ")})"
+            )
+        }
     }
 }

@@ -32,14 +32,9 @@ private val DEBUG_AND_PROFILER_LIBS = setOf(
     "libleaktracer.so",
 )
 
-private val EMPTY_STUB_BYTES = byteArrayOf()
+private val BANDWIDTH_SHARING_LIBS = setOf("libhopmn.so")
 
-private fun collectCandidateFiles(libDir: File, targetLibs: Set<String>): List<File> {
-    return libDir.walkTopDown()
-        .filter { it.isFile && it.extension.equals("so", ignoreCase = true) }
-        .filter { it.name.lowercase() in targetLibs }
-        .toList()
-}
+private val EMPTY_STUB_BYTES = byteArrayOf()
 
 private fun zeroBinaryFile(file: File): Long {
     val originalSize = file.length()
@@ -71,14 +66,19 @@ val universalNativeBinaryTrimmerPatch = rawResourcePatch(
         required = false,
     )
 
-    execute {
-        val libDir = try {
-            get("lib")
-        } catch (_: Throwable) {
-            null
-        }
+    val trimBandwidthSharing by booleanOption(
+        key = "trimBandwidthSharing",
+        default = true,
+        title = "Bandwidth-sharing SDKs",
+        description = "Removes Honeygain bandwidth monetization native library.",
+        required = false,
+    )
 
-        if (libDir == null || !libDir.exists() || !libDir.isDirectory) {
+    execute {
+        val libEntries = listApkEntries("lib/")
+            .filter { !it.endsWith('/') }
+
+        if (libEntries.isEmpty()) {
             println("[Remove Tracking Libraries] lib/ directory not found - skipping safely.")
             return@execute
         }
@@ -86,27 +86,32 @@ val universalNativeBinaryTrimmerPatch = rawResourcePatch(
         val targetLibs = mutableSetOf<String>()
         if (trimCrashReporters ?: true) targetLibs.addAll(CRASH_AND_TRACKING_LIBS)
         if (trimDebugProfilers ?: true) targetLibs.addAll(DEBUG_AND_PROFILER_LIBS)
+        if (trimBandwidthSharing ?: true) targetLibs.addAll(BANDWIDTH_SHARING_LIBS)
 
         if (targetLibs.isEmpty()) {
             println("[Remove Tracking Libraries] All trimming options disabled - skipping.")
             return@execute
         }
 
-        val candidateFiles = collectCandidateFiles(libDir, targetLibs)
-        if (candidateFiles.isEmpty()) {
+        val candidateEntries = libEntries.filter { entry ->
+            val name = entry.substringAfterLast('/')
+            name.endsWith(".so", ignoreCase = true) && name.lowercase() in targetLibs
+        }
+
+        if (candidateEntries.isEmpty()) {
             println("[Remove Tracking Libraries] No candidate tracking or debug native libraries found in lib/ - skipping.")
             return@execute
         }
 
         var savedBytes = 0L
         val strippedLibs = mutableListOf<String>()
-        val apkRoot = libDir.parentFile ?: libDir
 
-        for (file in candidateFiles) {
+        for (entry in candidateEntries) {
+            val file = get(entry)
             val freed = zeroBinaryFile(file)
             if (freed > 0) {
                 savedBytes += freed
-                strippedLibs.add(file.relativeTo(apkRoot).path.replace('\\', '/'))
+                strippedLibs.add(entry)
             }
         }
 
@@ -117,6 +122,6 @@ val universalNativeBinaryTrimmerPatch = rawResourcePatch(
 
         val savedFormatted = LocaleUtils.formatBytes(savedBytes)
         println("[Remove Tracking Libraries] Trimmed ${strippedLibs.size} companion native libraries (${strippedLibs.joinToString(", ")}) -> Saved $savedFormatted")
-        println("[Remove Tracking Libraries] Warning: trimmed libs are only safe if nothing loads them eagerly; pair with Universal SDK Blocker (blockCrashReporters) or verify no System.loadLibrary references, otherwise UnsatisfiedLinkError boot crashes follow.")
+        println("[Remove Tracking Libraries] Warning: trimmed libs are only safe if nothing loads them eagerly; pair with Universal SDK Blocker (blockCrashReporters) and bandwidth protections (Block Trackers service kill + blockBandwidthSharing cascade) or verify no System.loadLibrary references, otherwise UnsatisfiedLinkError boot crashes follow.")
     }
 }

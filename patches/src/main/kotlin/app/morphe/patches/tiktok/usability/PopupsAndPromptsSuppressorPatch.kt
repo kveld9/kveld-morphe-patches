@@ -134,7 +134,11 @@ val popupsAndPromptsSuppressorPatch = bytecodePatch(
             patched += applySkipContentWarningsHook()
         }
 
-        println("[Block Popups & Prompts] Applied $patched popup and prompt suppression hook(s).")
+        if (patched == 0) {
+            println("[Block Popups & Prompts] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Block Popups & Prompts] Applied $patched popup and prompt suppression hook(s).")
+        }
     }
 }
 
@@ -152,28 +156,30 @@ private fun BytecodePatchContext.applyAccountPromptHooks(): Int {
 
     // 2. "Get notifications from other accounts" multi-account push guide
     Fingerprint(
-        definingClass = "LX/0YL4;",
-        name = "LJII",
+        definingClass = "LX/10DR;",
+        name = "showPopup",
+        parameters = listOf("LX/06xK;", "LX/0C8j;"),
         returnType = "V",
     ).method.replaceWithReturnVoid()
-    println("[Block Popups & Prompts] Neutralized LX/0YL4.LJII() -> Multi-account push guide dialog blocked.")
+    println("[Block Popups & Prompts] Neutralized LX/10DR.showPopup() -> Multi-account push guide dialog blocked.")
     count++
 
     // 3. "Find contacts" Friends tab overlay (PopLayer element)
     Fingerprint(
-        definingClass = "LX/0v6A;",
+        definingClass = "LX/0rJh;",
         name = "canShow",
         returnType = "Z",
     ).method.replaceWithReturnBoolean(false)
-    println("[Block Popups & Prompts] Neutralized LX/0v6A.canShow() -> Find contacts PopLayer overlay blocked.")
+    println("[Block Popups & Prompts] Neutralized LX/0rJh.canShow() -> Find contacts PopLayer overlay blocked.")
     count++
 
     Fingerprint(
-        definingClass = "LX/0v6A;",
-        name = "LJII",
+        definingClass = "LX/0rJh;",
+        name = "showPopup",
+        parameters = listOf("LX/06xK;", "LX/0C8j;"),
         returnType = "V",
     ).method.replaceWithReturnVoid()
-    println("[Block Popups & Prompts] Neutralized LX/0v6A.LJII() -> Find contacts dialog inflation blocked.")
+    println("[Block Popups & Prompts] Neutralized LX/0rJh.showPopup() -> Find contacts dialog inflation blocked.")
     count++
 
     Fingerprint(
@@ -185,15 +191,15 @@ private fun BytecodePatchContext.applyAccountPromptHooks(): Int {
     count++
 
     Fingerprint(
-        definingClass = "LX/0v5r;",
+        definingClass = "LX/0rIq;",
         name = "LIZIZ",
         parameters = listOf(
-            "LX/1Gbn;",
-            "[LX/0Se8;",
+            "LX/1IPf;",
+            "[LX/0Sqb;",
         ),
         returnType = "V",
     ).method.replaceWithReturnVoid()
-    println("[Block Popups & Prompts] Neutralized LX/0v5r.LIZIZ() -> Find contacts access dialog pipeline blocked.")
+    println("[Block Popups & Prompts] Neutralized LX/0rIq.LIZIZ() -> Find contacts access dialog pipeline blocked.")
     count++
 
     // 4. "Security checkup 2SV" upsell modal
@@ -228,10 +234,6 @@ private fun BytecodePatchContext.applyAccountPromptHooks(): Int {
     Fingerprint(
         definingClass = "Lcom/ss/android/ugc/aweme/services/popsuite/local/Gpppa2svUpsellCampaign;",
         name = "startCampaign",
-        parameters = listOf(
-            "Lcom/ss/android/ugc/aweme/IPopSuiteManagerService\$PopupConfigObject;",
-            "LX/0Ck6;",
-        ),
         returnType = "Z",
     ).method.replaceWithReturnBoolean(false)
     println("[Block Popups & Prompts] Neutralized Gpppa2svUpsellCampaign.startCampaign() -> GPPPA 2SV security checkup sheet blocked.")
@@ -239,15 +241,15 @@ private fun BytecodePatchContext.applyAccountPromptHooks(): Int {
 
     Fingerprint(
         definingClass = "Lcom/ss/android/ugc/awemepushlib/manager/PushPermissionPopupManager;",
-        name = "LJI",
+        name = "LJIIIIZZ",
         parameters = listOf(
             "Landroid/app/Activity;",
             "Ljava/lang/String;",
-            "LX/1QQN;",
+            "LX/1Sat;",
         ),
         returnType = "V",
     ).method.replaceWithReturnVoid()
-    println("[Block Popups & Prompts] Neutralized PushPermissionPopupManager.LJI() -> Combined push permission popup blocked.")
+    println("[Block Popups & Prompts] Neutralized PushPermissionPopupManager.LJIIIIZZ() -> Combined push permission popup blocked.")
     count++
 
     return count
@@ -260,13 +262,13 @@ private fun BytecodePatchContext.applyStickerRecommendationHooks(): Int {
     val featureEnableMethod = Fingerprint(
         definingClass = "Lcom/ss/android/ugc/aweme/im/strategy/businessconfig/ChatFeatureListConf;",
         name = "featureEnable",
-        parameters = listOf("LX/0pdZ;"),
+        parameters = listOf("LX/0dWj;"),
         returnType = "Z",
     ).method
     featureEnableMethod.addInstructions(
         0,
         """
-            sget-object v0, LX/0pdZ;->TYPING_RECOMMEND:LX/0pdZ;
+            sget-object v0, LX/0dWj;->TYPING_RECOMMEND:LX/0dWj;
             if-ne p1, v0, :cond_orig
             const/4 v0, 0
             return v0
@@ -309,6 +311,73 @@ private fun BytecodePatchContext.applyStickerRecommendationHooks(): Int {
         count++
     }
 
+    val assemClass = "Lcom/ss/android/ugc/aweme/im/sdk/chat/ui/base/assems/input/typingrecommendation/TypingRecommendationPanelAssem;"
+    var renderDataHooks = 0
+
+    fun hookVoid(name: String, parameters: List<String> = emptyList()) {
+        try {
+            Fingerprint(
+                definingClass = assemClass,
+                name = name,
+                parameters = parameters,
+                returnType = "V",
+            ).method.replaceWithReturnVoid()
+            renderDataHooks++
+        } catch (e: Exception) {
+            throw PatchException("Failed to resolve TypingRecommendationPanelAssem.$name", e)
+        }
+    }
+
+    fun hookNull(name: String, returnType: String) {
+        try {
+            Fingerprint(
+                definingClass = assemClass,
+                name = name,
+                parameters = emptyList(),
+                returnType = returnType,
+            ).method.replaceWithReturnNull()
+            renderDataHooks++
+        } catch (e: Exception) {
+            throw PatchException("Failed to resolve TypingRecommendationPanelAssem.$name", e)
+        }
+    }
+
+    hookVoid(
+        name = "aj",
+        parameters = listOf(
+            "Lcom/ss/android/ugc/aweme/im/common/model/StickerItem;",
+            "Landroid/view/View;",
+            "I",
+            "LX/0dLq;",
+        ),
+    )
+    hookVoid(
+        name = "Rp",
+        parameters = listOf(
+            "Landroid/view/View;",
+            "Lcom/ss/android/ugc/aweme/im/common/model/StickerItem;",
+        ),
+    )
+    hookNull(
+        name = "Ip",
+        returnType = "Lcom/ss/android/ugc/aweme/im/sdk/chat/ui/base/assems/input/typingrecommendation/TypingRecommendationPanelViewModel;",
+    )
+    hookNull(
+        name = "Np",
+        returnType = "Lcom/ss/android/ugc/aweme/viewmodel/ITypingRecommendationVM;",
+    )
+    hookNull(
+        name = "Gp",
+        returnType = "Lcom/ss/android/ugc/aweme/im/prompts/api/chatnotice/flow/base/viewmodel/ICommonChatNoticeViewModel;",
+    )
+    hookVoid(name = "Bp")
+    hookVoid(name = "Cp")
+    hookVoid(name = "Dp")
+    hookVoid(name = "checkParentScope")
+
+    println("[Block Popups & Prompts] Hooked TypingRecommendationPanelAssem render/data methods ($renderDataHooks methods) -> sticker strip suppressed.")
+    count++
+
     return count
 }
 
@@ -316,7 +385,7 @@ private fun BytecodePatchContext.applyPopLayerFilterHook(): Int {
     var count = 0
 
     val method = Fingerprint(
-        definingClass = "LX/07Q5;",
+        definingClass = "LX/07PM;",
         name = "canShow",
         returnType = "Z",
     ).method
@@ -331,24 +400,24 @@ private fun BytecodePatchContext.applyPopLayerFilterHook(): Int {
             :cond_allow
         """.trimIndent(),
     )
-    println("[Block Popups & Prompts] Hooked LX/07Q5.canShow() -> PopLayer semantic label filter activated.")
+    println("[Block Popups & Prompts] Hooked PopLayer LX/07PM.canShow() -> Extension rule-based popup filter active.")
     count++
 
     Fingerprint(
-        definingClass = "LX/0P2r;",
+        definingClass = "LX/0OwH;",
         name = "LIZ",
         returnType = "V",
     ).method.replaceWithReturnVoid()
-    println("[Block Popups & Prompts] Neutralized LX/0P2r.LIZ() -> Profile view history turn-on sheet blocked.")
+    println("[Block Popups & Prompts] Neutralized LX/0OwH.LIZ() -> Profile view history turn-on sheet blocked.")
     count++
 
     Fingerprint(
-        definingClass = "LX/0OOs;",
+        definingClass = "LX/0OIx;",
         name = "invoke",
         parameters = listOf("Ljava/lang/Object;"),
         returnType = "Ljava/lang/Object;",
     ).method.replaceWithReturnNull()
-    println("[Block Popups & Prompts] Neutralized LX/0OOs.invoke() -> Profile view history alternate sheet trigger blocked.")
+    println("[Block Popups & Prompts] Neutralized LX/0OIx.invoke() -> Profile view history alternate sheet trigger blocked.")
     count++
 
     return count
@@ -381,9 +450,9 @@ private fun BytecodePatchContext.applyLiveTeaserBubbleHooks(): Int {
 
 private fun BytecodePatchContext.applyStreakReminderHook(): Int {
     val method = Fingerprint(
-        definingClass = "LX/0O2v;",
+        definingClass = "LX/0NxQ;",
         name = "LIZ",
-        parameters = listOf("Ljava/lang/String;", "LX/0BjM;"),
+        parameters = listOf("Ljava/lang/String;", "LX/0Bi8;"),
         returnType = "Ljava/lang/Object;",
     ).method
     method.addInstructions(
@@ -398,7 +467,7 @@ private fun BytecodePatchContext.applyStreakReminderHook(): Int {
             :cond_orig
         """.trimIndent(),
     )
-    println("[Block Popups & Prompts] Hooked LX/0O2v.LIZ() -> DM streak expiration reminders blocked.")
+    println("[Block Popups & Prompts] Hooked LX/0NxQ.LIZ() -> DM streak expiration reminders blocked.")
     return 1
 }
 

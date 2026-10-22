@@ -4,68 +4,14 @@ import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
-import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.sharedExtensionPatch
-import app.morphe.patches.shared.findXmlContaining
 import com.android.tools.smali.dexlib2.Opcode
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
-import org.w3c.dom.Element
-
-// ── Resource Patch: Sets defaultValue="false" for NTP marketing switches in XML ──────────
-private val braveCleanNtpXmlPatch = resourcePatch(
-    name = "Clean Start Page (Setup)",
-    description = "Turns off ads and news switches by default.",
-    default = true,
-) {
-    compatibleWith(Constants.COMPATIBILITY_BRAVE)
-
-    execute {
-        val ntpMarketingSwitches = listOf(
-            "show_background_images",
-            "show_sponsored_images",
-            "new_tab_page_show_sponsored_images",
-            "brave_news_switch",
-            "brave_today_switch",
-            "show_brave_news",
-            "show_brave_stats",
-            "brave_stats_switch",
-        )
-
-        val targetFiles = get("res").findXmlContaining(ntpMarketingSwitches)
-
-        var modifiedAttrs = 0
-        var modifiedFiles = 0
-
-        for (file in targetFiles) {
-            var fileTouched = false
-            document(file.absolutePath).use { doc ->
-                val elements = doc.getElementsByTagName("*")
-                for (i in 0 until elements.length) {
-                    val node = elements.item(i) as? Element ?: continue
-                    val key = node.getAttribute("android:key").takeIf { it.isNotEmpty() }
-                        ?: node.getAttribute("key")
-                    if (key in ntpMarketingSwitches) {
-                        if (node.hasAttribute("defaultValue")) {
-                            node.setAttribute("defaultValue", "false")
-                        } else {
-                            node.setAttribute("android:defaultValue", "false")
-                        }
-                        modifiedAttrs++
-                        fileTouched = true
-                    }
-                }
-            }
-            if (fileTouched) modifiedFiles++
-        }
-
-        println("[Clean Start Page] Set $modifiedAttrs NTP marketing preference defaults to false across $modifiedFiles XML layout files")
-    }
-}
 
 private class PrefTarget(val searchString: String, val tag: String)
 
@@ -116,41 +62,37 @@ val braveCleanNewTabPagePatch = bytecodePatch(
         required = false,
     )
 
-    dependsOn(braveCleanNtpXmlPatch)
-
     execute {
         val hookedMethods = mutableListOf<String>()
 
-        // 1. Force NTP marketing preference gates to false in PrefService (b and e) at return
-        listOf("b", "e").forEach { methodName ->
-            try {
-                val prefFp = Fingerprint(
-                    definingClass = "Lorg/chromium/components/prefs/PrefService;",
-                    name = methodName,
-                    returnType = "Z",
-                    parameters = listOf("Ljava/lang/String;"),
-                )
-                val method = prefFp.method
-                val returnIndices = method.implementation?.instructions?.withIndex()
-                    ?.filter { it.value.opcode == Opcode.RETURN }
-                    ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
-                    ?.toList() ?: emptyList()
+        // 1. Force NTP marketing preference gates to false in PrefService getBoolean at return
+        try {
+            val prefFp = Fingerprint(
+                definingClass = "Lorg/chromium/components/prefs/PrefService;",
+                name = "b",
+                returnType = "Z",
+                parameters = listOf("Ljava/lang/String;"),
+            )
+            val method = prefFp.method
+            val returnIndices = method.implementation?.instructions?.withIndex()
+                ?.filter { it.value.opcode == Opcode.RETURN }
+                ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
+                ?.toList() ?: emptyList()
 
-                returnIndices.asReversed().forEach { (returnIndex, reg) ->
-                    method.addInstructions(
-                        returnIndex,
-                        """
-                            invoke-static {p1, v$reg}, ${Constants.BRAVE_EXTENSION_CLASS}->filterNtpPref(Ljava/lang/String;Z)Z
-                            move-result v$reg
-                        """.trimIndent(),
-                    )
-                }
-                if (returnIndices.isNotEmpty()) {
-                    hookedMethods.add("PrefService.$methodName (NTP gates)")
-                }
-            } catch (e: Exception) {
-                println("[Clean Start Page] PrefService.$methodName hook note: ${e.message}")
+            returnIndices.asReversed().forEach { (returnIndex, reg) ->
+                method.addInstructions(
+                    returnIndex,
+                    """
+                        invoke-static {p1, v$reg}, ${Constants.BRAVE_EXTENSION_CLASS}->filterNtpPref(Ljava/lang/String;Z)Z
+                        move-result v$reg
+                    """.trimIndent(),
+                )
             }
+            if (returnIndices.isNotEmpty()) {
+                hookedMethods.add("PrefService.b (NTP gates)")
+            }
+        } catch (e: Exception) {
+            println("[Clean Start Page] PrefService.b hook note: ${e.message}")
         }
 
         val shouldHideTopSites = hideTopSites ?: false

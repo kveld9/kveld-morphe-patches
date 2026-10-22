@@ -39,6 +39,8 @@ INSTALL_ERROR_MAPPING: dict[str, str] = {
 
 VERDICT_EXIT_CODES: dict[str, int] = {
     "PASS": 0,
+    # Install succeeded but the version could not be read back, so nothing was verified.
+    "PASS_VERSION_UNVERIFIED": 0,
     "PASS_NO_LAUNCHER": 0,
     "FAIL": 1,
     "SKIPPED_ACTIVE_IME": 1,
@@ -356,8 +358,20 @@ def query_installed_version_name(serial: str, package: str) -> str | None:
 
 
 def _verify_installed_version(input_ver: str | None, installed_ver: str | None) -> tuple[str, str | None]:
+    # An unreadable version on either side means the comparison never ran. Returning
+    # PASS there certifies an install that was never checked, so it gets its own verdict:
+    # the run stays green for automation but the record no longer claims a verified match.
     if not input_ver or not installed_ver:
-        return "PASS", None
+        missing = []
+        if not input_ver:
+            missing.append("input APK")
+        if not installed_ver:
+            missing.append("installed package (dumpsys)")
+        log_warn(
+            f"Version not verified: could not read the version of {' and '.join(missing)}; "
+            "the install is unverified, not a confirmed match."
+        )
+        return "PASS_VERSION_UNVERIFIED", "VERSION_UNVERIFIED"
     if installed_ver != input_ver:
         log_fail(f"Version mismatch: input '{input_ver}' vs installed '{installed_ver}'")
         return "FAIL", "VERSION_MISMATCH"
@@ -433,7 +447,7 @@ def _split_into_blocks(lines: list[str]) -> list[list[str]]:
 
 def _package_process_pattern(package: str) -> re.Pattern[str]:
     # Package names never contain '-' or '/', so a match followed by those
-    # characters is a different token (e.g. "com.hevy-beta"), not our process.
+    # characters is a different token (e.g. "com.example-beta"), not our process.
     return re.compile(rf"{re.escape(package)}(?::[^\s,]*)?(?![\w.\-/])")
 
 
@@ -547,7 +561,9 @@ def _guard_active_ime(device: DeviceInfo, meta: InputMetadata, allow_active_ime:
 
 
 def _guard_install_result(device: DeviceInfo, meta: InputMetadata, install_res: InstallResult) -> None:
-    if install_res.success and install_res.verdict == "PASS":
+    # PASS_VERSION_UNVERIFIED still proceeds to the launch gate: only a real install
+    # failure stops the run here.
+    if install_res.success and install_res.verdict in ("PASS", "PASS_VERSION_UNVERIFIED"):
         return
     res = _build_result_dict(
         verdict=install_res.verdict,

@@ -121,21 +121,8 @@ class AdbDevice:
         # Scrub and restrict to target package only to avoid dumping third-party apps or user accounts
         return "\n".join([line for line in raw.splitlines() if PACKAGE_NAME in line or ("JOB #" in line and PACKAGE_NAME in line)])
 
-    def get_dumpsys_battery(self) -> str:
-        return self.shell("dumpsys battery")
-
     def get_dumpsys_alarms(self) -> str:
         return self.shell(f"dumpsys alarm | grep -E '{PACKAGE_NAME}'")
-
-    def set_battery_level(self, level: int):
-        self.shell(f"dumpsys battery set level {level}")
-
-    def set_battery_status(self, status_code: int):
-        # 2: Charging, 3: Discharging, 5: Full
-        self.shell(f"dumpsys battery set status {status_code}")
-
-    def reset_battery(self):
-        self.shell("dumpsys battery reset")
 
     def clear_logcat(self):
         self.cmd(["logcat", "-c"], check=False)

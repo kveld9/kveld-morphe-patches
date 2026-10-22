@@ -64,54 +64,6 @@ enum class TargetApp(
         ),
         filePattern = Regex("(?i).*brave.*\\.apk$"),
         patchDirectoryPart = "brave",
-    ),
-
-    HEVY(
-        id = "hevy",
-        appName = "Hevy",
-        packageName = Constants.HEVY_PACKAGE_NAME,
-        candidateFilenames = listOf(
-            "com.hevy_${Constants.HEVY_TARGET_VERSION}.apk",
-            "com.hevy_${Constants.HEVY_TARGET_VERSION}.apkm",
-        ),
-        filePattern = Regex("(?i).*hevy.*\\.(?:apk|apkm)$"),
-        patchDirectoryPart = "hevy",
-    ),
-    NOKOPRINT(
-        id = "nokoprint",
-        appName = "NokoPrint",
-        packageName = Constants.NOKOPRINT_PACKAGE_NAME,
-        candidateFilenames = listOf(
-            "nokoprint_${Constants.NOKOPRINT_TARGET_VERSION}_orig.xapk",
-            "NokoPrint+-+Print+from+Phone_${Constants.NOKOPRINT_TARGET_VERSION}_APKPure.xapk",
-            "com.nokoprint_${Constants.NOKOPRINT_TARGET_VERSION}.xapk",
-            "com.nokoprint_${Constants.NOKOPRINT_TARGET_VERSION}.apk",
-            "nokoprint_${Constants.NOKOPRINT_TARGET_VERSION}.apk",
-            "nokoprint.xapk",
-            "nokoprint.apk",
-        ),
-        filePattern = Regex("(?i).*nokoprint.*\\.(?:apk|xapk)$"),
-        patchDirectoryPart = "nokoprint",
-    ),
-    XIAOMI_EARBUDS(
-        id = "xiaomi_earbuds",
-        appName = "Xiaomi Earbuds",
-        packageName = Constants.XIAOMI_EARBUDS_PACKAGE_NAME,
-        candidateFilenames = listOf(
-            "Xiaomi+Earbuds_${Constants.XIAOMI_EARBUDS_TARGET_VERSION}_APKPure.xapk",
-            "Xiaomi+Earbuds_${Constants.XIAOMI_EARBUDS_TARGET_VERSION}.xapk",
-            "com.mi.earphone_${Constants.XIAOMI_EARBUDS_TARGET_VERSION}.xapk",
-            "com.mi.earphone_${Constants.XIAOMI_EARBUDS_TARGET_VERSION}.apkm",
-            "com.mi.earphone_${Constants.XIAOMI_EARBUDS_TARGET_VERSION}.apk",
-            "xiaomi_earbuds.xapk",
-            "xiaomi_earbuds.apkm",
-            "xiaomi_earbuds.apk",
-            "earphone.xapk",
-            "earphone.apkm",
-            "earphone.apk",
-        ),
-        filePattern = Regex("(?i).*(?:earphone|earbuds).*\\.(?:apk|apkm|xapk)$"),
-        patchDirectoryPart = "xiaomi",
     );
 
     companion object {
@@ -120,7 +72,6 @@ enum class TargetApp(
             return entries.firstOrNull { it.id == normalized }
                 ?: when (normalized) {
                     "gboard_lite" -> GBOARD
-                    "earbuds", "earphone", "xiaomi" -> XIAOMI_EARBUDS
                     else -> null
                 }
         }
@@ -131,9 +82,6 @@ enum class TargetApp(
                 lower.contains("tiktok") -> TIKTOK
                 lower.contains("gboard") -> GBOARD
                 lower.contains("brave") -> BRAVE
-                lower.contains("hevy") -> HEVY
-                lower.contains("nokoprint") -> NOKOPRINT
-                lower.contains("earphone") || lower.contains("earbuds") -> XIAOMI_EARBUDS
                 else -> entries.firstOrNull { it.filePattern.containsMatchIn(fileName) }
             }
         }
@@ -402,6 +350,18 @@ private fun verifyInputVersion(
     error("Input APK ${inputFile.name} version '$versionName' does not match expected target version(s) $expectedVersions. Pass -Papk=<path to the target version> or -PallowVersionMismatch=true for differential runs on other versions.")
 }
 
+private fun sanitizedSplitEntryName(entryName: String): String? {
+    if (entryName.isBlank()) return null
+    if (entryName.contains("..")) return null
+    if (entryName.contains('/') || entryName.contains('\\')) return null
+    if (entryName.startsWith("/") || entryName.contains(":")) return null
+    val base = File(entryName).name
+    if (base.isBlank() || base == "." || base == "..") return null
+    if (base != entryName) return null
+    if (!base.endsWith(".apk", ignoreCase = true)) return null
+    return base
+}
+
 fun main(args: Array<String>) {
     val userHome = System.getProperty("user.home") ?: "."
     val searchDirs = getSearchDirectories(userHome)
@@ -478,7 +438,7 @@ fun main(args: Array<String>) {
         var forced = 0
         targetPatches.forEach { patch ->
             patch.options.values.filter { it.default is Boolean }.forEach { option ->
-                patch.options[option.key] = true
+                patch.options[option.name] = true
                 forced++
             }
         }
@@ -616,7 +576,9 @@ fun main(args: Array<String>) {
     // to stderr and silently drops the offending instruction, so they must be caught here.
     val smaliErrorPattern = Regex("""^\[\d+,\d+] .+""")
     val pendingSmaliErrors = java.util.concurrent.CopyOnWriteArrayList<String>()
+    val pendingSkipLines = java.util.concurrent.CopyOnWriteArrayList<String>()
     val smaliCompileErrors = mutableListOf<String>()
+    val skipWarnings = mutableListOf<String>()
 
     class InterceptingOutputStream(val delegate: OutputStream) : OutputStream() {
         private val buffer = ByteArrayOutputStream()
@@ -653,6 +615,9 @@ fun main(args: Array<String>) {
             if (line.startsWith("Detected Fingerprint Failures:") || line.startsWith("[ERROR]") || line.startsWith("FINAL PATCHING RESULT")) return
             if (lower.contains("failed to match the fingerprint") || (lower.contains("fingerprint mismatch") && !line.startsWith("Detected Fingerprint Failures:"))) {
                 fingerprintErrors.add(line.trim())
+            }
+            if (isPatchSkipLine(line)) {
+                pendingSkipLines.add(line.trim())
             }
         }
 
@@ -695,13 +660,23 @@ fun main(args: Array<String>) {
                 if (result.exception == null) {
                     successfulPatches++
                     println("[PASS] $patchName")
+                    if (pendingSkipLines.isNotEmpty()) {
+                        println("[WARN] $patchName passed with skipped steps:")
+                        val lines = pendingSkipLines.toList()
+                        lines.forEach { println("    $it") }
+                        val suffix = if (lines.size > 1) " (+${lines.size - 1} more)" else ""
+                        skipWarnings.add("$patchName: ${lines.first()}$suffix")
+                    }
                 } else {
                     failedPatches++
                     val err = result.exception?.message ?: "Unknown error"
-                    println("[FAIL] $patchName -> $err")
+                    val location = result.exception?.let(::patchSourceLocation)
+                    val detail = if (location != null) "$err (at $location)" else err
+                    println("[FAIL] $patchName -> $detail")
                     result.exception?.printStackTrace()
-                    failures.add("$patchName: $err")
+                    failures.add("$patchName: $detail")
                 }
+                pendingSkipLines.clear()
             }
         }
 
@@ -715,6 +690,10 @@ fun main(args: Array<String>) {
         println("Failed:        $failedPatches")
         println("Detected Fingerprint Failures: ${fingerprintErrors.size}")
         println("Detected Smali Compile Errors: ${smaliCompileErrors.size}")
+        println("Patches with skipped steps: ${skipWarnings.size}")
+        if (skipWarnings.isNotEmpty()) {
+            skipWarnings.forEach { println("  - $it") }
+        }
         printPatchTimings(patchTimings, resolveSlowPatchThreshold(), patchTimings.firstOrNull()?.first)
 
         if (failedPatches == 0 && fingerprintErrors.isEmpty() && smaliCompileErrors.isEmpty()) {
@@ -840,10 +819,20 @@ fun main(args: Array<String>) {
                             ?: apkmZip.entries().asSequence().firstOrNull { it.name.endsWith(".apk") && (it.name.contains("base") || it.name.startsWith(targetApp.packageName)) }
                             ?: apkmZip.entries().asSequence().filter { it.name.endsWith(".apk") }.maxByOrNull { it.size }
                         val splitApkEntries = apkmZip.entries().asSequence()
-                            .filter { it.name.endsWith(".apk", ignoreCase = true) && it.name != baseEntry?.name }
+                            .filter { !it.isDirectory && it.name.endsWith(".apk", ignoreCase = true) && it.name != baseEntry?.name }
                             .toList()
                         splitApkEntries.parallelStream().forEach { splitEntry ->
-                            val rawSplitFile = File(tempDir, splitEntry.name)
+                            val safeName = sanitizedSplitEntryName(splitEntry.name)
+                            if (safeName == null) {
+                                println("[WARN] Skipping split entry '${splitEntry.name}': unsafe entry name.")
+                                return@forEach
+                            }
+                            val canonicalDir = tempDir.canonicalPath + File.separator
+                            val rawSplitFile = File(tempDir, safeName)
+                            if (!rawSplitFile.canonicalPath.startsWith(canonicalDir)) {
+                                println("[WARN] Skipping split entry '${splitEntry.name}' resolving outside workspace: ${rawSplitFile.canonicalPath}")
+                                return@forEach
+                            }
                             apkmZip.getInputStream(splitEntry).use { input ->
                                 rawSplitFile.outputStream().buffered().use { output -> input.copyTo(output) }
                             }
@@ -867,7 +856,7 @@ fun main(args: Array<String>) {
 
                             // Prefix splits with the output name so bundles of different apps never overwrite
                             // each other and `adb install-multiple -r <out-stem>*.apk` installs the whole set.
-                            val signedSplitFile = File(outFile.parentFile, "${outFile.nameWithoutExtension}.${File(splitEntry.name).name}")
+                            val signedSplitFile = File(outFile.parentFile, "${outFile.nameWithoutExtension}.$safeName")
                             println("[SIGN] Signing companion split -> ${signedSplitFile.name}...")
                             if (zipalignBin != null && apksignerBin != null && keystoreFile.exists() && keystoreFile.length() > 0L) {
                                 val splitAlignArgs = if (supports16k) {
@@ -1049,4 +1038,46 @@ private fun printDexDigest(apk: File, option: String) {
     }
 }
 
+/** Matches a stack frame from a patch and returns its source location. */
+private fun patchFrameLocation(frame: StackTraceElement): String? {
+    if (!frame.className.startsWith("app.morphe.patches.")) return null
+    val file = frame.fileName ?: return null
+    if (frame.lineNumber <= 0) return null
+    return "$file:${frame.lineNumber}"
+}
 
+/** Finds the first patch source location in the error cause chain. */
+private fun patchSourceLocation(error: Throwable): String? {
+    val visited = mutableSetOf<Throwable>()
+    var current: Throwable? = error
+    var depth = 0
+    while (current != null && depth < 10 && visited.add(current)) {
+        val location = current.stackTrace.firstNotNullOfOrNull(::patchFrameLocation)
+        if (location != null) return location
+        current = current.cause
+        depth++
+    }
+    return null
+}
+
+private val RUNNER_SKIP_PREFIXES = listOf(
+    "[PASS]",
+    "[FAIL]",
+    "[WARN]",
+    "[INFO]",
+    "[EXEC]",
+    "[BUILD]",
+    "[PACK]",
+    "[DONE]",
+    "Loaded ",
+    "Detected ",
+)
+
+private val PATCH_SKIP_PATTERN = Regex("""(?<!\d )\bskipped\b|\bskipping\b|\bnot found\b""", RegexOption.IGNORE_CASE)
+
+private fun isPatchSkipLine(line: String): Boolean {
+    if (RUNNER_SKIP_PREFIXES.any { line.startsWith(it) }) return false
+    val lower = line.lowercase()
+    if (lower.contains("fingerprint")) return false
+    return PATCH_SKIP_PATTERN.containsMatchIn(line)
+}

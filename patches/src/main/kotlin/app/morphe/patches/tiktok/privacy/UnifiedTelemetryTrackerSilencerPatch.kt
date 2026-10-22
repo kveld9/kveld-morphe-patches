@@ -130,6 +130,10 @@ val unifiedTelemetryTrackerSilencerPatch = bytecodePatch(
         println("[Block Trackers] Neutralized FirebaseAnalytics.setCurrentScreen() -> Firebase screen tracking suppressed.")
         patched++
 
-        println("[Block Trackers] Applied $patched telemetry and tracking suppression hooks.")
+        if (patched == 0) {
+            println("[Block Trackers] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Block Trackers] Applied $patched telemetry and tracking suppression hooks.")
+        }
     }
 }

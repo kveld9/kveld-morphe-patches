@@ -28,7 +28,6 @@ public class EsLanguagePack extends BaseLanguagePack {
         titles.put(PREF_KEY_BOTTOM_PADDING, "Espacio abajo (px)");
         titles.put(PREF_KEY_HIDE_IME_NAV_BAR, "Ocultar barra del sistema");
         titles.put(PREF_KEY_KEY_SHAPE_SELECTION, "Forma de teclas");
-        titles.put(PREF_KEY_EMOJI_SCALE, "Tamaño de emojis");
         titles.put(PREF_KEY_CAT_TOOLBAR, "Barra de herramientas y navegación");
         titles.put(PREF_KEY_ACCESS_POINTS_REDESIGN, "Nuevo menú de barra");
         titles.put(PREF_KEY_TOOLBAR_ITEM_COUNT, "Íconos de barra");
@@ -66,7 +65,6 @@ public class EsLanguagePack extends BaseLanguagePack {
         summaries.put(PREF_KEY_BOTTOM_PADDING, "Espacio extra abajo, en píxeles. 0 = nada.");
         summaries.put(PREF_KEY_HIDE_IME_NAV_BAR, "Oculta la barra del sistema bajo el teclado (Android 13+).");
         summaries.put(PREF_KEY_KEY_SHAPE_SELECTION, "Teclas redondeadas y sin bordes.");
-        summaries.put(PREF_KEY_EMOJI_SCALE, "Tamaño de emojis, 50% a 150%.");
         summaries.put(PREF_KEY_ACCESS_POINTS_REDESIGN, "Nuevo menú de barra y panel.");
         summaries.put(PREF_KEY_TOOLBAR_ITEM_COUNT, "Íconos máximos arriba (defecto 5).");
         summaries.put(PREF_KEY_DISMISS_SUGGESTIONS, "Muestra una X para cerrar sugerencias.");
@@ -129,8 +127,6 @@ public class EsLanguagePack extends BaseLanguagePack {
                 return value + (value == 1 ? " columna" : " columnas");
             case PREF_KEY_CLIPBOARD_CHAR_LIMIT:
                 return value + " mil caracteres";
-            case PREF_KEY_EMOJI_SCALE:
-                return value + " %";
             default:
                 return String.valueOf(value);
         }

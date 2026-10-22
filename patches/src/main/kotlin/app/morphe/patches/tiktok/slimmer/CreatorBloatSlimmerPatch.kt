@@ -58,12 +58,15 @@ val creatorBloatSlimmerPatch = rawResourcePatch(
             }
 
             // 2. Dynamic CapCut NLE editor libraries across ABIs
-            val abiDir = get(abi)
-            if (abiDir.exists() && abiDir.isDirectory) {
-                abiDir.listFiles()?.filter { it.isFile && it.name.startsWith("libNLE") && it.name.endsWith(".so") }?.forEach { file ->
-                    stripFile(file)
+            listApkEntries("$abi/")
+                .filter { !it.endsWith('/') }
+                .filter { entry ->
+                    val name = entry.substringAfterLast('/')
+                    name.startsWith("libNLE") && name.endsWith(".so")
                 }
-            }
+                .forEach { entry ->
+                    stripFile(get(entry))
+                }
         }
 
         // 3. Face models

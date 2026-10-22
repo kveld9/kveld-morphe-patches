@@ -123,6 +123,10 @@ val gboardClipboardEnhancementsPatch = bytecodePatch(
         println("[Clipboard Enhancements] Hooked per-clip character limit to dynamic Morphe Patches preference.")
         patched++
 
-        println("[Clipboard Enhancements] Applied $patched dynamic clipboard enhancement hook(s).")
+        if (patched == 0) {
+            println("[Clipboard Enhancements] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Clipboard Enhancements] Applied $patched dynamic clipboard enhancement hook(s).")
+        }
     }
 }

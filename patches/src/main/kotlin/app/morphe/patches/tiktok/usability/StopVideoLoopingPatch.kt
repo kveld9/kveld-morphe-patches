@@ -29,6 +29,10 @@ val stopVideoLoopingPatch = bytecodePatch(
         )
         println("[Stop Video Looping] Hooked TTVideoEngine.setLooping(Z)V -> Forced isLooping=false.")
         patched++
-        println("[Stop Video Looping] Applied $patched video loop suppression hook(s).")
+        if (patched == 0) {
+            println("[Stop Video Looping] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Stop Video Looping] Applied $patched video loop suppression hook(s).")
+        }
     }
 }

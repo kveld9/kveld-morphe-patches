@@ -132,7 +132,7 @@ private fun stripPermissionsFromManifest(
 
 @Suppress("unused")
 val universalPrivacyPermissionsPatch = resourcePatch(
-    name = "Strip Sensitive Permissions",
+    name = "Strip Sensitive Permissions (Universal)",
     description = "Removes sensitive privacy and hardware permissions you select.",
     default = false,
 ) {
@@ -221,7 +221,7 @@ val universalPrivacyPermissionsPatch = resourcePatch(
     execute {
         val manifestFile = get("AndroidManifest.xml")
         if (!manifestFile.exists()) {
-            println("[Strip Sensitive Permissions] Skipped: AndroidManifest.xml not found.")
+            println("[Strip Sensitive Permissions (Universal)] Skipped: AndroidManifest.xml not found.")
             return@execute
         }
 
@@ -250,7 +250,7 @@ val universalPrivacyPermissionsPatch = resourcePatch(
         )
 
         if (blockedPermissions.isEmpty()) {
-            println("[Strip Sensitive Permissions] Skipped: No privacy permission categories selected to strip.")
+            println("[Strip Sensitive Permissions (Universal)] Skipped: No privacy permission categories selected to strip.")
             return@execute
         }
 
@@ -260,11 +260,11 @@ val universalPrivacyPermissionsPatch = resourcePatch(
         }
 
         if (removedList.isEmpty()) {
-            println("[Strip Sensitive Permissions] No matching permissions found in AndroidManifest.xml.")
+            println("[Strip Sensitive Permissions (Universal)] No matching permissions found in AndroidManifest.xml.")
             return@execute
         }
 
         val shortNames = removedList.map { it.substringAfterLast('.') }.distinct()
-        println("[Strip Sensitive Permissions] Stripped ${removedList.size} permission(s) from AndroidManifest.xml: ${shortNames.joinToString(", ")}.")
+        println("[Strip Sensitive Permissions (Universal)] Stripped ${removedList.size} permission(s) from AndroidManifest.xml: ${shortNames.joinToString(", ")}.")
     }
 }

@@ -28,7 +28,6 @@ public class FrLanguagePack extends BaseLanguagePack {
         titles.put(PREF_KEY_BOTTOM_PADDING, "Espace en bas (px)");
         titles.put(PREF_KEY_HIDE_IME_NAV_BAR, "Masquer la barre système");
         titles.put(PREF_KEY_KEY_SHAPE_SELECTION, "Formes des touches");
-        titles.put(PREF_KEY_EMOJI_SCALE, "Taille des émojis");
         titles.put(PREF_KEY_CAT_TOOLBAR, "Barre d'outils et navigation");
         titles.put(PREF_KEY_ACCESS_POINTS_REDESIGN, "Nouveau menu de barre");
         titles.put(PREF_KEY_TOOLBAR_ITEM_COUNT, "Icônes de barre");
@@ -66,7 +65,6 @@ public class FrLanguagePack extends BaseLanguagePack {
         summaries.put(PREF_KEY_BOTTOM_PADDING, "Espace en bas, en pixels. 0 = aucun.");
         summaries.put(PREF_KEY_HIDE_IME_NAV_BAR, "Masque la barre système sous le clavier (Android 13+).");
         summaries.put(PREF_KEY_KEY_SHAPE_SELECTION, "Touches arrondies et sans bordure.");
-        summaries.put(PREF_KEY_EMOJI_SCALE, "Taille des émojis, 50 % à 150 %.");
         summaries.put(PREF_KEY_ACCESS_POINTS_REDESIGN, "Nouveau menu de barre et panneau.");
         summaries.put(PREF_KEY_TOOLBAR_ITEM_COUNT, "Icônes max en haut (défaut 5).");
         summaries.put(PREF_KEY_DISMISS_SUGGESTIONS, "Affiche un X pour fermer les suggestions.");
@@ -129,8 +127,6 @@ public class FrLanguagePack extends BaseLanguagePack {
                 return value + (value == 1 ? " colonne" : " colonnes");
             case PREF_KEY_CLIPBOARD_CHAR_LIMIT:
                 return value + " mille caractères";
-            case PREF_KEY_EMOJI_SCALE:
-                return value + " %";
             default:
                 return String.valueOf(value);
         }

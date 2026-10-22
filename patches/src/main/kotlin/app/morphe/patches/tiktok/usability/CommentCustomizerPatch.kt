@@ -136,7 +136,7 @@ private fun MutableMethod.addCommentTextCaptureInstructions(getTextInvokeIndex: 
         addInstructions(
             moveResultIndex + 1,
             """
-                invoke-static {v$commentTextRegister}, ${Constants.TIKTOK_EXTENSION_COMMENT_HOOK}->captureCommentText(Ljava/lang/String;)V
+                invoke-static/range {v$commentTextRegister .. v$commentTextRegister}, ${Constants.TIKTOK_EXTENSION_COMMENT_HOOK}->captureCommentText(Ljava/lang/String;)V
             """.trimIndent(),
         )
     } else {
@@ -157,7 +157,7 @@ private fun MutableMethod.addCommentCopySanitizerInstructions(
         addInstructions(
             insertIndex,
             """
-                invoke-static {v$copiedTextRegister}, ${Constants.TIKTOK_EXTENSION_COMMENT_HOOK}->sanitizeCopiedComment(Ljava/lang/String;)Ljava/lang/String;
+                invoke-static/range {v$copiedTextRegister .. v$copiedTextRegister}, ${Constants.TIKTOK_EXTENSION_COMMENT_HOOK}->sanitizeCopiedComment(Ljava/lang/String;)Ljava/lang/String;
                 move-result-object v$copiedTextRegister
             """.trimIndent(),
         )
@@ -411,7 +411,7 @@ private fun BytecodePatchContext.applyHideCommentQuickActions(): Int {
         onViewCreatedMethod.addInstructions(
             putIndex + 1,
             """
-                invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_COMMENT_HOOK}->hideCommentQuickActions(Landroid/view/View;)V
+                invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_COMMENT_HOOK}->hideCommentQuickActions(Landroid/view/View;)V
             """.trimIndent(),
         )
     } else {
@@ -714,7 +714,7 @@ private fun BytecodePatchContext.applyAutoTranslate(excludedLanguages: String): 
         if (listRegister <= 15) {
             addInstruction(
                 responseReadyIndex,
-                "invoke-static {v$listRegister}, ${Constants.TIKTOK_EXTENSION_COMMENT_TRANSLATE_HOOK}->onCommentListLoaded(Ljava/lang/Object;)V",
+                "invoke-static/range {v$listRegister .. v$listRegister}, ${Constants.TIKTOK_EXTENSION_COMMENT_TRANSLATE_HOOK}->onCommentListLoaded(Ljava/lang/Object;)V",
             )
         } else {
             addInstruction(
@@ -844,7 +844,7 @@ private fun BytecodePatchContext.applyCommentSendFix(): Int {
     // Order: insert at higher index first so preceding indices remain valid
     // 1. After Context->Activity move-result-object (vAct): noteActivity(vAct)
     val noteInstructions = if (activityReg <= 15) {
-        "invoke-static {v$activityReg}, ${Constants.TIKTOK_EXTENSION_COMMENT_HOOK}->noteActivity(Landroid/app/Activity;)V"
+        "invoke-static/range {v$activityReg .. v$activityReg}, ${Constants.TIKTOK_EXTENSION_COMMENT_HOOK}->noteActivity(Landroid/app/Activity;)V"
     } else {
         "invoke-static/range {v$activityReg .. v$activityReg}, ${Constants.TIKTOK_EXTENSION_COMMENT_HOOK}->noteActivity(Landroid/app/Activity;)V"
     }
@@ -1238,6 +1238,10 @@ val commentCustomizerPatch = bytecodePatch(
             patched += applyAutoTranslate(normalizedExclusions)
         }
 
-        println("[Comment Customizer] Applied $patched comment customization hook(s).")
+        if (patched == 0) {
+            println("[Comment Customizer] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Comment Customizer] Applied $patched comment customization hook(s).")
+        }
     }
 }

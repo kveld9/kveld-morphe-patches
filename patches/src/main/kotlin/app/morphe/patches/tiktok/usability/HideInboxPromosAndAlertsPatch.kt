@@ -83,16 +83,16 @@ val hideInboxPromosAndAlertsPatch = bytecodePatch(
             // Suppress contact recommendation cards inside multi-entrance inbox list
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/inbox/widget/multi/MultiViewModel;",
-                name = "D83",
-                returnType = "LX/0Nnc;",
+                name = "p33",
+                returnType = "LX/0NiY;",
                 parameters = emptyList(),
             ).method.replaceWithReturnNull()
             patched++
 
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/inbox/widget/multi/MultiViewModel;",
-                name = "E83",
-                returnType = "LX/0Nnc;",
+                name = "q33",
+                returnType = "LX/0NiY;",
                 parameters = emptyList(),
             ).method.replaceWithReturnNull()
             patched++
@@ -119,7 +119,7 @@ val hideInboxPromosAndAlertsPatch = bytecodePatch(
             // Suppress follower migration guide tooltip ("New followers has moved")
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/inbox/widget/multi/MultiViewModel;",
-                name = "K83",
+                name = "w33",
                 returnType = "V",
                 parameters = listOf("Ljava/util/List;"),
             ).method.replaceWithReturnVoid()
@@ -128,6 +128,10 @@ val hideInboxPromosAndAlertsPatch = bytecodePatch(
             println("[Hide Inbox Promos & Alerts] Disabled ${noticeClasses.size} navigation notice injector(s) and 1 follower guide hook.")
         }
 
-        println("[Hide Inbox Promos & Alerts] Applied $patched inbox promo and alert suppression hook(s).")
+        if (patched == 0) {
+            println("[Hide Inbox Promos & Alerts] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Hide Inbox Promos & Alerts] Applied $patched inbox promo and alert suppression hook(s).")
+        }
     }
 }

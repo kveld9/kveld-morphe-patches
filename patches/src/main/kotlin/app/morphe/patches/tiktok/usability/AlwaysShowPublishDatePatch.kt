@@ -255,6 +255,10 @@ val alwaysShowPublishDatePatch = bytecodePatch(
             }
         }
 
-        println("[Always Show Publish Date] Applied $patched publish date visibility hook(s).")
+        if (patched == 0) {
+            println("[Always Show Publish Date] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Always Show Publish Date] Applied $patched publish date visibility hook(s).")
+        }
     }
 }

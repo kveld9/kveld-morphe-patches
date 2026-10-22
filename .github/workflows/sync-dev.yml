@@ -1,0 +1,215 @@
+name: Sync Dev After Stable Release
+
+on:
+  workflow_run:
+    workflows: ["Release"]
+    types:
+      - completed
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: sync-dev
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  sync:
+    name: Sync main into dev
+    runs-on: ubuntu-latest
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main')
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - name: Verify stable release published
+        id: verify
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          TRIGGER_RUN_ID: ${{ github.event.workflow_run.id }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          python3 - << 'EOF'
+          import json
+          import os
+          import subprocess
+          import sys
+
+          event_name = os.environ.get("EVENT_NAME", "")
+          output_path = os.environ.get("GITHUB_OUTPUT", "")
+
+          def set_output(should_sync: bool) -> None:
+              if output_path:
+                  with open(output_path, "a", encoding="utf-8") as f:
+                      f.write(f"should_sync={'true' if should_sync else 'false'}\n")
+
+          if event_name == "workflow_dispatch":
+              print("[INFO] Manual trigger via workflow_dispatch; proceeding with sync.")
+              set_output(True)
+              sys.exit(0)
+
+          head_branch = os.environ.get("HEAD_BRANCH", "")
+          if head_branch != "main":
+              print(f"[INFO] Triggering run head_branch is '{head_branch}', expected 'main'. Skipping.")
+              set_output(False)
+              sys.exit(0)
+
+          run_id = os.environ.get("TRIGGER_RUN_ID", "")
+          repo = os.environ.get("GITHUB_REPOSITORY", "")
+          if not run_id or not repo:
+              print("[ERROR] TRIGGER_RUN_ID or GITHUB_REPOSITORY is missing.")
+              set_output(False)
+              sys.exit(1)
+
+          print(f"[INFO] Inspecting workflow run {run_id} on {repo} to verify if a release was published...")
+          res = subprocess.run(
+              ["gh", "api", f"repos/{repo}/actions/runs/{run_id}/jobs"],
+              capture_output=True,
+              text=True,
+          )
+          if res.returncode != 0:
+              print(f"[ERROR] Failed to query workflow run jobs: {res.stderr.strip()}")
+              set_output(False)
+              sys.exit(1)
+
+          try:
+              jobs_data = json.loads(res.stdout)
+          except Exception as exc:
+              print(f"[ERROR] Failed to parse workflow run jobs JSON: {exc}")
+              set_output(False)
+              sys.exit(1)
+
+          published = False
+          for job in jobs_data.get("jobs", []):
+              step_conclusions = {
+                  s.get("name"): s.get("conclusion")
+                  for s in job.get("steps", [])
+              }
+              if step_conclusions.get("Attest") == "success":
+                  print("[INFO] Step 'Attest' succeeded; release publication confirmed.")
+                  published = True
+                  break
+              if step_conclusions.get("Notify Telegram Channel") == "success":
+                  print("[INFO] Step 'Notify Telegram Channel' succeeded; release publication confirmed.")
+                  published = True
+                  break
+              if (
+                  step_conclusions.get("Release") == "success"
+                  and step_conclusions.get("Verify project compiles") == "skipped"
+              ):
+                  print("[INFO] Step 'Release' succeeded and compile-verification was skipped; release publication confirmed.")
+                  published = True
+                  break
+
+          if not published:
+              head_sha = os.environ.get("HEAD_SHA", "")
+              if head_sha:
+                  res_rel = subprocess.run(
+                      ["gh", "api", f"repos/{repo}/releases"],
+                      capture_output=True,
+                      text=True,
+                  )
+                  if res_rel.returncode == 0:
+                      try:
+                          releases = json.loads(res_rel.stdout)
+                          for rel in releases:
+                              if rel.get("target_commitish") == head_sha:
+                                  print(f"[INFO] Found GitHub release targeting {head_sha}; release publication confirmed.")
+                                  published = True
+                                  break
+                      except Exception:
+                          pass
+
+          if not published:
+              print("[INFO] No new release published in triggering run. Skipping dev sync.")
+              set_output(False)
+              sys.exit(0)
+
+          print("[OK] Confirmed stable release published on main. Proceeding with sync.")
+          set_output(True)
+          EOF
+
+      - name: Checkout dev branch
+        if: steps.verify.outputs.should_sync == 'true'
+        uses: actions/checkout@v7
+        with:
+          ref: dev
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git identity
+        if: steps.verify.outputs.should_sync == 'true'
+        run: |
+          ACTOR="${{ github.actor }}"
+          if [ -z "$ACTOR" ]; then
+            ACTOR="github-actions[bot]"
+          fi
+          git config user.name "$ACTOR"
+          git config user.email "${ACTOR}@users.noreply.github.com"
+          git remote set-url origin "https://github.com/${{ github.repository }}.git"
+          echo "[INFO] Git configured with user '$ACTOR' for repository '${{ github.repository }}'"
+
+      - name: Fetch origin main branch
+        if: steps.verify.outputs.should_sync == 'true'
+        run: |
+          echo "[INFO] Fetching origin/main..."
+          git fetch origin +refs/heads/main:refs/remotes/origin/main
+
+      - name: Sync main into dev and push
+        if: steps.verify.outputs.should_sync == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "[INFO] Checking if dev already contains origin/main..."
+          if git merge-base --is-ancestor origin/main HEAD; then
+            echo "[OK] dev branch already contains origin/main; nothing to sync."
+            exit 0
+          fi
+
+          echo "[INFO] Merging origin/main into dev..."
+          if ! git merge --no-ff -m "chore(sync): merge main into dev" origin/main; then
+            echo "[ERROR] Merge conflict while merging origin/main into dev." >&2
+            exit 1
+          fi
+
+          echo "[INFO] Fetching origin/dev before push..."
+          git fetch origin +refs/heads/dev:refs/remotes/origin/dev
+
+          if ! git merge-base --is-ancestor origin/dev HEAD; then
+            echo "[INFO] Remote dev has newer commits; reconciling before push..."
+            if ! git merge --no-ff -m "chore(sync): reconcile remote dev" origin/dev; then
+              echo "[ERROR] Merge conflict while reconciling remote dev." >&2
+              exit 1
+            fi
+          fi
+
+          echo "[INFO] Pushing synced dev branch to origin..."
+          if git push origin dev; then
+            echo "[OK] dev branch synced and pushed successfully."
+            exit 0
+          fi
+
+          echo "[WARN] Push rejected. Fetching remote dev and retrying once defensively..."
+          git fetch origin +refs/heads/dev:refs/remotes/origin/dev
+          if git merge --no-ff -m "chore(sync): reconcile remote dev" origin/dev; then
+            if git push origin dev; then
+              echo "[OK] dev branch synced and pushed successfully on retry."
+              exit 0
+            else
+              echo "[ERROR] Push failed on retry." >&2
+              exit 1
+            fi
+          else
+            echo "[ERROR] Merge conflict while reconciling remote dev on retry." >&2
+            exit 1
+          fi

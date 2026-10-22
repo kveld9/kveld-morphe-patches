@@ -2,9 +2,15 @@ package app.morphe.patches.tiktok.usability
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patcher.resource.ResourceType
+import app.morphe.patcher.resource.resourceId
+import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.clearTryBlocks
 import app.morphe.patches.shared.ensureRegisterCount
@@ -12,6 +18,7 @@ import app.morphe.patches.shared.replaceWithReturnBoolean
 import app.morphe.patches.shared.replaceWithReturnNull
 import app.morphe.patches.shared.replaceWithReturnVoid
 import com.android.tools.smali.dexlib2.AccessFlags
+import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
@@ -19,6 +26,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 
 val directMessageDeclutterPatch = bytecodePatch(
     name = "Declutter Direct Messages",
@@ -189,12 +197,13 @@ val directMessageDeclutterPatch = bytecodePatch(
             val titleBarMethod = titleBarFp.method
             val titleBarImpl = titleBarMethod.implementation
             if (titleBarImpl != null) {
+                val callButtonId = resourceId(ResourceType.ID, "kph").toInt()
                 titleBarMethod.ensureRegisterCount(4)
                 titleBarMethod.addInstructions(
                     0,
                     """
                         move-object/from16 v0, p1
-                        const v1, 0x7f0a39ae
+                        const v1, $callButtonId
                         invoke-virtual {v0, v1}, Landroid/view/View;->findViewById(I)Landroid/view/View;
                         move-result-object v0
                         if-eqz v0, :cond_skip_call
@@ -206,12 +215,12 @@ val directMessageDeclutterPatch = bytecodePatch(
                 for ((index, instruction) in titleBarImpl.instructions.withIndex()) {
                     if (instruction is ReferenceInstruction) {
                         val fieldRef = instruction.reference as? FieldReference
-                        if (fieldRef?.name == "LLLFF") {
+                        if (fieldRef?.name == "LLL") {
                             titleBarMethod.addInstructions(
                                 index + 1,
                                 """
                                     const/4 v0, 0x0
-                                    iput-object v0, p0, Lcom/ss/android/ugc/aweme/im/chatroom/common/titlebar/BaseSingleChatTitleBarRightAssem;->LLLFF:Lcom/bytedance/tux/icon/TuxIconView;
+                                    iput-object v0, p0, Lcom/ss/android/ugc/aweme/im/chatroom/common/titlebar/BaseSingleChatTitleBarRightAssem;->LLL:Lcom/bytedance/tux/icon/TuxIconView;
                                 """.trimIndent(),
                             )
                             break
@@ -324,12 +333,13 @@ val directMessageDeclutterPatch = bytecodePatch(
             val inputAssemMethod = inputAssemFp.method
             val inputAssemImpl = inputAssemMethod.implementation
             if (inputAssemImpl != null) {
+                val cameraSlotId = resourceId(ResourceType.ID, "nav").toInt()
                 inputAssemMethod.ensureRegisterCount(4)
                 inputAssemMethod.addInstructions(
                     0,
                     """
                         move-object/from16 v0, p1
-                        const v1, 0x7f0a479c
+                        const v1, $cameraSlotId
                         invoke-virtual {v0, v1}, Landroid/view/View;->findViewById(I)Landroid/view/View;
                         move-result-object v0
                         if-eqz v0, :cond_skip_cam
@@ -347,7 +357,7 @@ val directMessageDeclutterPatch = bytecodePatch(
         if (hideGalleryButton == true) {
             val galleryAssemFp = Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/im/chatroom/input/components/misc/IMImageBtnViewAssem;",
-                name = "Wr",
+                name = "Wq",
                 parameters = listOf("Landroid/view/View;"),
                 returnType = "V",
             )
@@ -402,10 +412,14 @@ val directMessageDeclutterPatch = bytecodePatch(
                         ((ins as? ReferenceInstruction)?.reference as? FieldReference)?.definingClass == "Lkotlin/Unit;"
                     }
                     if (unitIndex >= 0) {
-                        redesignedMethod.ensureRegisterCount(6)
+                        val albumParamRegisters = redesignedMethod.parameterTypes.sumOf { type -> if (type == "J" || type == "D") 2 else 1 }
+                        val albumLocals = redesignedMethod.implementation!!.registerCount - albumParamRegisters
+                        if (albumLocals < 2) {
+                            throw PatchException("[Declutter Direct Messages] ${redesignedMethod.definingClass}->${redesignedMethod.name} has $albumLocals local registers; the gallery hook needs 2.")
+                        }
                         val layoutParamsType = "Landroid/view/ViewGroup\$LayoutParams;"
                         val marginLayoutParamsType = "Landroid/view/ViewGroup\$MarginLayoutParams;"
-                        redesignedMethod.addInstructions(
+                        redesignedMethod.addInstructionsWithLabels(
                             unitIndex,
                             """
                                 move-object/from16 v0, p2
@@ -423,17 +437,20 @@ val directMessageDeclutterPatch = bytecodePatch(
                                 invoke-virtual {v0}, Landroid/view/View;->getLayoutParams()$layoutParamsType
                                 move-result-object v1
                                 if-eqz v1, :cond_skip_album
-                                const/4 v2, 0x0
-                                iput v2, v1, $layoutParamsType->width:I
-                                iput v2, v1, $layoutParamsType->height:I
-                                instance-of v2, v1, $marginLayoutParamsType
-                                if-eqz v2, :cond_skip_margin
+                                const/4 v0, 0x0
+                                iput v0, v1, $layoutParamsType->width:I
+                                iput v0, v1, $layoutParamsType->height:I
+                                instance-of v0, v1, $marginLayoutParamsType
+                                if-eqz v0, :cond_skip_margin
                                 check-cast v1, $marginLayoutParamsType
-                                const/4 v2, 0x0
-                                invoke-virtual {v1, v2}, $marginLayoutParamsType->setMarginEnd(I)V
+                                const/4 v0, 0x0
+                                invoke-virtual {v1, v0}, $marginLayoutParamsType->setMarginEnd(I)V
                                 :cond_skip_margin
+                                move-object/from16 v0, p2
+                                check-cast v0, Landroid/view/View;
                                 invoke-virtual {v0, v1}, Landroid/view/View;->setLayoutParams($layoutParamsType)V
                                 :cond_skip_album
+                                nop
                             """.trimIndent(),
                         )
                         hookedAlbumCount++
@@ -473,7 +490,7 @@ val directMessageDeclutterPatch = bytecodePatch(
                 patched++
             }
 
-            val redesignedEmojiBtnId = 0x7f0a3aba
+            val redesignedEmojiBtnId = resourceId(ResourceType.ID, "kve").toInt()
 
             val isRedesignedEmojiSetId: (Instruction, Instruction) -> Boolean = { a, b ->
                 val isLiteral = (a as? NarrowLiteralInstruction)?.narrowLiteral == redesignedEmojiBtnId ||
@@ -633,36 +650,6 @@ val directMessageDeclutterPatch = bytecodePatch(
             println("[Declutter Direct Messages] Hooked ReplyToStickerRecommendationViewModel.${stickerMethod.name} -> automatic sticker reply suggestions disabled.")
             patched++
 
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/im/sdk/chat/ui/base/assems/preshown/PreshownStickerBannerProtocol;",
-                name = "isEnabled",
-                returnType = "Z",
-                parameters = emptyList(),
-            ).method.replaceWithReturnBoolean(false)
-            println("[Declutter Direct Messages] Hooked PreshownStickerBannerProtocol.isEnabled -> preshown sticker reply banner disabled.")
-            patched++
-
-            val interceptFp = Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/im/sdk/chat/ui/base/assems/preshown/PreshownStickerBannerProtocol;",
-                name = "intercept",
-                returnType = "Ljava/util/List;",
-                parameters = listOf("Ljava/util/List;"),
-            )
-            val interceptMethod = interceptFp.method
-            val interceptImpl = interceptMethod.implementation
-            if (interceptImpl != null) {
-                interceptMethod.clearTryBlocks()
-                interceptMethod.removeInstructions(0, interceptImpl.instructions.count())
-                interceptMethod.addInstructions(
-                    0,
-                    """
-                        return-object p1
-                    """.trimIndent(),
-                )
-                println("[Declutter Direct Messages] Hooked PreshownStickerBannerProtocol.intercept -> passthrough message list.")
-                patched++
-            }
-
             val typingAssemClass = Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/im/sdk/chat/ui/base/assems/input/typingrecommendation/TypingRecommendationPanelAssem;"
             ).classDef
@@ -696,6 +683,10 @@ val directMessageDeclutterPatch = bytecodePatch(
             }
         }
 
-        println("[Declutter Direct Messages] Applied $patched hooks -> direct messages decluttered.")
+        if (patched == 0) {
+            println("[Declutter Direct Messages] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Declutter Direct Messages] Applied $patched hooks -> direct messages decluttered.")
+        }
     }
 }

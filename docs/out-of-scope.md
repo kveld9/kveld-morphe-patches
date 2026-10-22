@@ -26,7 +26,7 @@ The design of Morphe Patches is guided by four non-negotiable principles:
 Feature requests that fall into any of the following categories will be closed as **not planned**:
 
 ### ❌ In-App Settings Screens & Dynamic UI Panels
-* **What is requested**: Injecting custom preference menus, floating overlay panels, or settings screens into target applications (e.g., TikTok, Brave, Hevy) to toggle patches dynamically on the fly.
+* **What is requested**: Injecting custom preference menus, floating overlay panels, or settings screens into target applications (e.g., TikTok, Brave) to toggle patches dynamically on the fly.
 * **Why it is out of scope**:
   1. **Extreme Fragility**: Applications like TikTok deploy aggressive ProGuard/DexGuard re-obfuscation and publish updates weekly. Hooking into obfuscated Activity, Fragment, or Navigation controller hierarchies breaks continuously across version bumps, making rapid upstream synchronization impossible.
   2. **Contradicts Zero-Overhead Debloating**: Dynamic in-app toggles require keeping unwanted features, telemetry, and background daemons intact inside the APK and wrapping every hook in runtime conditional guards (`if (isFeatureEnabled())`). This adds unnecessary disk I/O to performance-critical paths (video decoding, rendering, networking).
@@ -60,7 +60,7 @@ Feature requests that fall into any of the following categories will be closed a
 
 ---
 
-### ❌ Arbitrary New Target Applications
-* **What is requested**: Adding new target applications without architectural alignment or maintainability rationale.
+### ❌ New Target Applications
+* **What is requested**: Adding support for a new target application.
 * **Why it is out of scope**:
-  Every supported application requires ongoing maintenance, reverse-engineering harnesses, and automated testing pipelines. New targets are added only when they offer clear utility, clean patch boundaries, and sustainable long-term maintenance.
+  Every supported application requires ongoing maintenance, reverse-engineering tooling, and automated testing pipelines. The supported app set is closed: no new target applications are accepted. Any issue requesting a new target will be closed as not planned.

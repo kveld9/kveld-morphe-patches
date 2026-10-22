@@ -35,6 +35,7 @@ val mediaEnhancementsPatch = bytecodePatch(
         title = "Saved-Video Quality Preference",
         description = "Select download quality: 'high', 'medium', 'low', or a resolution ceiling (e.g. 1080, 720).",
         default = "high",
+        values = mapOf("High" to "high", "Medium" to "medium", "Low" to "low", "1080p" to "1080", "720p" to "720", "540p" to "540", "480p" to "480", "360p" to "360"),
         required = false,
     )
 
@@ -389,7 +390,11 @@ val mediaEnhancementsPatch = bytecodePatch(
             println("[Download Without Watermark] Watermark removal disabled -> downloader spec kept stock.")
         }
 
-        println("[Download Without Watermark] Applied $patched media usability and watermark-free download hook(s).")
+        if (patched == 0) {
+            println("[Download Without Watermark] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Download Without Watermark] Applied $patched media usability and watermark-free download hook(s).")
+        }
     }
 }
 

@@ -51,6 +51,10 @@ val sensorPrivacyPatch = bytecodePatch(
             println("[Block Motion Sensors] PlatformSensor.create hook note: ${e.message}")
         }
 
-        println("[Block Motion Sensors] Neutralized $patched sensor provider hooks (${hookedMethods.joinToString(", ")}) -> motion/ambient sensor fingerprinting disabled.")
+        if (patched == 0) {
+            println("[Block Motion Sensors] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Block Motion Sensors] Neutralized $patched sensor provider hooks (${hookedMethods.joinToString(", ")}) -> motion/ambient sensor fingerprinting disabled.")
+        }
     }
 }

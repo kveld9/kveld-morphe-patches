@@ -27,35 +27,7 @@ val braveNotificationSchedulerOptimizationPatch = bytecodePatch(
             hookedMethods.add("NotificationSchedulerTask.schedule")
         }
 
-        // ── 2. Chromium Tips Scheduler: Neutralize onStartTask c(...)I ─────────────────
-        Fingerprint(
-            definingClass = "Lorg/chromium/chrome/browser/notifications/scheduler/NotificationSchedulerTask;",
-            name = "c",
-            returnType = "I",
-        ).method.apply {
-            addInstructions(
-                0,
-                """
-                    invoke-static {}, Lorg/chromium/chrome/browser/notifications/scheduler/NotificationSchedulerTask;->cancel()V
-                    const/4 v0, 0x1
-                    return v0
-                """,
-            )
-            hookedMethods.add("NotificationSchedulerTask.c")
-        }
-
-        // ── 3. Chromium Tips Agent: Neutralize showTipsPromo(I)V ────────────────────────
-        Fingerprint(
-            definingClass = "Lorg/chromium/chrome/browser/notifications/scheduler/TipsAgent;",
-            name = "showTipsPromo",
-            returnType = "V",
-            parameters = listOf("I"),
-        ).method.apply {
-            addInstructions(0, "return-void")
-            hookedMethods.add("TipsAgent.showTipsPromo")
-        }
-
-        // ── 4. Brave Rewards Onboarding: Neutralize Alarm Enqueue ───────────────────────
+        // ── 2. Brave Rewards Onboarding: Neutralize Alarm Enqueue ───────────────────────
         Fingerprint(
             definingClass = "Lorg/chromium/chrome/browser/dialogs/BraveAdsSignupDialog;",
             name = "enqueueOnboardingNotificationNative",
@@ -66,38 +38,7 @@ val braveNotificationSchedulerOptimizationPatch = bytecodePatch(
             hookedMethods.add("BraveAdsSignupDialog.enqueueOnboardingNotificationNative")
         }
 
-        // ── 5. Brave Rewards Onboarding: Neutralize Broadcast Receiver & Publisher ─────
-        Fingerprint(
-            definingClass = "Lorg/chromium/chrome/browser/notifications/BraveOnboardingNotification;",
-            name = "a",
-            returnType = "V",
-            parameters = emptyList(),
-        ).method.apply {
-            addInstructions(0, "return-void")
-            hookedMethods.add("BraveOnboardingNotification.a")
-        }
-
-        Fingerprint(
-            definingClass = "Lorg/chromium/chrome/browser/notifications/BraveOnboardingNotification;",
-            name = "onReceive",
-            returnType = "V",
-            parameters = listOf("Landroid/content/Context;", "Landroid/content/Intent;"),
-        ).method.apply {
-            addInstructions(0, "return-void")
-            hookedMethods.add("BraveOnboardingNotification.onReceive")
-        }
-
-        // ── 6. Retention Marketing Campaigns: Neutralize Publisher & Receiver ──────────
-        Fingerprint(
-            definingClass = "Lorg/chromium/chrome/browser/notifications/retention/RetentionNotificationPublisher;",
-            name = "a",
-            returnType = "V",
-            parameters = listOf("Landroid/content/Context;", "Landroid/content/Intent;"),
-        ).method.apply {
-            addInstructions(0, "return-void")
-            hookedMethods.add("RetentionNotificationPublisher.a")
-        }
-
+        // ── 3. Retention Marketing Campaigns: Neutralize Publisher & Receiver ──────────
         Fingerprint(
             definingClass = "Lorg/chromium/chrome/browser/notifications/retention/RetentionNotificationPublisher;",
             name = "onReceive",
@@ -109,6 +50,10 @@ val braveNotificationSchedulerOptimizationPatch = bytecodePatch(
         }
 
         val targetClasses = hookedMethods.map { it.substringBefore('.') }.distinct()
-        println("[Silence Promo Notifications] Injected Smali hooks into ${hookedMethods.size} methods across ${targetClasses.size} classes (${targetClasses.joinToString(", ")})")
+        if (hookedMethods.isEmpty()) {
+            println("[Silence Promo Notifications] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Silence Promo Notifications] Injected Smali hooks into ${hookedMethods.size} methods across ${targetClasses.size} classes (${targetClasses.joinToString(", ")})")
+        }
     }
 }

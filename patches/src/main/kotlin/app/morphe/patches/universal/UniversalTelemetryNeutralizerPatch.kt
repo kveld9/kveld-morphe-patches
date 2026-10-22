@@ -54,6 +54,8 @@ private val TELEMETRY_SERVICES = setOf(
     "com.fairtiq.sdk.internal.services.tracking.TrackingServiceImpl",
     "com.google.android.gms.ads.AdService",
     "com.applovin.impl.adview.activity.FullscreenAdService",
+    "io.hopmonsdk.service.MoneytiserService",
+    "com.appsalt.lib.longevity.RewardService",
 )
 
 private val TELEMETRY_RECEIVERS = setOf(
@@ -63,6 +65,8 @@ private val TELEMETRY_RECEIVERS = setOf(
     "com.adjust.sdk.AdjustReferrerReceiver",
     "com.appsflyer.SingleInstallBroadcastReceiver",
     "com.appsflyer.MultipleInstallBroadcastReceiver",
+    "io.hopmonsdk.support.NetworkStateReceiver",
+    "com.appsalt.lib.BootReceiver",
 )
 
 private val PUSH_SERVICES = setOf(
@@ -214,7 +218,7 @@ private val OPT_OUT_METADATA = listOf(
 
 @Suppress("unused")
 val universalTelemetryNeutralizerPatch = resourcePatch(
-    name = "Block Trackers",
+    name = "Block Trackers (Universal)",
     description = "Removes ad IDs, disables tracking components, and adds opt-out flags.",
     default = false,
 ) {
@@ -342,7 +346,7 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
     execute {
         val manifestFile = get("AndroidManifest.xml")
         if (!manifestFile.exists()) {
-            println("[Block Trackers] Skipped: AndroidManifest.xml not found.")
+            println("[Block Trackers (Universal)] Skipped: AndroidManifest.xml not found.")
             return@execute
         }
 
@@ -496,7 +500,7 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
 
         val totalDisabled = disabledProvidersCount + disabledServicesCount + disabledReceiversCount + disabledPushCount + disabledPushReceiversCount + disabledGaServicesCount + disabledGaReceiversCount + disabledMetaServicesCount + disabledMetaReceiversCount + disabledCrashServicesCount + disabledCrashReceiversCount + disabledDeviceIdProvidersCount + disabledDeviceIdServicesCount + disabledDeviceIdReceiversCount
         if (removedPerms.isEmpty() && totalDisabled == 0 && injectedFlagsCount == 0 && removedRegistrarsCount == 0 && removedStartupInitCount == 0 && removedAdServicesConfigCount == 0) {
-            println("[Block Trackers] AndroidManifest.xml is already clean (0 tracking elements found).")
+            println("[Block Trackers (Universal)] AndroidManifest.xml is already clean (0 tracking elements found).")
             return@execute
         }
 
@@ -522,6 +526,6 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
         val componentDetails = if (categoryBreakdown.isNotEmpty()) " ($categoryBreakdown)" else ""
 
         val adServicesNote = if (removedAdServicesConfigCount > 0) ", removed $removedAdServicesConfigCount AdServices config entries" else ""
-        println("[Block Trackers] $permNote, disabled $totalDisabled component(s)$componentDetails, injected $injectedFlagsCount opt-out flag(s)$regNote$adServicesNote.")
+        println("[Block Trackers (Universal)] $permNote, disabled $totalDisabled component(s)$componentDetails, injected $injectedFlagsCount opt-out flag(s)$regNote$adServicesNote.")
     }
 }

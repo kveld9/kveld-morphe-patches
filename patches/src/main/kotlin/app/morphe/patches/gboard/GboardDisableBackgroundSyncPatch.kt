@@ -228,6 +228,10 @@ val gboardDisableBackgroundSyncPatch = bytecodePatch(
         println("[Stop Background Sync] Pruned obsolete Superpacks eager-sync hooks: targets removed upstream.")
 
         val targetClasses = hookedMethods.map { it.substringBefore('.') }.distinct()
-        println("[Stop Background Sync] Neutralized ${hookedMethods.size} background sync methods across ${targetClasses.size} classes (${targetClasses.joinToString(", ")})")
+        if (hookedMethods.isEmpty()) {
+            println("[Stop Background Sync] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Stop Background Sync] Neutralized ${hookedMethods.size} background sync methods across ${targetClasses.size} classes (${targetClasses.joinToString(", ")})")
+        }
     }
 }

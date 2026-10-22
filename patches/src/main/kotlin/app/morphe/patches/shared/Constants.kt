@@ -5,7 +5,7 @@ import app.morphe.patcher.patch.AppTarget
 import app.morphe.patcher.patch.Compatibility
 
 object Constants {
-    const val BRAVE_TARGET_VERSION = "1.97.57"
+    const val BRAVE_TARGET_VERSION = "1.97.59"
     const val BRAVE_PACKAGE_NAME = "com.brave.browser"
 
     val COMPATIBILITY_BRAVE = Compatibility(
@@ -16,7 +16,7 @@ object Constants {
         targets = listOf(
             AppTarget(
                 version = BRAVE_TARGET_VERSION,
-                description = "Download com.brave.browser v$BRAVE_TARGET_VERSION (APK) arm64-v8a nodpi versionCode 429705704 (APK) from APKMirror"
+                description = "Download Bravemonoarm64.apk (arm64) or BraveMonoarm.apk (arm32) v$BRAVE_TARGET_VERSION from github.com/brave/brave-browser/releases; Universal builds unsupported"
             )
         )
     )
@@ -43,24 +43,8 @@ object Constants {
     )
 
 
-    const val HEVY_PACKAGE_NAME = "com.hevy"
-    const val HEVY_TARGET_VERSION = "3.1.14"
-
-    val COMPATIBILITY_HEVY = Compatibility(
-        name = "Hevy - Gym Log Workout Tracker",
-        packageName = HEVY_PACKAGE_NAME,
-        apkFileType = ApkFileType.APKM,
-        appIconColor = 0xFF4500,
-        targets = listOf(
-            AppTarget(
-                version = HEVY_TARGET_VERSION,
-                description = "Download com.hevy v$HEVY_TARGET_VERSION (APKM) arm64-v8a 120-640dpi versionCode 3308730 (BUNDLE) from APKMirror"
-            )
-        )
-    )
-
     const val TIKTOK_PACKAGE_NAME = "com.zhiliaoapp.musically"
-    const val TIKTOK_TARGET_VERSION = "47.1.4"
+    const val TIKTOK_TARGET_VERSION = "47.4.3"
 
     val COMPATIBILITY_TIKTOK = Compatibility(
         name = "TikTok",
@@ -70,39 +54,7 @@ object Constants {
         targets = listOf(
             AppTarget(
                 version = TIKTOK_TARGET_VERSION,
-                description = "Download com.zhiliaoapp.musically v$TIKTOK_TARGET_VERSION (APK) arm64-v8a nodpi versionCode 2024701040 (APK) from APKMirror"
-            )
-        )
-    )
-
-    const val NOKOPRINT_PACKAGE_NAME = "com.nokoprint"
-    const val NOKOPRINT_TARGET_VERSION = "5.28.6"
-
-    val COMPATIBILITY_NOKOPRINT = Compatibility(
-        name = "NokoPrint - WiFi, Bluetooth, USB",
-        packageName = NOKOPRINT_PACKAGE_NAME,
-        apkFileType = ApkFileType.XAPK,
-        appIconColor = 0x0288D1,
-        targets = listOf(
-            AppTarget(
-                version = NOKOPRINT_TARGET_VERSION,
-                description = "Download com.nokoprint v$NOKOPRINT_TARGET_VERSION (XAPK bundle) from APKPure",
-            )
-        )
-    )
-
-    const val XIAOMI_EARBUDS_PACKAGE_NAME = "com.mi.earphone"
-    const val XIAOMI_EARBUDS_TARGET_VERSION = "1.38.0i"
-
-    val COMPATIBILITY_XIAOMI_EARBUDS = Compatibility(
-        name = "Xiaomi Earbuds",
-        packageName = XIAOMI_EARBUDS_PACKAGE_NAME,
-        apkFileType = ApkFileType.XAPK,
-        appIconColor = 0xFF6700,
-        targets = listOf(
-            AppTarget(
-                version = XIAOMI_EARBUDS_TARGET_VERSION,
-                description = "Download com.mi.earphone v1.38.0i (XAPK bundle) from APKPure",
+                description = "Download com.zhiliaoapp.musically v$TIKTOK_TARGET_VERSION (APK) arm64-v8a nodpi versionCode 2024704030 (APK) from APKMirror"
             )
         )
     )
@@ -135,7 +87,6 @@ object Constants {
     const val TIKTOK_EXTENSION_VIDEO_FIT_HOOK = "Lcom/kveld9/morphe/extension/tiktok/TikTokVideoFitHook;"
     const val TIKTOK_EXTENSION_SENSITIVE_WARNINGS_HOOK = "Lcom/kveld9/morphe/extension/tiktok/SensitiveWarnings;"
     const val BRAVE_EXTENSION_CLASS = "Lcom/kveld9/morphe/extension/BraveExtension;"
-    const val CHROMIUM_EXTENSION_CLASS = "Lcom/kveld9/morphe/extension/ChromiumExtension;"
     const val GBOARD_EXTENSION_CLASS = "Lcom/kveld9/morphe/extension/gboard/GboardExtension;"
 
     object GboardPrefs {
@@ -157,7 +108,6 @@ object Constants {
         const val KEY_BOTTOM_PADDING = "morphe_bottom_padding"
         const val KEY_HIDE_IME_NAV_BAR = "morphe_hide_ime_nav_bar"
         const val KEY_TOOLBAR_ITEM_COUNT = "morphe_toolbar_item_count"
-        const val KEY_EMOJI_SCALE = "morphe_emoji_scale"
         const val KEY_KEY_SHAPE_SELECTION = "morphe_key_shape_selection"
         const val KEY_ACCESS_POINTS_REDESIGN = "morphe_access_points_redesign"
         const val KEY_DISMISS_SUGGESTIONS = "morphe_dismiss_suggestions"
@@ -202,10 +152,6 @@ object Constants {
         const val MIN_CLIPBOARD_CHAR_LIMIT_K = 5
         const val MAX_CLIPBOARD_CHAR_LIMIT_K = 200
         const val DEFAULT_CLIPBOARD_CHAR_LIMIT_K = 20
-
-        const val MIN_EMOJI_SCALE = 50
-        const val MAX_EMOJI_SCALE = 150
-        const val DEFAULT_EMOJI_SCALE = 100
     }
 }
 

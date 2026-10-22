@@ -167,7 +167,11 @@ val gboardBlockTelemetryPatch = bytecodePatch(
             println("[Block Trackers] Skipped blockAdwordsHost: option is disabled.")
         }
 
-        println("[Block Trackers] Injected Smali hooks into ${hookedMethods.size} telemetry & diagnostic methods across ${targetClasses.size} classes (${targetClasses.joinToString(", ")})")
+        if (hookedMethods.isEmpty()) {
+            println("[Block Trackers] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Block Trackers] Injected Smali hooks into ${hookedMethods.size} telemetry & diagnostic methods across ${targetClasses.size} classes (${targetClasses.joinToString(", ")})")
+        }
     }
 }
 

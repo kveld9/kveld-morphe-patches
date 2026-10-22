@@ -152,7 +152,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
                     method.addInstructionsAtControlFlowLabel(
                         returnIndex,
                         """
-                            invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAdsInList(Ljava/lang/Object;)V
+                            invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAdsInList(Ljava/lang/Object;)V
                         """,
                     )
                 }
@@ -178,7 +178,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 feedApiMethod.addInstructionsAtControlFlowLabel(
                     returnIndex,
                     """
-                        invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAdsInFeedItemList(Ljava/lang/Object;)V
+                        invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAdsInFeedItemList(Ljava/lang/Object;)V
                     """,
                 )
             }
@@ -211,7 +211,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 followMethod.addInstructionsAtControlFlowLabel(
                     returnIndex,
                     """
-                        invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAdsInFollowFeedList(Ljava/lang/Object;)V
+                        invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAdsInFollowFeedList(Ljava/lang/Object;)V
                     """,
                 )
             }
@@ -272,7 +272,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
                     method.addInstructionsAtControlFlowLabel(
                         returnIndex,
                         """
-                            invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterFeedBloatInFeedItemList(Ljava/lang/Object;)V
+                            invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterFeedBloatInFeedItemList(Ljava/lang/Object;)V
                         """.trimIndent(),
                     )
                 }
@@ -301,7 +301,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
                     method.addInstructionsAtControlFlowLabel(
                         returnIndex,
                         """
-                            invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterFeedBloatInList(Ljava/lang/Object;)V
+                            invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterFeedBloatInList(Ljava/lang/Object;)V
                         """.trimIndent(),
                     )
                 }
@@ -330,7 +330,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
                     method.addInstructionsAtControlFlowLabel(
                         returnIndex,
                         """
-                            invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterFeedBloatInFollowFeedList(Ljava/lang/Object;)V
+                            invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterFeedBloatInFollowFeedList(Ljava/lang/Object;)V
                         """.trimIndent(),
                     )
                 }
@@ -560,27 +560,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 println("[Feed Ads & Content Filter] Aweme.getStandardComponentInfo note: ${e.message}")
             }
 
-            // 2.8 Neutralize In-Feed Search Recommendations & Trending Search Cards
-            try {
-                Fingerprint(
-                    definingClass = "Lcom/ss/android/ugc/aweme/search/common/communicate/AbsSearchService;",
-                    name = "u",
-                    returnType = "Ljava/util/List;",
-                ).method.addInstructions(
-                    0,
-                    """
-                        invoke-static {}, Ljava/util/Collections;->emptyList()Ljava/util/List;
-                        move-result-object v0
-                        return-object v0
-                    """.trimIndent(),
-                )
-                println("[Feed Ads & Content Filter] Neutralized AbsSearchService.u() -> In-feed search recommendation and trending card insertions disabled.")
-                patched++
-            } catch (e: Exception) {
-                println("[Feed Ads & Content Filter] AbsSearchService.u note: ${e.message}")
-            }
-
-            // 2.9 Neutralize In-Feed Safety Surveys, Evaluation Cards & Questionnaires
+            // 2.8 Neutralize In-Feed Safety Surveys, Evaluation Cards & Questionnaires
             try {
                 Fingerprint(
                     definingClass = "Lcom/ss/android/ugc/feed/platform/cell/component/survey/CellSurveyComponent;",
@@ -599,41 +579,33 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 println("[Feed Ads & Content Filter] CellSurveyComponent.onViewCreated note: ${e.message}")
             }
 
-            try {
-                Fingerprint(
-                    definingClass = "Lcom/ss/android/ugc/feed/platform/cell/component/survey/CellSurveyComponent;",
-                    name = "ur",
-                    parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;"),
-                    returnType = "V",
-                ).method.addInstructions(
-                    0,
-                    """
-                        return-void
-                    """.trimIndent(),
-                )
-                println("[Feed Ads & Content Filter] Neutralized CellSurveyComponent.ur(Aweme).")
-                patched++
-            } catch (e: Exception) {
-                println("[Feed Ads & Content Filter] CellSurveyComponent.ur note: ${e.message}")
-            }
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/feed/platform/cell/component/survey/CellSurveyComponent;",
+                name = "Np",
+                parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;"),
+                returnType = "V",
+            ).method.addInstructions(
+                0,
+                """
+                    return-void
+                """.trimIndent(),
+            )
+            println("[Feed Ads & Content Filter] Neutralized CellSurveyComponent.Np(Aweme).")
+            patched++
 
-            try {
-                Fingerprint(
-                    definingClass = "Lcom/ss/android/ugc/feed/platform/cell/component/survey/CellSurveyComponent;",
-                    name = "wr",
-                    parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;", "Z"),
-                    returnType = "V",
-                ).method.addInstructions(
-                    0,
-                    """
-                        return-void
-                    """.trimIndent(),
-                )
-                println("[Feed Ads & Content Filter] Neutralized CellSurveyComponent.wr(Aweme, Z).")
-                patched++
-            } catch (e: Exception) {
-                println("[Feed Ads & Content Filter] CellSurveyComponent.wr note: ${e.message}")
-            }
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/feed/platform/cell/component/survey/CellSurveyComponent;",
+                name = "Op",
+                parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;", "Z"),
+                returnType = "V",
+            ).method.addInstructions(
+                0,
+                """
+                    return-void
+                """.trimIndent(),
+            )
+            println("[Feed Ads & Content Filter] Neutralized CellSurveyComponent.Op(Aweme, Z).")
+            patched++
 
             try {
                 Fingerprint(
@@ -672,24 +644,20 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 println("[Feed Ads & Content Filter] PNSSurveyService.LIZIZ note: ${e.message}")
             }
 
-            try {
-                Fingerprint(
-                    definingClass = "Lcom/ss/android/ugc/aweme/feed/assem/pushsurvey/PushSurveyAssemTrigger;",
-                    name = "yr",
-                    parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"),
-                    returnType = "Z",
-                ).method.addInstructions(
-                    0,
-                    """
-                        const/4 v0, 0x0
-                        return v0
-                    """.trimIndent(),
-                )
-                println("[Feed Ads & Content Filter] Neutralized PushSurveyAssemTrigger.yr(VideoItemParams) -> Push survey triggers disabled.")
-                patched++
-            } catch (e: Exception) {
-                println("[Feed Ads & Content Filter] PushSurveyAssemTrigger.yr note: ${e.message}")
-            }
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/feed/assem/pushsurvey/PushSurveyAssemTrigger;",
+                name = "Rp",
+                parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"),
+                returnType = "Z",
+            ).method.addInstructions(
+                0,
+                """
+                    const/4 v0, 0x0
+                    return v0
+                """.trimIndent(),
+            )
+            println("[Feed Ads & Content Filter] Neutralized PushSurveyAssemTrigger.Rp(VideoItemParams) -> Push survey triggers disabled.")
+            patched++
 
             try {
                 Fingerprint(
@@ -855,7 +823,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 feedApiMethod.addInstructionsAtControlFlowLabel(
                     returnIndex,
                     """
-                        invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->stripShopAnchorsInFeedItemList(Ljava/lang/Object;)V
+                        invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->stripShopAnchorsInFeedItemList(Ljava/lang/Object;)V
                     """,
                 )
             }
@@ -880,7 +848,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 feedItemListMethod.addInstructionsAtControlFlowLabel(
                     returnIndex,
                     """
-                        invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->stripShopAnchorsInList(Ljava/lang/Object;)V
+                        invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->stripShopAnchorsInList(Ljava/lang/Object;)V
                     """,
                 )
             }
@@ -905,7 +873,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 followFeedListMethod.addInstructionsAtControlFlowLabel(
                     returnIndex,
                     """
-                        invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->stripShopAnchorsInFollowFeedList(Ljava/lang/Object;)V
+                        invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->stripShopAnchorsInFollowFeedList(Ljava/lang/Object;)V
                     """,
                 )
             }
@@ -935,7 +903,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
                     method.addInstructionsAtControlFlowLabel(
                         returnIndex,
                         """
-                            invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterLiveStreamsInFeedItemList(Ljava/lang/Object;)V
+                            invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterLiveStreamsInFeedItemList(Ljava/lang/Object;)V
                         """.trimIndent(),
                     )
                 }
@@ -964,7 +932,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
                     method.addInstructionsAtControlFlowLabel(
                         returnIndex,
                         """
-                            invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterLiveStreamsInList(Ljava/lang/Object;)V
+                            invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterLiveStreamsInList(Ljava/lang/Object;)V
                         """.trimIndent(),
                     )
                 }
@@ -993,7 +961,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
                     method.addInstructionsAtControlFlowLabel(
                         returnIndex,
                         """
-                            invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterLiveStreamsInFollowFeedList(Ljava/lang/Object;)V
+                            invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterLiveStreamsInFollowFeedList(Ljava/lang/Object;)V
                         """.trimIndent(),
                     )
                 }
@@ -1024,7 +992,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 feedApiMethod.addInstructionsAtControlFlowLabel(
                     returnIndex,
                     """
-                        invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAiContentInFeedItemList(Ljava/lang/Object;)V
+                        invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAiContentInFeedItemList(Ljava/lang/Object;)V
                     """.trimIndent(),
                 )
             }
@@ -1049,7 +1017,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 feedItemListMethod.addInstructionsAtControlFlowLabel(
                     returnIndex,
                     """
-                        invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAiContentInList(Ljava/lang/Object;)V
+                        invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAiContentInList(Ljava/lang/Object;)V
                     """.trimIndent(),
                 )
             }
@@ -1074,7 +1042,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 followFeedListMethod.addInstructionsAtControlFlowLabel(
                     returnIndex,
                     """
-                        invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAiContentInFollowFeedList(Ljava/lang/Object;)V
+                        invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAiContentInFollowFeedList(Ljava/lang/Object;)V
                     """.trimIndent(),
                 )
             }
@@ -1083,24 +1051,9 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 patched++
             }
 
-            // Hook FriendsV3FeedNetworkSource.LJ (Friends tab V3 network response)
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/friendstab/repo/FriendsV3FeedNetworkSource;",
-                name = "LJ",
-                parameters = listOf("Lcom/ss/android/ugc/aweme/friendstab/repo/FriendsV3FeedResponse;"),
-                returnType = "Ljava/lang/Object;",
-            ).method.addInstructions(
-                0,
-                """
-                    invoke-static {p1}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAiContentInFriendsV3Response(Ljava/lang/Object;)V
-                """.trimIndent(),
-            )
-            println("[Feed Ads & Content Filter] Hooked FriendsV3FeedNetworkSource.LJ -> Friends V3 network responses protected.")
-            patched++
-
-            // Hook FriendsFeedApi network fetch return points (LX/06CX;->LIZLLL in v47.1.4)
+            // Hook FriendsFeedApi network fetch return points (LX/06Bw;->LIZLLL in v47.4.3)
             val friendsFeedApiFingerprint = Fingerprint(
-                definingClass = "LX/06CX;",
+                definingClass = "LX/06Bw;",
                 name = "LIZLLL",
                 parameters = listOf(
                     "I",
@@ -1260,7 +1213,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 returnIndices.asReversed().forEach { (returnIndex, reg) ->
                     method.addInstructionsAtControlFlowLabel(
                         returnIndex,
-                        "invoke-static {v$reg}, $hook->filterContentInFeedItemList(Ljava/lang/Object;)V",
+                        "invoke-static/range {v$reg .. v$reg}, $hook->filterContentInFeedItemList(Ljava/lang/Object;)V",
                     )
                 }
                 if (returnIndices.isNotEmpty()) {
@@ -1272,6 +1225,10 @@ val feedAdsContentFilterPatch = bytecodePatch(
             }
         }
 
-        println("[Feed Ads & Content Filter] Applied $patched feed ads and content filter hook(s).")
+        if (patched == 0) {
+            println("[Feed Ads & Content Filter] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Feed Ads & Content Filter] Applied $patched feed ads and content filter hook(s).")
+        }
     }
 }

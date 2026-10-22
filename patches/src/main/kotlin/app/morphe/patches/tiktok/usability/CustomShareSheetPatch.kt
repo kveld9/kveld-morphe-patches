@@ -217,6 +217,14 @@ val customShareSheetPatch = bytecodePatch(
         required = false,
     )
 
+    val hideUseThisEffect by booleanOption(
+        key = "hideUseThisEffect",
+        default = false,
+        title = "Hide 'Use This Effect'",
+        description = "Hides the Use this effect entry from the share sheet.",
+        required = false,
+    )
+
     val hidePip by booleanOption(
         key = "hidePip",
         default = false,
@@ -336,6 +344,7 @@ val customShareSheetPatch = bytecodePatch(
             "hideCreateSticker" to (hideCreateSticker == true),
             "hideDuet" to (hideDuet == true),
             "hideStitch" to (hideStitch == true),
+            "hideUseThisEffect" to (hideUseThisEffect == true),
             "hidePip" to (hidePip == true),
             "hideClearDisplay" to (hideClearDisplay == true),
             "hideListenAudio" to (hideListenAudio == true),
@@ -434,11 +443,11 @@ val customShareSheetPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = CREATE_GROUP_BUTTON_ASSEM_CLASS,
-                name = "ce",
+                name = "Od",
                 returnType = "V",
                 parameters = listOf("Z"),
             ).method.replaceWithReturnVoid()
-            println("[Custom Share Sheet] Hooked SharePanelCreateGroupButtonAssem.ce -> return-void.")
+            println("[Custom Share Sheet] Hooked SharePanelCreateGroupButtonAssem.Od -> return-void.")
             patched++
 
             // 6b. Hide SharePanelGroupChatHintAssem view and neutralize state updates
@@ -469,14 +478,18 @@ val customShareSheetPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = GROUP_CHAT_HINT_ASSEM_CLASS,
-                name = "ce",
+                name = "Od",
                 returnType = "V",
                 parameters = listOf("Z"),
             ).method.replaceWithReturnVoid()
-            println("[Custom Share Sheet] Hooked SharePanelGroupChatHintAssem.ce -> return-void.")
+            println("[Custom Share Sheet] Hooked SharePanelGroupChatHintAssem.Od -> return-void.")
             patched++
         }
 
-        println("[Custom Share Sheet] Applied $patched hooks -> share sheet customized.")
+        if (patched == 0) {
+            println("[Custom Share Sheet] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Custom Share Sheet] Applied $patched hooks -> share sheet customized.")
+        }
     }
 }

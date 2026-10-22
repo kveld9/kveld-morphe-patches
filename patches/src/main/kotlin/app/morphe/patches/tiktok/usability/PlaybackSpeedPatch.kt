@@ -234,6 +234,10 @@ val playbackSpeedPatch = bytecodePatch(
             }
         }
 
-        println("[Remember Playback Speed] Applied $patched playback speed hook(s) -> Persistent speed active.")
+        if (patched == 0) {
+            println("[Remember Playback Speed] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Remember Playback Speed] Applied $patched playback speed hook(s) -> Persistent speed active.")
+        }
     }
 }

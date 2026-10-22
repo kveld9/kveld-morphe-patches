@@ -241,10 +241,10 @@ val feedNavigationDeclutterPatch = bytecodePatch(
 
             val serviceFp = Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/explore/service/ExploreFeedServiceImpl;",
-                name = "LJJIII",
+                name = "LJJII",
                 parameters = emptyList(),
             )
-            var tabProviderClass = "LX/03rx;"
+            var tabProviderClass = "LX/03s9;"
             val insns = serviceFp.method.implementation?.instructions
             if (insns != null) {
                 for (insn in insns) {
@@ -332,7 +332,7 @@ val feedNavigationDeclutterPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = liveGenClass,
-                name = "LIZLLL",
+                name = "LJIIJ",
                 returnType = "Z",
                 parameters = emptyList(),
             ).method.replaceWithReturnBoolean(false)
@@ -483,8 +483,8 @@ val feedNavigationDeclutterPatch = bytecodePatch(
 
         val tabManagerClasses by lazy {
             val avatarAbilityClass = "Lcom/ss/android/ugc/aweme/friendstab/ability/BaseBottomTabAvatarAbility;"
-            val ksMethod = classDefByOrNull(avatarAbilityClass)?.methods?.firstOrNull { it.name == "kS" }
-            val tabManagerBaseType = ksMethod?.returnType ?: "LX/05Ha;"
+            val ksMethod = classDefByOrNull(avatarAbilityClass)?.methods?.firstOrNull { it.name == "uR" || it.name == "kS" }
+            val tabManagerBaseType = ksMethod?.returnType ?: "LX/05HL;"
 
             val managers = mutableListOf<String>()
             classDefForEach { cls ->
@@ -493,7 +493,7 @@ val feedNavigationDeclutterPatch = bytecodePatch(
                 }
             }
             if (managers.isEmpty()) {
-                managers.addAll(listOf("LX/06vO;", "LX/06vG;"))
+                managers.addAll(listOf("LX/06ue;", "LX/06um;"))
             }
             managers
         }
@@ -514,13 +514,6 @@ val feedNavigationDeclutterPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = redDotServiceClass,
-                name = "loadAvatarAbility",
-                returnType = "V",
-            ).method.replaceWithReturnVoid()
-            patched++
-
-            Fingerprint(
-                definingClass = redDotServiceClass,
                 name = "dealWithFriendsAvatar",
                 returnType = "V",
             ).method.replaceWithReturnVoid()
@@ -536,14 +529,14 @@ val feedNavigationDeclutterPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/friendstab/ability/BaseBottomTabAvatarAbility;",
-                name = "cr2",
+                name = "Hw2",
                 returnType = "Z",
             ).method.replaceWithReturnBoolean(false)
             patched++
 
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/friendstab/ability/FriendBottomTabAvatarAbility;",
-                name = "cr2",
+                name = "Hw2",
                 returnType = "Z",
             ).method.replaceWithReturnBoolean(false)
             patched++
@@ -666,6 +659,10 @@ val feedNavigationDeclutterPatch = bytecodePatch(
             }
         }
 
-        println("[Declutter Navigation Bar] Applied $patched navigation & header declutter hook(s).")
+        if (patched == 0) {
+            println("[Declutter Navigation Bar] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Declutter Navigation Bar] Applied $patched navigation & header declutter hook(s).")
+        }
     }
 }

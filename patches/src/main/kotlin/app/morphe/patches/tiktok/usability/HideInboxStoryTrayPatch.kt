@@ -43,7 +43,7 @@ val hideInboxStoryTrayPatch = bytecodePatch(
             // Neutralizes the pod provider so no story or thought combine pods are created.
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/inbox/skylight/InboxSkylightWidgetV2;",
-                name = "Sq",
+                name = "Zp",
                 returnType = "Ljava/util/List;",
                 parameters = emptyList(),
             ).method.replaceWithReturnEmptyList()
@@ -60,7 +60,11 @@ val hideInboxStoryTrayPatch = bytecodePatch(
             println("[Hide Inbox Story Tray] Hooked InboxSkylightWidgetV2 display eligibility -> return false.")
             patched++
 
-            println("[Hide Inbox Story Tray] Applied $patched hook(s) -> Inbox story and status tray hidden.")
+            if (patched == 0) {
+                println("[Hide Inbox Story Tray] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+            } else {
+                println("[Hide Inbox Story Tray] Applied $patched hook(s) -> Inbox story and status tray hidden.")
+            }
             return@execute
         }
 

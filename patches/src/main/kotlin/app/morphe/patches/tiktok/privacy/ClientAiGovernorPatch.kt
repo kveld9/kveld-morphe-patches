@@ -68,8 +68,8 @@ val clientAiGovernorPatch = bytecodePatch(
         )
         patched++
 
-        // 5. Neutralize TakoTrigger methods returning boolean (yr, Fr) -> suppresses Tako button in feed interact area
-        listOf("yr", "Fr").forEach { methodName ->
+        // 5. Neutralize TakoTrigger methods returning boolean (Rp, Sp) -> suppresses Tako button in feed interact area
+        listOf("Rp", "Sp").forEach { methodName ->
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/feed/assem/tikbot/TakoTrigger;",
                 name = methodName,
@@ -84,8 +84,8 @@ val clientAiGovernorPatch = bytecodePatch(
             patched++
         }
 
-        // 6. Neutralize TakoTriggerRoof methods returning boolean (yr, Fr) -> suppresses Tako roof trigger in feed
-        listOf("yr", "Fr").forEach { methodName ->
+        // 6. Neutralize TakoTriggerRoof methods returning boolean (Rp, Sp) -> suppresses Tako roof trigger in feed
+        listOf("Rp", "Sp").forEach { methodName ->
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/feed/assem/tikbot/TakoTriggerRoof;",
                 name = methodName,
@@ -278,6 +278,10 @@ val clientAiGovernorPatch = bytecodePatch(
         )
         patched++
 
-        println("[Disable On-Device AI] Applied $patched client-side AI, Tako, and search clutter governors.")
+        if (patched == 0) {
+            println("[Disable On-Device AI] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Disable On-Device AI] Applied $patched client-side AI, Tako, and search clutter governors.")
+        }
     }
 }

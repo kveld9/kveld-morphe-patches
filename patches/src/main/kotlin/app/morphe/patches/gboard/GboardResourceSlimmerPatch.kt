@@ -38,7 +38,7 @@ val gboardResourceSlimmerPatch = resourcePatch(
         var totalSavedBytes = 0L
 
         // 1. Clean up APK root metadata, build properties, and compiler junk
-        val apkRoot = get("AndroidManifest.xml").parentFile ?: get(".")
+        val apkRoot = get(".").absoluteFile.normalize()
         val protectedPrefixes = listOf("assets", "res", "smali", "lib", "kotlin")
         var junkFilesCount = 0
 
@@ -50,6 +50,7 @@ val gboardResourceSlimmerPatch = resourcePatch(
             // Never delete from protected code/resource trees here
             if (topDir in protectedPrefixes) return@forEach
             if (relativePath == "AndroidManifest.xml" || relativePath.startsWith("META-INF/services/")) return@forEach
+            if ('/' in relativePath && topDir != "META-INF") return@forEach
 
             val name = file.name
             val isJunk = name.endsWith(".properties") ||

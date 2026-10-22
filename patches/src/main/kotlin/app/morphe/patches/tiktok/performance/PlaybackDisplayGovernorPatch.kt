@@ -33,6 +33,7 @@ val playbackDisplayGovernorPatch = bytecodePatch(
         title = "Maximum Playback Resolution",
         description = "Select maximum video playback resolution ceiling: 1080 (1080p ExtremelyHigh), 720 (720p SuperHigh), 540 (540p H_High), 480 (480p High), or 360 (360p Standard).",
         default = "480",
+        values = mapOf("1080p ExtremelyHigh" to "1080", "720p SuperHigh" to "720", "540p H_High" to "540", "480p High" to "480", "360p Standard" to "360"),
         required = false,
     )
 
@@ -73,6 +74,7 @@ val playbackDisplayGovernorPatch = bytecodePatch(
         title = "Target Refresh Rate",
         description = "Select target display refresh rate: max (display peak rate), 120 (120 Hz), 90 (90 Hz), or 60 (60 Hz). Clamped automatically to display maximum.",
         default = "max",
+        values = mapOf("Display peak rate" to "max", "120 Hz" to "120", "90 Hz" to "90", "60 Hz" to "60"),
         required = false,
     )
 
@@ -232,7 +234,7 @@ val playbackDisplayGovernorPatch = bytecodePatch(
                 simMethod.addInstructionsAtControlFlowLabel(
                     returnIndex,
                     """
-                        invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->filterBitrates(Ljava/util/List;)Ljava/util/List;
+                        invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->filterBitrates(Ljava/util/List;)Ljava/util/List;
                         move-result-object v$reg
                     """.trimIndent(),
                 )
@@ -258,7 +260,7 @@ val playbackDisplayGovernorPatch = bytecodePatch(
                 simRawMethod.addInstructionsAtControlFlowLabel(
                     returnIndex,
                     """
-                        invoke-static {v$reg}, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->filterBitrates(Ljava/util/List;)Ljava/util/List;
+                        invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->filterBitrates(Ljava/util/List;)Ljava/util/List;
                         move-result-object v$reg
                     """.trimIndent(),
                 )
@@ -420,6 +422,7 @@ val playbackDisplayGovernorPatch = bytecodePatch(
                 name = "<clinit>",
             )
             val method = hookClinitFp.method
+            method.ensureRegisterCount(1)
             val instructions = method.implementation?.instructions?.toList() ?: emptyList()
             val returnIndex = instructions.indexOfLast { it.opcode == Opcode.RETURN_VOID }
             val targetIndex = if (returnIndex >= 0) returnIndex else 0
@@ -542,6 +545,10 @@ val playbackDisplayGovernorPatch = bytecodePatch(
             patched++
         }
 
-        println("[Playback & Display Governor] Applied $patched hook(s) across active playback and display governor feature(s).")
+        if (patched == 0) {
+            println("[Playback & Display Governor] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Playback & Display Governor] Applied $patched hook(s) across active playback and display governor feature(s).")
+        }
     }
 }

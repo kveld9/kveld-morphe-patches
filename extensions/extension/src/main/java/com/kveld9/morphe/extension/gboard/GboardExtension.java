@@ -3,7 +3,9 @@ package com.kveld9.morphe.extension.gboard;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.text.InputFilter;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 import com.kveld9.morphe.extension.gboard.i18n.GboardI18n;
 import java.lang.reflect.Constructor;
@@ -30,7 +32,6 @@ public class GboardExtension {
     public static final String PREF_KEY_BOTTOM_PADDING = "morphe_bottom_padding";
     public static final String PREF_KEY_HIDE_IME_NAV_BAR = "morphe_hide_ime_nav_bar";
     public static final String PREF_KEY_TOOLBAR_ITEM_COUNT = "morphe_toolbar_item_count";
-    public static final String PREF_KEY_EMOJI_SCALE = "morphe_emoji_scale";
     public static final String PREF_KEY_KEY_SHAPE_SELECTION = "morphe_key_shape_selection";
     public static final String PREF_KEY_ACCESS_POINTS_REDESIGN = "morphe_access_points_redesign";
     public static final String PREF_KEY_DISMISS_SUGGESTIONS = "morphe_dismiss_suggestions";
@@ -74,10 +75,6 @@ public class GboardExtension {
     public static final int MIN_CLIPBOARD_CHAR_LIMIT_K = 5;
     public static final int MAX_CLIPBOARD_CHAR_LIMIT_K = 200;
     public static final int DEFAULT_CLIPBOARD_CHAR_LIMIT_K = 20;
-
-    public static final int MIN_EMOJI_SCALE = 50;
-    public static final int MAX_EMOJI_SCALE = 150;
-    public static final int DEFAULT_EMOJI_SCALE = 100;
 
 
 
@@ -145,7 +142,6 @@ public class GboardExtension {
     private static volatile int cachedBottomPadding = 0;
     private static volatile boolean cachedHideImeNavBar = false;
     private static volatile int cachedToolbarItemCount = 5;
-    private static volatile int cachedEmojiScale = 100;
     private static volatile boolean cachedDecoupleHaptics = true;
     private static volatile boolean listenersInitialized = false;
 
@@ -157,8 +153,6 @@ public class GboardExtension {
         cachedBottomPadding = Math.max(MIN_BOTTOM_PADDING, Math.min(MAX_BOTTOM_PADDING, pad));
         int tbCount = getIntPref(PREF_KEY_TOOLBAR_ITEM_COUNT, DEFAULT_TOOLBAR_ITEM_COUNT);
         cachedToolbarItemCount = Math.max(MIN_TOOLBAR_ITEM_COUNT, Math.min(MAX_TOOLBAR_ITEM_COUNT, tbCount));
-        int scale = getIntPref(PREF_KEY_EMOJI_SCALE, DEFAULT_EMOJI_SCALE);
-        cachedEmojiScale = Math.max(MIN_EMOJI_SCALE, Math.min(MAX_EMOJI_SCALE, scale));
     }
 
     private static void showRestartToast(Context ctx) {
@@ -690,15 +684,6 @@ public class GboardExtension {
         return getBooleanPref(PREF_KEY_BLUETOOTH_MIC, true);
     }
 
-    public static float getEmojiScale(Context context) {
-        ensureListeners();
-        return ((float) cachedEmojiScale) / 100.0f;
-    }
-
-    public static float getEmojiScale() {
-        return getEmojiScale(null);
-    }
-
     private static Field findField(Class<?> clazz, String fieldName) {
         Class<?> curr = clazz;
         while (curr != null && curr != Object.class) {
@@ -748,8 +733,6 @@ public class GboardExtension {
                 min = MIN_CLIPBOARD_GRID_COLUMNS;
             } else if (PREF_KEY_CLIPBOARD_CHAR_LIMIT.equals(key)) {
                 min = MIN_CLIPBOARD_CHAR_LIMIT_K;
-            } else if (PREF_KEY_EMOJI_SCALE.equals(key)) {
-                min = MIN_EMOJI_SCALE;
             }
 
             if (min > 0) {
@@ -1201,5 +1184,42 @@ public class GboardExtension {
                 System.exit(0);
             }
         }).start();
+    }
+
+    public static void removeTranslateLimit(EditText editText) {
+        if (editText == null) {
+            return;
+        }
+        try {
+            stripFiltersSafe(editText);
+        } catch (Throwable ignored) {}
+    }
+
+    private static void stripFiltersSafe(EditText editText) {
+        InputFilter[] current = editText.getFilters();
+        if (current == null) {
+            return;
+        }
+        InputFilter[] stripped = stripLengthFilters(current);
+        if (stripped != current) {
+            editText.setFilters(stripped);
+        }
+    }
+
+    private static InputFilter[] stripLengthFilters(InputFilter[] filters) {
+        java.util.List<InputFilter> kept = new java.util.ArrayList<>(filters.length);
+        for (InputFilter filter : filters) {
+            if (isNonLengthFilter(filter)) {
+                kept.add(filter);
+            }
+        }
+        if (kept.size() == filters.length) {
+            return filters;
+        }
+        return kept.toArray(new InputFilter[0]);
+    }
+
+    private static boolean isNonLengthFilter(InputFilter filter) {
+        return filter != null && !(filter instanceof InputFilter.LengthFilter);
     }
 }

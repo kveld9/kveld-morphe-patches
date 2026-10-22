@@ -48,8 +48,6 @@ public abstract class BaseLanguagePack {
                 return value + (value == 1 ? " col" : " cols");
             case PREF_KEY_CLIPBOARD_CHAR_LIMIT:
                 return value + "k chars";
-            case PREF_KEY_EMOJI_SCALE:
-                return value + " %";
             default:
                 return String.valueOf(value);
         }

@@ -61,7 +61,7 @@ val gboardDecoupleHapticsPatch = bytecodePatch(
                     fpHapticHelper.method.addInstructionsAtControlFlowLabel(
                         idx,
                         """
-                            invoke-static {v$reg}, ${Constants.GBOARD_EXTENSION_CLASS}->overrideSystemHapticStatus(I)I
+                            invoke-static/range {v$reg .. v$reg}, ${Constants.GBOARD_EXTENSION_CLASS}->overrideSystemHapticStatus(I)I
                             move-result v$reg
                         """.trimIndent(),
                     )
@@ -109,7 +109,7 @@ val gboardDecoupleHapticsPatch = bytecodePatch(
                 methodSyncSetting.addInstructions(
                     idx + 2,
                     """
-                        invoke-static {v$reg}, ${Constants.GBOARD_EXTENSION_CLASS}->overrideSystemHapticAllowed(Z)Z
+                        invoke-static/range {v$reg .. v$reg}, ${Constants.GBOARD_EXTENSION_CLASS}->overrideSystemHapticAllowed(Z)Z
                         move-result v$reg
                     """.trimIndent(),
                 )
@@ -172,7 +172,7 @@ val gboardDecoupleHapticsPatch = bytecodePatch(
                     m.addInstructions(
                         idx + 1,
                         """
-                            invoke-static {v$reg}, ${Constants.GBOARD_EXTENSION_CLASS}->overrideSystemHapticAllowed(Z)Z
+                            invoke-static/range {v$reg .. v$reg}, ${Constants.GBOARD_EXTENSION_CLASS}->overrideSystemHapticAllowed(Z)Z
                             move-result v$reg
                         """.trimIndent(),
                     )
@@ -206,7 +206,7 @@ val gboardDecoupleHapticsPatch = bytecodePatch(
                     m.addInstructions(
                         idx + 1,
                         """
-                            invoke-static {v$reg}, ${Constants.GBOARD_EXTENSION_CLASS}->getVibrationUsage(I)I
+                            invoke-static/range {v$reg .. v$reg}, ${Constants.GBOARD_EXTENSION_CLASS}->getVibrationUsage(I)I
                             move-result v$reg
                         """.trimIndent(),
                     )
@@ -241,13 +241,17 @@ val gboardDecoupleHapticsPatch = bytecodePatch(
             methodPref.addInstructions(
                 idx + 2,
                 """
-                    invoke-static {v$reg}, ${Constants.GBOARD_EXTENSION_CLASS}->overrideSystemHapticAllowed(Z)Z
+                    invoke-static/range {v$reg .. v$reg}, ${Constants.GBOARD_EXTENSION_CLASS}->overrideSystemHapticAllowed(Z)Z
                     move-result v$reg
                 """.trimIndent(),
             )
             patched++
         }
 
-        println("[Decouple Haptics] Injected $patched independent haptics and touch feedback decoupling hook(s).")
+        if (patched == 0) {
+            println("[Decouple Haptics] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Decouple Haptics] Injected $patched independent haptics and touch feedback decoupling hook(s).")
+        }
     }
 }

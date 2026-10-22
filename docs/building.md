@@ -8,7 +8,7 @@ Instructions and toolchain requirements for compiling, testing, and developing *
 
 - **JDK 17+** (JDK 21 Temurin recommended)
 - **Gradle 9.6.1** (included via `./gradlew` wrapper)
-- **Python 3.x** with the project virtualenv in `./venv/` (`pip install -r requirements.txt`), used by the reverse engineering harness
+- **Python 3.x** with the project virtualenv in `./venv/` (`pip install -r requirements.txt`)
 - **Android SDK** (API Level 34+ build-tools if compiling the companion extension)
 
 ---
@@ -42,9 +42,6 @@ Execute AGP linting, Kotlin compiler checks, and unit tests:
 
 # Run Kotlin unit tests
 ./gradlew test
-
-# Run Python reverse engineering harness tests
-./venv/bin/python -m unittest discover harness/tests
 ```
 
 ---
@@ -53,7 +50,7 @@ Execute AGP linting, Kotlin compiler checks, and unit tests:
 Every patch change must be validated by running the Morphe Patcher against the target APK with all of that app's patches active. The run must finish with 0 failed patches, 0 fingerprint mismatches, and 0 smali compile errors. The runner rejects any input whose version is not a target version declared by the selected patches:
 
 ```bash
-# Patch the target app (brave, gboard, hevy, tiktok, nokoprint, xiaomi_earbuds)
+# Patch the target app (brave, gboard, tiktok)
 ./gradlew runPatchTest -Papp=<targetApp>
 
 # Use an explicit APK file instead
@@ -87,7 +84,7 @@ Or run the unattended smoke installation gate:
 ```
 It automatically selects the target device by matching ABI and minimum SDK (override with `--serial` or `ANDROID_SERIAL`), refuses to replace the active keyboard without `--allow-active-ime`, and prints a machine-readable JSON verdict (exit 0 = PASS).
 
-The `FINAL PATCHING RESULT` block lists the five slowest patches and the total patch time, and prints a `[WARN] Slow patch:` line for every patch above the threshold. The first executed patch also absorbs pipeline startup and is marked as such. The warning is informational and never fails the run.
+The `FINAL PATCHING RESULT` block lists the five slowest patches and the total patch time, and prints a `[WARN] Slow patch:` line for every patch above the threshold. The first executed patch also absorbs pipeline startup and is marked as such. The warning is informational and never fails the run. A patch that passes but prints a line containing `Skipped`, `skipping` or `not found` (counters such as `0 skipped` excluded) gets a `[WARN]` line and is listed under `Patches with skipped steps`; this also never changes the exit code.
 
 ---
 

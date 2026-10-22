@@ -1,6 +1,6 @@
 # Morphe Patches — ARM64 Physical Device Validation Suite
 
-This test suite automates metric collection, battery event tracking, and Background Sync job monitoring via ADB on physical ARM64 Android devices.
+This test suite automates metric collection and Background Sync job monitoring via ADB on physical ARM64 Android devices.
 
 ---
 
@@ -10,13 +10,11 @@ This test suite automates metric collection, battery event tracking, and Backgro
 validation/physical_harness/
 ├── run_harness.py                 # Primary CLI orchestrator
 ├── server/                        # Local HTTP diagnostic server
-│   ├── battery_test.html          # Test 1: Battery Status API events
-│   ├── background_sync_test.html  # Test 2: ServiceWorker Sync / PeriodicSync
+│   ├── background_sync_test.html  # Test 1: ServiceWorker Sync / PeriodicSync
 │   └── sw.js                      # Test ServiceWorker
 ├── scripts/
 │   ├── common.py                  # ADB connection, dumpsys, and port forwarding
-│   ├── test_battery.py            # Test 1 Runner (Battery)
-│   ├── test_background_sync.py    # Test 2 Runner (Background Sync)
+│   ├── test_background_sync.py    # Test 1 Runner (Background Sync)
 │   └── compare_results.py         # Vanilla vs Patched comparator
 └── results/                       # Logcat, dumpsys, and metrics dumps
 ```

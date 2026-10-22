@@ -251,20 +251,6 @@ for entry in by_app.values():
                 readme,
                 count=1,
             )
-        elif any("hevy" in p for p in pkgs):
-            slug_ver = target_ver.replace(".", "-")
-            readme = re.sub(
-                r"(\|\s*\*\*Hevy\*\*\s*\|\s*`com\.hevy`\s*\|\s*`)[^`]+(`\s*\|)",
-                rf"\g<1>{target_ver}\g<2>",
-                readme,
-                count=1,
-            )
-            readme = re.sub(
-                r"https://www\.apkmirror\.com/apk/hevy-gym-workout-tracker/hevy-gym-log-workout-tracker/hevy-gym-log-workout-tracker-[^/]+-release/",
-                f"https://www.apkmirror.com/apk/hevy-gym-workout-tracker/hevy-gym-log-workout-tracker/hevy-gym-log-workout-tracker-{slug_ver}-release/",
-                readme,
-                count=1,
-            )
         elif any("musically" in p for p in pkgs) or any("trill" in p for p in pkgs):
             slug_ver = target_ver.replace(".", "-")
             readme = re.sub(
@@ -282,20 +268,6 @@ for entry in by_app.values():
             readme = re.sub(
                 r"https://www\.apkmirror\.com/apk/tiktok-pte-ltd/tik-tok/tiktok-[^/]+-2-release/",
                 f"https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok/tiktok-{slug_ver}-2-release/",
-                readme,
-                count=1,
-            )
-        elif any("nokoprint" in p for p in pkgs):
-            readme = re.sub(
-                r"(\|\s*\*\*NokoPrint\*\*\s*\|\s*`com\.nokoprint`\s*\|\s*`)[^`]+(`\s*\|)",
-                rf"\g<1>{target_ver}\g<2>",
-                readme,
-                count=1,
-            )
-        elif any("earphone" in p for p in pkgs):
-            readme = re.sub(
-                r"(\|\s*\*\*Xiaomi Earbuds\*\*\s*\|\s*`com\.mi\.earphone`\s*\|\s*`)[^`]+(`\s*\|)",
-                rf"\g<1>{target_ver}\g<2>",
                 readme,
                 count=1,
             )

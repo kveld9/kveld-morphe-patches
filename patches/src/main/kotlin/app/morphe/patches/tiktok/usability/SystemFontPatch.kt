@@ -6,6 +6,7 @@ import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.clearTryBlocks
 import app.morphe.patches.shared.sharedExtensionPatch
 import com.android.tools.smali.dexlib2.AccessFlags
 
@@ -24,6 +25,7 @@ private fun BytecodePatchContext.hookStandardFontProvider(): Int {
     val weightReg = if (isStatic) "p1" else "p2"
     val italicReg = if (isStatic) "p2" else "p3"
 
+    axisMethod.clearTryBlocks()
     axisMethod.removeInstructions(0, axisMethod.implementation!!.instructions.count())
     axisMethod.addInstructions(
         0,
@@ -44,6 +46,7 @@ private fun BytecodePatchContext.hookStandardFontProvider(): Int {
     }
     pathMethods.forEach { method ->
         val pathReg = if (AccessFlags.STATIC.isSet(method.accessFlags)) "p0" else "p1"
+        method.clearTryBlocks()
         method.removeInstructions(0, method.implementation!!.instructions.count())
         method.addInstructions(
             0,
@@ -74,6 +77,7 @@ private fun BytecodePatchContext.hookDynamicFontProvider(): Int {
     val weightReg = if (isStatic) "p1" else "p2"
     val italicReg = if (isStatic) "p2" else "p3"
 
+    axisMethod.clearTryBlocks()
     axisMethod.removeInstructions(0, axisMethod.implementation!!.instructions.count())
     axisMethod.addInstructions(
         0,
@@ -93,6 +97,7 @@ private fun BytecodePatchContext.hookDynamicFontProvider(): Int {
     }
     pathMethods.forEach { method ->
         val pathReg = if (AccessFlags.STATIC.isSet(method.accessFlags)) "p0" else "p1"
+        method.clearTryBlocks()
         method.removeInstructions(0, method.implementation!!.instructions.count())
         method.addInstructions(
             0,
@@ -111,7 +116,7 @@ private fun BytecodePatchContext.hookDynamicFontProvider(): Int {
 
 private fun BytecodePatchContext.hookAssetFontLoader(): Int {
     val assetFontFp = Fingerprint(
-        definingClass = "LX/00kn;",
+        definingClass = "LX/00ki;",
         name = "s4",
         parameters = listOf("Landroid/content/res/AssetManager;", "Ljava/lang/String;"),
         returnType = "Landroid/graphics/Typeface;",
@@ -168,6 +173,10 @@ val systemFontPatch = bytecodePatch(
         patched += hookDynamicFontProvider()
         patched += hookAssetFontLoader()
         patched += hookWebViewFontLoader()
-        println("[Use System Font] Applied $patched system font hook(s) -> System font active.")
+        if (patched == 0) {
+            println("[Use System Font] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Use System Font] Applied $patched system font hook(s) -> System font active.")
+        }
     }
 }

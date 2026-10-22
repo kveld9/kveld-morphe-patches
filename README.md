@@ -10,7 +10,7 @@
 <h1 align="center">Morphe Patches</h1>
 
 <p align="center">
-  Simple tweaks for <b>Brave Browser</b>, <b>Gboard Lite</b>, <b>Hevy</b>, <b>TikTok</b>, <b>NokoPrint</b>, and <b>Xiaomi Earbuds</b> on Android: fewer ads, less tracking, less battery drain. Applied with the <b><a href="https://morphe.software">Morphe</a></b> patcher.
+  Simple tweaks for <b>Brave Browser</b>, <b>Gboard Lite</b>, and <b>TikTok</b> on Android: fewer ads, less tracking, less battery drain. Applied with the <b><a href="https://morphe.software">Morphe</a></b> patcher.
 </p>
 
 <p align="center">
@@ -84,12 +84,9 @@ flowchart TD
 
 | Application | Package ID | Target Version | Architecture / Variant | Download Source | Complete Guide |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Brave Browser** | `com.brave.browser` | `1.97.57` | `arm64-v8a`<br>`armeabi-v7a` (single file) | [ARM64](https://github.com/brave/brave-browser/releases/download/v1.97.57/Bravemonoarm64.apk) · [ARM32](https://github.com/brave/brave-browser/releases/download/v1.97.57/BraveMonoarm.apk) | Brave Guide |
-| **Gboard Lite** | `com.google.android.inputmethod.latin` | `18.5.1.993608717-lite_beta` | `arm64-v8a`<br>`armeabi-v7a` (any screen) | [APKMirror](https://www.apkmirror.com/apk/google-inc/gboard/gboard-the-google-keyboard-18-5-1-993608717-beta/) | Gboard Lite Guide |
-| **Hevy** | `com.hevy` | `3.1.14` | `arm64-v8a` (multi-file) | [APKMirror](https://www.apkmirror.com/apk/hevy-gym-workout-tracker/hevy-gym-log-workout-tracker/hevy-gym-log-workout-tracker-3-1-14-release/) | Hevy Guide |
-| **NokoPrint** | `com.nokoprint` | `5.28.6` | Universal (any screen) | [APKPure](https://d.apkpure.com/b/XAPK/com.nokoprint?versionCode=52806) | NokoPrint Guide |
-| **TikTok** | `com.zhiliaoapp.musically` | `47.1.4` | `arm64-v8a` (any screen) | [APKMirror](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-47-1-4-release/) | TikTok Guide |
-| **Xiaomi Earbuds** | `com.mi.earphone` | `1.38.0i` | Universal (multi-file) | [APKPure](https://d.apkpure.com/b/XAPK/com.mi.earphone?versionCode=138000) | Xiaomi Earbuds Guide |
+| **Brave Browser** | `com.brave.browser` | `1.97.59` | `arm64-v8a`<br>`armeabi-v7a` (single file) | [ARM64](https://github.com/brave/brave-browser/releases/download/v1.97.59/Bravemonoarm64.apk) · [ARM32](https://github.com/brave/brave-browser/releases/download/v1.97.59/BraveMonoarm.apk) | [Brave Guide](docs/apps/brave.md) |
+| **Gboard Lite** | `com.google.android.inputmethod.latin` | `18.5.1.993608717-lite_beta` | `arm64-v8a`<br>`armeabi-v7a` (any screen) | [APKMirror](https://www.apkmirror.com/apk/google-inc/gboard/gboard-the-google-keyboard-18-5-1-993608717-beta/) | [Gboard Lite Guide](docs/apps/gboard.md) |
+| **TikTok** | `com.zhiliaoapp.musically` | `47.4.3` | `arm64-v8a` (any screen) | [APKMirror](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-47-4-3-release/) | [TikTok Guide](docs/apps/tiktok.md) |
 
 Labels: `single file` = one APK; `multi-file` = a package Morphe joins together; `any screen` = works on any screen size.
 
@@ -116,7 +113,7 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 
 **Supported versions:**
 
-| 47.1.4 |
+| 47.4.3 |
 | :---: |
 
 | Patch | Description | Options |
@@ -133,7 +130,7 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 | **Camera & Microphone Indicator** | Shows a corner mark while TikTok holds camera/mic open. |  |
 | **Clean Share Links** | Removes tracking parameters from shared links. | • Custom Share Host |
 | **Comment Customizer** | Takes control of comments: sort, copy, translate and hide clutter. | • Comment Sort Controls<br>• Fix Silent Comment Drops<br>• Copy Comments Without Username<br>• Disable Suggested Emojis<br>• Hide Comment Quick Actions<br>• Hide Comment Surveys & Feedback Cards<br>• Hide Comment Story Rings<br>• Enable Voice Comments<br>• Hide Comment Popup Ads<br>• Show Community-Flagged Comments<br>• Auto-Translate Comments<br>• Do-Not-Translate Languages |
-| **Custom Share Sheet** | Lets you hide share menu entries you do not use. | • Hide WhatsApp<br>• Hide Instagram<br>• Hide Facebook & Messenger<br>• Hide Telegram<br>• Hide X / Twitter<br>• Hide Snapchat<br>• Hide Reddit & Discord<br>• Hide SMS & Messages<br>• Hide Secondary Networks<br>• Hide 'Repost' Button<br>• Hide QR Code<br>• Hide 'Copy Link'<br>• Hide System Share ('More')<br>• Hide Friends / Direct Messages Row<br>• Hide Quick Emojis<br>• Hide 'Send to New Group'<br>• Hide 'Promote' Action<br>• Hide 'Why This Video'<br>• Hide 'Create Group' Action<br>• Hide 'Add to Story'<br>• Hide 'Create Sticker'<br>• Hide 'Duet' Action<br>• Hide 'Stitch' Action<br>• Hide 'Picture-in-Picture' (PiP)<br>• Hide 'Clear Display'<br>• Hide 'Background Audio'<br>• Hide Live Wallpaper & GIF<br>• Hide 'Not Interested'<br>• Hide 'Report' |
+| **Custom Share Sheet** | Lets you hide share menu entries you do not use. | • Hide WhatsApp<br>• Hide Instagram<br>• Hide Facebook & Messenger<br>• Hide Telegram<br>• Hide X / Twitter<br>• Hide Snapchat<br>• Hide Reddit & Discord<br>• Hide SMS & Messages<br>• Hide Secondary Networks<br>• Hide 'Repost' Button<br>• Hide QR Code<br>• Hide 'Copy Link'<br>• Hide System Share ('More')<br>• Hide Friends / Direct Messages Row<br>• Hide Quick Emojis<br>• Hide 'Send to New Group'<br>• Hide 'Promote' Action<br>• Hide 'Why This Video'<br>• Hide 'Create Group' Action<br>• Hide 'Add to Story'<br>• Hide 'Create Sticker'<br>• Hide 'Duet' Action<br>• Hide 'Stitch' Action<br>• Hide 'Use This Effect'<br>• Hide 'Picture-in-Picture' (PiP)<br>• Hide 'Clear Display'<br>• Hide 'Background Audio'<br>• Hide Live Wallpaper & GIF<br>• Hide 'Not Interested'<br>• Hide 'Report' |
 | **Customize Search** | Customizes search suggestions, live recommendations, and autoplay. | • Hide Suggested Searches<br>• Hide Popular Lives<br>• Disable Search Autoplay<br>• Non-Personalized Search<br>• Enable Live Search |
 | **Declutter Direct Messages** | Cleans up chat and DM screens by hiding extra buttons. | • Hide Chat List Camera Button<br>• Hide Header Call Button<br>• Hide Message Forward Button<br>• Hide Reaction and Streak Bar<br>• Hide Input Bar Camera Button<br>• Hide Gallery Button<br>• Hide Emoji/Stickers Button<br>• Hide Voice Recording Button<br>• Hide Try Effect Button<br>• Hide Sticker Reply Suggestions |
 | **Declutter Navigation Bar** | Removes extra tabs and buttons from navigation bars. | • Hide Shop Navigation Tab<br>• Hide Nearby Feed Tab<br>• Hide Community Tab<br>• Hide Top-Left LIVE Button<br>• Hide Feed Search Bar<br>• Hide Create / Publish Button<br>• Hide Friends Tab Avatar Preview<br>• Hide Inbox Notification Badge |
@@ -174,28 +171,7 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 </details>
 
 <details>
-<summary>NokoPrint - WiFi, Bluetooth, USB&nbsp;&nbsp;•&nbsp;&nbsp;<b>7 patches</b></summary>
-<br>
-
-**Supported versions:**
-
-| 5.28.6 |
-| :---: |
-
-| Patch | Description | Options |
-|----------|----------------|-----------|
-| **Block Ads** | Blocks ad loaders and unlocks ad-free status. |  |
-| **Block Trackers** | Blocks analytics and ad tracking. |  |
-| **Remove Extra Files** | Deletes hidden ad files and trackers to shrink the app. |  |
-| **Remove Extra Stores** | Disables payment components for other app stores you do not use. |  |
-| **Safer Connections** | Uses trusted certificates while keeping printer downloads working. |  |
-| **Skip Welcome Screen** | Skips the first-launch popup (the About menu still works). |  |
-| **Stop Background Sync** | Stops background tasks that drain the battery. |  |
-
-</details>
-
-<details>
-<summary>Gboard Lite&nbsp;&nbsp;•&nbsp;&nbsp;<b>11 patches</b></summary>
+<summary>Gboard Lite&nbsp;&nbsp;•&nbsp;&nbsp;<b>12 patches</b></summary>
 <br>
 
 **Supported versions:**
@@ -214,18 +190,19 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 | **Offline Only** | Fully disconnects Gboard. Download dictionaries first. |  |
 | **Remove Extra Files** | Deletes licenses, tutorial animations and junk. |  |
 | **Remove Permissions** | Removes permissions you pick below. | • Contacts<br>• Microphone<br>• Photos & files<br>• Dictionary sync<br>• Work profile link |
+| **Remove Translate Limit** | Removes the character limit for inline translation. |  |
 | **Stop Background Sync** | Stops background downloads and sync to save battery. |  |
 | **Stop Remote Updates** | Stops Google from changing settings remotely. |  |
 
 </details>
 
 <details>
-<summary>Brave Private Web Browser, VPN&nbsp;&nbsp;•&nbsp;&nbsp;<b>16 patches</b></summary>
+<summary>Brave Private Web Browser, VPN&nbsp;&nbsp;•&nbsp;&nbsp;<b>13 patches</b></summary>
 <br>
 
 **Supported versions:**
 
-| 1.97.57 |
+| 1.97.59 |
 | :---: |
 
 | Patch | Description | Options |
@@ -234,12 +211,9 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 | **Block Popups & Rating Requests** | Blocks rating popups, review requests and promo dialogs. |  |
 | **Block Trackers** | Blocks usage analytics, crash uploads and experiment downloads. | • Block offers server |
 | **Brave Origin** | Unlocks Brave Origin feature switches. |  |
-| **Clean Shared Links** | Removes tracking codes from links you share or copy. |  |
 | **Clean Start Page** | Removes sponsored wallpapers, news feed and promo cards. | • Hide shortcut tiles |
-| **Faster Startup** | Speeds up launch by disabling carrier customizations. |  |
-| **Hide Battery Status** | Stops sites from reading your battery level to track you. |  |
 | **Keep Tabs Open** | Stops Brave from minimizing your tabs in the background. |  |
-| **Remove Extra Files** | Deletes unused AI, VPN and AR files to shrink the app. |  |
+| **Remove Extra Files** | Deletes unused AR and XR files to shrink the app. | • Remove VPN library |
 | **Remove Extra Languages** | Deletes unselected language packs. | • Languages to keep |
 | **Select Previous Tab on Close** | Selects the previous tab in the tab group when closing a tab. |  |
 | **Silence Promo Notifications** | Stops tips, reward promos and marketing notifications. |  |
@@ -250,73 +224,30 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 </details>
 
 <details>
-<summary>Hevy - Gym Log Workout Tracker&nbsp;&nbsp;•&nbsp;&nbsp;<b>4 patches</b></summary>
-<br>
-
-**Supported versions:**
-
-| 3.1.14 |
-| :---: |
-
-| Patch | Description | Options |
-|----------|----------------|-----------|
-| **Block Trackers** | Blocks crash reporting, ad attribution and referral tracking. |  |
-| **Remove Extra Files** | Deletes tutorial videos, editor stickers and junk to shrink the app. |  |
-| **Stop Background Sync** | Stops background sync tasks and alarms that drain the battery. |  |
-| **Unlock Pro** | Unlocks Pro features stored on the device (routines, folders, charts). Server-limited items may still need a subscription. |  |
-
-</details>
-
-<details>
-<summary>Xiaomi Earbuds&nbsp;&nbsp;•&nbsp;&nbsp;<b>11 patches</b></summary>
-<br>
-
-**Supported versions:**
-
-| 1.38.0i |
-| :---: |
-
-| Patch | Description | Options |
-|----------|----------------|-----------|
-| **Block Trackers** | Stops analytics and usage reporting. |  |
-| **Device Privacy Guard** | Hides hardware IDs and lets Bluetooth work without location. |  |
-| **Offline Only** | Fully disconnects the app from the internet. Pair your earbuds first. |  |
-| **Run on Rooted Devices** | Lets the app run on rooted phones and network tools without crashing. |  |
-| **Safer Connections** | Blocks unencrypted traffic and disables certificate pinning. |  |
-| **Show All Models** | Shows every earbud model for pairing. |  |
-| **Skip Popups & Tutorials** | Skips startup agreements, tutorials, and promo banners. |  |
-| **Stop Background Activity** | Stops persistent notifications and background battery drain. |  |
-| **Unlock Sound Features** | Enables spatial audio and hearing features on all devices. |  |
-| **Unlock for Other Phones** | Enables full features on Samsung, Pixel, and other non-Xiaomi phones. |  |
-| **Update Without Account** | Lets guests check and install earbud firmware updates. |  |
-
-</details>
-
-<details>
 <summary>Universal&nbsp;&nbsp;•&nbsp;&nbsp;<b>19 patches</b></summary>
 <br>
 
 | Patch | Description | Options |
 |----------|----------------|-----------|
-| **Allow Screenshots** | Removes screenshot blocking and capture detection. |  |
-| **Block Trackers** | Removes ad IDs, disables tracking components, and adds opt-out flags. | • Ad permissions<br>• Tracking providers<br>• Tracking services<br>• Tracking receivers<br>• Opt-out flags<br>• Firebase init (may break apps)<br>• Push services (breaks push!)<br>• Google Analytics<br>• Meta analytics<br>• Crash uploaders<br>• Device ID (may break login!)<br>• ML Kit vision (breaks scanner!)<br>• Remote config (may break app!)<br>• Crashlytics (may break app!)<br>• Ad auto-start |
-| **Block Tracking SDKs** | Disables analytics, crash and ad SDKs inside the app. | • Performance monitors<br>• Crash reporters<br>• Analytics<br>• Ad attribution<br>• Old Google Analytics<br>• Push SDKs (breaks push!)<br>• Screen recorders<br>• Location trackers<br>• SDKs to keep |
-| **Block Tracking Servers** | Rewrites tracking addresses to nowhere using your blocklist. | • Blocklist file<br>• Replace with<br>• Include subdomains |
+| **Allow Screenshots (Universal)** | Removes screenshot blocking and capture detection. |  |
+| **Block Trackers (Universal)** | Removes ad IDs, disables tracking components, and adds opt-out flags. | • Ad permissions<br>• Tracking providers<br>• Tracking services<br>• Tracking receivers<br>• Opt-out flags<br>• Firebase init (may break apps)<br>• Push services (breaks push!)<br>• Google Analytics<br>• Meta analytics<br>• Crash uploaders<br>• Device ID (may break login!)<br>• ML Kit vision (breaks scanner!)<br>• Remote config (may break app!)<br>• Crashlytics (may break app!)<br>• Ad auto-start |
+| **Block Tracking SDKs** | Disables analytics, crash and ad SDKs inside the app. | • Performance monitors<br>• Crash reporters<br>• Analytics<br>• Ad attribution<br>• Old Google Analytics<br>• Push SDKs (breaks push!)<br>• Screen recorders<br>• Location trackers<br>• Bandwidth-sharing SDKs<br>• SDKs to keep |
+| **Block Tracking Servers (Universal)** | Rewrites tracking addresses to nowhere using your blocklist. | • Blocklist file<br>• Replace with<br>• Include subdomains |
 | **Clean App Packaging** | Removes build leftovers and duplicate files. |  |
 | **Disable Browser File Associations** | Removes HTTP/HTTPS web-link intent filters (VIEW + BROWSABLE) so the app no longer appears in the browser app chooser for online files, while preserving local file handling. | • Strip HTTP/HTTPS Web Schemes<br>• Remove Emptied Filters |
 | **Disable Play Store updates** | Disables Play Store updates by setting the version code to the maximum allowed. |  |
 | **Force Screen Timeout** | Makes apps respect your screen-off timer. |  |
 | **Go Fully Offline** | Removes internet access completely. | • Network state<br>• Wi-Fi controls<br>• Push permissions<br>• Google sync<br>• Block unencrypted traffic |
 | **Lock Screen Brightness** | Stops apps from changing brightness by themselves. |  |
-| **Remove Extra Languages** | Deletes unselected translation folders. | • Languages to keep |
-| **Remove Tracking Libraries** | Deletes tracking and crash-reporting native libraries. | • Crash reporters<br>• Debuggers |
+| **Remove Extra Languages (Universal)** | Deletes unselected translation folders. | • Languages to keep |
+| **Remove Tracking Libraries** | Deletes tracking and crash-reporting native libraries. | • Crash reporters<br>• Debuggers<br>• Bandwidth-sharing SDKs |
 | **Remove Unused Screen Sizes** | Deletes image folders for screen sizes you do not use. | • Screen sizes to keep<br>• Watch resources<br>• TV resources<br>• Car, dock and VR resources |
 | **Shrink PNG Images** | Recompresses PNGs without losing quality. |  |
 | **Shrink WebP Images** | Strips hidden metadata from WebP images. | • Camera data<br>• Editing history<br>• Color profiles |
 | **Silence System Logs** | Stops apps from writing debug and diagnostic messages to the system log. | • Log level |
 | **Spoof Reinstall IDs** | Prevents apps from linking reinstalls to your device by resetting app and install IDs. | • App set ID<br>• Install ID<br>• Scope to single app |
-| **Stop Background Sync** | Stops background sync schedulers and boot wakeups. | • Strip Boot Permission<br>• Disable Boot Receivers<br>• Disable Background Schedulers<br>• Strip Wake Lock Permission |
-| **Strip Sensitive Permissions** | Removes sensitive privacy and hardware permissions you select. | • Notifications<br>• Camera<br>• Microphone<br>• Photos & files<br>• Location<br>• Contacts<br>• Calendar<br>• Nearby devices<br>• Body sensors<br>• Installed apps |
+| **Stop Background Sync (Universal)** | Stops background sync schedulers and boot wakeups. | • Strip Boot Permission<br>• Disable Boot Receivers<br>• Disable Background Schedulers<br>• Strip Wake Lock Permission |
+| **Strip Sensitive Permissions (Universal)** | Removes sensitive privacy and hardware permissions you select. | • Notifications<br>• Camera<br>• Microphone<br>• Photos & files<br>• Location<br>• Contacts<br>• Calendar<br>• Nearby devices<br>• Body sensors<br>• Installed apps |
 
 </details>
 
@@ -337,12 +268,9 @@ Technical references, setup manuals, and architecture notes are organized by foc
 ### Dedicated Application Guides
 | Application | Guide | Description |
 | :--- | :--- | :--- |
-| **Brave Browser** | **Brave Guide** | Faster start, no ads or tracking, clean start page. |
-| **Gboard Lite** | **Gboard Lite Guide** | Offline dictionaries, keyboard settings, no tracking. |
-| **Hevy** | **Hevy Guide** | Email login help, Pro unlock, less battery use. |
-| **NokoPrint** | **NokoPrint Guide** | No ads, drivers keep working, safer connections. |
-| **TikTok** | **TikTok Guide** | Change country, block ads, save clean videos, save battery. |
-| **Xiaomi Earbuds** | **Xiaomi Earbuds Guide** | Pairing help, all models, sound unlocks, offline mode. |
+| **Brave Browser** | **[Brave Guide](docs/apps/brave.md)** | Faster start, no ads or tracking, clean start page. |
+| **Gboard Lite** | **[Gboard Lite Guide](docs/apps/gboard.md)** | Offline dictionaries, keyboard settings, no tracking. |
+| **TikTok** | **[TikTok Guide](docs/apps/tiktok.md)** | Change country, block ads, save clean videos, save battery. |
 
 ### Universal & Architecture Reference
 | Guide | Description |
@@ -356,8 +284,7 @@ Technical references, setup manuals, and architecture notes are organized by foc
 | Guide | Description |
 | :--- | :--- |
 | **[Building & Development](docs/building.md)** | Toolchain prerequisites, Gradle build tasks, test execution, and catalog synchronization. |
-| **[Reverse Engineering & Update Harness](harness/README.md)** | Automatic tools that check patches against new app versions. |
-| **[Physical & Runtime ADB Test Suite](validation/physical_harness/README.md)** | Automated on-device validation for battery consumption, ServiceWorker sync, and runtime telemetry. |
+| **[Physical & Runtime ADB Test Suite](validation/physical_harness/README.md)** | Automated on-device validation for ServiceWorker sync and runtime telemetry. |
 
 <p align="center">
   <a href="#top"><b>&uarr; Back to top</b></a>
@@ -378,12 +305,11 @@ Before proposing new features or submitting modifications, please review our **[
 Every patch modification or contribution must pass the official Morphe Patcher in-situ verification gate with 100% success (0 failed patches, 0 fingerprint mismatches):
 ```bash
 # Execute in-situ patching test for target application
-./gradlew runPatchTest -Papp=<targetApp>   # e.g., brave, gboard, hevy, tiktok, nokoprint, xiaomi_earbuds
+./gradlew runPatchTest -Papp=<targetApp>   # targetApp is the app id (see docs/apps/)
 ```
-Additionally, ensure all Gradle checks and automated harness tests pass cleanly:
+Additionally, ensure all Gradle checks pass cleanly:
 ```bash
 ./gradlew check
-./venv/bin/python -m unittest discover harness/tests
 ```
 
 ---
@@ -401,7 +327,7 @@ Additionally, ensure all Gradle checks and automated harness tests pass cleanly:
 > - **Security vulnerabilities**: see [SECURITY.md](SECURITY.md) (do not open public issues)
 > - **Release notes**: [CHANGELOG.md](CHANGELOG.md)
 
-**Related project**: [kveld-extra-morphe-patches](https://github.com/kveld9/kveld-extra-morphe-patches) is my personal patch collection. It shares this repo's goals but has no per-app completion target — its patches are for personal use, and suggestions for apps to maintain are welcome there.
+**Related project**: [kveld-extra-morphe-patches](https://github.com/kveld9/kveld-extra-morphe-patches) is the companion collection holding app-specific patches for additional standalone targets.
 
 ---
 
@@ -414,7 +340,7 @@ Additionally, ensure all Gradle checks and automated harness tests pass cleanly:
 | :--- | :--- |
 | <a href="https://github.com/Lxchoooo"><img src="https://github.com/Lxchoooo.png" alt="@Lxchoooo" width="48" height="48" style="border-radius: 50%;" /><br><b>@Lxchoooo</b></a> | Testing: Daily patch testing, runtime APK validation, and bug diagnostics. |
 | <a href="https://github.com/Diego694"><img src="https://github.com/Diego694.png" alt="@Diego694" width="48" height="48" style="border-radius: 50%;" /><br><b>@Diego694</b></a> | Testing: Daily patch testing, runtime APK validation, and bug diagnostics. |
-| <a href="https://github.com/ll0r3nt3"><img src="https://github.com/ll0r3nt3.png" alt="@ll0r3nt3" width="48" height="48" style="border-radius: 50%;" /><br><b>@ll0r3nt3</b></a> | Feature request: Proposed DPI Resource Slimmer feature request ([#16](https://github.com/kveld9/kveld-morphe-patches/issues/16)), removing specific libraries and files ([#73](https://github.com/kveld9/kveld-morphe-patches/issues/73)), runtime SDK blocking in Telemetry Neutralizer ([#75](https://github.com/kveld9/kveld-morphe-patches/issues/75)), and Universal SDK fingerprints plus AdServices manifest cleanup ([#162](https://github.com/kveld9/kveld-morphe-patches/issues/162)). |
+| <a href="https://github.com/ll0r3nt3"><img src="https://github.com/ll0r3nt3.png" alt="@ll0r3nt3" width="48" height="48" style="border-radius: 50%;" /><br><b>@ll0r3nt3</b></a> | Feature request: Proposed DPI Resource Slimmer feature request ([#16](https://github.com/kveld9/kveld-morphe-patches/issues/16)). |
 | <a href="https://github.com/aidenking2102-dotcom"><img src="https://github.com/aidenking2102-dotcom.png" alt="@aidenking2102-dotcom" width="48" height="48" style="border-radius: 50%;" /><br><b>@aidenking2102-dotcom</b></a> | Feature request: Proposed TikTok Feed Ad Blocker ([#23](https://github.com/kveld9/kveld-morphe-patches/issues/23)), Playback Speed Setter ([#25](https://github.com/kveld9/kveld-morphe-patches/issues/25)), and Floating Ad Pendant / Sticker Blocker ([#33](https://github.com/kveld9/kveld-morphe-patches/issues/33)) feature requests. |
 | <a href="https://github.com/mparvezalam808"><img src="https://github.com/mparvezalam808.png" alt="@mparvezalam808" width="48" height="48" style="border-radius: 50%;" /><br><b>@mparvezalam808</b></a> | Feature request: Proposed TikTok Always show publish date, Copy comments without username, Fix Google login, and Show seekbar ([#35](https://github.com/kveld9/kveld-morphe-patches/issues/35)) and TikTok Custom offline videos limit ([#40](https://github.com/kveld9/kveld-morphe-patches/issues/40)) feature requests. |
 | <a href="https://github.com/raxelbyte"><img src="https://github.com/raxelbyte.png" alt="@raxelbyte" width="48" height="48" style="border-radius: 50%;" /><br><b>@raxelbyte</b></a> | Feature request: Proposed Gboard Lite Clipboard Enhancements feature request ([#17](https://github.com/kveld9/kveld-morphe-patches/issues/17)). |
@@ -422,9 +348,10 @@ Additionally, ensure all Gradle checks and automated harness tests pass cleanly:
 | <a href="https://github.com/Fahry-a"><img src="https://github.com/Fahry-a.png" alt="@Fahry-a" width="48" height="48" style="border-radius: 50%;" /><br><b>@Fahry-a</b></a> | Feature request: Proposed Brave ARMv7a (32-bit) architecture support feature request ([#50](https://github.com/kveld9/kveld-morphe-patches/issues/50)). |
 | <a href="https://github.com/marcoodhb"><img src="https://github.com/marcoodhb.png" alt="@marcoodhb" width="48" height="48" style="border-radius: 50%;" /><br><b>@marcoodhb</b></a> | Feature request: Proposed TikTok Disable double tap to like feature request ([#55](https://github.com/kveld9/kveld-morphe-patches/issues/55)). |
 | <a href="https://github.com/miyqwx-dev"><img src="https://github.com/miyqwx-dev.png" alt="@miyqwx-dev" width="48" height="48" style="border-radius: 50%;" /><br><b>@miyqwx-dev</b></a> | Feature request: Proposed Gboard Lite Hide Incognito Icon toggle feature request. |
-| <a href="https://github.com/rdx011"><img src="https://github.com/rdx011.png" alt="@rdx011" width="48" height="48" style="border-radius: 50%;" /><br><b>@rdx011</b></a> | Feature request: Proposed Gboard Lite Decouple keyboard vibration from system touch feedback feature request ([#69](https://github.com/kveld9/kveld-morphe-patches/issues/69)) and Universal patch to disable browser file associations ([#93](https://github.com/kveld9/kveld-morphe-patches/issues/93)). |
-| <a href="https://github.com/nightsper"><img src="https://github.com/nightsper.png" alt="@nightsper" width="48" height="48" style="border-radius: 50%;" /><br><b>@nightsper</b></a> | Feature request: Proposed Brave tab selection after deleting a tab in a tab group feature request ([#76](https://github.com/kveld9/kveld-morphe-patches/issues/76)). |
-| <a href="https://github.com/nadr21a21"><img src="https://github.com/nadr21a21.png" alt="@nadr21a21" width="48" height="48" style="border-radius: 50%;" /><br><b>@nadr21a21</b></a> | Feature request: Proposed Gboard Lite option to pause automatic deletion in clipboard feature request ([#61](https://github.com/kveld9/kveld-morphe-patches/issues/61)). |
+| <a href="https://github.com/rdx011"><img src="https://github.com/rdx011.png" alt="@rdx011" width="48" height="48" style="border-radius: 50%;" /><br><b>@rdx011</b></a> | Feature request: Proposed Gboard Lite Decouple keyboard vibration from system touch feedback ([#69](https://github.com/kveld9/kveld-morphe-patches/issues/69)) and A Universal Patch to Disable Browser File Associations ([#93](https://github.com/kveld9/kveld-morphe-patches/issues/93)) feature requests. |
+| <a href="https://github.com/nightsper"><img src="https://github.com/nightsper.png" alt="@nightsper" width="48" height="48" style="border-radius: 50%;" /><br><b>@nightsper</b></a> | Feature request: Proposed Tab selection after deleting a tab in a tab group feature request ([#76](https://github.com/kveld9/kveld-morphe-patches/issues/76)). |
+| <a href="https://github.com/nadr21a21"><img src="https://github.com/nadr21a21.png" alt="@nadr21a21" width="48" height="48" style="border-radius: 50%;" /><br><b>@nadr21a21</b></a> | Feature request: Proposed Gboard lite Option to pause automatic deletion in clipboard feature request ([#61](https://github.com/kveld9/kveld-morphe-patches/issues/61)). |
+| <a href="https://github.com/polosugars-sketch"><img src="https://github.com/polosugars-sketch.png" alt="@polosugars-sketch" width="48" height="48" style="border-radius: 50%;" /><br><b>@polosugars-sketch</b></a> | Feature request: Proposed Include other monetization SDKs in the patches feature request ([#164](https://github.com/kveld9/kveld-morphe-patches/issues/164)). |
 <!-- CONTRIBUTORS_END -->
 
 ---
@@ -433,7 +360,7 @@ Additionally, ensure all Gradle checks and automated harness tests pass cleanly:
 ## Legal Disclaimer
 ![](images/divider-purple.svg)
 
-**Morphe Patches** is an independent, community-driven open-source project and is not affiliated, associated, authorized, endorsed by, or in any way officially connected with Brave Software, Inc., Google LLC, Hevy App, ByteDance Ltd., NokoPrint LLC, Xiaomi Inc., or any of their subsidiaries or affiliates.
+**Morphe Patches** is an independent, community-driven open-source project and is not affiliated, associated, authorized, endorsed by, or in any way officially connected with any of the respective app publishers or their subsidiaries or affiliates.
 
 All product names, logos, brands, and registered trademarks mentioned in this repository are the property of their respective holders. Their inclusion does not imply affiliation with or endorsement by them.
 

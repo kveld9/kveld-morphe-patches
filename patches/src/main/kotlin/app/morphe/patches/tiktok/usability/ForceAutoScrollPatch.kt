@@ -153,6 +153,10 @@ val forceAutoScrollPatch = bytecodePatch(
             println("[Force Auto-Scroll] createAutoScrollItem note: ${e.message}")
         }
 
-        println("[Force Auto-Scroll] Applied $patched auto-scroll hook(s) -> Native auto-scroll permanently forced.")
+        if (patched == 0) {
+            println("[Force Auto-Scroll] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Force Auto-Scroll] Applied $patched auto-scroll hook(s) -> Native auto-scroll permanently forced.")
+        }
     }
 }

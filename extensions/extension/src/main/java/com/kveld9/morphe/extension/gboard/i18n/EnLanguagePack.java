@@ -28,7 +28,6 @@ public class EnLanguagePack extends BaseLanguagePack {
         titles.put(PREF_KEY_BOTTOM_PADDING, "Bottom space (px)");
         titles.put(PREF_KEY_HIDE_IME_NAV_BAR, "Hide system bar");
         titles.put(PREF_KEY_KEY_SHAPE_SELECTION, "Key shapes");
-        titles.put(PREF_KEY_EMOJI_SCALE, "Emoji size");
         titles.put(PREF_KEY_CAT_TOOLBAR, "Toolbar & Navigation");
         titles.put(PREF_KEY_ACCESS_POINTS_REDESIGN, "New toolbar menu");
         titles.put(PREF_KEY_TOOLBAR_ITEM_COUNT, "Toolbar icons");
@@ -66,7 +65,6 @@ public class EnLanguagePack extends BaseLanguagePack {
         summaries.put(PREF_KEY_BOTTOM_PADDING, "Extra space below, in pixels. 0 = none.");
         summaries.put(PREF_KEY_HIDE_IME_NAV_BAR, "Hides the system bar under the keyboard (Android 13+).");
         summaries.put(PREF_KEY_KEY_SHAPE_SELECTION, "Round and borderless key styles.");
-        summaries.put(PREF_KEY_EMOJI_SCALE, "Emoji size, 50% to 150%.");
         summaries.put(PREF_KEY_ACCESS_POINTS_REDESIGN, "New toolbar menu and panel.");
         summaries.put(PREF_KEY_TOOLBAR_ITEM_COUNT, "Max icons on the top bar (default 5).");
         summaries.put(PREF_KEY_DISMISS_SUGGESTIONS, "Shows an X to close suggestions.");

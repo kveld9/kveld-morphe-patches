@@ -295,8 +295,8 @@ private val METRICA_INSTANCE = setOf(
     "sendEventsBuffer",
 )
 
-// Scoped to appevents subpackage only (never broad com/facebook); flush verified in-repo
-// by Hevy telemetry patch (AppEventQueue.flush), logEvent is the stable public API entry.
+// Scoped to appevents subpackage only (never broad com/facebook); flush verified
+// against AppEventQueue.flush, logEvent is the stable public API entry.
 private val APPEVENTS_INSTANCE = setOf(
     "flush",
     "logEvent",
@@ -515,6 +515,39 @@ private val PUSH_RULES = listOf(
     SdkPrefixRule("Lcom/appboy", "Braze", PUSH_STATIC_METHODS, emptySet()),
 )
 
+// MANDATORY DIRECTION-SAFETY EXCLUSIONS (Honeygain, Appsalt & EarnFM bandwidth monetization):
+// Manifest component deactivation is the primary kill; bytecode hooks provide defense-in-depth
+// on cold-start entry points only.
+// NEVER hook:
+// - Honeygain: create/getInstance/builder/build (non-void object returns; null risks call-site NPE),
+//   isConsentAgreed/imsdkClassPresent/start()Z (non-void boolean returns),
+//   stop/cancleAsyncJob (direction inversion: stubbing prevents cleanup/stop),
+//   resetConsent/setConsent/reportUserConsent (direction inversion: stubbing freezes consent),
+//   showConsent/showConsentNow/startWithConsent (consent dialog UI),
+//   setCountry/setUid (config setters), getters (non-void).
+//   With zero safe void methods surviving, Honeygain carries empty method sets to prevent unsafe stubbing.
+// - Appsalt: stop/optOut (direction inversion: stubbing keeps SDK running or prevents opt-out),
+//   setBackground/setLaunchOnBoot/setEnableLogging/setNotification/setNotificationId/setOnError (config setters),
+//   isOptedIn/isRunning/isBackground/getId/getLastError/getNotification (non-void getters).
+//   Instance methods are internal/companion delegates; only safe void static entry points are hooked.
+// - EarnFM: FleetSdk(...) constructor (never hook constructors),
+//   initialize/startSdk/stopSdk/destroyServer/storeConsent/isInitialized (non-void booleans -> excluded by void-only policy),
+//   getActivePort (non-void int getter), setStoreLogs (config setter),
+//   _performVersionCheck (internal scheduler callback; stubbing halts update checker only, not running server -> no defense value).
+//   With zero safe void methods surviving, EarnFM carries empty method sets to prevent unsafe stubbing.
+private val APPSALT_STATIC_METHODS = setOf(
+    "initialize",
+    "start",
+    "optIn",
+    "requestConsent",
+)
+
+private val BANDWIDTH_SHARING_RULES = listOf(
+    SdkPrefixRule("Lio/hopmonsdk", "Honeygain", emptySet(), emptySet()),
+    SdkPrefixRule("Lcom/appsalt", "Appsalt", APPSALT_STATIC_METHODS, emptySet()),
+    SdkPrefixRule("Lcom/fleet", "EarnFM", emptySet(), emptySet()),
+)
+
 @Suppress("unused")
 val universalSdkBlockerPatch = bytecodePatch(
     name = "Block Tracking SDKs",
@@ -586,6 +619,14 @@ val universalSdkBlockerPatch = bytecodePatch(
         required = false,
     )
 
+    val blockBandwidthSharing by booleanOption(
+        key = "blockBandwidthSharing",
+        default = true,
+        title = "Bandwidth-sharing SDKs",
+        description = "Neutralizes Honeygain and Appsalt bandwidth monetization SDKs.",
+        required = false,
+    )
+
     val excludedSdks by stringOption(
         key = "excludedSdks",
         default = "",
@@ -609,6 +650,7 @@ val universalSdkBlockerPatch = bytecodePatch(
             blockPush = blockPushEngagement ?: false,
             blockSessionReplay = blockSessionReplay ?: true,
             blockLocationTrackers = blockLocationTrackers ?: true,
+            blockBandwidthSharing = blockBandwidthSharing ?: true,
         )
 
         if (excludedLabels.isNotEmpty()) {
@@ -664,6 +706,7 @@ private fun buildActiveRules(
     blockPush: Boolean,
     blockSessionReplay: Boolean,
     blockLocationTrackers: Boolean,
+    blockBandwidthSharing: Boolean,
 ): List<SdkPrefixRule> {
     val categories = listOf(
         blockApm to APM_RULES,
@@ -674,6 +717,7 @@ private fun buildActiveRules(
         blockPush to PUSH_RULES,
         blockSessionReplay to SESSION_REPLAY_RULES,
         blockLocationTrackers to LOCATION_RULES,
+        blockBandwidthSharing to BANDWIDTH_SHARING_RULES,
     )
     return categories.filter { it.first }.flatMap { it.second }
 }

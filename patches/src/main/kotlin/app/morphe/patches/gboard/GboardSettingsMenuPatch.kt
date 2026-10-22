@@ -108,27 +108,54 @@ val gboardSettingsMenuPatch = resourcePatch(
 
         val targetScreens = findTargetPreferenceScreens(resDir)
         var injectedHeaders = 0
-        var strippedHeaders = 0
 
         for (file in targetScreens) {
             document(file.absolutePath).use { doc ->
                 if (injectMorpheHeader(doc)) {
                     injectedHeaders++
                 }
-                strippedHeaders += stripUnwantedSettingsHeaders(doc)
             }
         }
 
         var populatedScreen = false
         val devScreen = findDeveloperSettingsScreen(resDir)
+        val emojiSeq = "EmojiScaleSliderPreference".toByteArray()
+
         if (devScreen != null) {
             document(devScreen.absolutePath).use { doc ->
-                populatedScreen = populateMorpheSettingsScreen(doc)
+                var nativeSliderNode: Element? = null
+                var nativeSliderAppNs: String? = null
+
+                resDir.walkTopDown()
+                    .filter { it.isFile && it.extension == "xml" && it != devScreen }
+                    .forEach { file ->
+                        if (nativeSliderNode != null) return@forEach
+                        if (file.readBytes().containsSequence(emojiSeq)) {
+                            document(file.absolutePath).use { sourceDoc ->
+                                val sourceRoot = sourceDoc.documentElement ?: return@use
+                                val nodes = sourceRoot.getElementsByTagName("com.google.android.libraries.inputmethod.preferencewidgets.EmojiScaleSliderPreference")
+                                if (nodes.length > 0) {
+                                    val sourceNode = nodes.item(0) as Element
+                                    nativeSliderNode = doc.importNode(sourceNode, true) as Element
+                                    nativeSliderAppNs = sourceRoot.getAttribute("xmlns:app").ifEmpty {
+                                        sourceRoot.getAttributeNS("http://www.w3.org/2000/xmlns/", "app")
+                                    }.ifEmpty {
+                                        "http://schemas.android.com/apk/res-auto"
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                if (nativeSliderNode == null) {
+                    println("[Keyboard Settings] Skipped: native EmojiScaleSliderPreference not found, emoji scaling left stock.")
+                }
+
+                populatedScreen = populateMorpheSettingsScreen(doc, nativeSliderNode, nativeSliderAppNs)
             }
         }
 
         var strippedEmojiSliders = 0
-        val emojiSeq = "EmojiScaleSliderPreference".toByteArray()
         resDir.walkTopDown().filter { it.isFile && it.extension == "xml" && it != devScreen }.forEach { file ->
             val content = file.readBytes()
             if (content.containsSequence(emojiSeq)) {
@@ -146,10 +173,7 @@ val gboardSettingsMenuPatch = resourcePatch(
             }
         }
         if (strippedEmojiSliders > 0) {
-            println("[Keyboard Settings] Stripped $strippedEmojiSliders native EmojiScaleSliderPreference element(s) from other preference screens.")
-        }
-        if (strippedHeaders > 0) {
-            println("[Keyboard Settings] Pruned $strippedHeaders obsolete telemetry/support header(s) from root settings.")
+            println("[Keyboard Settings] Moved $strippedEmojiSliders native EmojiScaleSliderPreference element(s) into Morphe screen.")
         }
 
         println("[Keyboard Settings] Injected top-level Morphe Patches header into $injectedHeaders root screen(s), populated dedicated settings screen: $populatedScreen.")
@@ -224,56 +248,11 @@ private fun hasExistingHeader(root: Element): Boolean {
     return false
 }
 
-private fun stripUnwantedSettingsHeaders(doc: Document): Int {
-    val root = doc.documentElement ?: return 0
-    if (root.tagName != "PreferenceScreen") return 0
-    var stripped = 0
-
-    val nodesToRemove = mutableListOf<Element>()
-    val allElements = root.getElementsByTagName("*")
-
-    for (i in 0 until allElements.length) {
-        val elem = allElements.item(i) as? Element ?: continue
-        val tagName = elem.tagName
-        val frag = elem.getAttributeNS(ANDROID_XML_NAMESPACE, "fragment").ifEmpty {
-            elem.getAttribute("android:fragment")
-        }
-        val key = elem.getAttributeNS(ANDROID_XML_NAMESPACE, "key").ifEmpty {
-            elem.getAttribute("android:key")
-        }
-
-        val isPrivacy = frag.endsWith("PrivacySettingsFragment") || key.contains("0x7f1409a4") || key.contains("setting_privacy")
-        val isAbout = frag.endsWith("AboutSettingsFragment") || key.contains("0x7f140994") || key.contains("setting_about")
-        val isRateUs = tagName.endsWith("RateUsPreference") || key.contains("0x7f1409a5") || key.contains("rate_us")
-        val isFooter = tagName.endsWith("FooterPreference") || key.contains("0x7f1409ac") || key.contains("work_profile_footer")
-        val isHelpOrShare = key.contains("0x7f14099d") || key.contains("0x7f1409a6") ||
-            key.contains("help_and_feedback") || key.contains("sharing")
-
-        if (isPrivacy || isAbout || isRateUs || isFooter || isHelpOrShare) {
-            nodesToRemove.add(elem)
-        }
-    }
-
-    for (elem in nodesToRemove) {
-        elem.parentNode?.removeChild(elem)
-        stripped++
-    }
-
-    val categories = root.getElementsByTagName("androidx.preference.PreferenceCategory")
-    for (i in (categories.length - 1) downTo 0) {
-        val cat = categories.item(i) as? Element ?: continue
-        val hasElements = (0 until cat.childNodes.length).any { idx ->
-            cat.childNodes.item(idx) is Element
-        }
-        if (!hasElements) {
-            cat.parentNode?.removeChild(cat)
-        }
-    }
-
-    return stripped
-}
-
-private fun populateMorpheSettingsScreen(doc: Document): Boolean {
+private fun populateMorpheSettingsScreen(
+    doc: Document,
+    nativeSliderNode: Element? = null,
+    nativeSliderAppNs: String? = null,
+): Boolean {
     val root = doc.documentElement ?: return false
     if (root.tagName != "PreferenceScreen") return false
 
@@ -283,6 +262,9 @@ private fun populateMorpheSettingsScreen(doc: Document): Boolean {
 
     root.setAttributeNS(ANDROID_XML_NAMESPACE, "android:title", "Morphe Patches")
     root.setAttributeNS(ANDROID_XML_NAMESPACE, "android:key", Constants.GboardPrefs.KEY_SCREEN)
+    if (nativeSliderNode != null && root.getAttribute("xmlns:app").isEmpty()) {
+        root.setAttribute("xmlns:app", nativeSliderAppNs ?: "http://schemas.android.com/apk/res-auto")
+    }
 
     // 0. Quick Actions & Status
     val actionsCategory = doc.createElement("androidx.preference.PreferenceCategory")
@@ -370,16 +352,9 @@ private fun populateMorpheSettingsScreen(doc: Document): Boolean {
             defaultValue = "true",
         )
     )
-    appearanceCategory.appendChild(
-        createSeekBar(
-            doc = doc,
-            key = Constants.GboardPrefs.KEY_EMOJI_SCALE,
-            title = "Emoji Size Scaling",
-            summary = "Adjust emoji visual size on the keyboard (50% - 150%)",
-            defaultValue = Constants.GboardPrefs.DEFAULT_EMOJI_SCALE,
-            max = Constants.GboardPrefs.MAX_EMOJI_SCALE,
-        )
-    )
+    if (nativeSliderNode != null) {
+        appearanceCategory.appendChild(nativeSliderNode)
+    }
     root.appendChild(appearanceCategory)
 
     // 2. Toolbar & Navigation

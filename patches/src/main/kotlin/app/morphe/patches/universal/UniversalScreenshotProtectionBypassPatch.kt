@@ -59,7 +59,7 @@ private val screenshotProtectionBypassResourcePatch = resourcePatch(
 
 @Suppress("unused")
 val universalScreenshotProtectionBypassPatch = bytecodePatch(
-    name = "Allow Screenshots",
+    name = "Allow Screenshots (Universal)",
     description = "Removes screenshot blocking and capture detection.",
     default = false,
 ) {
@@ -154,16 +154,16 @@ val universalScreenshotProtectionBypassPatch = bytecodePatch(
 
         val totalHooks = windowHooks + surfaceHooks + audioHooks + detectionHooks
         if (totalHooks == 0) {
-            println("[Allow Screenshots] Target APK does not invoke FLAG_SECURE, audio capture, or screenshot detection APIs (0 components found).")
+            println("[Allow Screenshots (Universal)] Target APK does not invoke FLAG_SECURE, audio capture, or screenshot detection APIs (0 components found).")
             return@execute
         }
 
         println(
-            "[Allow Screenshots] Applied $totalHooks bypass hook(s) across $touchedClasses class(es) " +
+            "[Allow Screenshots (Universal)] Applied $totalHooks bypass hook(s) across $touchedClasses class(es) " +
                 "($windowHooks window/layout flags, $surfaceHooks SurfaceView, $audioHooks audio capture, $detectionHooks detection/recents)."
         )
         if (skippedFlags > 0) {
-            println("[Allow Screenshots] Skipped $skippedFlags flag site(s) with registers >= 16 (assembler addressing limit).")
+            println("[Allow Screenshots (Universal)] Skipped $skippedFlags flag site(s) with registers >= 16 (assembler addressing limit).")
         }
     }
 }

@@ -81,7 +81,7 @@ val gboardForceIncognitoPatch: BytecodePatch = bytecodePatch(
             addInstructions(
                 moveResultIndex + 1,
                 """
-                    invoke-static {v$reg}, ${Constants.GBOARD_EXTENSION_CLASS}->overrideClipboardIncognito(Z)Z
+                    invoke-static/range {v$reg .. v$reg}, ${Constants.GBOARD_EXTENSION_CLASS}->overrideClipboardIncognito(Z)Z
                     move-result v$reg
                 """.trimIndent(),
             )

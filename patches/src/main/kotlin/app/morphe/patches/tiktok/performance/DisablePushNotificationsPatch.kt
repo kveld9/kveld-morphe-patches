@@ -33,6 +33,10 @@ val disablePushNotificationsPatch = bytecodePatch(
             println("[Disable Push Notifications] InitPushTask note: ${e.message}")
         }
 
-        println("[Disable Push Notifications] Applied $patched push notification suppression hook(s).")
+        if (patched == 0) {
+            println("[Disable Push Notifications] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Disable Push Notifications] Applied $patched push notification suppression hook(s).")
+        }
     }
 }

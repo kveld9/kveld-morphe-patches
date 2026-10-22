@@ -63,6 +63,10 @@ val gboardDisablePhenotypeSyncPatch = bytecodePatch(
         hookedMethods.add("$c3.g")
 
         val targetClasses = hookedMethods.map { it.substringBefore('.') }.distinct()
-        println("[Stop Remote Updates] Neutralized ${hookedMethods.size} Phenotype sync methods across ${targetClasses.size} classes (${targetClasses.joinToString(", ")})")
+        if (hookedMethods.isEmpty()) {
+            println("[Stop Remote Updates] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[Stop Remote Updates] Neutralized ${hookedMethods.size} Phenotype sync methods across ${targetClasses.size} classes (${targetClasses.joinToString(", ")})")
+        }
     }
 }

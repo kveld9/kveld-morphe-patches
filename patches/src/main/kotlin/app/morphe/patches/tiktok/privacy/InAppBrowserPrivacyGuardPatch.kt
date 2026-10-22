@@ -112,6 +112,10 @@ val inAppBrowserPrivacyGuardPatch = bytecodePatch(
             }
         }
 
-        println("[In-App Browser Privacy Guard] Applied $patched in-app browser tracking mitigations & external redirection hooks.")
+        if (patched == 0) {
+            println("[In-App Browser Privacy Guard] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+        } else {
+            println("[In-App Browser Privacy Guard] Applied $patched in-app browser tracking mitigations & external redirection hooks.")
+        }
     }
 }
