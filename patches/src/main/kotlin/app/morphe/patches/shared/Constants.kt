@@ -137,7 +137,7 @@ object Constants {
         const val DEFAULT_TOOLBAR_ITEM_COUNT = 5
 
         const val MIN_CLIPBOARD_RETENTION_HOURS = 1
-        const val MAX_CLIPBOARD_RETENTION_HOURS = 168
+        const val MAX_CLIPBOARD_RETENTION_HOURS = 720
         const val DEFAULT_CLIPBOARD_RETENTION_HOURS = 24
 
         const val MIN_CLIPBOARD_UNPINNED_LIMIT = 5

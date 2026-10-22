@@ -61,7 +61,7 @@ public class GboardExtension {
     public static final int DEFAULT_TOOLBAR_ITEM_COUNT = 5;
 
     public static final int MIN_CLIPBOARD_RETENTION_HOURS = 1;
-    public static final int MAX_CLIPBOARD_RETENTION_HOURS = 168;
+    public static final int MAX_CLIPBOARD_RETENTION_HOURS = 720;
     public static final int DEFAULT_CLIPBOARD_RETENTION_HOURS = 24;
 
     public static final int MIN_CLIPBOARD_UNPINNED_LIMIT = 5;
