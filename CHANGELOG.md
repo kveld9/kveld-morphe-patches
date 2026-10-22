@@ -1,3 +1,9 @@
+## [2.8.0-experimental.9](https://github.com/kveld9/kveld-morphe-patches/compare/v2.8.0-experimental.8...v2.8.0-experimental.9) (2026-10-22)
+
+### Bug Fixes
+
+* **gboard:** clamp clipboard retention getter to 720h ceiling ([695cba5](https://github.com/kveld9/kveld-morphe-patches/commit/695cba5fba827ac49a3562cad17eeb7cffe51ead))
+
 ## [2.8.0-experimental.8](https://github.com/kveld9/kveld-morphe-patches/compare/v2.8.0-experimental.7...v2.8.0-experimental.8) (2026-10-22)
 
 ### Bug Fixes
