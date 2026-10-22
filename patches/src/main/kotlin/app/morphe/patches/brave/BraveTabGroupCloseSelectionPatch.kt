@@ -32,7 +32,6 @@ val braveTabGroupCloseSelectionPatch = bytecodePatch(
         val closeSelectionFp = try {
             val fp = Fingerprint(
                 definingClass = "Lorg/chromium/chrome/browser/tabmodel/TabCollectionTabModelImpl;",
-                name = "Z",
                 parameters = listOf(
                     "Ljava/util/List;",
                     "Lorg/chromium/chrome/browser/tab/Tab;",

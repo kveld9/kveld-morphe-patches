@@ -443,8 +443,6 @@ def _extract_download_href(row_html: str) -> Optional[str]:
     if not match:
         match = re.search(r'<a[^>]*href="([^"]*(?:download|apk)[^"]*)"', row_html)
     if not match:
-        match = re.search(r'<a[^>]*href="([^"]+)"', row_html)
-    if not match:
         return None
     return _build_release_url(match.group(1))
 

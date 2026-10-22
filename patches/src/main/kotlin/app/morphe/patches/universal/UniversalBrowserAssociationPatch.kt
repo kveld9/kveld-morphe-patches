@@ -88,12 +88,12 @@ val universalBrowserAssociationPatch = resourcePatch(
     execute {
         val manifestFile = get("AndroidManifest.xml")
         if (!manifestFile.exists()) {
-            println("[Browser Association Stripper] Skipped: AndroidManifest.xml not found.")
+            println("[Disable Browser File Associations] Skipped: AndroidManifest.xml not found.")
             return@execute
         }
 
         if (stripWebSchemes == false) {
-            println("[Browser Association Stripper] Skipped: stripWebSchemes is disabled.")
+            println("[Disable Browser File Associations] Skipped: stripWebSchemes is disabled.")
             return@execute
         }
         val dropEmptied = removeEmptiedFilters ?: true
@@ -104,10 +104,10 @@ val universalBrowserAssociationPatch = resourcePatch(
         }
 
         if (result.dataNodesRemoved == 0) {
-            println("[Browser Association Stripper] No HTTP/HTTPS browser intent filters found - nothing to strip.")
+            println("[Disable Browser File Associations] No HTTP/HTTPS browser intent filters found - nothing to strip.")
             return@execute
         }
 
-        println("[Browser Association Stripper] Stripped ${result.dataNodesRemoved} web scheme entr(ies) and removed ${result.filtersRemoved} emptied browser filter(s). Local file handlers untouched.")
+        println("[Disable Browser File Associations] Stripped ${result.dataNodesRemoved} web scheme entr(ies) and removed ${result.filtersRemoved} emptied browser filter(s). Local file handlers untouched.")
     }
 }

@@ -61,7 +61,7 @@ public class GboardExtension {
     public static final int DEFAULT_TOOLBAR_ITEM_COUNT = 5;
 
     public static final int MIN_CLIPBOARD_RETENTION_HOURS = 1;
-    public static final int MAX_CLIPBOARD_RETENTION_HOURS = 168;
+    public static final int MAX_CLIPBOARD_RETENTION_HOURS = 720;
     public static final int DEFAULT_CLIPBOARD_RETENTION_HOURS = 24;
 
     public static final int MIN_CLIPBOARD_UNPINNED_LIMIT = 5;
@@ -615,7 +615,7 @@ public class GboardExtension {
             return 3600000L;
         }
         int hours = getIntPref(PREF_KEY_CLIPBOARD_RETENTION_HOURS, DEFAULT_CLIPBOARD_RETENTION_HOURS);
-        if (hours < MIN_CLIPBOARD_RETENTION_HOURS) hours = MIN_CLIPBOARD_RETENTION_HOURS;
+        hours = Math.max(MIN_CLIPBOARD_RETENTION_HOURS, Math.min(MAX_CLIPBOARD_RETENTION_HOURS, hours));
         return ((long) hours) * 3600000L;
     }
 

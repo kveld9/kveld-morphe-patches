@@ -5,7 +5,7 @@ import app.morphe.patcher.patch.AppTarget
 import app.morphe.patcher.patch.Compatibility
 
 object Constants {
-    const val BRAVE_TARGET_VERSION = "1.97.59"
+    const val BRAVE_TARGET_VERSION = "1.98.60"
     const val BRAVE_PACKAGE_NAME = "com.brave.browser"
 
     val COMPATIBILITY_BRAVE = Compatibility(
@@ -137,7 +137,7 @@ object Constants {
         const val DEFAULT_TOOLBAR_ITEM_COUNT = 5
 
         const val MIN_CLIPBOARD_RETENTION_HOURS = 1
-        const val MAX_CLIPBOARD_RETENTION_HOURS = 168
+        const val MAX_CLIPBOARD_RETENTION_HOURS = 720
         const val DEFAULT_CLIPBOARD_RETENTION_HOURS = 24
 
         const val MIN_CLIPBOARD_UNPINNED_LIMIT = 5

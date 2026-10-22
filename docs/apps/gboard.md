@@ -57,7 +57,7 @@ The `Keyboard Settings` patch incorporates several internal bytecode and resourc
   - *How*: Configures speech recognition to operate in private mode without remote transcript logging.
 - **Clipboard Enhancements**:
   - *Objective*: Keep copied snippets longer, save more unpinned clips, and display clips in a grid.
-  - *How*: Extends clipboard retention time limits, raises unpinned item count caps, enables grid layout mode, and expands character length limits.
+  - *How*: Extends clipboard retention time limits up to 30 days (720 hours), raises unpinned item count caps, enables grid layout mode, and expands character length limits.
 - **Modern Haptics & Decoupled Feedback**:
   - *Objective*: Customize vibration strength independently of system settings.
   - *How*: Decouples keyboard haptics from system touch vibration toggles and enables modern haptic patterns.

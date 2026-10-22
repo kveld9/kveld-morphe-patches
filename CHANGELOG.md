@@ -1,3 +1,15 @@
+## [2.8.0-experimental.8](https://github.com/kveld9/kveld-morphe-patches/compare/v2.8.0-experimental.7...v2.8.0-experimental.8) (2026-10-22)
+
+### Bug Fixes
+
+* **gboard:** log the Keyboard Settings tag in the seekbar enhancements helper ([a017e86](https://github.com/kveld9/kveld-morphe-patches/commit/a017e86749bf33cfe0bfab4246cdf510b7fc7d53))
+* **universal:** log the Disable Browser File Associations tag in manifest prune ([5523a65](https://github.com/kveld9/kveld-morphe-patches/commit/5523a652bacb02a01dfeec2ab589e5291f34960d))
+
+### New Features
+
+* **brave:** update target to 1.98.60 ([47719e3](https://github.com/kveld9/kveld-morphe-patches/commit/47719e3e5e4027fae37f4682c2a0da4ebe4a74d3))
+* **gboard:** extend clipboard retention limit to 30 days ([8142f47](https://github.com/kveld9/kveld-morphe-patches/commit/8142f47ea9381670f44e9d88d42b49f93b050c8c))
+
 ## [2.8.0-experimental.7](https://github.com/kveld9/kveld-morphe-patches/compare/v2.8.0-experimental.6...v2.8.0-experimental.7) (2026-10-21)
 
 ### Bug Fixes

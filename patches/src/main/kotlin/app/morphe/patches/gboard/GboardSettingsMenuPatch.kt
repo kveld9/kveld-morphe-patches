@@ -73,7 +73,7 @@ private val gboardSeekBarEnhancementsPatch = bytecodePatch(
         )
         patched++
 
-        println("[Preference Enhancements] Injected $patched live value indicator and status card hook(s) into Preference classes.")
+        println("[Keyboard Settings] Injected $patched live value indicator and status card hook(s) into Preference classes.")
     }
 }
 

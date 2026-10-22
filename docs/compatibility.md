@@ -10,7 +10,7 @@ Each application has an authoritative, all-in-one guide covering prerequisites, 
 
 | Application | Supported Version | Architectures | Target Format | Complete Documentation |
 | :--- | :--- | :--- | :--- | :--- |
-| **Brave Browser** | `1.97.59` | `arm64-v8a`, `armeabi-v7a` | Standalone APK (`Bravemonoarm64.apk` / `BraveMonoarm.apk`) | [Brave Guide](apps/brave.md) |
+| **Brave Browser** | `1.98.60` | `arm64-v8a`, `armeabi-v7a` | Standalone APK (`Bravemonoarm64.apk` / `BraveMonoarm.apk`) | [Brave Guide](apps/brave.md) |
 | **Gboard Lite** | `18.5.1.993608717-lite_beta` | `arm64-v8a`, `armeabi-v7a` | Standalone nodpi APK | [Gboard Lite Guide](apps/gboard.md) |
 | **TikTok** | `47.4.3` | `arm64-v8a` | Standalone nodpi APK | [TikTok Guide](apps/tiktok.md) |
 | **Universal Optimizations** | *Universal* | All Architectures | Any Android APK | [Universal Patches Guide](universal-patches.md) |
