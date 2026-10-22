@@ -550,9 +550,6 @@ fun main(args: Array<String>) {
     val config = PatcherConfig(
         apkFile = actualApkFile,
         temporaryFilesPath = tempDir,
-        aaptBinaryPath = null,
-        frameworkFileDirectory = null,
-        useArsclib = false,
         keepArchitectures = setOf(CpuArchitecture.ARM64_V8A, CpuArchitecture.ARMEABI_V7A),
         useBytecodeMode = BytecodeMode.STRIP_FAST,
         verifier = NoOpDexVerifier

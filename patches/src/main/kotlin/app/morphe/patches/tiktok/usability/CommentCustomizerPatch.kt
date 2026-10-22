@@ -1,6 +1,8 @@
 package app.morphe.patches.tiktok.usability
 
 import app.morphe.patcher.Fingerprint
+import app.morphe.patcher.StringComparisonType
+import app.morphe.patcher.string
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
@@ -474,7 +476,7 @@ private fun BytecodePatchContext.applyHideCommentSurveys(): Int {
     Fingerprint(
         returnType = "Z",
         parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;"),
-        strings = listOf("shouldShow return because"),
+        strings = listOf(string("shouldShow return because", StringComparisonType.STARTS_WITH)),
     ).method.replaceWithReturnBoolean(false)
     patched++
 

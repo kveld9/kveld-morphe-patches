@@ -27,6 +27,7 @@ val gboardAaptWorkaroundPatch = resourcePatch(
     compatibleWith(Constants.COMPATIBILITY_GBOARD)
 
     execute {
+        decode("res/xml*")
         val resDir = get("res")
         if (!resDir.exists() || !resDir.isDirectory) {
             return@execute

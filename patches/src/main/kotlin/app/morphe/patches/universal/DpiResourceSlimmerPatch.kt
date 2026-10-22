@@ -281,6 +281,7 @@ val dpiResourceSlimmerPatch = resourcePatch(
     )
 
     execute {
+        decode("res/drawable*", "res/mipmap*")
         val mainRes = get("res")
         val resDirs = LocaleUtils.resolveResourceDirectories(mainRes)
         if (resDirs.isEmpty()) {

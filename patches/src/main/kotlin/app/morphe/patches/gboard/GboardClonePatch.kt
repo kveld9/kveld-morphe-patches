@@ -132,6 +132,7 @@ val gboardClonePatch = resourcePatch(
         }
 
         // 6. Update authority references strictly in res/xml configuration files (e.g. sync adapters, searchables)
+        decode("res/xml*")
         val resXmlDir = get("res/xml")
         if (resXmlDir.exists() && resXmlDir.isDirectory) {
             val authorityAttributes = setOf("android:authorities", "authorities", "android:contentAuthority", "contentAuthority")

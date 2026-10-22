@@ -160,6 +160,7 @@ val pngOptimizerPatch = rawResourcePatch(
 
         var resNotDecoded = false
         try {
+            decode("res/drawable*", "res/mipmap*", "res/raw*")
             val resDir = get("res")
             if (resDir.exists() && resDir.isDirectory) rootDirs.add(resDir)
         } catch (e: PatchException) {

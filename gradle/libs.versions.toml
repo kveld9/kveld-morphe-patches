@@ -1,7 +1,7 @@
 [versions]
-morphe-patcher = "1.15.1"
+morphe-patcher = "2.0.0"
 #noinspection GradleDependency
-smali = "d92701d947"
+smali = "4220ae75f7"
 gson = "2.14.0"
 
 [libraries]

@@ -128,7 +128,7 @@ private val braveOriginResourcePatch = resourcePatch(
     compatibleWith(Constants.COMPATIBILITY_BRAVE)
 
     execute {
-        val targetFile = get("res").findXmlContaining(listOf("rewards_switch")).firstOrNull() ?: run {
+        val targetFile = findXmlContaining(listOf("rewards_switch")).firstOrNull() ?: run {
                 println("[Brave Origin] Skipped: rewards_switch XML preference not found.")
                 return@execute
             }
