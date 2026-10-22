@@ -45,12 +45,12 @@
 ![](images/divider-purple.svg)
 
 1. Install **Morphe Manager** on your Android device.
-2. Download the target app using the **exact version and variant** listed in [Supported Targets & Downloads](#supported-targets) (wrong version = nothing gets patched).
+2. Download the target app using the **exact version and variant** listed in [Supported Targets & Downloads](#supported-targets); the patches are built for that build and fail on any other.
 3. Add this repository as a patch source with the button above, or add `https://github.com/kveld9/kveld-morphe-patches` manually.
 4. Select the patches, keep a copy of the original APK, run the patcher, and install the rebuilt APK.
 
 > [!NOTE]
-> Requirements: the Morphe patcher on your device (patching happens on-device, no root needed); always use the exact version and file from the table below.
+> Requirements: Morphe Manager on your device. Patching runs on-device and needs no root.
 
 ---
 
@@ -62,7 +62,7 @@
 - **Real privacy**: tracking and crash reporting are switched off inside the app, not just blocked on the network.
 - **Smaller apps**: unused languages, files and extras are removed to save space and memory.
 - **No root needed**: patching happens on your device with Morphe Manager. No root, no computer.
-- **Always up to date**: every app targets its latest version, checked exactly before patching.
+- **Tested targets**: every app pins one build, and its version is checked exactly before patching, so a wrong download is caught early.
 
 ```mermaid
 flowchart TD
@@ -302,10 +302,10 @@ Before proposing new features or submitting modifications, please review our **[
 > We prioritize **small, fast changes** and keeping up with the latest app versions. Dynamic in-app settings panels, legacy multi-version support, server-side exploits, or heavy feature bloat are explicitly out of scope.
 
 ### Mandatory Verification Gates
-Every patch modification or contribution must pass the official Morphe Patcher in-situ verification gate with 100% success (0 failed patches, 0 fingerprint mismatches):
+Every patch modification or contribution must pass the in-situ patching test with 100% success (0 failed patches, 0 fingerprint mismatches):
 ```bash
-# Execute in-situ patching test for target application
-./gradlew runPatchTest -Papp=<targetApp>   # targetApp is the app id (see docs/apps/)
+# Patch the target app with every patch and every option enabled
+./gradlew runPatchTest -Papp=<targetApp> -PallOptions=true   # targetApp is the app id (see docs/apps/)
 ```
 Additionally, ensure all Gradle checks pass cleanly:
 ```bash
@@ -322,7 +322,6 @@ Additionally, ensure all Gradle checks pass cleanly:
 > Need assistance, have questions regarding patch configurations, or want to follow release announcements? Join the official Telegram community:
 >
 > - **Telegram Support Group**: [t.me/kveldmorphe](https://t.me/kveldmorphe)
->
 > - **Bug reports & feature requests**: [GitHub Issues](https://github.com/kveld9/kveld-morphe-patches/issues/new/choose)
 > - **Security vulnerabilities**: see [SECURITY.md](SECURITY.md) (do not open public issues)
 > - **Release notes**: [CHANGELOG.md](CHANGELOG.md)
