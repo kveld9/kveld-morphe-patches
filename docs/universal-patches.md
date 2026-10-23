@@ -29,6 +29,7 @@ Comprehensive reference for universal optimization and resource slimming patches
 | **[Disable Browser File Associations](#19-disable-browser-file-associations-universalbrowserassociationpatch)** | `resourcePatch` | Manifest (`AndroidManifest.xml`) | Removes HTTP/HTTPS `data` entries from `VIEW` + `BROWSABLE` intent filters; drops filters left dataless | App no longer appears in the browser chooser for online files; local file handling untouched |
 | **[Remove ads](#20-remove-ads-universalremoveadspatch)** | `bytecodePatch` | Dalvik Bytecode Methods | Neutralizes public ad loader entry points across common third-party ad networks (AdMob, AppLovin MAX, Meta, Unity Ads, ironSource, Pangle, Vungle, InMobi, Mintegral, Chartboost) | Stops background and full-screen ad fetches from third-party networks |
 | **[Report Play Store as installer](#21-report-play-store-as-installer-universalreportplaystoreinstallerpatch)** | `bytecodePatch` | Dalvik Bytecode Call Sites | Redirects `PackageManager` and `InstallSourceInfo` queries for the app's own package to report Google Play (`com.android.vending`) | Tells apps that check their install source that they came from Google Play without altering actual package metadata |
+| **[Spoof signature](#22-spoof-signature-universalspoofsignaturepatch)** | `bytecodePatch` | Dalvik Bytecode Call Sites | Substitutes the APK's original V2/V3 signing certificate in `PackageManager.getPackageInfo`, `hasSigningCertificate`, and `SigningInfo` self-queries | Passes local in-app signature verification checks after re-signing |
 
 ---
 
@@ -77,6 +78,7 @@ Exception: Block Tracking Servers (Universal) remains a valid opt-in patch on ma
 | **Disable Browser File Associations** | ✅ Yes | Only touches `VIEW` + `BROWSABLE` intent filters carrying `http`/`https` data. Local file handlers (`file`/`content` schemes), launcher entries (`MAIN`) and non-browser actions are never modified. Do not apply to apps that must open web links (browsers, readers). |
 | **Remove ads** | ⚠️ Opt-in | Disabled by default (`default = false`). Stops third-party ad networks from loading ads. May break reward-gated features that require watching an ad to unlock content. Does not remove SDK code or reclaim APK size, and does not touch first-party in-feed ads. |
 | **Report Play Store as installer** | ⚠️ Safe by Default | Opt-in (`default = false`). Redirects installer self-queries to report Google Play (`com.android.vending`); other package lookups are untouched. Cannot defeat server-side Play Integrity or remote attestation. Must pass ART verifier gate. |
+| **Spoof signature** | ⚠️ Safe by Default | Opt-in (`default = false`). Replaces signing certificate self-queries (`getPackageInfo`, `hasSigningCertificate`, `SigningInfo`) with baked original V2/V3 signatures; other package lookups are untouched. Cannot defeat server-side Play Integrity or remote attestation. Must pass ART verifier gate. |
 
 ---
 
@@ -622,3 +624,24 @@ The **`Report Play Store as installer`** patch redirects installer lookup querie
 - **Self-queries only**: Only lookups for the app's own package name are spoofed; queries for third-party packages are passed to the platform unchanged.
 - **Client-side only**: Operates strictly on client-side bytecode; cannot defeat server-side Play Integrity or remote attestation.
 - **Universal applicability**: Operates across any Android application without hardcoded class fingerprints or app-specific targets.
+
+---
+
+## 22. Spoof signature (`universalSpoofSignaturePatch`)
+
+The **`Spoof signature`** patch records the application's original V2/V3 signing certificate at patch time and intercepts Dalvik bytecode signature queries (`classes*.dex`), presenting the original publisher signature so that client-side anti-tamper and signature validation checks pass after re-signing.
+
+> [!NOTE]
+> ### In-App Signature Spoofing
+> Applications often inspect their own signature via `PackageManager.getPackageInfo(packageName, flags)` (inspecting `signatures` or `signingInfo`), `PackageManager.hasSigningCertificate(...)`, or `SigningInfo` accessors (`getApkContentsSigners()`, `getSigningCertificateHistory()`, `hasMultipleSigners()`) to detect whether the APK was modified or re-signed.
+>
+> At patch time, this patch captures the original DER certificate bytes from `PackageMetadata.getSigningCertificates()` (preferring V3 and falling back to V2) and bakes them as hex into the runtime extension. At runtime, calls to signature-query framework methods are redirected to extension helpers. When the target package is the application itself, original signatures are substituted; all other queries delegate to the Android framework.
+
+### Scope & Compatibility Notes
+
+- **Opt-in by default**: Disabled by default (`default = false`) because it modifies client-side signature reporting.
+- **Self-queries only**: Only lookups for the app's own package name return original signatures; other packages remain untouched.
+- **Client-side only**: Operates strictly on client-side bytecode queries; cannot defeat server-side Play Integrity or remote cryptographic attestation.
+- **Requires V2/V3 signature**: If the input APK lacks a V2 or V3 signature, the patch skips cleanly without making changes.
+- **Universal applicability**: Operates across any Android application without hardcoded class fingerprints or app-specific targets.
+

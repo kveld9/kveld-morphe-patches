@@ -1,5 +1,7 @@
 package app.morphe.patches.universal
 
+import app.morphe.patcher.PackageMetadata
+import app.morphe.patcher.apk.ApkSignatureScheme
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.instructionsOrNull
 import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions
@@ -248,3 +250,95 @@ val universalReportPlayStoreInstallerPatch = bytecodePatch(
     }
 }
 
+// ============================================================================
+// PATCH 2: Spoof signature
+// ============================================================================
+
+private val SIGNATURE_REDIRECTS = listOf(
+    CallSiteRedirect(
+        definingClass = "Landroid/content/pm/PackageManager;",
+        name = "getPackageInfo",
+        returnType = "Landroid/content/pm/PackageInfo;",
+        parameterTypes = listOf("Ljava/lang/String;", "I"),
+        targetDescriptor = "$EXTENSION_CLASS->getPackageInfo(Landroid/content/pm/PackageManager;Ljava/lang/String;I)Landroid/content/pm/PackageInfo;",
+    ),
+    CallSiteRedirect(
+        definingClass = "Landroid/content/pm/PackageManager;",
+        name = "getPackageInfo",
+        returnType = "Landroid/content/pm/PackageInfo;",
+        parameterTypes = listOf("Ljava/lang/String;", "Landroid/content/pm/PackageManager\$PackageInfoFlags;"),
+        targetDescriptor = "$EXTENSION_CLASS->getPackageInfo(Landroid/content/pm/PackageManager;Ljava/lang/String;Landroid/content/pm/PackageManager\$PackageInfoFlags;)Landroid/content/pm/PackageInfo;",
+    ),
+    CallSiteRedirect(
+        definingClass = "Landroid/content/pm/PackageManager;",
+        name = "hasSigningCertificate",
+        returnType = "Z",
+        parameterTypes = listOf("Ljava/lang/String;", "[B", "I"),
+        targetDescriptor = "$EXTENSION_CLASS->hasSigningCertificate(Landroid/content/pm/PackageManager;Ljava/lang/String;[BI)Z",
+    ),
+    CallSiteRedirect(
+        definingClass = "Landroid/content/pm/SigningInfo;",
+        name = "getApkContentsSigners",
+        returnType = "[Landroid/content/pm/Signature;",
+        parameterTypes = emptyList(),
+        targetDescriptor = "$EXTENSION_CLASS->getApkContentsSigners(Landroid/content/pm/SigningInfo;)[Landroid/content/pm/Signature;",
+    ),
+    CallSiteRedirect(
+        definingClass = "Landroid/content/pm/SigningInfo;",
+        name = "getSigningCertificateHistory",
+        returnType = "[Landroid/content/pm/Signature;",
+        parameterTypes = emptyList(),
+        targetDescriptor = "$EXTENSION_CLASS->getSigningCertificateHistory(Landroid/content/pm/SigningInfo;)[Landroid/content/pm/Signature;",
+    ),
+    CallSiteRedirect(
+        definingClass = "Landroid/content/pm/SigningInfo;",
+        name = "hasMultipleSigners",
+        returnType = "Z",
+        parameterTypes = emptyList(),
+        targetDescriptor = "$EXTENSION_CLASS->hasMultipleSigners(Landroid/content/pm/SigningInfo;)Z",
+    ),
+)
+
+private fun extractOriginalCertificatesHex(packageMetadata: PackageMetadata): String? {
+    val certs = packageMetadata.signingCertificates[ApkSignatureScheme.V3]?.takeIf { it.isNotEmpty() }
+        ?: packageMetadata.signingCertificates[ApkSignatureScheme.V2]?.takeIf { it.isNotEmpty() }
+        ?: return null
+
+    return certs.joinToString(",") { cert ->
+        cert.encoded.joinToString("") { "%02x".format(it) }
+    }
+}
+
+@Suppress("unused")
+val universalSpoofSignaturePatch = bytecodePatch(
+    name = "Spoof signature",
+    description = "Presents the original release signature so modified-app checks pass.",
+    default = false,
+) {
+    dependsOn(sharedExtensionPatch)
+
+    execute {
+        val certsHex = extractOriginalCertificatesHex(packageMetadata)
+        if (certsHex.isNullOrEmpty()) {
+            println("[Spoof signature] Skipped: APK has no V2/V3 signature to keep.")
+            return@execute
+        }
+
+        bakeStringMethod("ownPackage", packageMetadata.packageName)
+        bakeStringMethod("certificates", certsHex)
+
+        val result = applyRedirects(SIGNATURE_REDIRECTS)
+        val highRegMsg = if (result.skippedHighRegisters > 0) {
+            " (${result.skippedHighRegisters} call site(s) with registers > v15 left unhooked)"
+        } else {
+            ""
+        }
+
+        if (result.redirectedCount == 0) {
+            println("[Spoof signature] Skipped: No signature lookup call sites found$highRegMsg.")
+            return@execute
+        }
+
+        println("[Spoof signature] Redirected ${result.redirectedCount} signature lookup(s)$highRegMsg.")
+    }
+}
