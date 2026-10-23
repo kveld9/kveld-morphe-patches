@@ -25,6 +25,7 @@ Technical documentation and patch catalog for TikTok on Android.
 | **Disable Push Notifications** | `bytecodePatch` | `false` (Opt-in) | None | Stops background push notifications. |
 | **Instant Launch** | `bytecodePatch` | `true` (Enabled) | None | Opens the app immediately without splash screens or ad delays. |
 | **Disable Live Gift Effects** | `bytecodePatch` | `false` (Opt-in) | None | Disables 3D gift animations in live streams to prevent frame drops. |
+| **Disable QUIC** | `bytecodePatch` | `false` (Opt-in) | None | Loads videos, uploads, and live connections over standard HTTPS instead of QUIC. |
 | **Remove Live Stream Files** | `rawResourcePatch` | `false` (Opt-in) | None | Removes live streaming and minigame files. Breaks lives and video calls. |
 | **Block P2P Video Relay** | `rawResourcePatch` | `true` (Enabled) | None | Stops your device from uploading videos to other users. |
 | **Playback & Display Governor** | `bytecodePatch` | `false` (Opt-in) | `sharedExtensionPatch` | Limits playback resolution and HDR to save battery, and locks the screen refresh rate. |
@@ -114,6 +115,9 @@ Technical documentation and patch catalog for TikTok on Android.
 - **Battery & Resource Saver**:
   - *Objective*: Save battery life and reduce mobile data consumption.
   - *How*: Neutralizes 3D ad sensor listeners and limits aggressive background video preloading.
+- **Disable QUIC**:
+  - *Objective*: Fallback to standard HTTPS (TCP/TLS) when UDP or QUIC connections are blocked or throttled by network firewalls or VPNs.
+  - *How*: Forces video media loading, upload utilities, and live stream connections to use TCP/TLS instead of QUIC.
 - **Slimmer Axes**:
   - *Objective*: Shrink application size on device storage.
   - *How*: Provides opt-in stripping of creator tools, live broadcast engines, voice synthesis models, and unused language packs.
