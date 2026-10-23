@@ -23,6 +23,7 @@ public final class TikTokContentFilterHook {
     public static volatile long maxViews = 0;
     public static volatile long minLikes = 0;
     public static volatile long maxLikes = 0;
+    public static volatile int maxAgeDays = 0;
     public static volatile boolean hideStories = true;
     public static volatile boolean hidePhotoPosts = false;
     public static volatile String blockedAuthorsCsv = "";
@@ -106,6 +107,7 @@ public final class TikTokContentFilterHook {
     }
 
     public static boolean hasListRules() {
+        if (maxAgeDays > 0) return true;
         return hasRangeRules() || hasAnyCsvRules();
     }
 
@@ -220,7 +222,7 @@ public final class TikTokContentFilterHook {
     }
 
     private static boolean matchesListRules(Object aweme) {
-        if (matchesRangeRules(aweme)) return true;
+        if (matchesRangeRules(aweme) || matchesAgeRule(aweme)) return true;
         return matchesMetadataRules(aweme);
     }
 
@@ -319,6 +321,32 @@ public final class TikTokContentFilterHook {
             if (v instanceof String) return (String) v;
         } catch (Throwable ignored) {}
         return null;
+    }
+
+    private static long getLongProperty(Object target, String methodName) {
+        if (target == null) return -1;
+        try {
+            Method m = target.getClass().getMethod(methodName);
+            Object v = m.invoke(target);
+            if (v instanceof Number) return ((Number) v).longValue();
+        } catch (Throwable ignored) {}
+        return -1;
+    }
+
+    private static boolean matchesAgeRule(Object aweme) {
+        if (maxAgeDays <= 0) return false;
+        long createTime = getLongProperty(aweme, "getCreateTime");
+        if (createTime <= 0) return false;
+        long createSeconds = normalizeToSeconds(createTime);
+        long ageSeconds = (System.currentTimeMillis() / 1000L) - createSeconds;
+        return ageSeconds > (maxAgeDays * 86400L);
+    }
+
+    private static long normalizeToSeconds(long time) {
+        if (time > 100_000_000_000L) {
+            return time / 1000L;
+        }
+        return time;
     }
 
     private static boolean matchesRangeRules(Object aweme) {

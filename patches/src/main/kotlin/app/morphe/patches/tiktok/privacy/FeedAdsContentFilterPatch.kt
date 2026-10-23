@@ -134,6 +134,14 @@ val feedAdsContentFilterPatch = bytecodePatch(
         required = false,
     )
 
+    val maxAgeDays by intOption(
+        key = "maxAgeDays",
+        title = "Maximum Post Age",
+        description = "Hide posts older than this many days. 0 disables it.",
+        default = 0,
+        required = false,
+    )
+
     val hideStories by booleanOption(
         key = "hideStories",
         title = "Hide Stories",
@@ -156,7 +164,8 @@ val feedAdsContentFilterPatch = bytecodePatch(
         val hashtagsConfigured = !blockedHashtags.isNullOrBlank()
         val keywordsConfigured = !blockedKeywords.isNullOrBlank()
         val regionsConfigured = !hiddenRegions.isNullOrBlank()
-        val contentFilterActive = viewsLikesConfigured || authorsConfigured || hashtagsConfigured || keywordsConfigured || regionsConfigured || hideStories == true || hidePhotoPosts == true
+        val ageConfigured = (maxAgeDays ?: 0) > 0
+        val contentFilterActive = viewsLikesConfigured || authorsConfigured || hashtagsConfigured || keywordsConfigured || regionsConfigured || ageConfigured || hideStories == true || hidePhotoPosts == true
 
         if (filterAds != true &&
             filterBloat != true &&
@@ -1228,6 +1237,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 val maxV = (maxViews ?: 0).coerceAtLeast(0).toLong()
                 val minL = (minLikes ?: 0).coerceAtLeast(0).toLong()
                 val maxL = (maxLikes ?: 0).coerceAtLeast(0).toLong()
+                val maxAge = (maxAgeDays ?: 0).coerceAtLeast(0)
                 val clinit = Fingerprint(
                     definingClass = hook,
                     name = "<clinit>",
@@ -1251,6 +1261,8 @@ val feedAdsContentFilterPatch = bytecodePatch(
                         sput-wide v0, $hook->minLikes:J
                         const-wide v0, 0x${maxL.toString(16)}
                         sput-wide v0, $hook->maxLikes:J
+                        const v0, 0x${maxAge.toString(16)}
+                        sput v0, $hook->maxAgeDays:I
                         const/4 v0, ${if (hideStories != false) "0x1" else "0x0"}
                         sput-boolean v0, $hook->hideStories:Z
                         const/4 v0, ${if (hidePhotoPosts == true) "0x1" else "0x0"}
@@ -1261,7 +1273,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 val hashtagCount = countCsvEntries(blockedHashtags)
                 val keywordCount = countCsvEntries(blockedKeywords)
                 val regionCount = countCsvEntries(hiddenRegions)
-                println("[Feed Ads & Content Filter] Pushed configuration (views ${minViews ?: 0}..${maxViews ?: 0}, likes ${minLikes ?: 0}..${maxLikes ?: 0}, stories=$hideStories, photos=$hidePhotoPosts, authors=$authorCount entries, hashtags=$hashtagCount entries, keywords=$keywordCount entries, regions=$regionCount entries).")
+                println("[Feed Ads & Content Filter] Pushed configuration (views ${minViews ?: 0}..${maxViews ?: 0}, likes ${minLikes ?: 0}..${maxLikes ?: 0}, maxAge=${maxAge}d, stories=$hideStories, photos=$hidePhotoPosts, authors=$authorCount entries, hashtags=$hashtagCount entries, keywords=$keywordCount entries, regions=$regionCount entries).")
                 patched++
             } catch (e: Exception) {
                 println("[Feed Ads & Content Filter] Configuration note: ${e.message}")
@@ -1290,7 +1302,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
             println("[Feed Ads & Content Filter] Hooked FeedApiService.fetchFeedList (${feedApiReturns.size} return(s)).")
             patched++
 
-            val listRulesConfigured = viewsLikesConfigured || authorsConfigured || hashtagsConfigured || keywordsConfigured || regionsConfigured
+            val listRulesConfigured = viewsLikesConfigured || authorsConfigured || hashtagsConfigured || keywordsConfigured || regionsConfigured || ageConfigured
             if (listRulesConfigured) {
                 fun hookReturnList(definingClass: String, name: String, returnType: String, logLabel: String) {
                     val fingerprint = Fingerprint(
