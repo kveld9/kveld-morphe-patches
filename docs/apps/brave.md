@@ -34,6 +34,7 @@ Technical documentation and patch catalog for Brave Private Web Browser on Andro
 | **Brave Origin** | `bytecodePatch` | `true` (Enabled) | `Brave Origin (Setup)`, `braveNativeExtractionPatch` | Unlocks Brave Origin feature switches. |
 | **Block Popups & Rating Requests** | `bytecodePatch` | `true` (Enabled) | None | Blocks rating popups, review requests and promo dialogs. |
 | **Select Previous Tab on Close** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Selects the previous tab in the tab group when closing a tab. |
+| **Brave AMOLED theme** | `bytecodePatch` | `false` (Opt-in) | `Brave AMOLED theme resources` | Rewrites dark chrome to AMOLED pure black, supports two-tier surfaces, and disables Material You dynamic colors. |
 
 ---
 
@@ -73,6 +74,11 @@ Technical documentation and patch catalog for Brave Private Web Browser on Andro
 - **Remove Extra Files**:
   - *Objective*: Reduce overall application size on device storage.
   - *How*: Overwrites unused companion native libraries in place with empty stubs, targeting augmented reality and extended reality binaries. Includes an option to also remove the WireGuard VPN library.
+
+### E. Theming & Interface Customization
+- **Brave AMOLED theme**:
+  - *Objective*: Replace dark grey surfaces with true AMOLED black, optionally preserve raised card elevations with two-tier surfaces, and disable wallpaper-derived Material You dynamic colors.
+  - *How*: Rewrites color values, vector fills, and lStar selector resources at patch time, adjusts preference switches, and injects bytecode prologues into dynamic color reader methods to return false.
 
 ---
 
