@@ -118,6 +118,14 @@ val feedAdsContentFilterPatch = bytecodePatch(
         required = false,
     )
 
+    val blockedKeywords by stringOption(
+        key = "blockedKeywords",
+        title = "Blocked Keywords",
+        description = "Hide posts whose caption contains any of these words. Comma-separated, for example: giveaway,crypto.",
+        default = "",
+        required = false,
+    )
+
     val hideStories by booleanOption(
         key = "hideStories",
         title = "Hide Stories",
@@ -138,7 +146,8 @@ val feedAdsContentFilterPatch = bytecodePatch(
         val viewsLikesConfigured = (minViews ?: 0) > 0 || (maxViews ?: 0) > 0 || (minLikes ?: 0) > 0 || (maxLikes ?: 0) > 0
         val authorsConfigured = !blockedAuthors.isNullOrBlank()
         val hashtagsConfigured = !blockedHashtags.isNullOrBlank()
-        val contentFilterActive = viewsLikesConfigured || authorsConfigured || hashtagsConfigured || hideStories == true || hidePhotoPosts == true
+        val keywordsConfigured = !blockedKeywords.isNullOrBlank()
+        val contentFilterActive = viewsLikesConfigured || authorsConfigured || hashtagsConfigured || keywordsConfigured || hideStories == true || hidePhotoPosts == true
 
         if (filterAds != true &&
             filterBloat != true &&
@@ -1220,6 +1229,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 val insertIdx = if (returnIdx != -1) returnIdx else 0
                 val authorInstructions = buildPushCsvInstructions(hook, "blockedAuthorsCsv", blockedAuthors)
                 val hashtagInstructions = buildPushCsvInstructions(hook, "blockedHashtagsCsv", blockedHashtags)
+                val keywordInstructions = buildPushCsvInstructions(hook, "blockedKeywordsCsv", blockedKeywords)
                 clinit.addInstructions(
                     insertIdx,
                     """
@@ -1234,12 +1244,13 @@ val feedAdsContentFilterPatch = bytecodePatch(
                         const/4 v0, ${if (hideStories != false) "0x1" else "0x0"}
                         sput-boolean v0, $hook->hideStories:Z
                         const/4 v0, ${if (hidePhotoPosts == true) "0x1" else "0x0"}
-                        sput-boolean v0, $hook->hidePhotoPosts:Z$authorInstructions$hashtagInstructions
+                        sput-boolean v0, $hook->hidePhotoPosts:Z$authorInstructions$hashtagInstructions$keywordInstructions
                     """.trimIndent(),
                 )
                 val authorCount = countCsvEntries(blockedAuthors)
                 val hashtagCount = countCsvEntries(blockedHashtags)
-                println("[Feed Ads & Content Filter] Pushed configuration (views ${minViews ?: 0}..${maxViews ?: 0}, likes ${minLikes ?: 0}..${maxLikes ?: 0}, stories=$hideStories, photos=$hidePhotoPosts, authors=$authorCount entries, hashtags=$hashtagCount entries).")
+                val keywordCount = countCsvEntries(blockedKeywords)
+                println("[Feed Ads & Content Filter] Pushed configuration (views ${minViews ?: 0}..${maxViews ?: 0}, likes ${minLikes ?: 0}..${maxLikes ?: 0}, stories=$hideStories, photos=$hidePhotoPosts, authors=$authorCount entries, hashtags=$hashtagCount entries, keywords=$keywordCount entries).")
                 patched++
             } catch (e: Exception) {
                 println("[Feed Ads & Content Filter] Configuration note: ${e.message}")
@@ -1268,7 +1279,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
             println("[Feed Ads & Content Filter] Hooked FeedApiService.fetchFeedList (${feedApiReturns.size} return(s)).")
             patched++
 
-            val listRulesConfigured = viewsLikesConfigured || authorsConfigured || hashtagsConfigured
+            val listRulesConfigured = viewsLikesConfigured || authorsConfigured || hashtagsConfigured || keywordsConfigured
             if (listRulesConfigured) {
                 fun hookReturnList(definingClass: String, name: String, returnType: String, logLabel: String) {
                     val fingerprint = Fingerprint(

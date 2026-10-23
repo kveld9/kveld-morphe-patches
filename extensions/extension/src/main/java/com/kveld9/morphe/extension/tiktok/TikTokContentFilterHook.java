@@ -27,9 +27,11 @@ public final class TikTokContentFilterHook {
     public static volatile boolean hidePhotoPosts = false;
     public static volatile String blockedAuthorsCsv = "";
     public static volatile String blockedHashtagsCsv = "";
+    public static volatile String blockedKeywordsCsv = "";
 
     private static final CsvSet blockedAuthorsSet = new CsvSet();
     private static final CsvSet blockedHashtagsSet = new CsvSet();
+    private static final CsvSet blockedKeywordsSet = new CsvSet();
 
     private static final class CsvSet {
         private volatile String ref = null;
@@ -102,7 +104,7 @@ public final class TikTokContentFilterHook {
     }
 
     public static boolean hasListRules() {
-        return hasRangeRules() || !getBlockedAuthors().isEmpty() || !getBlockedHashtags().isEmpty();
+        return hasRangeRules() || !getBlockedAuthors().isEmpty() || !getBlockedHashtags().isEmpty() || !getBlockedKeywords().isEmpty();
     }
 
     private static boolean hasRangeRules() {
@@ -115,6 +117,10 @@ public final class TikTokContentFilterHook {
 
     public static Set<String> getBlockedHashtags() {
         return blockedHashtagsSet.get(blockedHashtagsCsv);
+    }
+
+    public static Set<String> getBlockedKeywords() {
+        return blockedKeywordsSet.get(blockedKeywordsCsv);
     }
 
     @SuppressWarnings("unchecked")
@@ -204,7 +210,8 @@ public final class TikTokContentFilterHook {
 
     private static boolean matchesListRules(Object aweme) {
         if (matchesRangeRules(aweme)) return true;
-        return matchesAuthorRule(aweme) || matchesHashtagRule(aweme);
+        if (matchesAuthorRule(aweme) || matchesHashtagRule(aweme)) return true;
+        return matchesKeywordRule(aweme);
     }
 
     private static boolean matchesAuthorRule(Object aweme) {
@@ -238,6 +245,23 @@ public final class TikTokContentFilterHook {
             return true;
         }
         return matchesTagList(getListProperty(aweme, "getChallengeList"), "getChallengeName", blocked);
+    }
+
+    private static boolean matchesKeywordRule(Object aweme) {
+        Set<String> keywords = getBlockedKeywords();
+        if (keywords.isEmpty()) return false;
+        String caption = getStringProperty(aweme, "getDesc");
+        if (caption == null || caption.isEmpty()) return false;
+        return containsAnyKeyword(caption.toLowerCase(Locale.ROOT), keywords);
+    }
+
+    private static boolean containsAnyKeyword(String lowerCaption, Set<String> keywords) {
+        for (String keyword : keywords) {
+            if (lowerCaption.contains(keyword)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean matchesTagList(List<?> list, String methodName, Set<String> blocked) {
