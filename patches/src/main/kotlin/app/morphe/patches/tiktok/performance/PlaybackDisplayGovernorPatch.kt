@@ -491,7 +491,7 @@ val playbackDisplayGovernorPatch = bytecodePatch(
             tutorLIZfp.method.addInstructions(
                 0,
                 """
-                    invoke-static {p0}, ${Constants.TIKTOK_EXTENSION_REFRESH_RATE_HOOK}->applyToWindow(Landroid/app/Activity;)V
+                    invoke-static/range {p1 .. p1}, ${Constants.TIKTOK_EXTENSION_REFRESH_RATE_HOOK}->applyToWindow(Landroid/app/Activity;)V
                     return-void
                 """.trimIndent(),
             )
