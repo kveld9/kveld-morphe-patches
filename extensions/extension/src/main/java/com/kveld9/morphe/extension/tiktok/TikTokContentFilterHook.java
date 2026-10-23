@@ -28,10 +28,12 @@ public final class TikTokContentFilterHook {
     public static volatile String blockedAuthorsCsv = "";
     public static volatile String blockedHashtagsCsv = "";
     public static volatile String blockedKeywordsCsv = "";
+    public static volatile String hiddenRegionsCsv = "";
 
     private static final CsvSet blockedAuthorsSet = new CsvSet();
     private static final CsvSet blockedHashtagsSet = new CsvSet();
     private static final CsvSet blockedKeywordsSet = new CsvSet();
+    private static final CsvSet hiddenRegionsSet = new CsvSet();
 
     private static final class CsvSet {
         private volatile String ref = null;
@@ -104,7 +106,12 @@ public final class TikTokContentFilterHook {
     }
 
     public static boolean hasListRules() {
-        return hasRangeRules() || !getBlockedAuthors().isEmpty() || !getBlockedHashtags().isEmpty() || !getBlockedKeywords().isEmpty();
+        return hasRangeRules() || hasAnyCsvRules();
+    }
+
+    private static boolean hasAnyCsvRules() {
+        if (!getBlockedAuthors().isEmpty() || !getBlockedHashtags().isEmpty()) return true;
+        return !getBlockedKeywords().isEmpty() || !getHiddenRegions().isEmpty();
     }
 
     private static boolean hasRangeRules() {
@@ -121,6 +128,10 @@ public final class TikTokContentFilterHook {
 
     public static Set<String> getBlockedKeywords() {
         return blockedKeywordsSet.get(blockedKeywordsCsv);
+    }
+
+    public static Set<String> getHiddenRegions() {
+        return hiddenRegionsSet.get(hiddenRegionsCsv);
     }
 
     @SuppressWarnings("unchecked")
@@ -210,8 +221,12 @@ public final class TikTokContentFilterHook {
 
     private static boolean matchesListRules(Object aweme) {
         if (matchesRangeRules(aweme)) return true;
+        return matchesMetadataRules(aweme);
+    }
+
+    private static boolean matchesMetadataRules(Object aweme) {
         if (matchesAuthorRule(aweme) || matchesHashtagRule(aweme)) return true;
-        return matchesKeywordRule(aweme);
+        return matchesKeywordRule(aweme) || matchesRegionRule(aweme);
     }
 
     private static boolean matchesAuthorRule(Object aweme) {
@@ -262,6 +277,14 @@ public final class TikTokContentFilterHook {
             }
         }
         return false;
+    }
+
+    private static boolean matchesRegionRule(Object aweme) {
+        Set<String> regions = getHiddenRegions();
+        if (regions.isEmpty()) return false;
+        String region = getStringProperty(aweme, "getRegion");
+        if (region == null || region.isEmpty()) return false;
+        return regions.contains(CsvSet.normalize(region));
     }
 
     private static boolean matchesTagList(List<?> list, String methodName, Set<String> blocked) {

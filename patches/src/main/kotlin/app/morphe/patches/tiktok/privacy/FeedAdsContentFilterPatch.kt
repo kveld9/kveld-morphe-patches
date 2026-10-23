@@ -126,6 +126,14 @@ val feedAdsContentFilterPatch = bytecodePatch(
         required = false,
     )
 
+    val hiddenRegions by stringOption(
+        key = "hiddenRegions",
+        title = "Hidden Regions",
+        description = "Hide posts published from these countries. Comma-separated two-letter country codes, for example: US,BR.",
+        default = "",
+        required = false,
+    )
+
     val hideStories by booleanOption(
         key = "hideStories",
         title = "Hide Stories",
@@ -147,7 +155,8 @@ val feedAdsContentFilterPatch = bytecodePatch(
         val authorsConfigured = !blockedAuthors.isNullOrBlank()
         val hashtagsConfigured = !blockedHashtags.isNullOrBlank()
         val keywordsConfigured = !blockedKeywords.isNullOrBlank()
-        val contentFilterActive = viewsLikesConfigured || authorsConfigured || hashtagsConfigured || keywordsConfigured || hideStories == true || hidePhotoPosts == true
+        val regionsConfigured = !hiddenRegions.isNullOrBlank()
+        val contentFilterActive = viewsLikesConfigured || authorsConfigured || hashtagsConfigured || keywordsConfigured || regionsConfigured || hideStories == true || hidePhotoPosts == true
 
         if (filterAds != true &&
             filterBloat != true &&
@@ -1230,6 +1239,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 val authorInstructions = buildPushCsvInstructions(hook, "blockedAuthorsCsv", blockedAuthors)
                 val hashtagInstructions = buildPushCsvInstructions(hook, "blockedHashtagsCsv", blockedHashtags)
                 val keywordInstructions = buildPushCsvInstructions(hook, "blockedKeywordsCsv", blockedKeywords)
+                val regionInstructions = buildPushCsvInstructions(hook, "hiddenRegionsCsv", hiddenRegions)
                 clinit.addInstructions(
                     insertIdx,
                     """
@@ -1244,13 +1254,14 @@ val feedAdsContentFilterPatch = bytecodePatch(
                         const/4 v0, ${if (hideStories != false) "0x1" else "0x0"}
                         sput-boolean v0, $hook->hideStories:Z
                         const/4 v0, ${if (hidePhotoPosts == true) "0x1" else "0x0"}
-                        sput-boolean v0, $hook->hidePhotoPosts:Z$authorInstructions$hashtagInstructions$keywordInstructions
+                        sput-boolean v0, $hook->hidePhotoPosts:Z$authorInstructions$hashtagInstructions$keywordInstructions$regionInstructions
                     """.trimIndent(),
                 )
                 val authorCount = countCsvEntries(blockedAuthors)
                 val hashtagCount = countCsvEntries(blockedHashtags)
                 val keywordCount = countCsvEntries(blockedKeywords)
-                println("[Feed Ads & Content Filter] Pushed configuration (views ${minViews ?: 0}..${maxViews ?: 0}, likes ${minLikes ?: 0}..${maxLikes ?: 0}, stories=$hideStories, photos=$hidePhotoPosts, authors=$authorCount entries, hashtags=$hashtagCount entries, keywords=$keywordCount entries).")
+                val regionCount = countCsvEntries(hiddenRegions)
+                println("[Feed Ads & Content Filter] Pushed configuration (views ${minViews ?: 0}..${maxViews ?: 0}, likes ${minLikes ?: 0}..${maxLikes ?: 0}, stories=$hideStories, photos=$hidePhotoPosts, authors=$authorCount entries, hashtags=$hashtagCount entries, keywords=$keywordCount entries, regions=$regionCount entries).")
                 patched++
             } catch (e: Exception) {
                 println("[Feed Ads & Content Filter] Configuration note: ${e.message}")
@@ -1279,7 +1290,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
             println("[Feed Ads & Content Filter] Hooked FeedApiService.fetchFeedList (${feedApiReturns.size} return(s)).")
             patched++
 
-            val listRulesConfigured = viewsLikesConfigured || authorsConfigured || hashtagsConfigured || keywordsConfigured
+            val listRulesConfigured = viewsLikesConfigured || authorsConfigured || hashtagsConfigured || keywordsConfigured || regionsConfigured
             if (listRulesConfigured) {
                 fun hookReturnList(definingClass: String, name: String, returnType: String, logLabel: String) {
                     val fingerprint = Fingerprint(
