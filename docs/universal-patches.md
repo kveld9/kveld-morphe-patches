@@ -28,6 +28,7 @@ Comprehensive reference for universal optimization and resource slimming patches
 | **[Silence System Logs](#18-silence-system-logs-universalsilencesystemlogspatch)** | `bytecodePatch` | Dalvik Bytecode Call Sites | Neutralizes log output invocations to prevent diagnostic log leakage | Stops application telemetry and sensitive strings leaking to logcat |
 | **[Disable Browser File Associations](#19-disable-browser-file-associations-universalbrowserassociationpatch)** | `resourcePatch` | Manifest (`AndroidManifest.xml`) | Removes HTTP/HTTPS `data` entries from `VIEW` + `BROWSABLE` intent filters; drops filters left dataless | App no longer appears in the browser chooser for online files; local file handling untouched |
 | **[Remove ads](#20-remove-ads-universalremoveadspatch)** | `bytecodePatch` | Dalvik Bytecode Methods | Neutralizes public ad loader entry points across common third-party ad networks (AdMob, AppLovin MAX, Meta, Unity Ads, ironSource, Pangle, Vungle, InMobi, Mintegral, Chartboost) | Stops background and full-screen ad fetches from third-party networks |
+| **[Report Play Store as installer](#21-report-play-store-as-installer-universalreportplaystoreinstallerpatch)** | `bytecodePatch` | Dalvik Bytecode Call Sites | Redirects `PackageManager` and `InstallSourceInfo` queries for the app's own package to report Google Play (`com.android.vending`) | Tells apps that check their install source that they came from Google Play without altering actual package metadata |
 
 ---
 
@@ -75,6 +76,7 @@ Exception: Block Tracking Servers (Universal) remains a valid opt-in patch on ma
 | **Silence System Logs** | ✅ Yes | Neutralizes diagnostic log calls (`Log.d/v/i/w/e/wtf` and `println`) with configurable level filtering. |
 | **Disable Browser File Associations** | ✅ Yes | Only touches `VIEW` + `BROWSABLE` intent filters carrying `http`/`https` data. Local file handlers (`file`/`content` schemes), launcher entries (`MAIN`) and non-browser actions are never modified. Do not apply to apps that must open web links (browsers, readers). |
 | **Remove ads** | ⚠️ Opt-in | Disabled by default (`default = false`). Stops third-party ad networks from loading ads. May break reward-gated features that require watching an ad to unlock content. Does not remove SDK code or reclaim APK size, and does not touch first-party in-feed ads. |
+| **Report Play Store as installer** | ⚠️ Safe by Default | Opt-in (`default = false`). Redirects installer self-queries to report Google Play (`com.android.vending`); other package lookups are untouched. Cannot defeat server-side Play Integrity or remote attestation. Must pass ART verifier gate. |
 
 ---
 
@@ -602,4 +604,21 @@ The **`Remove ads`** patch neutralizes public ad-loading entry points across com
 - **Code preservation**: Does not remove the underlying SDK classes from the APK or reduce APK size (use resource or library slimmers for size debloating).
 - **First-party ads**: Does not touch first-party in-feed sponsored content or proprietary server-rendered ads (e.g. TikTok in-feed ads, Brave sponsored images), which are handled by dedicated app patches.
 
+---
 
+## 21. Report Play Store as installer (`universalReportPlayStoreInstallerPatch`)
+
+The **`Report Play Store as installer`** patch redirects installer lookup queries at Dalvik bytecode call sites (`classes*.dex`) so that the application sees itself as installed from the Google Play Store (`com.android.vending`).
+
+> [!NOTE]
+> ### Framework Installer Query Interception
+> Many applications verify their installation source to guard against sideloading, distribution tampering, or unofficial app stores. These applications query `PackageManager.getInstallerPackageName(packageName)` or, on Android 11+ (API 30+), `PackageManager.getInstallSourceInfo(packageName)` and its associated `InstallSourceInfo` getters (`getInstallingPackageName()`, `getInitiatingPackageName()`).
+>
+> This patch intercepts these framework method invocations across application classes and redirects them to extension helpers in `extension.mpe`. When the queried package matches the application's own package name (baked from `PackageMetadata` at patch time), the redirected methods return `com.android.vending`. Queries targeting any other package delegate transparently to the platform result.
+
+### Scope & Compatibility Notes
+
+- **Opt-in by default**: Disabled by default (`default = false`) because it modifies client-side installation source reporting.
+- **Self-queries only**: Only lookups for the app's own package name are spoofed; queries for third-party packages are passed to the platform unchanged.
+- **Client-side only**: Operates strictly on client-side bytecode; cannot defeat server-side Play Integrity or remote attestation.
+- **Universal applicability**: Operates across any Android application without hardcoded class fingerprints or app-specific targets.
