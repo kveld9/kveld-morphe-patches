@@ -2,12 +2,16 @@ package com.kveld9.morphe.extension.tiktok;
 
 import android.util.Log;
 import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 /**
  * Runtime filter for the Feed Content Filter patch.
- * Removes stories, photo posts, and videos outside the configured
+ * Removes stories, photo posts, blocked creators, and videos outside the configured
  * view/like ranges from feed item lists.
  */
 @SuppressWarnings("unused")
@@ -21,6 +25,10 @@ public final class TikTokContentFilterHook {
     public static volatile long maxLikes = 0;
     public static volatile boolean hideStories = true;
     public static volatile boolean hidePhotoPosts = false;
+    public static volatile String blockedAuthorsCsv = "";
+
+    private static volatile String cachedCsvRef = null;
+    private static volatile Set<String> cachedBlockedAuthors = Collections.emptySet();
 
     private TikTokContentFilterHook() {}
 
@@ -43,7 +51,57 @@ public final class TikTokContentFilterHook {
     }
 
     public static boolean hasListRules() {
+        return hasRangeRules() || !getBlockedAuthors().isEmpty();
+    }
+
+    private static boolean hasRangeRules() {
         return minViews > 0 || maxViews > 0 || minLikes > 0 || maxLikes > 0;
+    }
+
+    public static Set<String> getBlockedAuthors() {
+        String csv = blockedAuthorsCsv;
+        if (csv != null && csv == cachedCsvRef) {
+            return cachedBlockedAuthors;
+        }
+        return updateBlockedAuthorsCache(csv);
+    }
+
+    private static synchronized Set<String> updateBlockedAuthorsCache(String csv) {
+        if (csv != null && csv == cachedCsvRef) {
+            return cachedBlockedAuthors;
+        }
+        Set<String> parsed = parseBlockedAuthors(csv);
+        cachedBlockedAuthors = parsed;
+        cachedCsvRef = csv;
+        return parsed;
+    }
+
+    private static Set<String> parseBlockedAuthors(String csv) {
+        if (csv == null || csv.isEmpty()) {
+            return Collections.emptySet();
+        }
+        Set<String> set = new HashSet<>();
+        String[] tokens = csv.split(",");
+        for (String raw : tokens) {
+            addNormalizedAuthor(set, raw);
+        }
+        return Collections.unmodifiableSet(set);
+    }
+
+    private static void addNormalizedAuthor(Set<String> set, String raw) {
+        String normalized = normalizeUsername(raw);
+        if (!normalized.isEmpty()) {
+            set.add(normalized);
+        }
+    }
+
+    private static String normalizeUsername(String raw) {
+        if (raw == null) return "";
+        String trimmed = raw.trim();
+        if (trimmed.startsWith("@")) {
+            trimmed = trimmed.substring(1);
+        }
+        return trimmed.toLowerCase(Locale.ROOT);
     }
 
     @SuppressWarnings("unchecked")
@@ -117,18 +175,51 @@ public final class TikTokContentFilterHook {
         if (item == null) return false;
         Object aweme = resolveAweme(item);
         if (matchesForYouRules(aweme)) return true;
-        return matchesRangeRules(aweme);
+        return matchesListRules(aweme);
     }
 
     private static boolean shouldFilterByListRules(Object item) {
         if (item == null) return false;
         Object aweme = resolveAweme(item);
-        return matchesRangeRules(aweme);
+        return matchesListRules(aweme);
     }
 
     private static boolean matchesForYouRules(Object aweme) {
         if (hideStories && isStory(aweme)) return true;
         return hidePhotoPosts && isPhotoPost(aweme);
+    }
+
+    private static boolean matchesListRules(Object aweme) {
+        return matchesRangeRules(aweme) || matchesAuthorRule(aweme);
+    }
+
+    private static boolean matchesAuthorRule(Object aweme) {
+        if (aweme == null) return false;
+        Set<String> blocked = getBlockedAuthors();
+        if (blocked.isEmpty()) return false;
+        String handle = getAuthorUniqueId(aweme);
+        if (handle == null) return false;
+        return blocked.contains(normalizeUsername(handle));
+    }
+
+    private static Object getAuthor(Object aweme) {
+        if (aweme == null) return null;
+        try {
+            Method m = aweme.getClass().getMethod("getAuthor");
+            return m.invoke(aweme);
+        } catch (Throwable ignored) {}
+        return null;
+    }
+
+    private static String getAuthorUniqueId(Object aweme) {
+        Object author = getAuthor(aweme);
+        if (author == null) return null;
+        try {
+            Method m = author.getClass().getMethod("getUniqueId");
+            Object v = m.invoke(author);
+            if (v instanceof String) return (String) v;
+        } catch (Throwable ignored) {}
+        return null;
     }
 
     private static boolean matchesRangeRules(Object aweme) {
