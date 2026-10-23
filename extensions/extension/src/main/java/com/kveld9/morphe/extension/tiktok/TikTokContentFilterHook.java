@@ -26,9 +26,60 @@ public final class TikTokContentFilterHook {
     public static volatile boolean hideStories = true;
     public static volatile boolean hidePhotoPosts = false;
     public static volatile String blockedAuthorsCsv = "";
+    public static volatile String blockedHashtagsCsv = "";
 
-    private static volatile String cachedCsvRef = null;
-    private static volatile Set<String> cachedBlockedAuthors = Collections.emptySet();
+    private static final CsvSet blockedAuthorsSet = new CsvSet();
+    private static final CsvSet blockedHashtagsSet = new CsvSet();
+
+    private static final class CsvSet {
+        private volatile String ref = null;
+        private volatile Set<String> set = Collections.emptySet();
+
+        public Set<String> get(String csv) {
+            if (csv != null && csv == ref) {
+                return set;
+            }
+            return update(csv);
+        }
+
+        private synchronized Set<String> update(String csv) {
+            if (csv != null && csv == ref) {
+                return set;
+            }
+            Set<String> parsed = parse(csv);
+            set = parsed;
+            ref = csv;
+            return parsed;
+        }
+
+        private static Set<String> parse(String csv) {
+            if (csv == null || csv.isEmpty()) {
+                return Collections.emptySet();
+            }
+            Set<String> result = new HashSet<>();
+            String[] tokens = csv.split(",");
+            for (String raw : tokens) {
+                addNormalized(result, raw);
+            }
+            return Collections.unmodifiableSet(result);
+        }
+
+        private static void addNormalized(Set<String> target, String raw) {
+            String norm = normalize(raw);
+            if (!norm.isEmpty()) {
+                target.add(norm);
+            }
+        }
+
+        static String normalize(String raw) {
+            if (raw == null) return "";
+            String trimmed = raw.trim();
+            if (trimmed.startsWith("@") || trimmed.startsWith("#")) {
+                trimmed = trimmed.substring(1);
+            }
+            return trimmed.toLowerCase(Locale.ROOT);
+        }
+    }
 
     private TikTokContentFilterHook() {}
 
@@ -51,7 +102,7 @@ public final class TikTokContentFilterHook {
     }
 
     public static boolean hasListRules() {
-        return hasRangeRules() || !getBlockedAuthors().isEmpty();
+        return hasRangeRules() || !getBlockedAuthors().isEmpty() || !getBlockedHashtags().isEmpty();
     }
 
     private static boolean hasRangeRules() {
@@ -59,49 +110,11 @@ public final class TikTokContentFilterHook {
     }
 
     public static Set<String> getBlockedAuthors() {
-        String csv = blockedAuthorsCsv;
-        if (csv != null && csv == cachedCsvRef) {
-            return cachedBlockedAuthors;
-        }
-        return updateBlockedAuthorsCache(csv);
+        return blockedAuthorsSet.get(blockedAuthorsCsv);
     }
 
-    private static synchronized Set<String> updateBlockedAuthorsCache(String csv) {
-        if (csv != null && csv == cachedCsvRef) {
-            return cachedBlockedAuthors;
-        }
-        Set<String> parsed = parseBlockedAuthors(csv);
-        cachedBlockedAuthors = parsed;
-        cachedCsvRef = csv;
-        return parsed;
-    }
-
-    private static Set<String> parseBlockedAuthors(String csv) {
-        if (csv == null || csv.isEmpty()) {
-            return Collections.emptySet();
-        }
-        Set<String> set = new HashSet<>();
-        String[] tokens = csv.split(",");
-        for (String raw : tokens) {
-            addNormalizedAuthor(set, raw);
-        }
-        return Collections.unmodifiableSet(set);
-    }
-
-    private static void addNormalizedAuthor(Set<String> set, String raw) {
-        String normalized = normalizeUsername(raw);
-        if (!normalized.isEmpty()) {
-            set.add(normalized);
-        }
-    }
-
-    private static String normalizeUsername(String raw) {
-        if (raw == null) return "";
-        String trimmed = raw.trim();
-        if (trimmed.startsWith("@")) {
-            trimmed = trimmed.substring(1);
-        }
-        return trimmed.toLowerCase(Locale.ROOT);
+    public static Set<String> getBlockedHashtags() {
+        return blockedHashtagsSet.get(blockedHashtagsCsv);
     }
 
     @SuppressWarnings("unchecked")
@@ -190,7 +203,8 @@ public final class TikTokContentFilterHook {
     }
 
     private static boolean matchesListRules(Object aweme) {
-        return matchesRangeRules(aweme) || matchesAuthorRule(aweme);
+        if (matchesRangeRules(aweme)) return true;
+        return matchesAuthorRule(aweme) || matchesHashtagRule(aweme);
     }
 
     private static boolean matchesAuthorRule(Object aweme) {
@@ -199,7 +213,7 @@ public final class TikTokContentFilterHook {
         if (blocked.isEmpty()) return false;
         String handle = getAuthorUniqueId(aweme);
         if (handle == null) return false;
-        return blocked.contains(normalizeUsername(handle));
+        return blocked.contains(CsvSet.normalize(handle));
     }
 
     private static Object getAuthor(Object aweme) {
@@ -213,10 +227,48 @@ public final class TikTokContentFilterHook {
 
     private static String getAuthorUniqueId(Object aweme) {
         Object author = getAuthor(aweme);
-        if (author == null) return null;
+        return getStringProperty(author, "getUniqueId");
+    }
+
+    private static boolean matchesHashtagRule(Object aweme) {
+        if (aweme == null) return false;
+        Set<String> blocked = getBlockedHashtags();
+        if (blocked.isEmpty()) return false;
+        if (matchesTagList(getListProperty(aweme, "getTextExtra"), "getHashTagName", blocked)) {
+            return true;
+        }
+        return matchesTagList(getListProperty(aweme, "getChallengeList"), "getChallengeName", blocked);
+    }
+
+    private static boolean matchesTagList(List<?> list, String methodName, Set<String> blocked) {
+        if (list == null) return false;
+        for (Object item : list) {
+            if (matchesTagItem(item, methodName, blocked)) return true;
+        }
+        return false;
+    }
+
+    private static boolean matchesTagItem(Object item, String methodName, Set<String> blocked) {
+        String val = getStringProperty(item, methodName);
+        if (val == null || val.isEmpty()) return false;
+        return blocked.contains(CsvSet.normalize(val));
+    }
+
+    private static List<?> getListProperty(Object target, String methodName) {
+        if (target == null) return null;
         try {
-            Method m = author.getClass().getMethod("getUniqueId");
-            Object v = m.invoke(author);
+            Method m = target.getClass().getMethod(methodName);
+            Object v = m.invoke(target);
+            if (v instanceof List) return (List<?>) v;
+        } catch (Throwable ignored) {}
+        return null;
+    }
+
+    private static String getStringProperty(Object target, String methodName) {
+        if (target == null) return null;
+        try {
+            Method m = target.getClass().getMethod(methodName);
+            Object v = m.invoke(target);
             if (v instanceof String) return (String) v;
         } catch (Throwable ignored) {}
         return null;

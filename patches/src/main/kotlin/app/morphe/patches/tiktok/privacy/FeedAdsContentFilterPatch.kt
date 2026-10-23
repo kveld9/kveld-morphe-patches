@@ -110,6 +110,14 @@ val feedAdsContentFilterPatch = bytecodePatch(
         required = false,
     )
 
+    val blockedHashtags by stringOption(
+        key = "blockedHashtags",
+        title = "Blocked Hashtags",
+        description = "Hide posts with any of these hashtags. Comma-separated, for example: fyp,ad.",
+        default = "",
+        required = false,
+    )
+
     val hideStories by booleanOption(
         key = "hideStories",
         title = "Hide Stories",
@@ -129,7 +137,8 @@ val feedAdsContentFilterPatch = bytecodePatch(
     execute {
         val viewsLikesConfigured = (minViews ?: 0) > 0 || (maxViews ?: 0) > 0 || (minLikes ?: 0) > 0 || (maxLikes ?: 0) > 0
         val authorsConfigured = !blockedAuthors.isNullOrBlank()
-        val contentFilterActive = viewsLikesConfigured || authorsConfigured || hideStories == true || hidePhotoPosts == true
+        val hashtagsConfigured = !blockedHashtags.isNullOrBlank()
+        val contentFilterActive = viewsLikesConfigured || authorsConfigured || hashtagsConfigured || hideStories == true || hidePhotoPosts == true
 
         if (filterAds != true &&
             filterBloat != true &&
@@ -1209,14 +1218,8 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 val instructions = clinit.implementation!!.instructions
                 val returnIdx = instructions.indexOfLast { it.opcode == Opcode.RETURN_VOID }
                 val insertIdx = if (returnIdx != -1) returnIdx else 0
-                val authorInstructions = if (authorsConfigured) {
-                    val escaped = (blockedAuthors ?: "")
-                        .replace("\\", "\\\\")
-                        .replace("\"", "\\\"")
-                    "\nconst-string v0, \"$escaped\"\nsput-object v0, $hook->blockedAuthorsCsv:Ljava/lang/String;"
-                } else {
-                    ""
-                }
+                val authorInstructions = buildPushCsvInstructions(hook, "blockedAuthorsCsv", blockedAuthors)
+                val hashtagInstructions = buildPushCsvInstructions(hook, "blockedHashtagsCsv", blockedHashtags)
                 clinit.addInstructions(
                     insertIdx,
                     """
@@ -1231,15 +1234,12 @@ val feedAdsContentFilterPatch = bytecodePatch(
                         const/4 v0, ${if (hideStories != false) "0x1" else "0x0"}
                         sput-boolean v0, $hook->hideStories:Z
                         const/4 v0, ${if (hidePhotoPosts == true) "0x1" else "0x0"}
-                        sput-boolean v0, $hook->hidePhotoPosts:Z$authorInstructions
+                        sput-boolean v0, $hook->hidePhotoPosts:Z$authorInstructions$hashtagInstructions
                     """.trimIndent(),
                 )
-                val authorCount = if (authorsConfigured) {
-                    (blockedAuthors ?: "").split(',').count { it.trim().isNotEmpty() }
-                } else {
-                    0
-                }
-                println("[Feed Ads & Content Filter] Pushed configuration (views ${minViews ?: 0}..${maxViews ?: 0}, likes ${minLikes ?: 0}..${maxLikes ?: 0}, stories=$hideStories, photos=$hidePhotoPosts, authors=$authorCount entries).")
+                val authorCount = countCsvEntries(blockedAuthors)
+                val hashtagCount = countCsvEntries(blockedHashtags)
+                println("[Feed Ads & Content Filter] Pushed configuration (views ${minViews ?: 0}..${maxViews ?: 0}, likes ${minLikes ?: 0}..${maxLikes ?: 0}, stories=$hideStories, photos=$hidePhotoPosts, authors=$authorCount entries, hashtags=$hashtagCount entries).")
                 patched++
             } catch (e: Exception) {
                 println("[Feed Ads & Content Filter] Configuration note: ${e.message}")
@@ -1268,7 +1268,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
             println("[Feed Ads & Content Filter] Hooked FeedApiService.fetchFeedList (${feedApiReturns.size} return(s)).")
             patched++
 
-            val listRulesConfigured = viewsLikesConfigured || authorsConfigured
+            val listRulesConfigured = viewsLikesConfigured || authorsConfigured || hashtagsConfigured
             if (listRulesConfigured) {
                 fun hookReturnList(definingClass: String, name: String, returnType: String, logLabel: String) {
                     val fingerprint = Fingerprint(
@@ -1345,3 +1345,15 @@ val feedAdsContentFilterPatch = bytecodePatch(
         }
     }
 }
+
+private fun buildPushCsvInstructions(hook: String, fieldName: String, csvValue: String?): String {
+    if (csvValue.isNullOrBlank()) return ""
+    val escaped = csvValue
+        .replace("\\", "\\\\")
+        .replace("\"", "\\\"")
+    return "\nconst-string v0, \"$escaped\"\nsput-object v0, $hook->$fieldName:Ljava/lang/String;"
+}
+
+private fun countCsvEntries(csvValue: String?): Int =
+    if (csvValue.isNullOrBlank()) 0 else csvValue.split(',').count { it.trim().isNotEmpty() }
+
