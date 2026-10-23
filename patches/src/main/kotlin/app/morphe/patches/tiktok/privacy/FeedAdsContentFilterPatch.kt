@@ -1223,28 +1223,95 @@ val feedAdsContentFilterPatch = bytecodePatch(
             }
 
             // Hook FeedApiService.fetchFeedList return points (live FYP responses).
-            try {
-                val method = Fingerprint(
-                    definingClass = "Lcom/ss/android/ugc/aweme/feed/FeedApiService;",
-                    name = "fetchFeedList",
-                    returnType = "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;",
-                ).method
-                val returnIndices = method.implementation?.instructions?.withIndex()
-                    ?.filter { it.value.opcode == Opcode.RETURN_OBJECT }
-                    ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
-                    ?.toList() ?: emptyList()
-                returnIndices.asReversed().forEach { (returnIndex, reg) ->
-                    method.addInstructionsAtControlFlowLabel(
-                        returnIndex,
-                        "invoke-static/range {v$reg .. v$reg}, $hook->filterContentInFeedItemList(Ljava/lang/Object;)V",
+            val feedApiFingerprint = Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/feed/FeedApiService;",
+                name = "fetchFeedList",
+                returnType = "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;",
+            )
+            val feedApiMethod = feedApiFingerprint.method
+            val feedApiReturns = feedApiMethod.implementation?.instructions?.withIndex()
+                ?.filter { it.value.opcode == Opcode.RETURN_OBJECT }
+                ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
+                ?.toList() ?: emptyList()
+            if (feedApiReturns.isEmpty()) {
+                throw PatchException("No return point found in FeedApiService.fetchFeedList")
+            }
+            feedApiReturns.asReversed().forEach { (returnIndex, reg) ->
+                feedApiMethod.addInstructionsAtControlFlowLabel(
+                    returnIndex,
+                    "invoke-static/range {v$reg .. v$reg}, $hook->filterContentInFeedItemList(Ljava/lang/Object;)V",
+                )
+            }
+            println("[Feed Ads & Content Filter] Hooked FeedApiService.fetchFeedList (${feedApiReturns.size} return(s)).")
+            patched++
+
+            val listRulesConfigured = viewsLikesConfigured
+            if (listRulesConfigured) {
+                fun hookReturnList(definingClass: String, name: String, returnType: String, logLabel: String) {
+                    val fingerprint = Fingerprint(
+                        definingClass = definingClass,
+                        name = name,
+                        returnType = returnType,
                     )
-                }
-                if (returnIndices.isNotEmpty()) {
-                    println("[Feed Ads & Content Filter] Hooked FeedApiService.fetchFeedList (${returnIndices.size} return(s)).")
+                    val method = fingerprint.method
+                    val returnIndices = method.implementation?.instructions?.withIndex()
+                        ?.filter { it.value.opcode == Opcode.RETURN_OBJECT }
+                        ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
+                        ?.toList() ?: emptyList()
+
+                    if (returnIndices.isEmpty()) {
+                        throw PatchException("No return point found in $definingClass->$name")
+                    }
+
+                    returnIndices.asReversed().forEach { (returnIndex, reg) ->
+                        method.addInstructionsAtControlFlowLabel(
+                            returnIndex,
+                            "invoke-static/range {v$reg .. v$reg}, $hook->filterRulesInList(Ljava/lang/Object;)V",
+                        )
+                    }
+                    println("[Feed Ads & Content Filter] Hooked $definingClass->$name() (${returnIndices.size} return point(s)) -> $logLabel protected.")
                     patched++
                 }
-            } catch (e: Exception) {
-                println("[Feed Ads & Content Filter] FeedApiService note: ${e.message}")
+
+                // Hook FeedItemList.getItems() (covers cached, offline, and UI adapter consumers)
+                hookReturnList(
+                    definingClass = "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;",
+                    name = "getItems",
+                    returnType = "Ljava/util/List;",
+                    logLabel = "All feed model consumers",
+                )
+
+                // Hook FollowFeedList.getItems() (covers Following feed UI consumers)
+                hookReturnList(
+                    definingClass = "Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;",
+                    name = "getItems",
+                    returnType = "Ljava/util/List;",
+                    logLabel = "Following feed",
+                )
+
+                // Hook ContinuousLoadingAwemeList.LIZLLL() (Search video continuous loading feed)
+                hookReturnList(
+                    definingClass = "Lcom/ss/android/ugc/aweme/search/common/model/ContinuousLoadingAwemeList;",
+                    name = "LIZLLL",
+                    returnType = "Ljava/util/List;",
+                    logLabel = "Search continuous video feed",
+                )
+
+                // Hook DynamicPatch.getAwemeList() (Search video detail launcher & Lynx cards)
+                hookReturnList(
+                    definingClass = "Lcom/ss/android/ugc/aweme/discover/mixfeed/DynamicPatch;",
+                    name = "getAwemeList",
+                    returnType = "Ljava/util/List;",
+                    logLabel = "Search video detail launcher",
+                )
+
+                // Hook SearchMix.getAwemeList() (Search mix and grid aweme streams)
+                hookReturnList(
+                    definingClass = "Lcom/ss/android/ugc/aweme/search/pages/result/topsearch/core/model/SearchMix;",
+                    name = "getAwemeList",
+                    returnType = "Ljava/util/List;",
+                    logLabel = "Search mix feed",
+                )
             }
         }
 

@@ -42,40 +42,121 @@ public final class TikTokContentFilterHook {
         } catch (Throwable ignored) {}
     }
 
+    public static boolean hasListRules() {
+        return minViews > 0 || maxViews > 0 || minLikes > 0 || maxLikes > 0;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static void filterRulesInList(Object listObj) {
+        if (!hasListRules() || !isNonEmptyList(listObj)) return;
+        int removed = removeItemsByListRules((List<Object>) listObj);
+        logFilterResult(removed);
+    }
+
     @SuppressWarnings("unchecked")
     public static void filterContentInList(Object listObj) {
-        if (!(listObj instanceof List)) return;
-        List<Object> items = (List<Object>) listObj;
-        if (items.isEmpty()) return;
+        if (!isNonEmptyList(listObj)) return;
+        int removed = removeItemsByContentRules((List<Object>) listObj);
+        logFilterResult(removed);
+    }
+
+    private static boolean isNonEmptyList(Object obj) {
+        if (!(obj instanceof List)) return false;
+        return !((List<?>) obj).isEmpty();
+    }
+
+    private static int removeItemsByListRules(List<Object> items) {
         int removed = 0;
         Iterator<Object> it = items.iterator();
         while (it.hasNext()) {
-            Object aweme = it.next();
-            try {
-                if (shouldFilter(aweme)) {
-                    it.remove();
-                    removed++;
-                }
-            } catch (Throwable ignored) {}
+            if (removeIfMatchesListRules(it, it.next())) {
+                removed++;
+            }
         }
+        return removed;
+    }
+
+    private static boolean removeIfMatchesListRules(Iterator<Object> it, Object item) {
+        try {
+            if (shouldFilterByListRules(item)) {
+                it.remove();
+                return true;
+            }
+        } catch (Throwable ignored) {}
+        return false;
+    }
+
+    private static int removeItemsByContentRules(List<Object> items) {
+        int removed = 0;
+        Iterator<Object> it = items.iterator();
+        while (it.hasNext()) {
+            if (removeIfMatchesContentRules(it, it.next())) {
+                removed++;
+            }
+        }
+        return removed;
+    }
+
+    private static boolean removeIfMatchesContentRules(Iterator<Object> it, Object item) {
+        try {
+            if (shouldFilter(item)) {
+                it.remove();
+                return true;
+            }
+        } catch (Throwable ignored) {}
+        return false;
+    }
+
+    private static void logFilterResult(int removed) {
         if (removed > 0) {
             Log.i(TAG, "[Content Filter] Removed " + removed + " item(s) by content rules.");
         }
     }
 
-    private static boolean shouldFilter(Object aweme) {
-        if (aweme == null) return false;
+    private static boolean shouldFilter(Object item) {
+        if (item == null) return false;
+        Object aweme = resolveAweme(item);
+        if (matchesForYouRules(aweme)) return true;
+        return matchesRangeRules(aweme);
+    }
 
+    private static boolean shouldFilterByListRules(Object item) {
+        if (item == null) return false;
+        Object aweme = resolveAweme(item);
+        return matchesRangeRules(aweme);
+    }
+
+    private static boolean matchesForYouRules(Object aweme) {
         if (hideStories && isStory(aweme)) return true;
-        if (hidePhotoPosts && isPhotoPost(aweme)) return true;
+        return hidePhotoPosts && isPhotoPost(aweme);
+    }
 
-        long views = getPlayCount(aweme);
-        long likes = getLikeCount(aweme);
-        if (minViews > 0 && views >= 0 && views < minViews) return true;
-        if (maxViews > 0 && views > maxViews) return true;
-        if (minLikes > 0 && likes >= 0 && likes < minLikes) return true;
-        if (maxLikes > 0 && likes > maxLikes) return true;
-        return false;
+    private static boolean matchesRangeRules(Object aweme) {
+        if (aweme == null) return false;
+        if (isCountOutOfRange(getPlayCount(aweme), minViews, maxViews)) return true;
+        return isCountOutOfRange(getLikeCount(aweme), minLikes, maxLikes);
+    }
+
+    private static boolean isCountOutOfRange(long value, long min, long max) {
+        return isBelowMin(value, min) || isAboveMax(value, max);
+    }
+
+    private static boolean isBelowMin(long value, long min) {
+        return min > 0 && value >= 0 && value < min;
+    }
+
+    private static boolean isAboveMax(long value, long max) {
+        return max > 0 && value > max;
+    }
+
+    private static Object resolveAweme(Object item) {
+        if (item == null) return null;
+        try {
+            Method m = item.getClass().getMethod("getAweme");
+            Object aweme = m.invoke(item);
+            if (aweme != null) return aweme;
+        } catch (Throwable ignored) {}
+        return item;
     }
 
     private static boolean isStory(Object aweme) {
