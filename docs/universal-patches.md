@@ -27,6 +27,7 @@ Comprehensive reference for universal optimization and resource slimming patches
 | **[Spoof Reinstall IDs](#17-spoof-reinstall-ids-universalspoofreinstallidspatch)** | `bytecodePatch` | Dalvik Bytecode Methods | Folds app-set and install/instance ID getters to neutral fixed values | Prevents tracking reinstalls and cross-install correlation |
 | **[Silence System Logs](#18-silence-system-logs-universalsilencesystemlogspatch)** | `bytecodePatch` | Dalvik Bytecode Call Sites | Neutralizes log output invocations to prevent diagnostic log leakage | Stops application telemetry and sensitive strings leaking to logcat |
 | **[Disable Browser File Associations](#19-disable-browser-file-associations-universalbrowserassociationpatch)** | `resourcePatch` | Manifest (`AndroidManifest.xml`) | Removes HTTP/HTTPS `data` entries from `VIEW` + `BROWSABLE` intent filters; drops filters left dataless | App no longer appears in the browser chooser for online files; local file handling untouched |
+| **[Remove ads](#20-remove-ads-universalremoveadspatch)** | `bytecodePatch` | Dalvik Bytecode Methods | Neutralizes public ad loader entry points across common third-party ad networks (AdMob, AppLovin MAX, Meta, Unity Ads, ironSource, Pangle, Vungle, InMobi, Mintegral, Chartboost) | Stops background and full-screen ad fetches from third-party networks |
 
 ---
 
@@ -73,6 +74,7 @@ Exception: Block Tracking Servers (Universal) remains a valid opt-in patch on ma
 | **Spoof Reinstall IDs** | ✅ Yes | Neutralizes app-set ID and instance/install ID getters to prevent cross-session device linking on reinstall. |
 | **Silence System Logs** | ✅ Yes | Neutralizes diagnostic log calls (`Log.d/v/i/w/e/wtf` and `println`) with configurable level filtering. |
 | **Disable Browser File Associations** | ✅ Yes | Only touches `VIEW` + `BROWSABLE` intent filters carrying `http`/`https` data. Local file handlers (`file`/`content` schemes), launcher entries (`MAIN`) and non-browser actions are never modified. Do not apply to apps that must open web links (browsers, readers). |
+| **Remove ads** | ⚠️ Opt-in | Disabled by default (`default = false`). Stops third-party ad networks from loading ads. May break reward-gated features that require watching an ad to unlock content. Does not remove SDK code or reclaim APK size, and does not touch first-party in-feed ads. |
 
 ---
 
@@ -572,4 +574,32 @@ For every `activity`, `activity-alias`, `service` and `receiver`, each `intent-f
 
 > [!WARNING]
 > Do not apply to applications that must open web links themselves (web browsers such as Brave, readers, link aggregators): stripping their `BROWSABLE` filters breaks opening links from other apps.
+
+---
+
+## 20. Remove ads (`universalRemoveAdsPatch`)
+
+The **`Remove ads`** patch neutralizes public ad-loading entry points across common third-party advertising SDKs directly at the Dalvik bytecode level (`classes*.dex`). By replacing ad-load methods with safe early returns or failure callback dispatches, it prevents the application from fetching interstitial, banner, rewarded, native, and app-open ads from third-party networks.
+
+> [!NOTE]
+> ### Client-Side Entry Point Neutralization
+> Rather than attempting to sink dynamic ad server endpoints across thousands of domain names or altering remote server responses, `Remove ads` intercepts the public Java/Kotlin entry points provided by commercial ad SDKs:
+> - **Google AdMob & Ad Manager**: Gated on presence of `InterstitialAd`. Static full-screen loaders (`InterstitialAd.load`, `RewardedAd.load`, `RewardedInterstitialAd.load`, `AppOpenAd.load`, and Ad Manager equivalents) are redirected to `AdLoadBlocker`, which dispatches `onAdFailedToLoad` with error code `3` (`ERROR_CODE_NO_FILL`) asynchronously to the Android main thread via reflection. Inline view loaders (`BaseAdView.loadAd`, `AdLoader.loadAd`/`loadAds`) are neutralized with an early `return-void`.
+> - **AppLovin MAX**: Neutralizes `loadAd` on `MaxAdView`, `MaxInterstitialAd`, `MaxRewardedAd`, `MaxAppOpenAd`, and `MaxNativeAdLoader`.
+> - **Meta Audience Network**: Neutralizes `loadAd` on `InterstitialAd`, `AdView`, `RewardedVideoAd`, `RewardedInterstitialAd`, and `NativeAdBase`.
+> - **Unity Ads**: Neutralizes `load` on `UnityAds`, `BannerView`, `InterstitialAd`, `RewardedAd`, and `BannerAd`.
+> - **ironSource / LevelPlay**: Neutralizes `loadAd` on `LevelPlayInterstitialAd`, `LevelPlayRewardedAd`, `LevelPlayBannerAdView`, `InterstitialAdLoader`, `RewardedAdLoader`, and `BannerAdLoader`.
+> - **Pangle**: Neutralizes `loadAd` on `PAGInterstitialAd`, `PAGRewardedAd`, `PAGBannerAd`, `PAGAppOpenAd`, and `PAGNativeAd`.
+> - **Vungle / Liftoff**: Neutralizes `load` on `BaseAd` and format subclasses.
+> - **InMobi**: Neutralizes `load` on `InMobiInterstitial`, `InMobiBanner`, and `InMobiNative`.
+> - **Mintegral**: Neutralizes loader methods (`load*`, `preLoad*`, `preload*`, `bidLoad*`) across public handler classes, safely returning `false` for boolean native loaders and `void`/`null` for others.
+> - **Chartboost**: Neutralizes `cache` on `Interstitial`, `Rewarded`, and `Banner`.
+
+### Scope & Trade-Offs
+
+- **Opt-in by default**: Disabled by default (`default = false`).
+- **Reward-gated features**: May break reward-gated features or currency rewards in apps or games that require watching a rewarded video ad to proceed.
+- **Code preservation**: Does not remove the underlying SDK classes from the APK or reduce APK size (use resource or library slimmers for size debloating).
+- **First-party ads**: Does not touch first-party in-feed sponsored content or proprietary server-rendered ads (e.g. TikTok in-feed ads, Brave sponsored images), which are handled by dedicated app patches.
+
 
