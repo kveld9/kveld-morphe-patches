@@ -67,6 +67,7 @@ object Constants {
     const val TIKTOK_EXTENSION_COMMENT_HOOK = "Lcom/kveld9/morphe/extension/tiktok/TikTokCommentHook;"
     const val TIKTOK_EXTENSION_COMMENT_TRANSLATE_HOOK = "Lcom/kveld9/morphe/extension/tiktok/TikTokCommentTranslateHook;"
     const val TIKTOK_EXTENSION_SEEKBAR_HOOK = "Lcom/kveld9/morphe/extension/tiktok/TikTokSeekbarHook;"
+    const val TIKTOK_EXTENSION_COUNTS_HOOK = "Lcom/kveld9/morphe/extension/tiktok/TikTokCountsHook;"
     const val TIKTOK_EXTENSION_PRIVACY_HOOK = "Lcom/kveld9/morphe/extension/tiktok/TikTokPrivacyHook;"
     const val TIKTOK_EXTENSION_REFRESH_RATE_HOOK = "Lcom/kveld9/morphe/extension/tiktok/TikTokRefreshRateHook;"
     const val TIKTOK_EXTENSION_OFFLINE_VIDEOS_HOOK = "Lcom/kveld9/morphe/extension/tiktok/TikTokOfflineVideosHook;"

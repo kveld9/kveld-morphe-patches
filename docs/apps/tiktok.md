@@ -68,6 +68,7 @@ Technical documentation and patch catalog for TikTok on Android.
 | **Resume Video After Scroll** | `bytecodePatch` | `false` (Opt-in) | None | Resumes playback from where you left off when returning to a video. |
 | **Customize Search** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Customizes search suggestions, live recommendations, and autoplay. |
 | **Show Author Region** | `bytecodePatch` | `false` (Opt-in) | `sharedExtensionPatch` | Displays the creator's country code next to their username. |
+| **Show Exact Counts** | `bytecodePatch` | `false` (Opt-in) | `sharedExtensionPatch` | Shows exact numbers on likes, comments, views and followers. |
 | **Show Seekbar** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Restores the video progress seekbar and scrubbing controls. |
 | **Stop Video Looping** | `bytecodePatch` | `false` (Opt-in) | None | Stops videos at the end instead of replaying them in an infinite loop. |
 | **Use System Font** | `bytecodePatch` | `false` (Opt-in) | `sharedExtensionPatch` | Uses the system font instead of bundled TikTok fonts. |
@@ -110,6 +111,9 @@ Technical documentation and patch catalog for TikTok on Android.
 - **Comment Customizer**:
   - *Objective*: Provide control over comment sorting, translation, copying, and poll visibility.
   - *How*: Enables comment sorting, clean comment copying, auto-translation, auto-expanding flagged comments, and displaying poll results without voting first.
+- **Exact Counts**:
+  - *Objective*: Display exact numerical counts instead of rounded metric abbreviations on likes, comments, views, and followers.
+  - *How*: Intercepts compact count formatters and ICU notation options to format raw metric values using locale-aware integer formatting.
 
 ### C. Resource Governance & Slimming
 - **Block P2P Video Relay**:
