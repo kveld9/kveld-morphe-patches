@@ -79,7 +79,7 @@ Technical documentation and patch catalog for TikTok on Android.
 ### A. Privacy, Ad Filtering & Tracking
 - **Feed Ads & Content Filter**:
   - *Objective*: Provide a clean feed without promotional interruptions, sponsored product links, or commerce anchors.
-  - *How*: Filters sponsored feed items, live cards, and shopping anchors during feed model parsing.
+  - *How*: Filters sponsored feed items, live cards, and shopping anchors during feed model parsing, and removes ads inserted between a profile's videos.
 - **Block Trackers**:
   - *Objective*: Prevent analytics tracking, event logging, and advertising profiling.
   - *How*: Neutralizes internal event dispatchers and strips tracking permissions from the manifest.

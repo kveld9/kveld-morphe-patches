@@ -2,6 +2,7 @@ package app.morphe.patches.tiktok.privacy
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.intOption
@@ -251,6 +252,28 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 returnType = "Ljava/util/List;",
                 logLabel = "Detail video player shared VM",
             )
+
+            // Hook profile ad request launcher to stop ads between profile videos
+            val profileAdFingerprint = Fingerprint(
+                strings = listOf("don't insert: author is empty."),
+            )
+            val profileAdClass = mutableClassDefBy(profileAdFingerprint.classDef)
+            val profileAdMethods = profileAdClass.methods.filter {
+                it.returnType == "V" &&
+                    it.parameterTypes == listOf("I", "Ljava/lang/String;", "I", "Ljava/lang/String;", "Ljava/util/List;")
+            }
+            if (profileAdMethods.size != 1) {
+                throw PatchException("Expected exactly 1 profile ad request method in ${profileAdClass.type}, found ${profileAdMethods.size}")
+            }
+            val profileAdMethod = profileAdMethods.first()
+            profileAdMethod.addInstructions(
+                0,
+                """
+                    return-void
+                """.trimIndent(),
+            )
+            println("[Feed Ads & Content Filter] Hooked ${profileAdClass.type}->${profileAdMethod.name}() -> Profile ads disabled.")
+            patched++
         }
 
         // 2. Branch: filterBloat (excluding Section 7 Friends-feed blocks)
