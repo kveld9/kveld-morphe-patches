@@ -32,6 +32,7 @@ Comprehensive reference for universal optimization and resource slimming patches
 | **[Spoof signature](#22-spoof-signature-universalspoofsignaturepatch)** | `bytecodePatch` | Dalvik Bytecode Call Sites | Substitutes the APK's original V2/V3 signing certificate in `PackageManager.getPackageInfo`, `hasSigningCertificate`, and `SigningInfo` self-queries | Passes local in-app signature verification checks after re-signing |
 | **[Override certificate pinning](#23-override-certificate-pinning-universaloverridecertificatepinningpatch)** | `resourcePatch` | Network Security Config (`res/xml/*.xml`) | Adds user trust anchor with `overridePins="true"` to base and domain configs in the app's Network Security Config | Allows user-installed CA certificate interception for lab HTTPS debugging; preserves system CA trust |
 | **[Remove Pairip](#24-remove-pairip-universalremovepairippatch)** | `bytecodePatch` | Dalvik Bytecode Methods | Forces Pairip's on-device license, installer-origin and signature verdicts to report success so a re-signed build passes them | Lets apps whose Pairip gate is enforced in Dalvik run after re-signing; native `libpairipcore.so` integrity checks are not covered |
+| **[Disable Root Checks](#25-disable-root-checks-universaldisablerootcheckspatch)** | `bytecodePatch` | Dalvik Bytecode Methods | Neutralizes RootBeer on-device root detection methods so the library reports not-rooted | Stops apps using the RootBeer library from detecting a rooted device; does not defeat custom root checks or Play Integrity |
 
 ---
 
@@ -83,6 +84,7 @@ Exception: Block Tracking Servers (Universal) remains a valid opt-in patch on ma
 | **Spoof signature** | ⚠️ Safe by Default | Opt-in (`default = false`). Replaces signing certificate self-queries (`getPackageInfo`, `hasSigningCertificate`, `SigningInfo`) with baked original V2/V3 signatures; other package lookups are untouched. Cannot defeat server-side Play Integrity or remote attestation. Must pass ART verifier gate. |
 | **Override certificate pinning** | ⚠️ Lab / Debugging | Opt-in (`default = false`). Enables user-installed CA trust with `overridePins="true"` in the app's Network Security Config for TLS inspection in lab environments. Only affects apps that declare a Network Security Config; overrides declarative `<pin-set>` definitions. Does not defeat code-level pinning (OkHttp `CertificatePinner` or custom `TrustManager`) and does not enable cleartext traffic. |
 | **Remove Pairip** | ⚠️ Lab / Sideloading | Opt-in (`default = false`). Neutralizes on-device Pairip license, installer-origin and signature checks in Dalvik only; never touches the startup VM (`StartupLauncher`/`VMRunner`) or native `libpairipcore.so`. Cannot defeat server-side Play Integrity, and cannot bypass native `libpairipcore.so` integrity checks, which may crash a re-signed build before the Dalvik gate runs. Must pass ART verifier gate. |
+| **Disable Root Checks** | ⚠️ Opt-in | Opt-in (default false); covers only the RootBeer root-detection library; makes its local root verdicts report not-rooted; does not defeat custom root checks, native JNI checks, or server-side Play Integrity. |
 
 ---
 
@@ -692,3 +694,23 @@ The **`Remove Pairip`** patch neutralizes the on-device checks of the Pairip app
 - **Native integrity checks are out of scope**: Some builds additionally verify integrity inside the native `libpairipcore.so` virtual machine. That native check runs before the Dalvik license flow and can abort a re-signed build on its own, and Dalvik bytecode hooks cannot neutralize it. (Verified on Adobe Lightroom 11.6.01: a re-signed build crashes in `libpairipcore.so` with an identical native signal whether or not this patch is applied, confirming the patch adds no regression and that the native layer is a separate limitation.) Applications protected this way require native binary patching, which this patch does not perform.
 - **No server-side bypass**: Cannot defeat server-side Play Integrity attestation or any decision whose final authority is a remote server.
 - **Clean skip**: When no `com.pairip.*` classes are present, the patch makes zero changes and logs an explicit skip.
+
+## 25. Disable Root Checks (`universalDisableRootChecksPatch`)
+
+The **`Disable Root Checks`** patch neutralizes the client-side detection methods of the RootBeer library (`com.scottyab.rootbeer`) so an application running on a rooted device reports that the device is not rooted.
+
+> [!NOTE]
+> ### On-Device Root Detection Neutralization
+> RootBeer is an open-source client-side library used by Android applications to verify device integrity and detect root indicators (such as su binaries, BusyBox, test-keys, dangerous build properties, root management apps, and root-cloaking packages).
+>
+> This patch targets the RootBeer classes (`Lcom/scottyab/rootbeer/RootBeer;` and `Lcom/scottyab/rootbeer/RootBeerNative;`) strictly gated on class presence, neutralizing all Dalvik boolean detection methods (`is*`, `detect*`, `check*`, `exists*`) to return `false`:
+> - General root status queries (`isRooted`, `isRootedWithBusyBoxCheck`, `isRootedWithoutBusyBoxCheck`) return `false`.
+> - Granular detection checks (`detectRootManagementApps`, `detectPotentiallyDangerousApps`, `detectTestKeys`, `detectRootCloakingApps`, `checkForBinary`, `checkForSuBinary`, `checkForDangerousProps`, `checkForRWPaths`, `checkSuExists`, `checkForRootNative`, `checkForMagiskBinary`) return `false`.
+
+### Scope & Compatibility Notes
+
+- **Opt-in by default**: Disabled by default (`default = false`); it cannot be verified for every application in advance, so it is enabled per build.
+- **RootBeer library only**: Targets only standard RootBeer library classes (`com.scottyab.rootbeer.RootBeer` and `com.scottyab.rootbeer.RootBeerNative`). Does not defeat proprietary or custom in-app root detection logic.
+- **Native JNI checks untouched**: Native methods (such as `RootBeerNative.checkForRoot`, which returns an integer and executes via JNI C code) are not modified, as replacing native method bodies directly in Dalvik is unsafe.
+- **No server-side bypass**: Operates strictly on client-side bytecode; cannot defeat remote server attestations, Google Play Integrity, or SafetyNet verdicts.
+- **Clean skip**: When no RootBeer classes are present in the target APK, the patch makes zero changes and logs an explicit skip.
