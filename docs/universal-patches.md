@@ -33,6 +33,7 @@ Comprehensive reference for universal optimization and resource slimming patches
 | **[Override certificate pinning](#23-override-certificate-pinning-universaloverridecertificatepinningpatch)** | `resourcePatch` | Network Security Config (`res/xml/*.xml`) | Adds user trust anchor with `overridePins="true"` to base and domain configs in the app's Network Security Config | Allows user-installed CA certificate interception for lab HTTPS debugging; preserves system CA trust |
 | **[Remove Pairip](#24-remove-pairip-universalremovepairippatch)** | `bytecodePatch` | Dalvik Bytecode Methods | Forces Pairip's on-device license, installer-origin and signature verdicts to report success so a re-signed build passes them | Lets apps whose Pairip gate is enforced in Dalvik run after re-signing; native `libpairipcore.so` integrity checks are not covered |
 | **[Disable Root Checks](#25-disable-root-checks-universaldisablerootcheckspatch)** | `bytecodePatch` | Dalvik Bytecode Methods | Neutralizes RootBeer on-device root detection methods so the library reports not-rooted | Stops apps using the RootBeer library from detecting a rooted device; does not defeat custom root checks or Play Integrity |
+| **[Bypass Play License](#26-bypass-play-license-universalbypassplaylicensepatch)** | `bytecodePatch` | Dalvik Bytecode Methods | Intercepts `LicenseChecker.checkAccess(LicenseCheckerCallback)` and delivers the licensed verdict locally without contacting Play | Lets apps using the legacy Play licensing client library run after re-signing; cannot affect server-side Play Integrity or subscription entitlements |
 
 ---
 
@@ -85,6 +86,7 @@ Exception: Block Tracking Servers (Universal) remains a valid opt-in patch on ma
 | **Override certificate pinning** | ⚠️ Lab / Debugging | Opt-in (`default = false`). Enables user-installed CA trust with `overridePins="true"` in the app's Network Security Config for TLS inspection in lab environments. Only affects apps that declare a Network Security Config; overrides declarative `<pin-set>` definitions. Does not defeat code-level pinning (OkHttp `CertificatePinner` or custom `TrustManager`) and does not enable cleartext traffic. |
 | **Remove Pairip** | ⚠️ Lab / Sideloading | Opt-in (`default = false`). Neutralizes on-device Pairip license, installer-origin and signature checks in Dalvik only; never touches the startup VM (`StartupLauncher`/`VMRunner`) or native `libpairipcore.so`. Cannot defeat server-side Play Integrity, and cannot bypass native `libpairipcore.so` integrity checks, which may crash a re-signed build before the Dalvik gate runs. Must pass ART verifier gate. |
 | **Disable Root Checks** | ⚠️ Opt-in | Opt-in (default false); covers only the RootBeer root-detection library; makes its local root verdicts report not-rooted; does not defeat custom root checks, native JNI checks, or server-side Play Integrity. |
+| **Bypass Play License** | ⚠️ Lab / Sideloading | Opt-in (`default = false`). Intercepts `LicenseChecker.checkAccess` and delivers the licensed verdict locally; the library never contacts Play. Cannot affect server-side Play Integrity or subscription entitlements. Applies only when `com.android.vending.licensing.LicenseChecker` is present; skips cleanly otherwise. Must pass ART verifier gate. |
 
 ---
 
@@ -714,3 +716,22 @@ The **`Disable Root Checks`** patch neutralizes the client-side detection method
 - **Native JNI checks untouched**: Native methods (such as `RootBeerNative.checkForRoot`, which returns an integer and executes via JNI C code) are not modified, as replacing native method bodies directly in Dalvik is unsafe.
 - **No server-side bypass**: Operates strictly on client-side bytecode; cannot defeat remote server attestations, Google Play Integrity, or SafetyNet verdicts.
 - **Clean skip**: When no RootBeer classes are present in the target APK, the patch makes zero changes and logs an explicit skip.
+
+
+## 26. Bypass Play License (`universalBypassPlayLicensePatch`)
+
+The **`Bypass Play License`** patch intercepts the legacy Play licensing client library (`com.android.vending.licensing`) in the app's own Dalvik bytecode and delivers a licensed verdict locally, so a re-signed build is no longer blocked by the on-device license gate.
+
+> [!NOTE]
+> ### Local License Verdict Normalization
+> Apps that ship the legacy Play licensing library call `LicenseChecker.checkAccess(LicenseCheckerCallback)` at startup. On a re-signed or sideloaded build the library cannot complete the license handshake (wrong certificate, no Play, or both) and invokes `dontAllow()` or `applicationError()` on the callback, causing the app to display a blocking dialog or exit.
+>
+> This patch replaces the body of every `checkAccess(LicenseCheckerCallback)V` method in `com.android.vending.licensing.LicenseChecker` with a direct call to `callback.allow(Policy.LICENSED)` (`0x0100`), exactly the value the library would pass after a genuine licensed server response. The method is identified by its signature shape (void return, single `LicenseCheckerCallback` parameter) rather than by name, so it survives R8 method-name minification within the library classes.
+
+### Scope & Compatibility Notes
+
+- **Opt-in by default**: Disabled by default (`default = false`); it cannot be verified for every application in advance, so it is enabled per build.
+- **Local verdict only**: Operates strictly on the on-device callback dispatch. No network request is made, intercepted, or suppressed; the library's outbound Play connection is never reached because the method body is replaced before it executes.
+- **No server-side bypass**: Cannot affect server-side Play Integrity attestation, subscription entitlements, or any decision whose final authority is a remote server.
+- **Clean skip**: When `com.android.vending.licensing.LicenseChecker` is not present in the target APK, the patch makes zero changes and logs an explicit skip. When the class is present but no matching `checkAccess` method is found, a second skip line is logged.
+- **Universal applicability**: Operates across any Android application that ships the legacy Play licensing client library without hardcoded class fingerprints or app-specific targets.
