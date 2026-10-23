@@ -30,6 +30,7 @@ Comprehensive reference for universal optimization and resource slimming patches
 | **[Remove ads](#20-remove-ads-universalremoveadspatch)** | `bytecodePatch` | Dalvik Bytecode Methods | Neutralizes public ad loader entry points across common third-party ad networks (AdMob, AppLovin MAX, Meta, Unity Ads, ironSource, Pangle, Vungle, InMobi, Mintegral, Chartboost) | Stops background and full-screen ad fetches from third-party networks |
 | **[Report Play Store as installer](#21-report-play-store-as-installer-universalreportplaystoreinstallerpatch)** | `bytecodePatch` | Dalvik Bytecode Call Sites | Redirects `PackageManager` and `InstallSourceInfo` queries for the app's own package to report Google Play (`com.android.vending`) | Tells apps that check their install source that they came from Google Play without altering actual package metadata |
 | **[Spoof signature](#22-spoof-signature-universalspoofsignaturepatch)** | `bytecodePatch` | Dalvik Bytecode Call Sites | Substitutes the APK's original V2/V3 signing certificate in `PackageManager.getPackageInfo`, `hasSigningCertificate`, and `SigningInfo` self-queries | Passes local in-app signature verification checks after re-signing |
+| **[Override certificate pinning](#23-override-certificate-pinning-universaloverridecertificatepinningpatch)** | `resourcePatch` | Network Security Config (`res/xml/*.xml`) | Adds user trust anchor with `overridePins="true"` to base and domain configs in the app's Network Security Config | Allows user-installed CA certificate interception for lab HTTPS debugging; preserves system CA trust |
 
 ---
 
@@ -79,6 +80,7 @@ Exception: Block Tracking Servers (Universal) remains a valid opt-in patch on ma
 | **Remove ads** | ⚠️ Opt-in | Disabled by default (`default = false`). Stops third-party ad networks from loading ads. May break reward-gated features that require watching an ad to unlock content. Does not remove SDK code or reclaim APK size, and does not touch first-party in-feed ads. |
 | **Report Play Store as installer** | ⚠️ Safe by Default | Opt-in (`default = false`). Redirects installer self-queries to report Google Play (`com.android.vending`); other package lookups are untouched. Cannot defeat server-side Play Integrity or remote attestation. Must pass ART verifier gate. |
 | **Spoof signature** | ⚠️ Safe by Default | Opt-in (`default = false`). Replaces signing certificate self-queries (`getPackageInfo`, `hasSigningCertificate`, `SigningInfo`) with baked original V2/V3 signatures; other package lookups are untouched. Cannot defeat server-side Play Integrity or remote attestation. Must pass ART verifier gate. |
+| **Override certificate pinning** | ⚠️ Lab / Debugging | Opt-in (`default = false`). Enables user-installed CA trust with `overridePins="true"` in the app's Network Security Config for TLS inspection in lab environments. Only affects apps that declare a Network Security Config; overrides declarative `<pin-set>` definitions. Does not defeat code-level pinning (OkHttp `CertificatePinner` or custom `TrustManager`) and does not enable cleartext traffic. |
 
 ---
 
@@ -645,3 +647,25 @@ The **`Spoof signature`** patch records the application's original V2/V3 signing
 - **Requires V2/V3 signature**: If the input APK lacks a V2 or V3 signature, the patch skips cleanly without making changes.
 - **Universal applicability**: Operates across any Android application without hardcoded class fingerprints or app-specific targets.
 
+---
+
+## 23. Override certificate pinning (`universalOverrideCertificatePinningPatch`)
+
+The **`Override certificate pinning`** patch modifies the application's declarative Android Network Security Configuration (`res/xml/*.xml`) to trust user-installed Certificate Authority (CA) certificates and override declarative `<pin-set>` constraints, enabling HTTPS traffic inspection through a local debugging proxy in a lab environment.
+
+> [!NOTE]
+> ### Declarative Network Security Configuration Modification
+> Starting with Android 7.0 (API level 24), applications by default only trust system CA certificates for HTTPS connections unless an explicit Network Security Config resource is declared in `AndroidManifest.xml` via `android:networkSecurityConfig`. Apps may also specify `<pin-set>` rules that enforce public key pinning on specific domains.
+>
+> This patch parses `AndroidManifest.xml` to locate the configured Network Security Config XML file, ensures a `<base-config>` exists, and injects `<trust-anchors>` with `<certificates src="system"/>` and `<certificates src="user" overridePins="true"/>` into `<base-config>` and every existing `<domain-config>`. If a `<certificates src="user"/>` entry is already present, its `overridePins` attribute is forced to `true`.
+>
+> This enables lab proxies (such as mitmproxy, Charles, Burp Suite) using a user-installed root CA to decrypt and inspect the application's HTTPS traffic without triggering TLS validation or pinning failures from the platform network security stack.
+
+### Scope & Compatibility Notes
+
+- **Opt-in by default**: Disabled by default (`default = false`); intended strictly for lab and debugging environments.
+- **Declarative pinning only**: Overrides declarative `<pin-set>` definitions in the app's Network Security Config. Does NOT defeat code-level pinning implemented via OkHttp `CertificatePinner` or custom `TrustManager` classes.
+- **Existing config requirement**: Only applies to applications that declare an `android:networkSecurityConfig` resource in `AndroidManifest.xml`. If the app declares no Network Security Config, the patch skips cleanly without making changes.
+- **No cleartext traffic**: Does NOT enable cleartext (HTTP) traffic; existing `cleartextTrafficPermitted` policies remain untouched.
+- **System trust preserved**: Preserves system CA trust alongside user CA trust.
+- **Universal applicability**: Operates across any Android application without hardcoded class fingerprints or app-specific targets.
