@@ -14,6 +14,8 @@ import app.morphe.patches.shared.sharedExtensionPatch
 import com.android.tools.smali.dexlib2.AccessFlags
 
 private const val NEW_USER_JOURNEY_SERVICE = "Lcom/ss/android/ugc/aweme/NewUserJourneyService;"
+private const val UNI_AUTH_GUIDE_POPUP_SERVICE_IMPL =
+    "Lcom/ss/android/ugc/aweme/unifiedauth/push/UniAuthGuidePopupServiceImpl;"
 
 val popupsAndPromptsSuppressorPatch = bytecodePatch(
     name = "Block Popups & Prompts",
@@ -28,6 +30,14 @@ val popupsAndPromptsSuppressorPatch = bytecodePatch(
         default = true,
         title = "Suppress Account & Permission Nags",
         description = "Suppresses 'Follow your friends' modals, 'Find contacts' Friends tab sync overlays, multi-account notification guides, and 'Security checkup 2SV' upsells.",
+        required = false,
+    )
+
+    val suppressNotificationPrompts by booleanOption(
+        key = "suppressNotificationPrompts",
+        default = true,
+        title = "Hide Notification Prompts",
+        description = "Stops prompts asking you to turn on notifications.",
         required = false,
     )
 
@@ -100,6 +110,10 @@ val popupsAndPromptsSuppressorPatch = bytecodePatch(
 
         if (suppressAccountPrompts == true) {
             patched += applyAccountPromptHooks()
+        }
+
+        if (suppressNotificationPrompts == true) {
+            patched += applyNotificationPromptHooks()
         }
 
         if (suppressStickerRecommendations == true) {
@@ -253,6 +267,40 @@ private fun BytecodePatchContext.applyAccountPromptHooks(): Int {
     count++
 
     return count
+}
+
+
+private fun BytecodePatchContext.applyNotificationPromptHooks(): Int {
+    val serviceClass = Fingerprint(
+        definingClass = UNI_AUTH_GUIDE_POPUP_SERVICE_IMPL,
+    ).classDef
+
+    val canShowCandidates = serviceClass.methods.filter {
+        it.returnType == "Z" && it.parameterTypes.isEmpty()
+    }
+    if (canShowCandidates.size != 1) {
+        throw PatchException(
+            "Expected exactly 1 zero-parameter boolean method in $UNI_AUTH_GUIDE_POPUP_SERVICE_IMPL, found ${canShowCandidates.size}",
+        )
+    }
+    val canShowMethod = canShowCandidates.single()
+    canShowMethod.replaceWithReturnBoolean(false)
+    println("[Block Popups & Prompts] Neutralized UniAuthGuidePopupServiceImpl.${canShowMethod.name}() -> Push permission guide popup disabled.")
+
+    val popupClassMethods = serviceClass.methods.filter {
+        it.returnType == "Ljava/lang/Class;"
+    }
+    if (popupClassMethods.isEmpty()) {
+        throw PatchException(
+            "No methods returning Ljava/lang/Class; found in $UNI_AUTH_GUIDE_POPUP_SERVICE_IMPL",
+        )
+    }
+    for (method in popupClassMethods) {
+        method.replaceWithReturnNull()
+    }
+    println("[Block Popups & Prompts] Neutralized UniAuthGuidePopupServiceImpl popup class resolution (${popupClassMethods.size} methods) -> Push guide dialog suppressed.")
+
+    return 1 + popupClassMethods.size
 }
 
 private fun BytecodePatchContext.applyStickerRecommendationHooks(): Int {

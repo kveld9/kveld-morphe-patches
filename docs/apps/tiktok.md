@@ -100,6 +100,9 @@ Technical documentation and patch catalog for TikTok on Android.
 - **Interface Decluttering**:
   - *Objective*: Maximize viewing area by removing non-essential UI buttons, prompts, and carousels.
   - *How*: Hides feed overlay widgets, story trays, direct message banners, and navigation bar tabs.
+- **Block Popups & Prompts**:
+  - *Objective*: Eliminate modal dialogs, permission nags, and promo sheets across the app.
+  - *How*: Suppresses push notification permission prompts, account and contact sync overlays, new user onboarding, PopLayer dialogs, update nags, and sticker recommendations.
 - **Media Enhancements & Screenshot Protection Bypass**:
   - *Objective*: Save media cleanly and allow screen capture in restricted views.
   - *How*: Removes watermark overlays from download flows and clears secure window flags to permit screenshots.
