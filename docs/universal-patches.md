@@ -31,6 +31,7 @@ Comprehensive reference for universal optimization and resource slimming patches
 | **[Report Play Store as installer](#21-report-play-store-as-installer-universalreportplaystoreinstallerpatch)** | `bytecodePatch` | Dalvik Bytecode Call Sites | Redirects `PackageManager` and `InstallSourceInfo` queries for the app's own package to report Google Play (`com.android.vending`) | Tells apps that check their install source that they came from Google Play without altering actual package metadata |
 | **[Spoof signature](#22-spoof-signature-universalspoofsignaturepatch)** | `bytecodePatch` | Dalvik Bytecode Call Sites | Substitutes the APK's original V2/V3 signing certificate in `PackageManager.getPackageInfo`, `hasSigningCertificate`, and `SigningInfo` self-queries | Passes local in-app signature verification checks after re-signing |
 | **[Override certificate pinning](#23-override-certificate-pinning-universaloverridecertificatepinningpatch)** | `resourcePatch` | Network Security Config (`res/xml/*.xml`) | Adds user trust anchor with `overridePins="true"` to base and domain configs in the app's Network Security Config | Allows user-installed CA certificate interception for lab HTTPS debugging; preserves system CA trust |
+| **[Remove Pairip](#24-remove-pairip-universalremovepairippatch)** | `bytecodePatch` | Dalvik Bytecode Methods | Forces Pairip's on-device license, installer-origin and signature verdicts to report success so a re-signed build passes them | Lets apps whose Pairip gate is enforced in Dalvik run after re-signing; native `libpairipcore.so` integrity checks are not covered |
 
 ---
 
@@ -81,6 +82,7 @@ Exception: Block Tracking Servers (Universal) remains a valid opt-in patch on ma
 | **Report Play Store as installer** | ⚠️ Safe by Default | Opt-in (`default = false`). Redirects installer self-queries to report Google Play (`com.android.vending`); other package lookups are untouched. Cannot defeat server-side Play Integrity or remote attestation. Must pass ART verifier gate. |
 | **Spoof signature** | ⚠️ Safe by Default | Opt-in (`default = false`). Replaces signing certificate self-queries (`getPackageInfo`, `hasSigningCertificate`, `SigningInfo`) with baked original V2/V3 signatures; other package lookups are untouched. Cannot defeat server-side Play Integrity or remote attestation. Must pass ART verifier gate. |
 | **Override certificate pinning** | ⚠️ Lab / Debugging | Opt-in (`default = false`). Enables user-installed CA trust with `overridePins="true"` in the app's Network Security Config for TLS inspection in lab environments. Only affects apps that declare a Network Security Config; overrides declarative `<pin-set>` definitions. Does not defeat code-level pinning (OkHttp `CertificatePinner` or custom `TrustManager`) and does not enable cleartext traffic. |
+| **Remove Pairip** | ⚠️ Lab / Sideloading | Opt-in (`default = false`). Neutralizes on-device Pairip license, installer-origin and signature checks in Dalvik only; never touches the startup VM (`StartupLauncher`/`VMRunner`) or native `libpairipcore.so`. Cannot defeat server-side Play Integrity, and cannot bypass native `libpairipcore.so` integrity checks, which may crash a re-signed build before the Dalvik gate runs. Must pass ART verifier gate. |
 
 ---
 
@@ -669,3 +671,24 @@ The **`Override certificate pinning`** patch modifies the application's declarat
 - **No cleartext traffic**: Does NOT enable cleartext (HTTP) traffic; existing `cleartextTrafficPermitted` policies remain untouched.
 - **System trust preserved**: Preserves system CA trust alongside user CA trust.
 - **Universal applicability**: Operates across any Android application without hardcoded class fingerprints or app-specific targets.
+
+## 24. Remove Pairip (`universalRemovePairipPatch`)
+
+The **`Remove Pairip`** patch neutralizes the on-device checks of the Pairip app-protection stack so an application re-signed with a different key is no longer blocked by its local license, installer-origin and signature verdicts.
+
+> [!NOTE]
+> ### On-Device License & Integrity Verdicts
+> Pairip wraps a protected app with a local license check (`com.pairip.licensecheck.*`) and a signature integrity check (`com.pairip.SignatureCheck`). On a re-signed or sideloaded build these report failure and the app shows a blocking license dialog or exits at startup.
+>
+> This patch forces each local verdict to report success, gated by class presence so a Pairip-free build is left untouched:
+> - `performLocalInstallerCheck` and `isLocalCheckPassed` return `true` (installer origin and local check pass).
+> - `SignatureCheck.verifyIntegrity` becomes a no-op and `verifySignatureMatches` returns `true`.
+> - `LicenseActivity.onStart` calls through to the framework `onStart` and immediately finishes, so the blocking license screen never stays on top.
+
+### Scope & Compatibility Notes
+
+- **Opt-in by default**: Disabled by default (`default = false`); it cannot be verified for every application in advance, so it is enabled per build.
+- **Startup VM is never touched**: The patch never modifies `com.pairip.StartupLauncher`, `com.pairip.VMRunner` or the loading of `libpairipcore.so`. Altering these crashes the application at boot, so they are excluded.
+- **Native integrity checks are out of scope**: Some builds additionally verify integrity inside the native `libpairipcore.so` virtual machine. That native check runs before the Dalvik license flow and can abort a re-signed build on its own, and Dalvik bytecode hooks cannot neutralize it. (Verified on Adobe Lightroom 11.6.01: a re-signed build crashes in `libpairipcore.so` with an identical native signal whether or not this patch is applied, confirming the patch adds no regression and that the native layer is a separate limitation.) Applications protected this way require native binary patching, which this patch does not perform.
+- **No server-side bypass**: Cannot defeat server-side Play Integrity attestation or any decision whose final authority is a remote server.
+- **Clean skip**: When no `com.pairip.*` classes are present, the patch makes zero changes and logs an explicit skip.
