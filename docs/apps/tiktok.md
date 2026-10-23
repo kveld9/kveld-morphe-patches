@@ -107,6 +107,9 @@ Technical documentation and patch catalog for TikTok on Android.
 - **Media Enhancements & Screenshot Protection Bypass**:
   - *Objective*: Save media cleanly and allow screen capture in restricted views.
   - *How*: Removes watermark overlays from download flows and clears secure window flags to permit screenshots.
+- **Comment Customizer**:
+  - *Objective*: Provide control over comment sorting, translation, copying, and poll visibility.
+  - *How*: Enables comment sorting, clean comment copying, auto-translation, auto-expanding flagged comments, and displaying poll results without voting first.
 
 ### C. Resource Governance & Slimming
 - **Block P2P Video Relay**:
