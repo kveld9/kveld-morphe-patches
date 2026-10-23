@@ -41,7 +41,9 @@ public class AdLoadBlocker {
     private static boolean tryInvokeOnClass(Class<?> clazz, Object callback) throws Exception {
         for (Method method : clazz.getDeclaredMethods()) {
             if (isAdFailedMethod(method)) {
-                return invokeOnAdFailed(method, callback);
+                if (invokeOnAdFailed(method, callback)) {
+                    return true;
+                }
             }
         }
         return false;
