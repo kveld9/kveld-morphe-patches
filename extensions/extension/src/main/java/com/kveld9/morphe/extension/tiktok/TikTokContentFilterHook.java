@@ -12,7 +12,7 @@ import java.util.Set;
 /**
  * Runtime filter for the Feed Content Filter patch.
  * Removes stories, photo posts, blocked creators, and videos outside the configured
- * view/like ranges from feed item lists.
+ * duration, age, or view/like ranges from feed item lists.
  */
 @SuppressWarnings("unused")
 public final class TikTokContentFilterHook {
@@ -24,6 +24,8 @@ public final class TikTokContentFilterHook {
     public static volatile long minLikes = 0;
     public static volatile long maxLikes = 0;
     public static volatile int maxAgeDays = 0;
+    public static volatile int minDurationSec = 0;
+    public static volatile int maxDurationSec = 0;
     public static volatile boolean hideStories = true;
     public static volatile boolean hidePhotoPosts = false;
     public static volatile String blockedAuthorsCsv = "";
@@ -107,8 +109,12 @@ public final class TikTokContentFilterHook {
     }
 
     public static boolean hasListRules() {
-        if (maxAgeDays > 0) return true;
+        if (maxAgeDays > 0 || hasDurationRules()) return true;
         return hasRangeRules() || hasAnyCsvRules();
+    }
+
+    private static boolean hasDurationRules() {
+        return minDurationSec > 0 || maxDurationSec > 0;
     }
 
     private static boolean hasAnyCsvRules() {
@@ -223,6 +229,7 @@ public final class TikTokContentFilterHook {
 
     private static boolean matchesListRules(Object aweme) {
         if (matchesRangeRules(aweme) || matchesAgeRule(aweme)) return true;
+        if (matchesDurationRule(aweme)) return true;
         return matchesMetadataRules(aweme);
     }
 
@@ -340,6 +347,23 @@ public final class TikTokContentFilterHook {
         long createSeconds = normalizeToSeconds(createTime);
         long ageSeconds = (System.currentTimeMillis() / 1000L) - createSeconds;
         return ageSeconds > (maxAgeDays * 86400L);
+    }
+
+    private static boolean matchesDurationRule(Object aweme) {
+        if (!hasDurationRules() || aweme == null) return false;
+        Object video = getObjectProperty(aweme, "getVideo");
+        long durationMs = getLongProperty(video, "getDuration");
+        if (durationMs <= 0) return false;
+        return isCountOutOfRange(durationMs, minDurationSec * 1000L, maxDurationSec * 1000L);
+    }
+
+    private static Object getObjectProperty(Object target, String methodName) {
+        if (target == null) return null;
+        try {
+            Method m = target.getClass().getMethod(methodName);
+            return m.invoke(target);
+        } catch (Throwable ignored) {}
+        return null;
     }
 
     private static long normalizeToSeconds(long time) {

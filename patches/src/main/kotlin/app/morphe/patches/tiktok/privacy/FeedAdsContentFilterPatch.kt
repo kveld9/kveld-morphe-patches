@@ -142,6 +142,22 @@ val feedAdsContentFilterPatch = bytecodePatch(
         required = false,
     )
 
+    val minDurationSec by intOption(
+        key = "minDurationSec",
+        title = "Minimum Video Length",
+        description = "Hide videos shorter than this many seconds. 0 disables it.",
+        default = 0,
+        required = false,
+    )
+
+    val maxDurationSec by intOption(
+        key = "maxDurationSec",
+        title = "Maximum Video Length",
+        description = "Hide videos longer than this many seconds. 0 disables it.",
+        default = 0,
+        required = false,
+    )
+
     val hideStories by booleanOption(
         key = "hideStories",
         title = "Hide Stories",
@@ -165,7 +181,8 @@ val feedAdsContentFilterPatch = bytecodePatch(
         val keywordsConfigured = !blockedKeywords.isNullOrBlank()
         val regionsConfigured = !hiddenRegions.isNullOrBlank()
         val ageConfigured = (maxAgeDays ?: 0) > 0
-        val contentFilterActive = viewsLikesConfigured || authorsConfigured || hashtagsConfigured || keywordsConfigured || regionsConfigured || ageConfigured || hideStories == true || hidePhotoPosts == true
+        val durationConfigured = (minDurationSec ?: 0) > 0 || (maxDurationSec ?: 0) > 0
+        val contentFilterActive = viewsLikesConfigured || authorsConfigured || hashtagsConfigured || keywordsConfigured || regionsConfigured || ageConfigured || durationConfigured || hideStories == true || hidePhotoPosts == true
 
         if (filterAds != true &&
             filterBloat != true &&
@@ -1238,6 +1255,8 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 val minL = (minLikes ?: 0).coerceAtLeast(0).toLong()
                 val maxL = (maxLikes ?: 0).coerceAtLeast(0).toLong()
                 val maxAge = (maxAgeDays ?: 0).coerceAtLeast(0)
+                val minDur = (minDurationSec ?: 0).coerceAtLeast(0)
+                val maxDur = (maxDurationSec ?: 0).coerceAtLeast(0)
                 val clinit = Fingerprint(
                     definingClass = hook,
                     name = "<clinit>",
@@ -1263,6 +1282,10 @@ val feedAdsContentFilterPatch = bytecodePatch(
                         sput-wide v0, $hook->maxLikes:J
                         const v0, 0x${maxAge.toString(16)}
                         sput v0, $hook->maxAgeDays:I
+                        const v0, 0x${minDur.toString(16)}
+                        sput v0, $hook->minDurationSec:I
+                        const v0, 0x${maxDur.toString(16)}
+                        sput v0, $hook->maxDurationSec:I
                         const/4 v0, ${if (hideStories != false) "0x1" else "0x0"}
                         sput-boolean v0, $hook->hideStories:Z
                         const/4 v0, ${if (hidePhotoPosts == true) "0x1" else "0x0"}
@@ -1273,7 +1296,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 val hashtagCount = countCsvEntries(blockedHashtags)
                 val keywordCount = countCsvEntries(blockedKeywords)
                 val regionCount = countCsvEntries(hiddenRegions)
-                println("[Feed Ads & Content Filter] Pushed configuration (views ${minViews ?: 0}..${maxViews ?: 0}, likes ${minLikes ?: 0}..${maxLikes ?: 0}, maxAge=${maxAge}d, stories=$hideStories, photos=$hidePhotoPosts, authors=$authorCount entries, hashtags=$hashtagCount entries, keywords=$keywordCount entries, regions=$regionCount entries).")
+                println("[Feed Ads & Content Filter] Pushed configuration (views ${minViews ?: 0}..${maxViews ?: 0}, likes ${minLikes ?: 0}..${maxLikes ?: 0}, maxAge=${maxAge}d, duration=${minDur}..${maxDur}s, stories=$hideStories, photos=$hidePhotoPosts, authors=$authorCount entries, hashtags=$hashtagCount entries, keywords=$keywordCount entries, regions=$regionCount entries).")
                 patched++
             } catch (e: Exception) {
                 println("[Feed Ads & Content Filter] Configuration note: ${e.message}")
@@ -1302,7 +1325,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
             println("[Feed Ads & Content Filter] Hooked FeedApiService.fetchFeedList (${feedApiReturns.size} return(s)).")
             patched++
 
-            val listRulesConfigured = viewsLikesConfigured || authorsConfigured || hashtagsConfigured || keywordsConfigured || regionsConfigured || ageConfigured
+            val listRulesConfigured = viewsLikesConfigured || authorsConfigured || hashtagsConfigured || keywordsConfigured || regionsConfigured || ageConfigured || durationConfigured
             if (listRulesConfigured) {
                 fun hookReturnList(definingClass: String, name: String, returnType: String, logLabel: String) {
                     val fingerprint = Fingerprint(
