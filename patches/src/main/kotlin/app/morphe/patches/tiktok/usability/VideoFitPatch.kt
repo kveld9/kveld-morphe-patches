@@ -174,7 +174,7 @@ val videoFitPatch = bytecodePatch(
         // 6. Hook CellAdaptionComponentV2.Yp(VideoAdaptionResult)V
         val cellAdaptionFp = Fingerprint(
             definingClass = "Lcom/ss/android/ugc/feed/platform/cell/component/adaption/CellAdaptionComponentV2;",
-            name = "Yp",
+            name = "Wp",
             parameters = listOf(resultClass),
             returnType = "V",
         )

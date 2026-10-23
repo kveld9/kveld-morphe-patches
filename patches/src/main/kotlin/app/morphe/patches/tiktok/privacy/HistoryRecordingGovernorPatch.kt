@@ -56,17 +56,17 @@ val historyRecordingGovernorPatch = bytecodePatch(
             ).method.replaceWithReturnVoid()
             patched++
 
-            // 3. Neutralize PlaybackHistoryManager recordVideoPlayback routine (LX/03l4;->LIZ in v47.4.3, was LX/03l3;)
+            // 3. Neutralize PlaybackHistoryManager recordVideoPlayback routine (LX/03hH;->LIZ in v47.5.3, was LX/03l4;)
             Fingerprint(
-                definingClass = "LX/03l4;",
+                definingClass = "LX/03hH;",
                 name = "LIZ",
                 returnType = "V",
             ).method.replaceWithReturnVoid()
             patched++
 
-            // 4. Neutralize PlaybackHistoryManager recordWatchDuration routine (LX/03l4;->LIZIZ in v47.4.3, was LX/03l3;)
+            // 4. Neutralize PlaybackHistoryManager recordWatchDuration routine (LX/03hH;->LIZIZ in v47.5.3, was LX/03l4;)
             Fingerprint(
-                definingClass = "LX/03l4;",
+                definingClass = "LX/03hH;",
                 name = "LIZIZ",
                 returnType = "V",
             ).method.replaceWithReturnVoid()

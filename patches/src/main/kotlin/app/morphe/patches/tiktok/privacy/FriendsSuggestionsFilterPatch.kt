@@ -101,7 +101,7 @@ val friendsSuggestionsFilterPatch = bytecodePatch(
 
             // Hook FriendsFeedApi network fetch return points (LX/06Bw;->LIZLLL in v47.4.3, was LX/06CX;)
             val friendsFeedApiFingerprint = Fingerprint(
-                definingClass = "LX/06Bw;",
+                definingClass = "LX/064b;",
                 name = "LIZLLL",
                 parameters = listOf(
                     "I",
@@ -170,7 +170,7 @@ val friendsSuggestionsFilterPatch = bytecodePatch(
 
             // Hook FriendsFeedApi network fetch return points (LX/06Bw;->LIZLLL in v47.4.3, was LX/06CX;)
             val friendsFeedApiFingerprint = Fingerprint(
-                definingClass = "LX/06Bw;",
+                definingClass = "LX/064b;",
                 name = "LIZLLL",
                 parameters = listOf(
                     "I",

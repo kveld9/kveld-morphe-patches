@@ -732,7 +732,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/feed/assem/pushsurvey/PushSurveyAssemTrigger;",
-                name = "Rp",
+                name = "Qp",
                 parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"),
                 returnType = "Z",
             ).method.addInstructions(

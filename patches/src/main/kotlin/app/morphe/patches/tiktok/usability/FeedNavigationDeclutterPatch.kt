@@ -158,10 +158,10 @@ val feedNavigationDeclutterPatch = bytecodePatch(
             val serviceClass = "Lcom/ss/android/ugc/nearby/service/NearbyServiceImpl;"
             val serviceFp = Fingerprint(
                 definingClass = serviceClass,
-                name = "LJIIZILJ",
+                name = "LJIJ",
                 parameters = emptyList(),
             )
-            var tabProviderClass = "LX/03ry;"
+            var tabProviderClass = "LX/03mE;"
             val serviceInsns = serviceFp.method.implementation?.instructions
             if (serviceInsns != null) {
                 for (insn in serviceInsns) {
@@ -212,7 +212,7 @@ val feedNavigationDeclutterPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = serviceClass,
-                name = "LJIIIIZZ",
+                name = "LJIIIZ",
                 returnType = "Z",
                 parameters = emptyList(),
             ).method.replaceWithReturnBoolean(false)
@@ -220,7 +220,7 @@ val feedNavigationDeclutterPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = serviceClass,
-                name = "LJIIL",
+                name = "LJIILIIL",
                 returnType = "Z",
                 parameters = emptyList(),
             ).method.replaceWithReturnBoolean(false)
@@ -241,7 +241,7 @@ val feedNavigationDeclutterPatch = bytecodePatch(
 
             val serviceFp = Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/explore/service/ExploreFeedServiceImpl;",
-                name = "LJJII",
+                name = "LJJJJIZL",
                 parameters = emptyList(),
             )
             var tabProviderClass = "LX/03s9;"

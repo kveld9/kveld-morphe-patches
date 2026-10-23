@@ -76,7 +76,7 @@ val instantColdStartPatch = bytecodePatch(
         // 7. Disable RealTimeSplashManagerImpl real-time splash gate (LIZLLL in v47.1.3)
         Fingerprint(
             definingClass = "Lcom/bytedance/ies/ugc/aweme/commercialize/splash/realtimesplash/RealTimeSplashManagerImpl;",
-            name = "LIZLLL",
+            name = "LIZJ",
             returnType = "Z",
         ).method.replaceWithReturnBoolean(false)
         println("[Instant Launch] Disabled RealTimeSplashManagerImpl splash gate -> Real-time splash execution disabled.")

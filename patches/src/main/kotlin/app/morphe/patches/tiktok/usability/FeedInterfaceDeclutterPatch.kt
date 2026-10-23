@@ -179,22 +179,22 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
         if (hideRepostBadge == true) {
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/feed/platform/cell/interact/info/UpvoteVideoTrigger;",
-                name = "Rp",
+                name = "Qp",
                 returnType = "Z",
                 parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"),
             ).method.replaceWithReturnBoolean(false)
-            println("[Declutter Video Interface] Hooked UpvoteVideoTrigger.Rp() -> return false.")
+            println("[Declutter Video Interface] Hooked UpvoteVideoTrigger.Qp() -> return false.")
             patched++
 
             val assemClass = "Lcom/ss/android/ugc/aweme/upvote/detail/whitebar/UpvoteVideoAssemNew;"
 
             Fingerprint(
                 definingClass = assemClass,
-                name = "Tp",
+                name = "Vp",
                 returnType = "Z",
                 parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"),
             ).method.replaceWithReturnBoolean(false)
-            println("[Declutter Video Interface] Hooked UpvoteVideoAssemNew.Tp() -> return false.")
+            println("[Declutter Video Interface] Hooked UpvoteVideoAssemNew.Vp() -> return false.")
             patched++
 
             Fingerprint(
@@ -208,20 +208,20 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = assemClass,
-                name = "LLLJL",
+                name = "LLLJ",
                 returnType = "V",
                 parameters = listOf("I"),
             ).method.replaceWithReturnVoid()
-            println("[Declutter Video Interface] Hooked UpvoteVideoAssemNew.LLLJL() -> return-void.")
+            println("[Declutter Video Interface] Hooked UpvoteVideoAssemNew.LLLJ() -> return-void.")
             patched++
 
             Fingerprint(
                 definingClass = assemClass,
-                name = "LLLLII",
+                name = "LJJJLZIJ",
                 returnType = "V",
                 parameters = listOf("I"),
             ).method.replaceWithReturnVoid()
-            println("[Declutter Video Interface] Hooked UpvoteVideoAssemNew.LLLLII() -> return-void.")
+            println("[Declutter Video Interface] Hooked UpvoteVideoAssemNew.LJJJLZIJ() -> return-void.")
             patched++
 
             val onViewCreatedMethod = Fingerprint(
@@ -247,11 +247,11 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = assemClass,
-                name = "l4",
+                name = "j4",
                 returnType = "V",
                 parameters = listOf("Ljava/lang/Object;"),
             ).method.replaceWithReturnVoid()
-            println("[Declutter Video Interface] Hooked UpvoteVideoAssemNew.l4() -> return-void.")
+            println("[Declutter Video Interface] Hooked UpvoteVideoAssemNew.j4() -> return-void.")
             patched++
         }
 
@@ -282,7 +282,7 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
 
             val descJs = Fingerprint(
                 definingClass = descTargetClass,
-                name = "bq",
+                name = "cq",
                 returnType = "V",
                 parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"),
             ).method
