@@ -1,3 +1,10 @@
+## [2.9.0-experimental.3](https://github.com/kveld9/kveld-morphe-patches/compare/v2.9.0-experimental.2...v2.9.0-experimental.3) (2026-10-24)
+
+### Bug Fixes
+
+* **tiktok:** restore friends feed api hook on 47.5.3 ([fddabeb](https://github.com/kveld9/kveld-morphe-patches/commit/fddabeb523256428eb5bfc75fa258424c35994d6))
+* **tiktok:** restore top-left live button toggle on 47.5.3 ([f337af7](https://github.com/kveld9/kveld-morphe-patches/commit/f337af7f12529df490b238642df6801b6347443d))
+
 ## [2.9.0-experimental.2](https://github.com/kveld9/kveld-morphe-patches/compare/v2.9.0-experimental.1...v2.9.0-experimental.2) (2026-10-24)
 
 ### Bug Fixes
