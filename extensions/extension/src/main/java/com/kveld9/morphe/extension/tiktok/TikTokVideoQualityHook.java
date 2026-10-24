@@ -102,11 +102,13 @@ public final class TikTokVideoQualityHook {
         if (!isGovernorEnabled) return 0;
         SharedPreferences sp = getPrefs();
         if (sp != null) {
-            int saved = sp.getInt(KEY_MAX_QUALITY, maxAllowedResolution);
-            if (isValidResolution(saved)) {
-                maxAllowedResolution = saved;
-                return saved;
-            }
+            try {
+                int saved = sp.getInt(KEY_MAX_QUALITY, maxAllowedResolution);
+                if (isValidResolution(saved)) {
+                    maxAllowedResolution = saved;
+                    return saved;
+                }
+            } catch (Throwable ignored) {}
         }
         return maxAllowedResolution;
     }
