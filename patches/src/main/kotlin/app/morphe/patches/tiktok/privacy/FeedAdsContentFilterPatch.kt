@@ -1137,9 +1137,9 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 patched++
             }
 
-            // Hook FriendsFeedApi network fetch return points (LX/06Bw;->LIZLLL in v47.4.3)
+            // Hook FriendsFeedApi network fetch return points (LX/064b;->LIZLLL in v47.5.3)
             val friendsFeedApiFingerprint = Fingerprint(
-                definingClass = "LX/06Bw;",
+                definingClass = "LX/064b;",
                 name = "LIZLLL",
                 parameters = listOf(
                     "I",
