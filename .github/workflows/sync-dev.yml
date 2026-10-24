@@ -1,6 +1,9 @@
 name: Sync Dev After Stable Release
 
 on:
+  schedule:
+    # Twice-daily backstop against missed syncs (04:00 and 16:00 UTC)
+    - cron: '0 4,16 * * *'
   workflow_run:
     workflows: ["Release"]
     types:
@@ -23,124 +26,14 @@ jobs:
     runs-on: ubuntu-latest
     if: >-
       github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'schedule' ||
       (github.event.workflow_run.conclusion == 'success' &&
        github.event.workflow_run.head_branch == 'main')
     permissions:
       contents: write
       actions: read
     steps:
-      - name: Verify stable release published
-        id: verify
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          TRIGGER_RUN_ID: ${{ github.event.workflow_run.id }}
-          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
-          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
-          EVENT_NAME: ${{ github.event_name }}
-        run: |
-          python3 - << 'EOF'
-          import json
-          import os
-          import subprocess
-          import sys
-
-          event_name = os.environ.get("EVENT_NAME", "")
-          output_path = os.environ.get("GITHUB_OUTPUT", "")
-
-          def set_output(should_sync: bool) -> None:
-              if output_path:
-                  with open(output_path, "a", encoding="utf-8") as f:
-                      f.write(f"should_sync={'true' if should_sync else 'false'}\n")
-
-          if event_name == "workflow_dispatch":
-              print("[INFO] Manual trigger via workflow_dispatch; proceeding with sync.")
-              set_output(True)
-              sys.exit(0)
-
-          head_branch = os.environ.get("HEAD_BRANCH", "")
-          if head_branch != "main":
-              print(f"[INFO] Triggering run head_branch is '{head_branch}', expected 'main'. Skipping.")
-              set_output(False)
-              sys.exit(0)
-
-          run_id = os.environ.get("TRIGGER_RUN_ID", "")
-          repo = os.environ.get("GITHUB_REPOSITORY", "")
-          if not run_id or not repo:
-              print("[ERROR] TRIGGER_RUN_ID or GITHUB_REPOSITORY is missing.")
-              set_output(False)
-              sys.exit(1)
-
-          print(f"[INFO] Inspecting workflow run {run_id} on {repo} to verify if a release was published...")
-          res = subprocess.run(
-              ["gh", "api", f"repos/{repo}/actions/runs/{run_id}/jobs"],
-              capture_output=True,
-              text=True,
-          )
-          if res.returncode != 0:
-              print(f"[ERROR] Failed to query workflow run jobs: {res.stderr.strip()}")
-              set_output(False)
-              sys.exit(1)
-
-          try:
-              jobs_data = json.loads(res.stdout)
-          except Exception as exc:
-              print(f"[ERROR] Failed to parse workflow run jobs JSON: {exc}")
-              set_output(False)
-              sys.exit(1)
-
-          published = False
-          for job in jobs_data.get("jobs", []):
-              step_conclusions = {
-                  s.get("name"): s.get("conclusion")
-                  for s in job.get("steps", [])
-              }
-              if step_conclusions.get("Attest") == "success":
-                  print("[INFO] Step 'Attest' succeeded; release publication confirmed.")
-                  published = True
-                  break
-              if step_conclusions.get("Notify Telegram Channel") == "success":
-                  print("[INFO] Step 'Notify Telegram Channel' succeeded; release publication confirmed.")
-                  published = True
-                  break
-              if (
-                  step_conclusions.get("Release") == "success"
-                  and step_conclusions.get("Verify project compiles") == "skipped"
-              ):
-                  print("[INFO] Step 'Release' succeeded and compile-verification was skipped; release publication confirmed.")
-                  published = True
-                  break
-
-          if not published:
-              head_sha = os.environ.get("HEAD_SHA", "")
-              if head_sha:
-                  res_rel = subprocess.run(
-                      ["gh", "api", f"repos/{repo}/releases"],
-                      capture_output=True,
-                      text=True,
-                  )
-                  if res_rel.returncode == 0:
-                      try:
-                          releases = json.loads(res_rel.stdout)
-                          for rel in releases:
-                              if rel.get("target_commitish") == head_sha:
-                                  print(f"[INFO] Found GitHub release targeting {head_sha}; release publication confirmed.")
-                                  published = True
-                                  break
-                      except Exception:
-                          pass
-
-          if not published:
-              print("[INFO] No new release published in triggering run. Skipping dev sync.")
-              set_output(False)
-              sys.exit(0)
-
-          print("[OK] Confirmed stable release published on main. Proceeding with sync.")
-          set_output(True)
-          EOF
-
       - name: Checkout dev branch
-        if: steps.verify.outputs.should_sync == 'true'
         uses: actions/checkout@v7
         with:
           ref: dev
@@ -148,7 +41,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Configure Git identity
-        if: steps.verify.outputs.should_sync == 'true'
         run: |
           ACTOR="${{ github.actor }}"
           if [ -z "$ACTOR" ]; then
@@ -159,17 +51,277 @@ jobs:
           git remote set-url origin "https://github.com/${{ github.repository }}.git"
           echo "[INFO] Git configured with user '$ACTOR' for repository '${{ github.repository }}'"
 
-      - name: Fetch origin main branch
-        if: steps.verify.outputs.should_sync == 'true'
+      - name: Fetch origin branches
         run: |
-          echo "[INFO] Fetching origin/main..."
-          git fetch origin +refs/heads/main:refs/remotes/origin/main
+          echo "[INFO] Fetching origin/main and origin/dev..."
+          git fetch origin +refs/heads/main:refs/remotes/origin/main +refs/heads/dev:refs/remotes/origin/dev
+
+      - name: Verify sync needed
+        id: verify
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          python3 - << 'EOF'
+          import json
+          import os
+          import re
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          output_path = os.environ.get("GITHUB_OUTPUT", "")
+          event_name = os.environ.get("EVENT_NAME", "")
+
+          def set_output(should_sync: bool) -> None:
+              if output_path:
+                  with open(output_path, "a", encoding="utf-8") as f:
+                      f.write(f"should_sync={'true' if should_sync else 'false'}\n")
+
+          SEMVER_REGEX = re.compile(
+              r"^v?(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)"
+              r"(?:-(?P<prerelease>[0-9A-Za-z.-]+))?"
+              r"(?:\+[0-9A-Za-z.-]+)?$"
+          )
+
+          class SemVer:
+              def __init__(self, raw: str):
+                  self.raw = raw.strip()
+                  match = SEMVER_REGEX.match(self.raw)
+                  if not match:
+                      raise ValueError(f"Invalid SemVer string: {self.raw!r}")
+                  self.major = int(match.group("major"))
+                  self.minor = int(match.group("minor"))
+                  self.patch = int(match.group("patch"))
+                  self.prerelease = match.group("prerelease")
+
+              @property
+              def core(self):
+                  return (self.major, self.minor, self.patch)
+
+              def __lt__(self, other: "SemVer") -> bool:
+                  if self.core != other.core:
+                      return self.core < other.core
+                  if self.prerelease is not None and other.prerelease is None:
+                      return True
+                  if self.prerelease is None and other.prerelease is not None:
+                      return False
+                  if self.prerelease is None and other.prerelease is None:
+                      return False
+
+                  p1 = self.prerelease.split(".")
+                  p2 = other.prerelease.split(".")
+                  for a, b in zip(p1, p2):
+                      if a == b:
+                          continue
+                      a_is_digit, b_is_digit = a.isdigit(), b.isdigit()
+                      if a_is_digit and b_is_digit:
+                          return int(a) < int(b)
+                      if a_is_digit and not b_is_digit:
+                          return True
+                      if not a_is_digit and b_is_digit:
+                          return False
+                      return a < b
+                  return len(p1) < len(p2)
+
+              def __eq__(self, other: object) -> bool:
+                  if not isinstance(other, SemVer):
+                      return False
+                  return self.core == other.core and self.prerelease == other.prerelease
+
+              def __le__(self, other: "SemVer") -> bool:
+                  return self < other or self == other
+
+              def __gt__(self, other: "SemVer") -> bool:
+                  return not (self <= other)
+
+          def check_ancestor(ancestor_ref: str, descendant_ref: str) -> bool:
+              res = subprocess.run(
+                  ["git", "merge-base", "--is-ancestor", ancestor_ref, descendant_ref],
+                  capture_output=True,
+              )
+              return res.returncode == 0
+
+          def load_json_from_file(path: Path):
+              if not path.is_file():
+                  return None
+              try:
+                  return json.loads(path.read_text(encoding="utf-8"))
+              except Exception as exc:
+                  print(f"[WARN] Failed to parse JSON from {path}: {exc}")
+                  return None
+
+          def load_json_from_git(ref_path: str):
+              proc = subprocess.run(
+                  ["git", "show", ref_path],
+                  capture_output=True,
+                  text=True,
+              )
+              if proc.returncode != 0:
+                  return None
+              try:
+                  return json.loads(proc.stdout)
+              except Exception as exc:
+                  print(f"[WARN] Failed to parse JSON from {ref_path}: {exc}")
+                  return None
+
+          # 1. Check ancestry: is origin/main an ancestor of dev HEAD?
+          is_ancestor = check_ancestor("origin/main", "HEAD")
+          print(f"[INFO] Ancestry check (origin/main is ancestor of dev HEAD): {is_ancestor}")
+          origin_not_ancestor = not is_ancestor
+
+          # 2. Load bundle versions
+          dev_version = None
+          dev_bundle = load_json_from_file(Path("patches-bundle.json"))
+          if dev_bundle is None:
+              dev_bundle = load_json_from_git("HEAD:patches-bundle.json")
+          if isinstance(dev_bundle, dict):
+              v = dev_bundle.get("version")
+              if isinstance(v, str) and v.strip():
+                  dev_version = v.strip()
+
+          main_version = None
+          main_bundle = load_json_from_git("origin/main:patches-bundle.json")
+          if main_bundle is None:
+              main_bundle = load_json_from_git("refs/remotes/origin/main:patches-bundle.json")
+          if isinstance(main_bundle, dict):
+              v = main_bundle.get("version")
+              if isinstance(v, str) and v.strip():
+                  main_version = v.strip()
+
+          semver_available = False
+          version_shadowed = False
+          if dev_version and main_version:
+              try:
+                  dev_sem = SemVer(dev_version)
+                  main_sem = SemVer(main_version)
+                  semver_available = True
+                  version_shadowed = (dev_sem <= main_sem)
+                  print(f"[INFO] Dev bundle version: {dev_sem.raw}")
+                  print(f"[INFO] Main bundle version: {main_sem.raw}")
+                  print(f"[INFO] Version shadowed (dev <= main): {version_shadowed}")
+              except ValueError as exc:
+                  print(f"[WARN] Failed to parse SemVer ({exc}); deciding by ancestry alone.")
+          else:
+              missing = []
+              if not dev_version:
+                  missing.append("dev patches-bundle.json")
+              if not main_version:
+                  missing.append("origin/main patches-bundle.json")
+              print(f"[WARN] Missing or unparseable bundle ({', '.join(missing)}); deciding by ancestry alone.")
+
+          # 3. Compute need_sync
+          if semver_available:
+              need_sync = origin_not_ancestor or version_shadowed
+          else:
+              need_sync = origin_not_ancestor
+
+          if event_name == "workflow_dispatch":
+              print("[INFO] Manual trigger via workflow_dispatch; forcing should_sync=true.")
+              need_sync = True
+
+          if need_sync:
+              reasons = []
+              if origin_not_ancestor:
+                  reasons.append("origin/main is not ancestor of dev HEAD")
+              if semver_available and version_shadowed:
+                  reasons.append(f"dev bundle ({dev_version}) <= main bundle ({main_version})")
+              if event_name == "workflow_dispatch":
+                  reasons.append("manual workflow_dispatch")
+              reason_str = ", ".join(reasons) if reasons else "state evaluation"
+              print(f"[OK] Synchronization needed ({reason_str}). Proceeding with sync.")
+              set_output(True)
+              sys.exit(0)
+          else:
+              print("[OK] dev branch already contains origin/main and dev version > main version; nothing to sync.")
+              set_output(False)
+              sys.exit(0)
+          EOF
 
       - name: Sync main into dev and push
         if: steps.verify.outputs.should_sync == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          GENERATED_FILES=(
+            ".github/contributors.json"
+            "CHANGELOG.md"
+            "gradle.properties"
+            "patches-bundle.json"
+            "patches-list.json"
+            "README.md"
+          )
+
+          merge_with_generated_resolution() {
+            local target_ref="$1"
+            local commit_msg="$2"
+
+            echo "[INFO] Attempting merge with $target_ref..."
+            if git merge --no-ff -m "$commit_msg" "$target_ref"; then
+              echo "[OK] Cleanly merged $target_ref."
+              return 0
+            fi
+
+            echo "[WARN] Merge conflict encountered while merging $target_ref."
+
+            # Discover all conflicted / unmerged files
+            local conflicted_files=()
+            while IFS= read -r file; do
+              [ -n "$file" ] && conflicted_files+=("$file")
+            done < <({ git diff --name-only --diff-filter=U; git ls-files -u | cut -f2; } | sort -u)
+
+            if [ ${#conflicted_files[@]} -eq 0 ]; then
+              echo "[ERROR] git merge failed, but no conflicted files were found." >&2
+              git merge --abort 2>/dev/null || true
+              return 1
+            fi
+
+            echo "[INFO] Conflicted files (${#conflicted_files[@]}):"
+            for f in "${conflicted_files[@]}"; do
+              echo "  - $f"
+            done
+
+            # Verify if EVERY conflicted file is inside the generated set
+            local non_generated_conflicts=()
+            for c_file in "${conflicted_files[@]}"; do
+              local is_gen=false
+              for g_file in "${GENERATED_FILES[@]}"; do
+                if [ "$c_file" = "$g_file" ]; then
+                  is_gen=true
+                  break
+                fi
+              done
+              if [ "$is_gen" = "false" ]; then
+                non_generated_conflicts+=("$c_file")
+              fi
+            done
+
+            if [ ${#non_generated_conflicts[@]} -gt 0 ]; then
+              echo "[ERROR] Conflicted file(s) outside release-generated asset set:" >&2
+              for ng in "${non_generated_conflicts[@]}"; do
+                echo "  - $ng" >&2
+              done
+              echo "[ERROR] Aborting merge with $target_ref to prevent unintended overrides." >&2
+              git merge --abort
+              return 1
+            fi
+
+            echo "[INFO] All conflicted files are generated release assets. Resolving with theirs ($target_ref)..."
+            for f in "${conflicted_files[@]}"; do
+              echo "[INFO] Checking out theirs for: $f"
+              git checkout --theirs -- "$f"
+              git add "$f"
+            done
+
+            if ! git commit -m "$commit_msg"; then
+              echo "[ERROR] Failed to commit merge after resolving generated file conflicts." >&2
+              git merge --abort 2>/dev/null || true
+              return 1
+            fi
+
+            echo "[OK] Successfully resolved conflicts and completed merge with $target_ref."
+            return 0
+          }
+
           echo "[INFO] Checking if dev already contains origin/main..."
           if git merge-base --is-ancestor origin/main HEAD; then
             echo "[OK] dev branch already contains origin/main; nothing to sync."
@@ -177,8 +329,8 @@ jobs:
           fi
 
           echo "[INFO] Merging origin/main into dev..."
-          if ! git merge --no-ff -m "chore(sync): merge main into dev" origin/main; then
-            echo "[ERROR] Merge conflict while merging origin/main into dev." >&2
+          if ! merge_with_generated_resolution "origin/main" "chore(sync): merge main into dev"; then
+            echo "[ERROR] Failed to merge origin/main into dev." >&2
             exit 1
           fi
 
@@ -187,7 +339,7 @@ jobs:
 
           if ! git merge-base --is-ancestor origin/dev HEAD; then
             echo "[INFO] Remote dev has newer commits; reconciling before push..."
-            if ! git merge --no-ff -m "chore(sync): reconcile remote dev" origin/dev; then
+            if ! merge_with_generated_resolution "origin/dev" "chore(sync): reconcile remote dev"; then
               echo "[ERROR] Merge conflict while reconciling remote dev." >&2
               exit 1
             fi
@@ -201,7 +353,7 @@ jobs:
 
           echo "[WARN] Push rejected. Fetching remote dev and retrying once defensively..."
           git fetch origin +refs/heads/dev:refs/remotes/origin/dev
-          if git merge --no-ff -m "chore(sync): reconcile remote dev" origin/dev; then
+          if merge_with_generated_resolution "origin/dev" "chore(sync): reconcile remote dev"; then
             if git push origin dev; then
               echo "[OK] dev branch synced and pushed successfully on retry."
               exit 0
