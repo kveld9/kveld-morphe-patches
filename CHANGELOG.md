@@ -1,3 +1,10 @@
+## [2.9.0-experimental.2](https://github.com/kveld9/kveld-morphe-patches/compare/v2.9.0-experimental.1...v2.9.0-experimental.2) (2026-10-24)
+
+### Bug Fixes
+
+* **extensions:** guard typed-preference reads against wrong-typed values ([3f248b8](https://github.com/kveld9/kveld-morphe-patches/commit/3f248b8d69e723a844c5e93636ad41a7e8b1e0bd))
+* **tiktok:** re-derive VideoAdaptionResult translations in fit mode ([6bcb3ba](https://github.com/kveld9/kveld-morphe-patches/commit/6bcb3baff65f7047e505117f06ccdd383cb18484))
+
 ## [2.9.0-experimental.1](https://github.com/kveld9/kveld-morphe-patches/compare/v2.8.0...v2.9.0-experimental.1) (2026-10-24)
 
 ### Bug Fixes
