@@ -34,7 +34,7 @@ Technical documentation and patch catalog for Brave Private Web Browser on Andro
 | **Brave Origin** | `bytecodePatch` | `true` (Enabled) | `Brave Origin (Setup)`, `braveNativeExtractionPatch` | Unlocks Brave Origin feature switches. |
 | **Block Popups & Rating Requests** | `bytecodePatch` | `true` (Enabled) | None | Blocks rating popups, review requests and promo dialogs. |
 | **Select Previous Tab on Close** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Selects the previous tab in the tab group when closing a tab. |
-| **Brave AMOLED theme** | `bytecodePatch` | `false` (Opt-in) | `Brave AMOLED theme resources` | Rewrites dark chrome to AMOLED pure black, supports two-tier surfaces, and disables Material You dynamic colors. |
+| **Custom Brave theme** | `bytecodePatch` | `false` (Opt-in) | `Custom Brave theme resources` | Applies custom background, surface, text, and accent colors to Brave dark mode chrome, defaulting to pure-black AMOLED styling. |
 
 ---
 
@@ -76,9 +76,31 @@ Technical documentation and patch catalog for Brave Private Web Browser on Andro
   - *How*: Overwrites unused companion native libraries in place with empty stubs, targeting augmented reality and extended reality binaries. Includes an option to also remove the WireGuard VPN library.
 
 ### E. Theming & Interface Customization
-- **Brave AMOLED theme**:
-  - *Objective*: Replace dark grey surfaces with true AMOLED black, optionally preserve raised card elevations with two-tier surfaces, and disable wallpaper-derived Material You dynamic colors.
-  - *How*: Rewrites color values, vector fills, and lStar selector resources at patch time, adjusts preference switches, and injects bytecode prologues into dynamic color reader methods to return false.
+- **Custom Brave theme**:
+  - *Objective*: Provide fully customizable styling for Brave dark mode chrome, replacing standard charcoal grey surfaces with custom colors. Defaults preserve pure-black AMOLED styling (#000000) while allowing granular customization of backgrounds, elevated containers, text ink, highlights, and Material You system role mappings.
+  - *Two-Tier Surfaces*: Distinguishes between flat base backgrounds (toolbars, window roots, web view containers) and elevated surfaces (dialog boxes, modal bottom sheets, popover menus, and settings cards).
+    - When `surfaceUsesBackground` is enabled (`true`, default), all surfaces share the base background color, providing a seamless, uniform true-black AMOLED appearance.
+    - When `surfaceUsesBackground` is disabled (`false`), elevated cards and dialogs use the dedicated `surfaceColor` (default `#1e2029`), creating clear visual separation and depth across the browser interface.
+  - *Material You Dynamic Palette Opt-Out*: On Android 12 and higher, system-wide wallpaper palette extraction dynamically tints app surfaces. When `disableDynamicColors` is enabled (`true`, default), the patch intercepts internal dynamic color readers and rewrites Android system neutral/container color definitions, preventing dynamic system wallpaper colors from overriding the chosen dark theme. Users wanting Android wallpaper-derived tints can toggle this setting to `false`.
+  - *Customization Options*:
+
+| Option Key | Typology | Default | Title & Visible Effect | Description & Example |
+| :--- | :--- | :--- | :--- | :--- |
+| `backgroundColor` | `colorOption` | `#000000` | Background color | Primary background for toolbars, window chrome, and base surfaces. Example: `#000000` for pure OLED black, or `#0d1117` for deep navy. |
+| `surfaceUsesBackground` | `booleanOption` | `true` | Surfaces use background color | When true, elevated dialogs and cards share the base background color. When false, elevated surfaces use `surfaceColor`. |
+| `surfaceColor` | `colorOption` | `#1e2029` | Surface / container color | Dedicated color for raised containers, modal sheets, and cards. Only active when two-tier surfaces are enabled. Example: `#1e2029`. |
+| `textColor` | `colorOption` | `#f0f2ff` | Text ink color | Primary text ink for labels, addresses, tab headers, and menus. Defaults to Brave slate ink (`#f0f2ff`). |
+| `accentColor` | `colorOption` | `#737ade` | Accent highlight color | Interactive highlights, active toggles, links, and action buttons. Defaults to Brave purple-blue (`#737ade`). |
+| `disableDynamicColors` | `booleanOption` | `true` | Disable Material You dynamic colors | Prevents wallpaper extraction on Android 12+ from overriding custom dark surfaces. |
+| `windowBackgroundColor` | `colorOption` | `#000000` | Window background color | Root window background applied behind decor views in two-tier mode. Defaults to `#000000`. |
+| `cardColor` | `colorOption` | `#1e2029` | Preference card color | Fill color for settings and preference rows in two-tier mode. Defaults to `#1e2029`. |
+| `enablePreferenceCards` | `booleanOption` | `true` | Style preference rows as cards | Groups Settings and preference rows into rounded cards with subtle margins in two-tier mode. |
+| `modulateTextLuminance` | `booleanOption` | `true` | Modulate text tiers by luminance | Dynamically scales secondary (81%) and disabled (62%) text brightness relative to the primary text ink color. |
+| `patchMaterialYouRoles` | `booleanOption` | `true` | Patch Material You system color roles | Rewrites Android S+ system neutral and container color roles in `values-v31+` directories to theme colors. |
+| `patchLStarSelectors` | `booleanOption` | `true` | Patch color state list lStar selectors | Rewrites color state list `lStar` luminance attributes in `res/color*` to match background and container surfaces. |
+| `patchVectorDrawables` | `booleanOption` | `true` | Patch vector drawable surface fills | Rewrites dark surface fills inside vector drawables in `res/drawable*` to match background and container colors. |
+
+  - *How*: Rewrites color values, vector fills, window background references, and lStar selector resources at patch time across day, night, and version-specific resource directories (`res/values*`, `res/color*`, `res/drawable*`, `res/layout*`, `res/xml*`), updates preference XML defaults, and injects bytecode prologues into dynamic color reader methods in DEX bytecode to return false.
 
 ---
 
