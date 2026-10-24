@@ -215,9 +215,9 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 | **Block Motion Sensors** | Stops sites from reading motion sensors to identify you. |  |
 | **Block Popups & Rating Requests** | Blocks rating popups, review requests and promo dialogs. |  |
 | **Block Trackers** | Blocks usage analytics, crash uploads and experiment downloads. | • Block offers server |
-| **Brave AMOLED theme** | Applies high-contrast true black (#000000) styling to Brave dark theme chrome. Neutral dark surfaces are rewritten to OLED black, with optional elevated tones for cards and sheets. Supports custom text and accent colors, and disables Material You dynamic wallpaper palettes so custom dark styling remains intact. | • AMOLED background color<br>• Text ink color<br>• Accent highlight color<br>• Disable Material You dynamic colors<br>• Surfaces use the background color<br>• Surface / button color |
 | **Brave Origin** | Unlocks Brave Origin feature switches. |  |
 | **Clean Start Page** | Removes sponsored wallpapers, news feed and promo cards. | • Hide shortcut tiles |
+| **Custom Brave theme** | Applies custom colors to Brave dark mode chrome, defaulting to pure OLED black for battery saving on OLED screens. | • Background color<br>• Surfaces use background color<br>• Surface / container color<br>• Text ink color<br>• Accent highlight color<br>• Disable Material You dynamic colors<br>• Window background color<br>• Preference card color<br>• Style preference rows as cards<br>• Modulate text tiers by luminance<br>• Patch Material You system color roles<br>• Patch color state list lStar selectors<br>• Patch vector drawable surface fills |
 | **Keep Tabs Open** | Stops Brave from minimizing your tabs in the background. |  |
 | **Remove Extra Files** | Deletes unused AR and XR files to shrink the app. | • Remove VPN library |
 | **Remove Extra Languages** | Deletes unselected language packs. | • Languages to keep |

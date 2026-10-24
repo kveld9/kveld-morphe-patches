@@ -1,3 +1,10 @@
+## [2.9.0-experimental.4](https://github.com/kveld9/kveld-morphe-patches/compare/v2.9.0-experimental.3...v2.9.0-experimental.4) (2026-10-24)
+
+### New Features
+
+* **brave:** default Custom theme surfaces to OLED black ([82c912d](https://github.com/kveld9/kveld-morphe-patches/commit/82c912dae20d32451c228b3ce9afdb46b1564320))
+* **brave:** rename AMOLED theme to customizable Custom Brave theme ([7105ab2](https://github.com/kveld9/kveld-morphe-patches/commit/7105ab225f554f90b0b679bf32d83acc3ec263f3))
+
 ## [2.9.0-experimental.3](https://github.com/kveld9/kveld-morphe-patches/compare/v2.9.0-experimental.2...v2.9.0-experimental.3) (2026-10-24)
 
 ### Bug Fixes
