@@ -332,7 +332,7 @@ val feedNavigationDeclutterPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = liveGenClass,
-                name = "LJIIJ",
+                name = "LJIIJJI",
                 returnType = "Z",
                 parameters = emptyList(),
             ).method.replaceWithReturnBoolean(false)
