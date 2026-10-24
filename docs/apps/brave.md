@@ -34,7 +34,7 @@ Technical documentation and patch catalog for Brave Private Web Browser on Andro
 | **Brave Origin** | `bytecodePatch` | `true` (Enabled) | `Brave Origin (Setup)`, `braveNativeExtractionPatch` | Unlocks Brave Origin feature switches. |
 | **Block Popups & Rating Requests** | `bytecodePatch` | `true` (Enabled) | None | Blocks rating popups, review requests and promo dialogs. |
 | **Select Previous Tab on Close** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Selects the previous tab in the tab group when closing a tab. |
-| **Custom Brave theme** | `bytecodePatch` | `false` (Opt-in) | `Custom Brave theme resources` | Applies custom background, surface, text, and accent colors to Brave dark mode chrome, defaulting to pure-black AMOLED styling. |
+| **Custom Brave theme** | `bytecodePatch` | `false` (Opt-in) | `Custom Brave theme resources` | Applies custom colors to Brave dark mode chrome, defaulting to pure OLED black for battery saving on OLED screens. |
 
 ---
 
@@ -79,8 +79,8 @@ Technical documentation and patch catalog for Brave Private Web Browser on Andro
 - **Custom Brave theme**:
   - *Objective*: Provide fully customizable styling for Brave dark mode chrome, replacing standard charcoal grey surfaces with custom colors. Defaults preserve pure-black AMOLED styling (#000000) while allowing granular customization of backgrounds, elevated containers, text ink, highlights, and Material You system role mappings.
   - *Two-Tier Surfaces*: Distinguishes between flat base backgrounds (toolbars, window roots, web view containers) and elevated surfaces (dialog boxes, modal bottom sheets, popover menus, and settings cards).
-    - When `surfaceUsesBackground` is enabled (`true`, default), all surfaces share the base background color, providing a seamless, uniform true-black AMOLED appearance.
-    - When `surfaceUsesBackground` is disabled (`false`), elevated cards and dialogs use the dedicated `surfaceColor` (default `#1e2029`), creating clear visual separation and depth across the browser interface.
+    - When `surfaceUsesBackground` is enabled (`true`, default), all surfaces share the base background color, providing a seamless, uniform true-black AMOLED appearance. Defaults are OLED pure-black out of the box, with #1e2029 as the suggested value for tier depth.
+    - When `surfaceUsesBackground` is disabled (`false`), elevated cards and dialogs use the dedicated `surfaceColor` (default `#000000`), creating clear visual separation when set to a distinct tier color such as `#1e2029`.
   - *Material You Dynamic Palette Opt-Out*: On Android 12 and higher, system-wide wallpaper palette extraction dynamically tints app surfaces. When `disableDynamicColors` is enabled (`true`, default), the patch intercepts internal dynamic color readers and rewrites Android system neutral/container color definitions, preventing dynamic system wallpaper colors from overriding the chosen dark theme. Users wanting Android wallpaper-derived tints can toggle this setting to `false`.
   - *Customization Options*:
 
@@ -88,12 +88,12 @@ Technical documentation and patch catalog for Brave Private Web Browser on Andro
 | :--- | :--- | :--- | :--- | :--- |
 | `backgroundColor` | `colorOption` | `#000000` | Background color | Primary background for toolbars, window chrome, and base surfaces. Example: `#000000` for pure OLED black, or `#0d1117` for deep navy. |
 | `surfaceUsesBackground` | `booleanOption` | `true` | Surfaces use background color | When true, elevated dialogs and cards share the base background color. When false, elevated surfaces use `surfaceColor`. |
-| `surfaceColor` | `colorOption` | `#1e2029` | Surface / container color | Dedicated color for raised containers, modal sheets, and cards. Only active when two-tier surfaces are enabled. Example: `#1e2029`. |
+| `surfaceColor` | `colorOption` | `#000000` | Surface / container color | Dedicated color for raised containers, modal sheets, and cards. Defaults to OLED pure-black (#000000) out of the box; use #1e2029 for visible tier depth. |
 | `textColor` | `colorOption` | `#f0f2ff` | Text ink color | Primary text ink for labels, addresses, tab headers, and menus. Defaults to Brave slate ink (`#f0f2ff`). |
 | `accentColor` | `colorOption` | `#737ade` | Accent highlight color | Interactive highlights, active toggles, links, and action buttons. Defaults to Brave purple-blue (`#737ade`). |
 | `disableDynamicColors` | `booleanOption` | `true` | Disable Material You dynamic colors | Prevents wallpaper extraction on Android 12+ from overriding custom dark surfaces. |
 | `windowBackgroundColor` | `colorOption` | `#000000` | Window background color | Root window background applied behind decor views in two-tier mode. Defaults to `#000000`. |
-| `cardColor` | `colorOption` | `#1e2029` | Preference card color | Fill color for settings and preference rows in two-tier mode. Defaults to `#1e2029`. |
+| `cardColor` | `colorOption` | `#000000` | Preference card color | Fill color for settings and preference rows in two-tier mode. Defaults to OLED pure-black (#000000) out of the box; use #1e2029 for visible tier depth. |
 | `enablePreferenceCards` | `booleanOption` | `true` | Style preference rows as cards | Groups Settings and preference rows into rounded cards with subtle margins in two-tier mode. |
 | `modulateTextLuminance` | `booleanOption` | `true` | Modulate text tiers by luminance | Dynamically scales secondary (81%) and disabled (62%) text brightness relative to the primary text ink color. |
 | `patchMaterialYouRoles` | `booleanOption` | `true` | Patch Material You system color roles | Rewrites Android S+ system neutral and container color roles in `values-v31+` directories to theme colors. |

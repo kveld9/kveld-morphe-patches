@@ -944,7 +944,7 @@ private val braveCustomThemeResourcePatch: ResourcePatch = resourcePatch(
 @Suppress("unused")
 val braveCustomThemePatch: BytecodePatch = bytecodePatch(
     name = "Custom Brave theme",
-    description = "Applies custom background, surface, text, and accent colors to Brave dark mode chrome, defaulting to pure-black AMOLED styling.",
+    description = "Applies custom colors to Brave dark mode chrome, defaulting to pure OLED black for battery saving on OLED screens.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_BRAVE)
@@ -961,8 +961,8 @@ val braveCustomThemePatch: BytecodePatch = bytecodePatch(
         required = false,
     )
     val surfaceColor by colorOption(
-        key = "surfaceColor", default = "#1e2029", title = "Surface / container color",
-        description = "Opaque hexadecimal color for elevated surfaces such as cards, sheets, and dialogs. Only active when 'Surfaces use background color' is disabled. Defaults to #1e2029.",
+        key = "surfaceColor", default = "#000000", title = "Surface / container color",
+        description = "Opaque hexadecimal color for elevated surfaces such as cards, sheets, and dialogs. Defaults to OLED black (#000000); use #1e2029 for visible depth between tiers.",
         required = false, validator = { hex -> hex == null || canonicalizeHex(hex) != null },
     )
     val textColor by colorOption(
@@ -986,8 +986,8 @@ val braveCustomThemePatch: BytecodePatch = bytecodePatch(
         required = false, validator = { hex -> hex == null || canonicalizeHex(hex) != null },
     )
     val cardColor by colorOption(
-        key = "cardColor", default = "#1e2029", title = "Preference card color",
-        description = "Opaque hexadecimal color for preference item cards in Settings. Only active when two-tier surfaces are enabled. Defaults to #1e2029.",
+        key = "cardColor", default = "#000000", title = "Preference card color",
+        description = "Opaque hexadecimal color for preference item cards in Settings. Defaults to OLED black (#000000); use #1e2029 for visible depth between tiers.",
         required = false, validator = { hex -> hex == null || canonicalizeHex(hex) != null },
     )
     val enablePreferenceCards by booleanOption(
