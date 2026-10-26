@@ -67,7 +67,6 @@ private val SCREENSHOT_DETECTION_PERMISSIONS = setOf(
 )
 
 private val MISC_HARDWARE_PERMISSIONS = setOf(
-    "android.permission.VIBRATE",
     "android.permission.MODIFY_AUDIO_SETTINGS",
     "android.permission.MANAGE_OWN_CALLS",
     "android.permission.REORDER_TASKS",
@@ -224,7 +223,7 @@ val tikTokPrivacyPermissionsStripperPatch = resourcePatch(
         key = "stripMiscHardware",
         default = false,
         title = "Strip Miscellaneous Hardware & System Permissions",
-        description = "Remove VIBRATE, MODIFY_AUDIO_SETTINGS, MANAGE_OWN_CALLS, REORDER_TASKS, SET_WALLPAPER, and USE_FULL_SCREEN_INTENT permissions. WARNING: Disables haptic feedback vibration, volume adjustments, alarm priority intents, and live wallpaper export.",
+        description = "Remove MODIFY_AUDIO_SETTINGS, MANAGE_OWN_CALLS, REORDER_TASKS, SET_WALLPAPER, and USE_FULL_SCREEN_INTENT permissions. WARNING: Breaks volume adjustments, alarm priority intents, and live wallpaper export. Haptic vibration is always kept because TikTok crashes without it.",
         required = false,
     )
 
