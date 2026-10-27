@@ -22,7 +22,7 @@ Technical documentation and patch catalog for TikTok Lite on Android.
 
 ## 2. Supported Patches Catalog (16 Patches)
 
-The following 16 patches are verified and fully supported on TikTok Lite `47.5.52`:
+The following 24 patches are verified and fully supported on TikTok Lite `47.5.52`:
 
 | Patch Name | Typology | Default State | Dependencies | Description |
 | :--- | :--- | :--- | :--- | :--- |
