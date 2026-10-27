@@ -10,50 +10,53 @@ val resourceGovernorPatch = bytecodePatch(
     description = "Stops 3D ad sensors and aggressive video preloading to save battery and data.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_LITE)
 
     execute {
         var patched = 0
+        val isLite = packageMetadata.packageName == Constants.TIKTOK_LITE_PACKAGE_NAME
 
         // ==========================================
         // 1. HARDWARE SENSORS & 3D ADS
         // ==========================================
 
-        // 1.1 ShakeEggService (interactive shake ad sensors in feed)
-        try {
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/ad/feed/shakeEgg/ShakeEggService;",
-                name = "LIZ",
-                returnType = "Z",
-            ).method.addInstructions(
-                0,
-                """
-                    const/4 v0, 0x0
-                    return v0
-                """.trimIndent(),
-            )
-            println("[Battery & Resource Saver] Neutralized ShakeEggService.LIZ() -> Shake ad sensor triggers disabled.")
-            patched++
-        } catch (e: Exception) {
-            println("[Battery & Resource Saver] ShakeEggService.LIZ note: ${e.message}")
-        }
+        if (!isLite) {
+            // 1.1 ShakeEggService (interactive shake ad sensors in feed)
+            try {
+                Fingerprint(
+                    definingClass = "Lcom/ss/android/ugc/aweme/ad/feed/shakeEgg/ShakeEggService;",
+                    name = "LIZ",
+                    returnType = "Z",
+                ).method.addInstructions(
+                    0,
+                    """
+                        const/4 v0, 0x0
+                        return v0
+                    """.trimIndent(),
+                )
+                println("[Battery & Resource Saver] Neutralized ShakeEggService.LIZ() -> Shake ad sensor triggers disabled.")
+                patched++
+            } catch (e: Exception) {
+                println("[Battery & Resource Saver] ShakeEggService.LIZ note: ${e.message}")
+            }
 
-        // 1.2 ShakeEggService.LIZIZ (shake model provider)
-        try {
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/ad/feed/shakeEgg/ShakeEggService;",
-                name = "LIZIZ",
-            ).method.addInstructions(
-                0,
-                """
-                    const/4 v0, 0x0
-                    return-object v0
-                """.trimIndent(),
-            )
-            println("[Battery & Resource Saver] Neutralized ShakeEggService.LIZIZ() -> Shake model suppressed.")
-            patched++
-        } catch (e: Exception) {
-            println("[Battery & Resource Saver] ShakeEggService.LIZIZ note: ${e.message}")
+            // 1.2 ShakeEggService.LIZIZ (shake model provider)
+            try {
+                Fingerprint(
+                    definingClass = "Lcom/ss/android/ugc/aweme/ad/feed/shakeEgg/ShakeEggService;",
+                    name = "LIZIZ",
+                ).method.addInstructions(
+                    0,
+                    """
+                        const/4 v0, 0x0
+                        return-object v0
+                    """.trimIndent(),
+                )
+                println("[Battery & Resource Saver] Neutralized ShakeEggService.LIZIZ() -> Shake model suppressed.")
+                patched++
+            } catch (e: Exception) {
+                println("[Battery & Resource Saver] ShakeEggService.LIZIZ note: ${e.message}")
+            }
         }
 
 
