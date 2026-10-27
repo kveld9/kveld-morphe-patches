@@ -2,6 +2,7 @@ package com.kveld9.morphe.extension.tiktok;
 
 import android.util.Log;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -162,45 +163,53 @@ public final class TikTokContentFilterHook {
     }
 
     private static int removeItemsByListRules(List<Object> items) {
-        int removed = 0;
-        Iterator<Object> it = items.iterator();
-        while (it.hasNext()) {
-            if (removeIfMatchesListRules(it, it.next())) {
-                removed++;
-            }
-        }
-        return removed;
-    }
-
-    private static boolean removeIfMatchesListRules(Iterator<Object> it, Object item) {
+        List<Object> snapshot;
         try {
-            if (shouldFilterByListRules(item)) {
-                it.remove();
-                return true;
-            }
-        } catch (Throwable ignored) {}
-        return false;
+            snapshot = new ArrayList<>(items);
+        } catch (RuntimeException ignored) {
+            return 0;
+        }
+        List<Object> toRemove = new ArrayList<>();
+        for (Object item : snapshot) {
+            try {
+                if (shouldFilterByListRules(item)) {
+                    toRemove.add(item);
+                }
+            } catch (Throwable ignored) {}
+        }
+        if (toRemove.isEmpty()) return 0;
+        try {
+            int before = items.size();
+            items.removeAll(toRemove);
+            return before - items.size();
+        } catch (RuntimeException ignored) {
+            return 0;
+        }
     }
 
     private static int removeItemsByContentRules(List<Object> items) {
-        int removed = 0;
-        Iterator<Object> it = items.iterator();
-        while (it.hasNext()) {
-            if (removeIfMatchesContentRules(it, it.next())) {
-                removed++;
-            }
-        }
-        return removed;
-    }
-
-    private static boolean removeIfMatchesContentRules(Iterator<Object> it, Object item) {
+        List<Object> snapshot;
         try {
-            if (shouldFilter(item)) {
-                it.remove();
-                return true;
-            }
-        } catch (Throwable ignored) {}
-        return false;
+            snapshot = new ArrayList<>(items);
+        } catch (RuntimeException ignored) {
+            return 0;
+        }
+        List<Object> toRemove = new ArrayList<>();
+        for (Object item : snapshot) {
+            try {
+                if (shouldFilter(item)) {
+                    toRemove.add(item);
+                }
+            } catch (Throwable ignored) {}
+        }
+        if (toRemove.isEmpty()) return 0;
+        try {
+            int before = items.size();
+            items.removeAll(toRemove);
+            return before - items.size();
+        } catch (RuntimeException ignored) {
+            return 0;
+        }
     }
 
     private static void logFilterResult(int removed) {
