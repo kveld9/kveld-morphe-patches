@@ -29,7 +29,7 @@ val friendsSuggestionsFilterPatch = bytecodePatch(
     description = "Keeps the Friends feed strictly mutual and hides suggested accounts across the app.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_LITE)
     dependsOn(sharedExtensionPatch)
 
     val strictMutualsOnly by booleanOption(
@@ -66,6 +66,53 @@ val friendsSuggestionsFilterPatch = bytecodePatch(
         }
 
         var patched = 0
+        val isLite = packageMetadata.packageName == Constants.TIKTOK_LITE_PACKAGE_NAME
+
+        if (isLite) {
+            if (strictMutualsOnly != false || filterFriendFeedBloat != false) {
+                // Hook Lite FriendsFeedResponse constructor (p3: List<FriendsFeed>)
+                Fingerprint(
+                    definingClass = "Lcom/ss/android/ugc/aweme/friends/tab/repo/FriendsFeedResponse;",
+                    name = "<init>",
+                    parameters = listOf(
+                        "I",
+                        "Ljava/lang/Boolean;",
+                        "Ljava/util/List;",
+                        "Ljava/lang/String;",
+                        "Ljava/lang/String;",
+                        "Ljava/lang/String;",
+                    ),
+                    returnType = "V",
+                ).method.addInstructions(
+                    0,
+                    """
+                        invoke-static {p3}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterSuggestedVideosInFriendsFeedData(Ljava/lang/Object;)V
+                    """.trimIndent(),
+                )
+                println("[Friends & Suggestions Filter] Hooked FriendsFeedResponse.<init> -> Lite Friends feed filtered for mutuals only.")
+                patched++
+            }
+
+            if (hideSuggestedAccounts != false) {
+                // Neutralize profile recommend cards (enable_recommend_card_profile) in ProfileRecUserViewModel.<clinit>
+                Fingerprint(
+                    definingClass = "Lcom/ss/android/ugc/aweme/profile/recommend/ProfileRecUserViewModel;",
+                    name = "<clinit>",
+                    returnType = "V",
+                ).method.addInstructions(
+                    0,
+                    """
+                        const/4 v0, 0x0
+                        sput-boolean v0, Lcom/ss/android/ugc/aweme/profile/recommend/ProfileRecUserViewModel;->LILII:Z
+                    """.trimIndent(),
+                )
+                println("[Friends & Suggestions Filter] Neutralized ProfileRecUserViewModel.LILII -> Profile recommended accounts suppressed on Lite.")
+                patched++
+            }
+
+            println("[Friends & Suggestions Filter] Applied $patched friends & suggestions filter hook(s).")
+            return@execute
+        }
 
         // 1. Strict Mutuals Friends Feed Hooks (from FriendsFeedStrictMutuals)
         if (strictMutualsOnly == true) {
