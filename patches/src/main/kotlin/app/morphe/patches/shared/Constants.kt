@@ -70,7 +70,7 @@ object Constants {
         targets = listOf(
             AppTarget(
                 version = TIKTOK_LITE_TARGET_VERSION,
-                description = "Download com.tiktok.lite.go v$TIKTOK_LITE_TARGET_VERSION (APKM) versionCode 470552 from APKMirror"
+                description = "Download com.tiktok.lite.go v$TIKTOK_LITE_TARGET_VERSION (APK) arm64-v8a versionCode 470552 (APK) from APKMirror"
             )
         )
     )
