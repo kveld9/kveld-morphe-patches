@@ -34,6 +34,7 @@ Comprehensive reference for universal optimization and resource slimming patches
 | **[Remove Pairip](#24-remove-pairip-universalremovepairippatch)** | `bytecodePatch` | Dalvik Bytecode Methods | Forces Pairip's on-device license, installer-origin and signature verdicts to report success so a re-signed build passes them | Lets apps whose Pairip gate is enforced in Dalvik run after re-signing; native `libpairipcore.so` integrity checks are not covered |
 | **[Disable Root Checks](#25-disable-root-checks-universaldisablerootcheckspatch)** | `bytecodePatch` | Dalvik Bytecode Methods | Neutralizes RootBeer on-device root detection methods so the library reports not-rooted | Stops apps using the RootBeer library from detecting a rooted device; does not defeat custom root checks or Play Integrity |
 | **[Bypass Play License](#26-bypass-play-license-universalbypassplaylicensepatch)** | `bytecodePatch` | Dalvik Bytecode Methods | Intercepts `LicenseChecker.checkAccess(LicenseCheckerCallback)` and delivers the licensed verdict locally without contacting Play | Lets apps using the legacy Play licensing client library run after re-signing; cannot affect server-side Play Integrity or subscription entitlements |
+| **[Neutralize Play Billing](#27-neutralize-play-billing-universalneutralizeplaybillingpatch)** | `resourcePatch` | Manifest (`AndroidManifest.xml`) | Strips `com.android.vending.BILLING` permission and unbinds Play Billing service queries; preserves proxy activities for crash safety | Enables graceful degradation on devices without Google Mobile Services; prevents IPC to Play Billing while avoiding `ActivityNotFoundException` |
 
 ---
 
@@ -87,6 +88,7 @@ Exception: Block Tracking Servers (Universal) remains a valid opt-in patch on ma
 | **Remove Pairip** | ⚠️ Lab / Sideloading | Opt-in (`default = false`). Neutralizes on-device Pairip license, installer-origin and signature checks in Dalvik only; never touches the startup VM (`StartupLauncher`/`VMRunner`) or native `libpairipcore.so`. Cannot defeat server-side Play Integrity, and cannot bypass native `libpairipcore.so` integrity checks, which may crash a re-signed build before the Dalvik gate runs. Must pass ART verifier gate. |
 | **Disable Root Checks** | ⚠️ Opt-in | Opt-in (default false); covers only the RootBeer root-detection library; makes its local root verdicts report not-rooted; does not defeat custom root checks, native JNI checks, or server-side Play Integrity. |
 | **Bypass Play License** | ⚠️ Lab / Sideloading | Opt-in (`default = false`). Intercepts `LicenseChecker.checkAccess` and delivers the licensed verdict locally; the library never contacts Play. Cannot affect server-side Play Integrity or subscription entitlements. Applies only when `com.android.vending.licensing.LicenseChecker` is present; skips cleanly otherwise. Must pass ART verifier gate. |
+| **Neutralize Play Billing** | ⚠️ Opt-in | Opt-in (`default = false`). Strips `com.android.vending.BILLING` permission and unbinds Play Billing service queries in `AndroidManifest.xml` so apps fail closed gracefully on GMS-free devices without purchase forging. Preserves `ProxyBillingActivity` to prevent `ActivityNotFoundException` crashes. Skips cleanly on apps without a billing surface. |
 
 ---
 
@@ -735,3 +737,27 @@ The **`Bypass Play License`** patch intercepts the legacy Play licensing client 
 - **No server-side bypass**: Cannot affect server-side Play Integrity attestation, subscription entitlements, or any decision whose final authority is a remote server.
 - **Clean skip**: When `com.android.vending.licensing.LicenseChecker` is not present in the target APK, the patch makes zero changes and logs an explicit skip. When the class is present but no matching `checkAccess` method is found, a second skip line is logged.
 - **Universal applicability**: Operates across any Android application that ships the legacy Play licensing client library without hardcoded class fingerprints or app-specific targets.
+
+## 27. Neutralize Play Billing (`universalNeutralizePlayBillingPatch`)
+
+The **`Neutralize Play Billing`** patch strips Google Play Billing manifest declarations (`com.android.vending.BILLING` permission and billing service query intents) from `AndroidManifest.xml` so applications that include the Google Play Billing client library degrade gracefully on environments or devices without Google Mobile Services (GMS).
+
+> [!NOTE]
+> ### Graceful Degradation vs. Purchase Forging
+> This patch implements pure **graceful degradation**, NOT purchase forging. It does not forge tokens, receipts, order IDs, or server attestations. Every query fails closed with standard unavailable/empty results.
+>
+> On devices lacking Google Play Services (or microG), applications attempting to communicate with the Play Store billing service either hang waiting for an IPC response or produce unexpected runtime exceptions. Removing `com.android.vending.BILLING` and unbinding billing service queries ensures the application immediately recognizes that Google Play Billing is unavailable on the device and falls back to its offline, free, or third-party payment workflows.
+
+> [!IMPORTANT]
+> ### Crash-Safety Invariant: Proxy Activities Preservation
+> The Google Play Billing library dispatches purchase flows via explicit intents targeting `com.android.billingclient.api.ProxyBillingActivity` or `ProxyBillingActivityV2`. Disabling these activities in `AndroidManifest.xml` (`android:enabled="false"`) while application callers still invoke `BillingClient.launchBillingFlow()` causes Android's `ActivityManager` to throw a fatal `ActivityNotFoundException`, immediately crashing the application.
+>
+> Because a universal patch operates across arbitrary applications without per-app caller stubs (and internal billing library classes/methods such as `BillingClientImpl` are minified and obfuscated per-version by R8), this patch intentionally preserves `ProxyBillingActivity` and `ProxyBillingActivityV2` in an enabled state. When launched, the proxy activities fail closed gracefully and finish without crashing the host process.
+
+### Scope & Compatibility Notes
+
+- **Opt-in by default**: Disabled by default (`default = false`); applied selectively per build.
+- **Fail closed**: Never forges purchase states, receipts, or entitlements; all billing requests resolve to unavailable.
+- **Manifest-level enforcement**: Removes `com.android.vending.BILLING` and unbinds billing query actions (`com.android.vending.billing.InAppBillingService.BIND` and `com.google.android.apps.play.billingtestcompanion.BillingOverrideService.BIND`) from `<queries>`.
+- **Zero bytecode modifications**: Operates purely as a `resourcePatch` on `AndroidManifest.xml`, ensuring complete stability across library versions (BillingClient 4.x through 9.x+).
+- **Clean skip**: When no Play Billing surface is detected in `AndroidManifest.xml`, the patch makes zero changes and logs an explicit skip.
