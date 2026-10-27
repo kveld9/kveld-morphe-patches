@@ -49,7 +49,7 @@ The following 16 patches are verified and fully supported on TikTok Lite `47.5.5
 | **Friends & Suggestions Filter** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Keeps the Friends feed strictly mutual and hides suggested accounts across the app. |
 ---
 
-## 3. Non-Applicable on Lite (35 Dropped Patches)
+## 3. Non-Applicable on Lite (31 Dropped Patches)
 
 The following 35 patches from the standard TikTok patch suite are excluded on TikTok Lite because the corresponding target classes, components, or assets are absent from the Lite build:
 
@@ -79,15 +79,11 @@ The following 35 patches from the standard TikTok patch suite are excluded on Ti
 - **Device Privacy Guard**: Anchor absent; `LX/0OBB` device identifier collector class absent in Lite DEX.
 - **Disable History Recording**: Anchor absent; `AwemeStatsApi` class and batch watch history reporting absent in Lite DEX.
 - **Disable On-Device AI**: Anchor absent; `PitayaBootLoader` class and Pitaya AI engine absent in Lite DEX.
-- **Disable QUIC**: Anchor absent; `CronetFrontierConnection.covertTransportMode` and cronet QUIC transport absent in Lite DEX.
 - **Enable Profile Banner**: Anchor absent; `ProfileBackgroundExp` class and profile banner customization absent in Lite DEX.
-- **Feed Ads & Content Filter**: Anchor absent; `FeedApiService.fetchFeedList` and commercial ad injection absent in Lite DEX.
-- **Friends & Suggestions Filter**: Anchor absent; `LX/064b` friend recommendation filter class absent in Lite DEX.
 - **Hide Inbox Promos & Alerts**: Anchor absent; `TopBannerWidgetContainerInjector` and promo banner widgets absent in Lite DEX.
 - **Hide Inbox Story Tray**: Anchor absent; `StoryGetFeedByPageResponse` class and story tray container absent in Lite DEX.
 - **Instant Launch**: Anchor absent; `SplashAdManagerPreloadTask` and splash ad preloader absent in Lite DEX.
 - **Login Compatibility Fix**: Anchor absent; `WebLoginActivity` and third-party login compatibility wrappers absent in Lite DEX.
-- **Playback & Display Governor**: Anchor absent; `Video.getRawBitRate` and video bitrate governor absent in Lite DEX.
 - **Resume Video After Scroll**: Anchor absent; `ScrollAutoPlayManager` and video resume on scroll handlers absent in Lite DEX.
 - **Show Author Region**: Anchor absent; `VideoAuthorInfoVM` and author region metadata badge absent in Lite DEX.
 - **Use System Font**: Anchor absent; `TikTokSans-VF.otf` font asset absent in Lite APK bundle.
