@@ -64,6 +64,20 @@ enum class TargetApp(
         ),
         filePattern = Regex("(?i).*brave.*\\.apk$"),
         patchDirectoryPart = "brave",
+    ),
+    TIKTOK_LITE(
+        id = "tiktok_lite",
+        appName = "TikTok Lite",
+        packageName = Constants.TIKTOK_LITE_PACKAGE_NAME,
+        candidateFilenames = listOf(
+            "com.tiktok.lite.go_${Constants.TIKTOK_LITE_TARGET_VERSION}-470552_2arch_7dpi_24lang_13feat_8277a28008ff07d5ab077942599e6e13_apkmirror.com.apkm",
+            "tiktok_lite_${Constants.TIKTOK_LITE_TARGET_VERSION}.apkm",
+            "tiktok_lite_${Constants.TIKTOK_LITE_TARGET_VERSION}.apk",
+            "tiktok_lite.apkm",
+            "tiktok_lite.apk",
+        ),
+        filePattern = Regex("(?i).*tiktok.*lite.*\\.(apk|apkm)$"),
+        patchDirectoryPart = "tiktok",
     );
 
     companion object {
@@ -72,6 +86,7 @@ enum class TargetApp(
             return entries.firstOrNull { it.id == normalized }
                 ?: when (normalized) {
                     "gboard_lite" -> GBOARD
+                    "tiktok_lite" -> TIKTOK_LITE
                     else -> null
                 }
         }
@@ -79,6 +94,7 @@ enum class TargetApp(
         fun fromFileName(fileName: String): TargetApp? {
             val lower = fileName.lowercase()
             return when {
+                lower.contains("tiktok") && lower.contains("lite") -> TIKTOK_LITE
                 lower.contains("tiktok") -> TIKTOK
                 lower.contains("gboard") -> GBOARD
                 lower.contains("brave") -> BRAVE

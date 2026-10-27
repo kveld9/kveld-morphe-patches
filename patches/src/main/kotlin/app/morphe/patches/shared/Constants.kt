@@ -59,6 +59,22 @@ object Constants {
         )
     )
 
+    const val TIKTOK_LITE_PACKAGE_NAME = "com.tiktok.lite.go"
+    const val TIKTOK_LITE_TARGET_VERSION = "47.5.52"
+
+    val COMPATIBILITY_TIKTOK_LITE = Compatibility(
+        name = "TikTok Lite",
+        packageName = TIKTOK_LITE_PACKAGE_NAME,
+        apkFileType = ApkFileType.APK,
+        appIconColor = 0xFE2C55,
+        targets = listOf(
+            AppTarget(
+                version = TIKTOK_LITE_TARGET_VERSION,
+                description = "Download com.tiktok.lite.go v$TIKTOK_LITE_TARGET_VERSION (APKM) versionCode 470552 from APKMirror"
+            )
+        )
+    )
+
     const val TIKTOK_EXTENSION_FILTER_CLASS = "Lcom/kveld9/morphe/extension/tiktok/TikTokFeedAdFilter;"
     const val TIKTOK_EXTENSION_MEDIA_HOOK = "Lcom/kveld9/morphe/extension/tiktok/TikTokMediaHook;"
     const val TIKTOK_EXTENSION_SPEED_HOOK = "Lcom/kveld9/morphe/extension/tiktok/TikTokSpeedHook;"
