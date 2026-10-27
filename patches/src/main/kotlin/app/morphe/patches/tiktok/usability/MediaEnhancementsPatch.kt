@@ -183,8 +183,57 @@ val mediaEnhancementsPatch = bytecodePatch(
                 }
             }
         } else {
+            // 1. Force D2M.L(Aweme) -> 2 and sanitize ACL download permissions.
+            // In Lite, HomePageShareServiceImpl.LBL checks 'D2M.L(aweme) != 0' to build the Save item,
+            // C4551FjF.enable() checks 'D2M.L(this.LIILZZL) == 2', and A06.LC verifies downloadMaskPanel
+            // code==0 and !mute. Forcing D2M.L to sanitize the ACL invariants and return 2 unlocks
+            // the download button in the share panel and long-press menus for restricted videos.
+            // NOTE: bare injection, no ensureRegisterCount: D2M.L carries 5 registers (v0-v3 local, v4=p0).
+            Fingerprint(
+                definingClass = "LX/D2M;",
+                name = "L",
+                parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;"),
+                returnType = "I",
+            ).method.addInstructionsWithLabels(
+                0,
+                """
+                    if-eqz p0, :cond_null
+                    iget-object v0, p0, Lcom/ss/android/ugc/aweme/feed/model/Aweme;->awemeACLShareInfo:Lcom/ss/android/ugc/aweme/feed/model/AwemeACLShare;
+                    if-eqz v0, :cond_skip_acl
+                    iget-object v1, v0, Lcom/ss/android/ugc/aweme/feed/model/AwemeACLShare;->downloadMaskPanel:Lcom/ss/android/ugc/aweme/feed/model/ACLCommonShare;
+                    if-eqz v1, :cond_skip_mask
+                    const/4 v2, 0x0
+                    iput v2, v1, Lcom/ss/android/ugc/aweme/feed/model/ACLCommonShare;->code:I
+                    iput-boolean v2, v1, Lcom/ss/android/ugc/aweme/feed/model/ACLCommonShare;->mute:Z
+                    const/4 v2, 0x2
+                    iput v2, v1, Lcom/ss/android/ugc/aweme/feed/model/ACLCommonShare;->showType:I
+                    const-string v2, ""
+                    iput-object v2, v1, Lcom/ss/android/ugc/aweme/feed/model/ACLCommonShare;->toastMsg:Ljava/lang/String;
+                    ${if (watermarkFree) "const/4 v2, 0x1\niput v2, v1, Lcom/ss/android/ugc/aweme/feed/model/ACLCommonShare;->transcode:I" else ""}
+                    :cond_skip_mask
+                    iget-object v1, v0, Lcom/ss/android/ugc/aweme/feed/model/AwemeACLShare;->downloadGeneral:Lcom/ss/android/ugc/aweme/feed/model/ACLCommonShare;
+                    if-eqz v1, :cond_skip_acl
+                    const/4 v2, 0x0
+                    iput v2, v1, Lcom/ss/android/ugc/aweme/feed/model/ACLCommonShare;->code:I
+                    iput-boolean v2, v1, Lcom/ss/android/ugc/aweme/feed/model/ACLCommonShare;->mute:Z
+                    const/4 v2, 0x2
+                    iput v2, v1, Lcom/ss/android/ugc/aweme/feed/model/ACLCommonShare;->showType:I
+                    const-string v2, ""
+                    iput-object v2, v1, Lcom/ss/android/ugc/aweme/feed/model/ACLCommonShare;->toastMsg:Ljava/lang/String;
+                    ${if (watermarkFree) "const/4 v2, 0x1\niput v2, v1, Lcom/ss/android/ugc/aweme/feed/model/ACLCommonShare;->transcode:I" else ""}
+                    :cond_skip_acl
+                    const/4 v0, 0x2
+                    return v0
+                    :cond_null
+                    const/4 v0, 0x0
+                    return v0
+                """.trimIndent(),
+            )
+            println("[Download Without Watermark] Forced Lite D2M.L(Aweme) -> unlocked share-panel & feed download button.")
+            patched++
+
             if (watermarkFree) {
-                // 1. Force 7PV.L(Aweme) -> true (forces LynxPageUriParser to route directly to clean playAddr stream)
+                // 2. Force 7PV.L(Aweme) -> true (forces LynxPageUriParser to route directly to clean playAddr stream)
                 Fingerprint(
                     definingClass = "LX/7PV;",
                     name = "L",
@@ -195,9 +244,28 @@ val mediaEnhancementsPatch = bytecodePatch(
                 println("[Download Without Watermark] Forced Lite 7PV.L(Aweme) -> unwatermarked playAddr stream active.")
                 patched++
 
-                // 2. Default ACLCommonShare transcode to 1 (clean stream in Share & Save paths).
-                // NOTE: no ensureRegisterCount: minilite <init> already carries 2 registers;
+                // 3. Default ACLCommonShare transcode to 1 (clean stream in Share & Save paths).
+                // NOTE: no ensureRegisterCount: <init> already carries 2 registers;
                 // growing the frame around the surviving body breaks ART verification.
+                Fingerprint(
+                    definingClass = "Lcom/ss/android/ugc/aweme/feed/model/ACLCommonShare;",
+                    name = "<init>",
+                ).method.apply {
+                    val returnIdx = implementation!!.instructions.indexOfLast { it.opcode == Opcode.RETURN_VOID }
+                    val insertIdx = if (returnIdx != -1) returnIdx else 0
+                    addInstructions(
+                        insertIdx,
+                        """
+                            const/4 v0, 0x1
+                            iput v0, p0, Lcom/ss/android/ugc/aweme/feed/model/ACLCommonShare;->transcode:I
+                            const/4 v0, 0x0
+                            iput v0, p0, Lcom/ss/android/ugc/aweme/feed/model/ACLCommonShare;->code:I
+                        """.trimIndent(),
+                    )
+                }
+                println("[Download Without Watermark] Forced ACLCommonShare.<init>() -> transcode=1, code=0.")
+                patched++
+
                 Fingerprint(
                     definingClass = "Lcom/ss/android/ugc/aweme/minilite/feed/model/ACLCommonShare;",
                     name = "<init>",
@@ -214,7 +282,7 @@ val mediaEnhancementsPatch = bytecodePatch(
                         """.trimIndent(),
                     )
                 }
-                println("[Download Without Watermark] Forced ACLCommonShare.<init>() -> transcode=1, code=0.")
+                println("[Download Without Watermark] Forced minilite ACLCommonShare.<init>() -> transcode=1, code=0.")
                 patched++
             }
         }
