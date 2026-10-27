@@ -36,6 +36,7 @@ The following 16 patches are verified and fully supported on TikTok Lite `47.5.5
 | **Show Seekbar** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Restores the video progress seekbar and scrubbing controls. |
 | **Block Trackers (Setup)** | `resourcePatch` | `true` (Enabled) | None | Removes tracking permissions and disables telemetry components. |
 | **Strip Sensitive Permissions** | `resourcePatch` | `false` (Opt-in) | None | Removes sensitive hardware, sensor, and tracking permissions. |
+| **Block Trackers** | `bytecodePatch` | `true` (Enabled) | None | Neutralizes ByteDance AppLog tracking, crash monitors, and analytics. |
 ---
 
 ## 3. Non-Applicable on Lite (35 Dropped Patches)
