@@ -30,6 +30,7 @@ The following 16 patches are verified and fully supported on TikTok Lite `47.5.5
 | **Battery & Resource Saver** | `bytecodePatch` | `true` (Enabled) | None | Stops aggressive video preloading to save battery and data. |
 | **Clean Share Links** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Removes tracking parameters from shared links. |
 | **Download Without Watermark** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Unlocks downloading and saves videos without watermarks. |
+| **In-App Browser Privacy Guard** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Opens web links in your browser and blocks tracking in the remaining web views. |
 ---
 
 ## 3. Non-Applicable on Lite (35 Dropped Patches)
