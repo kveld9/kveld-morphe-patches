@@ -32,6 +32,7 @@ The following 16 patches are verified and fully supported on TikTok Lite `47.5.5
 | **Download Without Watermark** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Unlocks downloading and saves videos without watermarks. |
 | **In-App Browser Privacy Guard** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Opens web links in your browser and blocks tracking in the remaining web views. |
 | **Offline Video Limit** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Customizes the maximum number of videos saved for offline viewing. |
+| **SIM Region Selector** | `bytecodePatch` | `false` (Opt-in) | None | Locks the app to a chosen country to unlock regional content. |
 ---
 
 ## 3. Non-Applicable on Lite (35 Dropped Patches)

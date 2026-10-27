@@ -15,7 +15,7 @@ val regionBypassPatch = bytecodePatch(
     description = "Locks the app to a chosen country to unlock regional content.",
     default = false,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_LITE)
 
     val targetRegion by stringOption(
         key = "region",
@@ -45,26 +45,29 @@ val regionBypassPatch = bytecodePatch(
         val raw = targetRegion?.trim()?.lowercase() ?: "ch"
         val region = if (raw.matches(Regex("^[a-z]{2}$"))) raw else "ch"
         var patched = 0
+        val isLite = packageMetadata.packageName == Constants.TIKTOK_LITE_PACKAGE_NAME
 
-        // 1. Hook getSimCountryIso with Cert token wrapper
-        try {
-            val simCertFp = Fingerprint(
-                returnType = "Ljava/lang/String;",
-                strings = listOf("TelephonyManager_getSimCountryIso"),
-                custom = { method, _ ->
-                    method.parameterTypes.size == 2 && method.parameterTypes[0] == "Landroid/telephony/TelephonyManager;"
-                },
-            )
-            simCertFp.method.addInstructions(
-                0,
-                """
-                const-string v0, "$region"
-                return-object v0
-                """.trimIndent()
-            )
-            patched++
-        } catch (e: Exception) {
-            println("[SIM Region Selector] simCert note: ${e.message}")
+        if (!isLite) {
+            // 1. Hook getSimCountryIso with Cert token wrapper
+            try {
+                val simCertFp = Fingerprint(
+                    returnType = "Ljava/lang/String;",
+                    strings = listOf("TelephonyManager_getSimCountryIso"),
+                    custom = { method, _ ->
+                        method.parameterTypes.size == 2 && method.parameterTypes[0] == "Landroid/telephony/TelephonyManager;"
+                    },
+                )
+                simCertFp.method.addInstructions(
+                    0,
+                    """
+                    const-string v0, "$region"
+                    return-object v0
+                    """.trimIndent()
+                )
+                patched++
+            } catch (e: Exception) {
+                println("[SIM Region Selector] simCert note: ${e.message}")
+            }
         }
 
         // 2. Hook getSimCountryIso direct
@@ -88,46 +91,48 @@ val regionBypassPatch = bytecodePatch(
             println("[SIM Region Selector] simDirect note: ${e.message}")
         }
 
-        // 3. Hook getNetworkCountryIso with Cert token wrapper
-        try {
-            val netCertFp = Fingerprint(
-                returnType = "Ljava/lang/String;",
-                strings = listOf("TelephonyManager_getNetworkCountryIso"),
-                custom = { method, _ ->
-                    method.parameterTypes.size == 2 && method.parameterTypes[0] == "Landroid/telephony/TelephonyManager;"
-                },
-            )
-            netCertFp.method.addInstructions(
-                0,
-                """
-                const-string v0, "$region"
-                return-object v0
-                """.trimIndent()
-            )
-            patched++
-        } catch (e: Exception) {
-            println("[SIM Region Selector] netCert note: ${e.message}")
-        }
+        if (!isLite) {
+            // 3. Hook getNetworkCountryIso with Cert token wrapper
+            try {
+                val netCertFp = Fingerprint(
+                    returnType = "Ljava/lang/String;",
+                    strings = listOf("TelephonyManager_getNetworkCountryIso"),
+                    custom = { method, _ ->
+                        method.parameterTypes.size == 2 && method.parameterTypes[0] == "Landroid/telephony/TelephonyManager;"
+                    },
+                )
+                netCertFp.method.addInstructions(
+                    0,
+                    """
+                    const-string v0, "$region"
+                    return-object v0
+                    """.trimIndent()
+                )
+                patched++
+            } catch (e: Exception) {
+                println("[SIM Region Selector] netCert note: ${e.message}")
+            }
 
-        // 4. Hook getNetworkCountryIso direct
-        try {
-            val netDirectFp = Fingerprint(
-                returnType = "Ljava/lang/String;",
-                strings = listOf("TelephonyManager_getNetworkCountryIso"),
-                custom = { method, _ ->
-                    method.parameterTypes.size == 1 && method.parameterTypes[0] == "Landroid/telephony/TelephonyManager;"
-                },
-            )
-            netDirectFp.method.addInstructions(
-                0,
-                """
-                const-string v0, "$region"
-                return-object v0
-                """.trimIndent()
-            )
-            patched++
-        } catch (e: Exception) {
-            println("[SIM Region Selector] netDirect note: ${e.message}")
+            // 4. Hook getNetworkCountryIso direct
+            try {
+                val netDirectFp = Fingerprint(
+                    returnType = "Ljava/lang/String;",
+                    strings = listOf("TelephonyManager_getNetworkCountryIso"),
+                    custom = { method, _ ->
+                        method.parameterTypes.size == 1 && method.parameterTypes[0] == "Landroid/telephony/TelephonyManager;"
+                    },
+                )
+                netDirectFp.method.addInstructions(
+                    0,
+                    """
+                    const-string v0, "$region"
+                    return-object v0
+                    """.trimIndent()
+                )
+                patched++
+            } catch (e: Exception) {
+                println("[SIM Region Selector] netDirect note: ${e.message}")
+            }
         }
 
         // 5. Operator and CellIdentity spoofing at every TelephonyManager/CellIdentity call site.
