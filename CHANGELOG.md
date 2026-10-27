@@ -1,3 +1,9 @@
+## [2.9.0-experimental.5](https://github.com/kveld9/kveld-morphe-patches/compare/v2.9.0-experimental.4...v2.9.0-experimental.5) (2026-10-27)
+
+### Bug Fixes
+
+* **tiktok:** keep vibration permission so sound pages no longer crash on tap ([70e63db](https://github.com/kveld9/kveld-morphe-patches/commit/70e63dbabb27bfc2ae55f19a447dbf2a1e0446c3))
+
 ## [2.9.0-experimental.4](https://github.com/kveld9/kveld-morphe-patches/compare/v2.9.0-experimental.3...v2.9.0-experimental.4) (2026-10-24)
 
 ### New Features
