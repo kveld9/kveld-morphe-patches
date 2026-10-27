@@ -7,6 +7,7 @@ import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patcher.patch.stringOption
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.addInstructionsAtControlFlowLabel
 import app.morphe.patches.shared.ensureRegisterCount
@@ -50,6 +51,22 @@ val playbackSpeedPatch = bytecodePatch(
     compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_LITE)
     dependsOn(sharedExtensionPatch)
 
+    val defaultSpeed by stringOption(
+        key = "defaultSpeed",
+        default = "1.0",
+        title = "Default Playback Speed",
+        description = "Sets the default playback speed for videos when no UI selector is present.",
+        values = mapOf(
+            "0.5x" to "0.5",
+            "0.75x" to "0.75",
+            "1.0x" to "1.0",
+            "1.25x" to "1.25",
+            "1.5x" to "1.5",
+            "2.0x" to "2.0",
+        ),
+        required = false,
+    )
+
     val enableSpeedLock by booleanOption(
         key = "enableSpeedLock",
         default = true,
@@ -63,6 +80,10 @@ val playbackSpeedPatch = bytecodePatch(
         val isLite = packageMetadata.packageName == Constants.TIKTOK_LITE_PACKAGE_NAME
 
         if (isLite) {
+            val rawSpeed = defaultSpeed?.trim()?.removeSuffix("x")?.toFloatOrNull() ?: 1.0f
+            val speedVal = if (rawSpeed in 0.25f..4.0f) rawSpeed else 1.0f
+            val speedHex = "0x" + java.lang.Float.floatToRawIntBits(speedVal).toUInt().toString(16)
+
             val speedFp = Fingerprint(
                 definingClass = "LX/Ao6;",
                 name = "LFF",
@@ -73,6 +94,8 @@ val playbackSpeedPatch = bytecodePatch(
             speedFp.method.addInstructions(
                 0,
                 """
+                    invoke-static {$lffSpeedReg}, ${Constants.TIKTOK_EXTENSION_SPEED_HOOK}->resolvePlayerSpeed(F)F
+                    move-result $lffSpeedReg
                     invoke-static {$lffSpeedReg}, ${Constants.TIKTOK_EXTENSION_SPEED_HOOK}->onSpeedSelected(F)V
                 """.trimIndent(),
             )
@@ -86,10 +109,12 @@ val playbackSpeedPatch = bytecodePatch(
                 returnType = "F",
             )
             val lblAwemeReg = if (AccessFlags.STATIC.isSet(getSpeedFp.method.accessFlags)) "p0" else "p1"
+            getSpeedFp.method.ensureRegisterCount(2)
             getSpeedFp.method.addInstructions(
                 0,
                 """
-                    invoke-static {$lblAwemeReg}, ${Constants.TIKTOK_EXTENSION_SPEED_HOOK}->getPlaybackSpeed(Ljava/lang/Object;)F
+                    const v1, $speedHex
+                    invoke-static {$lblAwemeReg, v1}, ${Constants.TIKTOK_EXTENSION_SPEED_HOOK}->getPlaybackSpeed(Ljava/lang/Object;F)F
                     move-result v0
                     return v0
                 """.trimIndent(),
@@ -103,11 +128,12 @@ val playbackSpeedPatch = bytecodePatch(
                 parameters = emptyList(),
                 returnType = "V",
             )
-            s6Fp.method.ensureRegisterCount(3)
+            s6Fp.method.ensureRegisterCount(4)
             s6Fp.method.addInstructionsWithLabels(
                 0,
                 """
-                    invoke-static {p0}, ${Constants.TIKTOK_EXTENSION_SPEED_HOOK}->getPlaybackSpeed(Ljava/lang/Object;)F
+                    const v2, $speedHex
+                    invoke-static {p0, v2}, ${Constants.TIKTOK_EXTENSION_SPEED_HOOK}->getPlaybackSpeed(Ljava/lang/Object;F)F
                     move-result v1
                     sput v1, LX/Ao6;->LCC:F
                     sput v1, LX/Ao6;->LB:F
