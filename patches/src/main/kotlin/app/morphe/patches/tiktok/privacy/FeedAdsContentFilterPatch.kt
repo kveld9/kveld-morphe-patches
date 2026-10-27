@@ -200,6 +200,58 @@ val feedAdsContentFilterPatch = bytecodePatch(
         val isLite = packageMetadata.packageName == Constants.TIKTOK_LITE_PACKAGE_NAME
 
         if (isLite) {
+            if (contentFilterActive) {
+                val hook = Constants.TIKTOK_EXTENSION_CONTENT_FILTER_HOOK
+                try {
+                    val minV = (minViews ?: 0).coerceAtLeast(0).toLong()
+                    val maxV = (maxViews ?: 0).coerceAtLeast(0).toLong()
+                    val minL = (minLikes ?: 0).coerceAtLeast(0).toLong()
+                    val maxL = (maxLikes ?: 0).coerceAtLeast(0).toLong()
+                    val maxAge = (maxAgeDays ?: 0).coerceAtLeast(0)
+                    val minDur = (minDurationSec ?: 0).coerceAtLeast(0)
+                    val maxDur = (maxDurationSec ?: 0).coerceAtLeast(0)
+                    val clinit = Fingerprint(
+                        definingClass = hook,
+                        name = "<clinit>",
+                    ).method
+                    clinit.ensureRegisterCount(2)
+                    val instructions = clinit.implementation!!.instructions
+                    val returnIdx = instructions.indexOfLast { it.opcode == Opcode.RETURN_VOID }
+                    val insertIdx = if (returnIdx != -1) returnIdx else 0
+                    val authorInstructions = buildPushCsvInstructions(hook, "blockedAuthorsCsv", blockedAuthors)
+                    val hashtagInstructions = buildPushCsvInstructions(hook, "blockedHashtagsCsv", blockedHashtags)
+                    val keywordInstructions = buildPushCsvInstructions(hook, "blockedKeywordsCsv", blockedKeywords)
+                    val regionInstructions = buildPushCsvInstructions(hook, "hiddenRegionsCsv", hiddenRegions)
+                    clinit.addInstructions(
+                        insertIdx,
+                        """
+                            const-wide v0, 0x${minV.toString(16)}
+                            sput-wide v0, $hook->minViews:J
+                            const-wide v0, 0x${maxV.toString(16)}
+                            sput-wide v0, $hook->maxViews:J
+                            const-wide v0, 0x${minL.toString(16)}
+                            sput-wide v0, $hook->minLikes:J
+                            const-wide v0, 0x${maxL.toString(16)}
+                            sput-wide v0, $hook->maxLikes:J
+                            const v0, 0x${maxAge.toString(16)}
+                            sput v0, $hook->maxAgeDays:I
+                            const v0, 0x${minDur.toString(16)}
+                            sput v0, $hook->minDurationSec:I
+                            const v0, 0x${maxDur.toString(16)}
+                            sput v0, $hook->maxDurationSec:I
+                            const/4 v0, ${if (hideStories != false) "0x1" else "0x0"}
+                            sput-boolean v0, $hook->hideStories:Z
+                            const/4 v0, ${if (hidePhotoPosts == true) "0x1" else "0x0"}
+                            sput-boolean v0, $hook->hidePhotoPosts:Z$authorInstructions$hashtagInstructions$keywordInstructions$regionInstructions
+                        """.trimIndent(),
+                    )
+                    println("[Feed Ads & Content Filter] Pushed Lite content filter configuration.")
+                    patched++
+                } catch (e: Exception) {
+                    println("[Feed Ads & Content Filter] Lite content filter config note: ${e.message}")
+                }
+            }
+
             fun hookReturnList(definingClass: String, name: String, returnType: String, logLabel: String) {
                 val fingerprint = Fingerprint(
                     definingClass = definingClass,
@@ -212,12 +264,33 @@ val feedAdsContentFilterPatch = bytecodePatch(
                     ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
                     ?.toList() ?: emptyList()
 
+                val callSnippets = mutableListOf<String>()
+                if (filterAds != false) {
+                    callSnippets.add("invoke-static/range {v\$reg .. v\$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAdsInList(Ljava/lang/Object;)V")
+                }
+                if (filterBloat != false) {
+                    callSnippets.add("invoke-static/range {v\$reg .. v\$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterFeedBloatInList(Ljava/lang/Object;)V")
+                }
+                if (stripShopAnchors != false) {
+                    callSnippets.add("invoke-static/range {v\$reg .. v\$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->stripShopAnchorsInList(Ljava/lang/Object;)V")
+                }
+                if (blockLiveStreams != false) {
+                    callSnippets.add("invoke-static/range {v\$reg .. v\$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterLiveStreamsInList(Ljava/lang/Object;)V")
+                }
+                if (hideAiContent != false) {
+                    callSnippets.add("invoke-static/range {v\$reg .. v\$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAiContentInList(Ljava/lang/Object;)V")
+                }
+                if (contentFilterActive) {
+                    callSnippets.add("invoke-static/range {v\$reg .. v\$reg}, ${Constants.TIKTOK_EXTENSION_CONTENT_FILTER_HOOK}->filterContentInList(Ljava/lang/Object;)V")
+                }
+
+                if (callSnippets.isEmpty()) return
+
+                val instructions = callSnippets.joinToString("\n")
                 returnIndices.asReversed().forEach { (returnIndex, reg) ->
                     method.addInstructionsAtControlFlowLabel(
                         returnIndex,
-                        """
-                            invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAdsInList(Ljava/lang/Object;)V
-                        """,
+                        instructions.replace("\$reg", reg.toString()),
                     )
                 }
                 if (returnIndices.isNotEmpty()) {
