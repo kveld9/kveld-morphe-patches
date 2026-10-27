@@ -31,6 +31,9 @@ private val BLOCKED_COMPONENTS = setOf(
     "com.appsflyer.referrer.INSTALL_PROVIDER",
     "com.appsflyer.internal.platform_extension.PluginInfoContentProvider",
     "com.google.android.gms.measurement.AppMeasurementContentProvider",
+    "com.google.android.gms.analytics.AnalyticsReceiver",
+    "com.google.android.gms.analytics.AnalyticsService",
+    "com.google.android.gms.analytics.AnalyticsJobService",
 )
 
 private val OPT_OUT_METADATA = listOf(

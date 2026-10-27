@@ -74,6 +74,225 @@ val unifiedTelemetryTrackerSilencerPatch = bytecodePatch(
             )
             println("[Block Trackers] Neutralized UltraliteInitAppsFlyer.run() -> AppsFlyer attribution disabled.")
             patched++
+
+            // 5. NpthTask secondary initialization path (LCCII)
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/legoImpl/task/NpthTask;",
+                name = "LCCII",
+                parameters = listOf("Landroid/content/Context;"),
+                returnType = "V",
+            ).method.addInstructions(
+                0,
+                """
+                    return-void
+                """,
+            )
+            println("[Block Trackers] Successfully neutralized NpthTask.LCCII() secondary crash reporter init.")
+            patched++
+
+            // 6. Npth crash reporter core initialization
+            Fingerprint(
+                definingClass = "Lcom/bytedance/crash/Npth;",
+                name = "init",
+                parameters = listOf("Landroid/content/Context;", "Lcom/bytedance/crash/ICommonParams;", "Z", "Z", "Z"),
+                returnType = "V",
+            ).method.addInstructions(
+                0,
+                """
+                    return-void
+                """,
+            )
+            println("[Block Trackers] Successfully neutralized Npth.init() -> Crash and monitor reporting suppressed.")
+            patched++
+
+            // 7. AppLogNetworkClient (Lite root package) - upload POST data
+            Fingerprint(
+                definingClass = "LAppLogNetworkClient;",
+                name = "LCC",
+                parameters = listOf("Ljava/lang/String;", "[B", "Ljava/util/Map;"),
+                returnType = "Ljava/lang/String;",
+            ).method.addInstructions(
+                0,
+                """
+                    const-string v0, "{\"magic_tag\":\"ss_app_log\",\"message\":\"success\"}"
+                    return-object v0
+                """,
+            )
+            println("[Block Trackers] Neutralized AppLogNetworkClient.LCC() -> Event uploads suppressed with synthetic success.")
+            patched++
+
+            // 8. AppLogNetworkClient (Lite root package) - GET
+            Fingerprint(
+                definingClass = "LAppLogNetworkClient;",
+                name = "LB",
+                parameters = listOf("Ljava/lang/String;"),
+                returnType = "Ljava/lang/String;",
+            ).method.addInstructions(
+                0,
+                """
+                    const-string v0, "{\"message\":\"success\"}"
+                    return-object v0
+                """,
+            )
+            println("[Block Trackers] Neutralized AppLogNetworkClient.LB() -> GET requests suppressed.")
+            patched++
+
+            // 9. AppLogNetworkClient (Lite root package) - POST params
+            Fingerprint(
+                definingClass = "LAppLogNetworkClient;",
+                name = "LBL",
+                parameters = listOf("Ljava/lang/String;", "Ljava/util/List;"),
+                returnType = "Ljava/lang/String;",
+            ).method.addInstructions(
+                0,
+                """
+                    const-string v0, "{\"message\":\"success\"}"
+                    return-object v0
+                """,
+            )
+            println("[Block Trackers] Neutralized AppLogNetworkClient.LBL() -> POST params suppressed.")
+            patched++
+
+            // 10. AppLogNetworkClient (Lite root package) - POST data stream
+            Fingerprint(
+                definingClass = "LAppLogNetworkClient;",
+                name = "LCCII",
+                parameters = listOf("Ljava/lang/String;", "[B", "Ljava/util/Map;"),
+                returnType = "[B",
+            ).method.addInstructions(
+                0,
+                """
+                    const/4 v0, 0x0
+                    return-object v0
+                """,
+            )
+            println("[Block Trackers] Neutralized AppLogNetworkClient.LCCII() -> Stream posts suppressed.")
+            patched++
+
+            // 11. com.ss.android.ugc.aweme.statistic.AppLogNetworkClient - upload POST data
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/statistic/AppLogNetworkClient;",
+                name = "LCC",
+                parameters = listOf("Ljava/lang/String;", "[B", "Ljava/util/Map;"),
+                returnType = "Ljava/lang/String;",
+            ).method.addInstructions(
+                0,
+                """
+                    const-string v0, "{\"magic_tag\":\"ss_app_log\",\"message\":\"success\"}"
+                    return-object v0
+                """,
+            )
+            println("[Block Trackers] Neutralized statistic.AppLogNetworkClient.LCC() -> Event uploads suppressed.")
+            patched++
+
+            // 12. com.ss.android.ugc.aweme.statistic.AppLogNetworkClient - GET
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/statistic/AppLogNetworkClient;",
+                name = "LB",
+                parameters = listOf("Ljava/lang/String;"),
+                returnType = "Ljava/lang/String;",
+            ).method.addInstructions(
+                0,
+                """
+                    const-string v0, "{\"message\":\"success\"}"
+                    return-object v0
+                """,
+            )
+            println("[Block Trackers] Neutralized statistic.AppLogNetworkClient.LB() -> GET requests suppressed.")
+            patched++
+
+            // 13. com.ss.android.ugc.aweme.statistic.AppLogNetworkClient - POST params
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/statistic/AppLogNetworkClient;",
+                name = "LBL",
+                parameters = listOf("Ljava/lang/String;", "Ljava/util/List;"),
+                returnType = "Ljava/lang/String;",
+            ).method.addInstructions(
+                0,
+                """
+                    const-string v0, "{\"message\":\"success\"}"
+                    return-object v0
+                """,
+            )
+            println("[Block Trackers] Neutralized statistic.AppLogNetworkClient.LBL() -> POST params suppressed.")
+            patched++
+
+            // 14. com.ss.android.ugc.aweme.statistic.AppLogNetworkClient - POST data stream
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/statistic/AppLogNetworkClient;",
+                name = "LCCII",
+                parameters = listOf("Ljava/lang/String;", "[B", "Ljava/util/Map;"),
+                returnType = "[B",
+            ).method.addInstructions(
+                0,
+                """
+                    const/4 v0, 0x0
+                    return-object v0
+                """,
+            )
+            println("[Block Trackers] Neutralized statistic.AppLogNetworkClient.LCCII() -> Stream posts suppressed.")
+            patched++
+
+            // 15. AppLog.flush()
+            Fingerprint(
+                definingClass = "Lcom/ss/android/common/applog/AppLog;",
+                name = "flush",
+                parameters = emptyList(),
+                returnType = "V",
+            ).method.addInstructions(
+                0,
+                """
+                    return-void
+                """,
+            )
+            println("[Block Trackers] Neutralized AppLog.flush().")
+            patched++
+
+            // 16. AppLog.sendHeartbeat()
+            Fingerprint(
+                definingClass = "Lcom/ss/android/common/applog/AppLog;",
+                name = "sendHeartbeat",
+                parameters = emptyList(),
+                returnType = "V",
+            ).method.addInstructions(
+                0,
+                """
+                    return-void
+                """,
+            )
+            println("[Block Trackers] Neutralized AppLog.sendHeartbeat().")
+            patched++
+
+            // 17. AppLog.tryUpdateConfig()
+            Fingerprint(
+                definingClass = "Lcom/ss/android/common/applog/AppLog;",
+                name = "tryUpdateConfig",
+                parameters = listOf("Z", "Z", "Z"),
+                returnType = "V",
+            ).method.addInstructions(
+                0,
+                """
+                    return-void
+                """,
+            )
+            println("[Block Trackers] Neutralized AppLog.tryUpdateConfig().")
+            patched++
+
+            // 18. AppLog.setupLogReaper()
+            Fingerprint(
+                definingClass = "Lcom/ss/android/common/applog/AppLog;",
+                name = "setupLogReaper",
+                parameters = emptyList(),
+                returnType = "Z",
+            ).method.addInstructions(
+                0,
+                """
+                    const/4 v0, 0x1
+                    return v0
+                """,
+            )
+            println("[Block Trackers] Neutralized AppLog.setupLogReaper().")
+            patched++
         } else {
             // 3. Npth Core Init Task
             Fingerprint(
