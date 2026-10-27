@@ -142,10 +142,18 @@ private fun BytecodePatchContext.findFormatterMatches(literal: String): List<Mut
     return fp.matchAll().map { it.method }
 }
 
-private fun BytecodePatchContext.hookStaticFormatters(methods1Dot0M: List<MutableMethod>): Int {
-    val methods1M = findFormatterMatches("1M")
-    if (methods1M.isEmpty()) {
-        throw PatchException("Found no matches for '1M' static count formatters")
+private fun BytecodePatchContext.hookStaticFormatters(
+    methods1Dot0M: List<MutableMethod>,
+    isLite: Boolean,
+): Int {
+    val methods1M = if (isLite) {
+        emptyList()
+    } else {
+        val matches = findFormatterMatches("1M")
+        if (matches.isEmpty()) {
+            throw PatchException("Found no matches for '1M' static count formatters")
+        }
+        matches
     }
     val distinctMethods = (methods1Dot0M + methods1M).distinctBy { "${it.definingClass}->${it.name}" }
     if (distinctMethods.size > 6) {
@@ -162,19 +170,19 @@ val showExactCountsPatch = bytecodePatch(
     description = "Shows exact numbers on likes, comments, views and followers.",
     default = false,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_LITE)
     dependsOn(sharedExtensionPatch)
 
     execute {
+        val isLite = packageMetadata.packageName == Constants.TIKTOK_LITE_PACKAGE_NAME
         val methods1Dot0M = findFormatterMatches("1.0M")
         if (methods1Dot0M.isEmpty()) {
             throw PatchException("Found no matches for '1.0M' static count formatters")
         }
 
-        val staticCount = hookStaticFormatters(methods1Dot0M)
-        hookIcuFormatting(this, methods1Dot0M)
-
-        val totalHooks = staticCount + 1
+        val staticCount = hookStaticFormatters(methods1Dot0M, isLite)
+        val icuCount = if (isLite) 0 else { hookIcuFormatting(this, methods1Dot0M); 1 }
+        val totalHooks = staticCount + icuCount
         println("[Show Exact Counts] Applied $totalHooks count formatting hook(s).")
     }
 }
