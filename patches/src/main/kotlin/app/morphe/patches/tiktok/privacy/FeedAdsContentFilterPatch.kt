@@ -19,7 +19,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
     description = "Filters ads, shopping tags, live cards, and clutter from your feed.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_LITE)
     dependsOn(sharedExtensionPatch)
 
     val filterAds by booleanOption(
@@ -197,6 +197,62 @@ val feedAdsContentFilterPatch = bytecodePatch(
         }
 
         var patched = 0
+        val isLite = packageMetadata.packageName == Constants.TIKTOK_LITE_PACKAGE_NAME
+
+        if (isLite) {
+            fun hookReturnList(definingClass: String, name: String, returnType: String, logLabel: String) {
+                val fingerprint = Fingerprint(
+                    definingClass = definingClass,
+                    name = name,
+                    returnType = returnType,
+                )
+                val method = fingerprint.method
+                val returnIndices = method.implementation?.instructions?.withIndex()
+                    ?.filter { it.value.opcode == Opcode.RETURN_OBJECT }
+                    ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
+                    ?.toList() ?: emptyList()
+
+                returnIndices.asReversed().forEach { (returnIndex, reg) ->
+                    method.addInstructionsAtControlFlowLabel(
+                        returnIndex,
+                        """
+                            invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAdsInList(Ljava/lang/Object;)V
+                        """,
+                    )
+                }
+                if (returnIndices.isNotEmpty()) {
+                    println("[Feed Ads & Content Filter] Hooked $definingClass->$name() (${returnIndices.size} return point(s)) -> $logLabel protected.")
+                    patched++
+                }
+            }
+
+            // Hook FeedItemList.getItems() (covers feed, cached, and home consumers on Lite)
+            hookReturnList(
+                definingClass = "Lcom/ss/android/ugc/aweme/main/homepage/fragment/data/model/FeedItemList;",
+                name = "getItems",
+                returnType = "Ljava/util/List;",
+                logLabel = "All Lite feed model consumers",
+            )
+
+            // Hook SearchMix.getAwemeList() (Search mix and grid streams on Lite)
+            hookReturnList(
+                definingClass = "Lcom/ss/android/ugc/aweme/main/homepage/fragment/data/discover/SearchMix;",
+                name = "getAwemeList",
+                returnType = "Ljava/util/List;",
+                logLabel = "Lite Search mix feed",
+            )
+
+            // Hook SearchMixFeedList.getAwemeList() (Search mix feed list on Lite)
+            hookReturnList(
+                definingClass = "Lcom/ss/android/ugc/aweme/main/homepage/fragment/data/discover/SearchMixFeedList;",
+                name = "getAwemeList",
+                returnType = "Ljava/util/List;",
+                logLabel = "Lite Search mix feed list",
+            )
+
+            println("[Feed Ads & Content Filter] Applied $patched feed and search content filter hook(s).")
+            return@execute
+        }
 
         // 1. Branch: filterAds
         if (filterAds != false) {
