@@ -38,6 +38,7 @@ The following 16 patches are verified and fully supported on TikTok Lite `47.5.5
 | **Strip Sensitive Permissions** | `resourcePatch` | `false` (Opt-in) | None | Removes sensitive hardware, sensor, and tracking permissions. |
 | **Block Trackers** | `bytecodePatch` | `true` (Enabled) | None | Neutralizes ByteDance AppLog tracking, crash monitors, and analytics. |
 | **Camera & Microphone Indicator** | `bytecodePatch` | `false` (Opt-in) | `sharedExtensionPatch` | Shows a corner mark while TikTok holds camera/mic open. |
+| **Disable Push Notifications** | `bytecodePatch` | `false` (Opt-in) | None | Stops background push notifications. |
 ---
 
 ## 3. Non-Applicable on Lite (35 Dropped Patches)
