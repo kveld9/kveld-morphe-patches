@@ -17,9 +17,32 @@ val disableQuicPatch = bytecodePatch(
     description = "Loads videos, uploads, and live connections over standard HTTPS instead of QUIC.",
     default = false,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_LITE)
 
     execute {
+        val isLite = packageMetadata.packageName == Constants.TIKTOK_LITE_PACKAGE_NAME
+
+        if (isLite) {
+            val videoLoaderMethod = Fingerprint(
+                definingClass = "Lcom/ss/mediakit/medialoader/AVMDLDataLoader;",
+                name = "setConfigureInternal",
+                parameters = listOf("Lcom/ss/mediakit/medialoader/AVMDLDataLoaderConfigure;"),
+                returnType = "V",
+            ).method
+            hookVideoLoader(videoLoaderMethod)
+
+            val uploadMethod = Fingerprint(
+                definingClass = "Lcom/ss/bduploader/BDUploadUtil;",
+                name = "xquicAvalilable",
+                returnType = "Z",
+                parameters = emptyList(),
+            ).method
+            hookUploadUtil(uploadMethod)
+
+            println("[Disable QUIC] Applied 2 QUIC suppression hook(s).")
+            return@execute
+        }
+
         val videoLoaderMethod = try {
             Fingerprint(
                 definingClass = "Lcom/ss/mediakit/medialoader/AVMDLDataLoader;",

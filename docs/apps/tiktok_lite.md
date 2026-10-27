@@ -43,6 +43,10 @@ The following 16 patches are verified and fully supported on TikTok Lite `47.5.5
 | **Force Auto-Scroll** | `bytecodePatch` | `true` (Enabled) | None | Enables native auto-scrolling to the next video. |
 | **Show Exact Counts** | `bytecodePatch` | `false` (Opt-in) | `sharedExtensionPatch` | Shows exact numbers on likes, comments, views and followers. |
 | **Stop Video Looping** | `bytecodePatch` | `false` (Opt-in) | None | Stops videos at the end instead of replaying them in an infinite loop. |
+| **Disable QUIC** | `bytecodePatch` | `false` (Opt-in) | None | Loads videos, uploads, and live connections over standard HTTPS instead of QUIC. |
+| **Playback & Display Governor** | `bytecodePatch` | `false` (Opt-in) | `sharedExtensionPatch` | Limits playback resolution and HDR to save battery, and locks the screen refresh rate. |
+| **Feed Ads & Content Filter** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Filters ads, shopping tags, live cards, and clutter from your feed. |
+| **Friends & Suggestions Filter** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Keeps the Friends feed strictly mutual and hides suggested accounts across the app. |
 ---
 
 ## 3. Non-Applicable on Lite (35 Dropped Patches)
