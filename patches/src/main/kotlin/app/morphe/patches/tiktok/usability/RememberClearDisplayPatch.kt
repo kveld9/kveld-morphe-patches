@@ -8,6 +8,7 @@ import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.ensureRegisterCount
 import app.morphe.patches.shared.sharedExtensionPatch
 import com.android.tools.smali.dexlib2.AccessFlags
+import com.android.tools.smali.dexlib2.Opcode
 
 val rememberClearDisplayPatch = bytecodePatch(
     name = "Remember Clear Display",
@@ -22,6 +23,7 @@ val rememberClearDisplayPatch = bytecodePatch(
         val isLite = packageMetadata.packageName == Constants.TIKTOK_LITE_PACKAGE_NAME
 
         if (isLite) {
+            // 1. Clear-mode dispatcher state tracking: observe all OPEN and manual CLOSE calls.
             val switchFp = Fingerprint(
                 definingClass = "LX/7iG;",
                 name = "LC",
@@ -29,20 +31,71 @@ val rememberClearDisplayPatch = bytecodePatch(
                 returnType = "V",
                 strings = listOf("change_clear_mode_status"),
             )
-            switchFp.method.addInstructionsWithLabels(
+            switchFp.method.addInstructions(
+                0,
+                "invoke-static/range {p0 .. p1}, ${Constants.TIKTOK_EXTENSION_CLEARDISPLAY_HOOK}->onClearModeCall(Ljava/lang/Object;Ljava/lang/String;)V",
+            )
+            println("[Remember Clear Display] Hooked Lite LX/7iG;.LC() -> intention tracking active.")
+            patched++
+
+            // 2. Long-press menu toggle: set user intention flag true when entering clear mode.
+            val longPressFp = Fingerprint(
+                definingClass = "LX/8iD;",
+                name = "LC",
+                parameters = listOf("Landroid/view/View;"),
+                returnType = "V",
+                strings = listOf("long_press"),
+            )
+            longPressFp.method.addInstructionsWithLabels(
                 0,
                 """
-                    move-object/from16 v1, p1
-                    const-string v0, "switch_video"
-                    invoke-virtual {v0, v1}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
-                    move-result v0
-                    if-nez v0, :clear_mode_continue
-                    return-void
-                    :clear_mode_continue
+                    iget-boolean v0, p0, LX/8iD;->LIILZZLLZ:Z
+                    if-nez v0, :skip_open
+                    const/4 v0, 1
+                    invoke-static {v0}, ${Constants.TIKTOK_EXTENSION_CLEARDISPLAY_HOOK}->setWantsClear(Z)V
+                    :skip_open
                     nop
                 """.trimIndent(),
             )
-            println("[Remember Clear Display] Neutralized Lite LX/7iG;.LC() for switch_video -> clear display retained on scroll.")
+            println("[Remember Clear Display] Hooked Lite LX/8iD;.LC() -> long-press intent recorded.")
+            patched++
+
+            // 3. FeedFragment.r5: re-link clear mode token and re-emit OPEN event on video switch.
+            val feedFp = Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/main/homepage/fragment/FeedFragment;",
+                name = "r5",
+                parameters = listOf("Z"),
+                returnType = "V",
+                strings = listOf("switch_video"),
+            )
+            // NOTE: do NOT call ensureRegisterCount here. r5 already carries 6 registers;
+            // ensureRegisterCount(6) on this method breaks ART verification (FeedFragment
+            // marked erroneous, 9-subclass cascade) while the bare edit passes clean.
+            val returnIndex = feedFp.method.implementation?.instructions?.indexOfLast {
+                it.opcode == Opcode.RETURN_VOID
+            } ?: error("No RETURN_VOID in FeedFragment.r5")
+
+            // Single insertion so the :skip_replay label resolves inside one batch.
+            feedFp.method.addInstructionsWithLabels(
+                returnIndex,
+                """
+                    invoke-static {}, ${Constants.TIKTOK_EXTENSION_CLEARDISPLAY_HOOK}->getWantsClear()Z
+                    move-result v0
+                    if-eqz v0, :skip_replay
+                    invoke-virtual {p0}, Lcom/ss/android/ugc/aweme/main/homepage/fragment/FeedFragment;->LLIIILLIL()Lcom/ss/android/ugc/aweme/feed/model/Aweme;
+                    move-result-object v0
+                    if-eqz v0, :skip_replay
+                    const/4 v1, 0x0
+                    invoke-static {v1, v0}, LX/7iG;->LCC(Landroid/content/Context;Lcom/ss/android/ugc/aweme/feed/model/Aweme;)V
+                    sget-object v1, LX/7iH;->OPEN:LX/7iH;
+                    const-string v2, "switch_video"
+                    const/4 v3, 0x0
+                    invoke-static {v1, v2, v3, v0}, LX/7iG;->LC(LX/7iH;Ljava/lang/String;ZLcom/ss/android/ugc/aweme/feed/model/Aweme;)V
+                    :skip_replay
+                    return-void
+                """.trimIndent(),
+            )
+            println("[Remember Clear Display] Hooked Lite FeedFragment.r5() -> video switch replay active.")
             patched++
 
             println("[Remember Clear Display] Applied $patched clear-display hook(s).")

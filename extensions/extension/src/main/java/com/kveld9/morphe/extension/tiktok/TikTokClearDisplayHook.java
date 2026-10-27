@@ -17,11 +17,37 @@ public final class TikTokClearDisplayHook {
     private static final int EVENT_NOTIFY_EXIT = 9;
 
     private static volatile boolean clearDisplayRemembered = false;
+    private static volatile boolean wantsClear = false;
 
     private TikTokClearDisplayHook() {}
 
     public static boolean getClearDisplayState() {
         return clearDisplayRemembered;
+    }
+
+    public static boolean getWantsClear() {
+        return wantsClear;
+    }
+
+    public static void setWantsClear(boolean wants) {
+        wantsClear = wants;
+        Log.i(TAG, "[Clear Display Lite] wantsClear=" + wants);
+    }
+
+    public static void onClearModeCall(Object enumStatus, String reason) {
+        if (enumStatus == null) return;
+        String status = enumStatus.toString();
+        if ("OPEN".equals(status)) {
+            wantsClear = true;
+            Log.i(TAG, "[Clear Display Lite] onClearModeCall OPEN (reason=" + reason + ") -> wantsClear=true");
+        } else if ("CLOSE".equals(status)) {
+            if (!"switch_video".equals(reason)) {
+                wantsClear = false;
+                Log.i(TAG, "[Clear Display Lite] onClearModeCall CLOSE (reason=" + reason + ") -> wantsClear=false");
+            } else {
+                Log.i(TAG, "[Clear Display Lite] onClearModeCall CLOSE (switch_video ignored for wantsClear)");
+            }
+        }
     }
 
     public static void rememberClearDisplayEvent(Object event) {
