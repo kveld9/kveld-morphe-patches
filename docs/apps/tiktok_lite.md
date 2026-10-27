@@ -26,6 +26,7 @@ The following 16 patches are verified and fully supported on TikTok Lite `47.5.5
 
 | Patch Name | Typology | Default State | Dependencies | Description |
 | :--- | :--- | :--- | :--- | :--- |
+| **Allow Screenshots** | `bytecodePatch` | `true` (Enabled) | None | Removes screenshot and screen recording blocking. |
 ---
 
 ## 3. Non-Applicable on Lite (35 Dropped Patches)
