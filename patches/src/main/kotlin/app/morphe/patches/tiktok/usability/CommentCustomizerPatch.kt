@@ -50,6 +50,10 @@ private const val COMMENT_SURPRISE_CLASS = "Lcom/ss/android/ugc/aweme/comment/mo
 private const val COMMENT_RESPONSE_CLASS = "Lcom/ss/android/ugc/aweme/comment/model/CommentResponse;"
 private const val COMMENT_PUBLISH_VIEW_MODEL_CLASS =
     "Lcom/ss/android/ugc/aweme/commentv2/commentlist/viewmodel/CommentPublishViewModel;"
+private const val POLL_CELL_CLASS =
+    "Lcom/ss/android/ugc/aweme/commentv2/commentlist/powercell/PollCell;"
+private const val POLL_INFO_CLASS =
+    "Lcom/ss/android/ugc/aweme/comment/model/PollInfo;"
 
 private data class MethodSignature(
     val definingClass: String,
@@ -1066,6 +1070,57 @@ private fun BytecodePatchContext.applyHideCommentPopupAds(): Int {
     return patched
 }
 
+private fun isStaticInvoke(opcode: Opcode): Boolean =
+    opcode == Opcode.INVOKE_STATIC || opcode == Opcode.INVOKE_STATIC_RANGE
+
+private fun isPollCellCheckRef(ref: MethodReference): Boolean {
+    if (ref.definingClass != POLL_CELL_CLASS) return false
+    if (ref.returnType != "Z") return false
+    return ref.parameterTypes.singleOrNull()?.toString() == POLL_INFO_CLASS
+}
+
+private fun callsPollCellCheck(method: Method): Boolean {
+    val instructions = method.implementation?.instructions ?: return false
+    return instructions.any { ins ->
+        isStaticInvoke(ins.opcode) &&
+            ((ins as? ReferenceInstruction)?.reference as? MethodReference)?.let(::isPollCellCheckRef) == true
+    }
+}
+
+private fun BytecodePatchContext.applyShowPollResults(): Int {
+    var patched = 0
+
+    val pollCellClass = classDefBy(POLL_CELL_CLASS)
+    val pollCellFp = Fingerprint(
+        accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC),
+        definingClass = POLL_CELL_CLASS,
+        returnType = "Z",
+        parameters = listOf(POLL_INFO_CLASS),
+        custom = { method, _ -> callsPollCellCheck(method) },
+    )
+
+    val matches = pollCellFp.matchAll(pollCellClass)
+    if (matches.size != 1) {
+        throw PatchException(
+            "Comment Customizer: expected exactly 1 poll result display method in PollCell, found ${matches.size}.",
+        )
+    }
+
+    val method = matches.first().method
+    method.ensureRegisterCount(1)
+    method.addInstructions(
+        0,
+        """
+            const/4 v0, 0x1
+            return v0
+        """.trimIndent(),
+    )
+    patched++
+
+    println("[Comment Customizer] Poll results display unlocked.")
+    return patched
+}
+
 val commentCustomizerPatch = bytecodePatch(
     name = "Comment Customizer",
     description = "Takes control of comments: sort, copy, translate and hide clutter.",
@@ -1154,6 +1209,14 @@ val commentCustomizerPatch = bytecodePatch(
         required = false,
     )
 
+    val showPollResults by booleanOption(
+        key = "showPollResults",
+        default = false,
+        title = "Show Poll Results",
+        description = "Shows poll results in comments without voting first.",
+        required = false,
+    )
+
     val autoTranslate by booleanOption(
         key = "autoTranslate",
         default = false,
@@ -1181,7 +1244,8 @@ val commentCustomizerPatch = bytecodePatch(
             autoTranslate != true &&
             commentSendFix != true &&
             hideCommentPopupAds != true &&
-            showFlaggedComments != true
+            showFlaggedComments != true &&
+            showPollResults != true
         ) {
             println("[Comment Customizer] Skipped: All comment customization options are disabled.")
             return@execute
@@ -1211,6 +1275,10 @@ val commentCustomizerPatch = bytecodePatch(
 
         if (showFlaggedComments == true) {
             patched += applyShowFlaggedComments()
+        }
+
+        if (showPollResults == true) {
+            patched += applyShowPollResults()
         }
 
         if (hideCommentSurveys == true) {

@@ -69,6 +69,9 @@ tasks {
         if (project.hasProperty("allOptions")) {
             systemProperty("allOptions", project.property("allOptions").toString())
         }
+        if (project.hasProperty("patchOptions")) {
+            systemProperty("patchOptions", project.property("patchOptions").toString())
+        }
         if (project.hasProperty("allowVersionMismatch")) {
             systemProperty("allowVersionMismatch", project.property("allowVersionMismatch").toString())
         }
@@ -84,6 +87,7 @@ tasks {
         System.getProperty("patchName")?.let { systemProperty("patchName", it) }
         System.getProperty("maxVersionCode")?.let { systemProperty("maxVersionCode", it) }
         System.getProperty("allOptions")?.let { systemProperty("allOptions", it) }
+        System.getProperty("patchOptions")?.let { systemProperty("patchOptions", it) }
         System.getProperty("allowVersionMismatch")?.let { systemProperty("allowVersionMismatch", it) }
         System.getProperty("slowPatchSeconds")?.let { systemProperty("slowPatchSeconds", it) }
         System.getProperty("dexDigest")?.let { systemProperty("dexDigest", it) }

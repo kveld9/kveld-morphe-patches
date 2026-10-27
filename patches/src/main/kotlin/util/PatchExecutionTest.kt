@@ -445,6 +445,8 @@ fun main(args: Array<String>) {
         println("[INFO] allOptions: forced $forced boolean patch option(s) to true.")
     }
 
+    applyPatchOptions(System.getProperty("patchOptions"), targetPatches)
+
     println("Loaded ${targetPatches.size} patch(es) for ${targetApp.appName} from ${patchFiles.first().name}:")
     targetPatches.sortedBy { it.name }.forEach { println("  • ${it.name}") }
 
@@ -1077,4 +1079,97 @@ private fun isPatchSkipLine(line: String): Boolean {
     val lower = line.lowercase()
     if (lower.contains("fingerprint")) return false
     return PATCH_SKIP_PATTERN.containsMatchIn(line)
+}
+
+private fun applyPatchOptions(rawOptions: String?, targetPatches: Set<Patch<*>>) {
+    if (rawOptions.isNullOrBlank()) return
+
+    val entries = parsePatchOptionEntries(rawOptions)
+    if (entries.isEmpty()) return
+
+    val setCount = applyPatchOptionEntries(entries, targetPatches)
+    println("[INFO] patchOptions: set $setCount option value(s).")
+}
+
+private fun parsePatchOptionEntries(raw: String): List<Pair<String, String>> {
+    return raw.split(';')
+        .map { it.trim() }
+        .filter { it.isNotEmpty() }
+        .map { parsePatchOptionPair(it) }
+}
+
+private fun parsePatchOptionPair(entry: String): Pair<String, String> {
+    val eqIndex = entry.indexOf('=')
+    if (eqIndex <= 0) {
+        error("Invalid patchOptions entry '$entry': expected <key>=<value>")
+    }
+    val key = entry.substring(0, eqIndex).trim()
+    val value = entry.substring(eqIndex + 1).trim()
+    return Pair(key, value)
+}
+
+private fun applyPatchOptionEntries(
+    entries: List<Pair<String, String>>,
+    targetPatches: Set<Patch<*>>,
+): Int {
+    var setCount = 0
+    for ((key, rawValue) in entries) {
+        setCount += applySingleOptionToPatches(key, rawValue, targetPatches)
+    }
+    return setCount
+}
+
+private fun applySingleOptionToPatches(
+    key: String,
+    rawValue: String,
+    targetPatches: Set<Patch<*>>,
+): Int {
+    val matchingPatches = targetPatches.filter { it.options.containsKey(key) }
+    if (matchingPatches.isEmpty()) {
+        error("Unknown patch option key '$key': does not match any target patch option")
+    }
+    for (patch in matchingPatches) {
+        val option = patch.options[key]!!
+        val convertedValue = parseOptionValue(key, rawValue, option.default)
+        patch.options[key] = convertedValue
+    }
+    return matchingPatches.size
+}
+
+private fun parseOptionValue(key: String, rawValue: String, default: Any?): Any {
+    if (default == null || default is String) return rawValue
+    return parseTypedOptionValue(key, rawValue, default)
+}
+
+private fun parseTypedOptionValue(key: String, rawValue: String, default: Any): Any {
+    return when (default) {
+        is Boolean -> parseBooleanOption(key, rawValue)
+        is Int -> parseIntOption(key, rawValue)
+        is Long -> parseLongOption(key, rawValue)
+        else -> error("Unsupported option type '${default::class.qualifiedName}' for key '$key'")
+    }
+}
+
+private fun parseBooleanOption(key: String, rawValue: String): Boolean {
+    return try {
+        rawValue.toBooleanStrict()
+    } catch (_: IllegalArgumentException) {
+        error("Invalid boolean value '$rawValue' for option key '$key'")
+    }
+}
+
+private fun parseIntOption(key: String, rawValue: String): Int {
+    return try {
+        rawValue.toInt()
+    } catch (_: NumberFormatException) {
+        error("Invalid int value '$rawValue' for option key '$key'")
+    }
+}
+
+private fun parseLongOption(key: String, rawValue: String): Long {
+    return try {
+        rawValue.toLong()
+    } catch (_: NumberFormatException) {
+        error("Invalid long value '$rawValue' for option key '$key'")
+    }
 }

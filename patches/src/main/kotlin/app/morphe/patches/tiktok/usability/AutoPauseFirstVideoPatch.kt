@@ -22,15 +22,15 @@ val autoPauseFirstVideoPatch = bytecodePatch(
             definingClass = "Lcom/ss/android/ugc/aweme/feed/controller/PlayerController;",
         )
 
-        // 1. Hook PlayerController.k0 right before return to pause first video after engine setup
+        // 1. Hook PlayerController.m right before return to pause first video after engine setup
         val l0Method = playerControllerFp.classDef.methods.firstOrNull {
-            it.name == "k0" && it.parameterTypes.size == 3 && it.returnType == "Ljava/lang/String;"
-        } ?: error("Could not find k0(Aweme, I, Z)Ljava/lang/String; method in PlayerController")
+            it.name == "m" && it.parameterTypes.size == 3 && it.returnType == "Ljava/lang/String;"
+        } ?: error("Could not find m(Aweme, I, Z)Ljava/lang/String; method in PlayerController")
 
         val l0ReturnIndex = l0Method.implementation!!.instructions.indexOfLast {
             it.opcode.name.startsWith("return")
         }
-        if (l0ReturnIndex == -1) error("Could not find return instruction in PlayerController.k0")
+        if (l0ReturnIndex == -1) error("Could not find return instruction in PlayerController.m")
 
         l0Method.addInstructionsAtControlFlowLabel(
             l0ReturnIndex,
@@ -38,13 +38,13 @@ val autoPauseFirstVideoPatch = bytecodePatch(
                 invoke-static/range {p0 .. p1}, ${Constants.TIKTOK_EXTENSION_AUTOPAUSE_HOOK}->onFirstVideoLoaded(Ljava/lang/Object;Ljava/lang/Object;)V
             """.trimIndent(),
         )
-        println("[Auto-Pause First Video] Hooked PlayerController.k0 -> Post-load pause & play icon active.")
+        println("[Auto-Pause First Video] Hooked PlayerController.m -> Post-load pause & play icon active.")
         patched++
 
-        // 2. Hook PlayerController.I6 to block automatic playback resume by tryResumePlay
+        // 2. Hook PlayerController.A6 to block automatic playback resume by tryResumePlay
         val w6Method = playerControllerFp.classDef.methods.firstOrNull {
-            it.name == "I6" && it.parameterTypes.size == 3 && it.returnType == "Ljava/lang/String;"
-        } ?: error("Could not find I6(Aweme, I, Z)Ljava/lang/String; method in PlayerController")
+            it.name == "A6" && it.parameterTypes.size == 3 && it.returnType == "Ljava/lang/String;"
+        } ?: error("Could not find A6(Aweme, I, Z)Ljava/lang/String; method in PlayerController")
 
         w6Method.addInstructions(
             0,
@@ -57,7 +57,7 @@ val autoPauseFirstVideoPatch = bytecodePatch(
                 :cond_proceed_q6
             """.trimIndent(),
         )
-        println("[Auto-Pause First Video] Hooked PlayerController.I6 -> Handover tryResumePlay suppressed.")
+        println("[Auto-Pause First Video] Hooked PlayerController.A6 -> Handover tryResumePlay suppressed.")
         patched++
 
         // 3. Hook PlayerController.onResumePlay(String) to detect user tap and unlock playback

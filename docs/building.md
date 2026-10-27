@@ -59,6 +59,9 @@ Every patch change must be validated by running the Morphe Patcher against the t
 # Force every boolean patch option on (covers hooks behind disabled-by-default toggles)
 ./gradlew runPatchTest -Papp=<targetApp> -PallOptions=true
 
+# Force non-boolean patch options (semicolon-separated key=value pairs; overrides allOptions)
+./gradlew runPatchTest -Papp=<targetApp> -PpatchOptions='minViews=1000;blockedAuthors=a,b'
+
 # Differential run against another app version (skips the target-version guard)
 ./gradlew runPatchTest -Papk=/path/to/other_version.apk -PallowVersionMismatch=true
 

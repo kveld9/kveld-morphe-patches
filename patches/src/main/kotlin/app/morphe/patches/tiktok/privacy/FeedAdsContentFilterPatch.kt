@@ -2,9 +2,11 @@ package app.morphe.patches.tiktok.privacy
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.intOption
+import app.morphe.patcher.patch.stringOption
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.addInstructionsAtControlFlowLabel
 import app.morphe.patches.shared.ensureRegisterCount
@@ -100,6 +102,62 @@ val feedAdsContentFilterPatch = bytecodePatch(
         required = false,
     )
 
+    val blockedAuthors by stringOption(
+        key = "blockedAuthors",
+        title = "Blocked Creators",
+        description = "Hide posts from these creators. Comma-separated usernames, for example: user1,user2.",
+        default = "",
+        required = false,
+    )
+
+    val blockedHashtags by stringOption(
+        key = "blockedHashtags",
+        title = "Blocked Hashtags",
+        description = "Hide posts with any of these hashtags. Comma-separated, for example: fyp,ad.",
+        default = "",
+        required = false,
+    )
+
+    val blockedKeywords by stringOption(
+        key = "blockedKeywords",
+        title = "Blocked Keywords",
+        description = "Hide posts whose caption contains any of these words. Comma-separated, for example: giveaway,crypto.",
+        default = "",
+        required = false,
+    )
+
+    val hiddenRegions by stringOption(
+        key = "hiddenRegions",
+        title = "Hidden Regions",
+        description = "Hide posts published from these countries. Comma-separated two-letter country codes, for example: US,BR.",
+        default = "",
+        required = false,
+    )
+
+    val maxAgeDays by intOption(
+        key = "maxAgeDays",
+        title = "Maximum Post Age",
+        description = "Hide posts older than this many days. 0 disables it.",
+        default = 0,
+        required = false,
+    )
+
+    val minDurationSec by intOption(
+        key = "minDurationSec",
+        title = "Minimum Video Length",
+        description = "Hide videos shorter than this many seconds. 0 disables it.",
+        default = 0,
+        required = false,
+    )
+
+    val maxDurationSec by intOption(
+        key = "maxDurationSec",
+        title = "Maximum Video Length",
+        description = "Hide videos longer than this many seconds. 0 disables it.",
+        default = 0,
+        required = false,
+    )
+
     val hideStories by booleanOption(
         key = "hideStories",
         title = "Hide Stories",
@@ -118,7 +176,13 @@ val feedAdsContentFilterPatch = bytecodePatch(
 
     execute {
         val viewsLikesConfigured = (minViews ?: 0) > 0 || (maxViews ?: 0) > 0 || (minLikes ?: 0) > 0 || (maxLikes ?: 0) > 0
-        val contentFilterActive = viewsLikesConfigured || hideStories == true || hidePhotoPosts == true
+        val authorsConfigured = !blockedAuthors.isNullOrBlank()
+        val hashtagsConfigured = !blockedHashtags.isNullOrBlank()
+        val keywordsConfigured = !blockedKeywords.isNullOrBlank()
+        val regionsConfigured = !hiddenRegions.isNullOrBlank()
+        val ageConfigured = (maxAgeDays ?: 0) > 0
+        val durationConfigured = (minDurationSec ?: 0) > 0 || (maxDurationSec ?: 0) > 0
+        val contentFilterActive = viewsLikesConfigured || authorsConfigured || hashtagsConfigured || keywordsConfigured || regionsConfigured || ageConfigured || durationConfigured || hideStories == true || hidePhotoPosts == true
 
         if (filterAds != true &&
             filterBloat != true &&
@@ -251,6 +315,28 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 returnType = "Ljava/util/List;",
                 logLabel = "Detail video player shared VM",
             )
+
+            // Hook profile ad request launcher to stop ads between profile videos
+            val profileAdFingerprint = Fingerprint(
+                strings = listOf("don't insert: author is empty."),
+            )
+            val profileAdClass = mutableClassDefBy(profileAdFingerprint.classDef)
+            val profileAdMethods = profileAdClass.methods.filter {
+                it.returnType == "V" &&
+                    it.parameterTypes == listOf("I", "Ljava/lang/String;", "I", "Ljava/lang/String;", "Ljava/util/List;")
+            }
+            if (profileAdMethods.size != 1) {
+                throw PatchException("Expected exactly 1 profile ad request method in ${profileAdClass.type}, found ${profileAdMethods.size}")
+            }
+            val profileAdMethod = profileAdMethods.first()
+            profileAdMethod.addInstructions(
+                0,
+                """
+                    return-void
+                """.trimIndent(),
+            )
+            println("[Feed Ads & Content Filter] Hooked ${profileAdClass.type}->${profileAdMethod.name}() -> Profile ads disabled.")
+            patched++
         }
 
         // 2. Branch: filterBloat (excluding Section 7 Friends-feed blocks)
@@ -646,7 +732,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/feed/assem/pushsurvey/PushSurveyAssemTrigger;",
-                name = "Rp",
+                name = "Qp",
                 parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"),
                 returnType = "Z",
             ).method.addInstructions(
@@ -1051,9 +1137,9 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 patched++
             }
 
-            // Hook FriendsFeedApi network fetch return points (LX/06Bw;->LIZLLL in v47.4.3)
+            // Hook FriendsFeedApi network fetch return points (LX/064b;->LIZLLL in v47.5.3)
             val friendsFeedApiFingerprint = Fingerprint(
-                definingClass = "LX/06Bw;",
+                definingClass = "LX/064b;",
                 name = "LIZLLL",
                 parameters = listOf(
                     "I",
@@ -1168,6 +1254,9 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 val maxV = (maxViews ?: 0).coerceAtLeast(0).toLong()
                 val minL = (minLikes ?: 0).coerceAtLeast(0).toLong()
                 val maxL = (maxLikes ?: 0).coerceAtLeast(0).toLong()
+                val maxAge = (maxAgeDays ?: 0).coerceAtLeast(0)
+                val minDur = (minDurationSec ?: 0).coerceAtLeast(0)
+                val maxDur = (maxDurationSec ?: 0).coerceAtLeast(0)
                 val clinit = Fingerprint(
                     definingClass = hook,
                     name = "<clinit>",
@@ -1176,6 +1265,10 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 val instructions = clinit.implementation!!.instructions
                 val returnIdx = instructions.indexOfLast { it.opcode == Opcode.RETURN_VOID }
                 val insertIdx = if (returnIdx != -1) returnIdx else 0
+                val authorInstructions = buildPushCsvInstructions(hook, "blockedAuthorsCsv", blockedAuthors)
+                val hashtagInstructions = buildPushCsvInstructions(hook, "blockedHashtagsCsv", blockedHashtags)
+                val keywordInstructions = buildPushCsvInstructions(hook, "blockedKeywordsCsv", blockedKeywords)
+                val regionInstructions = buildPushCsvInstructions(hook, "hiddenRegionsCsv", hiddenRegions)
                 clinit.addInstructions(
                     insertIdx,
                     """
@@ -1187,41 +1280,118 @@ val feedAdsContentFilterPatch = bytecodePatch(
                         sput-wide v0, $hook->minLikes:J
                         const-wide v0, 0x${maxL.toString(16)}
                         sput-wide v0, $hook->maxLikes:J
+                        const v0, 0x${maxAge.toString(16)}
+                        sput v0, $hook->maxAgeDays:I
+                        const v0, 0x${minDur.toString(16)}
+                        sput v0, $hook->minDurationSec:I
+                        const v0, 0x${maxDur.toString(16)}
+                        sput v0, $hook->maxDurationSec:I
                         const/4 v0, ${if (hideStories != false) "0x1" else "0x0"}
                         sput-boolean v0, $hook->hideStories:Z
                         const/4 v0, ${if (hidePhotoPosts == true) "0x1" else "0x0"}
-                        sput-boolean v0, $hook->hidePhotoPosts:Z
+                        sput-boolean v0, $hook->hidePhotoPosts:Z$authorInstructions$hashtagInstructions$keywordInstructions$regionInstructions
                     """.trimIndent(),
                 )
-                println("[Feed Ads & Content Filter] Pushed configuration (views ${minViews ?: 0}..${maxViews ?: 0}, likes ${minLikes ?: 0}..${maxLikes ?: 0}, stories=$hideStories, photos=$hidePhotoPosts).")
+                val authorCount = countCsvEntries(blockedAuthors)
+                val hashtagCount = countCsvEntries(blockedHashtags)
+                val keywordCount = countCsvEntries(blockedKeywords)
+                val regionCount = countCsvEntries(hiddenRegions)
+                println("[Feed Ads & Content Filter] Pushed configuration (views ${minViews ?: 0}..${maxViews ?: 0}, likes ${minLikes ?: 0}..${maxLikes ?: 0}, maxAge=${maxAge}d, duration=${minDur}..${maxDur}s, stories=$hideStories, photos=$hidePhotoPosts, authors=$authorCount entries, hashtags=$hashtagCount entries, keywords=$keywordCount entries, regions=$regionCount entries).")
                 patched++
             } catch (e: Exception) {
                 println("[Feed Ads & Content Filter] Configuration note: ${e.message}")
             }
 
             // Hook FeedApiService.fetchFeedList return points (live FYP responses).
-            try {
-                val method = Fingerprint(
-                    definingClass = "Lcom/ss/android/ugc/aweme/feed/FeedApiService;",
-                    name = "fetchFeedList",
-                    returnType = "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;",
-                ).method
-                val returnIndices = method.implementation?.instructions?.withIndex()
-                    ?.filter { it.value.opcode == Opcode.RETURN_OBJECT }
-                    ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
-                    ?.toList() ?: emptyList()
-                returnIndices.asReversed().forEach { (returnIndex, reg) ->
-                    method.addInstructionsAtControlFlowLabel(
-                        returnIndex,
-                        "invoke-static/range {v$reg .. v$reg}, $hook->filterContentInFeedItemList(Ljava/lang/Object;)V",
+            val feedApiFingerprint = Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/feed/FeedApiService;",
+                name = "fetchFeedList",
+                returnType = "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;",
+            )
+            val feedApiMethod = feedApiFingerprint.method
+            val feedApiReturns = feedApiMethod.implementation?.instructions?.withIndex()
+                ?.filter { it.value.opcode == Opcode.RETURN_OBJECT }
+                ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
+                ?.toList() ?: emptyList()
+            if (feedApiReturns.isEmpty()) {
+                throw PatchException("No return point found in FeedApiService.fetchFeedList")
+            }
+            feedApiReturns.asReversed().forEach { (returnIndex, reg) ->
+                feedApiMethod.addInstructionsAtControlFlowLabel(
+                    returnIndex,
+                    "invoke-static/range {v$reg .. v$reg}, $hook->filterContentInFeedItemList(Ljava/lang/Object;)V",
+                )
+            }
+            println("[Feed Ads & Content Filter] Hooked FeedApiService.fetchFeedList (${feedApiReturns.size} return(s)).")
+            patched++
+
+            val listRulesConfigured = viewsLikesConfigured || authorsConfigured || hashtagsConfigured || keywordsConfigured || regionsConfigured || ageConfigured || durationConfigured
+            if (listRulesConfigured) {
+                fun hookReturnList(definingClass: String, name: String, returnType: String, logLabel: String) {
+                    val fingerprint = Fingerprint(
+                        definingClass = definingClass,
+                        name = name,
+                        returnType = returnType,
                     )
-                }
-                if (returnIndices.isNotEmpty()) {
-                    println("[Feed Ads & Content Filter] Hooked FeedApiService.fetchFeedList (${returnIndices.size} return(s)).")
+                    val method = fingerprint.method
+                    val returnIndices = method.implementation?.instructions?.withIndex()
+                        ?.filter { it.value.opcode == Opcode.RETURN_OBJECT }
+                        ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
+                        ?.toList() ?: emptyList()
+
+                    if (returnIndices.isEmpty()) {
+                        throw PatchException("No return point found in $definingClass->$name")
+                    }
+
+                    returnIndices.asReversed().forEach { (returnIndex, reg) ->
+                        method.addInstructionsAtControlFlowLabel(
+                            returnIndex,
+                            "invoke-static/range {v$reg .. v$reg}, $hook->filterRulesInList(Ljava/lang/Object;)V",
+                        )
+                    }
+                    println("[Feed Ads & Content Filter] Hooked $definingClass->$name() (${returnIndices.size} return point(s)) -> $logLabel protected.")
                     patched++
                 }
-            } catch (e: Exception) {
-                println("[Feed Ads & Content Filter] FeedApiService note: ${e.message}")
+
+                // Hook FeedItemList.getItems() (covers cached, offline, and UI adapter consumers)
+                hookReturnList(
+                    definingClass = "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;",
+                    name = "getItems",
+                    returnType = "Ljava/util/List;",
+                    logLabel = "All feed model consumers",
+                )
+
+                // Hook FollowFeedList.getItems() (covers Following feed UI consumers)
+                hookReturnList(
+                    definingClass = "Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;",
+                    name = "getItems",
+                    returnType = "Ljava/util/List;",
+                    logLabel = "Following feed",
+                )
+
+                // Hook ContinuousLoadingAwemeList.LIZLLL() (Search video continuous loading feed)
+                hookReturnList(
+                    definingClass = "Lcom/ss/android/ugc/aweme/search/common/model/ContinuousLoadingAwemeList;",
+                    name = "LIZLLL",
+                    returnType = "Ljava/util/List;",
+                    logLabel = "Search continuous video feed",
+                )
+
+                // Hook DynamicPatch.getAwemeList() (Search video detail launcher & Lynx cards)
+                hookReturnList(
+                    definingClass = "Lcom/ss/android/ugc/aweme/discover/mixfeed/DynamicPatch;",
+                    name = "getAwemeList",
+                    returnType = "Ljava/util/List;",
+                    logLabel = "Search video detail launcher",
+                )
+
+                // Hook SearchMix.getAwemeList() (Search mix and grid aweme streams)
+                hookReturnList(
+                    definingClass = "Lcom/ss/android/ugc/aweme/search/pages/result/topsearch/core/model/SearchMix;",
+                    name = "getAwemeList",
+                    returnType = "Ljava/util/List;",
+                    logLabel = "Search mix feed",
+                )
             }
         }
 
@@ -1232,3 +1402,15 @@ val feedAdsContentFilterPatch = bytecodePatch(
         }
     }
 }
+
+private fun buildPushCsvInstructions(hook: String, fieldName: String, csvValue: String?): String {
+    if (csvValue.isNullOrBlank()) return ""
+    val escaped = csvValue
+        .replace("\\", "\\\\")
+        .replace("\"", "\\\"")
+    return "\nconst-string v0, \"$escaped\"\nsput-object v0, $hook->$fieldName:Ljava/lang/String;"
+}
+
+private fun countCsvEntries(csvValue: String?): Int =
+    if (csvValue.isNullOrBlank()) 0 else csvValue.split(',').count { it.trim().isNotEmpty() }
+

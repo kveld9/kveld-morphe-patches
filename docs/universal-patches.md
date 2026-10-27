@@ -27,6 +27,13 @@ Comprehensive reference for universal optimization and resource slimming patches
 | **[Spoof Reinstall IDs](#17-spoof-reinstall-ids-universalspoofreinstallidspatch)** | `bytecodePatch` | Dalvik Bytecode Methods | Folds app-set and install/instance ID getters to neutral fixed values | Prevents tracking reinstalls and cross-install correlation |
 | **[Silence System Logs](#18-silence-system-logs-universalsilencesystemlogspatch)** | `bytecodePatch` | Dalvik Bytecode Call Sites | Neutralizes log output invocations to prevent diagnostic log leakage | Stops application telemetry and sensitive strings leaking to logcat |
 | **[Disable Browser File Associations](#19-disable-browser-file-associations-universalbrowserassociationpatch)** | `resourcePatch` | Manifest (`AndroidManifest.xml`) | Removes HTTP/HTTPS `data` entries from `VIEW` + `BROWSABLE` intent filters; drops filters left dataless | App no longer appears in the browser chooser for online files; local file handling untouched |
+| **[Remove ads](#20-remove-ads-universalremoveadspatch)** | `bytecodePatch` | Dalvik Bytecode Methods | Neutralizes public ad loader entry points across common third-party ad networks (AdMob, AppLovin MAX, Meta, Unity Ads, ironSource, Pangle, Vungle, InMobi, Mintegral, Chartboost) | Stops background and full-screen ad fetches from third-party networks |
+| **[Report Play Store as installer](#21-report-play-store-as-installer-universalreportplaystoreinstallerpatch)** | `bytecodePatch` | Dalvik Bytecode Call Sites | Redirects `PackageManager` and `InstallSourceInfo` queries for the app's own package to report Google Play (`com.android.vending`) | Tells apps that check their install source that they came from Google Play without altering actual package metadata |
+| **[Spoof signature](#22-spoof-signature-universalspoofsignaturepatch)** | `bytecodePatch` | Dalvik Bytecode Call Sites | Substitutes the APK's original V2/V3 signing certificate in `PackageManager.getPackageInfo`, `hasSigningCertificate`, and `SigningInfo` self-queries | Passes local in-app signature verification checks after re-signing |
+| **[Override certificate pinning](#23-override-certificate-pinning-universaloverridecertificatepinningpatch)** | `resourcePatch` | Network Security Config (`res/xml/*.xml`) | Adds user trust anchor with `overridePins="true"` to base and domain configs in the app's Network Security Config | Allows user-installed CA certificate interception for lab HTTPS debugging; preserves system CA trust |
+| **[Remove Pairip](#24-remove-pairip-universalremovepairippatch)** | `bytecodePatch` | Dalvik Bytecode Methods | Forces Pairip's on-device license, installer-origin and signature verdicts to report success so a re-signed build passes them | Lets apps whose Pairip gate is enforced in Dalvik run after re-signing; native `libpairipcore.so` integrity checks are not covered |
+| **[Disable Root Checks](#25-disable-root-checks-universaldisablerootcheckspatch)** | `bytecodePatch` | Dalvik Bytecode Methods | Neutralizes RootBeer on-device root detection methods so the library reports not-rooted | Stops apps using the RootBeer library from detecting a rooted device; does not defeat custom root checks or Play Integrity |
+| **[Bypass Play License](#26-bypass-play-license-universalbypassplaylicensepatch)** | `bytecodePatch` | Dalvik Bytecode Methods | Intercepts `LicenseChecker.checkAccess(LicenseCheckerCallback)` and delivers the licensed verdict locally without contacting Play | Lets apps using the legacy Play licensing client library run after re-signing; cannot affect server-side Play Integrity or subscription entitlements |
 
 ---
 
@@ -73,6 +80,13 @@ Exception: Block Tracking Servers (Universal) remains a valid opt-in patch on ma
 | **Spoof Reinstall IDs** | ✅ Yes | Neutralizes app-set ID and instance/install ID getters to prevent cross-session device linking on reinstall. |
 | **Silence System Logs** | ✅ Yes | Neutralizes diagnostic log calls (`Log.d/v/i/w/e/wtf` and `println`) with configurable level filtering. |
 | **Disable Browser File Associations** | ✅ Yes | Only touches `VIEW` + `BROWSABLE` intent filters carrying `http`/`https` data. Local file handlers (`file`/`content` schemes), launcher entries (`MAIN`) and non-browser actions are never modified. Do not apply to apps that must open web links (browsers, readers). |
+| **Remove ads** | ⚠️ Opt-in | Disabled by default (`default = false`). Stops third-party ad networks from loading ads. May break reward-gated features that require watching an ad to unlock content. Does not remove SDK code or reclaim APK size, and does not touch first-party in-feed ads. |
+| **Report Play Store as installer** | ⚠️ Safe by Default | Opt-in (`default = false`). Redirects installer self-queries to report Google Play (`com.android.vending`); other package lookups are untouched. Cannot defeat server-side Play Integrity or remote attestation. Must pass ART verifier gate. |
+| **Spoof signature** | ⚠️ Safe by Default | Opt-in (`default = false`). Replaces signing certificate self-queries (`getPackageInfo`, `hasSigningCertificate`, `SigningInfo`) with baked original V2/V3 signatures; other package lookups are untouched. Cannot defeat server-side Play Integrity or remote attestation. Must pass ART verifier gate. |
+| **Override certificate pinning** | ⚠️ Lab / Debugging | Opt-in (`default = false`). Enables user-installed CA trust with `overridePins="true"` in the app's Network Security Config for TLS inspection in lab environments. Only affects apps that declare a Network Security Config; overrides declarative `<pin-set>` definitions. Does not defeat code-level pinning (OkHttp `CertificatePinner` or custom `TrustManager`) and does not enable cleartext traffic. |
+| **Remove Pairip** | ⚠️ Lab / Sideloading | Opt-in (`default = false`). Neutralizes on-device Pairip license, installer-origin and signature checks in Dalvik only; never touches the startup VM (`StartupLauncher`/`VMRunner`) or native `libpairipcore.so`. Cannot defeat server-side Play Integrity, and cannot bypass native `libpairipcore.so` integrity checks, which may crash a re-signed build before the Dalvik gate runs. Must pass ART verifier gate. |
+| **Disable Root Checks** | ⚠️ Opt-in | Opt-in (default false); covers only the RootBeer root-detection library; makes its local root verdicts report not-rooted; does not defeat custom root checks, native JNI checks, or server-side Play Integrity. |
+| **Bypass Play License** | ⚠️ Lab / Sideloading | Opt-in (`default = false`). Intercepts `LicenseChecker.checkAccess` and delivers the licensed verdict locally; the library never contacts Play. Cannot affect server-side Play Integrity or subscription entitlements. Applies only when `com.android.vending.licensing.LicenseChecker` is present; skips cleanly otherwise. Must pass ART verifier gate. |
 
 ---
 
@@ -134,9 +148,9 @@ The **`Remove Unused Screen Sizes`** patch strips unselected screen density asse
   - **Single density (maximum space savings)**: e.g. `xxhdpi` for 1080p devices, or `xxxhdpi` for 1440p / 2K devices.
   - **Multiple densities (broad device compatibility)**: e.g. `xhdpi, xxhdpi`.
   - **Friendly aliases**: Resolution aliases such as `1080p` (`xxhdpi`), `720p` (`xhdpi`), or `1440p` / `2k` (`xxxhdpi`) are supported.
-- **`Watch resources` (`stripSmartwatch`)**: Boolean toggle (`false` by default). Safely purges non-values resources qualified for Wear OS smartwatches (`watch`).
-- **`TV resources` (`stripTelevision`)**: Boolean toggle (`false` by default). Safely purges non-values resources qualified for Android TV / Leanback (`television`).
-- **`Car, dock and VR resources` (`stripOtherFormFactors`)**: Boolean toggle (`false` by default). Safely purges non-values resources qualified for car head units, desk docks, appliances, or VR headsets (`car`, `desk`, `appliance`, `vrheadset`).
+- **`Watch resources` (`stripSmartwatch`)**: Boolean toggle (`true` by default). Safely purges non-values resources qualified for Wear OS smartwatches (`watch`).
+- **`TV resources` (`stripTelevision`)**: Boolean toggle (`true` by default). Safely purges non-values resources qualified for Android TV / Leanback (`television`).
+- **`Car, dock and VR resources` (`stripOtherFormFactors`)**: Boolean toggle (`true` by default). Safely purges non-values resources qualified for car head units, desk docks, appliances, or VR headsets (`car`, `desk`, `appliance`, `vrheadset`).
 - **Multi-Package ARSC Traversal**: Scans across all decoded package resource directories (`resources/<package>/res`) to deduplicate densities and purge device bloat across primary and modularized packages.
 
 ### Screen Density Reference Guide
@@ -573,3 +587,151 @@ For every `activity`, `activity-alias`, `service` and `receiver`, each `intent-f
 > [!WARNING]
 > Do not apply to applications that must open web links themselves (web browsers such as Brave, readers, link aggregators): stripping their `BROWSABLE` filters breaks opening links from other apps.
 
+---
+
+## 20. Remove ads (`universalRemoveAdsPatch`)
+
+The **`Remove ads`** patch neutralizes public ad-loading entry points across common third-party advertising SDKs directly at the Dalvik bytecode level (`classes*.dex`). By replacing ad-load methods with safe early returns or failure callback dispatches, it prevents the application from fetching interstitial, banner, rewarded, native, and app-open ads from third-party networks.
+
+> [!NOTE]
+> ### Client-Side Entry Point Neutralization
+> Rather than attempting to sink dynamic ad server endpoints across thousands of domain names or altering remote server responses, `Remove ads` intercepts the public Java/Kotlin entry points provided by commercial ad SDKs:
+> - **Google AdMob & Ad Manager**: Gated on presence of `InterstitialAd`. Static full-screen loaders (`InterstitialAd.load`, `RewardedAd.load`, `RewardedInterstitialAd.load`, `AppOpenAd.load`, and Ad Manager equivalents) are redirected to `AdLoadBlocker`, which dispatches `onAdFailedToLoad` with error code `3` (`ERROR_CODE_NO_FILL`) asynchronously to the Android main thread via reflection. Inline view loaders (`BaseAdView.loadAd`, `AdLoader.loadAd`/`loadAds`) are neutralized with an early `return-void`.
+> - **AppLovin MAX**: Neutralizes `loadAd` on `MaxAdView`, `MaxInterstitialAd`, `MaxRewardedAd`, `MaxAppOpenAd`, and `MaxNativeAdLoader`.
+> - **Meta Audience Network**: Neutralizes `loadAd` on `InterstitialAd`, `AdView`, `RewardedVideoAd`, `RewardedInterstitialAd`, and `NativeAdBase`.
+> - **Unity Ads**: Neutralizes `load` on `UnityAds`, `BannerView`, `InterstitialAd`, `RewardedAd`, and `BannerAd`.
+> - **ironSource / LevelPlay**: Neutralizes `loadAd` on `LevelPlayInterstitialAd`, `LevelPlayRewardedAd`, `LevelPlayBannerAdView`, `InterstitialAdLoader`, `RewardedAdLoader`, and `BannerAdLoader`.
+> - **Pangle**: Neutralizes `loadAd` on `PAGInterstitialAd`, `PAGRewardedAd`, `PAGBannerAd`, `PAGAppOpenAd`, and `PAGNativeAd`.
+> - **Vungle / Liftoff**: Neutralizes `load` on `BaseAd` and format subclasses.
+> - **InMobi**: Neutralizes `load` on `InMobiInterstitial`, `InMobiBanner`, and `InMobiNative`.
+> - **Mintegral**: Neutralizes loader methods (`load*`, `preLoad*`, `preload*`, `bidLoad*`) across public handler classes, safely returning `false` for boolean native loaders and `void`/`null` for others.
+> - **Chartboost**: Neutralizes `cache` on `Interstitial`, `Rewarded`, and `Banner`.
+
+### Scope & Trade-Offs
+
+- **Opt-in by default**: Disabled by default (`default = false`).
+- **Reward-gated features**: May break reward-gated features or currency rewards in apps or games that require watching a rewarded video ad to proceed.
+- **Code preservation**: Does not remove the underlying SDK classes from the APK or reduce APK size (use resource or library slimmers for size debloating).
+- **First-party ads**: Does not touch first-party in-feed sponsored content or proprietary server-rendered ads (e.g. TikTok in-feed ads, Brave sponsored images), which are handled by dedicated app patches.
+
+---
+
+## 21. Report Play Store as installer (`universalReportPlayStoreInstallerPatch`)
+
+The **`Report Play Store as installer`** patch redirects installer lookup queries at Dalvik bytecode call sites (`classes*.dex`) so that the application sees itself as installed from the Google Play Store (`com.android.vending`).
+
+> [!NOTE]
+> ### Framework Installer Query Interception
+> Many applications verify their installation source to guard against sideloading, distribution tampering, or unofficial app stores. These applications query `PackageManager.getInstallerPackageName(packageName)` or, on Android 11+ (API 30+), `PackageManager.getInstallSourceInfo(packageName)` and its associated `InstallSourceInfo` getters (`getInstallingPackageName()`, `getInitiatingPackageName()`).
+>
+> This patch intercepts these framework method invocations across application classes and redirects them to extension helpers in `extension.mpe`. When the queried package matches the application's own package name (baked from `PackageMetadata` at patch time), the redirected methods return `com.android.vending`. Queries targeting any other package delegate transparently to the platform result.
+
+### Scope & Compatibility Notes
+
+- **Opt-in by default**: Disabled by default (`default = false`) because it modifies client-side installation source reporting.
+- **Self-queries only**: Only lookups for the app's own package name are spoofed; queries for third-party packages are passed to the platform unchanged.
+- **Client-side only**: Operates strictly on client-side bytecode; cannot defeat server-side Play Integrity or remote attestation.
+- **Universal applicability**: Operates across any Android application without hardcoded class fingerprints or app-specific targets.
+
+---
+
+## 22. Spoof signature (`universalSpoofSignaturePatch`)
+
+The **`Spoof signature`** patch records the application's original V2/V3 signing certificate at patch time and intercepts Dalvik bytecode signature queries (`classes*.dex`), presenting the original publisher signature so that client-side anti-tamper and signature validation checks pass after re-signing.
+
+> [!NOTE]
+> ### In-App Signature Spoofing
+> Applications often inspect their own signature via `PackageManager.getPackageInfo(packageName, flags)` (inspecting `signatures` or `signingInfo`), `PackageManager.hasSigningCertificate(...)`, or `SigningInfo` accessors (`getApkContentsSigners()`, `getSigningCertificateHistory()`, `hasMultipleSigners()`) to detect whether the APK was modified or re-signed.
+>
+> At patch time, this patch captures the original DER certificate bytes from `PackageMetadata.getSigningCertificates()` (preferring V3 and falling back to V2) and bakes them as hex into the runtime extension. At runtime, calls to signature-query framework methods are redirected to extension helpers. When the target package is the application itself, original signatures are substituted; all other queries delegate to the Android framework.
+
+### Scope & Compatibility Notes
+
+- **Opt-in by default**: Disabled by default (`default = false`) because it modifies client-side signature reporting.
+- **Self-queries only**: Only lookups for the app's own package name return original signatures; other packages remain untouched.
+- **Client-side only**: Operates strictly on client-side bytecode queries; cannot defeat server-side Play Integrity or remote cryptographic attestation.
+- **Requires V2/V3 signature**: If the input APK lacks a V2 or V3 signature, the patch skips cleanly without making changes.
+- **Universal applicability**: Operates across any Android application without hardcoded class fingerprints or app-specific targets.
+
+---
+
+## 23. Override certificate pinning (`universalOverrideCertificatePinningPatch`)
+
+The **`Override certificate pinning`** patch modifies the application's declarative Android Network Security Configuration (`res/xml/*.xml`) to trust user-installed Certificate Authority (CA) certificates and override declarative `<pin-set>` constraints, enabling HTTPS traffic inspection through a local debugging proxy in a lab environment.
+
+> [!NOTE]
+> ### Declarative Network Security Configuration Modification
+> Starting with Android 7.0 (API level 24), applications by default only trust system CA certificates for HTTPS connections unless an explicit Network Security Config resource is declared in `AndroidManifest.xml` via `android:networkSecurityConfig`. Apps may also specify `<pin-set>` rules that enforce public key pinning on specific domains.
+>
+> This patch parses `AndroidManifest.xml` to locate the configured Network Security Config XML file, ensures a `<base-config>` exists, and injects `<trust-anchors>` with `<certificates src="system"/>` and `<certificates src="user" overridePins="true"/>` into `<base-config>` and every existing `<domain-config>`. If a `<certificates src="user"/>` entry is already present, its `overridePins` attribute is forced to `true`.
+>
+> This enables lab proxies (such as mitmproxy, Charles, Burp Suite) using a user-installed root CA to decrypt and inspect the application's HTTPS traffic without triggering TLS validation or pinning failures from the platform network security stack.
+
+### Scope & Compatibility Notes
+
+- **Opt-in by default**: Disabled by default (`default = false`); intended strictly for lab and debugging environments.
+- **Declarative pinning only**: Overrides declarative `<pin-set>` definitions in the app's Network Security Config. Does NOT defeat code-level pinning implemented via OkHttp `CertificatePinner` or custom `TrustManager` classes.
+- **Existing config requirement**: Only applies to applications that declare an `android:networkSecurityConfig` resource in `AndroidManifest.xml`. If the app declares no Network Security Config, the patch skips cleanly without making changes.
+- **No cleartext traffic**: Does NOT enable cleartext (HTTP) traffic; existing `cleartextTrafficPermitted` policies remain untouched.
+- **System trust preserved**: Preserves system CA trust alongside user CA trust.
+- **Universal applicability**: Operates across any Android application without hardcoded class fingerprints or app-specific targets.
+
+## 24. Remove Pairip (`universalRemovePairipPatch`)
+
+The **`Remove Pairip`** patch neutralizes the on-device checks of the Pairip app-protection stack so an application re-signed with a different key is no longer blocked by its local license, installer-origin and signature verdicts.
+
+> [!NOTE]
+> ### On-Device License & Integrity Verdicts
+> Pairip wraps a protected app with a local license check (`com.pairip.licensecheck.*`) and a signature integrity check (`com.pairip.SignatureCheck`). On a re-signed or sideloaded build these report failure and the app shows a blocking license dialog or exits at startup.
+>
+> This patch forces each local verdict to report success, gated by class presence so a Pairip-free build is left untouched:
+> - `performLocalInstallerCheck` and `isLocalCheckPassed` return `true` (installer origin and local check pass).
+> - `SignatureCheck.verifyIntegrity` becomes a no-op and `verifySignatureMatches` returns `true`.
+> - `LicenseActivity.onStart` calls through to the framework `onStart` and immediately finishes, so the blocking license screen never stays on top.
+
+### Scope & Compatibility Notes
+
+- **Opt-in by default**: Disabled by default (`default = false`); it cannot be verified for every application in advance, so it is enabled per build.
+- **Startup VM is never touched**: The patch never modifies `com.pairip.StartupLauncher`, `com.pairip.VMRunner` or the loading of `libpairipcore.so`. Altering these crashes the application at boot, so they are excluded.
+- **Native integrity checks are out of scope**: Some builds additionally verify integrity inside the native `libpairipcore.so` virtual machine. That native check runs before the Dalvik license flow and can abort a re-signed build on its own, and Dalvik bytecode hooks cannot neutralize it. (Verified on Adobe Lightroom 11.6.01: a re-signed build crashes in `libpairipcore.so` with an identical native signal whether or not this patch is applied, confirming the patch adds no regression and that the native layer is a separate limitation.) Applications protected this way require native binary patching, which this patch does not perform.
+- **No server-side bypass**: Cannot defeat server-side Play Integrity attestation or any decision whose final authority is a remote server.
+- **Clean skip**: When no `com.pairip.*` classes are present, the patch makes zero changes and logs an explicit skip.
+
+## 25. Disable Root Checks (`universalDisableRootChecksPatch`)
+
+The **`Disable Root Checks`** patch neutralizes the client-side detection methods of the RootBeer library (`com.scottyab.rootbeer`) so an application running on a rooted device reports that the device is not rooted.
+
+> [!NOTE]
+> ### On-Device Root Detection Neutralization
+> RootBeer is an open-source client-side library used by Android applications to verify device integrity and detect root indicators (such as su binaries, BusyBox, test-keys, dangerous build properties, root management apps, and root-cloaking packages).
+>
+> This patch targets the RootBeer classes (`Lcom/scottyab/rootbeer/RootBeer;` and `Lcom/scottyab/rootbeer/RootBeerNative;`) strictly gated on class presence, neutralizing all Dalvik boolean detection methods (`is*`, `detect*`, `check*`, `exists*`) to return `false`:
+> - General root status queries (`isRooted`, `isRootedWithBusyBoxCheck`, `isRootedWithoutBusyBoxCheck`) return `false`.
+> - Granular detection checks (`detectRootManagementApps`, `detectPotentiallyDangerousApps`, `detectTestKeys`, `detectRootCloakingApps`, `checkForBinary`, `checkForSuBinary`, `checkForDangerousProps`, `checkForRWPaths`, `checkSuExists`, `checkForRootNative`, `checkForMagiskBinary`) return `false`.
+
+### Scope & Compatibility Notes
+
+- **Opt-in by default**: Disabled by default (`default = false`); it cannot be verified for every application in advance, so it is enabled per build.
+- **RootBeer library only**: Targets only standard RootBeer library classes (`com.scottyab.rootbeer.RootBeer` and `com.scottyab.rootbeer.RootBeerNative`). Does not defeat proprietary or custom in-app root detection logic.
+- **Native JNI checks untouched**: Native methods (such as `RootBeerNative.checkForRoot`, which returns an integer and executes via JNI C code) are not modified, as replacing native method bodies directly in Dalvik is unsafe.
+- **No server-side bypass**: Operates strictly on client-side bytecode; cannot defeat remote server attestations, Google Play Integrity, or SafetyNet verdicts.
+- **Clean skip**: When no RootBeer classes are present in the target APK, the patch makes zero changes and logs an explicit skip.
+
+
+## 26. Bypass Play License (`universalBypassPlayLicensePatch`)
+
+The **`Bypass Play License`** patch intercepts the legacy Play licensing client library (`com.android.vending.licensing`) in the app's own Dalvik bytecode and delivers a licensed verdict locally, so a re-signed build is no longer blocked by the on-device license gate.
+
+> [!NOTE]
+> ### Local License Verdict Normalization
+> Apps that ship the legacy Play licensing library call `LicenseChecker.checkAccess(LicenseCheckerCallback)` at startup. On a re-signed or sideloaded build the library cannot complete the license handshake (wrong certificate, no Play, or both) and invokes `dontAllow()` or `applicationError()` on the callback, causing the app to display a blocking dialog or exit.
+>
+> This patch replaces the body of every `checkAccess(LicenseCheckerCallback)V` method in `com.android.vending.licensing.LicenseChecker` with a direct call to `callback.allow(Policy.LICENSED)` (`0x0100`), exactly the value the library would pass after a genuine licensed server response. The method is identified by its signature shape (void return, single `LicenseCheckerCallback` parameter) rather than by name, so it survives R8 method-name minification within the library classes.
+
+### Scope & Compatibility Notes
+
+- **Opt-in by default**: Disabled by default (`default = false`); it cannot be verified for every application in advance, so it is enabled per build.
+- **Local verdict only**: Operates strictly on the on-device callback dispatch. No network request is made, intercepted, or suppressed; the library's outbound Play connection is never reached because the method body is replaced before it executes.
+- **No server-side bypass**: Cannot affect server-side Play Integrity attestation, subscription entitlements, or any decision whose final authority is a remote server.
+- **Clean skip**: When `com.android.vending.licensing.LicenseChecker` is not present in the target APK, the patch makes zero changes and logs an explicit skip. When the class is present but no matching `checkAccess` method is found, a second skip line is logged.
+- **Universal applicability**: Operates across any Android application that ships the legacy Play licensing client library without hardcoded class fingerprints or app-specific targets.

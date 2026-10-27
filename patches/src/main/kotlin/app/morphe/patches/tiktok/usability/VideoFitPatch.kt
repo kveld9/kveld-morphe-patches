@@ -171,10 +171,10 @@ val videoFitPatch = bytecodePatch(
         println("[Video Fit Mode] Hooked static helper (View,Result)Z -> prepended fitted() swap.")
         patched++
 
-        // 6. Hook CellAdaptionComponentV2.Yp(VideoAdaptionResult)V
+        // 6. Hook CellAdaptionComponentV2.Wp(VideoAdaptionResult)V (was Yp in v47.4.3)
         val cellAdaptionFp = Fingerprint(
             definingClass = "Lcom/ss/android/ugc/feed/platform/cell/component/adaption/CellAdaptionComponentV2;",
-            name = "Yp",
+            name = "Wp",
             parameters = listOf(resultClass),
             returnType = "V",
         )
@@ -187,13 +187,13 @@ val videoFitPatch = bytecodePatch(
                 check-cast p1, $resultClass
             """.trimIndent(),
         )
-        println("[Video Fit Mode] Hooked CellAdaptionComponentV2.Yp(Result)V -> prepended fitted() swap.")
+        println("[Video Fit Mode] Hooked CellAdaptionComponentV2.Wp(Result)V -> prepended fitted() swap.")
         patched++
 
-        // 7. Hook FeedCellAdaptionComponentV2.Yp(VideoAdaptionResult)V
+        // 7. Hook FeedCellAdaptionComponentV2.Wp(VideoAdaptionResult)V (was Yp in v47.4.3)
         val feedCellAdaptionFp = Fingerprint(
             definingClass = "Lcom/ss/android/ugc/feed/platform/cell/component/adaption/FeedCellAdaptionComponentV2;",
-            name = "Yp",
+            name = "Wp",
             parameters = listOf(resultClass),
             returnType = "V",
         )
@@ -206,7 +206,7 @@ val videoFitPatch = bytecodePatch(
                 check-cast p1, $resultClass
             """.trimIndent(),
         )
-        println("[Video Fit Mode] Hooked FeedCellAdaptionComponentV2.Yp(Result)V -> prepended fitted() swap.")
+        println("[Video Fit Mode] Hooked FeedCellAdaptionComponentV2.Wp(Result)V -> prepended fitted() swap.")
         patched++
 
         if (patched == 0) {

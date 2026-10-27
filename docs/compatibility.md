@@ -12,7 +12,7 @@ Each application has an authoritative, all-in-one guide covering prerequisites, 
 | :--- | :--- | :--- | :--- | :--- |
 | **Brave Browser** | `1.98.60` | `arm64-v8a`, `armeabi-v7a` | Standalone APK (`Bravemonoarm64.apk` / `BraveMonoarm.apk`) | [Brave Guide](apps/brave.md) |
 | **Gboard Lite** | `18.5.1.993608717-lite_beta` | `arm64-v8a`, `armeabi-v7a` | Standalone nodpi APK | [Gboard Lite Guide](apps/gboard.md) |
-| **TikTok** | `47.4.3` | `arm64-v8a` | Standalone nodpi APK | [TikTok Guide](apps/tiktok.md) |
+| **TikTok** | `47.5.3` | `arm64-v8a` | Standalone nodpi APK | [TikTok Guide](apps/tiktok.md) |
 | **Universal Optimizations** | *Universal* | All Architectures | Any Android APK | [Universal Patches Guide](universal-patches.md) |
 
 ---
@@ -42,4 +42,4 @@ Download the standalone `lite` or `lite_beta` APK (nodpi) from [APKMirror](https
 
 ### 🎵 TikTok (`com.zhiliaoapp.musically`)
 Download the official standalone APK release from [APKMirror (TikTok)](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/).
-- **Current Target**: `47.4.3` (nodpi APK, `arm64-v8a`). Details in [TikTok Guide](apps/tiktok.md).
+- **Current Target**: `47.5.3` (nodpi APK, `arm64-v8a`). Details in [TikTok Guide](apps/tiktok.md).

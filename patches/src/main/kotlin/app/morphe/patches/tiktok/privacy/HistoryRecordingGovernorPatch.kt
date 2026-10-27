@@ -56,25 +56,25 @@ val historyRecordingGovernorPatch = bytecodePatch(
             ).method.replaceWithReturnVoid()
             patched++
 
-            // 3. Neutralize PlaybackHistoryManager recordVideoPlayback routine (LX/03l4;->LIZ in v47.4.3, was LX/03l3;)
+            // 3. Neutralize PlaybackHistoryManager recordVideoPlayback routine (LX/03hH;->LIZ in v47.5.3, was LX/03l4;)
             Fingerprint(
-                definingClass = "LX/03l4;",
+                definingClass = "LX/03hH;",
                 name = "LIZ",
                 returnType = "V",
             ).method.replaceWithReturnVoid()
             patched++
 
-            // 4. Neutralize PlaybackHistoryManager recordWatchDuration routine (LX/03l4;->LIZIZ in v47.4.3, was LX/03l3;)
+            // 4. Neutralize PlaybackHistoryManager recordWatchDuration routine (LX/03hH;->LIZIZ in v47.5.3, was LX/03l4;)
             Fingerprint(
-                definingClass = "LX/03l4;",
+                definingClass = "LX/03hH;",
                 name = "LIZIZ",
                 returnType = "V",
             ).method.replaceWithReturnVoid()
             patched++
 
-            // 5. Neutralize fast stats report routine (LX/0bQi;->subscribe in v47.4.3, was LX/0aZr;)
+            // 5. Neutralize fast stats report routine (LX/0SnM;->subscribe in v47.5.3, was LX/0bQi;)
             Fingerprint(
-                definingClass = "LX/0bQi;",
+                definingClass = "LX/0SnM;",
                 name = "subscribe",
                 returnType = "V",
             ).method.replaceWithReturnVoid()
@@ -84,9 +84,9 @@ val historyRecordingGovernorPatch = bytecodePatch(
         }
 
         if (disableSearchHistory == true) {
-            // 1. Neutralize Search History Manager recordSearchHistory routine (LX/0CzL; in v47.4.3, was LX/0D1m;)
+            // 1. Neutralize Search History Manager recordSearchHistory routine (LX/0CW9; in v47.5.3, was LX/0CzL;, LX/0D1m;)
             Fingerprint(
-                definingClass = "LX/0CzL;",
+                definingClass = "LX/0CW9;",
                 name = "LIZ",
                 returnType = "V",
                 parameters = listOf(

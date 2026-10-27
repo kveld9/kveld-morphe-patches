@@ -10,10 +10,10 @@ Technical documentation and patch catalog for TikTok on Android.
 | :--- | :--- |
 | **Target App** | TikTok |
 | **Package Name** | `com.zhiliaoapp.musically` |
-| **Target Version** | `47.4.3` |
+| **Target Version** | `47.5.3` |
 | **Target Package Format** | standalone APK (nodpi APK) |
 | **Primary Architecture** | `arm64-v8a` / `armeabi-v7a` |
-| **Download Target** | [APKMirror](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-47-4-3-release/tiktok-47-4-3-android-apk-download/) |
+| **Download Target** | [APKMirror](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-47-5-3-release/tiktok-47-5-3-android-apk-download/) |
 | **Authoritative Source** | APKMirror |
 
 ---
@@ -25,6 +25,7 @@ Technical documentation and patch catalog for TikTok on Android.
 | **Disable Push Notifications** | `bytecodePatch` | `false` (Opt-in) | None | Stops background push notifications. |
 | **Instant Launch** | `bytecodePatch` | `true` (Enabled) | None | Opens the app immediately without splash screens or ad delays. |
 | **Disable Live Gift Effects** | `bytecodePatch` | `false` (Opt-in) | None | Disables 3D gift animations in live streams to prevent frame drops. |
+| **Disable QUIC** | `bytecodePatch` | `false` (Opt-in) | None | Loads videos, uploads, and live connections over standard HTTPS instead of QUIC. |
 | **Remove Live Stream Files** | `rawResourcePatch` | `false` (Opt-in) | None | Removes live streaming and minigame files. Breaks lives and video calls. |
 | **Block P2P Video Relay** | `rawResourcePatch` | `true` (Enabled) | None | Stops your device from uploading videos to other users. |
 | **Playback & Display Governor** | `bytecodePatch` | `false` (Opt-in) | `sharedExtensionPatch` | Limits playback resolution and HDR to save battery, and locks the screen refresh rate. |
@@ -67,6 +68,7 @@ Technical documentation and patch catalog for TikTok on Android.
 | **Resume Video After Scroll** | `bytecodePatch` | `false` (Opt-in) | None | Resumes playback from where you left off when returning to a video. |
 | **Customize Search** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Customizes search suggestions, live recommendations, and autoplay. |
 | **Show Author Region** | `bytecodePatch` | `false` (Opt-in) | `sharedExtensionPatch` | Displays the creator's country code next to their username. |
+| **Show Exact Counts** | `bytecodePatch` | `false` (Opt-in) | `sharedExtensionPatch` | Shows exact numbers on likes, comments, views and followers. |
 | **Show Seekbar** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Restores the video progress seekbar and scrubbing controls. |
 | **Stop Video Looping** | `bytecodePatch` | `false` (Opt-in) | None | Stops videos at the end instead of replaying them in an infinite loop. |
 | **Use System Font** | `bytecodePatch` | `false` (Opt-in) | `sharedExtensionPatch` | Uses the system font instead of bundled TikTok fonts. |
@@ -79,7 +81,7 @@ Technical documentation and patch catalog for TikTok on Android.
 ### A. Privacy, Ad Filtering & Tracking
 - **Feed Ads & Content Filter**:
   - *Objective*: Provide a clean feed without promotional interruptions, sponsored product links, or commerce anchors.
-  - *How*: Filters sponsored feed items, live cards, and shopping anchors during feed model parsing.
+  - *How*: Filters sponsored feed items, live cards, and shopping anchors during feed model parsing, removes ads inserted between a profile's videos, hides posts from chosen creators, with blocked hashtags, matching blocked keywords, or from hidden regions, and filters videos outside configured duration limits, exceeding post age, or outside configured view or like thresholds across For You, Following, and search feeds.
 - **Block Trackers**:
   - *Objective*: Prevent analytics tracking, event logging, and advertising profiling.
   - *How*: Neutralizes internal event dispatchers and strips tracking permissions from the manifest.
@@ -100,9 +102,18 @@ Technical documentation and patch catalog for TikTok on Android.
 - **Interface Decluttering**:
   - *Objective*: Maximize viewing area by removing non-essential UI buttons, prompts, and carousels.
   - *How*: Hides feed overlay widgets, story trays, direct message banners, and navigation bar tabs.
+- **Block Popups & Prompts**:
+  - *Objective*: Eliminate modal dialogs, permission nags, and promo sheets across the app.
+  - *How*: Suppresses push notification permission prompts, account and contact sync overlays, new user onboarding, PopLayer dialogs, update nags, and sticker recommendations.
 - **Media Enhancements & Screenshot Protection Bypass**:
   - *Objective*: Save media cleanly and allow screen capture in restricted views.
   - *How*: Removes watermark overlays from download flows and clears secure window flags to permit screenshots.
+- **Comment Customizer**:
+  - *Objective*: Provide control over comment sorting, translation, copying, and poll visibility.
+  - *How*: Enables comment sorting, clean comment copying, auto-translation, auto-expanding flagged comments, and displaying poll results without voting first.
+- **Exact Counts**:
+  - *Objective*: Display exact numerical counts instead of rounded metric abbreviations on likes, comments, views, and followers.
+  - *How*: Intercepts compact count formatters and ICU notation options to format raw metric values using locale-aware integer formatting.
 
 ### C. Resource Governance & Slimming
 - **Block P2P Video Relay**:
@@ -111,6 +122,9 @@ Technical documentation and patch catalog for TikTok on Android.
 - **Battery & Resource Saver**:
   - *Objective*: Save battery life and reduce mobile data consumption.
   - *How*: Neutralizes 3D ad sensor listeners and limits aggressive background video preloading.
+- **Disable QUIC**:
+  - *Objective*: Fallback to standard HTTPS (TCP/TLS) when UDP or QUIC connections are blocked or throttled by network firewalls or VPNs.
+  - *How*: Forces video media loading, upload utilities, and live stream connections to use TCP/TLS instead of QUIC.
 - **Slimmer Axes**:
   - *Objective*: Shrink application size on device storage.
   - *How*: Provides opt-in stripping of creator tools, live broadcast engines, voice synthesis models, and unused language packs.

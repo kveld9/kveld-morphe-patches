@@ -68,8 +68,8 @@ val clientAiGovernorPatch = bytecodePatch(
         )
         patched++
 
-        // 5. Neutralize TakoTrigger methods returning boolean (Rp, Sp) -> suppresses Tako button in feed interact area
-        listOf("Rp", "Sp").forEach { methodName ->
+        // 5. Neutralize TakoTrigger methods returning boolean (Rp) -> suppresses Tako button in feed interact area
+        listOf("Rp").forEach { methodName ->
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/feed/assem/tikbot/TakoTrigger;",
                 name = methodName,
@@ -84,8 +84,8 @@ val clientAiGovernorPatch = bytecodePatch(
             patched++
         }
 
-        // 6. Neutralize TakoTriggerRoof methods returning boolean (Rp, Sp) -> suppresses Tako roof trigger in feed
-        listOf("Rp", "Sp").forEach { methodName ->
+        // 6. Neutralize TakoTriggerRoof methods returning boolean (Rp) -> suppresses Tako roof trigger in feed
+        listOf("Rp").forEach { methodName ->
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/feed/assem/tikbot/TakoTriggerRoof;",
                 name = methodName,

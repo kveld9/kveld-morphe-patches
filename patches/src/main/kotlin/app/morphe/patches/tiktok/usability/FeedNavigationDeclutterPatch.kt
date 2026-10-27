@@ -158,10 +158,10 @@ val feedNavigationDeclutterPatch = bytecodePatch(
             val serviceClass = "Lcom/ss/android/ugc/nearby/service/NearbyServiceImpl;"
             val serviceFp = Fingerprint(
                 definingClass = serviceClass,
-                name = "LJIIZILJ",
+                name = "LJIJ",
                 parameters = emptyList(),
             )
-            var tabProviderClass = "LX/03ry;"
+            var tabProviderClass = "LX/03mE;"
             val serviceInsns = serviceFp.method.implementation?.instructions
             if (serviceInsns != null) {
                 for (insn in serviceInsns) {
@@ -212,7 +212,7 @@ val feedNavigationDeclutterPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = serviceClass,
-                name = "LJIIIIZZ",
+                name = "LJIIIZ",
                 returnType = "Z",
                 parameters = emptyList(),
             ).method.replaceWithReturnBoolean(false)
@@ -220,7 +220,7 @@ val feedNavigationDeclutterPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = serviceClass,
-                name = "LJIIL",
+                name = "LJIILIIL",
                 returnType = "Z",
                 parameters = emptyList(),
             ).method.replaceWithReturnBoolean(false)
@@ -241,10 +241,10 @@ val feedNavigationDeclutterPatch = bytecodePatch(
 
             val serviceFp = Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/explore/service/ExploreFeedServiceImpl;",
-                name = "LJJII",
+                name = "LJJIFFI", // in v47.5.3, was LJJII in v47.4.3
                 parameters = emptyList(),
             )
-            var tabProviderClass = "LX/03s9;"
+            var tabProviderClass = "LX/03mK;" // in v47.5.3, was LX/03s9;
             val insns = serviceFp.method.implementation?.instructions
             if (insns != null) {
                 for (insn in insns) {
@@ -332,7 +332,7 @@ val feedNavigationDeclutterPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = liveGenClass,
-                name = "LJIIJ",
+                name = "LJIIJJI",
                 returnType = "Z",
                 parameters = emptyList(),
             ).method.replaceWithReturnBoolean(false)
@@ -483,8 +483,8 @@ val feedNavigationDeclutterPatch = bytecodePatch(
 
         val tabManagerClasses by lazy {
             val avatarAbilityClass = "Lcom/ss/android/ugc/aweme/friendstab/ability/BaseBottomTabAvatarAbility;"
-            val ksMethod = classDefByOrNull(avatarAbilityClass)?.methods?.firstOrNull { it.name == "uR" || it.name == "kS" }
-            val tabManagerBaseType = ksMethod?.returnType ?: "LX/05HL;"
+            val ksMethod = classDefByOrNull(avatarAbilityClass)?.methods?.firstOrNull { it.name == "uR" || it.name == "kS" || it.name == "HQ" }
+            val tabManagerBaseType = ksMethod?.returnType ?: "LX/05G9;"
 
             val managers = mutableListOf<String>()
             classDefForEach { cls ->
@@ -493,7 +493,7 @@ val feedNavigationDeclutterPatch = bytecodePatch(
                 }
             }
             if (managers.isEmpty()) {
-                managers.addAll(listOf("LX/06ue;", "LX/06um;"))
+                managers.addAll(listOf("LX/06Y4;", "LX/06Y9;"))
             }
             managers
         }
@@ -527,16 +527,17 @@ val feedNavigationDeclutterPatch = bytecodePatch(
             ).method.replaceWithReturnBoolean(false)
             patched++
 
+            // Avatar preview active check (HB0 returning Z in v47.5.3, was Hw2)
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/friendstab/ability/BaseBottomTabAvatarAbility;",
-                name = "Hw2",
+                name = "HB0",
                 returnType = "Z",
             ).method.replaceWithReturnBoolean(false)
             patched++
 
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/friendstab/ability/FriendBottomTabAvatarAbility;",
-                name = "Hw2",
+                name = "HB0",
                 returnType = "Z",
             ).method.replaceWithReturnBoolean(false)
             patched++

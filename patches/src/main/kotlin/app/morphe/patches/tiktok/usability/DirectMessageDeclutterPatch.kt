@@ -318,10 +318,10 @@ val directMessageDeclutterPatch = bytecodePatch(
         if (hideInputCamera == true) {
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/im/saas/host/impl/feature/camera/DMCameraFeatureImpl;",
-                name = "LJII",
+                name = "LJFF",
                 returnType = "Lkotlin/jvm/functions/Function1;",
             ).method.replaceWithReturnNull()
-            println("[Declutter Direct Messages] Hooked DMCameraFeatureImpl.LJII -> return-null.")
+            println("[Declutter Direct Messages] Hooked DMCameraFeatureImpl.LJFF -> return-null.")
             patched++
 
             val inputAssemFp = Fingerprint(
@@ -357,7 +357,7 @@ val directMessageDeclutterPatch = bytecodePatch(
         if (hideGalleryButton == true) {
             val galleryAssemFp = Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/im/chatroom/input/components/misc/IMImageBtnViewAssem;",
-                name = "Wq",
+                name = "Sq",
                 parameters = listOf("Landroid/view/View;"),
                 returnType = "V",
             )
@@ -376,7 +376,7 @@ val directMessageDeclutterPatch = bytecodePatch(
                         return-void
                     """.trimIndent(),
                 )
-                println("[Declutter Direct Messages] Hooked IMImageBtnViewAssem.Wr -> View.GONE.")
+                println("[Declutter Direct Messages] Hooked IMImageBtnViewAssem.Sq -> View.GONE.")
                 patched++
             }
 
@@ -490,7 +490,7 @@ val directMessageDeclutterPatch = bytecodePatch(
                 patched++
             }
 
-            val redesignedEmojiBtnId = resourceId(ResourceType.ID, "kve").toInt()
+            val redesignedEmojiBtnId = resourceId(ResourceType.ID, "kw7").toInt()
 
             val isRedesignedEmojiSetId: (Instruction, Instruction) -> Boolean = { a, b ->
                 val isLiteral = (a as? NarrowLiteralInstruction)?.narrowLiteral == redesignedEmojiBtnId ||

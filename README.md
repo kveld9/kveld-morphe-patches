@@ -86,7 +86,7 @@ flowchart TD
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Brave Browser** | `com.brave.browser` | `1.98.60` | `arm64-v8a`<br>`armeabi-v7a` (single file) | [ARM64](https://github.com/brave/brave-browser/releases/download/v1.98.60/Bravemonoarm64.apk) · [ARM32](https://github.com/brave/brave-browser/releases/download/v1.98.60/BraveMonoarm.apk) | [Brave Guide](docs/apps/brave.md) |
 | **Gboard Lite** | `com.google.android.inputmethod.latin` | `18.5.1.993608717-lite_beta` | `arm64-v8a`<br>`armeabi-v7a` (any screen) | [APKMirror](https://www.apkmirror.com/apk/google-inc/gboard/gboard-the-google-keyboard-18-5-1-993608717-beta/) | [Gboard Lite Guide](docs/apps/gboard.md) |
-| **TikTok** | `com.zhiliaoapp.musically` | `47.4.3` | `arm64-v8a` (any screen) | [APKMirror](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-47-4-3-release/) | [TikTok Guide](docs/apps/tiktok.md) |
+| **TikTok** | `com.zhiliaoapp.musically` | `47.5.3` | `arm64-v8a` (any screen) | [APKMirror](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-47-5-3-release/) | [TikTok Guide](docs/apps/tiktok.md) |
 
 Labels: `single file` = one APK; `multi-file` = a package Morphe joins together; `any screen` = works on any screen size.
 
@@ -108,13 +108,14 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 
 <!-- PATCHES_START -->
 <details>
-<summary>TikTok&nbsp;&nbsp;•&nbsp;&nbsp;<b>49 patches</b></summary>
+<summary>TikTok&nbsp;&nbsp;•&nbsp;&nbsp;<b>51 patches</b></summary>
 <br>
 
 **Supported versions:**
 
-| 47.4.3 |
+| 47.5.3 |
 | :---: |
+| Download com.zhiliaoapp.musically v47.5.3 (APK) arm64-v8a nodpi versionCode 2024705030 (APK) from APKMirror |
 
 | Patch | Description | Options |
 |----------|----------------|-----------|
@@ -123,13 +124,13 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 | **Auto-Pause First Video** | Pauses the first video on launch so it plays without lag. |  |
 | **Battery & Resource Saver** | Stops 3D ad sensors and aggressive video preloading to save battery and data. |  |
 | **Block P2P Video Relay** | Stops your device from uploading videos to other users. |  |
-| **Block Popups & Prompts** | Blocks popups, nags and promo dialogs across the app. | • Suppress Account & Permission Nags<br>• Suppress Sticker Recommendations<br>• Filter PopLayer Prompts & Nags<br>• Suppress Live Teaser Bubbles<br>• Suppress DM Streak Reminders<br>• Disable Post-Download Share Dialog<br>• Update Prompt Suppressor<br>• Skip First-Launch Onboarding<br>• Skip Content Warnings |
+| **Block Popups & Prompts** | Blocks popups, nags and promo dialogs across the app. | • Suppress Account & Permission Nags<br>• Hide Notification Prompts<br>• Suppress Sticker Recommendations<br>• Filter PopLayer Prompts & Nags<br>• Suppress Live Teaser Bubbles<br>• Suppress DM Streak Reminders<br>• Disable Post-Download Share Dialog<br>• Update Prompt Suppressor<br>• Skip First-Launch Onboarding<br>• Skip Content Warnings |
 | **Block Trackers** | Neutralizes ByteDance AppLog tracking, crash monitors, and analytics. |  |
 | **Block Trackers (Setup)** | Removes tracking permissions and disables telemetry components. |  |
 | **Bypass Mandatory Login** | Lets you browse videos and feeds without creating an account or logging in. |  |
 | **Camera & Microphone Indicator** | Shows a corner mark while TikTok holds camera/mic open. |  |
 | **Clean Share Links** | Removes tracking parameters from shared links. | • Custom Share Host |
-| **Comment Customizer** | Takes control of comments: sort, copy, translate and hide clutter. | • Comment Sort Controls<br>• Fix Silent Comment Drops<br>• Copy Comments Without Username<br>• Disable Suggested Emojis<br>• Hide Comment Quick Actions<br>• Hide Comment Surveys & Feedback Cards<br>• Hide Comment Story Rings<br>• Enable Voice Comments<br>• Hide Comment Popup Ads<br>• Show Community-Flagged Comments<br>• Auto-Translate Comments<br>• Do-Not-Translate Languages |
+| **Comment Customizer** | Takes control of comments: sort, copy, translate and hide clutter. | • Comment Sort Controls<br>• Fix Silent Comment Drops<br>• Copy Comments Without Username<br>• Disable Suggested Emojis<br>• Hide Comment Quick Actions<br>• Hide Comment Surveys & Feedback Cards<br>• Hide Comment Story Rings<br>• Enable Voice Comments<br>• Hide Comment Popup Ads<br>• Show Community-Flagged Comments<br>• Show Poll Results<br>• Auto-Translate Comments<br>• Do-Not-Translate Languages |
 | **Custom Share Sheet** | Lets you hide share menu entries you do not use. | • Hide WhatsApp<br>• Hide Instagram<br>• Hide Facebook & Messenger<br>• Hide Telegram<br>• Hide X / Twitter<br>• Hide Snapchat<br>• Hide Reddit & Discord<br>• Hide SMS & Messages<br>• Hide Secondary Networks<br>• Hide 'Repost' Button<br>• Hide QR Code<br>• Hide 'Copy Link'<br>• Hide System Share ('More')<br>• Hide Friends / Direct Messages Row<br>• Hide Quick Emojis<br>• Hide 'Send to New Group'<br>• Hide 'Promote' Action<br>• Hide 'Why This Video'<br>• Hide 'Create Group' Action<br>• Hide 'Add to Story'<br>• Hide 'Create Sticker'<br>• Hide 'Duet' Action<br>• Hide 'Stitch' Action<br>• Hide 'Use This Effect'<br>• Hide 'Picture-in-Picture' (PiP)<br>• Hide 'Clear Display'<br>• Hide 'Background Audio'<br>• Hide Live Wallpaper & GIF<br>• Hide 'Not Interested'<br>• Hide 'Report' |
 | **Customize Search** | Customizes search suggestions, live recommendations, and autoplay. | • Hide Suggested Searches<br>• Hide Popular Lives<br>• Disable Search Autoplay<br>• Non-Personalized Search<br>• Enable Live Search |
 | **Declutter Direct Messages** | Cleans up chat and DM screens by hiding extra buttons. | • Hide Chat List Camera Button<br>• Hide Header Call Button<br>• Hide Message Forward Button<br>• Hide Reaction and Streak Bar<br>• Hide Input Bar Camera Button<br>• Hide Gallery Button<br>• Hide Emoji/Stickers Button<br>• Hide Voice Recording Button<br>• Hide Try Effect Button<br>• Hide Sticker Reply Suggestions |
@@ -140,9 +141,10 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 | **Disable Live Gift Effects** | Disables 3D gift animations in live streams to prevent frame drops. |  |
 | **Disable On-Device AI** | Turns off on-device AI, the chatbot and AI search. |  |
 | **Disable Push Notifications** | Stops background push notifications. |  |
+| **Disable QUIC** | Loads videos, uploads, and live connections over standard HTTPS instead of QUIC. |  |
 | **Download Without Watermark** | Unlocks downloading and saves videos without watermarks. | • Remove Watermark<br>• Saved-Video Quality Preference |
 | **Enable Profile Banner** | Unlocks the profile banner and its editing tools. |  |
-| **Feed Ads & Content Filter** | Filters ads, shopping tags, live cards, and clutter from your feed. | • Filter Feed Ads<br>• Filter Feed Bloat<br>• Hide Video Product Anchors<br>• Block Live Streams<br>• Hide AI-Generated Content<br>• Hide Seen Videos<br>• Minimum Views<br>• Maximum Views<br>• Minimum Likes<br>• Maximum Likes<br>• Hide Stories<br>• Hide Photo Posts |
+| **Feed Ads & Content Filter** | Filters ads, shopping tags, live cards, and clutter from your feed. | • Filter Feed Ads<br>• Filter Feed Bloat<br>• Hide Video Product Anchors<br>• Block Live Streams<br>• Hide AI-Generated Content<br>• Hide Seen Videos<br>• Minimum Views<br>• Maximum Views<br>• Minimum Likes<br>• Maximum Likes<br>• Blocked Creators<br>• Blocked Hashtags<br>• Blocked Keywords<br>• Hidden Regions<br>• Maximum Post Age<br>• Minimum Video Length<br>• Maximum Video Length<br>• Hide Stories<br>• Hide Photo Posts |
 | **Force Auto-Scroll** | Enables native auto-scrolling to the next video. |  |
 | **Friends & Suggestions Filter** | Keeps the Friends feed strictly mutual and hides suggested accounts across the app. | • Strict Mutual Friends Feed<br>• Filter Friends Feed Bloat<br>• Hide Suggested Accounts |
 | **Hide Inbox Promos & Alerts** | Hides promo banners, streak cards and suggestions in your inbox. | • Hide Top Promotional Banners<br>• Hide Contact & Friend Recommendations<br>• Hide Navigation Notices & Tooltips |
@@ -162,6 +164,7 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 | **Resume Video After Scroll** | Resumes playback from where you left off when returning to a video. |  |
 | **SIM Region Selector** | Locks the app to a chosen country to unlock regional content. | • Spoofed Region ISO Code<br>• Spoofed Operator Numeric Code (MCC+MNC)<br>• Spoofed Operator Name |
 | **Show Author Region** | Displays the creator's country code next to their username. |  |
+| **Show Exact Counts** | Shows exact numbers on likes, comments, views and followers. |  |
 | **Show Seekbar** | Restores the video progress seekbar and scrubbing controls. | • Show Thumbnail Preview |
 | **Stop Video Looping** | Stops videos at the end instead of replaying them in an infinite loop. |  |
 | **Strip Sensitive Permissions** | Removes sensitive hardware, sensor, and tracking permissions. | • Strip Notification Permission<br>• Strip Camera Permission<br>• Strip Microphone Permissions<br>• Strip Storage & Media Permissions<br>• Strip Bluetooth Permissions<br>• Strip NFC Permission<br>• Strip Biometric Permissions<br>• Strip Foreground Service Permissions<br>• Strip System Alert Window Permission<br>• Strip Wake Lock Permission<br>• Strip Screenshot & Recording Detection Permissions<br>• Strip Miscellaneous Hardware & System Permissions<br>• Strip OEM Diagnostic & Background Signals<br>• Strip Push Delivery Permissions<br>• Strip In-App Billing Permission |
@@ -178,6 +181,7 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 
 | 18.5.1.993608717-lite_beta-armeabi-v7a | 18.5.1.993608717-lite_beta-arm64-v8a |
 | :---: | :---: |
+| Download 18.5.1.993608717-lite_beta-armeabi-v7a (APK nodpi) from APKMirror | Download com.google.android.inputmethod.latin v18.5.1.993608717-lite_beta-arm64-v8a (APK) arm64-v8a nodpi versionCode 176049546 (APK) from APKMirror |
 
 | Patch | Description | Options |
 |----------|----------------|-----------|
@@ -197,13 +201,14 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 </details>
 
 <details>
-<summary>Brave Private Web Browser, VPN&nbsp;&nbsp;•&nbsp;&nbsp;<b>13 patches</b></summary>
+<summary>Brave Private Web Browser, VPN&nbsp;&nbsp;•&nbsp;&nbsp;<b>14 patches</b></summary>
 <br>
 
 **Supported versions:**
 
 | 1.98.60 |
 | :---: |
+| Download Bravemonoarm64.apk (arm64) or BraveMonoarm.apk (arm32) v1.98.60 from github.com/brave/brave-browser/releases; Universal builds unsupported |
 
 | Patch | Description | Options |
 |----------|----------------|-----------|
@@ -212,6 +217,7 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 | **Block Trackers** | Blocks usage analytics, crash uploads and experiment downloads. | • Block offers server |
 | **Brave Origin** | Unlocks Brave Origin feature switches. |  |
 | **Clean Start Page** | Removes sponsored wallpapers, news feed and promo cards. | • Hide shortcut tiles |
+| **Custom Brave theme** | Applies custom colors to Brave dark mode chrome, defaulting to pure OLED black for battery saving on OLED screens. | • Background color<br>• Surfaces use background color<br>• Surface / container color<br>• Text ink color<br>• Accent highlight color<br>• Disable Material You dynamic colors<br>• Window background color<br>• Preference card color<br>• Style preference rows as cards<br>• Modulate text tiers by luminance<br>• Patch Material You system color roles<br>• Patch color state list lStar selectors<br>• Patch vector drawable surface fills |
 | **Keep Tabs Open** | Stops Brave from minimizing your tabs in the background. |  |
 | **Remove Extra Files** | Deletes unused AR and XR files to shrink the app. | • Remove VPN library |
 | **Remove Extra Languages** | Deletes unselected language packs. | • Languages to keep |
@@ -224,7 +230,7 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 </details>
 
 <details>
-<summary>Universal&nbsp;&nbsp;•&nbsp;&nbsp;<b>19 patches</b></summary>
+<summary>Universal&nbsp;&nbsp;•&nbsp;&nbsp;<b>26 patches</b></summary>
 <br>
 
 | Patch | Description | Options |
@@ -233,19 +239,26 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 | **Block Trackers (Universal)** | Removes ad IDs, disables tracking components, and adds opt-out flags. | • Ad permissions<br>• Tracking providers<br>• Tracking services<br>• Tracking receivers<br>• Opt-out flags<br>• Firebase init (may break apps)<br>• Push services (breaks push!)<br>• Google Analytics<br>• Meta analytics<br>• Crash uploaders<br>• Device ID (may break login!)<br>• ML Kit vision (breaks scanner!)<br>• Remote config (may break app!)<br>• Crashlytics (may break app!)<br>• Ad auto-start |
 | **Block Tracking SDKs** | Disables analytics, crash and ad SDKs inside the app. | • Performance monitors<br>• Crash reporters<br>• Analytics<br>• Ad attribution<br>• Old Google Analytics<br>• Push SDKs (breaks push!)<br>• Screen recorders<br>• Location trackers<br>• Bandwidth-sharing SDKs<br>• SDKs to keep |
 | **Block Tracking Servers (Universal)** | Rewrites tracking addresses to nowhere using your blocklist. | • Blocklist file<br>• Replace with<br>• Include subdomains |
+| **Bypass Play License** | Stops apps that use the legacy Play licensing client library from blocking a re-signed install. Cannot affect server-side Play Integrity or subscription entitlements. |  |
 | **Clean App Packaging** | Removes build leftovers and duplicate files. |  |
 | **Disable Browser File Associations** | Removes HTTP/HTTPS web-link intent filters (VIEW + BROWSABLE) so the app no longer appears in the browser app chooser for online files, while preserving local file handling. | • Strip HTTP/HTTPS Web Schemes<br>• Remove Emptied Filters |
 | **Disable Play Store updates** | Disables Play Store updates by setting the version code to the maximum allowed. |  |
+| **Disable Root Checks** | Stops apps that use the common root-detection library from detecting a rooted device. |  |
 | **Force Screen Timeout** | Makes apps respect your screen-off timer. |  |
 | **Go Fully Offline** | Removes internet access completely. | • Network state<br>• Wi-Fi controls<br>• Push permissions<br>• Google sync<br>• Block unencrypted traffic |
 | **Lock Screen Brightness** | Stops apps from changing brightness by themselves. |  |
+| **Override certificate pinning** | Lets a user-installed certificate authority intercept the app's HTTPS traffic for debugging. |  |
 | **Remove Extra Languages (Universal)** | Deletes unselected translation folders. | • Languages to keep |
+| **Remove Pairip** | Stops apps protected by Pairip from blocking a re-signed install. Cannot defeat checks that rely on a remote server. |  |
 | **Remove Tracking Libraries** | Deletes tracking and crash-reporting native libraries. | • Crash reporters<br>• Debuggers<br>• Bandwidth-sharing SDKs |
 | **Remove Unused Screen Sizes** | Deletes image folders for screen sizes you do not use. | • Screen sizes to keep<br>• Watch resources<br>• TV resources<br>• Car, dock and VR resources |
+| **Remove ads** | Blocks common third-party ad networks from loading ads in any app. |  |
+| **Report Play Store as installer** | Tells apps that check their install source that they came from Google Play. |  |
 | **Shrink PNG Images** | Recompresses PNGs without losing quality. |  |
 | **Shrink WebP Images** | Strips hidden metadata from WebP images. | • Camera data<br>• Editing history<br>• Color profiles |
 | **Silence System Logs** | Stops apps from writing debug and diagnostic messages to the system log. | • Log level |
 | **Spoof Reinstall IDs** | Prevents apps from linking reinstalls to your device by resetting app and install IDs. | • App set ID<br>• Install ID<br>• Scope to single app |
+| **Spoof signature** | Presents the original release signature so modified-app checks pass. |  |
 | **Stop Background Sync (Universal)** | Stops background sync schedulers and boot wakeups. | • Strip Boot Permission<br>• Disable Boot Receivers<br>• Disable Background Schedulers<br>• Strip Wake Lock Permission |
 | **Strip Sensitive Permissions (Universal)** | Removes sensitive privacy and hardware permissions you select. | • Notifications<br>• Camera<br>• Microphone<br>• Photos & files<br>• Location<br>• Contacts<br>• Calendar<br>• Nearby devices<br>• Body sensors<br>• Installed apps |
 

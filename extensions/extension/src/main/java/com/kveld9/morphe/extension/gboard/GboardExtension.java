@@ -249,8 +249,10 @@ public class GboardExtension {
             try {
                 return dePrefs.getInt(key, defaultValue);
             } catch (ClassCastException e) {
-                String s = dePrefs.getString(key, null);
-                if (s != null) return Integer.parseInt(s.trim());
+                try {
+                    String s = dePrefs.getString(key, null);
+                    if (s != null) return Integer.parseInt(s.trim());
+                } catch (Throwable ignored) {}
             } catch (Throwable ignored) {}
         }
         SharedPreferences cePrefs = getCePrefs();
@@ -258,8 +260,10 @@ public class GboardExtension {
             try {
                 return cePrefs.getInt(key, defaultValue);
             } catch (ClassCastException e) {
-                String s = cePrefs.getString(key, null);
-                if (s != null) return Integer.parseInt(s.trim());
+                try {
+                    String s = cePrefs.getString(key, null);
+                    if (s != null) return Integer.parseInt(s.trim());
+                } catch (Throwable ignored) {}
             } catch (Throwable ignored) {}
         }
         return defaultValue;

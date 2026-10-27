@@ -44,7 +44,7 @@ object Constants {
 
 
     const val TIKTOK_PACKAGE_NAME = "com.zhiliaoapp.musically"
-    const val TIKTOK_TARGET_VERSION = "47.4.3"
+    const val TIKTOK_TARGET_VERSION = "47.5.3"
 
     val COMPATIBILITY_TIKTOK = Compatibility(
         name = "TikTok",
@@ -54,7 +54,7 @@ object Constants {
         targets = listOf(
             AppTarget(
                 version = TIKTOK_TARGET_VERSION,
-                description = "Download com.zhiliaoapp.musically v$TIKTOK_TARGET_VERSION (APK) arm64-v8a nodpi versionCode 2024704030 (APK) from APKMirror"
+                description = "Download com.zhiliaoapp.musically v$TIKTOK_TARGET_VERSION (APK) arm64-v8a nodpi versionCode 2024705030 (APK) from APKMirror"
             )
         )
     )
@@ -67,6 +67,7 @@ object Constants {
     const val TIKTOK_EXTENSION_COMMENT_HOOK = "Lcom/kveld9/morphe/extension/tiktok/TikTokCommentHook;"
     const val TIKTOK_EXTENSION_COMMENT_TRANSLATE_HOOK = "Lcom/kveld9/morphe/extension/tiktok/TikTokCommentTranslateHook;"
     const val TIKTOK_EXTENSION_SEEKBAR_HOOK = "Lcom/kveld9/morphe/extension/tiktok/TikTokSeekbarHook;"
+    const val TIKTOK_EXTENSION_COUNTS_HOOK = "Lcom/kveld9/morphe/extension/tiktok/TikTokCountsHook;"
     const val TIKTOK_EXTENSION_PRIVACY_HOOK = "Lcom/kveld9/morphe/extension/tiktok/TikTokPrivacyHook;"
     const val TIKTOK_EXTENSION_REFRESH_RATE_HOOK = "Lcom/kveld9/morphe/extension/tiktok/TikTokRefreshRateHook;"
     const val TIKTOK_EXTENSION_OFFLINE_VIDEOS_HOOK = "Lcom/kveld9/morphe/extension/tiktok/TikTokOfflineVideosHook;"

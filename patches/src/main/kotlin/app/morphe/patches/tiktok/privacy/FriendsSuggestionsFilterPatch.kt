@@ -101,7 +101,7 @@ val friendsSuggestionsFilterPatch = bytecodePatch(
 
             // Hook FriendsFeedApi network fetch return points (LX/06Bw;->LIZLLL in v47.4.3, was LX/06CX;)
             val friendsFeedApiFingerprint = Fingerprint(
-                definingClass = "LX/06Bw;",
+                definingClass = "LX/064b;",
                 name = "LIZLLL",
                 parameters = listOf(
                     "I",
@@ -170,7 +170,7 @@ val friendsSuggestionsFilterPatch = bytecodePatch(
 
             // Hook FriendsFeedApi network fetch return points (LX/06Bw;->LIZLLL in v47.4.3, was LX/06CX;)
             val friendsFeedApiFingerprint = Fingerprint(
-                definingClass = "LX/06Bw;",
+                definingClass = "LX/064b;",
                 name = "LIZLLL",
                 parameters = listOf(
                     "I",
@@ -208,11 +208,11 @@ val friendsSuggestionsFilterPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/relation/feed/v4/RecSwipeCardListAssem;",
-                name = "Dp",
+                name = "Fp", // in v47.5.3, was Dp in v47.4.3
                 parameters = listOf("Ljava/util/List;"),
                 returnType = "Ljava/util/List;",
             ).method.replaceWithReturnEmptyList()
-            println("[Friends & Suggestions Filter] Emptied RecSwipeCardListAssem.Dp() -> Friend suggestion swipe cards suppressed.")
+            println("[Friends & Suggestions Filter] Emptied RecSwipeCardListAssem.Fp() -> Friend suggestion swipe cards suppressed.")
             patched++
 
             try {
@@ -233,7 +233,6 @@ val friendsSuggestionsFilterPatch = bytecodePatch(
                         "Lcom/ss/android/ugc/aweme/relation/feed/FYPConfig;",
                         "Lcom/ss/android/ugc/aweme/relation/feed/FriendsTabConfig;",
                         "I",
-                        "Lcom/ss/android/ugc/aweme/relation/feed/StackCardConfig;",
                         "Z",
                     ),
                     returnType = "V",
@@ -259,68 +258,68 @@ val friendsSuggestionsFilterPatch = bytecodePatch(
             }
 
             try {
-                val methodLJIIIIZZ = Fingerprint(
+                val methodLJIIIZ = Fingerprint(
                     definingClass = "Lcom/ss/android/ugc/aweme/relation/feed/TTRecUserBigCardViewHolder;",
-                    name = "LJIIIIZZ",
+                    name = "LJIIIZ",
                     parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;"),
                     returnType = "V",
                 ).method
-                val returnsLJIIIIZZ = methodLJIIIIZZ.implementation?.instructions?.withIndex()
+                val returnsLJIIIZ = methodLJIIIZ.implementation?.instructions?.withIndex()
                     ?.filter { it.value.opcode == Opcode.RETURN_VOID }
                     ?.map { it.index }
                     ?.toList() ?: emptyList()
-                returnsLJIIIIZZ.asReversed().forEach { returnIndex ->
-                    methodLJIIIIZZ.addInstructionsAtControlFlowLabel(
+                returnsLJIIIZ.asReversed().forEach { returnIndex ->
+                    methodLJIIIZ.addInstructionsAtControlFlowLabel(
                         returnIndex,
                         """
                             invoke-static/range {p0 .. p0}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->collapseRecUserCardCell(Ljava/lang/Object;)V
                         """.trimIndent(),
                     )
                 }
-                if (returnsLJIIIIZZ.isNotEmpty()) {
-                    println("[Friends & Suggestions Filter] Collapsed TTRecUserBigCardViewHolder.LJIIIIZZ(Aweme).")
+                if (returnsLJIIIZ.isNotEmpty()) {
+                    println("[Friends & Suggestions Filter] Collapsed TTRecUserBigCardViewHolder.LJIIIZ(Aweme).")
                     patched++
                 } else {
-                    println("[Friends & Suggestions Filter] TTRecUserBigCardViewHolder.LJIIIIZZ note: No RETURN_VOID found")
+                    println("[Friends & Suggestions Filter] TTRecUserBigCardViewHolder.LJIIIZ note: No RETURN_VOID found")
                 }
             } catch (e: Exception) {
-                println("[Friends & Suggestions Filter] TTRecUserBigCardViewHolder.LJIIIIZZ note: ${e.message}")
+                println("[Friends & Suggestions Filter] TTRecUserBigCardViewHolder.LJIIIZ note: ${e.message}")
             }
 
             try {
-                val methodB1 = Fingerprint(
+                val methodNu = Fingerprint(
                     definingClass = "Lcom/ss/android/ugc/aweme/relation/feed/TTRecUserBigCardViewHolder;",
-                    name = "LLLLZLLIL",
+                    name = "nu",
                     parameters = listOf("Landroid/view/View;"),
                     returnType = "V",
                 ).method
-                val returnsB1 = methodB1.implementation?.instructions?.withIndex()
+                val returnsNu = methodNu.implementation?.instructions?.withIndex()
                     ?.filter { it.value.opcode == Opcode.RETURN_VOID }
                     ?.map { it.index }
                     ?.toList() ?: emptyList()
-                returnsB1.asReversed().forEach { returnIndex ->
-                    methodB1.addInstructionsAtControlFlowLabel(
+                returnsNu.asReversed().forEach { returnIndex ->
+                    methodNu.addInstructionsAtControlFlowLabel(
                         returnIndex,
                         """
                             invoke-static/range {p0 .. p0}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->collapseRecUserCardCell(Ljava/lang/Object;)V
                         """.trimIndent(),
                     )
                 }
-                if (returnsB1.isNotEmpty()) {
-                    println("[Friends & Suggestions Filter] Collapsed TTRecUserBigCardViewHolder.LLLLZLLIL(View).")
+                if (returnsNu.isNotEmpty()) {
+                    println("[Friends & Suggestions Filter] Collapsed TTRecUserBigCardViewHolder.nu(View).")
                     patched++
                 } else {
-                    println("[Friends & Suggestions Filter] TTRecUserBigCardViewHolder.B1 note: No RETURN_VOID found")
+                    println("[Friends & Suggestions Filter] TTRecUserBigCardViewHolder.nu note: No RETURN_VOID found")
                 }
             } catch (e: Exception) {
-                println("[Friends & Suggestions Filter] TTRecUserBigCardViewHolder.B1 note: ${e.message}")
+                println("[Friends & Suggestions Filter] TTRecUserBigCardViewHolder.nu note: ${e.message}")
             }
 
             try {
                 Fingerprint(
-                    definingClass = "LX/0FI6;",
-                    name = "LIZIZ",
-                    parameters = listOf("LX/0Dym;", "Ljava/lang/String;"),
+                    definingClass = "Lcom/ss/android/ugc/aweme/relation/feed/v4/RecSwipeViewModel;",
+                    name = "a60",
+                    parameters = listOf("Ljava/lang/String;"),
                     returnType = "Ljava/util/concurrent/CopyOnWriteArrayList;",
                 ).method.addInstructions(
                     0,
@@ -330,17 +329,17 @@ val friendsSuggestionsFilterPatch = bytecodePatch(
                         return-object v0
                     """.trimIndent(),
                 )
-                println("[Friends & Suggestions Filter] Emptied RecSwipe backing list source (LX/0FI6;->LIZIZ) -> Friend suggestion swipe cards starved.")
+                println("[Friends & Suggestions Filter] Emptied RecSwipe backing list source (RecSwipeViewModel.a60) -> Friend suggestion swipe cards starved.")
                 patched++
             } catch (e: Exception) {
-                println("[Friends & Suggestions Filter] LX/0FL0.LIZIZ note: ${e.message}")
+                println("[Friends & Suggestions Filter] RecSwipeViewModel.a60 note: ${e.message}")
             }
 
             try {
                 Fingerprint(
-                    definingClass = "LX/0FI6;",
-                    name = "LIZ",
-                    parameters = listOf("LX/0Dym;", "Ljava/util/List;"),
+                    definingClass = "Lcom/ss/android/ugc/aweme/relation/feed/v4/RecSwipeViewModel;",
+                    name = "U23",
+                    parameters = listOf("Ljava/util/List;"),
                     returnType = "V",
                 ).method.addInstructions(
                     0,
@@ -348,16 +347,16 @@ val friendsSuggestionsFilterPatch = bytecodePatch(
                         return-void
                     """.trimIndent(),
                 )
-                println("[Friends & Suggestions Filter] Neutralized RecSwipe backing list loader (LX/0FI6;->LIZ).")
+                println("[Friends & Suggestions Filter] Neutralized RecSwipe backing list loader (RecSwipeViewModel.U23).")
                 patched++
             } catch (e: Exception) {
-                println("[Friends & Suggestions Filter] LX/0FL0.LIZ note: ${e.message}")
+                println("[Friends & Suggestions Filter] RecSwipeViewModel.U23 note: ${e.message}")
             }
 
             try {
                 Fingerprint(
                     definingClass = "Lcom/ss/android/ugc/aweme/relation/feed/v4/RecSwipeViewModel;",
-                    name = "Yc",
+                    name = "Kc",
                     parameters = listOf("Ljava/lang/String;"),
                     returnType = "Z",
                 ).method.addInstructions(
@@ -367,10 +366,10 @@ val friendsSuggestionsFilterPatch = bytecodePatch(
                         return v0
                     """.trimIndent(),
                 )
-                println("[Friends & Suggestions Filter] Neutralized RecSwipeViewModel.Yc() -> has-data gate forced false.")
+                println("[Friends & Suggestions Filter] Neutralized RecSwipeViewModel.Kc() -> has-data gate forced false.")
                 patched++
             } catch (e: Exception) {
-                println("[Friends & Suggestions Filter] RecSwipeViewModel.md note: ${e.message}")
+                println("[Friends & Suggestions Filter] RecSwipeViewModel.Kc note: ${e.message}")
             }
 
             try {
