@@ -10,6 +10,8 @@ import app.morphe.patcher.patch.stringOption
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.sharedExtensionPatch
 import app.morphe.patches.shared.ensureRegisterCount
+import app.morphe.patches.shared.replaceWithReturnBoolean
+import app.morphe.patches.shared.replaceWithReturnVoid
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
@@ -36,6 +38,14 @@ val mediaEnhancementsPatch = bytecodePatch(
         description = "Select download quality: 'high', 'medium', 'low', or a resolution ceiling (e.g. 1080, 720).",
         default = "high",
         values = mapOf("High" to "high", "Medium" to "medium", "Low" to "low", "1080p" to "1080", "720p" to "720", "540p" to "540", "480p" to "480", "360p" to "360"),
+        required = false,
+    )
+
+    val suppressPostDownloadDialog by booleanOption(
+        key = "suppressPostDownloadDialog",
+        default = false,
+        title = "Disable Post-Download Share Dialog",
+        description = "Suppresses the automatic 'Share to' and friend suggestions bottom sheet that pops up after finishing a download.",
         required = false,
     )
 
@@ -171,6 +181,41 @@ val mediaEnhancementsPatch = bytecodePatch(
                 } catch (e: Exception) {
                     println("[Download Without Watermark] ACLCommonShare.$methodName note: ${e.message}")
                 }
+            }
+        } else {
+            if (watermarkFree) {
+                // 1. Force 7PV.L(Aweme) -> true (forces LynxPageUriParser to route directly to clean playAddr stream)
+                Fingerprint(
+                    definingClass = "LX/7PV;",
+                    name = "L",
+                    strings = listOf("key_no_watermark"),
+                    parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;"),
+                    returnType = "Z",
+                ).method.replaceWithReturnBoolean(true)
+                println("[Download Without Watermark] Forced Lite 7PV.L(Aweme) -> unwatermarked playAddr stream active.")
+                patched++
+
+                // 2. Default ACLCommonShare transcode to 1 (clean stream in Share & Save paths).
+                // NOTE: no ensureRegisterCount: minilite <init> already carries 2 registers;
+                // growing the frame around the surviving body breaks ART verification.
+                Fingerprint(
+                    definingClass = "Lcom/ss/android/ugc/aweme/minilite/feed/model/ACLCommonShare;",
+                    name = "<init>",
+                ).method.apply {
+                    val returnIdx = implementation!!.instructions.indexOfLast { it.opcode == Opcode.RETURN_VOID }
+                    val insertIdx = if (returnIdx != -1) returnIdx else 0
+                    addInstructions(
+                        insertIdx,
+                        """
+                            const/4 v0, 0x1
+                            iput v0, p0, Lcom/ss/android/ugc/aweme/minilite/feed/model/ACLCommonShare;->transcode:I
+                            const/4 v0, 0x0
+                            iput v0, p0, Lcom/ss/android/ugc/aweme/minilite/feed/model/ACLCommonShare;->code:I
+                        """.trimIndent(),
+                    )
+                }
+                println("[Download Without Watermark] Forced ACLCommonShare.<init>() -> transcode=1, code=0.")
+                patched++
             }
         }
 
@@ -394,6 +439,19 @@ val mediaEnhancementsPatch = bytecodePatch(
                 }
             } else {
                 println("[Download Without Watermark] Watermark removal disabled -> downloader spec kept stock.")
+            }
+        }
+
+        // 10. Post-download share dialog suppression
+        if (suppressPostDownloadDialog == true) {
+            if (isLite) {
+                Fingerprint(
+                    strings = listOf("show_download_share_panel"),
+                    parameters = listOf("Ljava/lang/String;"),
+                    returnType = "V",
+                ).method.replaceWithReturnVoid()
+                println("[Download Without Watermark] Neutralized Lite post-download share panel (B9m.L).")
+                patched++
             }
         }
 
