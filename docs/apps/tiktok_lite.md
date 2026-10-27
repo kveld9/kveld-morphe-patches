@@ -49,7 +49,7 @@ The following 16 patches are verified and fully supported on TikTok Lite `47.5.5
 | **Friends & Suggestions Filter** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Keeps the Friends feed strictly mutual and hides suggested accounts across the app. |
 | **Remember Clear Display** | `bytecodePatch` | `false` (Opt-in) | `sharedExtensionPatch` | Keeps clear-display mode active when scrolling to the next video. |
 | **Remember Playback Speed** | `bytecodePatch` | `false` (Opt-in) | `sharedExtensionPatch` | Remembers your video playback speed across videos. |
-| **Block Popups & Prompts** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Blocks popups, nags and promo dialogs across the app. |
+| **Block Popups & Prompts** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Blocks first-launch onboarding tutorials and notification prompts across the app. |
 ---
 
 ## 3. Non-Applicable on Lite (27 Dropped Patches)

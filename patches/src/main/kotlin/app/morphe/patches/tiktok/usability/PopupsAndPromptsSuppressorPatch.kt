@@ -111,53 +111,57 @@ val popupsAndPromptsSuppressorPatch = bytecodePatch(
 
         if (isLite) {
             // 1. Skip first-launch onboarding & consent flow
-            val nujFlowFp = Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/minilite/nuj/NUJServiceImpl;",
-                name = "L",
-                parameters = listOf("Landroid/app/Activity;", "LX/3La;"),
-                returnType = "V",
-            )
-            nujFlowFp.method.addInstructions(
-                0,
-                """
-                    sget-object v0, Ljava/lang/Boolean;->FALSE:Ljava/lang/Boolean;
-                    invoke-interface {p2, v0}, Lkotlin/jvm/functions/Function1;->invoke(Ljava/lang/Object;)Ljava/lang/Object;
-                    return-void
-                """.trimIndent(),
-            )
-            println("[Block Popups & Prompts] Neutralized Lite NUJServiceImpl.L() -> First-launch onboarding skipped.")
-            patched++
+            if (skipOnboarding != false) {
+                val nujFlowFp = Fingerprint(
+                    definingClass = "Lcom/ss/android/ugc/aweme/minilite/nuj/NUJServiceImpl;",
+                    name = "L",
+                    parameters = listOf("Landroid/app/Activity;", "LX/3La;"),
+                    returnType = "V",
+                )
+                nujFlowFp.method.addInstructions(
+                    0,
+                    """
+                        sget-object v0, Ljava/lang/Boolean;->FALSE:Ljava/lang/Boolean;
+                        invoke-interface {p2, v0}, Lkotlin/jvm/functions/Function1;->invoke(Ljava/lang/Object;)Ljava/lang/Object;
+                        return-void
+                    """.trimIndent(),
+                )
+                println("[Block Popups & Prompts] Neutralized Lite NUJServiceImpl.L() -> First-launch onboarding skipped.")
+                patched++
 
-            // 2. Report NUJ not active
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/minilite/nuj/NUJServiceImpl;",
-                name = "LB",
-                parameters = emptyList(),
-                returnType = "Z",
-            ).method.replaceWithReturnBoolean(false)
-            println("[Block Popups & Prompts] Forced Lite NUJServiceImpl.LB() -> Reported nuj not active.")
-            patched++
+                // 2. Report NUJ not active
+                Fingerprint(
+                    definingClass = "Lcom/ss/android/ugc/aweme/minilite/nuj/NUJServiceImpl;",
+                    name = "LB",
+                    parameters = emptyList(),
+                    returnType = "Z",
+                ).method.replaceWithReturnBoolean(false)
+                println("[Block Popups & Prompts] Forced Lite NUJServiceImpl.LB() -> Reported nuj not active.")
+                patched++
+            }
 
             // 3. Suppress notification permission prompts
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/minilite/nuj/PushServiceImpl;",
-                name = "LB",
-                parameters = emptyList(),
-                returnType = "Z",
-            ).method.replaceWithReturnBoolean(false)
-            println("[Block Popups & Prompts] Neutralized Lite PushServiceImpl.LB() -> Push permission prompts suppressed.")
-            patched++
+            if (suppressNotificationPrompts != false) {
+                Fingerprint(
+                    definingClass = "Lcom/ss/android/ugc/aweme/minilite/nuj/PushServiceImpl;",
+                    name = "LB",
+                    parameters = emptyList(),
+                    returnType = "Z",
+                ).method.replaceWithReturnBoolean(false)
+                println("[Block Popups & Prompts] Neutralized Lite PushServiceImpl.LB() -> Push permission prompts suppressed.")
+                patched++
 
-            // 4. Suppress system sheet push dialog check
-            Fingerprint(
-                definingClass = "LX/01c;",
-                name = "LBL",
-                parameters = emptyList(),
-                returnType = "Z",
-                strings = listOf("count_system"),
-            ).method.replaceWithReturnBoolean(false)
-            println("[Block Popups & Prompts] Neutralized Lite LX/01c.LBL() -> System push dialog check forced false.")
-            patched++
+                // 4. Suppress system sheet push dialog check
+                Fingerprint(
+                    definingClass = "LX/01c;",
+                    name = "LBL",
+                    parameters = emptyList(),
+                    returnType = "Z",
+                    strings = listOf("count_system"),
+                ).method.replaceWithReturnBoolean(false)
+                println("[Block Popups & Prompts] Neutralized Lite LX/01c.LBL() -> System push dialog check forced false.")
+                patched++
+            }
 
             println("[Block Popups & Prompts] Applied $patched popup & prompt suppressor hook(s).")
             return@execute
