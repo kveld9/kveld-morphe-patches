@@ -47,17 +47,18 @@ The following 16 patches are verified and fully supported on TikTok Lite `47.5.5
 | **Playback & Display Governor** | `bytecodePatch` | `false` (Opt-in) | `sharedExtensionPatch` | Limits playback resolution and HDR to save battery, and locks the screen refresh rate. |
 | **Feed Ads & Content Filter** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Filters ads, shopping tags, live cards, and clutter from your feed. |
 | **Friends & Suggestions Filter** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Keeps the Friends feed strictly mutual and hides suggested accounts across the app. |
+| **Remember Clear Display** | `bytecodePatch` | `false` (Opt-in) | `sharedExtensionPatch` | Keeps clear-display mode active when scrolling to the next video. |
+| **Remember Playback Speed** | `bytecodePatch` | `false` (Opt-in) | `sharedExtensionPatch` | Remembers your video playback speed across videos. |
+| **Block Popups & Prompts** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Blocks popups, nags and promo dialogs across the app. |
 ---
 
-## 3. Non-Applicable on Lite (31 Dropped Patches)
+## 3. Non-Applicable on Lite (27 Dropped Patches)
 
 The following 35 patches from the standard TikTok patch suite are excluded on TikTok Lite because the corresponding target classes, components, or assets are absent from the Lite build:
 
 ### Group B: Feature Absent / Inert (10 Patches)
 
 - **Always Show Publish Date**: Anchor absent; `VideoItemParams.getAweme()` and `aweme.getCreateTime()` feed item UI hook absent in Lite DEX.
-- **Remember Clear Display**: Anchor absent; `CleanModeManager` and `CleanModeService` clear display services absent in Lite DEX.
-- **Remember Playback Speed**: Anchor absent; `PlaybackSpeedHelper` and `PlaybackSpeedService` speed persistence helpers absent in Lite DEX.
 - **Disable Live Gift Effects**: Anchor absent; `LiveGiftPlayer` and `GiftEffectWidget` live gift rendering widgets absent in Lite DEX.
 - **Block P2P Video Relay**: Anchor absent; P2P relay binaries (`libns_p2p.so`, `libbytedance_p2p.so`) absent in Lite APK bundle.
 - **Remove Creator Tools**: Anchor absent; `CreatorToolsActivity` and creator studio entrypoints absent in Lite DEX.
@@ -69,7 +70,6 @@ The following 35 patches from the standard TikTok patch suite are excluded on Ti
 ### Group C: Architecture Divergence / Incompatible Targets (25 Patches)
 
 - **Auto-Pause First Video**: Anchor absent; `PlayerController` class and first-frame playback interception absent in Lite DEX.
-- **Block Popups & Prompts**: Anchor absent; `RecUserPopupInMainActivityController.LIZLLL` popup controller absent in Lite DEX.
 - **Comment Customizer**: Anchor absent; `comment_sort_opt_style` string and comment sorting logic absent in Lite DEX.
 - **Custom Share Sheet**: Anchor absent; `isImFunctionOff` method and custom share sheet layout absent in Lite DEX.
 - **Customize Search**: Anchor absent; `RecomDataWrapper` class and search feed injection absent in Lite DEX.

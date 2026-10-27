@@ -14,11 +14,41 @@ val rememberClearDisplayPatch = bytecodePatch(
     description = "Keeps clear-display mode active when scrolling to the next video.",
     default = false,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_LITE)
     dependsOn(sharedExtensionPatch)
 
     execute {
         var patched = 0
+        val isLite = packageMetadata.packageName == Constants.TIKTOK_LITE_PACKAGE_NAME
+
+        if (isLite) {
+            val switchFp = Fingerprint(
+                definingClass = "LX/7iG;",
+                name = "LC",
+                parameters = listOf("LX/7iH;", "Ljava/lang/String;", "Z", "Lcom/ss/android/ugc/aweme/feed/model/Aweme;"),
+                returnType = "V",
+                strings = listOf("change_clear_mode_status"),
+            )
+            switchFp.method.addInstructionsWithLabels(
+                0,
+                """
+                    move-object/from16 v1, p1
+                    const-string v0, "switch_video"
+                    invoke-virtual {v0, v1}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+                    move-result v0
+                    if-nez v0, :clear_mode_continue
+                    return-void
+                    :clear_mode_continue
+                    nop
+                """.trimIndent(),
+            )
+            println("[Remember Clear Display] Neutralized Lite LX/7iG;.LC() for switch_video -> clear display retained on scroll.")
+            patched++
+
+            println("[Remember Clear Display] Applied $patched clear-display hook(s).")
+            return@execute
+        }
+
         var eventClass: String? = null
 
         // 1. Record the user's clear-display choice from clear-mode events.
