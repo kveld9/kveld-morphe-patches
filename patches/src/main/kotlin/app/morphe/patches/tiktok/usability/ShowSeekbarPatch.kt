@@ -18,7 +18,7 @@ val showSeekbarPatch = bytecodePatch(
     description = "Restores the video progress seekbar and scrubbing controls.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_LITE)
     dependsOn(sharedExtensionPatch)
 
     val showThumbnailOption = booleanOption(
@@ -30,6 +30,7 @@ val showSeekbarPatch = bytecodePatch(
 
     execute {
         var patched = 0
+        val isLite = packageMetadata.packageName == Constants.TIKTOK_LITE_PACKAGE_NAME
 
         // 1. Aweme.getVideoControl() -> force draftProgressBar = 1 and showProgressBar = 1
         try {
@@ -61,45 +62,47 @@ val showSeekbarPatch = bytecodePatch(
             println("[Show Seekbar] Aweme.getVideoControl note: ${e.message}")
         }
 
-        // 2. SetSeekBarShowType handler -> override hidden types (3 and 4) to visible type 0
-        try {
-            val fp = Fingerprint(
-                strings = listOf("seekbar show type change, change to:"),
-            )
-            val method = fp.method
-            if (method.parameterTypes.size == 1 && method.parameterTypes[0] == "I") {
-                val isStatic = (method.accessFlags and AccessFlags.STATIC.value) != 0
-                val paramReg = if (isStatic) "p0" else "p1"
-                method.addInstructions(
-                    0,
-                    """
-                        invoke-static {$paramReg}, ${Constants.TIKTOK_EXTENSION_SEEKBAR_HOOK}->sanitizeSeekbarShowType(I)I
-                        move-result $paramReg
-                    """.trimIndent(),
-                )
-                println("[Show Seekbar] Hooked setSeekBarShowType($paramReg) -> Safe runtime show type normalizer active.")
-                patched++
-            } else {
-                println("[Show Seekbar] Note: setSeekBarShowType signature did not match (I)V.")
-            }
-        } catch (e: Exception) {
-            println("[Show Seekbar] SetSeekBarShowType note: ${e.message}")
-        }
-
-        // 3. Seekbar Thumbnail Preview AB experiment -> force seekbar_show_thumbnail_when_drag = 1
-        if (showThumbnailOption?.value != false) {
+        if (!isLite) {
+            // 2. SetSeekBarShowType handler -> override hidden types (3 and 4) to visible type 0
             try {
                 val fp = Fingerprint(
-                    returnType = "Ljava/lang/Object;",
-                    parameters = emptyList(),
-                    strings = listOf("seekbar_show_thumbnail_when_drag"),
+                    strings = listOf("seekbar show type change, change to:"),
                 )
                 val method = fp.method
-                method.replaceWithReturnIntegerObject(1)
-                println("[Show Seekbar] Hooked seekbar_show_thumbnail_when_drag -> Forced dragging thumbnail preview enabled.")
-                patched++
+                if (method.parameterTypes.size == 1 && method.parameterTypes[0] == "I") {
+                    val isStatic = (method.accessFlags and AccessFlags.STATIC.value) != 0
+                    val paramReg = if (isStatic) "p0" else "p1"
+                    method.addInstructions(
+                        0,
+                        """
+                            invoke-static {$paramReg}, ${Constants.TIKTOK_EXTENSION_SEEKBAR_HOOK}->sanitizeSeekbarShowType(I)I
+                            move-result $paramReg
+                        """.trimIndent(),
+                    )
+                    println("[Show Seekbar] Hooked setSeekBarShowType($paramReg) -> Safe runtime show type normalizer active.")
+                    patched++
+                } else {
+                    println("[Show Seekbar] Note: setSeekBarShowType signature did not match (I)V.")
+                }
             } catch (e: Exception) {
-                println("[Show Seekbar] Seekbar thumbnail preview note: ${e.message}")
+                println("[Show Seekbar] SetSeekBarShowType note: ${e.message}")
+            }
+
+            // 3. Seekbar Thumbnail Preview AB experiment -> force seekbar_show_thumbnail_when_drag = 1
+            if (showThumbnailOption?.value != false) {
+                try {
+                    val fp = Fingerprint(
+                        returnType = "Ljava/lang/Object;",
+                        parameters = emptyList(),
+                        strings = listOf("seekbar_show_thumbnail_when_drag"),
+                    )
+                    val method = fp.method
+                    method.replaceWithReturnIntegerObject(1)
+                    println("[Show Seekbar] Hooked seekbar_show_thumbnail_when_drag -> Forced dragging thumbnail preview enabled.")
+                    patched++
+                } catch (e: Exception) {
+                    println("[Show Seekbar] Seekbar thumbnail preview note: ${e.message}")
+                }
             }
         }
 

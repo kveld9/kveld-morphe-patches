@@ -33,6 +33,7 @@ The following 16 patches are verified and fully supported on TikTok Lite `47.5.5
 | **In-App Browser Privacy Guard** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Opens web links in your browser and blocks tracking in the remaining web views. |
 | **Offline Video Limit** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Customizes the maximum number of videos saved for offline viewing. |
 | **SIM Region Selector** | `bytecodePatch` | `false` (Opt-in) | None | Locks the app to a chosen country to unlock regional content. |
+| **Show Seekbar** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Restores the video progress seekbar and scrubbing controls. |
 ---
 
 ## 3. Non-Applicable on Lite (35 Dropped Patches)
