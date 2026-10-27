@@ -52,7 +52,7 @@ val telemetryManifestPurgePatch = resourcePatch(
     description = "Removes tracking permissions and disables telemetry components.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_LITE)
 
     execute {
         val manifestFile = get("AndroidManifest.xml")
