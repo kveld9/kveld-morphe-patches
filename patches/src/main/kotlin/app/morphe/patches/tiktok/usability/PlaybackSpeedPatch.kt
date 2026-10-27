@@ -2,6 +2,7 @@ package app.morphe.patches.tiktok.usability
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.booleanOption
@@ -46,7 +47,7 @@ val playbackSpeedPatch = bytecodePatch(
     description = "Keeps your chosen playback speed across videos and restarts.",
     default = false,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_LITE)
     dependsOn(sharedExtensionPatch)
 
     val enableSpeedLock by booleanOption(
@@ -59,6 +60,69 @@ val playbackSpeedPatch = bytecodePatch(
 
     execute {
         var patched = 0
+        val isLite = packageMetadata.packageName == Constants.TIKTOK_LITE_PACKAGE_NAME
+
+        if (isLite) {
+            val speedFp = Fingerprint(
+                definingClass = "LX/Ao6;",
+                name = "LFF",
+                parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;", "F"),
+                returnType = "V",
+            )
+            speedFp.method.addInstructions(
+                0,
+                """
+                    invoke-static {p1}, ${Constants.TIKTOK_EXTENSION_SPEED_HOOK}->onSpeedSelected(F)V
+                """.trimIndent(),
+            )
+            println("[Remember Playback Speed] Hooked Lite speed selection Ao6.LFF -> state persisted.")
+            patched++
+
+            val getSpeedFp = Fingerprint(
+                definingClass = "LX/Ao6;",
+                name = "LBL",
+                parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;"),
+                returnType = "F",
+            )
+            getSpeedFp.method.addInstructions(
+                0,
+                """
+                    invoke-static {}, ${Constants.TIKTOK_EXTENSION_SPEED_HOOK}->getPlaybackSpeed(Ljava/lang/Object;)F
+                    move-result v0
+                    return v0
+                """.trimIndent(),
+            )
+            println("[Remember Playback Speed] Hooked Lite speed query Ao6.LBL -> persistent speed returned.")
+            patched++
+
+            val s6Fp = Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/main/homepage/fragment/FeedFragment;",
+                name = "S6",
+                parameters = emptyList(),
+                returnType = "V",
+            )
+            s6Fp.method.ensureRegisterCount(3)
+            s6Fp.method.addInstructionsWithLabels(
+                0,
+                """
+                    invoke-static {}, ${Constants.TIKTOK_EXTENSION_SPEED_HOOK}->getPlaybackSpeed(Ljava/lang/Object;)F
+                    move-result v1
+                    sput v1, LX/Ao6;->LCC:F
+                    sput v1, LX/Ao6;->LB:F
+                    invoke-virtual {p0}, Lcom/ss/android/ugc/aweme/main/homepage/fragment/FeedFragment;->E5()LX/1T5;
+                    move-result-object v0
+                    if-nez v0, :skip_speed
+                    invoke-interface {v0, v1}, LX/1T5;->setSpeed(F)V
+                    :skip_speed
+                    return-void
+                """.trimIndent(),
+            )
+            println("[Remember Playback Speed] Hooked Lite FeedFragment.S6 -> persistent speed enforced on scroll.")
+            patched++
+
+            println("[Remember Playback Speed] Applied $patched playback speed hook(s).")
+            return@execute
+        }
 
         // 1. Hook Aweme.getParameterizedSpeed()F (Feed playback engine speed resolution)
         try {
