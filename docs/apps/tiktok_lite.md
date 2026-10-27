@@ -96,3 +96,29 @@ The following 35 patches from the standard TikTok patch suite are excluded on Ti
 - **Bundle Format**: TikTok Lite is distributed as an APKM bundle with code split across 15 DEX files (77,111 classes).
 - **Native Libraries**: TikTok Lite contains `libtt_lib.so`, `liborbuculum.so`, and `libzoin.so`, but lacks `libchrome.so`.
 - **Target Pinning**: TikTok Lite pins exclusively version `47.5.52` (`versionCode: 470552`, `minSdk: 21`).
+
+---
+
+## 5. Traffic Audit (coverage-closure, 2026-10-26, whyred, UID-isolated, DoT)
+
+Method: tcpdump on wlan0, per-UID iptables isolation (ACCEPT app UID before DROP 10000-19999),
+Private DNS forced to DoT (lab plaintext DNS sinkholes telemetry domains -- documented exercise
+limitation for windows 1-3, bypassed from window 4 on). Windows: 60 s baseline (force-stopped)
++ ~200 s exercise on the login wall (fresh install per window, TLS hellos inside the window).
+Verdicts per flow (SNI + OUT/IN volumes):
+
+| Flow | Window 4 (pre-5b) | Window 5 (post-iter1) | Window 6 (post-iter2) | Verdict |
+|---|---|---|---|---|
+| log-boot.tiktokv.com (AppLog settings+register) | 4.7 KB out | gone | gone | SILENCED (AppLogNetworkClient + tryUpdateConfig stubs) |
+| log16-normal-no1a.tiktokv.eu (AppLog upload) | 12.2 KB out | gone | gone | SILENCED (LCC synthetic success, flush/reaper stubs) |
+| mon-boot.tiktokv.com (APM/SDKMonitor) | 2.4 KB out | 4.6 KB out | 4.8 KB out | SURVIVING GAP (see below) |
+| tnc16-normal-useastred.tiktokv.eu (TNC net config) | 3.0 KB out | 2.9 KB out | 2.6 KB out | FUNCTIONAL (Traffic Network Controller config fetch, IN-dominant) |
+| Google Analytics trio (manifest) | enabled | disabled | disabled | SILENCED (Setup BLOCKED_COMPONENTS, verified in output manifest) |
+| api/gecko/vcs boots, CDN thumbs, FIS push | present | present | present | FUNCTIONAL (login bootstrap, media, push infra) |
+
+Surviving gap: mon-boot APM uploads persist (~5 KB OUT per window) although NpthTask.run/LCCII,
+Npth.init and DefaultTTNetImpl.doPost/doGet are all stubbed (gates green, ART PASS). The emitter
+reaches mon-boot through a transport path other than DefaultTTNetImpl (MonitorInitTask registers
+it for SDKMonitorUtils, but the observed uploads bypass those overloads). Two 5b iterations spent
+(max); not widened further blindly. Next step when resumed: XREF the mon-boot/monitorsdk URL
+construction sites beyond NpthTask (dynamic `%smonitorsdk.%s` builder) and hook the real transport.

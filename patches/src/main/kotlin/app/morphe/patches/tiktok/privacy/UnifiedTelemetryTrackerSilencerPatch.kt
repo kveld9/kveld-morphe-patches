@@ -293,6 +293,44 @@ val unifiedTelemetryTrackerSilencerPatch = bytecodePatch(
             )
             println("[Block Trackers] Neutralized AppLog.setupLogReaper().")
             patched++
+
+            // 19. APM / SDKMonitor HTTP transport (DefaultTTNetImpl.doPost)
+            Fingerprint(
+                definingClass = "Lcom/bytedance/apm/net/DefaultTTNetImpl;",
+                name = "doPost",
+                parameters = listOf("Ljava/lang/String;", "[B", "Ljava/util/Map;"),
+                returnType = "LX/1RQ;",
+            ).method.addInstructions(
+                0,
+                """
+                    new-instance v0, LX/1RQ;
+                    const/16 v1, 0xc8
+                    const/4 v2, 0x0
+                    invoke-direct {v0, v1, v2}, LX/1RQ;-><init>(I[B)V
+                    return-object v0
+                """,
+            )
+            println("[Block Trackers] Neutralized DefaultTTNetImpl.doPost() -> APM monitor upload suppressed.")
+            patched++
+
+            // 20. APM / SDKMonitor HTTP transport (DefaultTTNetImpl.doGet)
+            Fingerprint(
+                definingClass = "Lcom/bytedance/apm/net/DefaultTTNetImpl;",
+                name = "doGet",
+                parameters = listOf("Ljava/lang/String;", "Ljava/util/Map;"),
+                returnType = "LX/1RQ;",
+            ).method.addInstructions(
+                0,
+                """
+                    new-instance v0, LX/1RQ;
+                    const/16 v1, 0xc8
+                    const/4 v2, 0x0
+                    invoke-direct {v0, v1, v2}, LX/1RQ;-><init>(I[B)V
+                    return-object v0
+                """,
+            )
+            println("[Block Trackers] Neutralized DefaultTTNetImpl.doGet() -> APM monitor settings fetch suppressed.")
+            patched++
         } else {
             // 3. Npth Core Init Task
             Fingerprint(
