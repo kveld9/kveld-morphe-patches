@@ -54,7 +54,9 @@ The following 16 patches are verified and fully supported on TikTok Lite `47.5.5
 
 ## 3. Non-Applicable on Lite (27 Dropped Patches)
 
-The following 35 patches from the standard TikTok patch suite are excluded on TikTok Lite because the corresponding target classes, components, or assets are absent from the Lite build:
+The following 27 patches from the standard TikTok patch suite are excluded on TikTok Lite because the corresponding target classes, components, or assets are absent from the Lite build:
+
+> Re-audit note: every entry below was re-verified with a semantic sweep across all 15 DEX files (exact musically names, related strings, caller XREFs, nearest neighbor with file:line). "Absent" means zero hits everywhere, not just a renamed class. The login-bypass precedent (gate found under mini_account_impl/ with obfuscated names) was the trigger for this second pass, which rescued 8 additional ports.
 
 ### Group B: Feature Absent / Inert (10 Patches)
 
