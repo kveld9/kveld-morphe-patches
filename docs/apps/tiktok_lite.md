@@ -37,6 +37,7 @@ The following 16 patches are verified and fully supported on TikTok Lite `47.5.5
 | **Block Trackers (Setup)** | `resourcePatch` | `true` (Enabled) | None | Removes tracking permissions and disables telemetry components. |
 | **Strip Sensitive Permissions** | `resourcePatch` | `false` (Opt-in) | None | Removes sensitive hardware, sensor, and tracking permissions. |
 | **Block Trackers** | `bytecodePatch` | `true` (Enabled) | None | Neutralizes ByteDance AppLog tracking, crash monitors, and analytics. |
+| **Bypass Mandatory Login** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Skips the forced login wall via Lite's mini-account gate. |
 | **Camera & Microphone Indicator** | `bytecodePatch` | `false` (Opt-in) | `sharedExtensionPatch` | Shows a corner mark while TikTok holds camera/mic open. |
 | **Disable Push Notifications** | `bytecodePatch` | `false` (Opt-in) | None | Stops background push notifications. |
 | **Force Auto-Scroll** | `bytecodePatch` | `true` (Enabled) | None | Enables native auto-scrolling to the next video. |
@@ -65,7 +66,6 @@ The following 35 patches from the standard TikTok patch suite are excluded on Ti
 
 - **Auto-Pause First Video**: Anchor absent; `PlayerController` class and first-frame playback interception absent in Lite DEX.
 - **Block Popups & Prompts**: Anchor absent; `RecUserPopupInMainActivityController.LIZLLL` popup controller absent in Lite DEX.
-- **Bypass Mandatory Login**: Anchor absent; `MandatoryLoginService` class and mandatory login enforcement absent in Lite DEX.
 - **Comment Customizer**: Anchor absent; `comment_sort_opt_style` string and comment sorting logic absent in Lite DEX.
 - **Custom Share Sheet**: Anchor absent; `isImFunctionOff` method and custom share sheet layout absent in Lite DEX.
 - **Customize Search**: Anchor absent; `RecomDataWrapper` class and search feed injection absent in Lite DEX.
