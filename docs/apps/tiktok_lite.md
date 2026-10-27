@@ -41,6 +41,7 @@ The following 16 patches are verified and fully supported on TikTok Lite `47.5.5
 | **Disable Push Notifications** | `bytecodePatch` | `false` (Opt-in) | None | Stops background push notifications. |
 | **Force Auto-Scroll** | `bytecodePatch` | `true` (Enabled) | None | Enables native auto-scrolling to the next video. |
 | **Show Exact Counts** | `bytecodePatch` | `false` (Opt-in) | `sharedExtensionPatch` | Shows exact numbers on likes, comments, views and followers. |
+| **Stop Video Looping** | `bytecodePatch` | `false` (Opt-in) | None | Stops videos at the end instead of replaying them in an infinite loop. |
 ---
 
 ## 3. Non-Applicable on Lite (35 Dropped Patches)

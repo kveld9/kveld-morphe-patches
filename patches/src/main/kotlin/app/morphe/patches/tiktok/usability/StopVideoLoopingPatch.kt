@@ -4,31 +4,76 @@ import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 val stopVideoLoopingPatch = bytecodePatch(
     name = "Stop Video Looping",
     description = "Stops videos at the end instead of replaying them in an infinite loop.",
     default = false,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_LITE)
 
     execute {
         var patched = 0
-        val fp = Fingerprint(
-            definingClass = "Lcom/ss/ttvideoengine/TTVideoEngine;",
-            name = "setLooping",
-            returnType = "V",
-            parameters = listOf("Z"),
-        )
-        val method = fp.method
-        method.addInstructions(
-            0,
-            """
-                const/4 p1, 0x0
-            """.trimIndent(),
-        )
-        println("[Stop Video Looping] Hooked TTVideoEngine.setLooping(Z)V -> Forced isLooping=false.")
-        patched++
+        val isLite = packageMetadata.packageName == Constants.TIKTOK_LITE_PACKAGE_NAME
+
+        if (isLite) {
+            // In TikTok Lite, TTVideoEngine delegates to TTVideoEngineImpl.
+            // 1. LLJJJ(Z)V (asynchronous looping dispatcher, identified by "set looping value:")
+            val lljjjFp = Fingerprint(
+                definingClass = "Lcom/ss/ttvideoengine/TTVideoEngineImpl;",
+                parameters = listOf("Z"),
+                returnType = "V",
+                strings = listOf("set looping value:"),
+            )
+            lljjjFp.method.addInstructions(
+                0,
+                """
+                    const/4 p1, 0x0
+                """.trimIndent(),
+            )
+            println("[Stop Video Looping] Hooked TTVideoEngineImpl.${lljjjFp.method.name}(Z)V -> Forced isLooping=false.")
+            patched++
+
+            // 2. LILIILZ(Z)V (direct MediaPlayer.setLooping delegator)
+            val liliilzFp = Fingerprint(
+                definingClass = "Lcom/ss/ttvideoengine/TTVideoEngineImpl;",
+                parameters = listOf("Z"),
+                returnType = "V",
+                custom = { method, _ ->
+                    method.implementation?.instructions?.any {
+                        val ref = (it as? ReferenceInstruction)?.reference as? MethodReference
+                        ref?.name == "setLooping"
+                    } == true
+                },
+            )
+            liliilzFp.method.addInstructions(
+                0,
+                """
+                    const/4 p1, 0x0
+                """.trimIndent(),
+            )
+            println("[Stop Video Looping] Hooked TTVideoEngineImpl.${liliilzFp.method.name}(Z)V -> Forced MediaPlayer.setLooping=false.")
+            patched++
+        } else {
+            val fp = Fingerprint(
+                definingClass = "Lcom/ss/ttvideoengine/TTVideoEngine;",
+                name = "setLooping",
+                returnType = "V",
+                parameters = listOf("Z"),
+            )
+            val method = fp.method
+            method.addInstructions(
+                0,
+                """
+                    const/4 p1, 0x0
+                """.trimIndent(),
+            )
+            println("[Stop Video Looping] Hooked TTVideoEngine.setLooping(Z)V -> Forced isLooping=false.")
+            patched++
+        }
+
         if (patched == 0) {
             println("[Stop Video Looping] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
         } else {
