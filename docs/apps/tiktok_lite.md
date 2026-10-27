@@ -39,6 +39,7 @@ The following 16 patches are verified and fully supported on TikTok Lite `47.5.5
 | **Block Trackers** | `bytecodePatch` | `true` (Enabled) | None | Neutralizes ByteDance AppLog tracking, crash monitors, and analytics. |
 | **Camera & Microphone Indicator** | `bytecodePatch` | `false` (Opt-in) | `sharedExtensionPatch` | Shows a corner mark while TikTok holds camera/mic open. |
 | **Disable Push Notifications** | `bytecodePatch` | `false` (Opt-in) | None | Stops background push notifications. |
+| **Force Auto-Scroll** | `bytecodePatch` | `true` (Enabled) | None | Enables native auto-scrolling to the next video. |
 ---
 
 ## 3. Non-Applicable on Lite (35 Dropped Patches)
