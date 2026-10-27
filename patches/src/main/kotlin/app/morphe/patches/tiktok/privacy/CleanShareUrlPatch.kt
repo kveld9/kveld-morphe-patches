@@ -14,7 +14,7 @@ val cleanShareUrlPatch = bytecodePatch(
     description = "Removes tracking parameters from shared links.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_LITE)
     dependsOn(sharedExtensionPatch)
 
     val shareHost by stringOption(

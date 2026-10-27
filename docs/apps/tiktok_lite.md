@@ -28,6 +28,7 @@ The following 16 patches are verified and fully supported on TikTok Lite `47.5.5
 | :--- | :--- | :--- | :--- | :--- |
 | **Allow Screenshots** | `bytecodePatch` | `true` (Enabled) | None | Removes screenshot and screen recording blocking. |
 | **Battery & Resource Saver** | `bytecodePatch` | `true` (Enabled) | None | Stops aggressive video preloading to save battery and data. |
+| **Clean Share Links** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Removes tracking parameters from shared links. |
 ---
 
 ## 3. Non-Applicable on Lite (35 Dropped Patches)
