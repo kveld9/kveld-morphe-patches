@@ -69,10 +69,11 @@ val playbackSpeedPatch = bytecodePatch(
                 parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;", "F"),
                 returnType = "V",
             )
+            val lffSpeedReg = if (AccessFlags.STATIC.isSet(speedFp.method.accessFlags)) "p1" else "p2"
             speedFp.method.addInstructions(
                 0,
                 """
-                    invoke-static {p1}, ${Constants.TIKTOK_EXTENSION_SPEED_HOOK}->onSpeedSelected(F)V
+                    invoke-static {$lffSpeedReg}, ${Constants.TIKTOK_EXTENSION_SPEED_HOOK}->onSpeedSelected(F)V
                 """.trimIndent(),
             )
             println("[Remember Playback Speed] Hooked Lite speed selection Ao6.LFF -> state persisted.")
@@ -84,10 +85,11 @@ val playbackSpeedPatch = bytecodePatch(
                 parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;"),
                 returnType = "F",
             )
+            val lblAwemeReg = if (AccessFlags.STATIC.isSet(getSpeedFp.method.accessFlags)) "p0" else "p1"
             getSpeedFp.method.addInstructions(
                 0,
                 """
-                    invoke-static {}, ${Constants.TIKTOK_EXTENSION_SPEED_HOOK}->getPlaybackSpeed(Ljava/lang/Object;)F
+                    invoke-static {$lblAwemeReg}, ${Constants.TIKTOK_EXTENSION_SPEED_HOOK}->getPlaybackSpeed(Ljava/lang/Object;)F
                     move-result v0
                     return v0
                 """.trimIndent(),
@@ -105,7 +107,7 @@ val playbackSpeedPatch = bytecodePatch(
             s6Fp.method.addInstructionsWithLabels(
                 0,
                 """
-                    invoke-static {}, ${Constants.TIKTOK_EXTENSION_SPEED_HOOK}->getPlaybackSpeed(Ljava/lang/Object;)F
+                    invoke-static {p0}, ${Constants.TIKTOK_EXTENSION_SPEED_HOOK}->getPlaybackSpeed(Ljava/lang/Object;)F
                     move-result v1
                     sput v1, LX/Ao6;->LCC:F
                     sput v1, LX/Ao6;->LB:F
