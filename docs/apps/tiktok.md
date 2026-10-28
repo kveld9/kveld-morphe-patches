@@ -16,6 +16,8 @@ Technical documentation and patch catalog for TikTok on Android.
 | **Download Target** | [APKMirror](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/) |
 | **Authoritative Source** | APKMirror |
 
+TikTok Lite is a separate target covered in [TikTok Lite Guide](tiktok_lite.md).
+
 ---
 
 ## 2. Applied Patches Catalog

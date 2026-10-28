@@ -52,7 +52,7 @@ Applying both universal and app-specific patches simultaneously to the same targ
 3. **Binary Trimming**: Universal native trimmers zero only standard crash/telemetry libraries without colliding with app-specific bloat trimmers (such as Brave's `Remove Extra Files` or TikTok's `Remove Extra Files`).
 
 ### Do Not Stack Universals on Maintained Apps
-Dedicated app patches (Brave, Gboard Lite, TikTok) are a strict precision superset for their respective targets. Enabling Block Trackers (Universal) or Block Tracking SDKs on top of dedicated patches adds no extra protection.
+Dedicated app patches (Brave, Gboard Lite, TikTok, TikTok Lite) are a strict precision superset for their respective targets. Enabling Block Trackers (Universal) or Block Tracking SDKs on top of dedicated patches adds no extra protection.
 
 If patcher logs report components already clean or 0 methods hooked, that is the expected outcome, not a failure. Stacking these universals on maintained apps only adds patch execution time (such as expensive full-DEX scans on large targets like TikTok) and risks breaking features like login, account sync, or push notifications if optional toggles (e.g., device-ID providers, Firebase init, or push engagement) are enabled. To cover a newly discovered generic SDK in a maintained app, port the rule into that app's dedicated patch instead of enabling the universal patch.
 

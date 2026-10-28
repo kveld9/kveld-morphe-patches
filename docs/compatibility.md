@@ -13,6 +13,7 @@ Each application has an authoritative, all-in-one guide covering prerequisites, 
 | **Brave Browser** | `arm64-v8a`, `armeabi-v7a` | Standalone APK (`Bravemonoarm64.apk` / `BraveMonoarm.apk`) | [Brave Guide](apps/brave.md) |
 | **Gboard Lite** | `arm64-v8a`, `armeabi-v7a` | Standalone nodpi APK | [Gboard Lite Guide](apps/gboard.md) |
 | **TikTok** | `arm64-v8a` | Standalone nodpi APK | [TikTok Guide](apps/tiktok.md) |
+| **TikTok Lite** | `arm64-v8a`, `armeabi-v7a` | APKM bundle (Morphe joins splits) | [TikTok Lite Guide](apps/tiktok_lite.md) |
 | **Universal Optimizations** | All Architectures | Any Android APK | [Universal Patches Guide](universal-patches.md) |
 
 ---
@@ -42,3 +43,6 @@ Download the standalone `lite` or `lite_beta` APK (nodpi) from [APKMirror](https
 
 ### 🎵 TikTok (`com.zhiliaoapp.musically`)
 Download the official standalone APK release from [APKMirror (TikTok)](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/). Details in [TikTok Guide](apps/tiktok.md).
+
+### 🎵 TikTok Lite (`com.tiktok.lite.go`)
+Download the BUNDLE variant (`arm64-v8a` + `armeabi-v7a`) from [APKMirror (TikTok Lite)](https://www.apkmirror.com/apk/tiktok-pte-ltd/tiktok-lite-faster-tiktok/). Details in [TikTok Lite Guide](apps/tiktok_lite.md).
