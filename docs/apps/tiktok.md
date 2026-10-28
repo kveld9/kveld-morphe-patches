@@ -10,7 +10,7 @@ Technical documentation and patch catalog for TikTok on Android.
 | :--- | :--- |
 | **Target App** | TikTok |
 | **Package Name** | `com.zhiliaoapp.musically` |
-| **Target Version** | `Single pinned version -- see Supported Targets table in README.md` |
+| **Target Version** | `Single pinned version (see README Patch Catalog)` |
 | **Target Package Format** | standalone APK (nodpi APK) |
 | **Primary Architecture** | `arm64-v8a` / `armeabi-v7a` |
 | **Download Target** | [APKMirror](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/) |

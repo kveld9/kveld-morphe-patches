@@ -10,7 +10,7 @@ Technical documentation and patch catalog for Brave Private Web Browser on Andro
 | :--- | :--- |
 | **Target App** | Brave Private Web Browser, VPN |
 | **Package Name** | `com.brave.browser` |
-| **Target Version** | `Single pinned version -- see Supported Targets table in README.md` |
+| **Target Version** | `Single pinned version (see README Patch Catalog)` |
 | **Target Package Format** | standalone APK (`Bravemonoarm64.apk` or `BraveMonoarm.apk`) |
 | **Primary Architecture** | `arm64-v8a` / `armeabi-v7a` |
 | **Download Target** | [APKMirror](https://www.apkmirror.com/apk/brave-software/brave-browser/) |
@@ -65,7 +65,7 @@ The authoritative patch catalog with descriptions and options is generated in RE
 - **Custom Brave theme**:
   - *Objective*: Provide fully customizable styling for Brave dark mode chrome, replacing standard charcoal grey surfaces with custom colors. Defaults preserve pure-black AMOLED styling (#000000) while allowing granular customization of backgrounds, elevated containers, text ink, highlights, and Material You system role mappings.
   - *Two-Tier Surfaces*: Distinguishes between flat base backgrounds (toolbars, window roots, web view containers) and elevated surfaces (dialog boxes, modal bottom sheets, popover menus, and settings cards).
-    - When `surfaceUsesBackground` is enabled (`true`, default), all surfaces share the base background color, providing a seamless, uniform true-black AMOLED appearance. Defaults are OLED pure-black out of the box, with #1e2029 as the suggested value for tier depth.
+    - When `surfaceUsesBackground` is enabled (`true`, default), all surfaces share the base background color, providing a uniform true-black AMOLED appearance. Defaults are OLED pure-black out of the box, with #1e2029 as the suggested value for tier depth.
     - When `surfaceUsesBackground` is disabled (`false`), elevated cards and dialogs use the dedicated `surfaceColor` (default `#000000`), creating clear visual separation when set to a distinct tier color such as `#1e2029`.
   - *Material You Dynamic Palette Opt-Out*: On Android 12 and higher, system-wide wallpaper palette extraction dynamically tints app surfaces. When `disableDynamicColors` is enabled (`true`, default), the patch intercepts internal dynamic color readers and rewrites Android system neutral/container color definitions, preventing dynamic system wallpaper colors from overriding the chosen dark theme. Users wanting Android wallpaper-derived tints can toggle this setting to `false`.
   - *Customization Options*:

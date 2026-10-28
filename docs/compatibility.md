@@ -1,6 +1,6 @@
 # 📱 Compatibility & Architecture Policy
 
-Comprehensive guide to CPU architecture support, APK variant selection, and application-specific requirements across all targets supported by Morphe Patches.
+Guide to CPU architecture support, APK variant selection, and application-specific requirements across all targets supported by Morphe Patches.
 
 ---
 

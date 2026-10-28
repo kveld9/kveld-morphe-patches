@@ -1,6 +1,6 @@
 # 🌐 Universal Patch Reference & Configuration Guide
 
-Comprehensive reference for universal optimization and resource slimming patches provided by Morphe Patches. These patches operate without app-specific hardcoding and can be applied across any APK or custom Android applications.
+Reference for universal optimization and resource slimming patches provided by Morphe Patches. These patches operate without app-specific hardcoding and can be applied across any APK.
 
 ---
 

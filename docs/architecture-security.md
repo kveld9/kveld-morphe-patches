@@ -25,7 +25,7 @@ Genuine Brave telemetry is fully neutralized by the **Block Brave Telemetry** pa
 ## Brave Browser: Privacy, Debloat & Anti-Fingerprinting Architecture
 
 ### 1. Clean New Tab Page (Sponsored Wallpaper & Feed Neutralization)
-Official Brave periodically downloads full-screen sponsored advertising wallpapers and updates the Brave News/Today feed in the background. The **`Clean New Tab Page`** patch enforces a lightweight, zero-ad startup state across three layers:
+Official Brave periodically downloads full-screen sponsored advertising wallpapers and updates the Brave News/Today feed in the background. The **`Clean New Tab Page`** patch enforces a zero-ad startup state across three layers:
 - **Asset Schema Sanitization (`rawResourcePatch`)**: Overwrites `assets/brave/sponsored-images/default.json` with an empty campaigns schema (`{"schemaVersion":1,"campaigns":[]}`). Chromium's sponsored image coordinator finds zero campaigns to download, preventing background bandwidth consumption (~15–30 MB/month) and memory allocations.
 - **Preference Defaults Enforcement (`resourcePatch`)**: Sets XML defaults for `show_sponsored_images`, `new_tab_page_show_sponsored_images`, `brave_news_switch`, and `show_brave_news` to `false`.
 - **Dalvik Gatekeeper Interception (`bytecodePatch`)**: Intercepts `PrefService.e` for `brave.new_tab_page.show_sponsored_images`, `brave.today.enabled`, `brave.today.opted_in`, and `brave.new_tab_page.show_brave_news`, returning `false` directly at the preference service layer.

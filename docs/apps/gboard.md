@@ -10,7 +10,7 @@ Technical documentation and patch catalog for Gboard Lite on Android.
 | :--- | :--- |
 | **Target App** | Gboard Lite |
 | **Package Name** | `com.google.android.inputmethod.latin` |
-| **Target Version** | `Single pinned version -- see Supported Targets table in README.md` |
+| **Target Version** | `Single pinned version (see README Patch Catalog)` |
 | **Target Package Format** | standalone APK (APK nodpi) |
 | **Primary Architecture** | `arm64-v8a` / `armeabi-v7a` |
 | **Download Target** | [APKMirror](https://www.apkmirror.com/apk/google-inc/gboard/) |

@@ -10,7 +10,7 @@ Technical documentation and patch catalog for TikTok Lite on Android.
 | :--- | :--- |
 | **Target App** | TikTok Lite |
 | **Package Name** | `com.tiktok.lite.go` |
-| **Target Version** | `Single pinned version -- see Supported Targets table in README.md` |
+| **Target Version** | `Single pinned version (see README Patch Catalog)` |
 | **Min SDK** | `21` |
 | **Target Package Format** | APKM bundle (`base.apk` + split config APKs) |
 | **Primary Architecture** | `arm64-v8a` / `armeabi-v7a` |
