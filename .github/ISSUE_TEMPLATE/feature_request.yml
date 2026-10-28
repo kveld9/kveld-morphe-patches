@@ -27,14 +27,6 @@ body:
         - Universal / Other
     validations:
       required: true
-  - type: input
-    id: app-version
-    attributes:
-      label: Target app version tested on
-      description: Version you verified the request against.
-      placeholder: e.g. 1.98.60, 18.5.1.993608717-lite_beta-arm64-v8a, 47.5.3, 47.5.52
-    validations:
-      required: true
   - type: dropdown
     id: request-type
     attributes:

@@ -42,21 +42,6 @@ body:
       placeholder: e.g. Bravemonoarm64.apk (arm64) / com.zhiliaoapp.musically v47.5.3 arm64-v8a nodpi
     validations:
       required: true
-  - type: input
-    id: patcher-versions
-    attributes:
-      label: Morphe Manager + patcher versions
-      description: Copy from the log header.
-      placeholder: e.g. manager=1.29.0 patcher=1.11.0
-    validations:
-      required: true
-  - type: input
-    id: device-info
-    attributes:
-      label: Android version + device
-      placeholder: e.g. android=16 api=36 Pixel 8
-    validations:
-      required: true
   - type: dropdown
     id: failure-type
     attributes:
