@@ -14,7 +14,7 @@ val loginCompatibilityPatch = bytecodePatch(
     description = "Restores Google and Spotify sign-in on modified app builds.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_LITE)
     dependsOn(sharedExtensionPatch)
 
     val fixGoogleLogin by booleanOption(
@@ -39,63 +39,71 @@ val loginCompatibilityPatch = bytecodePatch(
             return@execute
         }
 
+        val isLite = packageMetadata.packageName == Constants.TIKTOK_LITE_PACKAGE_NAME
         var patched = 0
 
         if (fixGoogleLogin == true) {
             // 1. GoogleAuth.isAvailable()Z -> return false
-            try {
-                Fingerprint(
-                    definingClass = "Lcom/bytedance/lobby/google/GoogleAuth;",
-                    name = "isAvailable",
-                    returnType = "Z",
-                    parameters = emptyList(),
-                ).method.replaceWithReturnBoolean(false)
-                println("[Login Compatibility Fix] Forced GoogleAuth.isAvailable() -> false (Web OAuth fallback active).")
-                patched++
-            } catch (e: Exception) {
-                println("[Login Compatibility Fix] GoogleAuth.isAvailable note: ${e.message}")
+            val googleAuthClass = if (isLite) {
+                "Lcom/ss/android/ugc/aweme/mini_lobby/google/GoogleAuth;"
+            } else {
+                "Lcom/bytedance/lobby/google/GoogleAuth;"
             }
+            Fingerprint(
+                definingClass = googleAuthClass,
+                name = "isAvailable",
+                returnType = "Z",
+                parameters = emptyList(),
+            ).method.replaceWithReturnBoolean(false)
+            println("[Login Compatibility Fix] Forced GoogleAuth.isAvailable() -> false (Web OAuth fallback active).")
+            patched++
 
-            // 2. GoogleOneTapAuth.isAvailable()Z -> return false (if present in variant)
-            if (classDefByOrNull("Lcom/bytedance/lobby/google/GoogleOneTapAuth;") != null) {
-                try {
-                    Fingerprint(
-                        definingClass = "Lcom/bytedance/lobby/google/GoogleOneTapAuth;",
-                        name = "isAvailable",
-                        returnType = "Z",
-                        parameters = emptyList(),
-                    ).method.replaceWithReturnBoolean(false)
-                    println("[Login Compatibility Fix] Forced GoogleOneTapAuth.isAvailable() -> false.")
-                    patched++
-                } catch (e: Exception) {
-                    println("[Login Compatibility Fix] GoogleOneTapAuth.isAvailable note: ${e.message}")
+            if (!isLite) {
+                // 2. GoogleOneTapAuth.isAvailable()Z -> return false (if present in variant)
+                if (classDefByOrNull("Lcom/bytedance/lobby/google/GoogleOneTapAuth;") != null) {
+                    try {
+                        Fingerprint(
+                            definingClass = "Lcom/bytedance/lobby/google/GoogleOneTapAuth;",
+                            name = "isAvailable",
+                            returnType = "Z",
+                            parameters = emptyList(),
+                        ).method.replaceWithReturnBoolean(false)
+                        println("[Login Compatibility Fix] Forced GoogleOneTapAuth.isAvailable() -> false.")
+                        patched++
+                    } catch (e: Exception) {
+                        println("[Login Compatibility Fix] GoogleOneTapAuth.isAvailable note: ${e.message}")
+                    }
                 }
             }
         }
 
         if (fixSpotifyLogin == true) {
-            // The Spotify auth SDK lives in the df_music_dsp dynamic feature dex, which the patcher
-            // does not load. Its SSO intent is launched through this base-dex startActivityForResult
-            // wrapper, so the extension intercepts it there. Parameters sit in high registers
-            // (v28+), so the call must use the /range form.
-            Fingerprint(
-                accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC),
-                returnType = "V",
-                parameters = listOf("I", "Landroid/app/Activity;", "Landroid/content/Intent;", "L"),
-                strings = listOf("(Landroid/content/Intent;I)V", "android/app/Activity", "startActivityForResult"),
-            ).method.addInstructionsWithLabels(
-                0,
-                """
-                invoke-static/range {p0 .. p2},${Constants.TIKTOK_EXTENSION_SPOTIFY_AUTH_HOOK}->interceptStartActivityForResult(ILandroid/app/Activity;Landroid/content/Intent;)Z
-                move-result v0
-                if-eqz v0, :continue
-                return-void
-                :continue
-                nop
-                """.trimIndent()
-            )
-            println("[Login Compatibility Fix] Hooked startActivityForResult -> Spotify SSO routed to Web OAuth.")
-            patched++
+            if (!isLite) {
+                // The Spotify auth SDK lives in the df_music_dsp dynamic feature dex, which the patcher
+                // does not load. Its SSO intent is launched through this base-dex startActivityForResult
+                // wrapper, so the extension intercepts it there. Parameters sit in high registers
+                // (v28+), so the call must use the /range form.
+                Fingerprint(
+                    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC),
+                    returnType = "V",
+                    parameters = listOf("I", "Landroid/app/Activity;", "Landroid/content/Intent;", "L"),
+                    strings = listOf("(Landroid/content/Intent;I)V", "android/app/Activity", "startActivityForResult"),
+                ).method.addInstructionsWithLabels(
+                    0,
+                    """
+                    invoke-static/range {p0 .. p2},${Constants.TIKTOK_EXTENSION_SPOTIFY_AUTH_HOOK}->interceptStartActivityForResult(ILandroid/app/Activity;Landroid/content/Intent;)Z
+                    move-result v0
+                    if-eqz v0, :continue
+                    return-void
+                    :continue
+                    nop
+                    """.trimIndent()
+                )
+                println("[Login Compatibility Fix] Hooked startActivityForResult -> Spotify SSO routed to Web OAuth.")
+                patched++
+            } else {
+                println("[Login Compatibility Fix] Spotify sign-in is not supported on TikTok Lite (targets absent).")
+            }
         }
 
         if (patched == 0) {
