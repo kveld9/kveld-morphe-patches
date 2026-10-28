@@ -25,7 +25,7 @@ val customOfflineVideosLimitPatch = bytecodePatch(
     description = "Customizes the maximum number of videos saved for offline viewing.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_LITE)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
     dependsOn(sharedExtensionPatch)
 
     val customLimit by intOption(
@@ -38,7 +38,6 @@ val customOfflineVideosLimitPatch = bytecodePatch(
 
     execute {
         var patched = 0
-        val isLite = packageMetadata.packageName == Constants.TIKTOK_LITE_PACKAGE_NAME
         val chosenLimit = customLimit?.takeIf { it in 1..50000 } ?: 1000
 
         // 1. Initialize targetLimit in TikTokOfflineVideosHook.<clinit>
@@ -65,8 +64,7 @@ val customOfflineVideosLimitPatch = bytecodePatch(
             println("[Offline Video Limit] TikTokOfflineVideosHook.<clinit> note: ${e.message}")
         }
 
-        if (!isLite) {
-            // 2. Dynamic discovery through OfflineModeSheetPageAssem.onAssemPostCreate -> Limits list provider
+        // 2. Dynamic discovery through OfflineModeSheetPageAssem.onAssemPostCreate -> Limits list provider
         try {
             val assemClassFp = Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/offlinemode/ui/sheet/OfflineModeSheetPageAssem;",
@@ -357,7 +355,6 @@ val customOfflineVideosLimitPatch = bytecodePatch(
             }
         } catch (e: Exception) {
             println("[Offline Video Limit] Radio item cell note: ${e.message}")
-        }
         }
 
         if (patched == 0) {
