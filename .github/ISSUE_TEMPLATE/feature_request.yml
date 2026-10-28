@@ -1,6 +1,6 @@
 name: ⭐ Feature request
 description: Create a detailed request for a new feature.
-title: "feat: "
+title: "feat(<app>): "
 labels: ["Feature request"]
 body:
   - type: markdown
@@ -10,6 +10,7 @@ body:
 
         Before creating a new feature request, please keep the following in mind:
 
+        - **Title format**: feat(<app>): <user-visible effect>, e.g. feat(gboard): add haptic toggle.
         - **Do not submit a duplicate feature request**: Search for existing feature requests [here](https://github.com/kveld9/kveld-morphe-patches/issues?q=label%3A%22Feature+request%22).
         - **Review Out of Scope Features**: Read our [Project Scope & Out-of-Scope Philosophy](https://github.com/kveld9/kveld-morphe-patches/blob/main/docs/out-of-scope.md). In-app settings panels, server-side bypasses, legacy multi-version support, and feature bloat are strictly rejected.
         - **Review existing issues**: Make sure your feature request is clear and actionable.
@@ -21,8 +22,27 @@ body:
       options:
         - Brave Browser
         - Gboard Lite
-        - TikTok (Global & Asia)
+        - TikTok
+        - TikTok Lite
         - Universal / Other
+    validations:
+      required: true
+  - type: input
+    id: app-version
+    attributes:
+      label: Target app version tested on
+      description: Version you verified the request against.
+      placeholder: e.g. 1.98.60, 18.5.1.993608717-lite_beta-arm64-v8a, 47.5.3, 47.5.52
+    validations:
+      required: true
+  - type: dropdown
+    id: request-type
+    attributes:
+      label: Request type (triage)
+      options:
+        - New patch
+        - New option for existing patch
+        - Improvement to existing behavior
     validations:
       required: true
   - type: textarea
@@ -31,11 +51,13 @@ body:
       description: |
         - Describe your feature in detail
         - Add images, videos, links, examples, references, etc. if possible
+    validations:
+      required: true
   - type: textarea
     attributes:
       label: Motivation
       description: |
-        A strong motivation is necessary for a feature request to be considered.
+        A strong motivation is necessary for a feature request to be considered. State an explicit use case and concrete benefit (minimum one sentence each).
 
         - Why should this feature be implemented? 
         - What is the explicit use case?
@@ -51,9 +73,17 @@ body:
       options:
         - label: I have checked all open and closed feature requests and this is not a duplicate.
           required: true
-        - label: I have read the [Project Scope & Out of Scope documentation](https://github.com/kveld9/kveld-morphe-patches/blob/main/docs/out-of-scope.md) and verified this request is not out of scope.
+        - label: "I used the required title format feat(<app>): <effect>."
           required: true
-        - label: I have chosen an appropriate title.
+        - label: "Not In-app settings screens / dynamic UI panels: This request does not ask for in-app settings screens or dynamic UI panels."
+          required: true
+        - label: "Not Server-side bypass / DRM / account exploits: This request does not ask for server-side bypasses, DRM removal, or account exploits."
+          required: true
+        - label: "Not Feature bloat / embedded download managers: This request does not ask for feature bloat or embedded download managers."
+          required: true
+        - label: "Not Legacy or multi-version support: This request does not ask for legacy or multi-version support."
+          required: true
+        - label: "Not New target applications: This request does not ask for new target applications."
           required: true
         - label: All requested information has been provided properly.
           required: true
