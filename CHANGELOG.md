@@ -1,3 +1,10 @@
+## [2.10.0-experimental.2](https://github.com/kveld9/kveld-morphe-patches/compare/v2.10.0-experimental.1...v2.10.0-experimental.2) (2026-10-28)
+
+### Bug Fixes
+
+* **tiktoklite:** declare APKM file type for TikTok Lite target ([23e5dcb](https://github.com/kveld9/kveld-morphe-patches/commit/23e5dcb33ed0388f4c1a0d7c178c0ccc8537f991))
+* **tiktok:** strip tracking params from copied TikTok Lite share links ([63fa6cc](https://github.com/kveld9/kveld-morphe-patches/commit/63fa6ccaf913dbc3e28ba5de953f0728770e7aec))
+
 ## [2.10.0-experimental.1](https://github.com/kveld9/kveld-morphe-patches/compare/v2.9.0...v2.10.0-experimental.1) (2026-10-28)
 
 ### Bug Fixes

@@ -182,7 +182,7 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 
 | 47.5.52 |
 | :---: |
-| Download com.tiktok.lite.go v47.5.52 (APK) arm64-v8a versionCode 470552 (APK) from APKMirror |
+| Download com.tiktok.lite.go v47.5.52 (APKM) arm64-v8a versionCode 470552 (APKM) from APKMirror |
 
 | Patch | Description | Options |
 |----------|----------------|-----------|
