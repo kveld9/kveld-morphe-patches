@@ -91,7 +91,7 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
   - *How*: Installs visual indicator overlay in `MainActivity.onCreate` via `TikTokCameraMicHook.install` and instruments camera and microphone start and release call sites.
 - **Clean Share Links**:
   - *Objective*: Removes tracking parameters from shared links.
-  - *How*: Sanitizes shared link URLs and applies optional custom hostname replacement via `TikTokShareHostHook` in Lite share services `HomePageShareServiceImpl` and `Cem`.
+  - *How*: Sanitizes shared link URLs (supporting `tiktok.com` and `tiktxk.com` domains and Lite tracking parameters) and applies optional custom hostname replacement via `TikTokShareHostHook` in Lite share services `HomePageShareServiceImpl` and `Cem`.
 - **Feed Ads & Content Filter**:
   - *Objective*: Filters ads, shopping tags, live cards, and clutter from your feed.
   - *How*: Intercepts feed list getters `FeedItemList.getItems()`, `SearchMix.getAwemeList()`, and `SearchMixFeedList.getAwemeList()` to filter ads, bloat, shop anchors, live streams, AI content, and matching content rules via `TikTokFeedAdFilter` and `TikTokContentFilterHook`.

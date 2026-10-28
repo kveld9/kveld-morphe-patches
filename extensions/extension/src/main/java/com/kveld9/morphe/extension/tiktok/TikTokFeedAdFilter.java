@@ -186,11 +186,13 @@ public final class TikTokFeedAdFilter {
     private static final String SHOP_PROMO_MARKER = "placeholder_product_id";
 
     private static final Set<String> TRACKING_PARAMS = new HashSet<>(Arrays.asList(
-        "is_from_webapp", "sender_device", "_r", "checksum", "sec_user_id",
-        "ug_source", "share_app_id", "share_item_id", "share_link_id",
-        "source", "timestamp", "user_id", "u_code", "tt_from",
-        "utm_source", "utm_campaign", "utm_medium",
-        "share_iid", "sharer_id", "ugbiz_name"
+        "is_from_webapp", "sender_device", "_r", "_d", "_s", "_t", "checksum",
+        "checksum_invitation_scene", "invitation_scene", "sec_user_id", "preview_pb",
+        "sharer_language", "ug_source", "share_app_id", "share_item_id", "share_link_id",
+        "share_iid", "sharer_id", "share_sign", "share_token", "share_sec_user_id",
+        "share_author_id", "source", "timestamp", "user_id", "u_code", "tt_from",
+        "utm_source", "utm_campaign", "utm_medium", "utm_term", "utm_content",
+        "ugbiz_name", "social_share_type", "enter_method", "enter_from"
     ));
 
     private TikTokFeedAdFilter() {}
@@ -778,7 +780,7 @@ public final class TikTokFeedAdFilter {
      * Purges ByteDance tracking parameters and campaign telemetry from shared URLs.
      */
     public static String sanitizeShareUrl(String originalUrl) {
-        if (originalUrl == null || !originalUrl.contains("tiktok.com")) {
+        if (!TikTokShareHostHook.isTikTokShareUrl(originalUrl)) {
             return originalUrl;
         }
         try {
@@ -788,7 +790,7 @@ public final class TikTokFeedAdFilter {
             }
             Uri.Builder builder = uri.buildUpon().clearQuery();
             for (String param : uri.getQueryParameterNames()) {
-                if (!TRACKING_PARAMS.contains(param.toLowerCase())) {
+                if (!TRACKING_PARAMS.contains(param.toLowerCase(Locale.ROOT))) {
                     builder.appendQueryParameter(param, uri.getQueryParameter(param));
                 }
             }

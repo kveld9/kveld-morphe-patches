@@ -29,6 +29,9 @@ The authoritative patch catalog with descriptions and options is generated in RE
 ## 3. Technical Breakdown
 
 ### A. Privacy, Ad Filtering & Tracking
+- **Clean Share Links**:
+  - *Objective*: Removes tracking parameters from shared links and supports optional custom share host replacement.
+  - *How*: Purges tracking tokens, device telemetry, and marketing campaign parameters from shared links across `tiktok.com` and `tiktxk.com` domains with optional custom hostname replacement via `TikTokShareHostHook`.
 - **Feed Ads & Content Filter**:
   - *Objective*: Provide a clean feed without promotional interruptions, sponsored product links, or commerce anchors.
   - *How*: Filters sponsored feed items, live cards, and shopping anchors during feed model parsing, removes ads inserted between a profile's videos, hides posts from chosen creators, with blocked hashtags, matching blocked keywords, or from hidden regions, and filters videos outside configured duration limits, exceeding post age, or outside configured view or like thresholds across For You, Following, and search feeds.
