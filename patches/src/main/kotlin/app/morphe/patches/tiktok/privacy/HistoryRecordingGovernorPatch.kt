@@ -12,7 +12,7 @@ val historyRecordingGovernorPatch = bytecodePatch(
     description = "Prevents TikTok from recording your watch history and search queries.",
     default = false,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_LITE)
 
     val disableWatchHistory by booleanOption(
         key = "disableWatchHistory",
@@ -36,84 +36,101 @@ val historyRecordingGovernorPatch = bytecodePatch(
             return@execute
         }
 
+        val isLite = packageMetadata.packageName == Constants.TIKTOK_LITE_PACKAGE_NAME
         var patched = 0
 
         if (disableWatchHistory == true) {
-            // 1. Neutralize AwemeStatsApi video view reporting routine (AwemeStatsApi.LIZIZ(...)V)
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/feed/api/AwemeStatsApi;",
-                name = "LIZIZ",
-                returnType = "V",
-            ).method.replaceWithReturnVoid()
-            patched++
+            if (!isLite) {
+                // 1. Neutralize AwemeStatsApi video view reporting routine (AwemeStatsApi.LIZIZ(...)V)
+                Fingerprint(
+                    definingClass = "Lcom/ss/android/ugc/aweme/feed/api/AwemeStatsApi;",
+                    name = "LIZIZ",
+                    returnType = "V",
+                ).method.replaceWithReturnVoid()
+                patched++
 
-            // 2. Neutralize AwemeStatsApi batch video view flush routine (AwemeStatsApi.LIZ(List)V)
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/feed/api/AwemeStatsApi;",
-                name = "LIZ",
-                returnType = "V",
-                parameters = listOf("Ljava/util/List;"),
-            ).method.replaceWithReturnVoid()
-            patched++
+                // 2. Neutralize AwemeStatsApi batch video view flush routine (AwemeStatsApi.LIZ(List)V)
+                Fingerprint(
+                    definingClass = "Lcom/ss/android/ugc/aweme/feed/api/AwemeStatsApi;",
+                    name = "LIZ",
+                    returnType = "V",
+                    parameters = listOf("Ljava/util/List;"),
+                ).method.replaceWithReturnVoid()
+                patched++
 
-            // 3. Neutralize PlaybackHistoryManager recordVideoPlayback routine (LX/03hH;->LIZ in v47.5.3, was LX/03l4;)
-            Fingerprint(
-                definingClass = "LX/03hH;",
-                name = "LIZ",
-                returnType = "V",
-            ).method.replaceWithReturnVoid()
-            patched++
+                // 3. Neutralize PlaybackHistoryManager recordVideoPlayback routine (LX/03hH;->LIZ in v47.5.3, was LX/03l4;)
+                Fingerprint(
+                    definingClass = "LX/03hH;",
+                    name = "LIZ",
+                    returnType = "V",
+                ).method.replaceWithReturnVoid()
+                patched++
 
-            // 4. Neutralize PlaybackHistoryManager recordWatchDuration routine (LX/03hH;->LIZIZ in v47.5.3, was LX/03l4;)
-            Fingerprint(
-                definingClass = "LX/03hH;",
-                name = "LIZIZ",
-                returnType = "V",
-            ).method.replaceWithReturnVoid()
-            patched++
+                // 4. Neutralize PlaybackHistoryManager recordWatchDuration routine (LX/03hH;->LIZIZ in v47.5.3, was LX/03l4;)
+                Fingerprint(
+                    definingClass = "LX/03hH;",
+                    name = "LIZIZ",
+                    returnType = "V",
+                ).method.replaceWithReturnVoid()
+                patched++
 
-            // 5. Neutralize fast stats report routine (LX/0SnM;->subscribe in v47.5.3, was LX/0bQi;)
-            Fingerprint(
-                definingClass = "LX/0SnM;",
-                name = "subscribe",
-                returnType = "V",
-            ).method.replaceWithReturnVoid()
-            patched++
+                // 5. Neutralize fast stats report routine (LX/0SnM;->subscribe in v47.5.3, was LX/0bQi;)
+                Fingerprint(
+                    definingClass = "LX/0SnM;",
+                    name = "subscribe",
+                    returnType = "V",
+                ).method.replaceWithReturnVoid()
+                patched++
 
-            println("[Disable History Recording] Applied watch history suppression hooks -> Video watch history recording neutralized.")
+                println("[Disable History Recording] Applied watch history suppression hooks -> Video watch history recording neutralized.")
+            } else {
+                // Neutralize Lite AwemeStatsApi video stats reporting routine
+                Fingerprint(
+                    definingClass = "Lcom/ss/android/ugc/aweme/mob/AwemeStatsApi;",
+                    name = "L",
+                    returnType = "V",
+                ).method.replaceWithReturnVoid()
+                patched++
+
+                println("[Disable History Recording] Neutralized Lite AwemeStatsApi.L -> Video watch history recording neutralized.")
+            }
         }
 
         if (disableSearchHistory == true) {
-            // 1. Neutralize Search History Manager recordSearchHistory routine (LX/0CW9; in v47.5.3, was LX/0CzL;, LX/0D1m;)
-            Fingerprint(
-                definingClass = "LX/0CW9;",
-                name = "LIZ",
-                returnType = "V",
-                parameters = listOf(
-                    "Lcom/ss/android/ugc/aweme/search/model/SearchHistory;",
-                    "Ljava/lang/String;",
-                ),
-            ).method.replaceWithReturnVoid()
-            patched++
+            if (!isLite) {
+                // 1. Neutralize Search History Manager recordSearchHistory routine (LX/0CW9; in v47.5.3, was LX/0CzL;, LX/0D1m;)
+                Fingerprint(
+                    definingClass = "LX/0CW9;",
+                    name = "LIZ",
+                    returnType = "V",
+                    parameters = listOf(
+                        "Lcom/ss/android/ugc/aweme/search/model/SearchHistory;",
+                        "Ljava/lang/String;",
+                    ),
+                ).method.replaceWithReturnVoid()
+                patched++
 
-            // 2. Neutralize ManualSearchPvStore history tracking routine
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/search/pages/middlepage/history/ManualSearchPvStore;",
-                name = "LJIIJ",
-                returnType = "V",
-                parameters = listOf("Ljava/lang/String;", "Ljava/lang/String;"),
-            ).method.replaceWithReturnVoid()
-            patched++
+                // 2. Neutralize ManualSearchPvStore history tracking routine
+                Fingerprint(
+                    definingClass = "Lcom/ss/android/ugc/aweme/search/pages/middlepage/history/ManualSearchPvStore;",
+                    name = "LJIIJ",
+                    returnType = "V",
+                    parameters = listOf("Ljava/lang/String;", "Ljava/lang/String;"),
+                ).method.replaceWithReturnVoid()
+                patched++
 
-            // 3. Suppress server-pushed top history recommendations
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/discover/model/suggest/SuggestWordResponse;",
-                name = "getTopHistoryWords",
-                returnType = "Ljava/util/List;",
-            ).method.replaceWithReturnNull()
-            patched++
+                // 3. Suppress server-pushed top history recommendations
+                Fingerprint(
+                    definingClass = "Lcom/ss/android/ugc/aweme/discover/model/suggest/SuggestWordResponse;",
+                    name = "getTopHistoryWords",
+                    returnType = "Ljava/util/List;",
+                ).method.replaceWithReturnNull()
+                patched++
 
-            println("[Disable History Recording] Applied search history suppression hooks -> Search history recording neutralized.")
+                println("[Disable History Recording] Applied search history suppression hooks -> Search history recording neutralized.")
+            } else {
+                println("[Disable History Recording] Search history recording is not supported on TikTok Lite (targets absent).")
+            }
         }
 
         if (patched == 0) {

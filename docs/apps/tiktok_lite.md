@@ -52,7 +52,6 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
 - **Declutter Navigation Bar**: Anchor absent; `ShopBottomTabProtocol` and shop bottom navigation tab absent in Lite DEX.
 - **Declutter Video Interface**: Anchor absent; `UpvoteVideoTrigger.Qp` and declutter anchor classes absent in Lite DEX.
 - **Device Privacy Guard**: Anchor absent; `LX/0OBB` device identifier collector class absent in Lite DEX.
-- **Disable History Recording**: Anchor absent; `AwemeStatsApi` class and batch watch history reporting absent in Lite DEX.
 - **Disable On-Device AI**: Anchor absent; `PitayaBootLoader` class and Pitaya AI engine absent in Lite DEX.
 - **Enable Profile Banner**: Anchor absent; `ProfileBackgroundExp` class and profile banner customization absent in Lite DEX.
 - **Hide Inbox Promos & Alerts**: Anchor absent; `TopBannerWidgetContainerInjector` and promo banner widgets absent in Lite DEX.
@@ -66,7 +65,22 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
 
 ---
 
-## 4. Structural Notes
+## 4. Technical Breakdown
+
+### Privacy & Governance
+- **Disable History Recording**:
+  - *Objective*: Prevent viewed videos from recording in account watch history.
+  - *How*: Neutralizes video stats reporting routine (`AwemeStatsApi.L`) with `return-void` when `disableWatchHistory` is enabled.
+
+---
+
+## 5. Known Limitations
+
+- **Search History Suppression**: Search history query recording is not supported on TikTok Lite because the search history analytics and recommendation stores (`SuggestWordResponse`, `ManualSearchPvStore`) are absent in the Lite build.
+
+---
+
+## 6. Structural Notes
 
 - **Bundle Format**: TikTok Lite is distributed as an APKM bundle with code split across 15 DEX files (77,111 classes).
 - **Native Libraries**: TikTok Lite contains `libtt_lib.so`, `liborbuculum.so`, and `libzoin.so`, but lacks `libchrome.so`.
@@ -74,6 +88,6 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
 
 ---
 
-## 5. Traffic Audit
+## 7. Traffic Audit
 
 Per-flow traffic audit reports live in issues, not in this guide.
