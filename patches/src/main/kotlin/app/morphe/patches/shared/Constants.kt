@@ -65,12 +65,12 @@ object Constants {
     val COMPATIBILITY_TIKTOK_LITE = Compatibility(
         name = "TikTok Lite",
         packageName = TIKTOK_LITE_PACKAGE_NAME,
-        apkFileType = ApkFileType.APK,
+        apkFileType = ApkFileType.APKM,
         appIconColor = 0xFE2C55,
         targets = listOf(
             AppTarget(
                 version = TIKTOK_LITE_TARGET_VERSION,
-                description = "Download com.tiktok.lite.go v$TIKTOK_LITE_TARGET_VERSION (APK) arm64-v8a versionCode 470552 (APK) from APKMirror"
+                description = "Download com.tiktok.lite.go v$TIKTOK_LITE_TARGET_VERSION (APKM) arm64-v8a versionCode 470552 (APKM) from APKMirror"
             )
         )
     )
