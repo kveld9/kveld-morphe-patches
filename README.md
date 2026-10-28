@@ -142,7 +142,7 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 | **Disable On-Device AI** | Turns off on-device AI, the chatbot and AI search. |  |
 | **Disable Push Notifications** | Stops background push notifications. |  |
 | **Disable QUIC** | Loads videos, uploads, and live connections over standard HTTPS instead of QUIC. |  |
-| **Download Without Watermark** | Unlocks downloading and saves videos without watermarks. | • Remove Watermark<br>• Saved-Video Quality Preference |
+| **Download Without Watermark** | Unlocks downloading and saves videos without watermarks. | • Remove Watermark<br>• Saved-Video Quality Preference<br>• Disable Post-Download Share Dialog |
 | **Enable Profile Banner** | Unlocks the profile banner and its editing tools. |  |
 | **Feed Ads & Content Filter** | Filters ads, shopping tags, live cards, and clutter from your feed. | • Filter Feed Ads<br>• Filter Feed Bloat<br>• Hide Video Product Anchors<br>• Block Live Streams<br>• Hide AI-Generated Content<br>• Hide Seen Videos<br>• Minimum Views<br>• Maximum Views<br>• Minimum Likes<br>• Maximum Likes<br>• Blocked Creators<br>• Blocked Hashtags<br>• Blocked Keywords<br>• Hidden Regions<br>• Maximum Post Age<br>• Minimum Video Length<br>• Maximum Video Length<br>• Hide Stories<br>• Hide Photo Posts |
 | **Force Auto-Scroll** | Enables native auto-scrolling to the next video. |  |
@@ -155,7 +155,7 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 | **Offline Video Limit** | Customizes the maximum number of videos saved for offline viewing. | • Custom Offline Videos Limit |
 | **Playback & Display Governor** | Limits playback resolution and HDR to save battery, and locks the screen refresh rate. | • Cap Playback Resolution<br>• Maximum Playback Resolution<br>• Avoid ByteVC2 Software Decoding<br>• Drop Undecodable Video Streams<br>• Disable HDR Video Playback<br>• Govern Display Refresh Rate<br>• Target Refresh Rate |
 | **Remember Clear Display** | Keeps clear-display mode active when scrolling to the next video. |  |
-| **Remember Playback Speed** | Keeps your chosen playback speed across videos and restarts. | • Hold-And-Slide 2x Speed Lock |
+| **Remember Playback Speed** | Keeps your chosen playback speed across videos and restarts. | • Default Playback Speed<br>• Hold-And-Slide 2x Speed Lock |
 | **Remove Creator Tools** | Removes video editing and effects tools to free up space. |  |
 | **Remove Extra Files** | Removes card scanners, AI engines and extra fonts to save space. |  |
 | **Remove Extra Languages** | Deletes unselected language packs. | • Languages to keep |
@@ -170,6 +170,46 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 | **Strip Sensitive Permissions** | Removes sensitive hardware, sensor, and tracking permissions. | • Strip Notification Permission<br>• Strip Camera Permission<br>• Strip Microphone Permissions<br>• Strip Storage & Media Permissions<br>• Strip Bluetooth Permissions<br>• Strip NFC Permission<br>• Strip Biometric Permissions<br>• Strip Foreground Service Permissions<br>• Strip System Alert Window Permission<br>• Strip Wake Lock Permission<br>• Strip Screenshot & Recording Detection Permissions<br>• Strip Miscellaneous Hardware & System Permissions<br>• Strip OEM Diagnostic & Background Signals<br>• Strip Push Delivery Permissions<br>• Strip In-App Billing Permission |
 | **Use System Font** | Uses the system font instead of bundled TikTok fonts. |  |
 | **Video Fit Mode** | Lets you choose between fitting the whole video or filling the screen. | • Video Fit Mode |
+
+</details>
+
+<details>
+<summary>TikTok Lite&nbsp;&nbsp;•&nbsp;&nbsp;<b>25 patches</b></summary>
+<br>
+
+**Supported versions:**
+
+| 47.5.52 |
+| :---: |
+| Download com.tiktok.lite.go v47.5.52 (APK) arm64-v8a versionCode 470552 (APK) from APKMirror |
+
+| Patch | Description | Options |
+|----------|----------------|-----------|
+| **Allow Screenshots** | Removes screenshot and screen recording blocking. |  |
+| **Battery & Resource Saver** | Stops 3D ad sensors and aggressive video preloading to save battery and data. |  |
+| **Block Popups & Prompts** | Blocks popups, nags and promo dialogs across the app. | • Suppress Account & Permission Nags<br>• Hide Notification Prompts<br>• Suppress Sticker Recommendations<br>• Filter PopLayer Prompts & Nags<br>• Suppress Live Teaser Bubbles<br>• Suppress DM Streak Reminders<br>• Disable Post-Download Share Dialog<br>• Update Prompt Suppressor<br>• Skip First-Launch Onboarding<br>• Skip Content Warnings |
+| **Block Trackers** | Neutralizes ByteDance AppLog tracking, crash monitors, and analytics. |  |
+| **Block Trackers (Setup)** | Removes tracking permissions and disables telemetry components. |  |
+| **Bypass Mandatory Login** | Lets you browse videos and feeds without creating an account or logging in. |  |
+| **Camera & Microphone Indicator** | Shows a corner mark while TikTok holds camera/mic open. |  |
+| **Clean Share Links** | Removes tracking parameters from shared links. | • Custom Share Host |
+| **Disable History Recording** | Prevents TikTok from recording your watch history and search queries. | • Disable Watch History<br>• Disable Search History |
+| **Disable Push Notifications** | Stops background push notifications. |  |
+| **Disable QUIC** | Loads videos, uploads, and live connections over standard HTTPS instead of QUIC. |  |
+| **Download Without Watermark** | Unlocks downloading and saves videos without watermarks. | • Remove Watermark<br>• Saved-Video Quality Preference<br>• Disable Post-Download Share Dialog |
+| **Feed Ads & Content Filter** | Filters ads, shopping tags, live cards, and clutter from your feed. | • Filter Feed Ads<br>• Filter Feed Bloat<br>• Hide Video Product Anchors<br>• Block Live Streams<br>• Hide AI-Generated Content<br>• Hide Seen Videos<br>• Minimum Views<br>• Maximum Views<br>• Minimum Likes<br>• Maximum Likes<br>• Blocked Creators<br>• Blocked Hashtags<br>• Blocked Keywords<br>• Hidden Regions<br>• Maximum Post Age<br>• Minimum Video Length<br>• Maximum Video Length<br>• Hide Stories<br>• Hide Photo Posts |
+| **Force Auto-Scroll** | Enables native auto-scrolling to the next video. |  |
+| **Friends & Suggestions Filter** | Keeps the Friends feed strictly mutual and hides suggested accounts across the app. | • Strict Mutual Friends Feed<br>• Filter Friends Feed Bloat<br>• Hide Suggested Accounts |
+| **In-App Browser Privacy Guard** | Opens web links in your browser and blocks tracking in the remaining web views. |  |
+| **Login Compatibility Fix** | Restores Google and Spotify sign-in on modified app builds. | • Fix Google Login<br>• Fix Spotify Login |
+| **Playback & Display Governor** | Limits playback resolution and HDR to save battery, and locks the screen refresh rate. | • Cap Playback Resolution<br>• Maximum Playback Resolution<br>• Avoid ByteVC2 Software Decoding<br>• Drop Undecodable Video Streams<br>• Disable HDR Video Playback<br>• Govern Display Refresh Rate<br>• Target Refresh Rate |
+| **Remember Clear Display** | Keeps clear-display mode active when scrolling to the next video. |  |
+| **Remember Playback Speed** | Keeps your chosen playback speed across videos and restarts. | • Default Playback Speed<br>• Hold-And-Slide 2x Speed Lock |
+| **SIM Region Selector** | Locks the app to a chosen country to unlock regional content. | • Spoofed Region ISO Code<br>• Spoofed Operator Numeric Code (MCC+MNC)<br>• Spoofed Operator Name |
+| **Show Exact Counts** | Shows exact numbers on likes, comments, views and followers. |  |
+| **Show Seekbar** | Restores the video progress seekbar and scrubbing controls. | • Show Thumbnail Preview |
+| **Stop Video Looping** | Stops videos at the end instead of replaying them in an infinite loop. |  |
+| **Strip Sensitive Permissions** | Removes sensitive hardware, sensor, and tracking permissions. | • Strip Notification Permission<br>• Strip Camera Permission<br>• Strip Microphone Permissions<br>• Strip Storage & Media Permissions<br>• Strip Bluetooth Permissions<br>• Strip NFC Permission<br>• Strip Biometric Permissions<br>• Strip Foreground Service Permissions<br>• Strip System Alert Window Permission<br>• Strip Wake Lock Permission<br>• Strip Screenshot & Recording Detection Permissions<br>• Strip Miscellaneous Hardware & System Permissions<br>• Strip OEM Diagnostic & Background Signals<br>• Strip Push Delivery Permissions<br>• Strip In-App Billing Permission |
 
 </details>
 
@@ -230,7 +270,7 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 </details>
 
 <details>
-<summary>Universal&nbsp;&nbsp;•&nbsp;&nbsp;<b>26 patches</b></summary>
+<summary>Universal&nbsp;&nbsp;•&nbsp;&nbsp;<b>27 patches</b></summary>
 <br>
 
 | Patch | Description | Options |
@@ -247,6 +287,7 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 | **Force Screen Timeout** | Makes apps respect your screen-off timer. |  |
 | **Go Fully Offline** | Removes internet access completely. | • Network state<br>• Wi-Fi controls<br>• Push permissions<br>• Google sync<br>• Block unencrypted traffic |
 | **Lock Screen Brightness** | Stops apps from changing brightness by themselves. |  |
+| **Neutralize Play Billing** | Removes Play Billing permission and service query intents from AndroidManifest.xml for graceful degradation on devices without Google Mobile Services. |  |
 | **Override certificate pinning** | Lets a user-installed certificate authority intercept the app's HTTPS traffic for debugging. |  |
 | **Remove Extra Languages (Universal)** | Deletes unselected translation folders. | • Languages to keep |
 | **Remove Pairip** | Stops apps protected by Pairip from blocking a re-signed install. Cannot defeat checks that rely on a remote server. |  |
