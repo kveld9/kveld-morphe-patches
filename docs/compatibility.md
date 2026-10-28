@@ -8,12 +8,12 @@ Comprehensive guide to CPU architecture support, APK variant selection, and appl
 
 Each application has an authoritative, all-in-one guide covering prerequisites, patch catalogs, configuration parameters, and technical architecture:
 
-| Application | Supported Version | Architectures | Target Format | Complete Documentation |
-| :--- | :--- | :--- | :--- | :--- |
-| **Brave Browser** | `1.98.60` | `arm64-v8a`, `armeabi-v7a` | Standalone APK (`Bravemonoarm64.apk` / `BraveMonoarm.apk`) | [Brave Guide](apps/brave.md) |
-| **Gboard Lite** | `18.5.1.993608717-lite_beta` | `arm64-v8a`, `armeabi-v7a` | Standalone nodpi APK | [Gboard Lite Guide](apps/gboard.md) |
-| **TikTok** | `47.5.3` | `arm64-v8a` | Standalone nodpi APK | [TikTok Guide](apps/tiktok.md) |
-| **Universal Optimizations** | *Universal* | All Architectures | Any Android APK | [Universal Patches Guide](universal-patches.md) |
+| Application | Architectures | Target Format | Complete Documentation |
+| :--- | :--- | :--- | :--- |
+| **Brave Browser** | `arm64-v8a`, `armeabi-v7a` | Standalone APK (`Bravemonoarm64.apk` / `BraveMonoarm.apk`) | [Brave Guide](apps/brave.md) |
+| **Gboard Lite** | `arm64-v8a`, `armeabi-v7a` | Standalone nodpi APK | [Gboard Lite Guide](apps/gboard.md) |
+| **TikTok** | `arm64-v8a` | Standalone nodpi APK | [TikTok Guide](apps/tiktok.md) |
+| **Universal Optimizations** | All Architectures | Any Android APK | [Universal Patches Guide](universal-patches.md) |
 
 ---
 
@@ -38,8 +38,7 @@ Brave Browser provides official Monochrome release APKs for both architectures (
 Download `Bravemonoarm64.apk` (for 64-bit ARM devices) or `BraveMonoarm.apk` (for 32-bit ARM devices) from [Brave GitHub Releases](https://github.com/brave/brave-browser/releases). Do **NOT** use `Bravearm64Universal.apk`, `Bravearm64.apk`, or x86 builds. Details in [Brave Guide](apps/brave.md).
 
 ### ⌨️ Gboard Lite: Standalone nodpi APK
-Download the standalone `lite` or `lite_beta` APK (nodpi) from [APKMirror](https://www.apkmirror.com/apk/google-inc/gboard/gboard-the-google-keyboard-18-5-1-993608717-beta/). Do **NOT** download split packages or bundle formats. Details in [Gboard Lite Guide](apps/gboard.md).
+Download the standalone `lite` or `lite_beta` APK (nodpi) from [APKMirror](https://www.apkmirror.com/apk/google-inc/gboard/). Do **NOT** download split packages or bundle formats. Details in [Gboard Lite Guide](apps/gboard.md).
 
 ### 🎵 TikTok (`com.zhiliaoapp.musically`)
-Download the official standalone APK release from [APKMirror (TikTok)](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/).
-- **Current Target**: `47.5.3` (nodpi APK, `arm64-v8a`). Details in [TikTok Guide](apps/tiktok.md).
+Download the official standalone APK release from [APKMirror (TikTok)](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/). Details in [TikTok Guide](apps/tiktok.md).

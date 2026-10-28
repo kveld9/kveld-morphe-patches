@@ -1,6 +1,6 @@
 # 🌐 Universal Patch Reference & Configuration Guide
 
-Comprehensive reference for universal optimization and resource slimming patches provided by Morphe Patches. These patches operate without app-specific hardcoding and can be applied across any supported target APK (Brave, Gboard Lite, TikTok) or custom Android applications.
+Comprehensive reference for universal optimization and resource slimming patches provided by Morphe Patches. These patches operate without app-specific hardcoding and can be applied across any APK or custom Android applications.
 
 ---
 
@@ -94,10 +94,10 @@ Exception: Block Tracking Servers (Universal) remains a valid opt-in patch on ma
 
 ## 1. Remove Extra Languages (Universal) (`localeResourceSlimmerPatch`)
 
-The **`Remove Extra Languages (Universal)`** patch strips unselected language translation directories from `res/` (such as `values-*`, `raw-*`, `xml-*`) across any supported target APK (Brave, Gboard Lite, TikTok) to reduce APK size.
+The **`Remove Extra Languages (Universal)`** patch strips unselected language translation directories from `res/` (such as `values-*`, `raw-*`, `xml-*`) across any APK to reduce APK size.
 
 > [!TIP]
-> **Chromium Browsers (Brave)**: While `Remove Extra Languages (Universal)` trims standard Android wrapper resources in `res/values-*`, Chromium browsers store over 95% of their strings (~9.71 MB in Brave 1.97.57) in native binary `.pak` files inside `assets/locales/`. For complete multilingual slimming in Brave, combine this patch with the Brave-specific **`Remove Extra Languages`** patch (Chromium PAK slimmer), which trims those files.
+> **Chromium Browsers (Brave)**: While `Remove Extra Languages (Universal)` trims standard Android wrapper resources in `res/values-*`, Chromium browsers store over 95% of their strings (several MB, measured at time of writing) in native binary `.pak` files inside `assets/locales/`. For complete multilingual slimming in Brave, combine this patch with the Brave-specific **`Remove Extra Languages`** patch (Chromium PAK slimmer), which trims those files.
 
 ### Configuration in Morphe Manager
 

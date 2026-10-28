@@ -10,32 +10,18 @@ Technical documentation and patch catalog for Gboard Lite on Android.
 | :--- | :--- |
 | **Target App** | Gboard Lite |
 | **Package Name** | `com.google.android.inputmethod.latin` |
-| **Target Version** | `18.5.1.993608717-lite_beta-arm64-v8a` / `18.5.1.993608717-lite_beta-armeabi-v7a` |
+| **Target Version** | `Single pinned version -- see Supported Targets table in README.md` |
 | **Target Package Format** | standalone APK (APK nodpi) |
 | **Primary Architecture** | `arm64-v8a` / `armeabi-v7a` |
-| **Download Target** | [APKMirror (arm64-v8a)](https://www.apkmirror.com/apk/google-inc/gboard/gboard-the-google-keyboard-18-5-1-993608717-beta-release/gboard-the-google-keyboard-18-5-1-993608717-lite_beta-arm64-v8a-android-apk-download/) |
-| **Alternative Variant** | `18.5.1.993608717-lite_beta-armeabi-v7a` (alternative 32-bit ARM variant on APKMirror) |
+| **Download Target** | [APKMirror](https://www.apkmirror.com/apk/google-inc/gboard/) |
+| **Alternative Variant** | alternative 32-bit ARM variant on APKMirror |
 | **Authoritative Source** | APKMirror |
 
 ---
 
 ## 2. Applied Patches Catalog
 
-| Patch Name | Typology | Default State | Dependencies | Description |
-| :--- | :--- | :--- | :--- | :--- |
-| **Keyboard Settings** | `resourcePatch` | `true` (Enabled) | AMOLED, Inset, Incognito, Clipboard, Feature Flags, Toolbar, Seekbar, Core Integrity, Haptics | Adds a settings screen inside Gboard: theme, vibration, clipboard and more. |
-| **Block Trackers** | `bytecodePatch` | `true` (Enabled) | None | Stops background metrics, event logging and crash reporting. |
-| **Install a Copy** | `resourcePatch` | `true` (Enabled) | `gboardCoreIntegrityPatch` | Installs this Gboard next to the original one. |
-| **Stop Background Sync** | `bytecodePatch` | `false` (Opt-in) | None | Stops background downloads and sync to save battery. |
-| **Disable Cloud Backup** | `resourcePatch` | `true` (Enabled) | None | Keeps keyboard data off Google Drive backups. |
-| **Stop Remote Updates** | `bytecodePatch` | `true` (Enabled) | None | Stops Google from changing settings remotely. |
-| **Disable Play Services** | `bytecodePatch` | `false` (Opt-in) | None | Runs without Google Play services. Also turns off inline Translate. |
-| **Block App Hijacking** | `bytecodePatch` | `true` (Enabled) | `gboardRemoveWebDebugBridgePatch` | Protects against other apps hijacking Gboard and removes debug tools. |
-| **Go Offline (Setup)** | `resourcePatch` | `false` (Opt-in) | None | Removes network permissions. |
-| **Offline Only** | `bytecodePatch` | `false` (Opt-in) | `Go Offline (Setup)` | Fully disconnects Gboard. Download dictionaries first. |
-| **Remove Extra Files** | `resourcePatch` | `true` (Enabled) | None | Deletes licenses, tutorial animations and junk. |
-| **Remove Permissions** | `resourcePatch` | `false` (Opt-in) | None | Removes permissions you pick below. |
-| **Remove Translate Limit** | `bytecodePatch` | `true` (Enabled) | None | Removes the character limit for inline translation. |
+The authoritative patch catalog with descriptions and options is generated in README.md from the built .mpp; see also patches-list.json.
 
 ---
 

@@ -10,31 +10,17 @@ Technical documentation and patch catalog for Brave Private Web Browser on Andro
 | :--- | :--- |
 | **Target App** | Brave Private Web Browser, VPN |
 | **Package Name** | `com.brave.browser` |
-| **Target Version** | `1.98.60` |
+| **Target Version** | `Single pinned version -- see Supported Targets table in README.md` |
 | **Target Package Format** | standalone APK (`Bravemonoarm64.apk` or `BraveMonoarm.apk`) |
 | **Primary Architecture** | `arm64-v8a` / `armeabi-v7a` |
-| **Download Target** | [APKMirror](https://www.apkmirror.com/apk/brave-software/brave-browser/brave-browser-1-98-60-release/brave-private-web-browser-vpn-1-98-60-arm64-v8a-android-12l-apk/) |
+| **Download Target** | [APKMirror](https://www.apkmirror.com/apk/brave-software/brave-browser/) |
 | **Authoritative Source** | github.com/brave/brave-browser/releases |
 
 ---
 
 ## 2. Applied Patches Catalog
 
-| Patch Name | Typology | Default State | Dependencies | Description |
-| :--- | :--- | :--- | :--- | :--- |
-| **Stop Background Sync** | `bytecodePatch` | `true` (Enabled) | None | Stops background wakeups and battery drain. |
-| **Block Trackers (Setup)** | `resourcePatch` | `false` (Opt-in) | None | Removes the Play install referrer permission. |
-| **Block Tracking Servers** | `rawResourcePatch` | `false` (Opt-in) | None | Redirects tracking servers to 0.0.0.0. |
-| **Block Trackers** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch`, `Block Trackers (Setup)`, `Block Tracking Servers` | Blocks usage analytics, crash uploads and experiment downloads. |
-| **Clean Start Page** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Removes sponsored wallpapers, news feed and promo cards. |
-| **Keep Tabs Open** | `bytecodePatch` | `true` (Enabled) | None | Stops Brave from minimizing your tabs in the background. |
-| **Remove Extra Files** | `rawResourcePatch` | `false` (Opt-in) | None | Deletes unused AR and XR files to shrink the app. |
-| **Silence Promo Notifications** | `bytecodePatch` | `true` (Enabled) | None | Stops tips, reward promos and marketing notifications. |
-| **Brave Origin (Setup)** | `resourcePatch` | `false` (Opt-in) | None | Turns on Origin preference switches by default. |
-| **Brave Origin** | `bytecodePatch` | `true` (Enabled) | `Brave Origin (Setup)`, `braveNativeExtractionPatch` | Unlocks Brave Origin feature switches. |
-| **Block Popups & Rating Requests** | `bytecodePatch` | `true` (Enabled) | None | Blocks rating popups, review requests and promo dialogs. |
-| **Select Previous Tab on Close** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Selects the previous tab in the tab group when closing a tab. |
-| **Custom Brave theme** | `bytecodePatch` | `false` (Opt-in) | `Custom Brave theme resources` | Applies custom colors to Brave dark mode chrome, defaulting to pure OLED black for battery saving on OLED screens. |
+The authoritative patch catalog with descriptions and options is generated in README.md from the built .mpp; see also patches-list.json.
 
 ---
 

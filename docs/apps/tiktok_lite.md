@@ -10,8 +10,7 @@ Technical documentation and patch catalog for TikTok Lite on Android.
 | :--- | :--- |
 | **Target App** | TikTok Lite |
 | **Package Name** | `com.tiktok.lite.go` |
-| **Target Version** | `47.5.52` |
-| **Target Version Code** | `470552` |
+| **Target Version** | `Single pinned version -- see Supported Targets table in README.md` |
 | **Min SDK** | `21` |
 | **Target Package Format** | APKM bundle (`base.apk` + split config APKs) |
 | **Primary Architecture** | `arm64-v8a` / `armeabi-v7a` |
@@ -20,45 +19,19 @@ Technical documentation and patch catalog for TikTok Lite on Android.
 
 ---
 
-## 2. Supported Patches Catalog (16 Patches)
+## 2. Supported Patches Catalog
 
-The following 24 patches are verified and fully supported on TikTok Lite `47.5.52`:
+The authoritative patch catalog with descriptions and options is generated in README.md from the built .mpp; see also patches-list.json.
 
-| Patch Name | Typology | Default State | Dependencies | Description |
-| :--- | :--- | :--- | :--- | :--- |
-| **Allow Screenshots** | `bytecodePatch` | `true` (Enabled) | None | Removes screenshot and screen recording blocking. |
-| **Battery & Resource Saver** | `bytecodePatch` | `true` (Enabled) | None | Stops aggressive video preloading to save battery and data. |
-| **Clean Share Links** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Removes tracking parameters from shared links. |
-| **Download Without Watermark** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Unlocks downloading and saves videos without watermarks, with optional post-download dialog suppression. |
-| **In-App Browser Privacy Guard** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Opens web links in your browser and blocks tracking in the remaining web views. |
-| **Offline Video Limit** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Customizes the maximum number of videos saved for offline viewing. |
-| **SIM Region Selector** | `bytecodePatch` | `false` (Opt-in) | None | Locks the app to a chosen country to unlock regional content. |
-| **Show Seekbar** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Restores the video progress seekbar and scrubbing controls. |
-| **Block Trackers (Setup)** | `resourcePatch` | `true` (Enabled) | None | Removes tracking permissions and disables telemetry components. |
-| **Strip Sensitive Permissions** | `resourcePatch` | `false` (Opt-in) | None | Removes sensitive hardware, sensor, and tracking permissions. |
-| **Block Trackers** | `bytecodePatch` | `true` (Enabled) | None | Neutralizes ByteDance AppLog tracking, crash monitors, and analytics. |
-| **Bypass Mandatory Login** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Skips the forced login wall via Lite's mini-account gate. |
-| **Camera & Microphone Indicator** | `bytecodePatch` | `false` (Opt-in) | `sharedExtensionPatch` | Shows a corner mark while TikTok holds camera/mic open. |
-| **Disable Push Notifications** | `bytecodePatch` | `false` (Opt-in) | None | Stops background push notifications. |
-| **Force Auto-Scroll** | `bytecodePatch` | `true` (Enabled) | None | Enables native auto-scrolling to the next video. |
-| **Show Exact Counts** | `bytecodePatch` | `false` (Opt-in) | `sharedExtensionPatch` | Shows exact numbers on likes, comments, views and followers. |
-| **Stop Video Looping** | `bytecodePatch` | `false` (Opt-in) | None | Stops videos at the end instead of replaying them in an infinite loop. |
-| **Disable QUIC** | `bytecodePatch` | `false` (Opt-in) | None | Loads videos, uploads, and live connections over standard HTTPS instead of QUIC. |
-| **Playback & Display Governor** | `bytecodePatch` | `false` (Opt-in) | `sharedExtensionPatch` | Limits playback resolution and HDR to save battery, and locks the screen refresh rate. |
-| **Feed Ads & Content Filter** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Filters ads, shopping tags, live cards, clutter, AI content, and custom content filters from your feed. |
-| **Friends & Suggestions Filter** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Keeps the Friends feed strictly mutual and hides suggested accounts across the app. |
-| **Remember Clear Display** | `bytecodePatch` | `false` (Opt-in) | `sharedExtensionPatch` | Re-applies clear-display mode automatically when scrolling to the next video. |
-| **Remember Playback Speed** | `bytecodePatch` | `false` (Opt-in) | `sharedExtensionPatch` | Sets a default video playback speed (0.5x-2.0x), applied across videos. |
-| **Block Popups & Prompts** | `bytecodePatch` | `true` (Enabled) | `sharedExtensionPatch` | Blocks first-launch onboarding tutorials and notification prompts across the app. |
 ---
 
-## 3. Non-Applicable on Lite (27 Dropped Patches)
+## 3. Non-Applicable on Lite
 
-The following 27 patches from the standard TikTok patch suite are excluded on TikTok Lite because the corresponding target classes, components, or assets are absent from the Lite build:
+The following patches from the standard TikTok patch suite are excluded on TikTok Lite because the corresponding target classes, components, or assets are absent from the Lite build:
 
 > Re-audit note: every entry below was re-verified with a semantic sweep across all 15 DEX files (exact musically names, related strings, caller XREFs, nearest neighbor with file:line). "Absent" means zero hits everywhere, not just a renamed class. The login-bypass precedent (gate found under mini_account_impl/ with obfuscated names) was the trigger for this second pass, which rescued 8 additional ports.
 
-### Group B: Feature Absent / Inert (10 Patches)
+### Group B: Feature Absent / Inert
 
 - **Always Show Publish Date**: Anchor absent; `VideoItemParams.getAweme()` and `aweme.getCreateTime()` feed item UI hook absent in Lite DEX.
 - **Disable Live Gift Effects**: Anchor absent; `LiveGiftPlayer` and `GiftEffectWidget` live gift rendering widgets absent in Lite DEX.
@@ -69,7 +42,7 @@ The following 27 patches from the standard TikTok patch suite are excluded on Ti
 - **Remove Extra Files**: Anchor absent; stripped APK asset layout in Lite APK, no redundant sample files present.
 - **Remove Extra Languages**: Anchor absent; Lite APK is already split into trimmed language bundles.
 
-### Group C: Architecture Divergence / Incompatible Targets (25 Patches)
+### Group C: Architecture Divergence / Incompatible Targets
 
 - **Auto-Pause First Video**: Anchor absent; `PlayerController` class and first-frame playback interception absent in Lite DEX.
 - **Comment Customizer**: Anchor absent; `comment_sort_opt_style` string and comment sorting logic absent in Lite DEX.
@@ -97,30 +70,10 @@ The following 27 patches from the standard TikTok patch suite are excluded on Ti
 
 - **Bundle Format**: TikTok Lite is distributed as an APKM bundle with code split across 15 DEX files (77,111 classes).
 - **Native Libraries**: TikTok Lite contains `libtt_lib.so`, `liborbuculum.so`, and `libzoin.so`, but lacks `libchrome.so`.
-- **Target Pinning**: TikTok Lite pins exclusively version `47.5.52` (`versionCode: 470552`, `minSdk: 21`).
+- **Min SDK**: `21`.
 
 ---
 
-## 5. Traffic Audit (coverage-closure, 2026-10-26, whyred, UID-isolated, DoT)
+## 5. Traffic Audit
 
-Method: tcpdump on wlan0, per-UID iptables isolation (ACCEPT app UID before DROP 10000-19999),
-Private DNS forced to DoT (lab plaintext DNS sinkholes telemetry domains -- documented exercise
-limitation for windows 1-3, bypassed from window 4 on). Windows: 60 s baseline (force-stopped)
-+ ~200 s exercise on the login wall (fresh install per window, TLS hellos inside the window).
-Verdicts per flow (SNI + OUT/IN volumes):
-
-| Flow | Window 4 (pre-5b) | Window 5 (post-iter1) | Window 6 (post-iter2) | Verdict |
-|---|---|---|---|---|
-| log-boot.tiktokv.com (AppLog settings+register) | 4.7 KB out | gone | gone | SILENCED (AppLogNetworkClient + tryUpdateConfig stubs) |
-| log16-normal-no1a.tiktokv.eu (AppLog upload) | 12.2 KB out | gone | gone | SILENCED (LCC synthetic success, flush/reaper stubs) |
-| mon-boot.tiktokv.com (APM/SDKMonitor) | 2.4 KB out | 4.6 KB out | 4.8 KB out | SURVIVING GAP (see below) |
-| tnc16-normal-useastred.tiktokv.eu (TNC net config) | 3.0 KB out | 2.9 KB out | 2.6 KB out | FUNCTIONAL (Traffic Network Controller config fetch, IN-dominant) |
-| Google Analytics trio (manifest) | enabled | disabled | disabled | SILENCED (Setup BLOCKED_COMPONENTS, verified in output manifest) |
-| api/gecko/vcs boots, CDN thumbs, FIS push | present | present | present | FUNCTIONAL (login bootstrap, media, push infra) |
-
-Surviving gap: mon-boot APM uploads persist (~5 KB OUT per window) although NpthTask.run/LCCII,
-Npth.init and DefaultTTNetImpl.doPost/doGet are all stubbed (gates green, ART PASS). The emitter
-reaches mon-boot through a transport path other than DefaultTTNetImpl (MonitorInitTask registers
-it for SDKMonitorUtils, but the observed uploads bypass those overloads). Two 5b iterations spent
-(max); not widened further blindly. Next step when resumed: XREF the mon-boot/monitorsdk URL
-construction sites beyond NpthTask (dynamic `%smonitorsdk.%s` builder) and hook the real transport.
+Per-flow traffic audit reports live in issues, not in this guide.
