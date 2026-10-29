@@ -22,7 +22,7 @@ import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import java.io.File
 import java.nio.file.Files
 
-private const val MAX_WALLPAPER_BYTES = 8 * 1024 * 1024L // 8MB limit
+private const val MAX_WALLPAPER_BYTES = 20 * 1024 * 1024L // 20MB limit
 private const val PREF_KEY_WALLPAPER_PATH = "Chrome.NtpCustomization.BackgroundImageFilePath"
 private const val PREF_KEY_WALLPAPER_TYPE = "Chrome.NtpCustomization.NtpBackgroundImageType"
 
@@ -382,13 +382,13 @@ val braveCleanNewTabPagePatch = bytecodePatch(
             } catch (_: NoSuchElementException) {
             }
 
-            if (candidateMethods.isEmpty()) {
-                error("Failed to resolve NTP background manager wallpaper anchors: neither $PREF_KEY_WALLPAPER_PATH nor $PREF_KEY_WALLPAPER_TYPE was found")
-            }
-
             for (candidate in candidateMethods.distinctBy { "${it.definingClass}->${it.name}" }) {
                 wallpaperReadSitesHooked += hookWallpaperReadSites(candidate, PREF_KEY_WALLPAPER_PATH, true, hookedMethods)
                 wallpaperReadSitesHooked += hookWallpaperReadSites(candidate, PREF_KEY_WALLPAPER_TYPE, false, hookedMethods)
+            }
+
+            if (candidateMethods.isEmpty() || wallpaperReadSitesHooked == 0) {
+                error("Failed to resolve NTP background manager wallpaper anchors: no read sites hooked for custom wallpaper display path")
             }
         }
 
