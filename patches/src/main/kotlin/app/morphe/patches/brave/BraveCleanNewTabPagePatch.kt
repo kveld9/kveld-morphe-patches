@@ -2,7 +2,6 @@ package app.morphe.patches.brave
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.patch.ResourcePatch
 import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
@@ -13,9 +12,12 @@ import app.morphe.patches.shared.sharedExtensionPatch
 import com.android.tools.smali.dexlib2.Opcode
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import com.android.tools.smali.dexlib2.iface.ClassDef
+import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import java.io.File
 import java.nio.file.Files
@@ -75,23 +77,24 @@ private fun injectPrefGuards(
     val instructions = method.implementation?.instructions?.toList() ?: return
     val resolved = targets.mapNotNull { target ->
         val constIdx = instructions.indexOfFirst {
-            it.opcode == Opcode.CONST_STRING &&
+            (it.opcode == Opcode.CONST_STRING || it.opcode == Opcode.CONST_STRING_JUMBO) &&
                 (it as? ReferenceInstruction)?.reference?.let { ref ->
                     (ref as? StringReference)?.string == target.searchString
                 } == true
         }
         if (constIdx == -1) return@mapNotNull null
-        val iputRelOffset = instructions.drop(constIdx).indexOfFirst {
+        val iputRelOffset = instructions.drop(constIdx + 1).take(25).indexOfFirst {
             it.opcode == Opcode.IPUT_BOOLEAN
         }
         if (iputRelOffset == -1) return@mapNotNull null
-        val targetIdx = constIdx + iputRelOffset
+        val targetIdx = constIdx + 1 + iputRelOffset
         val reg = (instructions[targetIdx] as TwoRegisterInstruction).registerA
         Triple(targetIdx, reg, target.tag)
     }
 
     resolved.sortedByDescending { it.first }.forEach { (targetIdx, reg, tag) ->
-        method.addInstructions(targetIdx, "const/4 v$reg, 0x0")
+        val constInst = if (reg <= 15) "const/4 v$reg, 0x0" else "const/16 v$reg, 0x0"
+        method.addInstructions(targetIdx, constInst)
         hookedMethods.add(tag)
     }
 }
@@ -109,14 +112,35 @@ private fun classMentionsCompanionKeys(classDef: ClassDef): Boolean {
     return false
 }
 
+private fun invokeConsumesRegister(inst: Any, reg: Int): Boolean {
+    return when (inst) {
+        is FiveRegisterInstruction -> {
+            val count = inst.registerCount
+            (count >= 1 && inst.registerC == reg) ||
+                (count >= 2 && inst.registerD == reg) ||
+                (count >= 3 && inst.registerE == reg) ||
+                (count >= 4 && inst.registerF == reg) ||
+                (count >= 5 && inst.registerG == reg)
+        }
+        is RegisterRangeInstruction -> {
+            val start = inst.startRegister
+            val end = start + inst.registerCount
+            reg in start until end
+        }
+        else -> false
+    }
+}
+
 private fun hookWallpaperReadSites(
     method: MutableMethod,
     keyString: String,
     isPathHook: Boolean,
     hookedMethods: MutableList<String>,
 ): Int {
+    if (method.name == "<init>" || method.name == "<clinit>") return 0
+
     val instructions = method.implementation?.instructions?.toList() ?: return 0
-    val matches = mutableListOf<Triple<Int, Int, Int>>() // injectionIdx, keyReg, resultReg
+    val matches = mutableListOf<Pair<Int, Int>>() // injectionIdx, resultReg
 
     instructions.forEachIndexed { constIdx, inst ->
         if (inst.opcode == Opcode.CONST_STRING || inst.opcode == Opcode.CONST_STRING_JUMBO) {
@@ -126,6 +150,17 @@ private fun hookWallpaperReadSites(
                 val subsequent = instructions.drop(constIdx + 1).take(15)
                 val invokeOffset = subsequent.indexOfFirst { it.opcode.name.startsWith("invoke-") }
                 if (invokeOffset != -1) {
+                    val invokeInst = subsequent[invokeOffset]
+                    if (!invokeConsumesRegister(invokeInst, keyReg)) {
+                        return@forEachIndexed
+                    }
+
+                    val methodRef = (invokeInst as? ReferenceInstruction)?.reference as? MethodReference
+                    val expectedReturnType = if (isPathHook) "Ljava/lang/String;" else "I"
+                    if (methodRef != null && methodRef.returnType != expectedReturnType) {
+                        return@forEachIndexed
+                    }
+
                     val moveResultIdx = constIdx + 1 + invokeOffset + 1
                     if (moveResultIdx < instructions.size) {
                         val moveResultInst = instructions[moveResultIdx]
@@ -137,7 +172,7 @@ private fun hookWallpaperReadSites(
                         if (isExpectedMoveResult && moveResultInst is OneRegisterInstruction) {
                             val resultReg = moveResultInst.registerA
                             val injectionIdx = moveResultIdx + 1
-                            matches.add(Triple(injectionIdx, keyReg, resultReg))
+                            matches.add(injectionIdx to resultReg)
                         }
                     }
                 }
@@ -148,41 +183,26 @@ private fun hookWallpaperReadSites(
     if (matches.isEmpty()) return 0
 
     var counter = 0
-    matches.sortedByDescending { it.first }.forEach { (injectionIdx, keyReg, resultReg) ->
-        val labelTag = if (isPathHook) "skip_wp" else "skip_type"
-        val labelName = ":${labelTag}_${method.name}_$injectionIdx"
-        val smali = if (keyReg != resultReg) {
-            if (isPathHook) {
-                """
-                    invoke-static {}, ${Constants.BRAVE_EXTENSION_CLASS}->ntpWallpaperPath()Ljava/lang/String;
-                    move-result-object v$keyReg
-                    if-nez v$keyReg, $labelName
-                    move-object v$resultReg, v$keyReg
-                    $labelName
-                """.trimIndent()
-            } else {
-                """
-                    invoke-static {}, ${Constants.BRAVE_EXTENSION_CLASS}->ntpWallpaperPath()Ljava/lang/String;
-                    move-result-object v$keyReg
-                    if-nez v$keyReg, $labelName
-                    const/4 v$resultReg, 0x1
-                    $labelName
-                """.trimIndent()
-            }
+    matches.sortedByDescending { it.first }.forEach { (injectionIdx, resultReg) ->
+        val invokeOp = if (resultReg <= 15) {
+            "invoke-static {v$resultReg}"
         } else {
-            if (isPathHook) {
-                """
-                    invoke-static {v$resultReg}, ${Constants.BRAVE_EXTENSION_CLASS}->overrideWallpaperPath(Ljava/lang/String;)Ljava/lang/String;
-                    move-result-object v$resultReg
-                """.trimIndent()
-            } else {
-                """
-                    invoke-static {v$resultReg}, ${Constants.BRAVE_EXTENSION_CLASS}->overrideWallpaperType(I)I
-                    move-result v$resultReg
-                """.trimIndent()
-            }
+            "invoke-static/range {v$resultReg .. v$resultReg}"
         }
-        method.addInstructionsWithLabels(injectionIdx, smali)
+        val helperMethod = if (isPathHook) {
+            "overrideWallpaperPath(Ljava/lang/String;)Ljava/lang/String;"
+        } else {
+            "overrideWallpaperType(I)I"
+        }
+        val moveResultOp = if (isPathHook) "move-result-object" else "move-result"
+
+        method.addInstructions(
+            injectionIdx,
+            """
+                $invokeOp, ${Constants.BRAVE_EXTENSION_CLASS}->$helperMethod
+                $moveResultOp v$resultReg
+            """.trimIndent(),
+        )
         val tag = if (isPathHook) "NtpBackground.filePath" else "NtpBackground.imageType"
         hookedMethods.add("${method.definingClass.substringAfterLast('/').removeSuffix(";")}.${method.name} ($tag)")
         counter++
@@ -279,34 +299,39 @@ val braveCleanNewTabPagePatch = bytecodePatch(
         val isWallpaperConfigured = deployedWallpaperBytes > 0
 
         // 1. Force NTP marketing preference gates in PrefService getBoolean at return
-        try {
-            val prefFp = Fingerprint(
-                definingClass = "Lorg/chromium/components/prefs/PrefService;",
-                name = "b",
-                returnType = "Z",
-                parameters = listOf("Ljava/lang/String;"),
-            )
-            val method = prefFp.method
-            val returnIndices = method.implementation?.instructions?.withIndex()
-                ?.filter { it.value.opcode == Opcode.RETURN }
-                ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
-                ?.toList() ?: emptyList()
+        val prefFp = Fingerprint(
+            definingClass = "Lorg/chromium/components/prefs/PrefService;",
+            name = "b",
+            returnType = "Z",
+            parameters = listOf("Ljava/lang/String;"),
+        )
+        val prefMethod = prefFp.method
+        val prefInstructions = prefMethod.implementation?.instructions?.toList() ?: emptyList()
+        val returnIndices = prefInstructions.withIndex()
+            .filter { it.value.opcode == Opcode.RETURN }
+            .mapNotNull { iv ->
+                val returnIndex = iv.index
+                val reg = (iv.value as? OneRegisterInstruction)?.registerA ?: return@mapNotNull null
+                val insertIdx = if (returnIndex > 0 && prefInstructions[returnIndex - 1].opcode == Opcode.MONITOR_EXIT) {
+                    returnIndex - 1
+                } else {
+                    returnIndex
+                }
+                insertIdx to reg
+            }
 
-            val filterMethod = if (isWallpaperConfigured) "filterNtpPrefWithWallpaper" else "filterNtpPref"
-            returnIndices.asReversed().forEach { (returnIndex, reg) ->
-                method.addInstructions(
-                    returnIndex,
-                    """
-                        invoke-static {p1, v$reg}, ${Constants.BRAVE_EXTENSION_CLASS}->$filterMethod(Ljava/lang/String;Z)Z
-                        move-result v$reg
-                    """.trimIndent(),
-                )
-            }
-            if (returnIndices.isNotEmpty()) {
-                hookedMethods.add("PrefService.b (NTP gates)")
-            }
-        } catch (e: Exception) {
-            println("[Clean Start Page] PrefService.b hook note: ${e.message}")
+        val filterMethod = if (isWallpaperConfigured) "filterNtpPrefWithWallpaper" else "filterNtpPref"
+        returnIndices.asReversed().forEach { (returnIndex, reg) ->
+            prefMethod.addInstructions(
+                returnIndex,
+                """
+                    invoke-static {p1, v$reg}, ${Constants.BRAVE_EXTENSION_CLASS}->$filterMethod(Ljava/lang/String;Z)Z
+                    move-result v$reg
+                """.trimIndent(),
+            )
+        }
+        if (returnIndices.isNotEmpty()) {
+            hookedMethods.add("PrefService.b (NTP gates)")
         }
 
         val shouldHideTopSites = hideTopSites ?: false
@@ -318,67 +343,52 @@ val braveCleanNewTabPagePatch = bytecodePatch(
         }
 
         // 2. Force NTP layout initialization guards
-        try {
-            val statsInitFp = Fingerprint(
-                strings = listOf("recyclerview_visible_position_", "show_brave_stats"),
-                returnType = "V",
-                parameters = emptyList(),
-            )
-            injectPrefGuards(statsInitFp.method, prefTargets, hookedMethods)
-        } catch (e: Exception) {
-            println("[Clean Start Page] Stats init hook note: ${e.message}")
-        }
+        val statsInitFp = Fingerprint(
+            strings = listOf("recyclerview_visible_position_", "show_brave_stats"),
+            returnType = "V",
+            parameters = emptyList(),
+        )
+        injectPrefGuards(statsInitFp.method, prefTargets, hookedMethods)
 
         // 3. Force preference listener guards
-        try {
-            val statsListenerFp = Fingerprint(
-                strings = listOf("brave_news_change_source", "show_brave_stats"),
-                returnType = "V",
-                parameters = listOf("Landroid/content/SharedPreferences;", "Ljava/lang/String;"),
-            )
-            injectPrefGuards(statsListenerFp.method, prefTargets, hookedMethods)
-        } catch (e: Exception) {
-            println("[Clean Start Page] Stats listener hook note: ${e.message}")
-        }
+        val statsListenerFp = Fingerprint(
+            strings = listOf("brave_news_change_source", "show_brave_stats"),
+            returnType = "V",
+            parameters = listOf("Landroid/content/SharedPreferences;", "Ljava/lang/String;"),
+        )
+        injectPrefGuards(statsListenerFp.method, prefTargets, hookedMethods)
 
         var wallpaperReadSitesHooked = 0
         if (isWallpaperConfigured) {
-            // Verify ContextUtils by fingerprint before relying on it
-            try {
-                val contextUtilsFp = Fingerprint(
-                    definingClass = "Lorg/chromium/base/ContextUtils;",
-                    name = "getApplicationContext",
-                    returnType = "Landroid/content/Context;",
-                    parameters = emptyList(),
-                )
-                val matches = contextUtilsFp.matchAll()
-                if (matches.isNotEmpty()) {
-                    hookedMethods.add("ContextUtils.getApplicationContext")
-                } else {
-                    println("[Clean Start Page] ContextUtils verification note: ContextUtils.getApplicationContext not found by fingerprint in this target build.")
-                }
-            } catch (e: Exception) {
-                println("[Clean Start Page] ContextUtils verification note: ${e.message}")
-            }
-
             // 4. Hook SharedPreferences reads in NTP background manager class(es)
+            val candidateMethods = mutableListOf<MutableMethod>()
             try {
                 val pathFp = Fingerprint(strings = listOf(PREF_KEY_WALLPAPER_PATH))
+                candidateMethods.addAll(
+                    pathFp.matchAll()
+                        .filter { classMentionsCompanionKeys(it.classDef) }
+                        .map { it.method },
+                )
+            } catch (_: NoSuchElementException) {
+            }
+
+            try {
                 val typeFp = Fingerprint(strings = listOf(PREF_KEY_WALLPAPER_TYPE))
-                val pathMatches = pathFp.matchAll()
-                val typeMatches = typeFp.matchAll()
+                candidateMethods.addAll(
+                    typeFp.matchAll()
+                        .filter { classMentionsCompanionKeys(it.classDef) }
+                        .map { it.method },
+                )
+            } catch (_: NoSuchElementException) {
+            }
 
-                val candidateMethods = (pathMatches + typeMatches)
-                    .filter { classMentionsCompanionKeys(it.classDef) }
-                    .map { it.method }
-                    .distinctBy { "${it.definingClass}->${it.name}" }
+            if (candidateMethods.isEmpty()) {
+                error("Failed to resolve NTP background manager wallpaper anchors: neither $PREF_KEY_WALLPAPER_PATH nor $PREF_KEY_WALLPAPER_TYPE was found")
+            }
 
-                for (candidate in candidateMethods) {
-                    wallpaperReadSitesHooked += hookWallpaperReadSites(candidate, PREF_KEY_WALLPAPER_PATH, true, hookedMethods)
-                    wallpaperReadSitesHooked += hookWallpaperReadSites(candidate, PREF_KEY_WALLPAPER_TYPE, false, hookedMethods)
-                }
-            } catch (e: Exception) {
-                println("[Clean Start Page] NTP background manager hook note: ${e.message}")
+            for (candidate in candidateMethods.distinctBy { "${it.definingClass}->${it.name}" }) {
+                wallpaperReadSitesHooked += hookWallpaperReadSites(candidate, PREF_KEY_WALLPAPER_PATH, true, hookedMethods)
+                wallpaperReadSitesHooked += hookWallpaperReadSites(candidate, PREF_KEY_WALLPAPER_TYPE, false, hookedMethods)
             }
         }
 
