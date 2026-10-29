@@ -32,7 +32,7 @@ private fun injectPrefGuards(
         val iputRelOffset = instructions.drop(constIdx + 1).take(25).indexOfFirst {
             it.opcode == Opcode.IPUT_BOOLEAN
         }
-        if (iputRelOffset == -1) return@mapNotNull null
+        if (iputRelOffset == -1) error("Matching IPUT_BOOLEAN not found for pref: ${target.searchString}")
         val targetIdx = constIdx + 1 + iputRelOffset
         val reg = (instructions[targetIdx] as TwoRegisterInstruction).registerA
         Triple(targetIdx, reg, target.tag)
@@ -89,6 +89,9 @@ val braveCleanNewTabPagePatch = bytecodePatch(
             }
 
         returnIndices.asReversed().forEach { (returnIndex, reg) ->
+            if (reg > 15) {
+                error("PrefService.b return register v$reg exceeds 4-bit range for non-range invoke-static")
+            }
             prefMethod.addInstructions(
                 returnIndex,
                 """
