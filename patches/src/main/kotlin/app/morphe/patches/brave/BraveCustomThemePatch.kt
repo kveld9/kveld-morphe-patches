@@ -37,6 +37,9 @@ internal val LIGHT_CANONICAL_PALETTE = setOf(
     "#f0f4f9", "#f2f4f8", "#f4f6fa",
 )
 
+// Elevated light surfaces from LIGHT_CANONICAL_PALETTE that require elevation differentiation even at peakComponent >= 254
+internal val LIGHT_ELEVATED_CANONICAL = setOf("#f1f3f4", "#f1f3f5", "#f8f9fa", "#e8eaed", "#dadce0")
+
 internal val REGEX_SYS_DARK_BASE_ROLES = Regex("""@android:color/system_(?:neutral[123]_(?:700|800|900|1000)|(?:background|surface|surface_dim)_dark)$""", RegexOption.IGNORE_CASE)
 internal val REGEX_SYS_DARK_CONTAINER_ROLES = Regex("""@android:color/system_(?:surface_bright|surface_variant|surface_container(?:_low|_lowest|_high|_highest)?)_dark$""", RegexOption.IGNORE_CASE)
 internal val REGEX_SYS_DARK_ALL_ROLES = Regex("""@android:color/system_(?:neutral[123]_(?:700|800|900|1000)|(?:background|surface|surface_bright|surface_dim|surface_variant|surface_container(?:_low|_lowest|_high|_highest)?)_dark)$""", RegexOption.IGNORE_CASE)
@@ -101,7 +104,7 @@ internal fun isLightElevatedTierColor(hexString: String): Boolean {
     if (!isLightSurfaceCandidate(hexString)) return false
     val canon = canonicalizeHex(hexString) ?: return false
     val sample = decodeHexColor(canon) ?: return false
-    return sample.peakComponent < 254 || canon in setOf("#f1f3f4", "#f1f3f5", "#f8f9fa", "#e8eaed", "#dadce0")
+    return sample.peakComponent < 254 || canon in LIGHT_ELEVATED_CANONICAL
 }
 
 internal fun isLegibleInkColor(hexString: String): Boolean {

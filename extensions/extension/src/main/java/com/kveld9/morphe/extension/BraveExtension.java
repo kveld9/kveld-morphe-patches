@@ -14,7 +14,8 @@ import java.util.List;
 @SuppressWarnings("unused")
 public class BraveExtension {
 
-    private static final String[] CANDIDATE_EXTENSIONS = new String[]{"jpg", "jpeg", "png", "webp"};
+    // Asset contract: Keep in sync with BraveCleanNewTabPagePatch.kt get("assets/morphe_ntp_wallpaper.$ext")
+    private static final String[] CANDIDATE_EXTENSIONS = new String[]{"jpg", "png", "webp"};
     private static volatile String sDeployedWallpaperPath = null;
 
     public static boolean filterNtpPref(String pref, boolean originalValue) {
@@ -36,21 +37,11 @@ public class BraveExtension {
     }
 
     public static boolean filterNtpPrefWithWallpaper(String pref, boolean originalValue) {
-        if (pref == null) return originalValue;
-        switch (pref) {
-            case "brave.new_tab_page.show_sponsored_images":
-            case "brave.brave_ads.sponsored.enabled":
-            case "brave.new_tab_page.show_stats":
-            case "brave.new_tab_page.show_sponsored_sites":
-            case "brave.today.enabled":
-            case "brave.today.opted_in":
-            case "brave.new_tab_page.show_brave_news":
-                return false;
-            case "brave.new_tab_page.show_background_image":
-            case "brave.new_tab_page.show_branded_background_image":
-            default:
-                return originalValue;
+        if ("brave.new_tab_page.show_background_image".equals(pref)
+                || "brave.new_tab_page.show_branded_background_image".equals(pref)) {
+            return originalValue;
         }
+        return filterNtpPref(pref, originalValue);
     }
 
     private static Context getApplicationContext() {
@@ -107,25 +98,34 @@ public class BraveExtension {
                 }
 
                 File tempFile = new File(filesDir, "morphe_ntp_wallpaper." + matchedExt + ".tmp");
-                try (OutputStream os = new FileOutputStream(tempFile)) {
-                    byte[] buffer = new byte[8192];
-                    int read;
-                    while ((read = is.read(buffer)) != -1) {
-                        os.write(buffer, 0, read);
+                tempFile.delete();
+                boolean copySuccess = false;
+                try {
+                    try (OutputStream os = new FileOutputStream(tempFile)) {
+                        byte[] buffer = new byte[8192];
+                        int read;
+                        while ((read = is.read(buffer)) != -1) {
+                            os.write(buffer, 0, read);
+                        }
+                        os.flush();
                     }
-                    os.flush();
-                }
 
-                if (!tempFile.renameTo(destFile)) {
-                    if (destFile.delete()) {
-                        tempFile.renameTo(destFile);
+                    if (!tempFile.renameTo(destFile)) {
+                        if (destFile.delete()) {
+                            tempFile.renameTo(destFile);
+                        }
+                    }
+
+                    if (destFile.isFile() && destFile.length() > 0) {
+                        sDeployedWallpaperPath = destFile.getAbsolutePath();
+                        copySuccess = true;
+                        return sDeployedWallpaperPath;
+                    }
+                } finally {
+                    if (!copySuccess) {
+                        tempFile.delete();
                     }
                 }
-            }
-
-            if (destFile.isFile() && destFile.length() > 0) {
-                sDeployedWallpaperPath = destFile.getAbsolutePath();
-                return sDeployedWallpaperPath;
             }
         } catch (Throwable ignored) {
         }

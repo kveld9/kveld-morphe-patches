@@ -18,6 +18,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import java.io.File
+import java.nio.file.Files
 
 private const val MAX_WALLPAPER_BYTES = 8 * 1024 * 1024L // 8MB limit
 private const val PREF_KEY_WALLPAPER_PATH = "Chrome.NtpCustomization.BackgroundImageFilePath"
@@ -31,7 +32,6 @@ private val COMPANION_KEYS = listOf(
     "IsMvtVisible",
 )
 
-private var deployedWallpaperExt: String? = null
 private var deployedWallpaperBytes: Long = 0L
 private var wallpaperSkipReason: String? = null
 
@@ -200,7 +200,6 @@ private val braveCleanNewTabPageResourcePatch: ResourcePatch = resourcePatch(
     compatibleWith(Constants.COMPATIBILITY_BRAVE)
 
     execute {
-        deployedWallpaperExt = null
         deployedWallpaperBytes = 0L
         wallpaperSkipReason = null
 
@@ -211,41 +210,39 @@ private val braveCleanNewTabPageResourcePatch: ResourcePatch = resourcePatch(
         }
 
         val file = File(selectedPath)
-        if (!file.isFile) {
-            wallpaperSkipReason = "custom wallpaper file not found: $selectedPath"
+        val fileName = file.name
+        if (Files.isSymbolicLink(file.toPath()) || !file.isFile) {
+            wallpaperSkipReason = "custom wallpaper file not found: $fileName"
             println("[Clean Start Page] Skipped: $wallpaperSkipReason")
             return@execute
         }
 
-        val fileLength = file.length()
-        if (fileLength == 0L) {
-            wallpaperSkipReason = "custom wallpaper file is empty: $selectedPath"
+        val maxCap = (MAX_WALLPAPER_BYTES + 1).toInt()
+        val content = file.inputStream().use { it.readNBytes(maxCap) }
+        if (content.isEmpty()) {
+            wallpaperSkipReason = "custom wallpaper file is empty: $fileName"
             println("[Clean Start Page] Skipped: $wallpaperSkipReason")
             return@execute
         }
 
-        if (fileLength > MAX_WALLPAPER_BYTES) {
-            wallpaperSkipReason = "custom wallpaper file exceeds 8MB limit: $fileLength bytes"
+        if (content.size > MAX_WALLPAPER_BYTES) {
+            wallpaperSkipReason = "custom wallpaper file exceeds ${MAX_WALLPAPER_BYTES / 1024 / 1024}MB limit: ${content.size} bytes"
             println("[Clean Start Page] Skipped: $wallpaperSkipReason")
             return@execute
         }
 
-        val headerBytes = ByteArray(12)
-        val bytesRead = file.inputStream().use { it.read(headerBytes) }
-        val validHeader = if (bytesRead > 0) headerBytes.copyOf(bytesRead) else headerBytes
-        val ext = detectImageExtension(validHeader)
+        val ext = detectImageExtension(content)
         if (ext == null) {
-            wallpaperSkipReason = "unrecognized image format (expected JPEG, PNG, or WebP magic bytes): $selectedPath"
+            wallpaperSkipReason = "unrecognized image format (expected JPEG, PNG, or WebP magic bytes): $fileName"
             println("[Clean Start Page] Skipped: $wallpaperSkipReason")
             return@execute
         }
 
+        // Asset contract: Keep in sync with BraveExtension.java CANDIDATE_EXTENSIONS probe and dest construction
         val targetAsset = get("assets/morphe_ntp_wallpaper.$ext")
         targetAsset.parentFile?.mkdirs()
-        val content = file.readBytes()
         targetAsset.writeBytes(content)
 
-        deployedWallpaperExt = ext
         deployedWallpaperBytes = content.size.toLong()
         wallpaperSkipReason = null
     }
