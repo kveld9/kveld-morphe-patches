@@ -1055,11 +1055,6 @@ val braveCustomThemePatch: BytecodePatch = bytecodePatch(
         description = "Opaque hexadecimal color for primary backgrounds and base window chrome across dark and light modes. Defaults to pure OLED black (#000000).",
         required = true, validator = { hex -> hex == null || canonicalizeHex(hex) != null },
     )
-    val surfaceUsesBackground by booleanOption(
-        key = "surfaceUsesBackground", default = true, title = "Surfaces use background color",
-        description = "When enabled, cards, sheets, and dialogs share the primary background color. When disabled, elevated surfaces use the dedicated surface color below.",
-        required = false,
-    )
     val surfaceColor by colorOption(
         key = "surfaceColor", default = "#000000", title = "Surface / container color",
         description = "Opaque hexadecimal color for elevated surfaces such as cards, sheets, and dialogs. Defaults to OLED black (#000000); use #1e2029 for visible depth between tiers.",
@@ -1075,11 +1070,6 @@ val braveCustomThemePatch: BytecodePatch = bytecodePatch(
         description = "Opaque hexadecimal color for interactive highlights, active switches, and links across dark and light chrome. Defaults to Brave purple-blue accent (#737ade).",
         required = true, validator = { hex -> hex == null || canonicalizeHex(hex) != null },
     )
-    val disableDynamicColors by booleanOption(
-        key = "disableDynamicColors", default = true, title = "Disable Material You dynamic colors",
-        description = "Prevents Android 12+ wallpaper palette extraction from replacing theme surfaces. When disabled, dynamic system colors take precedence.",
-        required = false,
-    )
     val windowBackgroundColor by colorOption(
         key = "windowBackgroundColor", default = "#000000", title = "Window background color",
         description = "Opaque hexadecimal color for root window backgrounds in two-tier surface mode. Defaults to pure black (#000000).",
@@ -1089,6 +1079,16 @@ val braveCustomThemePatch: BytecodePatch = bytecodePatch(
         key = "cardColor", default = "#000000", title = "Preference card color",
         description = "Opaque hexadecimal color for preference item cards in Settings. Defaults to OLED black (#000000); use #1e2029 for visible depth between tiers.",
         required = false, validator = { hex -> hex == null || canonicalizeHex(hex) != null },
+    )
+    val surfaceUsesBackground by booleanOption(
+        key = "surfaceUsesBackground", default = true, title = "Surfaces use background color",
+        description = "When enabled, cards, sheets, and dialogs share the primary background color. When disabled, elevated surfaces use the dedicated surface color below.",
+        required = false,
+    )
+    val disableDynamicColors by booleanOption(
+        key = "disableDynamicColors", default = true, title = "Disable Material You dynamic colors",
+        description = "Prevents Android 12+ wallpaper palette extraction from replacing theme surfaces. When disabled, dynamic system colors take precedence.",
+        required = false,
     )
     val enablePreferenceCards by booleanOption(
         key = "enablePreferenceCards", default = true, title = "Style preference rows as cards",

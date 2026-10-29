@@ -80,13 +80,13 @@ The authoritative patch catalog with descriptions and options is generated in RE
 | Option Key | Typology | Default | Title & Visible Effect | Description & Example |
 | :--- | :--- | :--- | :--- | :--- |
 | `backgroundColor` | `colorOption` | `#000000` | Background color | Primary background for toolbars, window chrome, and base surfaces across dark and light modes. Example: `#000000` for pure OLED black, or `#0d1117` for deep navy. |
-| `surfaceUsesBackground` | `booleanOption` | `true` | Surfaces use background color | When true, elevated dialogs, omnibox containers, and cards share the base background color. When false, elevated surfaces use `surfaceColor`. |
 | `surfaceColor` | `colorOption` | `#000000` | Surface / container color | Dedicated color for raised containers, modal sheets, cards, and omnibox surfaces. Defaults to OLED pure-black (#000000) out of the box; use #1e2029 for visible tier depth. |
 | `textColor` | `colorOption` | `#f0f2ff` | Text ink color | Primary text ink for labels, addresses, tab headers, and menus across dark and light chrome. Defaults to Brave slate ink (`#f0f2ff`). |
 | `accentColor` | `colorOption` | `#737ade` | Accent highlight color | Interactive highlights, active toggles, links, and action buttons across dark and light chrome. Defaults to Brave purple-blue (`#737ade`). |
-| `disableDynamicColors` | `booleanOption` | `true` | Disable Material You dynamic colors | Prevents wallpaper extraction on Android 12+ from overriding custom theme surfaces. |
 | `windowBackgroundColor` | `colorOption` | `#000000` | Window background color | Root window background applied behind decor views in two-tier mode. Defaults to `#000000`. |
 | `cardColor` | `colorOption` | `#000000` | Preference card color | Fill color for settings and preference rows in two-tier mode. Defaults to OLED pure-black (#000000) out of the box; use #1e2029 for visible tier depth. |
+| `surfaceUsesBackground` | `booleanOption` | `true` | Surfaces use background color | When true, elevated dialogs, omnibox containers, and cards share the base background color. When false, elevated surfaces use `surfaceColor`. |
+| `disableDynamicColors` | `booleanOption` | `true` | Disable Material You dynamic colors | Prevents wallpaper extraction on Android 12+ from overriding custom theme surfaces. |
 | `enablePreferenceCards` | `booleanOption` | `true` | Style preference rows as cards | Groups Settings and preference rows into rounded cards with subtle margins in two-tier mode. |
 | `modulateTextLuminance` | `booleanOption` | `true` | Modulate text tiers by luminance | Dynamically scales secondary (81%) and disabled (62%) text brightness relative to the primary text ink color. |
 | `patchMaterialYouRoles` | `booleanOption` | `true` | Patch Material You system color roles | Rewrites Android S+ system neutral and container color roles in `values-v31+` directories to theme colors across dark and light modes. |
