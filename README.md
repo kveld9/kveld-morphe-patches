@@ -257,8 +257,8 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 | **Block Popups & Rating Requests** | Blocks rating popups, review requests and promo dialogs. |  |
 | **Block Trackers** | Blocks usage analytics, crash uploads and experiment downloads. | • Block offers server |
 | **Brave Origin** | Unlocks Brave Origin feature switches. |  |
-| **Clean Start Page** | Removes sponsored wallpapers, news feed and promo cards. | • Hide shortcut tiles |
-| **Custom Brave theme** | Applies custom colors to Brave dark mode chrome, defaulting to pure OLED black for battery saving on OLED screens. | • Background color<br>• Surfaces use background color<br>• Surface / container color<br>• Text ink color<br>• Accent highlight color<br>• Disable Material You dynamic colors<br>• Window background color<br>• Preference card color<br>• Style preference rows as cards<br>• Modulate text tiers by luminance<br>• Patch Material You system color roles<br>• Patch color state list lStar selectors<br>• Patch vector drawable surface fills |
+| **Clean Start Page** | Removes sponsored wallpapers, news feed and promo cards. | • Custom NTP wallpaper<br>• Hide shortcut tiles |
+| **Custom Brave theme** | Applies custom colors to Brave chrome across dark and light modes, defaulting to pure OLED black for battery saving on OLED screens. | • Background color<br>• Surfaces use background color<br>• Surface / container color<br>• Text ink color<br>• Accent highlight color<br>• Disable Material You dynamic colors<br>• Window background color<br>• Preference card color<br>• Style preference rows as cards<br>• Modulate text tiers by luminance<br>• Patch Material You system color roles<br>• Patch color state list lStar selectors<br>• Patch vector drawable surface fills |
 | **Keep Tabs Open** | Stops Brave from minimizing your tabs in the background. |  |
 | **Remove Extra Files** | Deletes unused AR and XR files to shrink the app. | • Remove VPN library |
 | **Remove Extra Languages** | Deletes unselected language packs. | • Languages to keep |

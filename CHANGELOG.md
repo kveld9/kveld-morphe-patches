@@ -1,3 +1,15 @@
+## [2.10.0-experimental.4](https://github.com/kveld9/kveld-morphe-patches/compare/v2.10.0-experimental.3...v2.10.0-experimental.4) (2026-10-29)
+
+### Bug Fixes
+
+* **brave:** harden wallpaper option and theme helpers per audit ([5b5d754](https://github.com/kveld9/kveld-morphe-patches/commit/5b5d75419131ec3ad47762627d9d2f5901b82511))
+* **brave:** keep Start Page free of sponsored wallpapers, news and promo cards ([d008e87](https://github.com/kveld9/kveld-morphe-patches/commit/d008e87431a99b9fdcf97a3de2e842e7c422c8dc))
+
+### New Features
+
+* **brave:** add opt-in custom NTP wallpaper to Clean Start Page ([7ae3344](https://github.com/kveld9/kveld-morphe-patches/commit/7ae33442ecc8504086cecd107dfb2ecfbe05c4e2))
+* **brave:** apply Custom theme colors to light mode chrome ([6a3d0b1](https://github.com/kveld9/kveld-morphe-patches/commit/6a3d0b1be7351d4dc0914090c172627ed9226193))
+
 ## [2.10.0-experimental.3](https://github.com/kveld9/kveld-morphe-patches/compare/v2.10.0-experimental.2...v2.10.0-experimental.3) (2026-10-29)
 
 ### Bug Fixes
