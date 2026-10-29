@@ -37,7 +37,7 @@ The authoritative patch catalog with descriptions and options is generated in RE
 ### B. Interface & Promo Suppression
 - **Clean Start Page**:
   - *Objective*: Provide a distraction-free start page free of ads, sponsored cards, and unwanted news.
-  - *How*: Disables sponsored background wallpapers, Brave News feeds, and marketing cards by intercepting preference checks and feed view models. Includes an option to hide top site tiles.
+  - *How*: Disables sponsored background wallpapers, Brave News feeds, and marketing cards by intercepting preference queries and layout initialization guards. Includes an option to hide top site tiles.
 - **Silence Promo Notifications**:
   - *Objective*: Eliminate unsolicited marketing reminders, tips, and rewards onboarding notifications.
   - *How*: Neutralizes tips notification scheduling, rewards onboarding alarm enqueue, and retention marketing broadcast dispatch.
