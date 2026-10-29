@@ -1,3 +1,17 @@
+## [2.10.0-experimental.5](https://github.com/kveld9/kveld-morphe-patches/compare/v2.10.0-experimental.4...v2.10.0-experimental.5) (2026-10-29)
+
+### Bug Fixes
+
+* **brave:** drop custom NTP wallpaper option that can never display ([9c59a05](https://github.com/kveld9/kveld-morphe-patches/commit/9c59a05f0db64611206a9f37eb6319efd3e69858))
+* **brave:** fail loudly on NTP hook drift instead of skipping silently ([0113a7e](https://github.com/kveld9/kveld-morphe-patches/commit/0113a7ee2cf409989c39ac79e41ebf3303b3b74e))
+* **brave:** move theme toggles below color options ([75ffaa6](https://github.com/kveld9/kveld-morphe-patches/commit/75ffaa644d8443c6024ba0438917b2fcc1cf3c2e))
+* **brave:** stop startup crash when custom NTP wallpaper is set ([ff573da](https://github.com/kveld9/kveld-morphe-patches/commit/ff573da6ef58b8757ee53f338770ff9d86b0b935))
+
+### New Features
+
+* **brave:** raise custom NTP wallpaper limit to 20MB and fail loudly when its anchors miss ([50c0dde](https://github.com/kveld9/kveld-morphe-patches/commit/50c0dde739e3788c4a3486d0032489d5d83902ea))
+* **universal:** add Remove Debug Info patch ([b0f453e](https://github.com/kveld9/kveld-morphe-patches/commit/b0f453e0bd2d727382d1389f3b7f13afd9fd5401))
+
 ## [2.10.0-experimental.4](https://github.com/kveld9/kveld-morphe-patches/compare/v2.10.0-experimental.3...v2.10.0-experimental.4) (2026-10-29)
 
 ### Bug Fixes
