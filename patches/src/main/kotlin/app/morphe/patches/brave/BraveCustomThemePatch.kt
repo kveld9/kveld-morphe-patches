@@ -116,9 +116,9 @@ internal fun isLegibleInkColor(hexString: String): Boolean {
 
 internal fun isDayTextInkColor(hexString: String): Boolean {
     val canon = canonicalizeHex(hexString) ?: return false
-    if (isSurfaceCandidate(canon) || isLightSurfaceCandidate(canon)) return false
+    if (isLightSurfaceCandidate(canon)) return false
     val sample = decodeHexColor(canon) ?: return false
-    return sample.spreadDelta <= 40 && sample.peakComponent in 15..140
+    return sample.spreadDelta <= 40 && sample.peakComponent <= 140
 }
 
 internal fun computeTextLuminanceRatio(sample: ColorSample): Float = when {
@@ -253,10 +253,13 @@ internal fun rewriteXmlAccentInk(xmlText: String, accentHex: String): Pair<Strin
     }
 }
 
-internal fun rewriteMaterialYouSystemRoles(xmlText: String, bgHex: String, containerHex: String = bgHex): Pair<String, Int> {
+internal fun rewriteMaterialYouSystemRoles(
+    xmlText: String, bgHex: String, containerHex: String = bgHex, excludedTagNames: Set<String> = emptySet(),
+): Pair<String, Int> {
     val canonicalBg = canonicalizeHex(bgHex) ?: throw PatchException("Provided background is not a valid opaque hex: $bgHex")
     val canonicalContainer = canonicalizeHex(containerHex) ?: throw PatchException("Provided container is not a valid opaque hex: $containerHex")
-    return replaceXmlColorTags(xmlText) { _, raw ->
+    return replaceXmlColorTags(xmlText) { name, raw ->
+        if (name in excludedTagNames) return@replaceXmlColorTags null
         when {
             REGEX_SYS_DARK_CONTAINER_ROLES.matches(raw) || REGEX_SYS_LIGHT_CONTAINER_ROLES.matches(raw) -> canonicalContainer
             REGEX_SYS_DARK_BASE_ROLES.matches(raw) || REGEX_SYS_LIGHT_BASE_ROLES.matches(raw) -> canonicalBg
@@ -327,7 +330,7 @@ internal fun buildNightV31OverrideMap(
     val allNames = linkedSetOf<String>()
     val raisedNames = linkedSetOf<String>()
 
-    listOf(dayXmlText, nightXmlText).forEach { xml ->
+    listOf(nightXmlText).forEach { xml ->
         REGEX_COLOR_TAG.findAll(xml).forEach { match ->
             val (name, raw) = match.destructured
             inspectEntryForNightOverride(name, raw.trim(), textBearingIds, baseRoleIds, containerRoleIds, allNames, raisedNames)
@@ -360,17 +363,29 @@ private fun evaluateLStarSurfaceTone(roleString: String, toneValue: Double, bgHe
     else -> bgHex
 }
 
-internal fun rewriteLStarColorSelectors(xmlText: String, bgHex: String, containerHex: String = bgHex): Pair<String, Int> {
+internal fun rewriteLStarColorSelectors(
+    xmlText: String, bgHex: String, containerHex: String = bgHex, textHex: String? = null, isNight: Boolean = true,
+): Pair<String, Int> {
     val canonicalBg = canonicalizeHex(bgHex) ?: throw PatchException("Provided background is not a valid opaque hex: $bgHex")
     val canonicalContainer = canonicalizeHex(containerHex) ?: throw PatchException("Provided container is not a valid opaque hex: $containerHex")
+    val canonicalText = textHex?.let { canonicalizeHex(it) }
     var totalRewrites = 0
 
     val transformed = REGEX_LSTAR_SELECTOR_ITEM.replace(xmlText) { match ->
         val (prefix, systemRole, toneString) = match.destructured
         val tone = toneString.toDoubleOrNull() ?: return@replace match.value
-        if (tone in 25.0..80.0) return@replace match.value
 
-        val targetHex = evaluateLStarSurfaceTone(systemRole, tone, canonicalBg, canonicalContainer)
+        val isTextTone = if (isNight) tone >= 80.0 else tone <= 24.0
+        val isSurfaceTone = if (isNight) tone <= 24.0 else tone >= 85.0
+
+        if (!isTextTone && !isSurfaceTone) return@replace match.value
+
+        val targetHex = if (isTextTone) {
+            canonicalText ?: return@replace match.value
+        } else {
+            evaluateLStarSurfaceTone(systemRole, tone, canonicalBg, canonicalContainer)
+        }
+
         totalRewrites++
         val colorPattern = Regex("""${Regex.escape(prefix)}:color="[^"]*"""")
         val lStarPattern = Regex("""\s+${Regex.escape(prefix)}:lStar="[^"]*"""")
@@ -628,13 +643,20 @@ private val REGEX_LAYOUT_TEXT_ATTR = Regex("""(?:android:|\bn\d+:)text[A-Za-z]*\
 internal fun discoverTextBearingColorIdentifiers(resRoot: File): Set<String> {
     val detectedIds = linkedSetOf<String>()
     resRoot.subdirsNamed("values").flatMap { it.xmlChildFiles() }
-        .filter { it.name.equals("styles.xml", true) }
+        .filter { it.name.equals("styles.xml", true) || it.name.equals("themes.xml", true) }
         .forEach { file -> REGEX_STYLE_TEXT_ATTR.findAll(file.readText()).forEach { detectedIds += it.groupValues[1] } }
 
     resRoot.subdirsNamed("layout").forEach { dir ->
         dir.walkTopDown().filter { it.isFile && it.extension.equals("xml", true) }.sortedBy { it.absolutePath }
             .forEach { file -> REGEX_LAYOUT_TEXT_ATTR.findAll(file.readText()).forEach { detectedIds += it.groupValues[1] } }
     }
+
+    val colorDirs = resRoot.listFiles().orEmpty().filter { it.isDirectory && (it.name == "color" || it.name.startsWith("color-")) }
+    val selectorColorPattern = Regex("""@color/([a-zA-Z0-9_]+)""")
+    colorDirs.flatMap { it.xmlChildFiles() }
+        .filter { it.nameWithoutExtension in detectedIds }
+        .forEach { file -> selectorColorPattern.findAll(file.readText()).forEach { detectedIds += it.groupValues[1] } }
+
     return detectedIds
 }
 
@@ -704,6 +726,7 @@ private fun executeDayColorsTransform(
     val (afterSurfaces, stats) = rewriteXmlDaySurfaces(
         xmlText = currentXml, backgroundHex = bgHex, containerHex = surfaceHex,
         containerTagNames = containerIds, baseTagNames = baseIds, excludedTagNames = textBearingIds,
+        lightCandidatesOnly = true,
     )
     currentXml = afterSurfaces
     var replacedText = 0
@@ -768,6 +791,7 @@ private fun executeNightColorsTransform(
 
 private fun rewriteMaterialYouSystemRolesInDirs(
     resRoot: File, enableSystemRolesRewrite: Boolean, bgHex: String, surfaceHex: String, collectedNeutralIds: MutableList<String>,
+    textBearingIds: Set<String> = emptySet(),
 ): Int {
     if (!enableSystemRolesRewrite) return 0
     var totalRewrites = 0
@@ -776,8 +800,8 @@ private fun rewriteMaterialYouSystemRolesInDirs(
         if (targetFile.isFile) {
             val originalContent = targetFile.readText()
             collectedNeutralIds += discoverMaterialYouNeutralIds(originalContent)
-            val (rolesUpdated, roleCount) = rewriteMaterialYouSystemRoles(originalContent, bgHex, surfaceHex)
-            val (surfacesUpdated, surfaceStats) = rewriteXmlDaySurfaces(rolesUpdated, bgHex, surfaceHex, lightCandidatesOnly = true)
+            val (rolesUpdated, roleCount) = rewriteMaterialYouSystemRoles(originalContent, bgHex, surfaceHex, textBearingIds)
+            val (surfacesUpdated, surfaceStats) = rewriteXmlDaySurfaces(rolesUpdated, bgHex, surfaceHex, excludedTagNames = textBearingIds, lightCandidatesOnly = true)
             val modifiedCount = roleCount + surfaceStats.baseCount + surfaceStats.containerCount
             if (surfacesUpdated != originalContent) {
                 targetFile.writeText(surfacesUpdated)
@@ -788,13 +812,16 @@ private fun rewriteMaterialYouSystemRolesInDirs(
     return totalRewrites
 }
 
-private fun rewriteSelectorLStarEntriesInDirs(resRoot: File, enableLStarRewrite: Boolean, bgHex: String, surfaceHex: String): Int {
+private fun rewriteSelectorLStarEntriesInDirs(
+    resRoot: File, enableLStarRewrite: Boolean, bgHex: String, surfaceHex: String, textHex: String? = null,
+): Int {
     if (!enableLStarRewrite) return 0
     var totalRewrites = 0
     resRoot.listFiles().orEmpty().filter { it.isDirectory && (it.name == "color" || it.name.startsWith("color-")) }.sortedBy { it.name }
         .forEach { dir ->
+            val isNight = dir.name.contains("night")
             dir.xmlChildFiles().forEach { file ->
-                val (updated, count) = rewriteLStarColorSelectors(file.readText(), bgHex, surfaceHex)
+                val (updated, count) = rewriteLStarColorSelectors(file.readText(), bgHex, surfaceHex, textHex, isNight = isNight)
                 if (count > 0) { file.writeText(updated); totalRewrites += count }
             }
         }
@@ -885,12 +912,12 @@ internal fun executeCustomThemeResourceTransformation(
 
     val collectedNeutralIds = mutableListOf<String>()
     val matYouActive = disableDynamicColors && patchMaterialYouRoles
-    val matYouCount = rewriteMaterialYouSystemRolesInDirs(resRoot, matYouActive, canonicalBg, canonicalSurface, collectedNeutralIds)
+    val matYouCount = rewriteMaterialYouSystemRolesInDirs(resRoot, matYouActive, canonicalBg, canonicalSurface, collectedNeutralIds, textBearingIds)
     val overrides = buildNightV31OverrideMap(
         originalDayXml, originalNightXml, collectedNeutralIds, containerNames, baseNames, textBearingIds, canonicalBg, canonicalSurface,
     )
     val lStarActive = disableDynamicColors && patchLStarSelectors
-    val lStarCount = rewriteSelectorLStarEntriesInDirs(resRoot, lStarActive, canonicalBg, canonicalSurface)
+    val lStarCount = rewriteSelectorLStarEntriesInDirs(resRoot, lStarActive, canonicalBg, canonicalSurface, textColorHex)
     val drawableFillsCount = rewriteVectorDrawablesInDirs(resRoot, patchVectorDrawables, canonicalBg, canonicalSurface)
 
     if (overrides.isNotEmpty()) {
