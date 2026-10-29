@@ -2,7 +2,7 @@
 """Scheduled upstream app update checker for Morphe Patches.
 
 Parses target versions from Constants.kt, queries upstream public sources
-(APKMirror and APKPure), and reports whether updates are available.
+(APKMirror, APKPure, and GitHub), and reports whether updates are available.
 """
 
 from __future__ import annotations
@@ -40,10 +40,12 @@ APP_SPECS: List[Dict[str, Any]] = [
     #     "name": "My App",                         # 2. Display name shown in logs, issue titles, and alerts
     #     "package_name": "com.example.app",        # 3. Android application package name
     #     "constant_key": "MY_APP_TARGET_VERSION",  # 4. Target version constant defined in Constants.kt
-    #     "source_type": "apkmirror",               # 5. Upstream host type: "apkmirror" or "apkpure"
+    #     "source_type": "apkmirror",               # 5. Upstream host type: "apkmirror", "apkpure" or "github"
     #     "source_name": "APKMirror",               # 6. Display name of upstream host, must match the entry's source
     #     "source_url": "https://www.apkmirror.com/apk/slug/app/",  # 7. Canonical listing URL (HTTP 200 verified live)
-    #     "path_prefix": "/apk/slug/app/app-",      # URL path prefix for release links (apkmirror). Release-level vs directory-level prefix both work with startswith (Brave uses directory-level).
+    #     "path_prefix": "/apk/slug/app/app-",      # URL path prefix for release links (apkmirror-only). Release-level vs directory-level prefix both work with startswith.
+    #     "api_url": "https://api.github.com/...",  # GitHub releases API endpoint URL (github-only)
+    #     "release_prefix": "Release v",            # Release title prefix to match channel (github-only)
     #     "allow_beta": False,                      # Pre-release filter (typically False for stable patch releases)
     #     # "require_variant_marker": "...",        # Optional: set for variant-pinned listings (e.g. Gboard); omitted otherwise (consumer reads via .get)
     #     # "variant_match": {                      # Optional: exact variant criteria to resolve direct download link
@@ -58,16 +60,16 @@ APP_SPECS: List[Dict[str, Any]] = [
         "name": "Brave",
         "package_name": "com.brave.browser",
         "constant_key": "BRAVE_TARGET_VERSION",
-        "source_type": "apkmirror",
-        "source_name": "APKMirror",
-        "source_url": "https://www.apkmirror.com/apk/brave-software/brave-browser/",
-        "path_prefix": "/apk/brave-software/brave-browser/",
+        "source_type": "github",
+        "source_name": "GitHub",
+        "source_url": "https://github.com/brave/brave-browser/releases",
+        "api_url": "https://api.github.com/repos/brave/brave-browser/releases?per_page=100",
+        "release_prefix": "Release v",
         "allow_beta": False,
         # variant_match decision: Constants.kt pins "Bravemonoarm64.apk (arm64) or
         # BraveMonoarm.apk (arm32)" from GitHub releases without a DPI marker.
-        # APKMirror release pages have multiple candidate APKs with dual architectures
-        # and no single disambiguated target variant. Leaving variant_match unconfigured
-        # avoids guessing links and uses the safe fallback (no Direct download line).
+        # Leaving variant_match unconfigured avoids guessing links and uses
+        # the safe fallback (no Direct download line).
     },
     {
         "id": "gboard",
@@ -720,6 +722,67 @@ def extract_apkpure_version(html: str, package_name: str) -> Optional[str]:
     return None
 
 
+def _extract_github_release_version(
+    item: Dict[str, Any],
+    prefix: str,
+) -> Optional[str]:
+    """Extract cleaned version string from GitHub release item if matching prefix."""
+    if item.get("draft") is True or item.get("prerelease") is True:
+        return None
+
+    name = item.get("name")
+    if not isinstance(name, str) or not name.startswith(prefix):
+        return None
+
+    tag = item.get("tag_name")
+    if tag and isinstance(tag, str):
+        raw_v = tag.strip().lstrip("vV")
+    else:
+        raw = name[len(prefix):].strip() if name.startswith(prefix) else name.strip()
+        raw_v = raw.lstrip("vV")
+
+    core, _ = parse_version(raw_v)
+    return raw_v if core else None
+
+
+def extract_github_channel_latest(
+    payload: str,
+    prefix: str,
+) -> Tuple[Optional[str], Optional[str]]:
+    """Extract latest release version and html_url matching prefix from GitHub releases JSON.
+
+    Parses JSON list of releases, filters out draft and prerelease entries,
+    and matches entries whose name starts with prefix (e.g. 'Release v').
+    Extracts version from tag_name (stripping leading v/V), falling back to name.
+    Selects the winner with highest version using parse_version.
+    Returns (version, html_url) or (None, None) if no matching release is found.
+    """
+    if not payload:
+        return None, None
+
+    try:
+        data = json.loads(payload)
+    except Exception:
+        return None, None
+
+    if not isinstance(data, list):
+        return None, None
+
+    candidates: List[Tuple[str, Optional[str]]] = []
+    for item in data:
+        if not isinstance(item, dict):
+            continue
+        ver = _extract_github_release_version(item, prefix)
+        if ver:
+            candidates.append((ver, item.get("html_url")))
+
+    if not candidates:
+        return None, None
+
+    winner = max(candidates, key=lambda c: parse_version(c[0])[0])
+    return winner[0], winner[1]
+
+
 def run_update_checks(
     constants_path: Path,
     fetch_fn: Optional[Callable[[str], Optional[str]]] = None,
@@ -750,9 +813,9 @@ def run_update_checks(
 
         remote_version: Optional[str] = None
         release_url: Optional[str] = None
-        html = fetcher(source_url)
-        if html:
-            if source_type == "apkmirror":
+        if source_type == "apkmirror":
+            html = fetcher(source_url)
+            if html:
                 remote_version, release_url = extract_apkmirror_latest_release(
                     html,
                     spec["path_prefix"],
@@ -761,8 +824,16 @@ def run_update_checks(
                     require_variant_marker=require_variant_marker,
                     fetch_fn=fetcher,
                 )
-            elif source_type == "apkpure":
+        elif source_type == "apkpure":
+            html = fetcher(source_url)
+            if html:
                 remote_version = extract_apkpure_version(html, package_name)
+        elif source_type == "github":
+            payload = fetcher(spec["api_url"])
+            if payload:
+                remote_version, release_url = extract_github_channel_latest(
+                    payload, spec["release_prefix"]
+                )
 
         if not remote_version:
             status = "unknown"
@@ -1216,7 +1287,6 @@ class TestUpdateChecker(unittest.TestCase):
 
             gboard_release_url = "https://www.apkmirror.com/apk/google-inc/gboard/gboard-the-google-keyboard-18-5-1-993608717-release/"
             tiktok_release_url = "https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-47-4-3-release/"
-            brave_release_url = "https://www.apkmirror.com/apk/brave-software/brave-browser/brave-browser-1-97-59-release/"
 
             gboard_listing = f"""
             <div>
@@ -1232,13 +1302,15 @@ class TestUpdateChecker(unittest.TestCase):
               </a>
             </div>
             """
-            brave_listing = f"""
-            <div>
-              <a class="fontBlack" href="/apk/brave-software/brave-browser/brave-browser-1-97-59-release/">
-                Brave Browser 1.97.59
-              </a>
-            </div>
-            """
+            brave_github_payload = json.dumps([
+                {
+                    "name": "Release v1.97.59",
+                    "tag_name": "v1.97.59",
+                    "draft": False,
+                    "prerelease": False,
+                    "html_url": "https://github.com/brave/brave-browser/releases/tag/v1.97.59",
+                }
+            ])
 
             gboard_release_page = """
             <div class="variants-table">
@@ -1271,10 +1343,8 @@ class TestUpdateChecker(unittest.TestCase):
             """
 
             def fake_fetcher(url: str) -> Optional[str]:
-                if "brave-browser/" in url and not url.endswith("-release/"):
-                    return brave_listing
-                if "brave-browser-1-97-59-release" in url:
-                    return "<div>Brave release page</div>"
+                if "api.github.com/repos/brave/brave-browser/releases" in url:
+                    return brave_github_payload
                 if "google-inc/gboard/" in url and not url.endswith("-release/"):
                     return gboard_listing
                 if url == gboard_release_url:
@@ -1329,6 +1399,76 @@ class TestUpdateChecker(unittest.TestCase):
             "Source link: https://www.apkmirror.com/apk/brave/\n"
         )
         self.assertEqual(body_without_link, expected_body)
+
+    def test_brave_github_release_channel_filter(self) -> None:
+        """Verify GitHub release channel filtering and exclusion of drafts/prereleases."""
+        tag_url = "https://github.com/brave/brave-browser/releases/tag/v1.98.62"
+        synthetic_payload = json.dumps([
+            {
+                "name": "Nightly v1.101.2",
+                "tag_name": "v1.101.2",
+                "prerelease": False,
+                "draft": False,
+                "html_url": "https://github.com/brave/brave-browser/releases/tag/v1.101.2",
+            },
+            {
+                "name": "Beta v1.99.53",
+                "tag_name": "v1.99.53",
+                "prerelease": False,
+                "draft": False,
+                "html_url": "https://github.com/brave/brave-browser/releases/tag/v1.99.53",
+            },
+            {
+                "name": "Release v1.98.62",
+                "tag_name": "v1.98.62",
+                "prerelease": False,
+                "draft": False,
+                "html_url": tag_url,
+            },
+            {
+                "name": "Release v1.98.60",
+                "tag_name": "v1.98.60",
+                "prerelease": False,
+                "draft": False,
+                "html_url": "https://github.com/brave/brave-browser/releases/tag/v1.98.60",
+            },
+            {
+                "name": "Release v1.100.0",
+                "tag_name": "v1.100.0",
+                "prerelease": True,
+                "draft": False,
+                "html_url": "https://github.com/brave/brave-browser/releases/tag/v1.100.0",
+            },
+            {
+                "name": "Release v1.102.0",
+                "tag_name": "v1.102.0",
+                "prerelease": False,
+                "draft": True,
+                "html_url": "https://github.com/brave/brave-browser/releases/tag/v1.102.0",
+            },
+        ])
+
+        winner_ver, winner_url = extract_github_channel_latest(
+            synthetic_payload, prefix="Release v"
+        )
+        self.assertEqual((winner_ver, winner_url), ("1.98.62", tag_url))
+        self.assertNotEqual(winner_ver, "1.100.0")
+        self.assertNotEqual(winner_ver, "1.102.0")
+        self.assertNotEqual(winner_ver, "1.101.2")
+        self.assertNotEqual(winner_ver, "1.99.53")
+
+        fallback_payload = json.dumps([
+            {
+                "name": "Release v1.98.62",
+                "prerelease": False,
+                "draft": False,
+                "html_url": tag_url,
+            }
+        ])
+        fb_ver, fb_url = extract_github_channel_latest(
+            fallback_payload, prefix="Release v"
+        )
+        self.assertEqual((fb_ver, fb_url), ("1.98.62", tag_url))
 
 
 def main() -> int:
