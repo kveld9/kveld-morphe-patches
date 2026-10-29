@@ -1,5 +1,10 @@
 package com.kveld9.morphe.extension;
 
+import android.content.Context;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.util.List;
 
@@ -8,6 +13,9 @@ import java.util.List;
  */
 @SuppressWarnings("unused")
 public class BraveExtension {
+
+    private static final String[] CANDIDATE_EXTENSIONS = new String[]{"jpg", "jpeg", "png", "webp"};
+    private static volatile String sDeployedWallpaperPath = null;
 
     public static boolean filterNtpPref(String pref, boolean originalValue) {
         if (pref == null) return originalValue;
@@ -25,6 +33,113 @@ public class BraveExtension {
             default:
                 return originalValue;
         }
+    }
+
+    public static boolean filterNtpPrefWithWallpaper(String pref, boolean originalValue) {
+        if (pref == null) return originalValue;
+        switch (pref) {
+            case "brave.new_tab_page.show_sponsored_images":
+            case "brave.brave_ads.sponsored.enabled":
+            case "brave.new_tab_page.show_stats":
+            case "brave.new_tab_page.show_sponsored_sites":
+            case "brave.today.enabled":
+            case "brave.today.opted_in":
+            case "brave.new_tab_page.show_brave_news":
+                return false;
+            case "brave.new_tab_page.show_background_image":
+            case "brave.new_tab_page.show_branded_background_image":
+            default:
+                return originalValue;
+        }
+    }
+
+    private static Context getApplicationContext() {
+        try {
+            Class<?> contextUtils = Class.forName("org.chromium.base.ContextUtils");
+            Method getAppContext = contextUtils.getMethod("getApplicationContext");
+            return (Context) getAppContext.invoke(null);
+        } catch (Throwable ignored) {
+            return null;
+        }
+    }
+
+    public static String ntpWallpaperPath() {
+        String cached = sDeployedWallpaperPath;
+        if (cached != null) {
+            File f = new File(cached);
+            if (f.isFile() && f.length() > 0) {
+                return cached;
+            }
+        }
+        try {
+            Context context = getApplicationContext();
+            if (context == null) {
+                return null;
+            }
+
+            String foundAsset = null;
+            String matchedExt = null;
+            for (String ext : CANDIDATE_EXTENSIONS) {
+                String candidateName = "morphe_ntp_wallpaper." + ext;
+                try (InputStream is = context.getAssets().open(candidateName)) {
+                    foundAsset = candidateName;
+                    matchedExt = ext;
+                    break;
+                } catch (Throwable ignored) {
+                }
+            }
+
+            if (foundAsset == null) {
+                return null;
+            }
+
+            File filesDir = context.getFilesDir();
+            if (filesDir == null) {
+                return null;
+            }
+            File destFile = new File(filesDir, "morphe_ntp_wallpaper." + matchedExt);
+
+            try (InputStream is = context.getAssets().open(foundAsset)) {
+                int assetSize = is.available();
+                if (destFile.exists() && assetSize > 0 && destFile.length() == assetSize) {
+                    sDeployedWallpaperPath = destFile.getAbsolutePath();
+                    return sDeployedWallpaperPath;
+                }
+
+                File tempFile = new File(filesDir, "morphe_ntp_wallpaper." + matchedExt + ".tmp");
+                try (OutputStream os = new FileOutputStream(tempFile)) {
+                    byte[] buffer = new byte[8192];
+                    int read;
+                    while ((read = is.read(buffer)) != -1) {
+                        os.write(buffer, 0, read);
+                    }
+                    os.flush();
+                }
+
+                if (!tempFile.renameTo(destFile)) {
+                    if (destFile.delete()) {
+                        tempFile.renameTo(destFile);
+                    }
+                }
+            }
+
+            if (destFile.isFile() && destFile.length() > 0) {
+                sDeployedWallpaperPath = destFile.getAbsolutePath();
+                return sDeployedWallpaperPath;
+            }
+        } catch (Throwable ignored) {
+        }
+        return null;
+    }
+
+    public static String overrideWallpaperPath(String stockPath) {
+        String deployed = ntpWallpaperPath();
+        return deployed != null ? deployed : stockPath;
+    }
+
+    public static int overrideWallpaperType(int stockType) {
+        String deployed = ntpWallpaperPath();
+        return deployed != null ? 1 : stockType;
     }
 
     /**

@@ -36,8 +36,10 @@ The authoritative patch catalog with descriptions and options is generated in RE
 
 ### B. Interface & Promo Suppression
 - **Clean Start Page**:
-  - *Objective*: Provide a distraction-free start page free of ads, sponsored cards, and unwanted news.
-  - *How*: Disables sponsored background wallpapers, Brave News feeds, and marketing cards by intercepting preference queries and layout initialization guards. Includes an option to hide top site tiles.
+  - *Objective*: Provide a distraction-free start page free of ads, sponsored cards, and unwanted news, with support for an opt-in custom background image.
+  - *How*: Disables sponsored background wallpapers, Brave News feeds, and marketing cards by intercepting preference queries and layout initialization guards. Includes options to hide shortcut tiles and to package a custom New Tab Page wallpaper:
+    - `hideTopSites`: Removes most-visited shortcut tiles for a completely blank new tab page.
+    - `wallpaperImage`: Packages a local image from the patching device as the New Tab Page background. Supports JPEG, PNG, and WebP formats up to 8MB in file size (JPEG 1080p is recommended for optimal decode performance and minimal memory footprint). Leaving this option empty preserves the default clean blank start page.
 - **Silence Promo Notifications**:
   - *Objective*: Eliminate unsolicited marketing reminders, tips, and rewards onboarding notifications.
   - *How*: Neutralizes tips notification scheduling, rewards onboarding alarm enqueue, and retention marketing broadcast dispatch.
