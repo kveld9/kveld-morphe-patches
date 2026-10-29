@@ -35,6 +35,7 @@ Reference for universal optimization and resource slimming patches provided by M
 | **[Disable Root Checks](#25-disable-root-checks-universaldisablerootcheckspatch)** | `bytecodePatch` | Dalvik Bytecode Methods | Neutralizes RootBeer on-device root detection methods so the library reports not-rooted | Stops apps using the RootBeer library from detecting a rooted device; does not defeat custom root checks or Play Integrity |
 | **[Bypass Play License](#26-bypass-play-license-universalbypassplaylicensepatch)** | `bytecodePatch` | Dalvik Bytecode Methods | Intercepts `LicenseChecker.checkAccess(LicenseCheckerCallback)` and delivers the licensed verdict locally without contacting Play | Lets apps using the legacy Play licensing client library run after re-signing; cannot affect server-side Play Integrity or subscription entitlements |
 | **[Neutralize Play Billing](#27-neutralize-play-billing-universalneutralizeplaybillingpatch)** | `resourcePatch` | Manifest (`AndroidManifest.xml`) | Strips `com.android.vending.BILLING` permission and unbinds Play Billing service queries; preserves proxy activities for crash safety | Enables graceful degradation on devices without Google Mobile Services; prevents IPC to Play Billing while avoiding `ActivityNotFoundException` |
+| **[Remove Debug Info](#28-remove-debug-info-universalremovedebuginfopatch)** | `bytecodePatch` | Dalvik Bytecode (`classes*.dex`) | Strips DEX debug info (source names and line tables) | Reduces APK size; stack traces lose line numbers |
 
 ---
 
@@ -89,6 +90,7 @@ Exception: Block Tracking Servers (Universal) remains a valid opt-in patch on ma
 | **Disable Root Checks** | ⚠️ Opt-in | Opt-in (default false); covers only the RootBeer root-detection library; makes its local root verdicts report not-rooted; does not defeat custom root checks, native JNI checks, or server-side Play Integrity. |
 | **Bypass Play License** | ⚠️ Lab / Sideloading | Opt-in (`default = false`). Intercepts `LicenseChecker.checkAccess` and delivers the licensed verdict locally; the library never contacts Play. Cannot affect server-side Play Integrity or subscription entitlements. Applies only when `com.android.vending.licensing.LicenseChecker` is present; skips cleanly otherwise. Must pass ART verifier gate. |
 | **Neutralize Play Billing** | ⚠️ Opt-in | Opt-in (`default = false`). Strips `com.android.vending.BILLING` permission and unbinds Play Billing service queries in `AndroidManifest.xml` so apps fail closed gracefully on GMS-free devices without purchase forging. Preserves `ProxyBillingActivity` to prevent `ActivityNotFoundException` crashes. Skips cleanly on apps without a billing surface. |
+| **Remove Debug Info** | ⚠️ Opt-in | Opt-in (`default = false`). Strips DEX debug info (source names and line tables) to reduce APK size; note that stack traces lose line numbers. |
 
 ---
 
@@ -761,3 +763,13 @@ The **`Neutralize Play Billing`** patch strips Google Play Billing manifest decl
 - **Manifest-level enforcement**: Removes `com.android.vending.BILLING` and unbinds billing query actions (`com.android.vending.billing.InAppBillingService.BIND` and `com.google.android.apps.play.billingtestcompanion.BillingOverrideService.BIND`) from `<queries>`.
 - **Zero bytecode modifications**: Operates purely as a `resourcePatch` on `AndroidManifest.xml`, ensuring complete stability across library versions (BillingClient 4.x through 9.x+).
 - **Clean skip**: When no Play Billing surface is detected in `AndroidManifest.xml`, the patch makes zero changes and logs an explicit skip.
+
+## 28. Remove Debug Info (`universalRemoveDebugInfoPatch`)
+
+The **`Remove Debug Info`** patch strips Dalvik executable debug metadata (source file names and method debug item line tables) across application classes to reduce final APK size.
+
+### Scope & Compatibility Notes
+
+- **Opt-in by default**: Disabled by default (`default = false`).
+- **Stack traces**: Exception stack traces will report `Unknown Source` and lack line numbers since debug line tables and source file attributes are stripped.
+- **Clean skip**: When no debug info is found across the application bytecode, the patch makes zero changes and logs an explicit skip.
