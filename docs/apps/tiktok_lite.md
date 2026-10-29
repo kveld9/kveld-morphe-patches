@@ -49,7 +49,8 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
 - **Custom Share Sheet**: Anchor absent; `isImFunctionOff` method and custom share sheet layout absent in Lite DEX.
 - **Customize Search**: Anchor absent; `RecomDataWrapper` class and search feed injection absent in Lite DEX.
 - **Declutter Direct Messages**: Anchor absent; DM / IM messaging components and inbox message protocols absent in Lite DEX.
-- **Declutter Navigation Bar**: Anchor absent; `ShopBottomTabProtocol` and shop bottom navigation tab absent in Lite DEX.
+- **Declutter Navigation Bar**: Anchor absent; DEX inventory of the pinned Lite target shows none of `ShopBottomTabProtocol`, `NearbyServiceImpl`, `ExploreFeedServiceImpl`, `ExploreBottomTabProtocol`, `LiveIconGenerator`, `PublishTabProtocol`, `FeedSearchBottomBarAssemTrigger`, `AwemeTrendingBar` or `HotSearchInfo` --
+  the Lite main page (MainActivity -> MainRootFragment -> MainPageFragment -> FeedFragment) builds its top strip programmatically from a static single-entry tab list and its bottom navigation, LIVE entrance and feed search pill have no statically resolvable anchors (server/Lynx-driven candidates: lite_bottom_tab_2/4/5, lite_live_add_toplive_entrance, short_drama_inner_feed_search_entry_enabled experiments).
 - **Declutter Video Interface**: Anchor absent; `UpvoteVideoTrigger.Qp` and declutter anchor classes absent in Lite DEX.
 - **Device Privacy Guard**: Anchor absent; `LX/0OBB` device identifier collector class absent in Lite DEX.
 - **Disable On-Device AI**: Anchor absent; `PitayaBootLoader` class and Pitaya AI engine absent in Lite DEX.
@@ -155,6 +156,10 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
 - **Search History Suppression**: Search history query recording is not supported on TikTok Lite because the search history analytics and recommendation stores (`SuggestWordResponse`, `ManualSearchPvStore`) are absent in the Lite build.
 - **Spotify Sign-In**: Spotify login compatibility is not supported on TikTok Lite because the Spotify auth SDK dynamic feature module (`df_music_dsp`) is absent in the Lite build.
 - **Offline Video Limit**: TikTok Lite does not feature user-facing offline video limit selection (`OfflineModeSheetPageAssem` is absent); caching is handled automatically based on storage tiers.
+
+### Lite UI anchor map (observed)
+
+Top tab strip = MainPageFragment + C1MA/C08030Ut tab list; top progress ring = C0TT; feed = FeedFragment + player views; bottom 5-tab bar / LIVE button / feed search pill = no static anchors found.
 
 ---
 
