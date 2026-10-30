@@ -37,6 +37,10 @@
         {
           "title": "DPI Resource Slimmer",
           "issue": 16
+        },
+        {
+          "title": "Remove Debug Info",
+          "issue": 198
         }
       ]
     },
