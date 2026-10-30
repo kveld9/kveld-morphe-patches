@@ -1,3 +1,9 @@
+## [2.10.0-experimental.8](https://github.com/kveld9/kveld-morphe-patches/compare/v2.10.0-experimental.7...v2.10.0-experimental.8) (2026-10-30)
+
+### Bug Fixes
+
+* **tiktok:** block every tracker event entry point ([1ece8ee](https://github.com/kveld9/kveld-morphe-patches/commit/1ece8ee57783a02b08cb2cc3438e4caf002452f7))
+
 ## [2.10.0-experimental.7](https://github.com/kveld9/kveld-morphe-patches/compare/v2.10.0-experimental.6...v2.10.0-experimental.7) (2026-10-30)
 
 ### Bug Fixes
