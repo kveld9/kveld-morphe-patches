@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-10-30T18:11:19",
-  "description": "## [2.10.0-experimental.6](https://github.com/kveld9/kveld-morphe-patches/compare/v2.10.0-experimental.5...v2.10.0-experimental.6) (2026-10-30)\n\n### Bug Fixes\n\n* **brave:** restore readable menu text with the Custom theme ([2f950b9](https://github.com/kveld9/kveld-morphe-patches/commit/2f950b942eaaf24e7355971f20fcc072761bbe6d))\n* **brave:** stop the custom theme from hiding menu text ([d37d4f1](https://github.com/kveld9/kveld-morphe-patches/commit/d37d4f1ffb5b22c229e413e91118bbde39a272d4))\n\n### New Features\n\n* **brave:** add opt-in custom background for the new tab page ([33b1219](https://github.com/kveld9/kveld-morphe-patches/commit/33b12193fa111cbfde6729cf6787ad8b0261fd9f))",
-  "download_url": "https://github.com/kveld9/kveld-morphe-patches/releases/download/v2.10.0-experimental.6/patches-2.10.0-experimental.6.mpp",
+  "created_at": "2026-10-30T18:44:27",
+  "description": "## [2.10.0-experimental.7](https://github.com/kveld9/kveld-morphe-patches/compare/v2.10.0-experimental.6...v2.10.0-experimental.7) (2026-10-30)\n\n### Bug Fixes\n\n* **brave:** restore the dark-mode custom theme ([81ee00a](https://github.com/kveld9/kveld-morphe-patches/commit/81ee00ae71405b23a4c35747320e81b3ab1c2c1e))",
+  "download_url": "https://github.com/kveld9/kveld-morphe-patches/releases/download/v2.10.0-experimental.7/patches-2.10.0-experimental.7.mpp",
   "signature_download_url": "",
-  "version": "2.10.0-experimental.6"
+  "version": "2.10.0-experimental.7"
 }

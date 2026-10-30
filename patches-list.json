@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "2.10.0-experimental.6",
+  "version": "2.10.0-experimental.7",
   "patches": [
     {
       "name": "Allow Screenshots",
@@ -1228,7 +1228,7 @@
     },
     {
       "name": "Custom Brave theme",
-      "description": "Applies a custom color scheme to Brave chrome, dark mode first, with an option to paint light mode too.",
+      "description": "Applies custom colors to Brave dark mode chrome, defaulting to pure OLED black for battery saving on OLED screens.",
       "default": false,
       "dependencies": [
         "ResourcePatch"
@@ -1256,10 +1256,19 @@
         {
           "key": "backgroundColor",
           "title": "Background color",
-          "description": "Opaque hexadecimal color for primary backgrounds and base window chrome across dark and light modes. Defaults to pure OLED black (#000000).",
+          "description": "Opaque hexadecimal color for primary backgrounds and base window chrome. Defaults to pure OLED black (#000000).",
           "required": true,
           "type": "kotlin.String",
           "default": "#000000",
+          "values": null
+        },
+        {
+          "key": "surfaceUsesBackground",
+          "title": "Surfaces use background color",
+          "description": "When enabled, cards, sheets, and dialogs share the primary background color. When disabled, elevated surfaces use the dedicated surface color below.",
+          "required": false,
+          "type": "kotlin.Boolean",
+          "default": true,
           "values": null
         },
         {
@@ -1274,7 +1283,7 @@
         {
           "key": "textColor",
           "title": "Text ink color",
-          "description": "Opaque hexadecimal color applied to primary text labels across dark and light chrome. Defaults to Brave light slate ink (#f0f2ff).",
+          "description": "Opaque hexadecimal color applied to primary text labels. Defaults to Brave light slate ink (#f0f2ff).",
           "required": true,
           "type": "kotlin.String",
           "default": "#f0f2ff",
@@ -1283,10 +1292,19 @@
         {
           "key": "accentColor",
           "title": "Accent highlight color",
-          "description": "Opaque hexadecimal color for interactive highlights, active switches, and links across dark and light chrome. Defaults to Brave purple-blue accent (#737ade).",
+          "description": "Opaque hexadecimal color for interactive highlights, active switches, and links. Defaults to Brave purple-blue accent (#737ade).",
           "required": true,
           "type": "kotlin.String",
           "default": "#737ade",
+          "values": null
+        },
+        {
+          "key": "disableDynamicColors",
+          "title": "Disable Material You dynamic colors",
+          "description": "Prevents Android 12+ wallpaper palette extraction from replacing dark surfaces. When disabled, dynamic system colors take precedence.",
+          "required": false,
+          "type": "kotlin.Boolean",
+          "default": true,
           "values": null
         },
         {
@@ -1308,39 +1326,12 @@
           "values": null
         },
         {
-          "key": "surfaceUsesBackground",
-          "title": "Surfaces use background color",
-          "description": "When enabled, cards, sheets, and dialogs share the primary background color. When disabled, elevated surfaces use the dedicated surface color below.",
-          "required": false,
-          "type": "kotlin.Boolean",
-          "default": true,
-          "values": null
-        },
-        {
-          "key": "disableDynamicColors",
-          "title": "Disable Material You dynamic colors",
-          "description": "Prevents Android 12+ wallpaper palette extraction from replacing theme surfaces. When disabled, dynamic system colors take precedence.",
-          "required": false,
-          "type": "kotlin.Boolean",
-          "default": true,
-          "values": null
-        },
-        {
           "key": "enablePreferenceCards",
           "title": "Style preference rows as cards",
           "description": "Wraps settings and preference rows in rounded card shapes when two-tier surfaces are enabled.",
           "required": false,
           "type": "kotlin.Boolean",
           "default": true,
-          "values": null
-        },
-        {
-          "key": "themeLightMode",
-          "title": "Also theme light mode",
-          "description": "Paints the light theme with the custom colors too. Keep it off if light mode should stay as Brave ships it: Brave reuses some light-theme color entries in the dark theme, so repainting them can hide menu text.",
-          "required": false,
-          "type": "kotlin.Boolean",
-          "default": false,
           "values": null
         },
         {

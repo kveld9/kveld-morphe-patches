@@ -1,3 +1,9 @@
+## [2.10.0-experimental.7](https://github.com/kveld9/kveld-morphe-patches/compare/v2.10.0-experimental.6...v2.10.0-experimental.7) (2026-10-30)
+
+### Bug Fixes
+
+* **brave:** restore the dark-mode custom theme ([81ee00a](https://github.com/kveld9/kveld-morphe-patches/commit/81ee00ae71405b23a4c35747320e81b3ab1c2c1e))
+
 ## [2.10.0-experimental.6](https://github.com/kveld9/kveld-morphe-patches/compare/v2.10.0-experimental.5...v2.10.0-experimental.6) (2026-10-30)
 
 ### Bug Fixes
