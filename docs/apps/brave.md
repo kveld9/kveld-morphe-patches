@@ -37,7 +37,7 @@ The authoritative patch catalog with descriptions and options is generated in RE
 ### B. Interface & Promo Suppression
 - **Clean Start Page**:
   - *Objective*: Provide a distraction-free start page free of ads, sponsored cards, and unwanted news.
-  - *How*: Disables sponsored background wallpapers, Brave News feeds, and marketing cards by intercepting preference queries and layout initialization guards (custom NTP wallpaper is unsupported on current Brave). Includes an option to hide shortcut tiles:
+  - *How*: Disables sponsored background wallpapers, Brave News feeds, and marketing cards by intercepting preference queries and layout initialization guards (allows background images only when a custom NTP wallpaper is installed). Includes an option to hide shortcut tiles:
     - `hideTopSites`: Removes most-visited shortcut tiles for a completely blank new tab page.
 - **Silence Promo Notifications**:
   - *Objective*: Eliminate unsolicited marketing reminders, tips, and rewards onboarding notifications.
@@ -93,6 +93,10 @@ The authoritative patch catalog with descriptions and options is generated in RE
 | `patchVectorDrawables` | `booleanOption` | `true` | Patch vector drawable surface fills | Rewrites background and container fills inside vector drawables in `res/drawable*` to match theme colors. |
 
   - *How*: Rewrites color values, vector fills, window background references, and lStar selector resources at patch time across day, night, and version-specific resource directories (`res/values*`, `res/color*`, `res/drawable*`, `res/layout*`, `res/xml*`), updates preference XML defaults, and injects bytecode prologues into dynamic color reader methods in DEX bytecode to return false.
+- **Custom NTP wallpaper**:
+  - *Objective*: Replace the Brave New Tab Page background with a user-supplied custom PNG image.
+  - *How*: Deploys the selected PNG into `res/drawable-nodpi` at patch time, rewrites the Java ambient wallpaper catalog accessor to construct and return a `BackgroundImage` model referencing the custom drawable resource ID via `BraveExtension.getCustomNtpWallpaperDrawableId()`, and forces wallpaper callback handlers to consume the ambient catalog instead of native URL-loaded branded wallpapers. Includes an option for the wallpaper image:
+    - `customWallpaper`: PNG image file on host system used as the new-tab background (validated for PNG magic bytes, dimensions between 480 and 8192 px, and size up to 8 MiB).
 
 ---
 

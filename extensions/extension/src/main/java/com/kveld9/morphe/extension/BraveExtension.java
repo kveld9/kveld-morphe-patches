@@ -1,5 +1,7 @@
 package com.kveld9.morphe.extension;
 
+import android.content.Context;
+import android.content.res.Resources;
 import java.lang.reflect.Method;
 import java.util.List;
 
@@ -13,6 +15,7 @@ public class BraveExtension {
         if (pref == null) return originalValue;
         switch (pref) {
             case "brave.new_tab_page.show_background_image":
+                return getCustomNtpWallpaperDrawableId() != 0 ? originalValue : false;
             case "brave.new_tab_page.show_branded_background_image":
             case "brave.new_tab_page.show_sponsored_images":
             case "brave.brave_ads.sponsored.enabled":
@@ -147,6 +150,45 @@ public class BraveExtension {
             // 6. Pre-select predecessor tab
             setIndexMethod.invoke(tabModelObj, predecessorIndex);
         } catch (Throwable ignored) {
+        }
+    }
+
+    private static final String NTP_WALLPAPER_DRAWABLE = "morphe_custom_ntp_wallpaper";
+    private static volatile int sCustomDrawableId = -1;
+
+    /**
+     * Resolves the Morphe-installed NTP wallpaper drawable resource ID at runtime.
+     * Lives in the extension so bytecode sites only need a 2-register invoke-static.
+     *
+     * @return the drawable resource ID, or 0 if not found
+     */
+    public static int getCustomNtpWallpaperDrawableId() {
+        if (sCustomDrawableId != -1) {
+            return sCustomDrawableId;
+        }
+        try {
+            Context app = currentApplication();
+            if (app == null) return 0;
+            Resources res = app.getResources();
+            if (res == null) return 0;
+            int id = res.getIdentifier(NTP_WALLPAPER_DRAWABLE, "drawable", app.getPackageName());
+            if (id != 0) {
+                sCustomDrawableId = id;
+            }
+            return id;
+        } catch (Throwable t) {
+            return 0;
+        }
+    }
+
+    /** Hidden API; resolve reflectively so this class compiles against public SDK. */
+    private static Context currentApplication() {
+        try {
+            Class<?> at = Class.forName("android.app.ActivityThread");
+            Object app = at.getDeclaredMethod("currentApplication").invoke(null);
+            return (Context) app;
+        } catch (Throwable t) {
+            return null;
         }
     }
 }
