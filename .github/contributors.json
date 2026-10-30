@@ -149,6 +149,10 @@
           "issue": 164
         }
       ]
+    },
+    {
+      "username": "AlexanderQueen",
+      "customText": "Feature request: Proposed a user-chosen New Tab Page background image ([#197](https://github.com/kveld9/kveld-morphe-patches/issues/197))."
     }
   ]
 }

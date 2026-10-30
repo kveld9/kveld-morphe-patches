@@ -409,6 +409,7 @@ Additionally, ensure all Gradle checks pass cleanly:
 | <a href="https://github.com/nightsper"><img src="https://github.com/nightsper.png" alt="@nightsper" width="48" height="48" style="border-radius: 50%;" /><br><b>@nightsper</b></a> | Feature request: Proposed Tab selection after deleting a tab in a tab group feature request ([#76](https://github.com/kveld9/kveld-morphe-patches/issues/76)). |
 | <a href="https://github.com/nadr21a21"><img src="https://github.com/nadr21a21.png" alt="@nadr21a21" width="48" height="48" style="border-radius: 50%;" /><br><b>@nadr21a21</b></a> | Feature request: Proposed Gboard lite Option to pause automatic deletion in clipboard feature request ([#61](https://github.com/kveld9/kveld-morphe-patches/issues/61)). |
 | <a href="https://github.com/polosugars-sketch"><img src="https://github.com/polosugars-sketch.png" alt="@polosugars-sketch" width="48" height="48" style="border-radius: 50%;" /><br><b>@polosugars-sketch</b></a> | Feature request: Proposed Include other monetization SDKs in the patches feature request ([#164](https://github.com/kveld9/kveld-morphe-patches/issues/164)). |
+| <a href="https://github.com/AlexanderQueen"><img src="https://github.com/AlexanderQueen.png" alt="@AlexanderQueen" width="48" height="48" style="border-radius: 50%;" /><br><b>@AlexanderQueen</b></a> | Feature request: Proposed a user-chosen New Tab Page background image ([#197](https://github.com/kveld9/kveld-morphe-patches/issues/197)). |
 <!-- CONTRIBUTORS_END -->
 
 ---
