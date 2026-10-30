@@ -64,33 +64,28 @@ The authoritative patch catalog with descriptions and options is generated in RE
 
 ### E. Theming & Interface Customization
 - **Custom Brave theme**:
-  - *Objective*: Provide fully customizable styling for Brave dark and light chrome, replacing standard charcoal grey and white surfaces with custom colors. Defaults preserve pure-black AMOLED styling (#000000) while allowing granular customization of backgrounds, elevated containers, text ink, highlights, and Material You system role mappings across both dark and light modes.
-  - *Light Theme Coverage*: Light-mode painting is opt-in through the "Also theme light mode" option and defaults to off. Brave shares some light-theme color entries with the dark theme, so repainting them can hide menu labels. When enabled, it symmetrically skins daytime chrome so that switching to light theme or system day mode does not revert toolbars, the address bar, or the omnibox back to stock white:
-    - Base backgrounds (`backgroundColor`) apply to daytime window chrome, toolbar backgrounds, and light system neutral/surface base roles (`system_surface_light`, `system_neutral1_50`).
-    - Elevated surfaces (`surfaceColor`) apply to daytime search containers, omnibox backgrounds, and light system container roles (`system_surface_container_light`, `system_surface_container_high_light`).
-    - Text ink (`textColor`) applies to daytime text labels, address bar text, and tab titles, inverted from dark ink with luminance scaling preserved.
-    - Accent highlights (`accentColor`) apply to daytime toggles, active switches, and interactive highlights.
+  - *Objective*: Provide fully customizable styling for Brave dark mode chrome, replacing standard charcoal grey surfaces with custom colors. Defaults preserve pure-black AMOLED styling (#000000) while allowing granular customization of backgrounds, elevated containers, text ink, highlights, and Material You system role mappings.
   - *Two-Tier Surfaces*: Distinguishes between flat base backgrounds (toolbars, window roots, web view containers) and elevated surfaces (dialog boxes, modal bottom sheets, popover menus, and settings cards).
     - When `surfaceUsesBackground` is enabled (`true`, default), all surfaces share the base background color, providing a uniform true-black AMOLED appearance. Defaults are OLED pure-black out of the box, with #1e2029 as the suggested value for tier depth.
-    - When `surfaceUsesBackground` is disabled (`false`), elevated cards, omnibox containers, and dialogs use the dedicated `surfaceColor` (default `#000000`), creating clear visual separation when set to a distinct tier color such as `#1e2029`.
-  - *Material You Dynamic Palette Opt-Out*: On Android 12 and higher, system-wide wallpaper palette extraction dynamically tints app surfaces. When `disableDynamicColors` is enabled (`true`, default), the patch intercepts internal dynamic color readers and rewrites Android system neutral/container color definitions, preventing dynamic system wallpaper colors from overriding the chosen custom theme across dark and light modes. Users wanting Android wallpaper-derived tints can toggle this setting to `false`.
+    - When `surfaceUsesBackground` is disabled (`false`), elevated cards and dialogs use the dedicated `surfaceColor` (default `#000000`), creating clear visual separation when set to a distinct tier color such as `#1e2029`.
+  - *Material You Dynamic Palette Opt-Out*: On Android 12 and higher, system-wide wallpaper palette extraction dynamically tints app surfaces. When `disableDynamicColors` is enabled (`true`, default), the patch intercepts internal dynamic color readers and rewrites Android system neutral/container color definitions, preventing dynamic system wallpaper colors from overriding the chosen dark theme. Users wanting Android wallpaper-derived tints can toggle this setting to `false`.
   - *Customization Options*:
 
 | Option Key | Typology | Default | Title & Visible Effect | Description & Example |
 | :--- | :--- | :--- | :--- | :--- |
-| `backgroundColor` | `colorOption` | `#000000` | Background color | Primary background for toolbars, window chrome, and base surfaces across dark and light modes. Example: `#000000` for pure OLED black, or `#0d1117` for deep navy. |
-| `surfaceColor` | `colorOption` | `#000000` | Surface / container color | Dedicated color for raised containers, modal sheets, cards, and omnibox surfaces. Defaults to OLED pure-black (#000000) out of the box; use #1e2029 for visible tier depth. |
-| `textColor` | `colorOption` | `#f0f2ff` | Text ink color | Primary text ink for labels, addresses, tab headers, and menus across dark and light chrome. Defaults to Brave slate ink (`#f0f2ff`). |
-| `accentColor` | `colorOption` | `#737ade` | Accent highlight color | Interactive highlights, active toggles, links, and action buttons across dark and light chrome. Defaults to Brave purple-blue (`#737ade`). |
+| `backgroundColor` | `colorOption` | `#000000` | Background color | Primary background for toolbars, window chrome, and base surfaces. Example: `#000000` for pure OLED black, or `#0d1117` for deep navy. |
+| `surfaceUsesBackground` | `booleanOption` | `true` | Surfaces use background color | When true, elevated dialogs and cards share the base background color. When false, elevated surfaces use `surfaceColor`. |
+| `surfaceColor` | `colorOption` | `#000000` | Surface / container color | Dedicated color for raised containers, modal sheets, and cards. Defaults to OLED pure-black (#000000) out of the box; use #1e2029 for visible tier depth. |
+| `textColor` | `colorOption` | `#f0f2ff` | Text ink color | Primary text ink for labels, addresses, tab headers, and menus. Defaults to Brave slate ink (`#f0f2ff`). |
+| `accentColor` | `colorOption` | `#737ade` | Accent highlight color | Interactive highlights, active toggles, links, and action buttons. Defaults to Brave purple-blue (`#737ade`). |
+| `disableDynamicColors` | `booleanOption` | `true` | Disable Material You dynamic colors | Prevents wallpaper extraction on Android 12+ from overriding custom dark surfaces. |
 | `windowBackgroundColor` | `colorOption` | `#000000` | Window background color | Root window background applied behind decor views in two-tier mode. Defaults to `#000000`. |
 | `cardColor` | `colorOption` | `#000000` | Preference card color | Fill color for settings and preference rows in two-tier mode. Defaults to OLED pure-black (#000000) out of the box; use #1e2029 for visible tier depth. |
-| `surfaceUsesBackground` | `booleanOption` | `true` | Surfaces use background color | When true, elevated dialogs, omnibox containers, and cards share the base background color. When false, elevated surfaces use `surfaceColor`. |
-| `disableDynamicColors` | `booleanOption` | `true` | Disable Material You dynamic colors | Prevents wallpaper extraction on Android 12+ from overriding custom theme surfaces. |
 | `enablePreferenceCards` | `booleanOption` | `true` | Style preference rows as cards | Groups Settings and preference rows into rounded cards with subtle margins in two-tier mode. |
 | `modulateTextLuminance` | `booleanOption` | `true` | Modulate text tiers by luminance | Dynamically scales secondary (81%) and disabled (62%) text brightness relative to the primary text ink color. |
-| `patchMaterialYouRoles` | `booleanOption` | `true` | Patch Material You system color roles | Rewrites Android S+ system neutral and container color roles in `values-v31+` directories to theme colors across dark and light modes. |
-| `patchLStarSelectors` | `booleanOption` | `true` | Patch color state list lStar selectors | Rewrites color state list `lStar` luminance attributes in `res/color*` to match background and container surfaces across dark and light modes. |
-| `patchVectorDrawables` | `booleanOption` | `true` | Patch vector drawable surface fills | Rewrites background and container fills inside vector drawables in `res/drawable*` to match theme colors. |
+| `patchMaterialYouRoles` | `booleanOption` | `true` | Patch Material You system color roles | Rewrites Android S+ system neutral and container color roles in `values-v31+` directories to theme colors. |
+| `patchLStarSelectors` | `booleanOption` | `true` | Patch color state list lStar selectors | Rewrites color state list `lStar` luminance attributes in `res/color*` to match background and container surfaces. |
+| `patchVectorDrawables` | `booleanOption` | `true` | Patch vector drawable surface fills | Rewrites dark surface fills inside vector drawables in `res/drawable*` to match background and container colors. |
 
   - *How*: Rewrites color values, vector fills, window background references, and lStar selector resources at patch time across day, night, and version-specific resource directories (`res/values*`, `res/color*`, `res/drawable*`, `res/layout*`, `res/xml*`), updates preference XML defaults, and injects bytecode prologues into dynamic color reader methods in DEX bytecode to return false.
 - **Custom NTP wallpaper**:

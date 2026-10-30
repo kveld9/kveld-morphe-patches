@@ -30,23 +30,9 @@ internal val DARK_CANONICAL_PALETTE = setOf(
     "#212121", "#212529", "#272733", "#2e3039", "#3b3e4f",
 )
 
-internal val LIGHT_CANONICAL_PALETTE = setOf(
-    "#ffffff", "#fefefe", "#fcfcfc", "#fafafa", "#f9f9f9",
-    "#f8f9fa", "#f5f5f5", "#f1f3f4", "#f1f3f5", "#eeeeee",
-    "#e8eaed", "#e9ecef", "#e0e0e0", "#dee2e6", "#dadce0",
-    "#f0f4f9", "#f2f4f8", "#f4f6fa",
-)
-
-// Elevated light surfaces from LIGHT_CANONICAL_PALETTE that require elevation differentiation even at peakComponent >= 254
-internal val LIGHT_ELEVATED_CANONICAL = setOf("#f1f3f4", "#f1f3f5", "#f8f9fa", "#e8eaed", "#dadce0")
-
 internal val REGEX_SYS_DARK_BASE_ROLES = Regex("""@android:color/system_(?:neutral[123]_(?:700|800|900|1000)|(?:background|surface|surface_dim)_dark)$""", RegexOption.IGNORE_CASE)
 internal val REGEX_SYS_DARK_CONTAINER_ROLES = Regex("""@android:color/system_(?:surface_bright|surface_variant|surface_container(?:_low|_lowest|_high|_highest)?)_dark$""", RegexOption.IGNORE_CASE)
 internal val REGEX_SYS_DARK_ALL_ROLES = Regex("""@android:color/system_(?:neutral[123]_(?:700|800|900|1000)|(?:background|surface|surface_bright|surface_dim|surface_variant|surface_container(?:_low|_lowest|_high|_highest)?)_dark)$""", RegexOption.IGNORE_CASE)
-
-internal val REGEX_SYS_LIGHT_BASE_ROLES = Regex("""@android:color/system_(?:neutral[123]_(?:0|10|50|100|200)|(?:background|surface|surface_dim)_light)$""", RegexOption.IGNORE_CASE)
-internal val REGEX_SYS_LIGHT_CONTAINER_ROLES = Regex("""@android:color/system_(?:surface_bright|surface_variant|surface_container(?:_low|_lowest|_high|_highest)?)_light$""", RegexOption.IGNORE_CASE)
-internal val REGEX_SYS_LIGHT_ALL_ROLES = Regex("""@android:color/system_(?:neutral[123]_(?:0|10|50|100|200)|(?:background|surface|surface_bright|surface_dim|surface_variant|surface_container(?:_low|_lowest|_high|_highest)?)_light)$""", RegexOption.IGNORE_CASE)
 internal val REGEX_LSTAR_SELECTOR_ITEM = Regex("""<item\s+(n\d+):color="(@android:color/system_[^"]+)"\s+\1:lStar="(\d+(?:\.\d+)?)"""", RegexOption.IGNORE_CASE)
 
 private val REGEX_COLOR_TAG = Regex("""<color\s+name="([^"]+)"\s*>([^<]+)</color>""")
@@ -88,24 +74,11 @@ internal fun isSurfaceCandidate(hexString: String): Boolean {
     return sample.spreadDelta <= 40 && (sample.peakComponent <= 80 || canon in DARK_CANONICAL_PALETTE)
 }
 
-internal fun isLightSurfaceCandidate(hexString: String): Boolean {
-    val canon = canonicalizeHex(hexString) ?: return false
-    val sample = decodeHexColor(canon) ?: return false
-    return sample.spreadDelta <= 40 && (sample.peakComponent >= 215 || canon in LIGHT_CANONICAL_PALETTE)
-}
-
 internal fun isGroundTierColor(hexString: String): Boolean =
     isSurfaceCandidate(hexString) && (decodeHexColor(hexString)?.peakComponent ?: 255) <= 0x1c
 
 internal fun isElevatedTierColor(hexString: String): Boolean =
     isSurfaceCandidate(hexString) && !isGroundTierColor(hexString)
-
-internal fun isLightElevatedTierColor(hexString: String): Boolean {
-    if (!isLightSurfaceCandidate(hexString)) return false
-    val canon = canonicalizeHex(hexString) ?: return false
-    val sample = decodeHexColor(canon) ?: return false
-    return sample.peakComponent < 254 || canon in LIGHT_ELEVATED_CANONICAL
-}
 
 internal fun isLegibleInkColor(hexString: String): Boolean {
     val canon = canonicalizeHex(hexString) ?: return false
@@ -114,23 +87,9 @@ internal fun isLegibleInkColor(hexString: String): Boolean {
     return sample.spreadDelta <= 40 && sample.peakComponent >= 140
 }
 
-internal fun isDayTextInkColor(hexString: String): Boolean {
-    val canon = canonicalizeHex(hexString) ?: return false
-    if (isSurfaceCandidate(canon)) return false
-    if (isLightSurfaceCandidate(canon)) return false
-    val sample = decodeHexColor(canon) ?: return false
-    return sample.spreadDelta <= 40 && sample.peakComponent in 15..140
-}
-
 internal fun computeTextLuminanceRatio(sample: ColorSample): Float = when {
     sample.peakComponent >= 220 -> 1.0f
     sample.peakComponent >= 180 -> 0.81f
-    else -> 0.62f
-}
-
-internal fun computeDayTextLuminanceRatio(sample: ColorSample): Float = when {
-    sample.peakComponent <= 60 -> 1.0f
-    sample.peakComponent <= 110 -> 0.81f
     else -> 0.62f
 }
 
@@ -167,9 +126,6 @@ internal data class SurfaceTransformStats(val baseCount: Int, val containerCount
 private fun resolveRaisedStatus(tagId: String, rawHex: String, baseTagNames: Set<String>, containerTagNames: Set<String>): Boolean =
     tagId !in baseTagNames && (tagId in containerTagNames || isElevatedTierColor(rawHex))
 
-private fun resolveDayRaisedStatus(tagId: String, rawHex: String, baseTagNames: Set<String>, containerTagNames: Set<String>): Boolean =
-    tagId !in baseTagNames && (tagId in containerTagNames || isElevatedTierColor(rawHex) || isLightElevatedTierColor(rawHex))
-
 internal fun rewriteXmlSurfaces(
     xmlText: String, backgroundHex: String, containerHex: String,
     containerTagNames: Set<String> = emptySet(), baseTagNames: Set<String> = emptySet(),
@@ -192,62 +148,12 @@ internal fun rewriteXmlSurfaces(
     return updatedXml to SurfaceTransformStats(baseCount = countBase, containerCount = countRaised)
 }
 
-internal fun rewriteXmlDaySurfaces(
-    xmlText: String, backgroundHex: String, containerHex: String,
-    containerTagNames: Set<String> = emptySet(), baseTagNames: Set<String> = emptySet(),
-    excludedTagNames: Set<String> = emptySet(),
-    lightCandidatesOnly: Boolean = false,
-): Pair<String, SurfaceTransformStats> {
-    val canonicalBg = canonicalizeHex(backgroundHex) ?: throw PatchException("Provided background is not a valid opaque hex: $backgroundHex")
-    val canonicalContainer = canonicalizeHex(containerHex) ?: throw PatchException("Provided container is not a valid opaque hex: $containerHex")
-    val singleTone = canonicalContainer == canonicalBg
-    var countBase = 0
-    var countRaised = 0
-
-    val (updatedXml, _) = replaceXmlColorTags(xmlText) { name, raw ->
-        if (name in excludedTagNames) return@replaceXmlColorTags null
-        val isDark = !lightCandidatesOnly && isSurfaceCandidate(raw)
-        val isLight = isLightSurfaceCandidate(raw)
-        if (!isDark && !isLight) return@replaceXmlColorTags null
-        val raised = resolveDayRaisedStatus(name, raw, baseTagNames, containerTagNames)
-        val target = if (raised) canonicalContainer else canonicalBg
-        if (canonicalizeHex(raw) == target) return@replaceXmlColorTags null
-        if (raised && !singleTone) countRaised++ else countBase++
-        target
-    }
-    return updatedXml to SurfaceTransformStats(baseCount = countBase, containerCount = countRaised)
-}
-
 internal fun rewriteXmlTextInk(xmlText: String, textHex: String, modulateLuminance: Boolean = true): Pair<String, Int> {
     val canonicalText = canonicalizeHex(textHex) ?: throw PatchException("Provided ink is not a valid opaque hex: $textHex")
     return replaceXmlColorTags(xmlText) { _, raw ->
         if (!isLegibleInkColor(raw)) return@replaceXmlColorTags null
         val sample = decodeHexColor(raw) ?: return@replaceXmlColorTags null
         val target = if (modulateLuminance) modulateHexColor(canonicalText, computeTextLuminanceRatio(sample)) else canonicalText
-        if (canonicalizeHex(raw) == target) null else target
-    }
-}
-
-internal fun rewriteXmlDayTextInk(
-    xmlText: String, textHex: String, textBearingIds: Set<String>, modulateLuminance: Boolean = true,
-    excludedTagNames: Set<String> = emptySet(), nightInkIds: Set<String> = emptySet(),
-): Pair<String, Int> {
-    val canonicalText = canonicalizeHex(textHex) ?: throw PatchException("Provided ink is not a valid opaque hex: $textHex")
-    return replaceXmlColorTags(xmlText) { name, raw ->
-        if (name in excludedTagNames) return@replaceXmlColorTags null
-        val isTextId = name in textBearingIds
-        val isThemeText = name in nightInkIds
-        val isLightInk = isLegibleInkColor(raw)
-        val isDarkInk = isDayTextInkColor(raw)
-        if (!isTextId && !isThemeText && !isLightInk && !isDarkInk) return@replaceXmlColorTags null
-        val sample = decodeHexColor(raw) ?: return@replaceXmlColorTags null
-        if (sample.alphaVal != 0xFF) return@replaceXmlColorTags null
-        val ratio = when {
-            isDarkInk -> if (modulateLuminance) computeDayTextLuminanceRatio(sample) else 1.0f
-            (isTextId || isThemeText) && sample.peakComponent <= 80 -> if (modulateLuminance) computeDayTextLuminanceRatio(sample) else 1.0f
-            else -> if (modulateLuminance) computeTextLuminanceRatio(sample) else 1.0f
-        }
-        val target = if (modulateLuminance) modulateHexColor(canonicalText, ratio) else canonicalText
         if (canonicalizeHex(raw) == target) null else target
     }
 }
@@ -259,33 +165,28 @@ internal fun rewriteXmlAccentInk(xmlText: String, accentHex: String): Pair<Strin
     }
 }
 
-internal fun rewriteMaterialYouSystemRoles(
-    xmlText: String, bgHex: String, containerHex: String = bgHex, excludedTagNames: Set<String> = emptySet(),
-): Pair<String, Int> {
+internal fun rewriteMaterialYouSystemRoles(xmlText: String, bgHex: String, containerHex: String = bgHex): Pair<String, Int> {
     val canonicalBg = canonicalizeHex(bgHex) ?: throw PatchException("Provided background is not a valid opaque hex: $bgHex")
     val canonicalContainer = canonicalizeHex(containerHex) ?: throw PatchException("Provided container is not a valid opaque hex: $containerHex")
-    return replaceXmlColorTags(xmlText) { name, raw ->
-        if (name in excludedTagNames) return@replaceXmlColorTags null
+    return replaceXmlColorTags(xmlText) { _, raw ->
         when {
-            REGEX_SYS_DARK_CONTAINER_ROLES.matches(raw) || REGEX_SYS_LIGHT_CONTAINER_ROLES.matches(raw) -> canonicalContainer
-            REGEX_SYS_DARK_BASE_ROLES.matches(raw) || REGEX_SYS_LIGHT_BASE_ROLES.matches(raw) -> canonicalBg
+            REGEX_SYS_DARK_CONTAINER_ROLES.matches(raw) -> canonicalContainer
+            REGEX_SYS_DARK_BASE_ROLES.matches(raw) -> canonicalBg
             else -> null
         }
     }
 }
 
 internal fun discoverMaterialYouNeutralIds(xmlText: String): List<String> =
-    REGEX_COLOR_TAG.findAll(xmlText).filter {
-        REGEX_SYS_DARK_ALL_ROLES.matches(it.groupValues[2].trim()) || REGEX_SYS_LIGHT_ALL_ROLES.matches(it.groupValues[2].trim())
-    }.map { m -> m.groupValues[1] }.toList()
+    REGEX_COLOR_TAG.findAll(xmlText).filter { REGEX_SYS_DARK_ALL_ROLES.matches(it.groupValues[2].trim()) }.map { m -> m.groupValues[1] }.toList()
 
 internal fun discoverMaterialYouRoleMap(xmlText: String): Map<String, Boolean> =
     REGEX_COLOR_TAG.findAll(xmlText).mapNotNull { match ->
         val (name, raw) = match.destructured
         val trimmed = raw.trim()
         when {
-            REGEX_SYS_DARK_CONTAINER_ROLES.matches(trimmed) || REGEX_SYS_LIGHT_CONTAINER_ROLES.matches(trimmed) -> name to true
-            REGEX_SYS_DARK_BASE_ROLES.matches(trimmed) || REGEX_SYS_LIGHT_BASE_ROLES.matches(trimmed) -> name to false
+            REGEX_SYS_DARK_CONTAINER_ROLES.matches(trimmed) -> name to true
+            REGEX_SYS_DARK_BASE_ROLES.matches(trimmed) -> name to false
             else -> null
         }
     }.toMap()
@@ -336,7 +237,7 @@ internal fun buildNightV31OverrideMap(
     val allNames = linkedSetOf<String>()
     val raisedNames = linkedSetOf<String>()
 
-    listOf(nightXmlText).forEach { xml ->
+    listOf(dayXmlText, nightXmlText).forEach { xml ->
         REGEX_COLOR_TAG.findAll(xml).forEach { match ->
             val (name, raw) = match.destructured
             inspectEntryForNightOverride(name, raw.trim(), textBearingIds, baseRoleIds, containerRoleIds, allNames, raisedNames)
@@ -362,36 +263,23 @@ internal fun renderNightV31XmlDocument(overrides: Map<String, String>): String =
 }
 
 private fun evaluateLStarSurfaceTone(roleString: String, toneValue: Double, bgHex: String, containerHex: String): String = when {
-    REGEX_SYS_DARK_CONTAINER_ROLES.matches(roleString) || REGEX_SYS_LIGHT_CONTAINER_ROLES.matches(roleString) -> containerHex
-    REGEX_SYS_DARK_BASE_ROLES.matches(roleString) || REGEX_SYS_LIGHT_BASE_ROLES.matches(roleString) -> bgHex
-    toneValue in 12.0..24.0 -> containerHex
-    toneValue in 85.0..95.0 -> containerHex
+    REGEX_SYS_DARK_CONTAINER_ROLES.matches(roleString) -> containerHex
+    REGEX_SYS_DARK_BASE_ROLES.matches(roleString) -> bgHex
+    toneValue >= 12.0 -> containerHex
     else -> bgHex
 }
 
-internal fun rewriteLStarColorSelectors(
-    xmlText: String, bgHex: String, containerHex: String = bgHex, textHex: String? = null, isNight: Boolean = true,
-): Pair<String, Int> {
+internal fun rewriteLStarColorSelectors(xmlText: String, bgHex: String, containerHex: String = bgHex): Pair<String, Int> {
     val canonicalBg = canonicalizeHex(bgHex) ?: throw PatchException("Provided background is not a valid opaque hex: $bgHex")
     val canonicalContainer = canonicalizeHex(containerHex) ?: throw PatchException("Provided container is not a valid opaque hex: $containerHex")
-    val canonicalText = textHex?.let { canonicalizeHex(it) }
     var totalRewrites = 0
 
     val transformed = REGEX_LSTAR_SELECTOR_ITEM.replace(xmlText) { match ->
         val (prefix, systemRole, toneString) = match.destructured
         val tone = toneString.toDoubleOrNull() ?: return@replace match.value
+        if (tone > 24.0) return@replace match.value
 
-        val isTextTone = if (isNight) tone >= 80.0 else tone <= 24.0
-        val isSurfaceTone = if (isNight) tone <= 24.0 else tone >= 85.0
-
-        if (!isTextTone && !isSurfaceTone) return@replace match.value
-
-        val targetHex = if (isTextTone) {
-            canonicalText ?: return@replace match.value
-        } else {
-            evaluateLStarSurfaceTone(systemRole, tone, canonicalBg, canonicalContainer)
-        }
-
+        val targetHex = evaluateLStarSurfaceTone(systemRole, tone, canonicalBg, canonicalContainer)
         totalRewrites++
         val colorPattern = Regex("""${Regex.escape(prefix)}:color="[^"]*"""")
         val lStarPattern = Regex("""\s+${Regex.escape(prefix)}:lStar="[^"]*"""")
@@ -412,11 +300,8 @@ internal fun rewriteVectorDrawableSurfaceFills(xmlText: String, bgHex: String, c
     var modified = 0
     val transformed = REGEX_VECTOR_FILL_ATTR.replace(xmlText) { match ->
         val (attrPrefix, fillValue) = match.destructured
-        val isDark = isSurfaceCandidate(fillValue)
-        val isLight = isLightSurfaceCandidate(fillValue)
-        if (!isDark && !isLight) return@replace match.value
-        val isElevated = if (isDark) isElevatedTierColor(fillValue) else isLightElevatedTierColor(fillValue)
-        val targetHex = if (isElevated) canonicalContainer else canonicalBg
+        if (!isSurfaceCandidate(fillValue)) return@replace match.value
+        val targetHex = if (isElevatedTierColor(fillValue)) canonicalContainer else canonicalBg
         modified++
         """$attrPrefix="$targetHex""""
     }
@@ -649,20 +534,13 @@ private val REGEX_LAYOUT_TEXT_ATTR = Regex("""(?:android:|\bn\d+:)text[A-Za-z]*\
 internal fun discoverTextBearingColorIdentifiers(resRoot: File): Set<String> {
     val detectedIds = linkedSetOf<String>()
     resRoot.subdirsNamed("values").flatMap { it.xmlChildFiles() }
-        .filter { it.name.equals("styles.xml", true) || it.name.equals("themes.xml", true) }
+        .filter { it.name.equals("styles.xml", true) }
         .forEach { file -> REGEX_STYLE_TEXT_ATTR.findAll(file.readText()).forEach { detectedIds += it.groupValues[1] } }
 
     resRoot.subdirsNamed("layout").forEach { dir ->
         dir.walkTopDown().filter { it.isFile && it.extension.equals("xml", true) }.sortedBy { it.absolutePath }
             .forEach { file -> REGEX_LAYOUT_TEXT_ATTR.findAll(file.readText()).forEach { detectedIds += it.groupValues[1] } }
     }
-
-    val colorDirs = resRoot.listFiles().orEmpty().filter { it.isDirectory && (it.name == "color" || it.name.startsWith("color-")) }
-    val selectorColorPattern = Regex("""@color/([a-zA-Z0-9_]+)""")
-    colorDirs.flatMap { it.xmlChildFiles() }
-        .filter { it.nameWithoutExtension in detectedIds }
-        .forEach { file -> selectorColorPattern.findAll(file.readText()).forEach { detectedIds += it.groupValues[1] } }
-
     return detectedIds
 }
 
@@ -681,12 +559,6 @@ internal fun discoverDeclaredColorNames(resRoot: File): Set<String> {
 internal fun discoverColorNamesInFile(xmlFile: File): Set<String> =
     if (!xmlFile.isFile) emptySet() else REGEX_COLOR_TAG.findAll(xmlFile.readText()).mapTo(linkedSetOf()) { it.groupValues[1] }
 
-internal fun parseColorTagValues(xmlText: String): Map<String, String> =
-    REGEX_COLOR_TAG.findAll(xmlText).associate { it.groupValues[1] to it.groupValues[2].trim() }
-
-internal fun discoverNightInkIds(nightXmlText: String): Set<String> =
-    parseColorTagValues(nightXmlText).filterValues { isLegibleInkColor(it) }.keys
-
 internal fun locateNightColorsXmlFile(resRoot: File): File? {
     val standardPath = File(resRoot, RES_PATH_NIGHT_COLORS)
     if (standardPath.isFile) return standardPath
@@ -703,16 +575,14 @@ private fun setupTwoTierSurfaceEnvironment(
 ): Pair<Boolean, Int> {
     if (useBgForSurfaces) return false to 0
     redirectWindowBackgroundReferences(resRoot)
-    val validHex = canonicalizeHex(windowBgHex) ?: "#000000"
-    val argbHex = if (validHex.length == 7) "#ff" + validHex.substring(1) else validHex
-
-    listOf(File(resRoot, RES_PATH_DAY_COLORS), File(resRoot, RES_PATH_NIGHT_COLORS)).forEach { colorFile ->
-        if (colorFile.isFile) {
-            val originalXml = colorFile.readText()
-            if (!originalXml.contains("custom_theme_window_background")) {
-                val injected = originalXml.replace("</resources>", "    <color name=\"custom_theme_window_background\">$argbHex</color>\n</resources>")
-                colorFile.writeText(injected)
-            }
+    val nightFile = File(resRoot, RES_PATH_NIGHT_COLORS)
+    if (nightFile.isFile) {
+        val originalXml = nightFile.readText()
+        if (!originalXml.contains("custom_theme_window_background")) {
+            val validHex = canonicalizeHex(windowBgHex) ?: "#000000"
+            val argbHex = if (validHex.length == 7) "#ff" + validHex.substring(1) else validHex
+            val injected = originalXml.replace("</resources>", "    <color name=\"custom_theme_window_background\">$argbHex</color>\n</resources>")
+            nightFile.writeText(injected)
         }
     }
     var cardGenerated = false
@@ -732,18 +602,12 @@ private fun executeDayColorsTransform(
     dayFile: File, bgHex: String, surfaceHex: String, containerIds: Set<String>, baseIds: Set<String>,
     textBearingIds: Set<String>, neededTextIds: List<String>, declaredColors: Set<String>,
     configuredTextHex: String?, configuredAccentHex: String?, modulateLuminance: Boolean,
-    nightInkIds: Set<String> = emptySet(),
 ): DayProcessingSummary {
     if (!dayFile.isFile) return DayProcessingSummary(0, 0, 0, 0, 0)
     var currentXml = dayFile.readText()
-    val daySurfaceTagNames = REGEX_COLOR_TAG.findAll(currentXml)
-        .filter { it.groupValues[1] !in textBearingIds && isLightSurfaceCandidate(it.groupValues[2].trim()) }
-        .mapTo(linkedSetOf()) { it.groupValues[1] }
-        .also { it += baseIds; it += containerIds }
-    val (afterSurfaces, stats) = rewriteXmlDaySurfaces(
+    val (afterSurfaces, stats) = rewriteXmlSurfaces(
         xmlText = currentXml, backgroundHex = bgHex, containerHex = surfaceHex,
         containerTagNames = containerIds, baseTagNames = baseIds, excludedTagNames = textBearingIds,
-        lightCandidatesOnly = true,
     )
     currentXml = afterSurfaces
     var replacedText = 0
@@ -751,11 +615,8 @@ private fun executeDayColorsTransform(
     var replacedAccent = 0
 
     if (configuredTextHex != null) {
-        val (textTransformed, tCount) = rewriteXmlDayTextInk(
-            currentXml, configuredTextHex, textBearingIds, modulateLuminance,
-            excludedTagNames = daySurfaceTagNames, nightInkIds = nightInkIds,
-        )
-        val (inkInjected, iCount) = injectDayTextInkDefaults(textTransformed, neededTextIds, declaredColors, configuredTextHex)
+        val (textTransformed, tCount) = rewriteXmlTextInk(currentXml, configuredTextHex, modulateLuminance)
+        val (inkInjected, iCount) = injectDayTextInkDefaults(textTransformed, neededTextIds, declaredColors, "#202124")
         currentXml = inkInjected
         replacedText = tCount
         injectedInk = iCount
@@ -811,39 +672,29 @@ private fun executeNightColorsTransform(
 
 private fun rewriteMaterialYouSystemRolesInDirs(
     resRoot: File, enableSystemRolesRewrite: Boolean, bgHex: String, surfaceHex: String, collectedNeutralIds: MutableList<String>,
-    textBearingIds: Set<String> = emptySet(),
 ): Int {
     if (!enableSystemRolesRewrite) return 0
     var totalRewrites = 0
     ANDROID_S_SYS_COLOR_FILES.forEach { relativePath ->
         val targetFile = File(resRoot, relativePath)
         if (targetFile.isFile) {
-            val originalContent = targetFile.readText()
-            collectedNeutralIds += discoverMaterialYouNeutralIds(originalContent)
-            val (rolesUpdated, roleCount) = rewriteMaterialYouSystemRoles(originalContent, bgHex, surfaceHex, textBearingIds)
-            val (surfacesUpdated, surfaceStats) = rewriteXmlDaySurfaces(rolesUpdated, bgHex, surfaceHex, excludedTagNames = textBearingIds, lightCandidatesOnly = true)
-            val modifiedCount = roleCount + surfaceStats.baseCount + surfaceStats.containerCount
-            if (surfacesUpdated != originalContent) {
-                targetFile.writeText(surfacesUpdated)
-                totalRewrites += modifiedCount
-            }
+            val content = targetFile.readText()
+            collectedNeutralIds += discoverMaterialYouNeutralIds(content)
+            val (updated, count) = rewriteMaterialYouSystemRoles(content, bgHex, surfaceHex)
+            targetFile.writeText(updated)
+            totalRewrites += count
         }
     }
     return totalRewrites
 }
 
-private fun rewriteSelectorLStarEntriesInDirs(
-    resRoot: File, enableLStarRewrite: Boolean, bgHex: String, surfaceHex: String, textHex: String? = null,
-    includeDayDirs: Boolean = true,
-): Int {
+private fun rewriteSelectorLStarEntriesInDirs(resRoot: File, enableLStarRewrite: Boolean, bgHex: String, surfaceHex: String): Int {
     if (!enableLStarRewrite) return 0
     var totalRewrites = 0
     resRoot.listFiles().orEmpty().filter { it.isDirectory && (it.name == "color" || it.name.startsWith("color-")) }.sortedBy { it.name }
         .forEach { dir ->
-            val isNight = dir.name.contains("night")
-            if (!isNight && !includeDayDirs) return@forEach
             dir.xmlChildFiles().forEach { file ->
-                val (updated, count) = rewriteLStarColorSelectors(file.readText(), bgHex, surfaceHex, textHex, isNight = isNight)
+                val (updated, count) = rewriteLStarColorSelectors(file.readText(), bgHex, surfaceHex)
                 if (count > 0) { file.writeText(updated); totalRewrites += count }
             }
         }
@@ -888,7 +739,7 @@ internal fun executeCustomThemeResourceTransformation(
     windowBackgroundColorHex: String? = null, cardColorHex: String? = null,
     enablePreferenceCards: Boolean = true, modulateTextLuminance: Boolean = true,
     patchMaterialYouRoles: Boolean = true, patchLStarSelectors: Boolean = true,
-    patchVectorDrawables: Boolean = true, themeLightMode: Boolean = false,
+    patchVectorDrawables: Boolean = true,
 ): CustomThemeExecutionSummary {
     val canonicalBg = canonicalizeHex(backgroundHex) ?: throw PatchException("Provided background is not a valid opaque hex: $backgroundHex")
     val canonicalSurface = if (surfaceUsesBackground) canonicalBg else {
@@ -923,17 +774,10 @@ internal fun executeCustomThemeResourceTransformation(
     val originalDayXml = if (dayFile.isFile) dayFile.readText() else ""
     val originalNightXml = if (nightFile?.isFile == true) nightFile.readText() else ""
 
-    val nightInkIds = if (themeLightMode) discoverNightInkIds(originalNightXml) else emptySet()
-
-    val daySummary = if (themeLightMode) {
-        executeDayColorsTransform(
-            dayFile, canonicalBg, canonicalSurface, containerNames, baseNames,
-            textBearingIds, styleTextRefs, declaredColorNames, textColorHex, accentColorHex, modulateTextLuminance,
-            nightInkIds = nightInkIds,
-        )
-    } else {
-        DayProcessingSummary(0, 0, 0, 0, 0)
-    }
+    val daySummary = executeDayColorsTransform(
+        dayFile, canonicalBg, canonicalSurface, containerNames, baseNames,
+        textBearingIds, styleTextRefs, declaredColorNames, textColorHex, accentColorHex, modulateTextLuminance,
+    )
     val nightSummary = executeNightColorsTransform(
         nightFile, originalDayXml, resRoot, canonicalBg, canonicalSurface,
         containerNames, baseNames, textBearingIds, textColorHex, accentColorHex, modulateTextLuminance,
@@ -941,18 +785,13 @@ internal fun executeCustomThemeResourceTransformation(
 
     val collectedNeutralIds = mutableListOf<String>()
     val matYouActive = disableDynamicColors && patchMaterialYouRoles
-    val matYouCount = if (themeLightMode) {
-        rewriteMaterialYouSystemRolesInDirs(resRoot, matYouActive, canonicalBg, canonicalSurface, collectedNeutralIds, textBearingIds)
-    } else {
-        0
-    }
-    if (!themeLightMode) ANDROID_S_SYS_COLOR_FILES.forEach { relPath -> File(resRoot, relPath).takeIf { it.isFile }?.let { collectedNeutralIds += discoverMaterialYouNeutralIds(it.readText()) } }
+    val matYouCount = rewriteMaterialYouSystemRolesInDirs(resRoot, matYouActive, canonicalBg, canonicalSurface, collectedNeutralIds)
     val overrides = buildNightV31OverrideMap(
         originalDayXml, originalNightXml, collectedNeutralIds, containerNames, baseNames, textBearingIds, canonicalBg, canonicalSurface,
     )
     val lStarActive = disableDynamicColors && patchLStarSelectors
-    val lStarCount = rewriteSelectorLStarEntriesInDirs(resRoot, lStarActive, canonicalBg, canonicalSurface, textColorHex, themeLightMode)
-    val drawableFillsCount = if (themeLightMode) rewriteVectorDrawablesInDirs(resRoot, patchVectorDrawables, canonicalBg, canonicalSurface) else 0
+    val lStarCount = rewriteSelectorLStarEntriesInDirs(resRoot, lStarActive, canonicalBg, canonicalSurface)
+    val drawableFillsCount = rewriteVectorDrawablesInDirs(resRoot, patchVectorDrawables, canonicalBg, canonicalSurface)
 
     if (overrides.isNotEmpty()) {
         val nightV31File = File(resRoot, RES_PATH_NIGHT_V31_COLORS)
@@ -1017,7 +856,7 @@ private data class ResolvedCustomThemeSettings(
     val surfaceHex: String?, val disableDynamic: Boolean, val useBgForSurfaces: Boolean,
     val windowBgHex: String?, val cardColorHex: String?, val enablePrefCards: Boolean,
     val modulateText: Boolean, val patchMatYouRoles: Boolean, val patchLStar: Boolean,
-    val patchVectors: Boolean, val themeLight: Boolean,
+    val patchVectors: Boolean,
 )
 
 private fun fetchConfiguredOpaqueHex(optionKey: String): String? =
@@ -1042,7 +881,6 @@ private fun buildCustomThemeSettings(): ResolvedCustomThemeSettings {
         patchMatYouRoles = fetchConfiguredBoolean("patchMaterialYouRoles", true),
         patchLStar = fetchConfiguredBoolean("patchLStarSelectors", true),
         patchVectors = fetchConfiguredBoolean("patchVectorDrawables", true),
-        themeLight = fetchConfiguredBoolean("themeLightMode", false),
     )
 }
 
@@ -1056,7 +894,7 @@ private fun outputCustomThemeSummaryLog(s: ResolvedCustomThemeSettings, r: Custo
     println(
         "[Custom Brave theme] background=${s.bgHex} text=$txt accent=$acc surface=$surf surfaceTier=$tierActive " +
             "windowBg=$winBg cardColor=$card disableDynamic=${s.disableDynamic} textModulation=${s.modulateText} " +
-            "matYouRoles=${s.patchMatYouRoles} lStar=${s.patchLStar} vectorDrawables=${s.patchVectors} prefCards=${s.enablePrefCards} lightMode=${s.themeLight} " +
+            "matYouRoles=${s.patchMatYouRoles} lStar=${s.patchLStar} vectorDrawables=${s.patchVectors} prefCards=${s.enablePrefCards} " +
             "dayReplaced=${r.dayColorsReplaced} nightReplaced=${r.nightColorsReplaced} containerReplaced=${r.containerColorsReplaced} " +
             "materialYouReplaced=${r.v31MaterialYouReplaced} nightV31Overrides=${r.nightV31Overrides} textReplaced=${r.textColorsReplaced} " +
             "accentReplaced=${r.accentColorsReplaced} textIdsInjected=${r.textIdsInjected} nightTextDeclared=${r.nightTextDeclared} " +
@@ -1084,17 +922,16 @@ private fun runCustomThemeResourcePipeline(resDir: File) {
         patchMaterialYouRoles = themeSettings.patchMatYouRoles,
         patchLStarSelectors = themeSettings.patchLStar,
         patchVectorDrawables = themeSettings.patchVectors,
-        themeLightMode = themeSettings.themeLight,
     )
     if (summary.dayColorsReplaced + summary.nightColorsReplaced + summary.nightV31Overrides == 0) {
-        throw PatchException("No theme surface colors matched; refusing to ship an empty custom theme rewrite")
+        throw PatchException("No dark surface colors matched; refusing to ship an empty custom theme rewrite")
     }
     outputCustomThemeSummaryLog(themeSettings, summary)
 }
 
 private val braveCustomThemeResourcePatch: ResourcePatch = resourcePatch(
     name = "Custom Brave theme resources",
-    description = "Rewrites Brave palettes, system roles, and UI drawables to custom theme colors.",
+    description = "Rewrites Brave dark palettes, system roles, and UI drawables to custom theme colors.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_BRAVE)
@@ -1107,7 +944,7 @@ private val braveCustomThemeResourcePatch: ResourcePatch = resourcePatch(
 @Suppress("unused")
 val braveCustomThemePatch: BytecodePatch = bytecodePatch(
     name = "Custom Brave theme",
-    description = "Applies a custom color scheme to Brave chrome, dark mode first, with an option to paint light mode too.",
+    description = "Applies custom colors to Brave dark mode chrome, defaulting to pure OLED black for battery saving on OLED screens.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_BRAVE)
@@ -1115,8 +952,13 @@ val braveCustomThemePatch: BytecodePatch = bytecodePatch(
 
     val backgroundColor by colorOption(
         key = "backgroundColor", default = "#000000", title = "Background color",
-        description = "Opaque hexadecimal color for primary backgrounds and base window chrome across dark and light modes. Defaults to pure OLED black (#000000).",
+        description = "Opaque hexadecimal color for primary backgrounds and base window chrome. Defaults to pure OLED black (#000000).",
         required = true, validator = { hex -> hex == null || canonicalizeHex(hex) != null },
+    )
+    val surfaceUsesBackground by booleanOption(
+        key = "surfaceUsesBackground", default = true, title = "Surfaces use background color",
+        description = "When enabled, cards, sheets, and dialogs share the primary background color. When disabled, elevated surfaces use the dedicated surface color below.",
+        required = false,
     )
     val surfaceColor by colorOption(
         key = "surfaceColor", default = "#000000", title = "Surface / container color",
@@ -1125,13 +967,18 @@ val braveCustomThemePatch: BytecodePatch = bytecodePatch(
     )
     val textColor by colorOption(
         key = "textColor", default = "#f0f2ff", title = "Text ink color",
-        description = "Opaque hexadecimal color applied to primary text labels across dark and light chrome. Defaults to Brave light slate ink (#f0f2ff).",
+        description = "Opaque hexadecimal color applied to primary text labels. Defaults to Brave light slate ink (#f0f2ff).",
         required = true, validator = { hex -> hex == null || canonicalizeHex(hex) != null },
     )
     val accentColor by colorOption(
         key = "accentColor", default = "#737ade", title = "Accent highlight color",
-        description = "Opaque hexadecimal color for interactive highlights, active switches, and links across dark and light chrome. Defaults to Brave purple-blue accent (#737ade).",
+        description = "Opaque hexadecimal color for interactive highlights, active switches, and links. Defaults to Brave purple-blue accent (#737ade).",
         required = true, validator = { hex -> hex == null || canonicalizeHex(hex) != null },
+    )
+    val disableDynamicColors by booleanOption(
+        key = "disableDynamicColors", default = true, title = "Disable Material You dynamic colors",
+        description = "Prevents Android 12+ wallpaper palette extraction from replacing dark surfaces. When disabled, dynamic system colors take precedence.",
+        required = false,
     )
     val windowBackgroundColor by colorOption(
         key = "windowBackgroundColor", default = "#000000", title = "Window background color",
@@ -1143,24 +990,9 @@ val braveCustomThemePatch: BytecodePatch = bytecodePatch(
         description = "Opaque hexadecimal color for preference item cards in Settings. Defaults to OLED black (#000000); use #1e2029 for visible depth between tiers.",
         required = false, validator = { hex -> hex == null || canonicalizeHex(hex) != null },
     )
-    val surfaceUsesBackground by booleanOption(
-        key = "surfaceUsesBackground", default = true, title = "Surfaces use background color",
-        description = "When enabled, cards, sheets, and dialogs share the primary background color. When disabled, elevated surfaces use the dedicated surface color below.",
-        required = false,
-    )
-    val disableDynamicColors by booleanOption(
-        key = "disableDynamicColors", default = true, title = "Disable Material You dynamic colors",
-        description = "Prevents Android 12+ wallpaper palette extraction from replacing theme surfaces. When disabled, dynamic system colors take precedence.",
-        required = false,
-    )
     val enablePreferenceCards by booleanOption(
         key = "enablePreferenceCards", default = true, title = "Style preference rows as cards",
         description = "Wraps settings and preference rows in rounded card shapes when two-tier surfaces are enabled.",
-        required = false,
-    )
-    val themeLightMode by booleanOption(
-        key = "themeLightMode", default = false, title = "Also theme light mode",
-        description = "Paints the light theme with the custom colors too. Keep it off if light mode should stay as Brave ships it: Brave reuses some light-theme color entries in the dark theme, so repainting them can hide menu text.",
         required = false,
     )
     val modulateTextLuminance by booleanOption(
