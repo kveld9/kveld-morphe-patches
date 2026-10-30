@@ -73,6 +73,9 @@ Every patch change must be validated by running the Morphe Patcher against the t
 
 # Print a SHA-256 of the patched DEX set; with a path, also write per-file digests (compare before/after with diff)
 ./gradlew runPatchTest -Papp=<targetApp> -PdexDigest=build/dex-before.txt
+
+# Strict mode that fails any patch whose fingerprint matches more than one method, enabled with -Pvalidate=true (a bare -Pvalidate also enables it)
+./gradlew runPatchTest -Papp=<targetApp> -Pvalidate=true
 ```
 
 For bundle targets (`.apkm` / `.xapk`), the signed split APKs are written next to the output and prefixed with its name (`<app>_<version>_patched.<split>.apk`), so one glob installs the whole set:
