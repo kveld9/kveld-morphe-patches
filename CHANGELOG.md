@@ -1,3 +1,14 @@
+## [2.10.0-experimental.6](https://github.com/kveld9/kveld-morphe-patches/compare/v2.10.0-experimental.5...v2.10.0-experimental.6) (2026-10-30)
+
+### Bug Fixes
+
+* **brave:** restore readable menu text with the Custom theme ([2f950b9](https://github.com/kveld9/kveld-morphe-patches/commit/2f950b942eaaf24e7355971f20fcc072761bbe6d))
+* **brave:** stop the custom theme from hiding menu text ([d37d4f1](https://github.com/kveld9/kveld-morphe-patches/commit/d37d4f1ffb5b22c229e413e91118bbde39a272d4))
+
+### New Features
+
+* **brave:** add opt-in custom background for the new tab page ([33b1219](https://github.com/kveld9/kveld-morphe-patches/commit/33b12193fa111cbfde6729cf6787ad8b0261fd9f))
+
 ## [2.10.0-experimental.5](https://github.com/kveld9/kveld-morphe-patches/compare/v2.10.0-experimental.4...v2.10.0-experimental.5) (2026-10-29)
 
 ### Bug Fixes
