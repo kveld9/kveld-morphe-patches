@@ -65,7 +65,7 @@ The authoritative patch catalog with descriptions and options is generated in RE
 ### E. Theming & Interface Customization
 - **Custom Brave theme**:
   - *Objective*: Provide fully customizable styling for Brave dark and light chrome, replacing standard charcoal grey and white surfaces with custom colors. Defaults preserve pure-black AMOLED styling (#000000) while allowing granular customization of backgrounds, elevated containers, text ink, highlights, and Material You system role mappings across both dark and light modes.
-  - *Light Theme Coverage*: Symmetrically skins daytime chrome so that switching to light theme or system day mode does not revert toolbars, the address bar, or the omnibox back to stock white:
+  - *Light Theme Coverage*: Light-mode painting is opt-in through the "Also theme light mode" option and defaults to off. Brave shares some light-theme color entries with the dark theme, so repainting them can hide menu labels. When enabled, it symmetrically skins daytime chrome so that switching to light theme or system day mode does not revert toolbars, the address bar, or the omnibox back to stock white:
     - Base backgrounds (`backgroundColor`) apply to daytime window chrome, toolbar backgrounds, and light system neutral/surface base roles (`system_surface_light`, `system_neutral1_50`).
     - Elevated surfaces (`surfaceColor`) apply to daytime search containers, omnibox backgrounds, and light system container roles (`system_surface_container_light`, `system_surface_container_high_light`).
     - Text ink (`textColor`) applies to daytime text labels, address bar text, and tab titles, inverted from dark ink with luminance scaling preserved.
