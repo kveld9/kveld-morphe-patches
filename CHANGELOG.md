@@ -1,3 +1,10 @@
+## [2.10.0-experimental.9](https://github.com/kveld9/kveld-morphe-patches/compare/v2.10.0-experimental.8...v2.10.0-experimental.9) (2026-10-31)
+
+### Bug Fixes
+
+* **brave:** update native telemetry redirection offsets for 1.98.63 ([dd89ba9](https://github.com/kveld9/kveld-morphe-patches/commit/dd89ba96b2f9f1a50e5c8d4030eef47a81cb35de))
+* **brave:** update target version to 1.98.63 ([5917b81](https://github.com/kveld9/kveld-morphe-patches/commit/5917b81a9ad4dac65c37246936be614037715f3f))
+
 ## [2.10.0-experimental.8](https://github.com/kveld9/kveld-morphe-patches/compare/v2.10.0-experimental.7...v2.10.0-experimental.8) (2026-10-30)
 
 ### Bug Fixes
