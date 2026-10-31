@@ -1,3 +1,9 @@
+## [2.10.0-experimental.10](https://github.com/kveld9/kveld-morphe-patches/compare/v2.10.0-experimental.9...v2.10.0-experimental.10) (2026-10-31)
+
+### New Features
+
+* **brave:** add JPG format support to Custom NTP wallpaper patch ([ce1deeb](https://github.com/kveld9/kveld-morphe-patches/commit/ce1deebc4be067c9035307c5da496f1c685229ff))
+
 ## [2.10.0-experimental.9](https://github.com/kveld9/kveld-morphe-patches/compare/v2.10.0-experimental.8...v2.10.0-experimental.9) (2026-10-31)
 
 ### Bug Fixes

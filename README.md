@@ -259,7 +259,7 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 | **Brave Origin** | Unlocks Brave Origin feature switches. |  |
 | **Clean Start Page** | Removes sponsored wallpapers, news feed and promo cards. | • Hide shortcut tiles |
 | **Custom Brave theme** | Applies custom colors to Brave dark mode chrome, defaulting to pure OLED black for battery saving on OLED screens. | • Background color<br>• Surfaces use background color<br>• Surface / container color<br>• Text ink color<br>• Accent highlight color<br>• Disable Material You dynamic colors<br>• Window background color<br>• Preference card color<br>• Style preference rows as cards<br>• Modulate text tiers by luminance<br>• Patch Material You system color roles<br>• Patch color state list lStar selectors<br>• Patch vector drawable surface fills |
-| **Custom NTP wallpaper** | Forces the Brave new-tab background to a custom PNG chosen at patch time. Rewrites the Java ambient wallpaper catalog (BackgroundImage drawable resource id) and makes wallpaper callbacks use it instead of native branded/URL images. Crop the image to your screen resolution before selecting it. Default off. | • Custom NTP wallpaper |
+| **Custom NTP wallpaper** | Replaces the new tab page background with a custom wallpaper chosen at patch time. For best results, select an image matching your device screen resolution. | • Custom NTP wallpaper |
 | **Keep Tabs Open** | Stops Brave from minimizing your tabs in the background. |  |
 | **Remove Extra Files** | Deletes unused AR and XR files to shrink the app. | • Remove VPN library |
 | **Remove Extra Languages** | Deletes unselected language packs. | • Languages to keep |
