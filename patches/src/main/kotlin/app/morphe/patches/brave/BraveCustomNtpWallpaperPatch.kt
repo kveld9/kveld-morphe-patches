@@ -39,7 +39,13 @@ private const val MAX_WALLPAPER_FILE_SIZE = 8L * 1024L * 1024L
 private val PNG_SIGNATURE = byteArrayOf(
     0x89.toByte(), 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A
 )
+private val JPEG_SOI = byteArrayOf(0xFF.toByte(), 0xD8.toByte())
 private val IHDR_CHUNK = byteArrayOf(0x49, 0x48, 0x44, 0x52)
+
+private enum class ImageFormat(val extension: String) {
+    PNG("png"),
+    JPEG("jpg"),
+}
 
 private data class WallpaperDimensions(
     val width: Int,
@@ -149,7 +155,26 @@ private fun forceCreateBrandedWallpaperParamsSmali(packageName: String): String 
 // 4. RESOURCE VALIDATION & DEPLOYMENT
 // ════════════════════════════════════════════════════════════════════════════════
 
-private fun validateWallpaperFile(file: File): WallpaperDimensions {
+private fun isPngHeader(header: ByteArray, count: Int): Boolean =
+    count >= 8 && header.contentEquals(PNG_SIGNATURE)
+
+private fun isJpegHeader(header: ByteArray, count: Int): Boolean =
+    count >= 2 && header[0] == JPEG_SOI[0] && header[1] == JPEG_SOI[1]
+
+private fun detectImageFormat(file: File): ImageFormat? =
+    runCatching {
+        FileInputStream(file).use { stream ->
+            val header = ByteArray(8)
+            val count = stream.read(header)
+            when {
+                isPngHeader(header, count) -> ImageFormat.PNG
+                isJpegHeader(header, count) -> ImageFormat.JPEG
+                else -> null
+            }
+        }
+    }.getOrNull()
+
+private fun validateFileAccessibility(file: File) {
     if (!file.exists()) {
         throw PatchException("Custom NTP wallpaper file does not exist: ${file.absolutePath}")
     }
@@ -159,17 +184,46 @@ private fun validateWallpaperFile(file: File): WallpaperDimensions {
     if (file.length() > MAX_WALLPAPER_FILE_SIZE) {
         throw PatchException("Custom NTP wallpaper exceeds 8 MiB: ${file.absolutePath}")
     }
-    val dimensions = readPngDimensions(file)
-        ?: throw PatchException("Custom NTP wallpaper must be a valid PNG file: ${file.absolutePath}")
-    if (dimensions.width !in MIN_WALLPAPER_DIMENSION..MAX_WALLPAPER_DIMENSION ||
-        dimensions.height !in MIN_WALLPAPER_DIMENSION..MAX_WALLPAPER_DIMENSION
-    ) {
+}
+
+private fun validateDimensionBounds(dimensions: WallpaperDimensions) {
+    val validWidth = dimensions.width in MIN_WALLPAPER_DIMENSION..MAX_WALLPAPER_DIMENSION
+    val validHeight = dimensions.height in MIN_WALLPAPER_DIMENSION..MAX_WALLPAPER_DIMENSION
+    if (!validWidth || !validHeight) {
         throw PatchException(
             "Custom NTP wallpaper dimensions must be between $MIN_WALLPAPER_DIMENSION and " +
                 "$MAX_WALLPAPER_DIMENSION px on each side, received ${dimensions.width}x${dimensions.height}",
         )
     }
-    return dimensions
+}
+
+private fun readDimensionsForFormat(file: File, format: ImageFormat): WallpaperDimensions? =
+    when (format) {
+        ImageFormat.PNG -> readPngDimensions(file)
+        ImageFormat.JPEG -> readJpegDimensions(file)
+    }
+
+private fun validateWallpaperFile(file: File): Pair<WallpaperDimensions, ImageFormat> {
+    validateFileAccessibility(file)
+    val format = detectImageFormat(file)
+        ?: throw PatchException("Custom NTP wallpaper must be a valid PNG or JPG file: ${file.absolutePath}")
+    val dimensions = readDimensionsForFormat(file, format)
+        ?: throw PatchException("Custom NTP wallpaper has invalid or unreadable image dimensions: ${file.absolutePath}")
+    validateDimensionBounds(dimensions)
+    return dimensions to format
+}
+
+private fun parsePngIhdr(input: DataInputStream): WallpaperDimensions? {
+    val headerLength = input.readInt()
+    val headerType = ByteArray(4)
+    input.readFully(headerType)
+    if (headerLength != 13 || !headerType.contentEquals(IHDR_CHUNK)) return null
+
+    val width = input.readInt()
+    val height = input.readInt()
+    if (width <= 0 || height <= 0) return null
+
+    return WallpaperDimensions(width, height)
 }
 
 private fun readPngDimensions(file: File): WallpaperDimensions? =
@@ -178,26 +232,94 @@ private fun readPngDimensions(file: File): WallpaperDimensions? =
             val signature = ByteArray(8)
             input.readFully(signature)
             if (!signature.contentEquals(PNG_SIGNATURE)) return null
-
-            val headerLength = input.readInt()
-            val headerType = ByteArray(4)
-            input.readFully(headerType)
-            if (headerLength != 13 || !headerType.contentEquals(IHDR_CHUNK)) return null
-
-            val width = input.readInt()
-            val height = input.readInt()
-            if (width <= 0 || height <= 0) return null
-
-            WallpaperDimensions(width, height)
+            parsePngIhdr(input)
         }
     }.getOrNull()
 
-private fun installWallpaperResource(resourceDirectory: File, sourceFile: File) {
+private fun isSofMarker(marker: Int): Boolean = when (marker) {
+    0xC0, 0xC1, 0xC2, 0xC3, 0xC5, 0xC6, 0xC7,
+    0xC9, 0xCA, 0xCB, 0xCD, 0xCE, 0xCF -> true
+    else -> false
+}
+
+private fun isTerminalMarker(marker: Int): Boolean = when (marker) {
+    0xD8, 0xD9, 0xDA -> true
+    else -> false
+}
+
+private fun nextMarker(input: DataInputStream): Int {
+    var b = input.readUnsignedByte()
+    while (b != 0xFF) {
+        b = input.readUnsignedByte()
+    }
+    while (b == 0xFF) {
+        b = input.readUnsignedByte()
+    }
+    return b
+}
+
+private fun skipBytesFully(input: DataInputStream, totalBytes: Int) {
+    var remaining = totalBytes.toLong()
+    while (remaining > 0) {
+        val skipped = input.skip(remaining)
+        if (skipped > 0) {
+            remaining -= skipped
+        } else {
+            input.readByte()
+            remaining--
+        }
+    }
+}
+
+private fun readSofDimensions(input: DataInputStream): WallpaperDimensions? {
+    val length = input.readUnsignedShort()
+    if (length < 7) return null
+    input.readUnsignedByte()
+    val height = input.readUnsignedShort()
+    val width = input.readUnsignedShort()
+    if (width <= 0 || height <= 0) return null
+    return WallpaperDimensions(width, height)
+}
+
+private fun skipSegment(input: DataInputStream): Boolean {
+    val length = input.readUnsignedShort()
+    if (length < 2) return false
+    skipBytesFully(input, length - 2)
+    return true
+}
+
+private fun findJpegDimensions(input: DataInputStream): WallpaperDimensions? {
+    while (true) {
+        val marker = nextMarker(input)
+        if (isTerminalMarker(marker)) return null
+        if (isSofMarker(marker)) return readSofDimensions(input)
+        if (!skipSegment(input)) return null
+    }
+}
+
+private fun readJpegDimensions(file: File): WallpaperDimensions? =
+    runCatching {
+        DataInputStream(FileInputStream(file).buffered()).use { input ->
+            val soi = ByteArray(2)
+            input.readFully(soi)
+            if (!soi.contentEquals(JPEG_SOI)) return null
+            findJpegDimensions(input)
+        }
+    }.getOrNull()
+
+private fun installWallpaperResource(
+    resourceDirectory: File,
+    sourceFile: File,
+    format: ImageFormat,
+) {
     val drawableDirectory = resourceDirectory.resolve("drawable-nodpi").apply(File::mkdirs)
+    drawableDirectory.listFiles { file -> file.name.startsWith(NTP_WALLPAPER_RESOURCE_NAME) }
+        ?.forEach { it.delete() }
     sourceFile.copyTo(
-        target = drawableDirectory.resolve("$NTP_WALLPAPER_RESOURCE_NAME.png"),
+        target = drawableDirectory.resolve("$NTP_WALLPAPER_RESOURCE_NAME.${format.extension}"),
         overwrite = true,
     )
+    println("[Custom NTP Wallpaper] Installed $NTP_WALLPAPER_RESOURCE_NAME.${format.extension} into drawable-nodpi")
 }
 
 // ════════════════════════════════════════════════════════════════════════════════
@@ -206,7 +328,7 @@ private fun installWallpaperResource(resourceDirectory: File, sourceFile: File) 
 
 private val braveCustomNtpWallpaperResourcePatch: ResourcePatch = resourcePatch(
     name = "Custom NTP wallpaper (Setup)",
-    description = "Installs the patch-time wallpaper PNG as a Brave drawable.",
+    description = "Installs the patch-time wallpaper image into Brave resources.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_BRAVE)
@@ -217,13 +339,12 @@ private val braveCustomNtpWallpaperResourcePatch: ResourcePatch = resourcePatch(
             ?.trim()
         if (rawPath.isNullOrBlank()) {
             throw PatchException(
-                "Custom NTP wallpaper requires selecting a valid PNG file in the customWallpaper option (480-8192 px, max 8 MiB)",
+                "Custom NTP wallpaper requires selecting a valid PNG or JPG file in the customWallpaper option (480-8192 px, max 8 MiB)",
             )
         }
         val sourceFile = File(rawPath)
-        validateWallpaperFile(sourceFile)
-        installWallpaperResource(get("res"), sourceFile)
-        println("[Custom NTP Wallpaper] Installed $NTP_WALLPAPER_RESOURCE_NAME.png into drawable-nodpi")
+        val (_, format) = validateWallpaperFile(sourceFile)
+        installWallpaperResource(get("res"), sourceFile, format)
     }
 }
 
@@ -234,10 +355,8 @@ private val braveCustomNtpWallpaperResourcePatch: ResourcePatch = resourcePatch(
 @Suppress("unused")
 val braveCustomNtpWallpaperPatch: BytecodePatch = bytecodePatch(
     name = "Custom NTP wallpaper",
-    description = "Forces the Brave new-tab background to a custom PNG chosen at patch time. " +
-        "Rewrites the Java ambient wallpaper catalog (BackgroundImage drawable resource id) and " +
-        "makes wallpaper callbacks use it instead of native branded/URL images. Crop the image to " +
-        "your screen resolution before selecting it. Default off.",
+    description = "Replaces the new tab page background with a custom wallpaper chosen at patch time. " +
+        "For best results, select an image matching your device screen resolution.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_BRAVE)
@@ -250,20 +369,19 @@ val braveCustomNtpWallpaperPatch: BytecodePatch = bytecodePatch(
     val customWallpaperPath by imageOption(
         key = "customWallpaper",
         title = "Custom NTP wallpaper",
-        description = "PNG wallpaper used as the Brave new-tab background. " +
-            "Crop it to your current screen resolution first, then select that file here. " +
-            "480-8192 px on each side, maximum 8 MiB.",
+        description = "Wallpaper image used as the Brave new tab page background. " +
+            "Crop to your screen resolution before selecting (PNG or JPG, 480-8192 px, up to 8 MiB).",
         required = true,
-        allowedExtensions = listOf("png"),
+        allowedExtensions = listOf("png", "jpg", "jpeg"),
         recommendedSize = ImageSize(1920, 1080),
-        validator = { value -> value == null || value.trim().endsWith(".png", ignoreCase = true) },
+        validator = { value -> value == null || value.trim().let { it.endsWith(".png", ignoreCase = true) || it.endsWith(".jpg", ignoreCase = true) || it.endsWith(".jpeg", ignoreCase = true) } },
     )
 
     execute {
         val rawPath = customWallpaperPath?.trim()
         if (rawPath.isNullOrBlank()) {
             throw PatchException(
-                "Custom NTP wallpaper requires selecting a valid PNG file in the customWallpaper option (480-8192 px, max 8 MiB)",
+                "Custom NTP wallpaper requires selecting a valid PNG or JPG file in the customWallpaper option (480-8192 px, max 8 MiB)",
             )
         }
         val sourceFile = File(rawPath)

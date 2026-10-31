@@ -89,9 +89,9 @@ The authoritative patch catalog with descriptions and options is generated in RE
 
   - *How*: Rewrites color values, vector fills, window background references, and lStar selector resources at patch time across day, night, and version-specific resource directories (`res/values*`, `res/color*`, `res/drawable*`, `res/layout*`, `res/xml*`), updates preference XML defaults, and injects bytecode prologues into dynamic color reader methods in DEX bytecode to return false.
 - **Custom NTP wallpaper**:
-  - *Objective*: Replace the Brave New Tab Page background with a user-supplied custom PNG image.
-  - *How*: Deploys the selected PNG into `res/drawable-nodpi` at patch time, rewrites the Java ambient wallpaper catalog accessor to construct and return a `BackgroundImage` model referencing the custom drawable resource ID via `BraveExtension.getCustomNtpWallpaperDrawableId()`, and forces wallpaper callback handlers to consume the ambient catalog instead of native URL-loaded branded wallpapers. Includes an option for the wallpaper image:
-    - `customWallpaper`: PNG image file on host system used as the new-tab background (validated for PNG magic bytes, dimensions between 480 and 8192 px, and size up to 8 MiB).
+  - *Objective*: Replace the Brave New Tab Page background with a user-supplied custom PNG or JPG image.
+  - *How*: Deploys the selected PNG or JPG into `res/drawable-nodpi` at patch time, rewrites the Java ambient wallpaper catalog accessor to construct and return a `BackgroundImage` model referencing the custom drawable resource ID via `BraveExtension.getCustomNtpWallpaperDrawableId()`, and forces wallpaper callback handlers to consume the ambient catalog instead of native URL-loaded branded wallpapers. Includes an option for the wallpaper image:
+    - `customWallpaper`: PNG or JPG image file on host system used as the new-tab background (validated for PNG or JPEG magic bytes, dimensions between 480 and 8192 px, and size up to 8 MiB to prevent Android heap memory exhaustion and OutOfMemory errors on high-resolution bitmaps).
 
 ---
 
