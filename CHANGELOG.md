@@ -1,3 +1,9 @@
+## [2.10.1](https://github.com/kveld9/kveld-morphe-patches/compare/v2.10.0...v2.10.1) (2026-11-02)
+
+### Bug Fixes
+
+* **brave:** restore Brave Origin patch name in catalog ([4f323af](https://github.com/kveld9/kveld-morphe-patches/commit/4f323af8fe7ac030c052ba6f7d6340a5a0c49dac)), closes [#209](https://github.com/kveld9/kveld-morphe-patches/issues/209)
+
 ## [2.10.0](https://github.com/kveld9/kveld-morphe-patches/compare/v2.9.0...v2.10.0) (2026-11-02)
 
 ### Bug Fixes

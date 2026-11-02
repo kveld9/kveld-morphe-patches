@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "2.10.0",
+  "version": "2.10.1",
   "patches": [
     {
       "name": "Allow Screenshots",
@@ -853,8 +853,8 @@
       ]
     },
     {
-      "name": "Brave Rewards",
-      "description": "Enables Brave Rewards.",
+      "name": "Brave Origin",
+      "description": "Unlocks Brave Origin feature switches across Rewards, News, Wallet, and VPN.",
       "default": true,
       "dependencies": [
         "ResourcePatch",
