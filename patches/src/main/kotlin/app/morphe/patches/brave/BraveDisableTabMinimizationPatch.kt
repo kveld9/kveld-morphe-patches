@@ -7,7 +7,7 @@ import app.morphe.patches.shared.Constants
 
 @Suppress("unused")
 val braveDisableTabMinimizationPatch = bytecodePatch(
-    name = "Keep Tabs Open",
+    name = "Keep All Tabs Loaded",
     description = "Stops Brave from minimizing your tabs in the background.",
     default = true,
 ) {
@@ -40,6 +40,6 @@ val braveDisableTabMinimizationPatch = bytecodePatch(
             """.trimIndent(),
         )
 
-        println("[Keep Tabs Open] Applied 1 hook in ChromeTabbedActivity.${openingScreenFp.method.name} -> opening screen tab backgrounding disabled.")
+        println("[Keep All Tabs Loaded] Applied 1 hook in ChromeTabbedActivity.${openingScreenFp.method.name} -> opening screen tab backgrounding disabled.")
     }
 }

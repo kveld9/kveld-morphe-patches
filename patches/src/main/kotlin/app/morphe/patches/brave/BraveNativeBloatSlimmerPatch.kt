@@ -20,7 +20,7 @@ private val VPN_NATIVE_LIBS = listOf("libwg-go.so")
 
 @Suppress("unused")
 val braveNativeBloatSlimmerPatch = rawResourcePatch(
-    name = "Remove Extra Files",
+    name = "Remove Unused AI & VPN",
     description = "Deletes unused AR and XR files to shrink the app.",
     default = false,
 ) {
@@ -60,6 +60,6 @@ val braveNativeBloatSlimmerPatch = rawResourcePatch(
         }
 
         val totalSavedMb = String.format(java.util.Locale.US, "%.2f", savedBytes.toDouble() / (1024 * 1024))
-        println("[Remove Extra Files] Stripped ${strippedLibs.size} bloat binaries (${strippedLibs.joinToString(", ")}) -> Saved $totalSavedMb MB")
+        println("[Remove Unused AI & VPN] Stripped ${strippedLibs.size} bloat binaries (${strippedLibs.joinToString(", ")}) -> Saved $totalSavedMb MB")
     }
 }

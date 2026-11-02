@@ -179,49 +179,49 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
         if (hideRepostBadge == true) {
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/feed/platform/cell/interact/info/UpvoteVideoTrigger;",
-                name = "Qp",
+                name = "Np",
                 returnType = "Z",
                 parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"),
             ).method.replaceWithReturnBoolean(false)
-            println("[Declutter Video Interface] Hooked UpvoteVideoTrigger.Qp() -> return false.")
+            println("[Declutter Video Interface] Hooked UpvoteVideoTrigger.Np() -> return false.")
             patched++
 
             val assemClass = "Lcom/ss/android/ugc/aweme/upvote/detail/whitebar/UpvoteVideoAssemNew;"
 
             Fingerprint(
                 definingClass = assemClass,
-                name = "Vp",
+                name = "Xp",
                 returnType = "Z",
                 parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"),
             ).method.replaceWithReturnBoolean(false)
-            println("[Declutter Video Interface] Hooked UpvoteVideoAssemNew.Vp() -> return false.")
+            println("[Declutter Video Interface] Hooked UpvoteVideoAssemNew.Xp() -> return false.")
             patched++
 
             Fingerprint(
                 definingClass = assemClass,
-                name = "xa",
+                name = "Ea",
                 returnType = "Z",
                 parameters = listOf("Ljava/lang/Object;"),
             ).method.replaceWithReturnBoolean(false)
-            println("[Declutter Video Interface] Hooked UpvoteVideoAssemNew.xa() -> return false.")
+            println("[Declutter Video Interface] Hooked UpvoteVideoAssemNew.Ea() -> return false.")
             patched++
 
             Fingerprint(
                 definingClass = assemClass,
-                name = "LLLJ",
+                name = "LJJLIIIJJI",
                 returnType = "V",
                 parameters = listOf("I"),
             ).method.replaceWithReturnVoid()
-            println("[Declutter Video Interface] Hooked UpvoteVideoAssemNew.LLLJ() -> return-void.")
+            println("[Declutter Video Interface] Hooked UpvoteVideoAssemNew.LJJLIIIJJI() -> return-void.")
             patched++
 
             Fingerprint(
                 definingClass = assemClass,
-                name = "LJJJLZIJ",
+                name = "Mq",
                 returnType = "V",
                 parameters = listOf("I"),
             ).method.replaceWithReturnVoid()
-            println("[Declutter Video Interface] Hooked UpvoteVideoAssemNew.LJJJLZIJ() -> return-void.")
+            println("[Declutter Video Interface] Hooked UpvoteVideoAssemNew.Mq() -> return-void.")
             patched++
 
             val onViewCreatedMethod = Fingerprint(
@@ -247,11 +247,11 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = assemClass,
-                name = "j4",
+                name = "i4",
                 returnType = "V",
                 parameters = listOf("Ljava/lang/Object;"),
             ).method.replaceWithReturnVoid()
-            println("[Declutter Video Interface] Hooked UpvoteVideoAssemNew.j4() -> return-void.")
+            println("[Declutter Video Interface] Hooked UpvoteVideoAssemNew.i4() -> return-void.")
             patched++
         }
 
@@ -282,7 +282,7 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
 
             val descJs = Fingerprint(
                 definingClass = descTargetClass,
-                name = "cq",
+                name = "iq",
                 returnType = "V",
                 parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"),
             ).method
@@ -312,8 +312,8 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
             // covers every current and future show path, including see-more expansion flows,
             // with no control-flow disturbance.
             val descVisibilityRedirects = mapOf(
+                "LLLLLZL" to "${Constants.TIKTOK_EXTENSION_MEDIA_HOOK}->forceGoneViewLast(Landroid/view/View;I)V",
                 "LLLLLZIL" to "${Constants.TIKTOK_EXTENSION_MEDIA_HOOK}->forceGoneViewLast(Landroid/view/View;I)V",
-                "LLLLLZ" to "${Constants.TIKTOK_EXTENSION_MEDIA_HOOK}->forceGoneViewLast(Landroid/view/View;I)V",
                 "LJLLLLLL" to "${Constants.TIKTOK_EXTENSION_MEDIA_HOOK}->forceGoneViewFirst(ILandroid/view/View;)V",
                 "LJLLILLLL" to "${Constants.TIKTOK_EXTENSION_MEDIA_HOOK}->forceGoneViewFirst(ILandroid/view/View;)V",
             )
@@ -321,7 +321,7 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
             var redirectedCallsDescAssem = 0
             var redirectedCalls095y = 0
             var skippedShapes = 0
-            val descRedirectClasses = listOf(descTargetClass, "LX/095y;")
+            val descRedirectClasses = listOf(descTargetClass, "LX/0974;")
             for (targetClass in descRedirectClasses) {
                 var classRedirectedCalls = 0
                 for (target in mutableClassDefBy(targetClass).methods) {
@@ -329,7 +329,7 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
                     val redirectIndices = mutableListOf<Pair<Int, String>>()
                     for ((index, instruction) in instructions.withIndex()) {
                         val reference = (instruction as? ReferenceInstruction)?.reference as? MethodReference ?: continue
-                        if (reference.definingClass != "LX/00kd;") continue
+                        if (reference.definingClass != "LX/00kq;") continue
                         if (reference.name !in descVisibilityRedirects) continue
                         val newCallee = descVisibilityRedirects[reference.name] ?: continue
                         val registers = extractInstructionRegisters(instruction)
@@ -366,10 +366,10 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
             println("[Declutter Video Interface] Hooked desc visibility calls -> $redirectedCalls call(s) (VideoDescAssem: $redirectedCallsDescAssem, LX/095y: $redirectedCalls095y, skippedShapes: $skippedShapes) across $redirectedMethods method(s) forced GONE.")
             patched++
 
-            // 2c. Direct prologue guards on LX/00kd visibility helpers (in v47.5.3, was LX/00ki)
+            // 2c. Direct prologue guards on LX/00kq visibility helpers (in v47.6.3, was LX/00kd)
             val descHelpers = listOf(
-                Triple("LLLLLZIL", listOf("Lcom/bytedance/tux/input/TuxTextView;", "I"), "p0"),
-                Triple("LLLLLZ", listOf("LX/0955;", "I"), "p0"), // was LX/09AL; in v47.4.3
+                Triple("LLLLLZL", listOf("Lcom/bytedance/tux/input/TuxTextView;", "I"), "p0"),
+                Triple("LLLLLZIL", listOf("LX/096B;", "I"), "p0"),
                 Triple("LJLLLLLL", listOf("I", "Landroid/widget/LinearLayout;"), "p1"),
                 Triple("LJLLILLLL", listOf("I", "Landroid/view/View;"), "p1"),
             )
@@ -377,7 +377,7 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
             for ((name, params, viewReg) in descHelpers) {
                 try {
                     val method = Fingerprint(
-                        definingClass = "LX/00kd;",
+                        definingClass = "LX/00kq;",
                         name = name,
                         returnType = "V",
                         parameters = params,
@@ -386,14 +386,14 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
                         0,
                         "invoke-static {$viewReg}, ${Constants.TIKTOK_EXTENSION_MEDIA_HOOK}->hideDescViewIfDesc(Landroid/view/View;)V",
                     )
-                    println("[Declutter Video Interface] Hooked LX/00kd.$name() prologue -> hideDescViewIfDesc($viewReg).")
+                    println("[Declutter Video Interface] Hooked LX/00kq.$name() prologue -> hideDescViewIfDesc($viewReg).")
                     installedHelpers++
                 } catch (e: Exception) {
                     println("[Declutter Video Interface] WARNING: helper $name signature not found, skipped")
                 }
             }
             println("[Declutter Video Interface] Installed desc prologue guards on $installedHelpers / ${descHelpers.size} helper(s).")
-            require(installedHelpers == descHelpers.size) { "LX/00kd desc visibility helpers: expected ${descHelpers.size}, installed $installedHelpers" }
+            require(installedHelpers == descHelpers.size) { "LX/00kq desc visibility helpers: expected ${descHelpers.size}, installed $installedHelpers" }
             patched++
 
             val translationClasses = listOf(
@@ -428,11 +428,11 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
 
                 Fingerprint(
                     definingClass = transClass,
-                    name = "j4",
+                    name = "i4",
                     returnType = "V",
                     parameters = listOf("Ljava/lang/Object;"),
                 ).method.replaceWithReturnVoid()
-                println("[Declutter Video Interface] Hooked $transClass j4() -> return-void.")
+                println("[Declutter Video Interface] Hooked $transClass i4() -> return-void.")
                 patched++
             }
         }
@@ -540,11 +540,11 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
             val triggerClass = "Lcom/ss/android/ugc/feed/platform/cell/interact/bottom/bar/PlayListBottomBarAssemTrigger;"
             Fingerprint(
                 definingClass = triggerClass,
-                name = "Qp", // in v47.5.3, was Rp in v47.4.3
+                name = "Np", // in v47.6.3, was Qp in v47.5.3, Rp in v47.4.3
                 returnType = "Z",
                 parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"),
             ).method.replaceWithReturnBoolean(false)
-            println("[Declutter Video Interface] Hooked PlayListBottomBarAssemTrigger.Qp() -> return false.")
+            println("[Declutter Video Interface] Hooked PlayListBottomBarAssemTrigger.Np() -> return false.")
             patched++
 
             val bottomBarClass = "Lcom/ss/android/ugc/feed/platform/cell/interact/bottom/bar/InteractPlayListBottomBarAssem;"
@@ -572,11 +572,11 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = bottomBarClass,
-                name = "j4", // in v47.5.3, was l4 in v47.4.3
+                name = "i4", // in v47.6.3, was j4 in v47.5.3, l4 in v47.4.3
                 returnType = "V",
                 parameters = listOf("Ljava/lang/Object;"),
             ).method.replaceWithReturnVoid()
-            println("[Declutter Video Interface] Hooked InteractPlayListBottomBarAssem.j4() -> return-void.")
+            println("[Declutter Video Interface] Hooked InteractPlayListBottomBarAssem.i4() -> return-void.")
             patched++
 
             Fingerprint(
@@ -616,11 +616,11 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = favClass,
-                name = "j4", // in v47.5.3, was l4 in v47.4.3
+                name = "i4", // in v47.6.3, was j4 in v47.5.3, l4 in v47.4.3
                 returnType = "V",
                 parameters = listOf("Ljava/lang/Object;"),
             ).method.replaceWithReturnVoid()
-            println("[Declutter Video Interface] Hooked VideoFavoriteAssem.j4() -> return-void.")
+            println("[Declutter Video Interface] Hooked VideoFavoriteAssem.i4() -> return-void.")
             patched++
         }
 
@@ -653,20 +653,20 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = musicCoverClass,
-                name = "j4", // in v47.5.3, was l4 in v47.4.3
+                name = "i4", // in v47.6.3, was j4 in v47.5.3, l4 in v47.4.3
                 returnType = "V",
                 parameters = listOf("Ljava/lang/Object;"),
             ).method.replaceWithReturnVoid()
-            println("[Declutter Video Interface] Hooked VideoMusicCoverAssem.j4() -> return-void.")
+            println("[Declutter Video Interface] Hooked VideoMusicCoverAssem.i4() -> return-void.")
             patched++
 
             Fingerprint(
                 definingClass = musicCoverClass,
-                name = "wq", // in v47.5.3, was tq in v47.4.3
+                name = "tq", // in v47.6.3, was wq in v47.5.3, tq in v47.4.3
                 returnType = "V",
                 parameters = emptyList(),
             ).method.replaceWithReturnVoid()
-            println("[Declutter Video Interface] Hooked VideoMusicCoverAssem.wq() -> return-void.")
+            println("[Declutter Video Interface] Hooked VideoMusicCoverAssem.tq() -> return-void.")
             patched++
 
             Fingerprint(
@@ -694,20 +694,20 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = landscapeClass,
-                name = "M9", // in v47.5.3, was J9 in v47.4.3
+                name = "G9", // in v47.6.3, was M9 in v47.5.3, J9 in v47.4.3
                 returnType = "Z",
                 parameters = emptyList(),
             ).method.replaceWithReturnBoolean(false)
-            println("[Declutter Video Interface] Hooked LandscapeEntranceAssem.M9() -> return false.")
+            println("[Declutter Video Interface] Hooked LandscapeEntranceAssem.G9() -> return false.")
             patched++
 
             Fingerprint(
                 definingClass = landscapeClass,
-                name = "gq", // in v47.5.3, was fq in v47.4.3
+                name = "kq", // in v47.6.3, was gq in v47.5.3, fq in v47.4.3
                 returnType = "Z",
                 parameters = emptyList(),
             ).method.replaceWithReturnBoolean(false)
-            println("[Declutter Video Interface] Hooked LandscapeEntranceAssem.gq() -> return false.")
+            println("[Declutter Video Interface] Hooked LandscapeEntranceAssem.kq() -> return false.")
             patched++
 
             val entranceOnViewCreated = Fingerprint(
@@ -734,29 +734,29 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = landscapeClass,
-                name = "j4", // in v47.5.3, was l4 in v47.4.3
+                name = "i4", // in v47.6.3, was j4 in v47.5.3, l4 in v47.4.3
                 returnType = "V",
                 parameters = listOf("Ljava/lang/Object;"),
             ).method.replaceWithReturnVoid()
-            println("[Declutter Video Interface] Hooked LandscapeEntranceAssem.j4() -> return-void.")
+            println("[Declutter Video Interface] Hooked LandscapeEntranceAssem.i4() -> return-void.")
             patched++
 
             Fingerprint(
                 definingClass = landscapeClass,
-                name = "LLLJ", // in v47.5.3, was LLLJL in v47.4.3
+                name = "LLLILZJ", // in v47.6.3, was LLLJ in v47.5.3, LLLJL in v47.4.3
                 returnType = "V",
                 parameters = listOf("I"),
             ).method.replaceWithReturnVoid()
-            println("[Declutter Video Interface] Hooked LandscapeEntranceAssem.LLLJ() -> return-void.")
+            println("[Declutter Video Interface] Hooked LandscapeEntranceAssem.LLLILZJ() -> return-void.")
             patched++
 
             Fingerprint(
                 definingClass = landscapeClass,
-                name = "LJJJLZIJ", // in v47.5.3, was LLLLII in v47.4.3
+                name = "LJJLIIIJJI", // in v47.6.3, was LJJJLZIJ in v47.5.3, LLLLII in v47.4.3
                 returnType = "V",
                 parameters = listOf("I"),
             ).method.replaceWithReturnVoid()
-            println("[Declutter Video Interface] Hooked LandscapeEntranceAssem.LJJJLZIJ() -> return-void.")
+            println("[Declutter Video Interface] Hooked LandscapeEntranceAssem.LJJLIIIJJI() -> return-void.")
             patched++
         }
 
@@ -764,11 +764,11 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
         if (hideFeedbackButtons == true) {
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/feed/assem/earlyfeedback/EarlyFeedbackButtonTrigger;",
-                name = "Qp", // in v47.5.3, was Rp in v47.4.3
+                name = "Np", // in v47.6.3, was Qp in v47.5.3, Rp in v47.4.3
                 returnType = "Z",
                 parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"),
             ).method.replaceWithReturnBoolean(false)
-            println("[Declutter Video Interface] Hooked EarlyFeedbackButtonTrigger.Qp() -> return false.")
+            println("[Declutter Video Interface] Hooked EarlyFeedbackButtonTrigger.Np() -> return false.")
             patched++
 
             val feedbackAssems = listOf(
@@ -800,21 +800,21 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
 
                 Fingerprint(
                     definingClass = assemClass,
-                    name = "j4", // in v47.5.3, was l4 in v47.4.3
+                    name = "i4", // in v47.6.3, was j4 in v47.5.3, l4 in v47.4.3
                     returnType = "V",
                     parameters = listOf("Ljava/lang/Object;"),
                 ).method.replaceWithReturnVoid()
-                println("[Declutter Video Interface] Hooked $assemClass j4() -> return-void.")
+                println("[Declutter Video Interface] Hooked $assemClass i4() -> return-void.")
                 patched++
             }
 
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/feed/assem/earlyfeedback/EarlyFeedbackStandardButtonAssem;",
-                name = "jq", // in v47.5.3, was hq in v47.4.3
+                name = "oq", // in v47.6.3, was jq in v47.5.3, hq in v47.4.3
                 returnType = "V",
                 parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"),
             ).method.replaceWithReturnVoid()
-            println("[Declutter Video Interface] Hooked EarlyFeedbackStandardButtonAssem.jq() -> return-void.")
+            println("[Declutter Video Interface] Hooked EarlyFeedbackStandardButtonAssem.oq() -> return-void.")
             patched++
         }
 

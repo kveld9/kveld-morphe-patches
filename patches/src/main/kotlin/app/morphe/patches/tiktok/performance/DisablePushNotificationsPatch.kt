@@ -10,28 +10,31 @@ val disablePushNotificationsPatch = bytecodePatch(
     description = "Stops background push notifications.",
     default = false,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_LITE)
 
     execute {
         var patched = 0
+        val isLite = packageMetadata.packageName == Constants.TIKTOK_LITE_PACKAGE_NAME
 
-        try {
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/legoImp/task/InitPushTask;",
-                name = "run",
-                parameters = listOf("Landroid/content/Context;"),
-                returnType = "V",
-            ).method.addInstructions(
-                0,
-                """
-                    return-void
-                """.trimIndent(),
-            )
-            println("[Disable Push Notifications] Neutralized InitPushTask.run() -> Background push polling & wake locks disabled.")
-            patched++
-        } catch (e: Exception) {
-            println("[Disable Push Notifications] InitPushTask note: ${e.message}")
+        val targetClass = if (isLite) {
+            "Lcom/ss/android/ugc/aweme/legoImpl/task/PushInitTask;"
+        } else {
+            "Lcom/ss/android/ugc/aweme/legoImp/task/InitPushTask;"
         }
+
+        Fingerprint(
+            definingClass = targetClass,
+            name = "run",
+            parameters = listOf("Landroid/content/Context;"),
+            returnType = "V",
+        ).method.addInstructions(
+            0,
+            """
+                return-void
+            """.trimIndent(),
+        )
+        println("[Disable Push Notifications] Neutralized $targetClass.run() -> Background push polling & wake locks disabled.")
+        patched++
 
         if (patched == 0) {
             println("[Disable Push Notifications] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")

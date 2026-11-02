@@ -25,7 +25,7 @@ Genuine Brave telemetry is fully neutralized by the **Block Brave Telemetry** pa
 ## Brave Browser: Privacy, Debloat & Anti-Fingerprinting Architecture
 
 ### 1. Clean New Tab Page (Sponsored Wallpaper & Feed Neutralization)
-Official Brave periodically downloads full-screen sponsored advertising wallpapers and updates the Brave News/Today feed in the background. The **`Clean New Tab Page`** patch enforces a lightweight, zero-ad startup state across three layers:
+Official Brave periodically downloads full-screen sponsored advertising wallpapers and updates the Brave News/Today feed in the background. The **`Clean New Tab Page`** patch enforces a zero-ad startup state across three layers:
 - **Asset Schema Sanitization (`rawResourcePatch`)**: Overwrites `assets/brave/sponsored-images/default.json` with an empty campaigns schema (`{"schemaVersion":1,"campaigns":[]}`). Chromium's sponsored image coordinator finds zero campaigns to download, preventing background bandwidth consumption (~15–30 MB/month) and memory allocations.
 - **Preference Defaults Enforcement (`resourcePatch`)**: Sets XML defaults for `show_sponsored_images`, `new_tab_page_show_sponsored_images`, `brave_news_switch`, and `show_brave_news` to `false`.
 - **Dalvik Gatekeeper Interception (`bytecodePatch`)**: Intercepts `PrefService.e` for `brave.new_tab_page.show_sponsored_images`, `brave.today.enabled`, `brave.today.opted_in`, and `brave.new_tab_page.show_brave_news`, returning `false` directly at the preference service layer.
@@ -41,7 +41,7 @@ Web applications can fingerprint device hardware variations or infer user input 
 
 ## TikTok: Share URL Sanitization
 
-The TikTok companion filter ([`TikTokFeedAdFilter.sanitizeShareUrl`](../extensions/extension/src/main/java/com/kveld9/morphe/extension/tiktok/TikTokFeedAdFilter.java#L887-L910)) is domain-scoped (`tiktok.com`) and purges ByteDance-specific user tracking and device fingerprinting keys:
+The TikTok companion filter ([`TikTokShareHostHook.sanitizeShareUrlWithHost`](../extensions/extension/src/main/java/com/kveld9/morphe/extension/tiktok/TikTokShareHostHook.java)) is domain-scoped (`tiktok.com`) and purges ByteDance-specific user tracking and device fingerprinting keys:
 - `user_id`, `sec_user_id`, `u_code` (sender user identification)
 - `sender_device`, `checksum` (device telemetry and verification)
 - `share_link_id`, `share_item_id`, `share_app_id`, `ug_source`, `tt_from`, `timestamp`, `_r`, `source` (viral loop and graph correlation)
@@ -59,7 +59,7 @@ Chromium browsers (such as Brave), however, bypass Android's resource pipeline f
    - Deleting `<locale>.pak` from the APK causes Chromium's native C++ resource loader (`ui::ResourceBundle::LoadLocaleResources`) to fail startup initialization when the host device is set to that language.
    - Truncating `<locale>.pak` to an empty (0-byte) file causes Chromium to trigger an assertion crash (`Check failed: file_is_valid`).
 3. **Morphe's Safe Substitution Strategy**:
-   - `Locale PAK Slimmer` (`localePakSlimmerPatch`): Copies `en-US.pak` into each stripped locale path, satisfying the C++ bundle loader with zero native crashes while freeing ~9.64 MB, but leaves a locale pak untouched (and does not count it as stripped) when it is already smaller than `en-US.pak` (e.g. zh-CN, zh-HK, zh-TW in Brave 1.97.59), since replacing it would grow the APK.
+   - `Locale PAK Slimmer` (`localePakSlimmerPatch`): Copies `en-US.pak` into each stripped locale path, satisfying the C++ bundle loader with zero native crashes while freeing several MB (measured at time of writing), but leaves a locale pak untouched (and does not count it as stripped) when it is already smaller than `en-US.pak` (e.g. zh-CN, zh-HK, zh-TW in recent Brave builds), since replacing it would grow the APK.
 4. **Separation of Concerns**:
    - `Remove Extra Languages (Universal)` operates universally across all Android apps on `res/values-*`.
    - `Locale PAK Slimmer` operates specifically on Chromium's native `assets/locales/*.pak`.

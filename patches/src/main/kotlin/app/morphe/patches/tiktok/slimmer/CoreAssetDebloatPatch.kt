@@ -52,16 +52,11 @@ val coreAssetDebloatPatch = rawResourcePatch(
             }
         }
 
-        // 1. C2PA & Content Verification libraries
-        stripNative(
-            abis,
-            listOf(
-                "libtt_c2pa_sdk.so",
-                "libtt_c2pa_sdk_d.so",
-            ),
-        )
+        // C2PA libraries (libtt_c2pa_sdk.so, libtt_c2pa_sdk_d.so) are preserved
+        // because stripping/zeroing them causes TikTok's media/photo picker
+        // (MvChoosePhotoScene -> TTC2PAServiceImpl.init) to crash with Librarian EOFException on 0-byte ELF headers.
 
-        // 2. Internal Profiling & Python Runtimes
+        // 1. Internal Profiling & Python Runtimes
         stripNative(
             abis,
             listOf(
@@ -74,7 +69,7 @@ val coreAssetDebloatPatch = rawResourcePatch(
             ),
         )
 
-        // 3. Pitaya AI native libraries
+        // 2. Pitaya AI native libraries
         stripNative(
             abis,
             listOf(
@@ -86,7 +81,7 @@ val coreAssetDebloatPatch = rawResourcePatch(
             ),
         )
 
-        // 4. TikTok Shop FinTech & Card Scanner libraries + checkout assets
+        // 3. TikTok Shop FinTech & Card Scanner libraries + checkout assets
         stripNative(
             abis,
             listOf(
@@ -102,7 +97,7 @@ val coreAssetDebloatPatch = rawResourcePatch(
             "assets/pipo_ui_default_components.json",
         ).forEach { stripFile(it) }
 
-        // 5. ByteDance Local LLM & Gemini Nano libraries (libbytenn.so and libbytennwrapper.so preserved for libaudioeffect.so and libstarship_sdk.so)
+        // 4. ByteDance Local LLM & Gemini Nano libraries (libbytenn.so and libbytennwrapper.so preserved for libaudioeffect.so and libstarship_sdk.so)
         stripNative(
             abis,
             listOf(
@@ -112,14 +107,14 @@ val coreAssetDebloatPatch = rawResourcePatch(
             ),
         )
 
-        // 6. SSDP/DLNA local network scanner binary & ByteDance TTWebView engine
+        // 5. SSDP/DLNA local network scanner binary & ByteDance TTWebView engine
         stripNative(abis, listOf("libdex_df_live_cast.so", "libdex_df_ttwebview.so"))
         stripFile("assets/dynamic_feature_install/df_ttwebview.json")
 
-        // 7. Microblink OCR models
+        // 6. Microblink OCR models
         stripDirectory("assets/microblink")
 
-        // 8. Non-Latin font files
+        // 7. Non-Latin font files
         val nonLatinPatterns = listOf(
             "NotoSansGreek",
             "NotoSansHebrew",
@@ -136,7 +131,7 @@ val coreAssetDebloatPatch = rawResourcePatch(
 
         if (count > 0) {
             val savedMb = String.format(java.util.Locale.US, "%.2f", savedBytes.toDouble() / (1024 * 1024))
-            println("[Remove Extra Files] Stripped $count non-essential OCR models, C2PA SDKs, AI/LLM engines, and regional fonts -> Saved $savedMb MB uncompressed")
+            println("[Remove Extra Files] Stripped $count non-essential OCR models, AI/LLM engines, and regional fonts -> Saved $savedMb MB uncompressed")
         } else {
             println("[Remove Extra Files] Target assets already clean.")
         }

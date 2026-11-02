@@ -271,6 +271,20 @@ for entry in by_app.values():
                 readme,
                 count=1,
             )
+        elif any("lite.go" in p for p in pkgs):
+            slug_ver = target_ver.replace(".", "-")
+            readme = re.sub(
+                r"(\|\s*\*\*TikTok Lite\*\*\s*\|\s*`com\.tiktok\.lite\.go`\s*\|\s*`)[^`]+(`\s*\|)",
+                rf"\g<1>{target_ver}\g<2>",
+                readme,
+                count=1,
+            )
+            readme = re.sub(
+                r"https://www\.apkmirror\.com/apk/tiktok-pte-ltd/tiktok-lite-faster-tiktok/tiktok-lite-faster-tiktok-[^/]+-release/",
+                f"https://www.apkmirror.com/apk/tiktok-pte-ltd/tiktok-lite-faster-tiktok/tiktok-lite-faster-tiktok-{slug_ver}-release/",
+                readme,
+                count=1,
+            )
 
 # The generated section is inserted as a *function* replacement, never as a template:
 # a patch description containing a backslash (C:\path, \1, \g<name>) would otherwise be

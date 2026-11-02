@@ -85,6 +85,9 @@ private val OEM_SIGNALS_PERMISSIONS = setOf(
     "com.google.android.apps.aicore.service.BIND_SERVICE",
     "com.tiktok.manager.SYS_START_PERMISSION",
     "com.tiktok.preload.permission.IDENTIFY",
+    "com.tiktok.lite.go.permission.PRF_INTERNAL",
+    "com.tiktok.lite.go.permission.RECEIVE_ADM_MESSAGE",
+    "com.tiktok.lite.go.permission.ATTRIBUTION_INFO",
     "com.zhiliaoapp.musically.permission.PRF_INTERNAL",
     "com.zhiliaoapp.musically.permission.RECEIVE_ADM_MESSAGE",
     "com.zhiliao.musically.livewallpaper.permission.wallpaperplugin",
@@ -129,7 +132,7 @@ val tikTokPrivacyPermissionsStripperPatch = resourcePatch(
     description = "Removes sensitive hardware, sensor, and tracking permissions.",
     default = false,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_LITE)
 
     val stripNotifications by booleanOption(
         key = "stripNotifications",

@@ -9,17 +9,61 @@ import app.morphe.patches.shared.replaceWithReturnBoolean
 
 private const val MANDATORY_LOGIN_SERVICE = "Lcom/ss/android/ugc/aweme/services/MandatoryLoginService;"
 private const val GUEST_MODE_SERVICE_IMPL = "Lcom/ss/android/ugc/aweme/account/guestmode/GuestModeServiceImpl;"
+private const val LITE_MANDATORY_LOGIN_SERVICE = "Lcom/ss/android/ugc/aweme/mini_account_impl/MandatoryLoginService;"
 
 val mandatoryLoginBypassPatch = bytecodePatch(
     name = "Bypass Mandatory Login",
     description = "Lets you browse videos and feeds without creating an account or logging in.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_LITE)
     dependsOn(sharedExtensionPatch)
 
     execute {
         var patched = 0
+        val isLite = packageMetadata.packageName == Constants.TIKTOK_LITE_PACKAGE_NAME
+
+        if (isLite) {
+            // Lite gate: LCC(String, String)Z is the master forced-login decision
+            // (LC + isLogin + pre-login journey + region force-login). False skips the wall.
+            Fingerprint(
+                definingClass = LITE_MANDATORY_LOGIN_SERVICE,
+                name = "LCC",
+                parameters = listOf("Ljava/lang/String;", "Ljava/lang/String;"),
+                returnType = "Z",
+            ).method.replaceWithReturnBoolean(false)
+            println("[Bypass Mandatory Login] Neutralized Lite MandatoryLoginService.LCC() -> Forced login decision suppressed.")
+            patched++
+
+            // Lite fragment gate: MainRootFragment.onViewCreated calls L(String)Z and
+            // skips the login panel when it returns false (if-nez v9, +079h).
+            Fingerprint(
+                definingClass = LITE_MANDATORY_LOGIN_SERVICE,
+                name = "L",
+                parameters = listOf("Ljava/lang/String;"),
+                returnType = "Z",
+            ).method.replaceWithReturnBoolean(false)
+            println("[Bypass Mandatory Login] Neutralized Lite MandatoryLoginService.L() -> Feed fragment login check suppressed.")
+            patched++
+
+            // Lite shower: LBL(String, X/7Db)V forwards to IAccountService.LIIL (login page). Stub it.
+            Fingerprint(
+                definingClass = LITE_MANDATORY_LOGIN_SERVICE,
+                name = "LBL",
+                parameters = listOf("Ljava/lang/String;", "LX/7Db;"),
+                returnType = "V",
+            ).method.addInstructions(
+                0,
+                """
+                    return-void
+                """.trimIndent(),
+            )
+            println("[Bypass Mandatory Login] Neutralized Lite MandatoryLoginService.LBL() -> Login page display suppressed.")
+            patched++
+
+            println("[Bypass Mandatory Login] Applied $patched hooks -> Mandatory login wall bypassed on Lite.")
+            return@execute
+        }
 
         // 1. MandatoryLoginService.shouldShowForcedLogin(Z)Z -> return false
         try {

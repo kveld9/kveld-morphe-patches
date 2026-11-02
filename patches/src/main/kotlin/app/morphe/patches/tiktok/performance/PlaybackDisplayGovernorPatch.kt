@@ -17,7 +17,7 @@ val playbackDisplayGovernorPatch = bytecodePatch(
     description = "Limits playback resolution and HDR to save battery, and locks the screen refresh rate.",
     default = false,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_LITE)
     dependsOn(sharedExtensionPatch)
 
     val capPlaybackQuality by booleanOption(
@@ -89,6 +89,244 @@ val playbackDisplayGovernorPatch = bytecodePatch(
         }
 
         var patched = 0
+        val isLite = packageMetadata.packageName == Constants.TIKTOK_LITE_PACKAGE_NAME
+
+        if (isLite) {
+            fun parseResolution(raw: String?, defaultRes: Int): Int {
+                val q = raw?.trim()?.lowercase() ?: return defaultRes
+                return when {
+                    q.contains("none") || q.contains("unconstrained") || q == "0" -> 0
+                    q.contains("1080") -> 1080
+                    q.contains("720") -> 720
+                    q.contains("540") -> 540
+                    q.contains("360") -> 360
+                    q.contains("480") -> 480
+                    else -> defaultRes
+                }
+            }
+
+            val chosenPlaybackRes = parseResolution(maxQuality, 480)
+
+            if (capQuality) {
+                val hookClinitFp = Fingerprint(
+                    definingClass = Constants.TIKTOK_EXTENSION_QUALITY_HOOK,
+                    name = "<clinit>",
+                )
+                val hookClinit = hookClinitFp.method
+                hookClinit.ensureRegisterCount(2)
+                val clinitInstructions = hookClinit.implementation!!.instructions
+                val returnIdx = clinitInstructions.indexOfLast { it.opcode == Opcode.RETURN_VOID }
+                val insertIdx = if (returnIdx != -1) returnIdx else 0
+
+                val avoidByteVC2Enabled = avoidByteVC2 ?: true
+                val avoidByteVC2Const = if (avoidByteVC2Enabled) 1 else 0
+                val dropUndecodableEnabled = dropUndecodableVideo ?: true
+                val dropUndecodableConst = if (dropUndecodableEnabled) 1 else 0
+
+                hookClinit.addInstructions(
+                    insertIdx,
+                    """
+                        const/4 v0, 1
+                        sput-boolean v0, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->isGovernorEnabled:Z
+                        const/16 v0, $chosenPlaybackRes
+                        sput v0, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->maxAllowedResolution:I
+                        const/4 v0, 0
+                        sput v0, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->downloadAllowedResolution:I
+                        const/4 v0, $avoidByteVC2Const
+                        sput-boolean v0, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->avoidByteVC2:Z
+                        const/4 v0, $dropUndecodableConst
+                        sput-boolean v0, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->dropUndecodableVideo:Z
+                    """.trimIndent(),
+                )
+                println("[Playback & Display Governor] Initialized playback cap: playback=${chosenPlaybackRes}p, avoidByteVC2=$avoidByteVC2Enabled, dropUndecodable=$dropUndecodableEnabled (download ceiling retired).")
+                patched++
+
+                val awemeGetVideoFp = Fingerprint(
+                    definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
+                    name = "getVideo",
+                    returnType = "Lcom/ss/android/ugc/aweme/feed/model/Video;",
+                )
+                val method = awemeGetVideoFp.method
+                val returnIndices = method.implementation?.instructions?.withIndex()
+                    ?.filter { it.value.opcode == Opcode.RETURN_OBJECT }
+                    ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
+                    ?.toList() ?: emptyList()
+
+                returnIndices.asReversed().forEach { (returnIndex, reg) ->
+                    method.addInstructionsAtControlFlowLabel(
+                        returnIndex,
+                        """
+                            invoke-static {v$reg, p0}, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->capVideoObject(Ljava/lang/Object;Ljava/lang/Object;)V
+                        """.trimIndent(),
+                    )
+                }
+                if (returnIndices.isNotEmpty()) {
+                    println("[Playback & Display Governor] Hooked Aweme.getVideo() (${returnIndices.size} return point(s)) -> Video capping active.")
+                    patched++
+                }
+
+                val videoGetBitrateFp = Fingerprint(
+                    definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Video;",
+                    name = "getBitRate",
+                    returnType = "Ljava/util/List;",
+                )
+                val videoMethod = videoGetBitrateFp.method
+                val videoReturnIndices = videoMethod.implementation?.instructions?.withIndex()
+                    ?.filter { it.value.opcode == Opcode.RETURN_OBJECT }
+                    ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
+                    ?.toList() ?: emptyList()
+
+                videoReturnIndices.asReversed().forEach { (returnIndex, reg) ->
+                    videoMethod.addInstructionsAtControlFlowLabel(
+                        returnIndex,
+                        """
+                            invoke-static {v$reg, p0}, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->filterBitratesEx(Ljava/util/List;Ljava/lang/Object;)Ljava/util/List;
+                            move-result-object v$reg
+                        """.trimIndent(),
+                    )
+                }
+                if (videoReturnIndices.isNotEmpty()) {
+                    println("[Playback & Display Governor] Hooked Video.getBitRate() (${videoReturnIndices.size} return point(s)) -> Bitrate list filter active.")
+                    patched++
+                }
+
+                val videoGetProperPlayAddrFp = Fingerprint(
+                    definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Video;",
+                    name = "getProperPlayAddr",
+                    returnType = "Lcom/ss/android/ugc/aweme/feed/model/VideoUrlModel;",
+                )
+                val properPlayAddrMethod = videoGetProperPlayAddrFp.method
+                val properPlayAddrReturnIndices = properPlayAddrMethod.implementation?.instructions?.withIndex()
+                    ?.filter { it.value.opcode == Opcode.RETURN_OBJECT }
+                    ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
+                    ?.toList() ?: emptyList()
+
+                properPlayAddrReturnIndices.asReversed().forEach { (returnIndex, reg) ->
+                    properPlayAddrMethod.addInstructionsAtControlFlowLabel(
+                        returnIndex,
+                        """
+                            invoke-static {v$reg, p0}, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->enforcePlaybackCap(Ljava/lang/Object;Ljava/lang/Object;)V
+                        """.trimIndent(),
+                    )
+                }
+                if (properPlayAddrReturnIndices.isNotEmpty()) {
+                    println("[Playback & Display Governor] Hooked Video.getProperPlayAddr() (${properPlayAddrReturnIndices.size} return point(s)) -> Detail-path play address enforcement active.")
+                    patched++
+                }
+
+                val videoGetPlayAddrFp = Fingerprint(
+                    definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Video;",
+                    name = "getPlayAddr",
+                    returnType = "Lcom/ss/android/ugc/aweme/feed/model/VideoUrlModel;",
+                )
+                val playAddrMethod = videoGetPlayAddrFp.method
+                val playAddrReturnIndices = playAddrMethod.implementation?.instructions?.withIndex()
+                    ?.filter { it.value.opcode == Opcode.RETURN_OBJECT }
+                    ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
+                    ?.toList() ?: emptyList()
+
+                playAddrReturnIndices.asReversed().forEach { (returnIndex, reg) ->
+                    playAddrMethod.addInstructionsAtControlFlowLabel(
+                        returnIndex,
+                        """
+                            invoke-static {v$reg, p0}, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->enforcePlaybackCap(Ljava/lang/Object;Ljava/lang/Object;)V
+                        """.trimIndent(),
+                    )
+                }
+                if (playAddrReturnIndices.isNotEmpty()) {
+                    println("[Playback & Display Governor] Hooked Video.getPlayAddr() (${playAddrReturnIndices.size} return point(s)) -> Direct play address enforcement active.")
+                    patched++
+                }
+
+                val codecPlayAddrMethods = listOf("getPlayAddrBytevc1", "getPlayAddrH264", "getH264PlayAddr")
+                for (getterName in codecPlayAddrMethods) {
+                    val getterFp = Fingerprint(
+                        definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Video;",
+                        name = getterName,
+                        returnType = "Lcom/ss/android/ugc/aweme/feed/model/VideoUrlModel;",
+                    )
+                    val getterMethod = getterFp.method
+                    val getterReturnIndices = getterMethod.implementation?.instructions?.withIndex()
+                        ?.filter { it.value.opcode == Opcode.RETURN_OBJECT }
+                        ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
+                        ?.toList() ?: emptyList()
+
+                    getterReturnIndices.asReversed().forEach { (returnIndex, reg) ->
+                        getterMethod.addInstructionsAtControlFlowLabel(
+                            returnIndex,
+                            """
+                                invoke-static {v$reg, p0}, ${Constants.TIKTOK_EXTENSION_QUALITY_HOOK}->enforcePlaybackCap(Ljava/lang/Object;Ljava/lang/Object;)V
+                            """.trimIndent(),
+                        )
+                    }
+                    if (getterReturnIndices.isNotEmpty()) {
+                        println("[Playback & Display Governor] Hooked Video.$getterName() (${getterReturnIndices.size} return point(s)) -> Codec play address enforcement active.")
+                        patched++
+                    }
+                }
+            }
+
+            if (governRate) {
+                val rateFloat = when (val trimmed = targetRate?.trim()?.lowercase()) {
+                    null, "", "max" -> 0.0f
+                    else -> trimmed.toFloatOrNull() ?: 0.0f
+                }
+                val rateBits = java.lang.Float.floatToIntBits(rateFloat)
+
+                val hookClinitFp = Fingerprint(
+                    definingClass = Constants.TIKTOK_EXTENSION_REFRESH_RATE_HOOK,
+                    name = "<clinit>",
+                )
+                val method = hookClinitFp.method
+                method.ensureRegisterCount(1)
+                val instructions = method.implementation?.instructions?.toList() ?: emptyList()
+                val returnIndex = instructions.indexOfLast { it.opcode == Opcode.RETURN_VOID }
+                val targetIndex = if (returnIndex >= 0) returnIndex else 0
+                method.addInstructions(
+                    targetIndex,
+                    """
+                        const v0, $rateBits
+                        sput v0, ${Constants.TIKTOK_EXTENSION_REFRESH_RATE_HOOK}->targetRefreshRate:F
+                    """.trimIndent(),
+                )
+                println("[Playback & Display Governor] Initialized targetRefreshRate=${if (rateFloat == 0f) "max" else "${rateFloat.toInt()}Hz"} (hardware bounded).")
+                patched++
+
+                val liteMainActivityClass = "Lcom/zhiliaoapp/musically/go/mini/MainActivity;"
+
+                Fingerprint(
+                    definingClass = liteMainActivityClass,
+                    name = "onResume",
+                    returnType = "V",
+                ).method.addInstructions(
+                    0,
+                    """
+                        invoke-static {p0}, ${Constants.TIKTOK_EXTENSION_REFRESH_RATE_HOOK}->applyToWindow(Landroid/app/Activity;)V
+                    """.trimIndent(),
+                )
+                println("[Playback & Display Governor] Hooked MainActivity.onResume() -> enforced target rate.")
+                patched++
+
+                Fingerprint(
+                    definingClass = liteMainActivityClass,
+                    name = "onWindowFocusChanged",
+                    parameters = listOf("Z"),
+                    returnType = "V",
+                ).method.addInstructions(
+                    0,
+                    """
+                        if-eqz p1, :skip_refresh
+                        invoke-static {p0}, ${Constants.TIKTOK_EXTENSION_REFRESH_RATE_HOOK}->applyToWindow(Landroid/app/Activity;)V
+                        :skip_refresh
+                    """.trimIndent(),
+                )
+                println("[Playback & Display Governor] Hooked MainActivity.onWindowFocusChanged() -> enforced target rate on focus gain.")
+                patched++
+            }
+
+            println("[Playback & Display Governor] Applied $patched hook(s) across active playback and display governor feature(s).")
+            return@execute
+        }
 
         if (capQuality) {
             fun parseResolution(raw: String?, defaultRes: Int): Int {

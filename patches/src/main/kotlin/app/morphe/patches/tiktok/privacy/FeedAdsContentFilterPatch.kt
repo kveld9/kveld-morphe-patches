@@ -19,7 +19,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
     description = "Filters ads, shopping tags, live cards, and clutter from your feed.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_LITE)
     dependsOn(sharedExtensionPatch)
 
     val filterAds by booleanOption(
@@ -197,6 +197,135 @@ val feedAdsContentFilterPatch = bytecodePatch(
         }
 
         var patched = 0
+        val isLite = packageMetadata.packageName == Constants.TIKTOK_LITE_PACKAGE_NAME
+
+        if (isLite) {
+            if (contentFilterActive) {
+                val hook = Constants.TIKTOK_EXTENSION_CONTENT_FILTER_HOOK
+                try {
+                    val minV = (minViews ?: 0).coerceAtLeast(0).toLong()
+                    val maxV = (maxViews ?: 0).coerceAtLeast(0).toLong()
+                    val minL = (minLikes ?: 0).coerceAtLeast(0).toLong()
+                    val maxL = (maxLikes ?: 0).coerceAtLeast(0).toLong()
+                    val maxAge = (maxAgeDays ?: 0).coerceAtLeast(0)
+                    val minDur = (minDurationSec ?: 0).coerceAtLeast(0)
+                    val maxDur = (maxDurationSec ?: 0).coerceAtLeast(0)
+                    val clinit = Fingerprint(
+                        definingClass = hook,
+                        name = "<clinit>",
+                    ).method
+                    clinit.ensureRegisterCount(2)
+                    val instructions = clinit.implementation!!.instructions
+                    val returnIdx = instructions.indexOfLast { it.opcode == Opcode.RETURN_VOID }
+                    val insertIdx = if (returnIdx != -1) returnIdx else 0
+                    val authorInstructions = buildPushCsvInstructions(hook, "blockedAuthorsCsv", blockedAuthors)
+                    val hashtagInstructions = buildPushCsvInstructions(hook, "blockedHashtagsCsv", blockedHashtags)
+                    val keywordInstructions = buildPushCsvInstructions(hook, "blockedKeywordsCsv", blockedKeywords)
+                    val regionInstructions = buildPushCsvInstructions(hook, "hiddenRegionsCsv", hiddenRegions)
+                    clinit.addInstructions(
+                        insertIdx,
+                        """
+                            const-wide v0, 0x${minV.toString(16)}
+                            sput-wide v0, $hook->minViews:J
+                            const-wide v0, 0x${maxV.toString(16)}
+                            sput-wide v0, $hook->maxViews:J
+                            const-wide v0, 0x${minL.toString(16)}
+                            sput-wide v0, $hook->minLikes:J
+                            const-wide v0, 0x${maxL.toString(16)}
+                            sput-wide v0, $hook->maxLikes:J
+                            const v0, 0x${maxAge.toString(16)}
+                            sput v0, $hook->maxAgeDays:I
+                            const v0, 0x${minDur.toString(16)}
+                            sput v0, $hook->minDurationSec:I
+                            const v0, 0x${maxDur.toString(16)}
+                            sput v0, $hook->maxDurationSec:I
+                            const/4 v0, ${if (hideStories != false) "0x1" else "0x0"}
+                            sput-boolean v0, $hook->hideStories:Z
+                            const/4 v0, ${if (hidePhotoPosts == true) "0x1" else "0x0"}
+                            sput-boolean v0, $hook->hidePhotoPosts:Z$authorInstructions$hashtagInstructions$keywordInstructions$regionInstructions
+                        """.trimIndent(),
+                    )
+                    println("[Feed Ads & Content Filter] Pushed Lite content filter configuration.")
+                    patched++
+                } catch (e: Exception) {
+                    println("[Feed Ads & Content Filter] Lite content filter config note: ${e.message}")
+                }
+            }
+
+            fun hookReturnList(definingClass: String, name: String, returnType: String, logLabel: String) {
+                val fingerprint = Fingerprint(
+                    definingClass = definingClass,
+                    name = name,
+                    returnType = returnType,
+                )
+                val method = fingerprint.method
+                val returnIndices = method.implementation?.instructions?.withIndex()
+                    ?.filter { it.value.opcode == Opcode.RETURN_OBJECT }
+                    ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
+                    ?.toList() ?: emptyList()
+
+                val callSnippets = mutableListOf<String>()
+                if (filterAds != false) {
+                    callSnippets.add("invoke-static/range {v\$reg .. v\$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAdsInList(Ljava/lang/Object;)V")
+                }
+                if (filterBloat != false) {
+                    callSnippets.add("invoke-static/range {v\$reg .. v\$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterFeedBloatInList(Ljava/lang/Object;)V")
+                }
+                if (stripShopAnchors != false) {
+                    callSnippets.add("invoke-static/range {v\$reg .. v\$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->stripShopAnchorsInList(Ljava/lang/Object;)V")
+                }
+                if (blockLiveStreams != false) {
+                    callSnippets.add("invoke-static/range {v\$reg .. v\$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterLiveStreamsInList(Ljava/lang/Object;)V")
+                }
+                if (hideAiContent != false) {
+                    callSnippets.add("invoke-static/range {v\$reg .. v\$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAiContentInList(Ljava/lang/Object;)V")
+                }
+                if (contentFilterActive) {
+                    callSnippets.add("invoke-static/range {v\$reg .. v\$reg}, ${Constants.TIKTOK_EXTENSION_CONTENT_FILTER_HOOK}->filterContentInList(Ljava/lang/Object;)V")
+                }
+
+                if (callSnippets.isEmpty()) return
+
+                val instructions = callSnippets.joinToString("\n")
+                returnIndices.asReversed().forEach { (returnIndex, reg) ->
+                    method.addInstructionsAtControlFlowLabel(
+                        returnIndex,
+                        instructions.replace("\$reg", reg.toString()),
+                    )
+                }
+                if (returnIndices.isNotEmpty()) {
+                    println("[Feed Ads & Content Filter] Hooked $definingClass->$name() (${returnIndices.size} return point(s)) -> $logLabel protected.")
+                    patched++
+                }
+            }
+
+            // Hook FeedItemList.getItems() (covers feed, cached, and home consumers on Lite)
+            hookReturnList(
+                definingClass = "Lcom/ss/android/ugc/aweme/main/homepage/fragment/data/model/FeedItemList;",
+                name = "getItems",
+                returnType = "Ljava/util/List;",
+                logLabel = "All Lite feed model consumers",
+            )
+
+            // Hook SearchMix.getAwemeList() (Search mix and grid streams on Lite)
+            hookReturnList(
+                definingClass = "Lcom/ss/android/ugc/aweme/main/homepage/fragment/data/discover/SearchMix;",
+                name = "getAwemeList",
+                returnType = "Ljava/util/List;",
+                logLabel = "Lite Search mix feed",
+            )
+
+            // Hook SearchMixFeedList.getAwemeList() (Search mix feed list on Lite)
+            hookReturnList(
+                definingClass = "Lcom/ss/android/ugc/aweme/main/homepage/fragment/data/discover/SearchMixFeedList;",
+                name = "getAwemeList",
+                returnType = "Ljava/util/List;",
+                logLabel = "Lite Search mix feed list",
+            )
+
+            println("[Feed Ads & Content Filter] Applied $patched feed and search content filter hook(s).")
+            return@execute
+        }
 
         // 1. Branch: filterAds
         if (filterAds != false) {
@@ -667,7 +796,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/feed/platform/cell/component/survey/CellSurveyComponent;",
-                name = "Np",
+                name = "Mp",
                 parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;"),
                 returnType = "V",
             ).method.addInstructions(
@@ -676,12 +805,12 @@ val feedAdsContentFilterPatch = bytecodePatch(
                     return-void
                 """.trimIndent(),
             )
-            println("[Feed Ads & Content Filter] Neutralized CellSurveyComponent.Np(Aweme).")
+            println("[Feed Ads & Content Filter] Neutralized CellSurveyComponent.Mp(Aweme).")
             patched++
 
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/feed/platform/cell/component/survey/CellSurveyComponent;",
-                name = "Op",
+                name = "Np",
                 parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;", "Z"),
                 returnType = "V",
             ).method.addInstructions(
@@ -690,7 +819,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
                     return-void
                 """.trimIndent(),
             )
-            println("[Feed Ads & Content Filter] Neutralized CellSurveyComponent.Op(Aweme, Z).")
+            println("[Feed Ads & Content Filter] Neutralized CellSurveyComponent.Np(Aweme, Z).")
             patched++
 
             try {
@@ -732,7 +861,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/feed/assem/pushsurvey/PushSurveyAssemTrigger;",
-                name = "Qp",
+                name = "Np",
                 parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"),
                 returnType = "Z",
             ).method.addInstructions(
@@ -742,7 +871,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
                     return v0
                 """.trimIndent(),
             )
-            println("[Feed Ads & Content Filter] Neutralized PushSurveyAssemTrigger.Rp(VideoItemParams) -> Push survey triggers disabled.")
+            println("[Feed Ads & Content Filter] Neutralized PushSurveyAssemTrigger.Np(VideoItemParams) -> Push survey triggers disabled.")
             patched++
 
             try {
@@ -1137,9 +1266,9 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 patched++
             }
 
-            // Hook FriendsFeedApi network fetch return points (LX/064b;->LIZLLL in v47.5.3)
+            // Hook FriendsFeedApi network fetch return points (LX/065q;->LIZLLL in v47.6.3, was LX/064b;)
             val friendsFeedApiFingerprint = Fingerprint(
-                definingClass = "LX/064b;",
+                definingClass = "LX/065q;",
                 name = "LIZLLL",
                 parameters = listOf(
                     "I",

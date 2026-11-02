@@ -166,13 +166,20 @@ val cameraMicIndicatorPatch = bytecodePatch(
     description = "Shows a corner mark while TikTok holds camera/mic open.",
     default = false,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_LITE)
     dependsOn(sharedExtensionPatch)
 
     execute {
+        val isLite = packageMetadata.packageName == Constants.TIKTOK_LITE_PACKAGE_NAME
+        val mainActivityClass = if (isLite) {
+            "Lcom/zhiliaoapp/musically/go/mini/MainActivity;"
+        } else {
+            "Lcom/ss/android/ugc/aweme/main/MainActivity;"
+        }
+
         // (a) Hook MainActivity.onCreate at index 0 to install the indicator overlay view.
         val mainActivityFp = Fingerprint(
-            definingClass = "Lcom/ss/android/ugc/aweme/main/MainActivity;",
+            definingClass = mainActivityClass,
             name = "onCreate",
             parameters = listOf("Landroid/os/Bundle;"),
             returnType = "V",

@@ -14,29 +14,21 @@ val bypassScreenCapturePatch = bytecodePatch(
     description = "Removes screenshot and screen recording blocking.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_LITE)
 
     execute {
         var patched = 0
+        val isLite = packageMetadata.packageName == Constants.TIKTOK_LITE_PACKAGE_NAME
 
         // ==========================================
         // 1. SCREENSHOT DETECTION & TELEMETRY SUPPRESSION
         // ==========================================
 
-        // 1.1 Neutralize Lego Startup Screenshot Tasks
-        val contextTasks = listOf(
-            "Lcom/ss/android/ugc/aweme/legoImp/task/ScreenShotTaskHolder\$BootFinish;",
-            "Lcom/ss/android/ugc/aweme/legoImp/task/ScreenShotFeedbackTaskHolder\$BootFinish;",
-            "Lcom/ss/android/ugc/aweme/legoImpl/task/ScreenShotTask;",
-            "Lcom/ss/android/ugc/aweme/legoImpl/task/ScreenShotFeedbackTask;",
-            "Lcom/ss/android/ugc/aweme/legoImp/task/ScreenRecordingMonitorInitTask;",
-            "Lcom/ss/android/ugc/aweme/im/sharepanel/impl/screenshotshare/InternalShareScreenshotTask;",
-            "Lcom/ss/android/ugc/aweme/im/sharepanel/impl/screenshotshare/InternalShareScreenshotTaskHolder\$BootFinish;",
-        )
-        contextTasks.forEach { taskClass ->
+        if (isLite) {
+            // TikTok Lite: only ScreenShotTask is present
             try {
                 Fingerprint(
-                    definingClass = taskClass,
+                    definingClass = "Lcom/ss/android/ugc/aweme/legoImpl/task/ScreenShotTask;",
                     name = "run",
                     parameters = listOf("Landroid/content/Context;"),
                     returnType = "V",
@@ -46,308 +38,340 @@ val bypassScreenCapturePatch = bytecodePatch(
                         return-void
                     """.trimIndent(),
                 )
-                println("[Allow Screenshots] Neutralized $taskClass.run(Context).")
+                println("[Allow Screenshots] Neutralized Lcom/ss/android/ugc/aweme/legoImpl/task/ScreenShotTask;.run(Context).")
                 patched++
             } catch (e: Exception) {
-                println("[Allow Screenshots] Task $taskClass note: ${e.message}")
+                println("[Allow Screenshots] Task Lcom/ss/android/ugc/aweme/legoImpl/task/ScreenShotTask; note: ${e.message}")
             }
-        }
-
-        // 1.2 Neutralize ScreenShotFeedbackService triggers & telemetry
-        try {
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/feedback/screenshot/ScreenShotFeedbackService;",
-                name = "onShot",
-                returnType = "Z",
-            ).method.addInstructions(
-                0,
-                """
-                    const/4 v0, 0x0
-                    return v0
-                """.trimIndent(),
+        } else {
+            // 1.1 Neutralize Lego Startup Screenshot Tasks
+            val contextTasks = listOf(
+                "Lcom/ss/android/ugc/aweme/legoImp/task/ScreenShotTaskHolder\$BootFinish;",
+                "Lcom/ss/android/ugc/aweme/legoImp/task/ScreenShotFeedbackTaskHolder\$BootFinish;",
+                "Lcom/ss/android/ugc/aweme/legoImpl/task/ScreenShotTask;",
+                "Lcom/ss/android/ugc/aweme/legoImpl/task/ScreenShotFeedbackTask;",
+                "Lcom/ss/android/ugc/aweme/legoImp/task/ScreenRecordingMonitorInitTask;",
+                "Lcom/ss/android/ugc/aweme/im/sharepanel/impl/screenshotshare/InternalShareScreenshotTask;",
+                "Lcom/ss/android/ugc/aweme/im/sharepanel/impl/screenshotshare/InternalShareScreenshotTaskHolder\$BootFinish;",
             )
-            println("[Allow Screenshots] Neutralized ScreenShotFeedbackService.onShot() -> false.")
-            patched++
-        } catch (e: Exception) {
-            println("[Allow Screenshots] ScreenShotFeedbackService.onShot note: ${e.message}")
-        }
+            contextTasks.forEach { taskClass ->
+                try {
+                    Fingerprint(
+                        definingClass = taskClass,
+                        name = "run",
+                        parameters = listOf("Landroid/content/Context;"),
+                        returnType = "V",
+                    ).method.addInstructions(
+                        0,
+                        """
+                            return-void
+                        """.trimIndent(),
+                    )
+                    println("[Allow Screenshots] Neutralized $taskClass.run(Context).")
+                    patched++
+                } catch (e: Exception) {
+                    println("[Allow Screenshots] Task $taskClass note: ${e.message}")
+                }
+            }
 
-        try {
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/feedback/screenshot/ScreenShotFeedbackService;",
-                name = "safelyShowDialog",
-                returnType = "V",
-            ).method.addInstructions(
-                0,
-                """
-                    return-void
-                """.trimIndent(),
-            )
-            println("[Allow Screenshots] Neutralized ScreenShotFeedbackService.safelyShowDialog().")
-            patched++
-        } catch (e: Exception) {
-            println("[Allow Screenshots] ScreenShotFeedbackService.safelyShowDialog note: ${e.message}")
-        }
+            // 1.2 Neutralize ScreenShotFeedbackService triggers & telemetry
+            try {
+                Fingerprint(
+                    definingClass = "Lcom/ss/android/ugc/aweme/feedback/screenshot/ScreenShotFeedbackService;",
+                    name = "onShot",
+                    returnType = "Z",
+                ).method.addInstructions(
+                    0,
+                    """
+                        const/4 v0, 0x0
+                        return v0
+                    """.trimIndent(),
+                )
+                println("[Allow Screenshots] Neutralized ScreenShotFeedbackService.onShot() -> false.")
+                patched++
+            } catch (e: Exception) {
+                println("[Allow Screenshots] ScreenShotFeedbackService.onShot note: ${e.message}")
+            }
 
-        try {
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/feedback/screenshot/ScreenShotFeedbackService;",
-                name = "sendShareFeedbackEvent",
-                returnType = "V",
-            ).method.addInstructions(
-                0,
-                """
-                    return-void
-                """.trimIndent(),
-            )
-            println("[Allow Screenshots] Neutralized ScreenShotFeedbackService.sendShareFeedbackEvent().")
-            patched++
-        } catch (e: Exception) {
-            println("[Allow Screenshots] ScreenShotFeedbackService.sendShareFeedbackEvent note: ${e.message}")
-        }
+            try {
+                Fingerprint(
+                    definingClass = "Lcom/ss/android/ugc/aweme/feedback/screenshot/ScreenShotFeedbackService;",
+                    name = "safelyShowDialog",
+                    returnType = "V",
+                ).method.addInstructions(
+                    0,
+                    """
+                        return-void
+                    """.trimIndent(),
+                )
+                println("[Allow Screenshots] Neutralized ScreenShotFeedbackService.safelyShowDialog().")
+                patched++
+            } catch (e: Exception) {
+                println("[Allow Screenshots] ScreenShotFeedbackService.safelyShowDialog note: ${e.message}")
+            }
 
-        try {
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/feedback/screenshot/ScreenShotFeedbackService;",
-                name = "isFeedbackEnable",
-                returnType = "Z",
-            ).method.addInstructions(
-                0,
-                """
-                    const/4 v0, 0x0
-                    return v0
-                """.trimIndent(),
-            )
-            println("[Allow Screenshots] Neutralized ScreenShotFeedbackService.isFeedbackEnable() -> false.")
-            patched++
-        } catch (e: Exception) {
-            println("[Allow Screenshots] ScreenShotFeedbackService.isFeedbackEnable note: ${e.message}")
-        }
+            try {
+                Fingerprint(
+                    definingClass = "Lcom/ss/android/ugc/aweme/feedback/screenshot/ScreenShotFeedbackService;",
+                    name = "sendShareFeedbackEvent",
+                    returnType = "V",
+                ).method.addInstructions(
+                    0,
+                    """
+                        return-void
+                    """.trimIndent(),
+                )
+                println("[Allow Screenshots] Neutralized ScreenShotFeedbackService.sendShareFeedbackEvent().")
+                patched++
+            } catch (e: Exception) {
+                println("[Allow Screenshots] ScreenShotFeedbackService.sendShareFeedbackEvent note: ${e.message}")
+            }
 
-        try {
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/feedback/screenshot/ScreenShotFeedbackService;",
-                name = "tryShowScreenShotFloatingView",
-                returnType = "Z",
-            ).method.addInstructions(
-                0,
-                """
-                    const/4 v0, 0x0
-                    return v0
-                """.trimIndent(),
-            )
-            println("[Allow Screenshots] Neutralized ScreenShotFeedbackService.tryShowScreenShotFloatingView() -> false.")
-            patched++
-        } catch (e: Exception) {
-            println("[Allow Screenshots] ScreenShotFeedbackService.tryShowScreenShotFloatingView note: ${e.message}")
+            try {
+                Fingerprint(
+                    definingClass = "Lcom/ss/android/ugc/aweme/feedback/screenshot/ScreenShotFeedbackService;",
+                    name = "isFeedbackEnable",
+                    returnType = "Z",
+                ).method.addInstructions(
+                    0,
+                    """
+                        const/4 v0, 0x0
+                        return v0
+                    """.trimIndent(),
+                )
+                println("[Allow Screenshots] Neutralized ScreenShotFeedbackService.isFeedbackEnable() -> false.")
+                patched++
+            } catch (e: Exception) {
+                println("[Allow Screenshots] ScreenShotFeedbackService.isFeedbackEnable note: ${e.message}")
+            }
+
+            try {
+                Fingerprint(
+                    definingClass = "Lcom/ss/android/ugc/aweme/feedback/screenshot/ScreenShotFeedbackService;",
+                    name = "tryShowScreenShotFloatingView",
+                    returnType = "Z",
+                ).method.addInstructions(
+                    0,
+                    """
+                        const/4 v0, 0x0
+                        return v0
+                    """.trimIndent(),
+                )
+                println("[Allow Screenshots] Neutralized ScreenShotFeedbackService.tryShowScreenShotFloatingView() -> false.")
+                patched++
+            } catch (e: Exception) {
+                println("[Allow Screenshots] ScreenShotFeedbackService.tryShowScreenShotFloatingView note: ${e.message}")
+            }
         }
 
         // ==========================================
         // 2. SCREEN CAPTURE & RECORDING UNRESTRICT (FLAG_SECURE BYPASS)
         // ==========================================
 
-        // 2.1 Neutralize Live Paid Courses Anti-Screenshot Setting (LivePcsCourseVideoAntiScreenshotSetting.getValue() -> false)
-        try {
-            Fingerprint(
-                definingClass = "Lcom/bytedance/android/livesdk/comp/api/pcs/data/setting/LivePcsCourseVideoAntiScreenshotSetting;",
-                name = "getValue",
-                returnType = "Z",
-            ).method.addInstructions(
-                0,
-                """
-                    const/4 v0, 0x0
-                    return v0
-                """.trimIndent(),
-            )
-            println("[Allow Screenshots] Neutralized LivePcsCourseVideoAntiScreenshotSetting.getValue() -> false.")
-            patched++
-        } catch (e: Exception) {
-            println("[Allow Screenshots] LivePcsCourseVideoAntiScreenshotSetting note: ${e.message}")
-        }
-
-        // 2.2 Neutralize AntiScreenRecordController.applyFlag(boolean enabled)
-        // Forces parameter p1 (enabled) -> false so it permanently invokes Window.clearFlags(0x2000).
-        try {
-            Fingerprint(
-                returnType = "V",
-                parameters = listOf("Z"),
-                strings = listOf("AntiScreenRecordController", "applyFlag window is null"),
-            ).method.addInstructions(
-                0,
-                """
-                    const/4 p1, 0x0
-                """.trimIndent(),
-            )
-            println("[Allow Screenshots] Neutralized AntiScreenRecordController.applyFlag() -> forced enabled=false.")
-            patched++
-        } catch (e: Exception) {
-            println("[Allow Screenshots] AntiScreenRecordController note: ${e.message}")
-        }
-
-        // 2.3 Neutralize makeScreenProtection(Window window, boolean enableScreenProtection)
-        // Forces parameter p2 (enableScreenProtection) -> false so canRecordScreen is true & Window.clearFlags(0x2000) is called.
-        try {
-            Fingerprint(
-                returnType = "V",
-                parameters = listOf("Landroid/view/Window;", "Z"),
-                strings = listOf("makeScreenProtection, canRecordScreen:"),
-            ).method.addInstructions(
-                0,
-                """
-                    const/4 p2, 0x0
-                """.trimIndent(),
-            )
-            println("[Allow Screenshots] Neutralized makeScreenProtection() -> forced enable=false.")
-            patched++
-        } catch (e: Exception) {
-            println("[Allow Screenshots] makeScreenProtection note: ${e.message}")
-        }
-
-        // 2.4 Neutralize Circle to Search Block Setting (circle_search_block -> 0)
-        // Suppresses TikTok ABMock experiment that dynamically blocks Google Circle to Search and Recent Apps.
-        try {
-            Fingerprint(
-                returnType = "Ljava/lang/Object;",
-                strings = listOf("circle_search_block"),
-            ).method.addInstructions(
-                0,
-                """
-                    const/4 v0, 0x0
-                    invoke-static {v0}, Ljava/lang/Integer;->valueOf(I)Ljava/lang/Integer;
-                    move-result-object v0
-                    return-object v0
-                """.trimIndent(),
-            )
-            println("[Allow Screenshots] Neutralized circle_search_block setting -> 0.")
-            patched++
-        } catch (e: Exception) {
-            println("[Allow Screenshots] circle_search_block note: ${e.message}")
-        }
-
-        // 2.5 Neutralize MainContentSecurityAssem (Circle to Search & Recent Apps dynamic FLAG_SECURE injection)
-        // Prevents touch interception at bottom navigation bar from adding FLAG_SECURE (0x2000) to the window.
-        try {
-            val assemFp = Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/main/assems/MainContentSecurityAssem;",
-                name = "dispatchTouchEvent",
-                parameters = listOf("Landroid/view/MotionEvent;"),
-                returnType = "V",
-            )
-            assemFp.method.addInstructions(
-                0,
-                """
-                    return-void
-                """.trimIndent(),
-            )
-            println("[Allow Screenshots] Neutralized MainContentSecurityAssem.dispatchTouchEvent().")
-            patched++
-
-            val rqMethod = assemFp.classDef.methods.firstOrNull { method ->
-                method.name != "<clinit>" && method.name != "<init>" && !method.name.startsWith("on") &&
-                    method.parameterTypes.isEmpty() && method.returnType == "V" &&
-                    method.implementation?.instructions?.any { inst ->
-                        val refStr = (inst as? ReferenceInstruction)?.reference?.toString() ?: ""
-                        refStr.contains("D5l") || refStr.contains("D5n")
-                    } == true
-            }
-            if (rqMethod != null) {
+        if (!isLite) {
+            // 2.1 Neutralize Live Paid Courses Anti-Screenshot Setting (LivePcsCourseVideoAntiScreenshotSetting.getValue() -> false)
+            try {
                 Fingerprint(
-                    definingClass = assemFp.classDef.type,
-                    name = rqMethod.name,
-                    parameters = emptyList(),
-                    returnType = "V",
+                    definingClass = "Lcom/bytedance/android/livesdk/comp/api/pcs/data/setting/LivePcsCourseVideoAntiScreenshotSetting;",
+                    name = "getValue",
+                    returnType = "Z",
                 ).method.addInstructions(
                     0,
                     """
-                        return-void
+                        const/4 v0, 0x0
+                        return v0
                     """.trimIndent(),
                 )
-                println("[Allow Screenshots] Neutralized MainContentSecurityAssem.${rqMethod.name}().")
+                println("[Allow Screenshots] Neutralized LivePcsCourseVideoAntiScreenshotSetting.getValue() -> false.")
                 patched++
+            } catch (e: Exception) {
+                println("[Allow Screenshots] LivePcsCourseVideoAntiScreenshotSetting note: ${e.message}")
             }
-        } catch (e: Exception) {
-            println("[Allow Screenshots] MainContentSecurityAssem note: ${e.message}")
-        }
 
-        // 2.6 Neutralize ContentSecurityHelper (Circle to Search & Recent Apps gesture bar FLAG_SECURE trigger)
-        // Directly neutralizes the touch handler that adds FLAG_SECURE (0x2000) when the user touches
-        // the bottom navigation / home gesture bar across all activities (MainActivity, DetailActivity, etc.).
-        try {
-            val contentSecurityFp = Fingerprint(
-                returnType = "Z",
-                strings = listOf("config_navBarInteractionMode", "integer", "android"),
-            )
-            val helperClass = contentSecurityFp.classDef
-            val touchMethod = helperClass.methods.firstOrNull {
-                it.parameterTypes == listOf("Landroid/view/MotionEvent;") && it.returnType == "V"
-            }
-            if (touchMethod != null) {
+            // 2.2 Neutralize AntiScreenRecordController.applyFlag(boolean enabled)
+            // Forces parameter p1 (enabled) -> false so it permanently invokes Window.clearFlags(0x2000).
+            try {
                 Fingerprint(
-                    definingClass = helperClass.type,
-                    name = touchMethod.name,
+                    returnType = "V",
+                    parameters = listOf("Z"),
+                    strings = listOf("AntiScreenRecordController", "applyFlag window is null"),
+                ).method.addInstructions(
+                    0,
+                    """
+                        const/4 p1, 0x0
+                    """.trimIndent(),
+                )
+                println("[Allow Screenshots] Neutralized AntiScreenRecordController.applyFlag() -> forced enabled=false.")
+                patched++
+            } catch (e: Exception) {
+                println("[Allow Screenshots] AntiScreenRecordController note: ${e.message}")
+            }
+
+            // 2.3 Neutralize makeScreenProtection(Window window, boolean enableScreenProtection)
+            // Forces parameter p2 (enableScreenProtection) -> false so canRecordScreen is true & Window.clearFlags(0x2000) is called.
+            try {
+                Fingerprint(
+                    returnType = "V",
+                    parameters = listOf("Landroid/view/Window;", "Z"),
+                    strings = listOf("makeScreenProtection, canRecordScreen:"),
+                ).method.addInstructions(
+                    0,
+                    """
+                        const/4 p2, 0x0
+                    """.trimIndent(),
+                )
+                println("[Allow Screenshots] Neutralized makeScreenProtection() -> forced enable=false.")
+                patched++
+            } catch (e: Exception) {
+                println("[Allow Screenshots] makeScreenProtection note: ${e.message}")
+            }
+
+            // 2.4 Neutralize Circle to Search Block Setting (circle_search_block -> 0)
+            // Suppresses TikTok ABMock experiment that dynamically blocks Google Circle to Search and Recent Apps.
+            try {
+                Fingerprint(
+                    returnType = "Ljava/lang/Object;",
+                    strings = listOf("circle_search_block"),
+                ).method.addInstructions(
+                    0,
+                    """
+                        const/4 v0, 0x0
+                        invoke-static {v0}, Ljava/lang/Integer;->valueOf(I)Ljava/lang/Integer;
+                        move-result-object v0
+                        return-object v0
+                    """.trimIndent(),
+                )
+                println("[Allow Screenshots] Neutralized circle_search_block setting -> 0.")
+                patched++
+            } catch (e: Exception) {
+                println("[Allow Screenshots] circle_search_block note: ${e.message}")
+            }
+
+            // 2.5 Neutralize MainContentSecurityAssem (Circle to Search & Recent Apps dynamic FLAG_SECURE injection)
+            // Prevents touch interception at bottom navigation bar from adding FLAG_SECURE (0x2000) to the window.
+            try {
+                val assemFp = Fingerprint(
+                    definingClass = "Lcom/ss/android/ugc/aweme/main/assems/MainContentSecurityAssem;",
+                    name = "dispatchTouchEvent",
                     parameters = listOf("Landroid/view/MotionEvent;"),
                     returnType = "V",
-                ).method.addInstructions(
+                )
+                assemFp.method.addInstructions(
                     0,
                     """
                         return-void
                     """.trimIndent(),
                 )
-                println("[Allow Screenshots] Neutralized ${helperClass.type}->${touchMethod.name}(MotionEvent) -> return-void.")
+                println("[Allow Screenshots] Neutralized MainContentSecurityAssem.dispatchTouchEvent().")
                 patched++
+
+                val rqMethod = assemFp.classDef.methods.firstOrNull { method ->
+                    method.name != "<clinit>" && method.name != "<init>" && !method.name.startsWith("on") &&
+                        method.parameterTypes.isEmpty() && method.returnType == "V" &&
+                        method.implementation?.instructions?.any { inst ->
+                            val refStr = (inst as? ReferenceInstruction)?.reference?.toString() ?: ""
+                            refStr.contains("D5l") || refStr.contains("D5n")
+                        } == true
+                }
+                if (rqMethod != null) {
+                    Fingerprint(
+                        definingClass = assemFp.classDef.type,
+                        name = rqMethod.name,
+                        parameters = emptyList(),
+                        returnType = "V",
+                    ).method.addInstructions(
+                        0,
+                        """
+                            return-void
+                        """.trimIndent(),
+                    )
+                    println("[Allow Screenshots] Neutralized MainContentSecurityAssem.${rqMethod.name}().")
+                    patched++
+                }
+            } catch (e: Exception) {
+                println("[Allow Screenshots] MainContentSecurityAssem note: ${e.message}")
             }
 
-            contentSecurityFp.method.addInstructions(
-                0,
-                """
-                    const/4 v0, 0x0
-                    return v0
-                """.trimIndent(),
-            )
-            println("[Allow Screenshots] Neutralized ${helperClass.type}->${contentSecurityFp.method.name}() -> false.")
-            patched++
-        } catch (e: Exception) {
-            println("[Allow Screenshots] ContentSecurityHelper note: ${e.message}")
-        }
+            // 2.6 Neutralize ContentSecurityHelper (Circle to Search & Recent Apps gesture bar FLAG_SECURE trigger)
+            // Directly neutralizes the touch handler that adds FLAG_SECURE (0x2000) when the user touches
+            // the bottom navigation / home gesture bar across all activities (MainActivity, DetailActivity, etc.).
+            try {
+                val contentSecurityFp = Fingerprint(
+                    returnType = "Z",
+                    strings = listOf("config_navBarInteractionMode", "integer", "android"),
+                )
+                val helperClass = contentSecurityFp.classDef
+                val touchMethod = helperClass.methods.firstOrNull {
+                    it.parameterTypes == listOf("Landroid/view/MotionEvent;") && it.returnType == "V"
+                }
+                if (touchMethod != null) {
+                    Fingerprint(
+                        definingClass = helperClass.type,
+                        name = touchMethod.name,
+                        parameters = listOf("Landroid/view/MotionEvent;"),
+                        returnType = "V",
+                    ).method.addInstructions(
+                        0,
+                        """
+                            return-void
+                        """.trimIndent(),
+                    )
+                    println("[Allow Screenshots] Neutralized ${helperClass.type}->${touchMethod.name}(MotionEvent) -> return-void.")
+                    patched++
+                }
 
-        // 2.7 Neutralize Window FLAG_SECURE Activity Setter (setFlags(8192, 8192))
-        // Strips unconditional FLAG_SECURE enforcement across feeds, paid content, landscape mode, and stories.
-        try {
-            val paidFp = Fingerprint(
-                returnType = "V",
-                strings = listOf("disable screen capture", "PaidContent"),
-            )
-            val instructions = paidFp.method.implementation?.instructions?.toList() ?: emptyList()
-            var setFlagsMethodRef: MethodReference? = null
-            for (i in instructions.indices) {
-                val ref = (instructions[i] as? ReferenceInstruction)?.reference as? MethodReference ?: continue
-                if (ref.returnType == "V" && ref.parameterTypes == listOf("Landroid/app/Activity;")) {
-                    val nearbyStrings = (i..minOf(i + 3, instructions.lastIndex)).mapNotNull { idx ->
-                        ((instructions[idx] as? ReferenceInstruction)?.reference as? StringReference)?.string
-                    }
-                    if (nearbyStrings.any { it.contains("disable screen capture") }) {
-                        setFlagsMethodRef = ref
-                        break
+                contentSecurityFp.method.addInstructions(
+                    0,
+                    """
+                        const/4 v0, 0x0
+                        return v0
+                    """.trimIndent(),
+                )
+                println("[Allow Screenshots] Neutralized ${helperClass.type}->${contentSecurityFp.method.name}() -> false.")
+                patched++
+            } catch (e: Exception) {
+                println("[Allow Screenshots] ContentSecurityHelper note: ${e.message}")
+            }
+
+            // 2.7 Neutralize Window FLAG_SECURE Activity Setter (setFlags(8192, 8192))
+            // Strips unconditional FLAG_SECURE enforcement across feeds, paid content, landscape mode, and stories.
+            try {
+                val paidFp = Fingerprint(
+                    returnType = "V",
+                    strings = listOf("disable screen capture", "PaidContent"),
+                )
+                val instructions = paidFp.method.implementation?.instructions?.toList() ?: emptyList()
+                var setFlagsMethodRef: MethodReference? = null
+                for (i in instructions.indices) {
+                    val ref = (instructions[i] as? ReferenceInstruction)?.reference as? MethodReference ?: continue
+                    if (ref.returnType == "V" && ref.parameterTypes == listOf("Landroid/app/Activity;")) {
+                        val nearbyStrings = (i..minOf(i + 3, instructions.lastIndex)).mapNotNull { idx ->
+                            ((instructions[idx] as? ReferenceInstruction)?.reference as? StringReference)?.string
+                        }
+                        if (nearbyStrings.any { it.contains("disable screen capture") }) {
+                            setFlagsMethodRef = ref
+                            break
+                        }
                     }
                 }
+                if (setFlagsMethodRef != null) {
+                    Fingerprint(
+                        definingClass = setFlagsMethodRef.definingClass,
+                        name = setFlagsMethodRef.name,
+                        parameters = listOf("Landroid/app/Activity;"),
+                        returnType = "V",
+                    ).method.addInstructions(
+                        0,
+                        """
+                            return-void
+                        """.trimIndent(),
+                    )
+                    println("[Allow Screenshots] Neutralized ${setFlagsMethodRef.definingClass}->${setFlagsMethodRef.name}(Activity) -> return-void.")
+                    patched++
+                }
+            } catch (e: Exception) {
+                println("[Allow Screenshots] setFlagsSecure(Activity) note: ${e.message}")
             }
-            if (setFlagsMethodRef != null) {
-                Fingerprint(
-                    definingClass = setFlagsMethodRef.definingClass,
-                    name = setFlagsMethodRef.name,
-                    parameters = listOf("Landroid/app/Activity;"),
-                    returnType = "V",
-                ).method.addInstructions(
-                    0,
-                    """
-                        return-void
-                    """.trimIndent(),
-                )
-                println("[Allow Screenshots] Neutralized ${setFlagsMethodRef.definingClass}->${setFlagsMethodRef.name}(Activity) -> return-void.")
-                patched++
-            }
-        } catch (e: Exception) {
-            println("[Allow Screenshots] setFlagsSecure(Activity) note: ${e.message}")
         }
 
         if (patched == 0) {

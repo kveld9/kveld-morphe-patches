@@ -5,6 +5,7 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.replaceWithReturnBooleanObject
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
@@ -15,17 +16,18 @@ val forceAutoScrollPatch = bytecodePatch(
     description = "Enables native auto-scrolling to the next video.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_LITE)
 
     execute {
         var patched = 0
+        val isLite = packageMetadata.packageName == Constants.TIKTOK_LITE_PACKAGE_NAME
 
-        // 1. Force native Feed Auto-Scroll A/B experiment flag (fyp_auto_scroll)
-        try {
+        if (isLite) {
+            // 1. Force native Feed Auto-Scroll A/B experiment flag for TikTok Lite
             val fypAutoScrollFp = Fingerprint(
                 returnType = "Z",
                 parameters = emptyList(),
-                strings = listOf("fyp_auto_scroll"),
+                strings = listOf("fyp_auto_scroll_lite_client"),
             )
             fypAutoScrollFp.method.addInstructions(
                 0,
@@ -34,16 +36,32 @@ val forceAutoScrollPatch = bytecodePatch(
                     return v0
                 """.trimIndent(),
             )
+            println("[Force Auto-Scroll] Forced fyp_auto_scroll_lite_client -> true.")
             patched++
-        } catch (e: Exception) {
-            println("[Force Auto-Scroll] fyp_auto_scroll note: ${e.message}")
-        }
+        } else {
+            // 1. Force native Feed Auto-Scroll A/B experiment flag (fyp_auto_scroll)
+            try {
+                val fypAutoScrollFp = Fingerprint(
+                    returnType = "Z",
+                    parameters = emptyList(),
+                    strings = listOf("fyp_auto_scroll"),
+                )
+                fypAutoScrollFp.method.addInstructions(
+                    0,
+                    """
+                        const/4 v0, 0x1
+                        return v0
+                    """.trimIndent(),
+                )
+                patched++
+            } catch (e: Exception) {
+                println("[Force Auto-Scroll] fyp_auto_scroll note: ${e.message}")
+            }
 
-        // 2. Force FypAutoScrollServiceImpl capability check (LJIILJJIL)
-        try {
+            // 2. Force FypAutoScrollServiceImpl capability check (LJIILIIL in v47.6.3, was LJIILJJIL)
             val fypServiceFp = Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/feed/platform/panel/autoscroll/FypAutoScrollServiceImpl;",
-                name = "LJIILJJIL",
+                name = "LJIILIIL",
                 returnType = "Z",
             )
             fypServiceFp.method.addInstructions(
@@ -54,103 +72,91 @@ val forceAutoScrollPatch = bytecodePatch(
                 """.trimIndent(),
             )
             patched++
-        } catch (e: Exception) {
-            println("[Force Auto-Scroll] FypAutoScrollServiceImpl.LJIILJJIL note: ${e.message}")
-        }
 
-        // 3. Force tablet / foldable auto-scroll experiment flag (tablet_fyp_auto_scroll)
-        try {
-            val tabletAutoScrollFp = Fingerprint(
-                returnType = "Z",
-                parameters = emptyList(),
-                strings = listOf("tablet_fyp_auto_scroll"),
-            )
-            tabletAutoScrollFp.method.addInstructions(
-                0,
-                """
-                    const/4 v0, 0x1
-                    return v0
-                """.trimIndent(),
-            )
-            patched++
-        } catch (e: Exception) {
-            println("[Force Auto-Scroll] tablet_fyp_auto_scroll note: ${e.message}")
-        }
+            // 3. Force tablet / foldable auto-scroll experiment flag (tablet_fyp_auto_scroll)
+            try {
+                val tabletAutoScrollFp = Fingerprint(
+                    returnType = "Z",
+                    parameters = emptyList(),
+                    strings = listOf("tablet_fyp_auto_scroll"),
+                )
+                tabletAutoScrollFp.method.addInstructions(
+                    0,
+                    """
+                        const/4 v0, 0x1
+                        return v0
+                    """.trimIndent(),
+                )
+                patched++
+            } catch (e: Exception) {
+                println("[Force Auto-Scroll] tablet_fyp_auto_scroll note: ${e.message}")
+            }
 
-        // 4. Force search results feed auto-scroll experiment flag (search_auto_scroll)
-        try {
-            val searchAutoScrollFp = Fingerprint(
-                returnType = "Z",
-                parameters = emptyList(),
-                strings = listOf("search_auto_scroll"),
-            )
-            searchAutoScrollFp.method.addInstructions(
-                0,
-                """
-                    const/4 v0, 0x1
-                    return v0
-                """.trimIndent(),
-            )
-            patched++
-        } catch (e: Exception) {
-            println("[Force Auto-Scroll] search_auto_scroll note: ${e.message}")
-        }
+            // 4. Force search results feed auto-scroll experiment flag (search_auto_scroll)
+            try {
+                val searchAutoScrollFp = Fingerprint(
+                    returnType = "Z",
+                    parameters = emptyList(),
+                    strings = listOf("search_auto_scroll"),
+                )
+                searchAutoScrollFp.method.addInstructions(
+                    0,
+                    """
+                        const/4 v0, 0x1
+                        return v0
+                    """.trimIndent(),
+                )
+                patched++
+            } catch (e: Exception) {
+                println("[Force Auto-Scroll] search_auto_scroll note: ${e.message}")
+            }
 
-        // 5. Force panel_auto_scroll check on FeedBottomBarFacadeImpl
-        try {
+            // 5. Force panel_auto_scroll check on FeedBottomBarFacadeImpl (returns Boolean object in v47.6.3)
             val feedBottomBarFp = Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/feed/bottombar/FeedBottomBarFacadeImpl;",
-                returnType = "Z",
-                strings = listOf("panel_auto_scroll"),
+                name = "LJIJJLI",
+                returnType = "Ljava/lang/Boolean;",
             )
-            feedBottomBarFp.method.addInstructions(
-                0,
-                """
-                    const/4 v0, 0x1
-                    return v0
-                """.trimIndent(),
-            )
+            feedBottomBarFp.method.replaceWithReturnBooleanObject(true)
             patched++
-        } catch (e: Exception) {
-            println("[Force Auto-Scroll] FeedBottomBarFacadeImpl.LJIJJLI note: ${e.message}")
-        }
 
-        // 6. Ensure auto-scroll action item is created in the long-press / share menu
-        try {
-            val createItemFp = Fingerprint(
-                strings = listOf("createAutoScrollItem, add auto scroll item to the menu"),
-            )
-            val createItemMethod = createItemFp.method
-            val instructions = createItemMethod.implementation?.instructions?.toList() ?: emptyList()
+            // 6. Ensure auto-scroll action item is created in the long-press / share menu
+            try {
+                val createItemFp = Fingerprint(
+                    strings = listOf("createAutoScrollItem, add auto scroll item to the menu"),
+                )
+                val createItemMethod = createItemFp.method
+                val instructions = createItemMethod.implementation?.instructions?.toList() ?: emptyList()
 
-            val panelStrIdx = instructions.indexOfFirst { ins ->
-                ((ins as? ReferenceInstruction)?.reference as? StringReference)?.string == "panel_auto_scroll"
-            }
-            if (panelStrIdx >= 0) {
-                val moveResultIdx = (panelStrIdx until (panelStrIdx + 5)).firstOrNull { idx ->
-                    instructions[idx].opcode.name.startsWith("move-result")
+                val panelStrIdx = instructions.indexOfFirst { ins ->
+                    ((ins as? ReferenceInstruction)?.reference as? StringReference)?.string == "panel_auto_scroll"
                 }
-                if (moveResultIdx != null) {
-                    val reg = (instructions[moveResultIdx] as OneRegisterInstruction).registerA
-                    createItemMethod.replaceInstruction(moveResultIdx, "const/4 v$reg, 1")
+                if (panelStrIdx >= 0) {
+                    val moveResultIdx = (panelStrIdx until (panelStrIdx + 5)).firstOrNull { idx ->
+                        instructions[idx].opcode.name.startsWith("move-result")
+                    }
+                    if (moveResultIdx != null) {
+                        val reg = (instructions[moveResultIdx] as OneRegisterInstruction).registerA
+                        createItemMethod.replaceInstruction(moveResultIdx, "const/4 v$reg, 1")
+                    }
                 }
-            }
 
-            val isLoginIdx = instructions.indexOfFirst { ins ->
-                ((ins as? ReferenceInstruction)?.reference as? MethodReference)?.name == "isLogin"
-            }
-            if (isLoginIdx >= 0) {
-                val moveResultIdx = (isLoginIdx until (isLoginIdx + 5)).firstOrNull { idx ->
-                    instructions[idx].opcode.name.startsWith("move-result")
+                val isLoginIdx = instructions.indexOfFirst { ins ->
+                    ((ins as? ReferenceInstruction)?.reference as? MethodReference)?.name == "isLogin"
                 }
-                if (moveResultIdx != null) {
-                    val reg = (instructions[moveResultIdx] as OneRegisterInstruction).registerA
-                    createItemMethod.replaceInstruction(moveResultIdx, "const/4 v$reg, 1")
+                if (isLoginIdx >= 0) {
+                    val moveResultIdx = (isLoginIdx until (isLoginIdx + 5)).firstOrNull { idx ->
+                        instructions[idx].opcode.name.startsWith("move-result")
+                    }
+                    if (moveResultIdx != null) {
+                        val reg = (instructions[moveResultIdx] as OneRegisterInstruction).registerA
+                        createItemMethod.replaceInstruction(moveResultIdx, "const/4 v$reg, 1")
+                    }
                 }
+                patched++
+            } catch (e: Exception) {
+                println("[Force Auto-Scroll] createAutoScrollItem note: ${e.message}")
             }
-            patched++
-        } catch (e: Exception) {
-            println("[Force Auto-Scroll] createAutoScrollItem note: ${e.message}")
         }
 
         if (patched == 0) {

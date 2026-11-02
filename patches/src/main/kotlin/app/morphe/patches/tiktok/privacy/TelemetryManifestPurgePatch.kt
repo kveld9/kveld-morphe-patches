@@ -31,6 +31,9 @@ private val BLOCKED_COMPONENTS = setOf(
     "com.appsflyer.referrer.INSTALL_PROVIDER",
     "com.appsflyer.internal.platform_extension.PluginInfoContentProvider",
     "com.google.android.gms.measurement.AppMeasurementContentProvider",
+    "com.google.android.gms.analytics.AnalyticsReceiver",
+    "com.google.android.gms.analytics.AnalyticsService",
+    "com.google.android.gms.analytics.AnalyticsJobService",
 )
 
 private val OPT_OUT_METADATA = listOf(
@@ -52,7 +55,7 @@ val telemetryManifestPurgePatch = resourcePatch(
     description = "Removes tracking permissions and disables telemetry components.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_LITE)
 
     execute {
         val manifestFile = get("AndroidManifest.xml")

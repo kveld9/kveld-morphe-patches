@@ -5,7 +5,7 @@ import app.morphe.patcher.patch.AppTarget
 import app.morphe.patcher.patch.Compatibility
 
 object Constants {
-    const val BRAVE_TARGET_VERSION = "1.98.60"
+    const val BRAVE_TARGET_VERSION = "1.98.63"
     const val BRAVE_PACKAGE_NAME = "com.brave.browser"
 
     val COMPATIBILITY_BRAVE = Compatibility(
@@ -44,7 +44,7 @@ object Constants {
 
 
     const val TIKTOK_PACKAGE_NAME = "com.zhiliaoapp.musically"
-    const val TIKTOK_TARGET_VERSION = "47.5.3"
+    const val TIKTOK_TARGET_VERSION = "47.6.3"
 
     val COMPATIBILITY_TIKTOK = Compatibility(
         name = "TikTok",
@@ -54,7 +54,23 @@ object Constants {
         targets = listOf(
             AppTarget(
                 version = TIKTOK_TARGET_VERSION,
-                description = "Download com.zhiliaoapp.musically v$TIKTOK_TARGET_VERSION (APK) arm64-v8a nodpi versionCode 2024705030 (APK) from APKMirror"
+                description = "Download com.zhiliaoapp.musically v$TIKTOK_TARGET_VERSION (APK) arm64-v8a nodpi versionCode 2024706030 (APK) from APKMirror"
+            )
+        )
+    )
+
+    const val TIKTOK_LITE_PACKAGE_NAME = "com.tiktok.lite.go"
+    const val TIKTOK_LITE_TARGET_VERSION = "47.5.52"
+
+    val COMPATIBILITY_TIKTOK_LITE = Compatibility(
+        name = "TikTok Lite",
+        packageName = TIKTOK_LITE_PACKAGE_NAME,
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0xFE2C55,
+        targets = listOf(
+            AppTarget(
+                version = TIKTOK_LITE_TARGET_VERSION,
+                description = "Download com.tiktok.lite.go v$TIKTOK_LITE_TARGET_VERSION (APKM) arm64-v8a versionCode 470552 (APKM) from APKMirror"
             )
         )
     )

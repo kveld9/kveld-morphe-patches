@@ -64,6 +64,20 @@ enum class TargetApp(
         ),
         filePattern = Regex("(?i).*brave.*\\.apk$"),
         patchDirectoryPart = "brave",
+    ),
+    TIKTOK_LITE(
+        id = "tiktok_lite",
+        appName = "TikTok Lite",
+        packageName = Constants.TIKTOK_LITE_PACKAGE_NAME,
+        candidateFilenames = listOf(
+            "com.tiktok.lite.go_${Constants.TIKTOK_LITE_TARGET_VERSION}-470552_2arch_7dpi_24lang_13feat_8277a28008ff07d5ab077942599e6e13_apkmirror.com.apkm",
+            "tiktok_lite_${Constants.TIKTOK_LITE_TARGET_VERSION}.apkm",
+            "tiktok_lite_${Constants.TIKTOK_LITE_TARGET_VERSION}.apk",
+            "tiktok_lite.apkm",
+            "tiktok_lite.apk",
+        ),
+        filePattern = Regex("(?i).*tiktok.*lite.*\\.(apk|apkm)$"),
+        patchDirectoryPart = "tiktok",
     );
 
     companion object {
@@ -72,6 +86,7 @@ enum class TargetApp(
             return entries.firstOrNull { it.id == normalized }
                 ?: when (normalized) {
                     "gboard_lite" -> GBOARD
+                    "tiktok_lite" -> TIKTOK_LITE
                     else -> null
                 }
         }
@@ -79,6 +94,7 @@ enum class TargetApp(
         fun fromFileName(fileName: String): TargetApp? {
             val lower = fileName.lowercase()
             return when {
+                lower.contains("tiktok") && lower.contains("lite") -> TIKTOK_LITE
                 lower.contains("tiktok") -> TIKTOK
                 lower.contains("gboard") -> GBOARD
                 lower.contains("brave") -> BRAVE
@@ -90,6 +106,7 @@ enum class TargetApp(
 
 // Tuning default for the warning only (TikTok's heaviest patch measured ~27 s isolated, the rest under 10 s).
 private const val DEFAULT_SLOW_PATCH_SECONDS = 15.0
+private const val PROP_VALIDATE = "validate"
 
 private fun getDownloadDirectory(): File? {
     return try {
@@ -448,7 +465,7 @@ fun main(args: Array<String>) {
     applyPatchOptions(System.getProperty("patchOptions"), targetPatches)
 
     println("Loaded ${targetPatches.size} patch(es) for ${targetApp.appName} from ${patchFiles.first().name}:")
-    targetPatches.sortedBy { it.name }.forEach { println("  • ${it.name}") }
+    targetPatches.sortedBy { it.name }.forEach { println("  - ${it.name}") }
 
     val tempDir = File("build/tmp/patcher-test-workspace").absoluteFile
     tempDir.deleteRecursively()
@@ -549,15 +566,25 @@ fun main(args: Array<String>) {
         effectiveApkFile
     }
 
+    val validateMode = resolveValidateOption()
+
     val config = PatcherConfig(
         apkFile = actualApkFile,
         temporaryFilesPath = tempDir,
         keepArchitectures = setOf(CpuArchitecture.ARM64_V8A, CpuArchitecture.ARMEABI_V7A),
         useBytecodeMode = BytecodeMode.STRIP_FAST,
-        verifier = NoOpDexVerifier
+        verifier = NoOpDexVerifier,
+        validate = validateMode
     )
 
     println("\n[INIT] Initializing Morphe Patcher engine...")
+    println(
+        if (validateMode) {
+            "[INFO] validate: strict fingerprint checks enabled (every fingerprint must match at most one method)."
+        } else {
+            "[INFO] validate: strict fingerprint checks disabled (pass -Pvalidate to enable)."
+        },
+    )
     val patcher = Patcher(config)
     verifyInputVersion(patcher, targetPatches, targetApp, effectiveApkFile)
     patcher += targetPatches
@@ -612,7 +639,10 @@ fun main(args: Array<String>) {
             }
             val lower = line.lowercase()
             if (line.startsWith("Detected Fingerprint Failures:") || line.startsWith("[ERROR]") || line.startsWith("FINAL PATCHING RESULT")) return
-            if (lower.contains("failed to match the fingerprint") || (lower.contains("fingerprint mismatch") && !line.startsWith("Detected Fingerprint Failures:"))) {
+            val isFingerprintFailure = lower.contains("failed to match the fingerprint") ||
+                lower.contains("fingerprint validation failed") ||
+                (lower.contains("fingerprint mismatch") && !line.startsWith("Detected Fingerprint Failures:"))
+            if (isFingerprintFailure) {
                 fingerprintErrors.add(line.trim())
             }
             if (isPatchSkipLine(line)) {
@@ -922,13 +952,13 @@ fun main(args: Array<String>) {
 
     if (fingerprintErrors.isNotEmpty()) {
         println("\n[ERROR] Unresolved fingerprint mismatches detected during patch execution (${fingerprintErrors.size}):")
-        fingerprintErrors.forEach { println("  • $it") }
+        fingerprintErrors.forEach { println("  - $it") }
         error("Patcher execution failed: ${fingerprintErrors.size} fingerprint mismatch(es) detected! A patch update or creation is NEVER complete until 100% of fingerprints resolve cleanly.")
     }
 
     if (smaliCompileErrors.isNotEmpty()) {
         println("\n[ERROR] Inline smali compile errors detected; the offending instructions were dropped (${smaliCompileErrors.size}):")
-        smaliCompileErrors.forEach { println("  • $it") }
+        smaliCompileErrors.forEach { println("  - $it") }
         error("Patcher execution failed: ${smaliCompileErrors.size} inline smali compile error(s) detected! Non-range invokes cannot address registers above v15; use the /range form or move values into low registers.")
     }
 
@@ -1002,6 +1032,14 @@ private fun writeDexDigestFile(file: File, content: String) {
     file.parentFile?.mkdirs()
     file.writeText(content, Charsets.UTF_8)
     println("[DIGEST] Per-file digests written to ${file.absolutePath}")
+}
+
+private fun resolveValidateOption(): Boolean {
+    val raw = System.getProperty(PROP_VALIDATE) ?: return false
+    if (raw.isBlank()) return true
+    if (raw.equals("true", ignoreCase = true)) return true
+    if (raw.equals("false", ignoreCase = true)) return false
+    error("[ERROR] -P$PROP_VALIDATE expects true or false, got '$raw'.")
 }
 
 private fun resolveDexDigestOption(): String? {

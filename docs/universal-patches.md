@@ -1,6 +1,6 @@
 # 🌐 Universal Patch Reference & Configuration Guide
 
-Comprehensive reference for universal optimization and resource slimming patches provided by Morphe Patches. These patches operate without app-specific hardcoding and can be applied across any supported target APK (Brave, Gboard Lite, TikTok) or custom Android applications.
+Reference for universal optimization and resource slimming patches provided by Morphe Patches. These patches operate without app-specific hardcoding and can be applied across any APK.
 
 ---
 
@@ -34,6 +34,8 @@ Comprehensive reference for universal optimization and resource slimming patches
 | **[Remove Pairip](#24-remove-pairip-universalremovepairippatch)** | `bytecodePatch` | Dalvik Bytecode Methods | Forces Pairip's on-device license, installer-origin and signature verdicts to report success so a re-signed build passes them | Lets apps whose Pairip gate is enforced in Dalvik run after re-signing; native `libpairipcore.so` integrity checks are not covered |
 | **[Disable Root Checks](#25-disable-root-checks-universaldisablerootcheckspatch)** | `bytecodePatch` | Dalvik Bytecode Methods | Neutralizes RootBeer on-device root detection methods so the library reports not-rooted | Stops apps using the RootBeer library from detecting a rooted device; does not defeat custom root checks or Play Integrity |
 | **[Bypass Play License](#26-bypass-play-license-universalbypassplaylicensepatch)** | `bytecodePatch` | Dalvik Bytecode Methods | Intercepts `LicenseChecker.checkAccess(LicenseCheckerCallback)` and delivers the licensed verdict locally without contacting Play | Lets apps using the legacy Play licensing client library run after re-signing; cannot affect server-side Play Integrity or subscription entitlements |
+| **[Neutralize Play Billing](#27-neutralize-play-billing-universalneutralizeplaybillingpatch)** | `resourcePatch` | Manifest (`AndroidManifest.xml`) | Strips `com.android.vending.BILLING` permission and unbinds Play Billing service queries; preserves proxy activities for crash safety | Enables graceful degradation on devices without Google Mobile Services; prevents IPC to Play Billing while avoiding `ActivityNotFoundException` |
+| **[Remove Debug Info](#28-remove-debug-info-universalremovedebuginfopatch)** | `bytecodePatch` | Dalvik Bytecode (`classes*.dex`) | Strips DEX debug info (source names and line tables) | Reduces APK size; stack traces lose line numbers |
 
 ---
 
@@ -48,10 +50,10 @@ Morphe Patches uses a multi-tiered **defense-in-depth** model separating generic
 Applying both universal and app-specific patches simultaneously to the same target APK is **completely safe and idempotent**:
 1. **Manifest Operations**: If a universal patch (such as `Block Trackers (Universal)`) and an app-specific patch (such as `Brave Block Telemetry`) both target the same component (e.g., `AppMeasurementService`), assigning `android:enabled="false"` multiple times is idempotent.
 2. **Permission Revocation**: If a permission node is pruned by an earlier patch pass, subsequent passes skip the missing node without throwing exceptions.
-3. **Binary Trimming**: Universal native trimmers zero only standard crash/telemetry libraries without colliding with app-specific bloat trimmers (such as Brave's `Remove Extra Files` or TikTok's `Remove Extra Files`).
+3. **Binary Trimming**: Universal native trimmers zero only standard crash/telemetry libraries without colliding with app-specific bloat trimmers (such as Brave's `Remove Unused AI & VPN` or TikTok's `Remove Extra Files`).
 
 ### Do Not Stack Universals on Maintained Apps
-Dedicated app patches (Brave, Gboard Lite, TikTok) are a strict precision superset for their respective targets. Enabling Block Trackers (Universal) or Block Tracking SDKs on top of dedicated patches adds no extra protection.
+Dedicated app patches (Brave, Gboard Lite, TikTok, TikTok Lite) are a strict precision superset for their respective targets. Enabling Block Trackers (Universal) or Block Tracking SDKs on top of dedicated patches adds no extra protection.
 
 If patcher logs report components already clean or 0 methods hooked, that is the expected outcome, not a failure. Stacking these universals on maintained apps only adds patch execution time (such as expensive full-DEX scans on large targets like TikTok) and risks breaking features like login, account sync, or push notifications if optional toggles (e.g., device-ID providers, Firebase init, or push engagement) are enabled. To cover a newly discovered generic SDK in a maintained app, port the rule into that app's dedicated patch instead of enabling the universal patch.
 
@@ -87,15 +89,17 @@ Exception: Block Tracking Servers (Universal) remains a valid opt-in patch on ma
 | **Remove Pairip** | ⚠️ Lab / Sideloading | Opt-in (`default = false`). Neutralizes on-device Pairip license, installer-origin and signature checks in Dalvik only; never touches the startup VM (`StartupLauncher`/`VMRunner`) or native `libpairipcore.so`. Cannot defeat server-side Play Integrity, and cannot bypass native `libpairipcore.so` integrity checks, which may crash a re-signed build before the Dalvik gate runs. Must pass ART verifier gate. |
 | **Disable Root Checks** | ⚠️ Opt-in | Opt-in (default false); covers only the RootBeer root-detection library; makes its local root verdicts report not-rooted; does not defeat custom root checks, native JNI checks, or server-side Play Integrity. |
 | **Bypass Play License** | ⚠️ Lab / Sideloading | Opt-in (`default = false`). Intercepts `LicenseChecker.checkAccess` and delivers the licensed verdict locally; the library never contacts Play. Cannot affect server-side Play Integrity or subscription entitlements. Applies only when `com.android.vending.licensing.LicenseChecker` is present; skips cleanly otherwise. Must pass ART verifier gate. |
+| **Neutralize Play Billing** | ⚠️ Opt-in | Opt-in (`default = false`). Strips `com.android.vending.BILLING` permission and unbinds Play Billing service queries in `AndroidManifest.xml` so apps fail closed gracefully on GMS-free devices without purchase forging. Preserves `ProxyBillingActivity` to prevent `ActivityNotFoundException` crashes. Skips cleanly on apps without a billing surface. |
+| **Remove Debug Info** | ⚠️ Opt-in | Opt-in (`default = false`). Strips DEX debug info (source names and line tables) to reduce APK size; note that stack traces lose line numbers. |
 
 ---
 
 ## 1. Remove Extra Languages (Universal) (`localeResourceSlimmerPatch`)
 
-The **`Remove Extra Languages (Universal)`** patch strips unselected language translation directories from `res/` (such as `values-*`, `raw-*`, `xml-*`) across any supported target APK (Brave, Gboard Lite, TikTok) to reduce APK size.
+The **`Remove Extra Languages (Universal)`** patch strips unselected language translation directories from `res/` (such as `values-*`, `raw-*`, `xml-*`) across any APK to reduce APK size.
 
 > [!TIP]
-> **Chromium Browsers (Brave)**: While `Remove Extra Languages (Universal)` trims standard Android wrapper resources in `res/values-*`, Chromium browsers store over 95% of their strings (~9.71 MB in Brave 1.97.57) in native binary `.pak` files inside `assets/locales/`. For complete multilingual slimming in Brave, combine this patch with the Brave-specific **`Remove Extra Languages`** patch (Chromium PAK slimmer), which trims those files.
+> **Chromium Browsers (Brave)**: While `Remove Extra Languages (Universal)` trims standard Android wrapper resources in `res/values-*`, Chromium browsers store over 95% of their strings (several MB, measured at time of writing) in native binary `.pak` files inside `assets/locales/`. For complete multilingual slimming in Brave, combine this patch with the Brave-specific **`Remove Extra Languages`** patch (Chromium PAK slimmer), which trims those files.
 
 ### Configuration in Morphe Manager
 
@@ -735,3 +739,37 @@ The **`Bypass Play License`** patch intercepts the legacy Play licensing client 
 - **No server-side bypass**: Cannot affect server-side Play Integrity attestation, subscription entitlements, or any decision whose final authority is a remote server.
 - **Clean skip**: When `com.android.vending.licensing.LicenseChecker` is not present in the target APK, the patch makes zero changes and logs an explicit skip. When the class is present but no matching `checkAccess` method is found, a second skip line is logged.
 - **Universal applicability**: Operates across any Android application that ships the legacy Play licensing client library without hardcoded class fingerprints or app-specific targets.
+
+## 27. Neutralize Play Billing (`universalNeutralizePlayBillingPatch`)
+
+The **`Neutralize Play Billing`** patch strips Google Play Billing manifest declarations (`com.android.vending.BILLING` permission and billing service query intents) from `AndroidManifest.xml` so applications that include the Google Play Billing client library degrade gracefully on environments or devices without Google Mobile Services (GMS).
+
+> [!NOTE]
+> ### Graceful Degradation vs. Purchase Forging
+> This patch implements pure **graceful degradation**, NOT purchase forging. It does not forge tokens, receipts, order IDs, or server attestations. Every query fails closed with standard unavailable/empty results.
+>
+> On devices lacking Google Play Services (or microG), applications attempting to communicate with the Play Store billing service either hang waiting for an IPC response or produce unexpected runtime exceptions. Removing `com.android.vending.BILLING` and unbinding billing service queries ensures the application immediately recognizes that Google Play Billing is unavailable on the device and falls back to its offline, free, or third-party payment workflows.
+
+> [!IMPORTANT]
+> ### Crash-Safety Invariant: Proxy Activities Preservation
+> The Google Play Billing library dispatches purchase flows via explicit intents targeting `com.android.billingclient.api.ProxyBillingActivity` or `ProxyBillingActivityV2`. Disabling these activities in `AndroidManifest.xml` (`android:enabled="false"`) while application callers still invoke `BillingClient.launchBillingFlow()` causes Android's `ActivityManager` to throw a fatal `ActivityNotFoundException`, immediately crashing the application.
+>
+> Because a universal patch operates across arbitrary applications without per-app caller stubs (and internal billing library classes/methods such as `BillingClientImpl` are minified and obfuscated per-version by R8), this patch intentionally preserves `ProxyBillingActivity` and `ProxyBillingActivityV2` in an enabled state. When launched, the proxy activities fail closed gracefully and finish without crashing the host process.
+
+### Scope & Compatibility Notes
+
+- **Opt-in by default**: Disabled by default (`default = false`); applied selectively per build.
+- **Fail closed**: Never forges purchase states, receipts, or entitlements; all billing requests resolve to unavailable.
+- **Manifest-level enforcement**: Removes `com.android.vending.BILLING` and unbinds billing query actions (`com.android.vending.billing.InAppBillingService.BIND` and `com.google.android.apps.play.billingtestcompanion.BillingOverrideService.BIND`) from `<queries>`.
+- **Zero bytecode modifications**: Operates purely as a `resourcePatch` on `AndroidManifest.xml`, ensuring complete stability across library versions (BillingClient 4.x through 9.x+).
+- **Clean skip**: When no Play Billing surface is detected in `AndroidManifest.xml`, the patch makes zero changes and logs an explicit skip.
+
+## 28. Remove Debug Info (`universalRemoveDebugInfoPatch`)
+
+The **`Remove Debug Info`** patch strips Dalvik executable debug metadata (source file names and method debug item line tables) across application classes to reduce final APK size.
+
+### Scope & Compatibility Notes
+
+- **Opt-in by default**: Disabled by default (`default = false`).
+- **Stack traces**: Exception stack traces will report `Unknown Source` and lack line numbers since debug line tables and source file attributes are stripped.
+- **Clean skip**: When no debug info is found across the application bytecode, the patch makes zero changes and logs an explicit skip.
