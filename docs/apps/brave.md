@@ -50,7 +50,7 @@ The authoritative patch catalog with descriptions and options is generated in RE
 - **Keep All Tabs Loaded**:
   - *Objective*: Prevent the browser from discarding or minimizing background tabs unexpectedly.
   - *How*: Disables inactive tab suspension and automatic tab minimization logic.
-- **Select Previous Tab on Close**:
+- **Close Tab In Group Order**:
   - *Objective*: Return directly to the previously viewed tab inside a tab group when closing the active tab.
   - *How*: Alters tab closure selection logic to preselect the predecessor tab within the active tab group.
 - **Brave Rewards**:
