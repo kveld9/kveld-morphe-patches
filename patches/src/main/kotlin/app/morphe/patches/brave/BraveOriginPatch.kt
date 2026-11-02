@@ -166,7 +166,7 @@ private val braveOriginResourcePatch = resourcePatch(
 @Suppress("unused")
 val braveOriginPatch = bytecodePatch(
     name = "Brave Origin",
-    description = "Unlocks Brave Origin feature switches.",
+    description = "Unlocks Brave Origin feature switches across Rewards, News, Wallet, and VPN.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_BRAVE)
