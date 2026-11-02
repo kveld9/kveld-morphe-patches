@@ -86,7 +86,7 @@ flowchart TD
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Brave Browser** | `com.brave.browser` | `1.98.63` | `arm64-v8a`<br>`armeabi-v7a` (single file) | [ARM64](https://github.com/brave/brave-browser/releases/download/v1.98.63/Bravemonoarm64.apk) · [ARM32](https://github.com/brave/brave-browser/releases/download/v1.98.63/BraveMonoarm.apk) | [Brave Guide](docs/apps/brave.md) |
 | **Gboard Lite** | `com.google.android.inputmethod.latin` | `18.5.1.993608717-lite_beta` | `arm64-v8a`<br>`armeabi-v7a` (any screen) | [APKMirror](https://www.apkmirror.com/apk/google-inc/gboard/gboard-the-google-keyboard-18-5-1-993608717-beta/) | [Gboard Lite Guide](docs/apps/gboard.md) |
-| **TikTok** | `com.zhiliaoapp.musically` | `47.5.3` | `arm64-v8a` (any screen) | [APKMirror](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-47-5-3-release/) | [TikTok Guide](docs/apps/tiktok.md) |
+| **TikTok** | `com.zhiliaoapp.musically` | `47.6.3` | `arm64-v8a` (any screen) | [APKMirror](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-47-6-3-release/) | [TikTok Guide](docs/apps/tiktok.md) |
 | **TikTok Lite** | `com.tiktok.lite.go` | `47.5.52` | `arm64-v8a`<br>`armeabi-v7a` (multi-file) | [APKMirror](https://www.apkmirror.com/apk/tiktok-pte-ltd/tiktok-lite-faster-tiktok/tiktok-lite-faster-tiktok-47-5-52-release/) | [TikTok Lite Guide](docs/apps/tiktok_lite.md) |
 
 Labels: `single file` = one APK; `multi-file` = a package Morphe joins together; `any screen` = works on any screen size.
@@ -114,9 +114,9 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 
 **Supported versions:**
 
-| 47.5.3 |
+| 47.6.3 |
 | :---: |
-| Download com.zhiliaoapp.musically v47.5.3 (APK) arm64-v8a nodpi versionCode 2024705030 (APK) from APKMirror |
+| Download com.zhiliaoapp.musically v47.6.3 (APK) arm64-v8a nodpi versionCode 2024706030 (APK) from APKMirror |
 
 | Patch | Description | Options |
 |----------|----------------|-----------|
@@ -254,19 +254,19 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 | Patch | Description | Options |
 |----------|----------------|-----------|
 | **Block Motion Sensors** | Stops sites from reading motion sensors to identify you. |  |
-| **Block Popups & Rating Requests** | Blocks rating popups, review requests and promo dialogs. |  |
-| **Block Trackers** | Blocks usage analytics, crash uploads and experiment downloads. | • Block offers server |
-| **Brave Origin** | Unlocks Brave Origin feature switches. |  |
-| **Clean Start Page** | Removes sponsored wallpapers, news feed and promo cards. | • Hide shortcut tiles |
+| **Block Popups & Ratings** | Blocks rating popups, review requests and promo dialogs. |  |
+| **Block Telemetry** | Blocks usage analytics, crash uploads and experiment downloads. | • Block offers server |
+| **Brave Rewards** | Enables Brave Rewards. |  |
+| **Clean New Tab** | Removes sponsored wallpapers, news feed and promo cards. | • Hide shortcut tiles |
+| **Close Tab In Group Order** | Selects the previous tab in the tab group when closing a tab. |  |
 | **Custom Brave theme** | Applies custom colors to Brave dark mode chrome, defaulting to pure OLED black for battery saving on OLED screens. | • Background color<br>• Surfaces use background color<br>• Surface / container color<br>• Text ink color<br>• Accent highlight color<br>• Disable Material You dynamic colors<br>• Window background color<br>• Preference card color<br>• Style preference rows as cards<br>• Modulate text tiers by luminance<br>• Patch Material You system color roles<br>• Patch color state list lStar selectors<br>• Patch vector drawable surface fills |
 | **Custom NTP wallpaper** | Replaces the new tab page background with a custom wallpaper chosen at patch time. For best results, select an image matching your device screen resolution. | • Custom NTP wallpaper |
-| **Keep Tabs Open** | Stops Brave from minimizing your tabs in the background. |  |
-| **Remove Extra Files** | Deletes unused AR and XR files to shrink the app. | • Remove VPN library |
+| **Keep All Tabs Loaded** | Stops Brave from minimizing your tabs in the background. |  |
 | **Remove Extra Languages** | Deletes unselected language packs. | • Languages to keep |
-| **Select Previous Tab on Close** | Selects the previous tab in the tab group when closing a tab. |  |
-| **Silence Promo Notifications** | Stops tips, reward promos and marketing notifications. |  |
+| **Remove Unused AI & VPN** | Deletes unused AR and XR files to shrink the app. | • Remove VPN library |
 | **Skip Welcome Screens** | Skips welcome, search choice and onboarding on fresh installs. |  |
-| **Stop Background Sync** | Stops background wakeups and battery drain. |  |
+| **Stop Background Wakeups** | Stops background wakeups and battery drain. |  |
+| **Stop Promo Notifications** | Stops tips, reward promos and marketing notifications. |  |
 | **Stop Text Sharing with System** | Stops sending page text to the Android capture service. |  |
 
 </details>

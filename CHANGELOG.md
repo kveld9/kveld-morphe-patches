@@ -1,3 +1,37 @@
+## [2.10.0-experimental.11](https://github.com/kveld9/kveld-morphe-patches/compare/v2.10.0-experimental.10...v2.10.0-experimental.11) (2026-11-02)
+
+### Bug Fixes
+
+* extension hygiene, scrub logcat pii and release safety ([35665ee](https://github.com/kveld9/kveld-morphe-patches/commit/35665ee93e4d47cdb97735cee251da6106e552d4)), closes [#167](https://github.com/kveld9/kveld-morphe-patches/issues/167)
+* **patches:** narrow manifest edits and document boot receivers ([5c5d547](https://github.com/kveld9/kveld-morphe-patches/commit/5c5d5477d6ae75d94ad9cc41165188d51ab266dc)), closes [#166](https://github.com/kveld9/kveld-morphe-patches/issues/166)
+* **tiktok:** preserve C2PA libraries in debloat patch to prevent photo picker crash ([229afb6](https://github.com/kveld9/kveld-morphe-patches/commit/229afb6b4c9d3d07547115d9db790c46579e67c4))
+* **tiktok:** preserve NLE libraries in creator slimmer to prevent player crash ([3267ed3](https://github.com/kveld9/kveld-morphe-patches/commit/3267ed307a97268babb685bc900b4fe7a6c11b7c))
+* **tiktok:** restore auto-pause first video player controller on 47.6.3 ([b21713a](https://github.com/kveld9/kveld-morphe-patches/commit/b21713a20230c0f61a78004fc522de67b9cdc848))
+* **tiktok:** restore friends suggestions filter targets on 47.6.3 ([7f03e96](https://github.com/kveld9/kveld-morphe-patches/commit/7f03e96db03ec1c1f7f2f36adceeb4b3ca4acfbb))
+* **tiktok:** restore instant cold start hook on 47.6.3 ([9661670](https://github.com/kveld9/kveld-morphe-patches/commit/9661670918fa89695b74a85ba131fef357e83374))
+* **tiktok:** restore system font patch on 47.6.3 ([c62e268](https://github.com/kveld9/kveld-morphe-patches/commit/c62e268efaed477d05aa76c34440218e60356676))
+* **tiktok:** restore video fit mode on 47.6.3 ([e597fdf](https://github.com/kveld9/kveld-morphe-patches/commit/e597fdf4b9c71122428f1c16983b10d5ff37cda9))
+* **tiktok:** update client ai governor targets on 47.6.3 ([0fb833e](https://github.com/kveld9/kveld-morphe-patches/commit/0fb833e7c50169a6210ac69ecb7fcfab1850d88f))
+* **tiktok:** update custom share sheet targets on 47.6.3 ([835b2d1](https://github.com/kveld9/kveld-morphe-patches/commit/835b2d14ff2e29fa4a2c3e0c3a4ac811a3073ae6))
+* **tiktok:** update device privacy guard targets on 47.6.3 ([acd9e60](https://github.com/kveld9/kveld-morphe-patches/commit/acd9e607487e7ad9041124bbeed05342993fcce8))
+* **tiktok:** update direct message declutter targets on 47.6.3 ([9105f61](https://github.com/kveld9/kveld-morphe-patches/commit/9105f6194b089bff87d9fb928412faf350561707))
+* **tiktok:** update feed ads content filter targets on 47.6.3 ([6a04959](https://github.com/kveld9/kveld-morphe-patches/commit/6a04959968d5a257177ba335c6b1157a6cfb3f98))
+* **tiktok:** update feed interface declutter assem and trigger targets on 47.6.3 ([34986c8](https://github.com/kveld9/kveld-morphe-patches/commit/34986c8ba4febfcda25e0ffadb7d5f32c53bb035))
+* **tiktok:** update feed navigation declutter targets on 47.6.3 ([6798318](https://github.com/kveld9/kveld-morphe-patches/commit/6798318f1cc7ca8b045819bca09960aae6cff56c))
+* **tiktok:** update force auto scroll bottom bar facade on 47.6.3 ([0bd34ea](https://github.com/kveld9/kveld-morphe-patches/commit/0bd34eaa81450cd5ff66a8a8942149816ee1d822))
+* **tiktok:** update hide inbox promos and alerts targets on 47.6.3 ([3f68c64](https://github.com/kveld9/kveld-morphe-patches/commit/3f68c64f1b610bd02ff2016bebc9065ccdb4b0a1))
+* **tiktok:** update history recording governor targets on 47.6.3 ([b43e913](https://github.com/kveld9/kveld-morphe-patches/commit/b43e91302e926f2355f09c9d66f38e3817d405fb))
+* **tiktok:** update popups and prompts suppressor targets on 47.6.3 ([a8e8f55](https://github.com/kveld9/kveld-morphe-patches/commit/a8e8f554c10eddd315d7ba145c7c5fdc76681432))
+* **tiktok:** update search experience customizer targets on 47.6.3 ([ef65d3f](https://github.com/kveld9/kveld-morphe-patches/commit/ef65d3ffa4582e319ae369dd5b5811f462c9bbd1))
+
+### New Features
+
+* **tiktok:** bump target version to 47.6.3 ([a8c7eef](https://github.com/kveld9/kveld-morphe-patches/commit/a8c7eef0d9775de5c1add11a8804a71a17e86547))
+
+### Improvements
+
+* **tiktok:** delete unselected language pack directories in locale slimmer ([58a3556](https://github.com/kveld9/kveld-morphe-patches/commit/58a3556422f237dfe4aa5f98ff61dfd79b1cd48b))
+
 ## [2.10.0-experimental.10](https://github.com/kveld9/kveld-morphe-patches/compare/v2.10.0-experimental.9...v2.10.0-experimental.10) (2026-10-31)
 
 ### New Features
