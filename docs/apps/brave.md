@@ -27,7 +27,7 @@ The authoritative patch catalog with descriptions and options is generated in RE
 ## 3. Technical Breakdown
 
 ### A. Telemetry & Background Sync Neutralization
-- **Stop Background Sync**:
+- **Stop Background Wakeups**:
   - *Objective*: Stop periodic background wakeups and conserve battery.
   - *How*: Modifies the background sync check to return true, preventing scheduled sync tasks from running.
 - **Block Trackers & Hosts**:
