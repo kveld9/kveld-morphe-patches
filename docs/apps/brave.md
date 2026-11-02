@@ -53,8 +53,8 @@ The authoritative patch catalog with descriptions and options is generated in RE
 - **Select Previous Tab on Close**:
   - *Objective*: Return directly to the previously viewed tab inside a tab group when closing the active tab.
   - *How*: Alters tab closure selection logic to preselect the predecessor tab within the active tab group.
-- **Brave Origin**:
-  - *Objective*: Provide access to internal Brave Origin feature switches and experimental settings.
+- **Brave Rewards**:
+  - *Objective*: Provide access to internal Brave Rewards feature switches and experimental settings.
   - *How*: Unlocks Origin preference toggles and bypasses internal feature gatekeepers across Rewards, News, Wallet, and VPN settings.
 
 ### D. Resource Debloating
