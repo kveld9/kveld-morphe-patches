@@ -7,7 +7,20 @@ from __future__ import annotations
 import json
 import time
 from pathlib import Path
+from typing import List
 from common import AdbDevice, SERVER_PORT
+
+
+def derive_registration_state(sync_logs: List[str]) -> str:
+    """No matching log line means no evidence at all, which is not the same as an
+    accepted registration: reporting ACCEPTED there would let an empty run act as
+    the vanilla baseline for the comparator."""
+    if any("rejected" in line.lower() for line in sync_logs):
+        return "REGISTRATION_REJECTED"
+    if sync_logs:
+        return "REGISTRATION_ACCEPTED"
+    return "REGISTRATION_UNKNOWN"
+
 
 def run_background_sync_test(device: AdbDevice, mode: str, output_dir: Path) -> dict:
     print(f"\n[TEST 2 - BACKGROUND SYNC] Running {mode.upper()} mode on device {device.serial}...")
@@ -37,11 +50,15 @@ def run_background_sync_test(device: AdbDevice, mode: str, output_dir: Path) -> 
     # 5. Capture Logcat
     logcat = device.dump_logcat()
 
-    sync_logs = [line for line in logcat.splitlines() if any(k in line.lower() for k in ["backgroundsync", "periodicsync", "cr_playserviceschecker", "sw-sync", "sw-periodic"])]
+    # The service worker runs in its own process; scope the evidence to the package so
+    # "sw-sync" lines from other apps cannot stand in for Brave's background sync.
+    scoped_logcat = device.filter_logcat_by_pids(logcat)
+
+    sync_logs = [line for line in scoped_logcat if any(k in line.lower() for k in ["backgroundsync", "periodicsync", "cr_playserviceschecker", "sw-sync", "sw-periodic"])]
 
     # Analysis of job scheduling states:
     # State A: Registration status (from logs/diag)
-    registration_state = "REGISTRATION_ACCEPTED" if not any("rejected" in l.lower() for l in sync_logs) else "REGISTRATION_REJECTED"
+    registration_state = derive_registration_state(sync_logs)
     
     # State B: Job Scheduling in Android JobScheduler
     job_scheduled = "BackgroundSync" in jobs_bg or "PeriodicBackgroundSync" in jobs_bg or "BackgroundSyncOneShot" in jobs_bg
