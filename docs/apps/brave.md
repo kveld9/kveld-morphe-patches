@@ -30,7 +30,7 @@ The authoritative patch catalog with descriptions and options is generated in RE
 - **Stop Background Wakeups**:
   - *Objective*: Stop periodic background wakeups and conserve battery.
   - *How*: Modifies the background sync check to return true, preventing scheduled sync tasks from running.
-- **Block Trackers & Hosts**:
+- **Block Telemetry & Hosts**:
   - *Objective*: Prevent transmission of telemetry, crash reports, and remote experiment metrics.
   - *How*: Strips the Google Play install referrer permission from the manifest, neutralizes crash dump uploads, experiment synchronization, and Google Play install referrer attribution queries, and redirects telemetry server endpoints to 0.0.0.0. Provides the option to also block shopping offer servers.
 

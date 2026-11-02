@@ -25,7 +25,7 @@ import java.io.RandomAccessFile
 
 // Resource Patch: Strips Play install referrer permission from AndroidManifest.xml
 private val braveTelemetryResourcePatch = resourcePatch(
-    name = "Block Trackers (Setup)",
+    name = "Block Telemetry (Setup)",
     description = "Removes the Play install referrer permission.",
     default = false,
 ) {
@@ -59,7 +59,7 @@ private val braveTelemetryResourcePatch = resourcePatch(
                 }
             }
             if (strippedNodes > 0) {
-                println("[Block Trackers] Stripped $strippedNodes Play install referrer entries from AndroidManifest.xml")
+                println("[Block Telemetry] Stripped $strippedNodes Play install referrer entries from AndroidManifest.xml")
             }
         }
     }
@@ -178,7 +178,7 @@ private val braveHostsBlockerPatch = rawResourcePatch(
             .filter { (_, file, _) -> file.exists() && file.isFile }
 
         if (existingTargets.isEmpty()) {
-            println("[Block Trackers] Skipped: no arm64-v8a or armeabi-v7a libchrome.so found.")
+            println("[Block Telemetry] Skipped: no arm64-v8a or armeabi-v7a libchrome.so found.")
             return@execute
         }
 
@@ -197,7 +197,7 @@ private val braveHostsBlockerPatch = rawResourcePatch(
                 writeHostEntries(raf, relPath, hostEntries, offsetSelector, redirectionIp)
             }
 
-            println("[Block Trackers] $relPath: Redirected $writtenHosts / ${hostEntries.size} endpoints to 0.0.0.0 in libchrome.so")
+            println("[Block Telemetry] $relPath: Redirected $writtenHosts / ${hostEntries.size} endpoints to 0.0.0.0 in libchrome.so")
         }
     }
 }
@@ -210,7 +210,7 @@ internal const val BRAVE_UNSUPPORTED_VARIANT_MESSAGE =
 
 @Suppress("unused")
 val braveBlockTelemetryPatch = bytecodePatch(
-    name = "Block Trackers",
+    name = "Block Telemetry",
     description = "Blocks usage analytics, crash uploads and experiment downloads.",
     default = true,
 ) {
@@ -287,7 +287,7 @@ val braveBlockTelemetryPatch = bytecodePatch(
         if (blockOffersHost == true) {
             blockOffersHostInDex()
         } else {
-            println("[Block Trackers] Offers host blocking disabled by option.")
+            println("[Block Telemetry] Offers host blocking disabled by option.")
         }
 
         // 5. Play Install Referrer: Neutralize initReferrer() to prevent Play Store attribution binding
@@ -308,7 +308,11 @@ val braveBlockTelemetryPatch = bytecodePatch(
         }
 
         val targetClasses = hookedMethods.map { it.substringBefore('.') }.distinct()
-        println("[Block Trackers] Hooked ${hookedMethods.size} bytecode telemetry methods across ${targetClasses.size} classes (${hookedMethods.joinToString(", ")})")
+        if (hookedMethods.isEmpty()) {
+            println("[Block Telemetry] Warning: 0 bytecode telemetry methods were resolved.")
+        } else {
+            println("[Block Telemetry] Hooked ${hookedMethods.size} bytecode telemetry methods across ${targetClasses.size} classes (${hookedMethods.joinToString(", ")})")
+        }
     }
 }
 
@@ -347,9 +351,9 @@ private fun BytecodePatchContext.blockOffersHostInDex() {
 
 private fun logOffersResult(rewrittenStrings: Int, touchedClasses: Int) {
     if (rewrittenStrings == 0) {
-        println("[Block Trackers] No offers.brave.com literals found.")
+        println("[Block Telemetry] No offers.brave.com literals found.")
     } else {
-        println("[Block Trackers] Rewrote $rewrittenStrings offers.brave.com literal(s) across $touchedClasses class(es) -> 0.0.0.0.")
+        println("[Block Telemetry] Rewrote $rewrittenStrings offers.brave.com literal(s) across $touchedClasses class(es) -> 0.0.0.0.")
     }
 }
 
