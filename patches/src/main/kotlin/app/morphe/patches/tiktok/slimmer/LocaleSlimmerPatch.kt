@@ -6,8 +6,6 @@ import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.LocaleUtils
 import java.util.Locale
 
-private val EMPTY_BYTES = byteArrayOf()
-
 private val LOCALE_ALIASES = mapOf(
     "in" to "id",
     "id" to "in",
@@ -56,16 +54,9 @@ val localeSlimmerPatch = rawResourcePatch(
         assetsDir.listFiles()?.filter { it.isDirectory && it.name.startsWith("strings#lang_") }?.forEach { langDir ->
             val langCode = langDir.name.removePrefix("strings#lang_").lowercase()
             if (langCode !in selectedLangs) {
-                var folderStripped = false
-                langDir.walkTopDown().filter { it.isFile }.forEach { file ->
-                    val origSize = file.length()
-                    if (origSize > 0) {
-                        file.writeBytes(EMPTY_BYTES)
-                        savedBytes += origSize
-                        folderStripped = true
-                    }
-                }
-                if (folderStripped) {
+                val dirSize = langDir.walkTopDown().filter { it.isFile }.sumOf { it.length() }
+                if (langDir.deleteRecursively()) {
+                    savedBytes += dirSize
                     strippedFolders++
                 }
             }
