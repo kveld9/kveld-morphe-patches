@@ -1,4 +1,4 @@
-## [2.10.1-experimental.1](https://github.com/kveld9/kveld-morphe-patches/compare/v2.10.0...v2.10.1-experimental.1) (2026-11-02)
+## [2.10.1](https://github.com/kveld9/kveld-morphe-patches/compare/v2.10.0...v2.10.1) (2026-11-02)
 
 ### Bug Fixes
 
