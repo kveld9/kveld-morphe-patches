@@ -796,7 +796,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/feed/platform/cell/component/survey/CellSurveyComponent;",
-                name = "Np",
+                name = "Mp",
                 parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;"),
                 returnType = "V",
             ).method.addInstructions(
@@ -805,12 +805,12 @@ val feedAdsContentFilterPatch = bytecodePatch(
                     return-void
                 """.trimIndent(),
             )
-            println("[Feed Ads & Content Filter] Neutralized CellSurveyComponent.Np(Aweme).")
+            println("[Feed Ads & Content Filter] Neutralized CellSurveyComponent.Mp(Aweme).")
             patched++
 
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/feed/platform/cell/component/survey/CellSurveyComponent;",
-                name = "Op",
+                name = "Np",
                 parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;", "Z"),
                 returnType = "V",
             ).method.addInstructions(
@@ -819,7 +819,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
                     return-void
                 """.trimIndent(),
             )
-            println("[Feed Ads & Content Filter] Neutralized CellSurveyComponent.Op(Aweme, Z).")
+            println("[Feed Ads & Content Filter] Neutralized CellSurveyComponent.Np(Aweme, Z).")
             patched++
 
             try {
@@ -861,7 +861,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/feed/assem/pushsurvey/PushSurveyAssemTrigger;",
-                name = "Qp",
+                name = "Np",
                 parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"),
                 returnType = "Z",
             ).method.addInstructions(
@@ -871,7 +871,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
                     return v0
                 """.trimIndent(),
             )
-            println("[Feed Ads & Content Filter] Neutralized PushSurveyAssemTrigger.Rp(VideoItemParams) -> Push survey triggers disabled.")
+            println("[Feed Ads & Content Filter] Neutralized PushSurveyAssemTrigger.Np(VideoItemParams) -> Push survey triggers disabled.")
             patched++
 
             try {
@@ -1266,9 +1266,9 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 patched++
             }
 
-            // Hook FriendsFeedApi network fetch return points (LX/064b;->LIZLLL in v47.5.3)
+            // Hook FriendsFeedApi network fetch return points (LX/065q;->LIZLLL in v47.6.3, was LX/064b;)
             val friendsFeedApiFingerprint = Fingerprint(
-                definingClass = "LX/064b;",
+                definingClass = "LX/065q;",
                 name = "LIZLLL",
                 parameters = listOf(
                     "I",
