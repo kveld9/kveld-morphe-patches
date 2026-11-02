@@ -58,7 +58,7 @@ The authoritative patch catalog with descriptions and options is generated in RE
   - *How*: Unlocks Origin preference toggles and bypasses internal feature gatekeepers across Rewards, News, Wallet, and VPN settings.
 
 ### D. Resource Debloating
-- **Remove Extra Files**:
+- **Remove Unused AI & VPN**:
   - *Objective*: Reduce overall application size on device storage.
   - *How*: Overwrites unused companion native libraries in place with empty stubs, targeting augmented reality and extended reality binaries. Includes an option to also remove the WireGuard VPN library.
 
