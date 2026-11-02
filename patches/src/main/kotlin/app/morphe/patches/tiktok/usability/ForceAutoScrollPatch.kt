@@ -5,6 +5,7 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.replaceWithReturnBooleanObject
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
@@ -57,24 +58,20 @@ val forceAutoScrollPatch = bytecodePatch(
                 println("[Force Auto-Scroll] fyp_auto_scroll note: ${e.message}")
             }
 
-            // 2. Force FypAutoScrollServiceImpl capability check (LJIILJJIL)
-            try {
-                val fypServiceFp = Fingerprint(
-                    definingClass = "Lcom/ss/android/ugc/feed/platform/panel/autoscroll/FypAutoScrollServiceImpl;",
-                    name = "LJIILJJIL",
-                    returnType = "Z",
-                )
-                fypServiceFp.method.addInstructions(
-                    0,
-                    """
-                        const/4 v0, 0x1
-                        return v0
-                    """.trimIndent(),
-                )
-                patched++
-            } catch (e: Exception) {
-                println("[Force Auto-Scroll] FypAutoScrollServiceImpl.LJIILJJIL note: ${e.message}")
-            }
+            // 2. Force FypAutoScrollServiceImpl capability check (LJIILIIL in v47.6.3, was LJIILJJIL)
+            val fypServiceFp = Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/feed/platform/panel/autoscroll/FypAutoScrollServiceImpl;",
+                name = "LJIILIIL",
+                returnType = "Z",
+            )
+            fypServiceFp.method.addInstructions(
+                0,
+                """
+                    const/4 v0, 0x1
+                    return v0
+                """.trimIndent(),
+            )
+            patched++
 
             // 3. Force tablet / foldable auto-scroll experiment flag (tablet_fyp_auto_scroll)
             try {
@@ -114,24 +111,14 @@ val forceAutoScrollPatch = bytecodePatch(
                 println("[Force Auto-Scroll] search_auto_scroll note: ${e.message}")
             }
 
-            // 5. Force panel_auto_scroll check on FeedBottomBarFacadeImpl
-            try {
-                val feedBottomBarFp = Fingerprint(
-                    definingClass = "Lcom/ss/android/ugc/aweme/feed/bottombar/FeedBottomBarFacadeImpl;",
-                    returnType = "Z",
-                    strings = listOf("panel_auto_scroll"),
-                )
-                feedBottomBarFp.method.addInstructions(
-                    0,
-                    """
-                        const/4 v0, 0x1
-                        return v0
-                    """.trimIndent(),
-                )
-                patched++
-            } catch (e: Exception) {
-                println("[Force Auto-Scroll] FeedBottomBarFacadeImpl.LJIJJLI note: ${e.message}")
-            }
+            // 5. Force panel_auto_scroll check on FeedBottomBarFacadeImpl (returns Boolean object in v47.6.3)
+            val feedBottomBarFp = Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/feed/bottombar/FeedBottomBarFacadeImpl;",
+                name = "LJIJJLI",
+                returnType = "Ljava/lang/Boolean;",
+            )
+            feedBottomBarFp.method.replaceWithReturnBooleanObject(true)
+            patched++
 
             // 6. Ensure auto-scroll action item is created in the long-press / share menu
             try {
