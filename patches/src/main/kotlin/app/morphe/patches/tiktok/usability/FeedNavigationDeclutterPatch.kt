@@ -241,10 +241,10 @@ val feedNavigationDeclutterPatch = bytecodePatch(
 
             val serviceFp = Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/explore/service/ExploreFeedServiceImpl;",
-                name = "LJJIFFI", // in v47.5.3, was LJJII in v47.4.3
+                name = "LJJ", // in v47.6.3, was LJJIFFI in v47.5.3
                 parameters = emptyList(),
             )
-            var tabProviderClass = "LX/03mK;" // in v47.5.3, was LX/03s9;
+            var tabProviderClass = "LX/03nU;" // in v47.6.3, was LX/03mK;
             val insns = serviceFp.method.implementation?.instructions
             if (insns != null) {
                 for (insn in insns) {
@@ -483,8 +483,8 @@ val feedNavigationDeclutterPatch = bytecodePatch(
 
         val tabManagerClasses by lazy {
             val avatarAbilityClass = "Lcom/ss/android/ugc/aweme/friendstab/ability/BaseBottomTabAvatarAbility;"
-            val ksMethod = classDefByOrNull(avatarAbilityClass)?.methods?.firstOrNull { it.name == "uR" || it.name == "kS" || it.name == "HQ" }
-            val tabManagerBaseType = ksMethod?.returnType ?: "LX/05G9;"
+            val ksMethod = classDefByOrNull(avatarAbilityClass)?.methods?.firstOrNull { it.name == "XQ" || it.name == "br0" || it.name == "uR" || it.name == "kS" || it.name == "HQ" }
+            val tabManagerBaseType = ksMethod?.returnType ?: "LX/05HP;"
 
             val managers = mutableListOf<String>()
             classDefForEach { cls ->
@@ -493,7 +493,7 @@ val feedNavigationDeclutterPatch = bytecodePatch(
                 }
             }
             if (managers.isEmpty()) {
-                managers.addAll(listOf("LX/06Y4;", "LX/06Y9;"))
+                managers.addAll(listOf("LX/06ZI;", "LX/06ZN;"))
             }
             managers
         }
@@ -527,17 +527,10 @@ val feedNavigationDeclutterPatch = bytecodePatch(
             ).method.replaceWithReturnBoolean(false)
             patched++
 
-            // Avatar preview active check (HB0 returning Z in v47.5.3, was Hw2)
+            // Avatar preview active check (PV1 returning Z in v47.6.3, was HB0)
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/friendstab/ability/BaseBottomTabAvatarAbility;",
-                name = "HB0",
-                returnType = "Z",
-            ).method.replaceWithReturnBoolean(false)
-            patched++
-
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/friendstab/ability/FriendBottomTabAvatarAbility;",
-                name = "HB0",
+                name = "PV1",
                 returnType = "Z",
             ).method.replaceWithReturnBoolean(false)
             patched++
