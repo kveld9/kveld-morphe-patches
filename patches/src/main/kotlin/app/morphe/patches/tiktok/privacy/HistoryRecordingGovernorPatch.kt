@@ -58,26 +58,29 @@ val historyRecordingGovernorPatch = bytecodePatch(
                 ).method.replaceWithReturnVoid()
                 patched++
 
-                // 3. Neutralize PlaybackHistoryManager recordVideoPlayback routine (LX/03hH;->LIZ in v47.5.3, was LX/03l4;)
+                // 3. Neutralize PlaybackHistoryManager recordVideoPlayback routine (LX/03iW;->LIZ in v47.6.3, was LX/03hH;)
                 Fingerprint(
-                    definingClass = "LX/03hH;",
+                    definingClass = "LX/03iW;",
                     name = "LIZ",
+                    parameters = listOf("LX/038r;", "Ljava/lang/String;"),
                     returnType = "V",
                 ).method.replaceWithReturnVoid()
                 patched++
 
-                // 4. Neutralize PlaybackHistoryManager recordWatchDuration routine (LX/03hH;->LIZIZ in v47.5.3, was LX/03l4;)
+                // 4. Neutralize PlaybackHistoryManager recordWatchDuration routine (LX/03iW;->LIZIZ in v47.6.3, was LX/03hH;)
                 Fingerprint(
-                    definingClass = "LX/03hH;",
+                    definingClass = "LX/03iW;",
                     name = "LIZIZ",
+                    parameters = listOf("LX/038r;", "Ljava/lang/String;"),
                     returnType = "V",
                 ).method.replaceWithReturnVoid()
                 patched++
 
-                // 5. Neutralize fast stats report routine (LX/0SnM;->subscribe in v47.5.3, was LX/0bQi;)
+                // 5. Neutralize fast stats report routine (LX/0ShW;->subscribe in v47.6.3, was LX/0SnM;)
                 Fingerprint(
-                    definingClass = "LX/0SnM;",
+                    definingClass = "LX/0ShW;",
                     name = "subscribe",
+                    parameters = listOf("LX/08R3;"),
                     returnType = "V",
                 ).method.replaceWithReturnVoid()
                 patched++
@@ -98,9 +101,9 @@ val historyRecordingGovernorPatch = bytecodePatch(
 
         if (disableSearchHistory == true) {
             if (!isLite) {
-                // 1. Neutralize Search History Manager recordSearchHistory routine (LX/0CW9; in v47.5.3, was LX/0CzL;, LX/0D1m;)
+                // 1. Neutralize Search History Manager recordSearchHistory routine (LX/0CWE; in v47.6.3, was LX/0CW9;)
                 Fingerprint(
-                    definingClass = "LX/0CW9;",
+                    definingClass = "LX/0CWE;",
                     name = "LIZ",
                     returnType = "V",
                     parameters = listOf(
