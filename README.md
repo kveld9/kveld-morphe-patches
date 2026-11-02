@@ -256,7 +256,7 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 | **Block Motion Sensors** | Stops sites from reading motion sensors to identify you. |  |
 | **Block Popups & Ratings** | Blocks rating popups, review requests and promo dialogs. |  |
 | **Block Telemetry** | Blocks usage analytics, crash uploads and experiment downloads. | • Block offers server |
-| **Brave Rewards** | Enables Brave Rewards. |  |
+| **Brave Origin** | Unlocks Brave Origin feature switches across Rewards, News, Wallet, and VPN. |  |
 | **Clean New Tab** | Removes sponsored wallpapers, news feed and promo cards. | • Hide shortcut tiles |
 | **Close Tab In Group Order** | Selects the previous tab in the tab group when closing a tab. |  |
 | **Custom Brave theme** | Applies custom colors to Brave dark mode chrome, defaulting to pure OLED black for battery saving on OLED screens. | • Background color<br>• Surfaces use background color<br>• Surface / container color<br>• Text ink color<br>• Accent highlight color<br>• Disable Material You dynamic colors<br>• Window background color<br>• Preference card color<br>• Style preference rows as cards<br>• Modulate text tiers by luminance<br>• Patch Material You system color roles<br>• Patch color state list lStar selectors<br>• Patch vector drawable surface fills |
