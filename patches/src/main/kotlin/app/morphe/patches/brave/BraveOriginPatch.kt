@@ -121,15 +121,15 @@ private fun buildLeoFeatureFlagHook(): String = """
 // ════════════════════════════════════════════════════════════════════════════════
 
 private val braveOriginResourcePatch = resourcePatch(
-    name = "Brave Rewards (Setup)",
-    description = "Turns on Rewards preference switches by default.",
+    name = "Brave Origin (Setup)",
+    description = "Turns on Origin preference switches by default.",
     default = false,
 ) {
     compatibleWith(Constants.COMPATIBILITY_BRAVE)
 
     execute {
         val targetFile = findXmlContaining(listOf("rewards_switch")).firstOrNull() ?: run {
-                println("[Brave Rewards] Skipped: rewards_switch XML preference not found.")
+                println("[Brave Origin] Skipped: rewards_switch XML preference not found.")
                 return@execute
             }
 
@@ -155,7 +155,7 @@ private val braveOriginResourcePatch = resourcePatch(
             }
         }
 
-        println("[Brave Rewards] Set $modifiedAttrs Origin preference defaults to true across 1 XML layout files")
+        println("[Brave Origin] Set $modifiedAttrs Origin preference defaults to true across 1 XML layout files")
     }
 }
 
@@ -165,8 +165,8 @@ private val braveOriginResourcePatch = resourcePatch(
 
 @Suppress("unused")
 val braveOriginPatch = bytecodePatch(
-    name = "Brave Rewards",
-    description = "Enables Brave Rewards.",
+    name = "Brave Origin",
+    description = "Unlocks Brave Origin feature switches.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_BRAVE)
@@ -410,10 +410,10 @@ val braveOriginPatch = bytecodePatch(
         val configuredGatekeepers = GATEKEEPER_POLICIES.map { it.name } + "Leo Flag"
         val targetClasses = hookedMethods.map { it.substringBefore('.') }.distinct()
         if (hookedMethods.isEmpty()) {
-            println("[Brave Rewards] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+            println("[Brave Origin] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
         } else {
             println(
-                "[Brave Rewards] Hooked ${hookedMethods.size} core methods across ${targetClasses.size} classes (${hookedMethods.joinToString(", ")}) & configured ${configuredGatekeepers.size} policy gatekeepers (${configuredGatekeepers.joinToString(", ")})"
+                "[Brave Origin] Hooked ${hookedMethods.size} core methods across ${targetClasses.size} classes (${hookedMethods.joinToString(", ")}) & configured ${configuredGatekeepers.size} policy gatekeepers (${configuredGatekeepers.joinToString(", ")})"
             )
         }
     }
