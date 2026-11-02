@@ -57,16 +57,9 @@ val creatorBloatSlimmerPatch = rawResourcePatch(
                 stripFile(get("$abi/$lib"))
             }
 
-            // 2. Dynamic CapCut NLE editor libraries across ABIs
-            listApkEntries("$abi/")
-                .filter { !it.endsWith('/') }
-                .filter { entry ->
-                    val name = entry.substringAfterLast('/')
-                    name.startsWith("libNLE") && name.endsWith(".so")
-                }
-                .forEach { entry ->
-                    stripFile(get(entry))
-                }
+            // CapCut NLE editor libraries (libNLE*.so) are preserved because stripping/zeroing them
+            // causes TikTok's feed player (AnchorBusinessOutBridgeServiceImpl -> canSupportAnchorFeatureBits -> NLE.loadNLELibrary)
+            // to crash with Librarian EOFException on 0-byte ELF headers when playing videos with anchor/template features.
         }
 
         // 3. Face models
