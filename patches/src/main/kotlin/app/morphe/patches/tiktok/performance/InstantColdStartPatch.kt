@@ -73,17 +73,17 @@ val instantColdStartPatch = bytecodePatch(
         println("[Instant Launch] Forced SplashSettingServiceImpl.LIZ() -> Force skip TopView enabled.")
         patched++
 
-        // 7. Disable RealTimeSplashManagerImpl real-time splash gate (LIZLLL in v47.1.3)
+        // 7. Disable RealTimeSplashManagerImpl real-time splash gate (LIZLLL in v47.6.3, was LIZJ)
         Fingerprint(
             definingClass = "Lcom/bytedance/ies/ugc/aweme/commercialize/splash/realtimesplash/RealTimeSplashManagerImpl;",
-            name = "LIZJ",
+            name = "LIZLLL",
             returnType = "Z",
         ).method.replaceWithReturnBoolean(false)
         println("[Instant Launch] Disabled RealTimeSplashManagerImpl splash gate -> Real-time splash execution disabled.")
         patched++
 
-        // 8. Disable SplashAdServiceImpl methods (LJFF, LJIILJJIL, LJJIJIIJIL in v47.4.3)
-        for (mName in listOf("LJFF", "LJIILJJIL", "LJJIJIIJIL")) {
+        // 8. Disable SplashAdServiceImpl methods (LJI, LJIILJJIL, LJJIJIL in v47.6.3)
+        for (mName in listOf("LJI", "LJIILJJIL", "LJJIJIL")) {
             Fingerprint(
                 definingClass = "Lcom/bytedance/ies/ugc/aweme/commercialize/splash/core/SplashAdServiceImpl;",
                 name = mName,
@@ -111,40 +111,22 @@ val instantColdStartPatch = bytecodePatch(
         println("[Instant Launch] Neutralized TopViewJsonManager.LIZIZ() -> TopView cache parsed Aweme returns null.")
         patched++
 
-        // 11. Disable SplashAdManager global splash check (LX/03eL.LJFF() in v47.5.3, was LX/03fS;)
+        // 11. Disable SplashAdManager global splash check (LX/03fZ.LJFF() in v47.6.3, was LX/03eL;)
         Fingerprint(
-            definingClass = "LX/03eL;",
+            definingClass = "LX/03fZ;",
             name = "LJFF",
             returnType = "Z",
         ).method.replaceWithReturnBoolean(false)
-        println("[Instant Launch] Disabled LX/03eL.LJFF() -> Global splash enable flag neutralized.")
+        println("[Instant Launch] Disabled LX/03fZ.LJFF() -> Global splash enable flag neutralized.")
         patched++
 
-        // 12. Disable SplashAdShowManager (LX/05Ws.LJI() in v47.5.3, was LX/05Vp;, LX/05W5;) - blocks both cold (1) and warm (2) splash
+        // 12. Disable CommercializeSplashManager dispatch (LX/03k1.LJIIIZ() in v47.6.3, was LX/03iJ;)
         Fingerprint(
-            definingClass = "LX/05Ws;",
-            name = "LJI",
+            definingClass = "LX/03k1;",
+            name = "LJIIIZ",
             returnType = "Z",
         ).method.replaceWithReturnBoolean(false)
-        println("[Instant Launch] Disabled LX/05Ws.LJI() -> Cold and warm background resume splash show blocked.")
-        patched++
-
-        // 13. Disable CommercializeSplashManager dispatch (LX/03iJ.LJFF() in v47.5.3, was LX/03nN;, LX/03nM;)
-        Fingerprint(
-            definingClass = "LX/03iJ;",
-            name = "LJFF",
-            returnType = "Z",
-        ).method.replaceWithReturnBoolean(false)
-        println("[Instant Launch] Disabled LX/03iJ.LJFF() -> Resume activity splash trigger neutralized.")
-        patched++
-
-        // 14. Neutralize TopView Feed Inserter (LX/07Fu.LJIJ() in v47.5.3, was LX/07me.LJIJJLI;, LX/07nR;)
-        Fingerprint(
-            definingClass = "LX/07Fu;",
-            name = "LJIJ",
-            returnType = "Z",
-        ).method.replaceWithReturnBoolean(false)
-        println("[Instant Launch] Disabled LX/07Fu.LJIJ() -> FeedRecommendFragment TopView insertion blocked.")
+        println("[Instant Launch] Disabled LX/03k1.LJIIIZ() -> Resume activity splash trigger neutralized.")
         patched++
 
         // 15. Fail-safe instant finish for NormalSplashAdActivity
