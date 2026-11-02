@@ -47,7 +47,7 @@ The authoritative patch catalog with descriptions and options is generated in RE
   - *How*: Disables in-app review and promotional sign-up eligibility checks, and drops promotional dialog tags before display. Hides the Rate Brave entry and its Support category in Settings.
 
 ### C. Browser Navigation & Performance
-- **Keep Tabs Open**:
+- **Keep All Tabs Loaded**:
   - *Objective*: Prevent the browser from discarding or minimizing background tabs unexpectedly.
   - *How*: Disables inactive tab suspension and automatic tab minimization logic.
 - **Select Previous Tab on Close**:
