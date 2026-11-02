@@ -48,7 +48,7 @@ private fun injectPrefGuards(
 // ── Bytecode Patch: Suppresses sponsored wallpaper & news preferences at runtime ────────
 @Suppress("unused")
 val braveCleanNewTabPagePatch = bytecodePatch(
-    name = "Clean Start Page",
+    name = "Clean New Tab",
     description = "Removes sponsored wallpapers, news feed and promo cards.",
     default = true,
 ) {
@@ -129,6 +129,10 @@ val braveCleanNewTabPagePatch = bytecodePatch(
         injectPrefGuards(statsListenerFp.method, prefTargets, hookedMethods)
 
         val targetClasses = hookedMethods.map { it.substringBefore('.') }.distinct()
-        println("[Clean Start Page] Neutralized ${hookedMethods.size} NTP marketing & layout components across ${targetClasses.size} classes")
+        if (hookedMethods.isEmpty()) {
+            println("[Clean New Tab] Warning: 0 NTP marketing & layout components were resolved.")
+        } else {
+            println("[Clean New Tab] Neutralized ${hookedMethods.size} NTP marketing & layout components across ${targetClasses.size} classes")
+        }
     }
 }

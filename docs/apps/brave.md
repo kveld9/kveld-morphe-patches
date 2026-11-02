@@ -35,7 +35,7 @@ The authoritative patch catalog with descriptions and options is generated in RE
   - *How*: Strips the Google Play install referrer permission from the manifest, neutralizes crash dump uploads, experiment synchronization, and Google Play install referrer attribution queries, and redirects telemetry server endpoints to 0.0.0.0. Provides the option to also block shopping offer servers.
 
 ### B. Interface & Promo Suppression
-- **Clean Start Page**:
+- **Clean New Tab**:
   - *Objective*: Provide a distraction-free start page free of ads, sponsored cards, and unwanted news.
   - *How*: Disables sponsored background wallpapers, Brave News feeds, and marketing cards by intercepting preference queries and layout initialization guards (allows background images only when a custom NTP wallpaper is installed). Includes an option to hide shortcut tiles:
     - `hideTopSites`: Removes most-visited shortcut tiles for a completely blank new tab page.
