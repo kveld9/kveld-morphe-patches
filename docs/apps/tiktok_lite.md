@@ -58,6 +58,7 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
 - **Hide Inbox Promos & Alerts**: Anchor absent; `TopBannerWidgetContainerInjector` and promo banner widgets absent in Lite DEX.
 - **Hide Inbox Story Tray**: Anchor absent; `StoryGetFeedByPageResponse` class and story tray container absent in Lite DEX.
 - **Instant Launch**: Anchor absent; `SplashAdManagerPreloadTask` and splash ad preloader absent in Lite DEX.
+- **Login Compatibility Fix**: Anchor absent; Web-based OAuth fallback and third-party login compatibility wrappers absent in Lite DEX.
 - **Offline Video Limit**: Anchor absent; `OfflineModeSheetPageAssem` and user-facing offline videos download sheet absent in Lite DEX.
 - **Resume Video After Scroll**: Anchor absent; `ScrollAutoPlayManager` and video resume on scroll handlers absent in Lite DEX.
 - **Show Author Region**: Anchor absent; `VideoAuthorInfoVM` and author region metadata badge absent in Lite DEX.
@@ -72,9 +73,6 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
 - **Disable History Recording**:
   - *Objective*: Prevent viewed videos from recording in account watch history.
   - *How*: Neutralizes video stats reporting routine (`AwemeStatsApi.L`) with `return-void` when `disableWatchHistory` is enabled.
-- **Login Compatibility Fix**:
-  - *Objective*: Restore Google account sign-in after patching on modified app signatures.
-  - *How*: Stubs `GoogleAuth.isAvailable()Z` to return `false`, which forces `AuthorizeActivity` to fall back to Web-based OAuth (`google_web`).
 - **Allow Screenshots**:
   - *Objective*: Removes screenshot and screen recording blocking.
   - *How*: Neutralizes screenshot detection task (`ScreenShotTask.run(Context)`) with early `return-void` to prevent screenshot monitoring and detection telemetry.
@@ -154,7 +152,6 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
 ## 5. Known Limitations
 
 - **Search History Suppression**: Search history query recording is not supported on TikTok Lite because the search history analytics and recommendation stores (`SuggestWordResponse`, `ManualSearchPvStore`) are absent in the Lite build.
-- **Spotify Sign-In**: Spotify login compatibility is not supported on TikTok Lite because the Spotify auth SDK dynamic feature module (`df_music_dsp`) is absent in the Lite build.
 - **Offline Video Limit**: TikTok Lite does not feature user-facing offline video limit selection (`OfflineModeSheetPageAssem` is absent); caching is handled automatically based on storage tiers.
 
 ### Lite UI anchor map (observed)
