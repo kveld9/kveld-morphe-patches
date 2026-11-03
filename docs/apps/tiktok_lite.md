@@ -141,7 +141,7 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
   - *How*: Forces `PreloadStrategyConfig.isEnableBufferPreload()` to return `false`, throttling aggressive buffer preloading.
 - **Disable Push Notifications**:
   - *Objective*: Stops background push notifications.
-  - *How*: Neutralizes push initialization task (`PushInitTask.run(Context)`) with early `return-void` to prevent background push polling and wake locks.
+  - *How*: Neutralizes push service initialization (`PushService.init(Context)`) with early `return-void` to prevent background push polling and wake locks without breaking Play Feature Delivery (`SplitCompat.install`).
 - **Disable QUIC**:
   - *Objective*: Loads videos, uploads, and live connections over standard HTTPS instead of QUIC.
   - *How*: Forces TCP/TLS fallback by clearing `mEnableTTQuicHeLoader` in `AVMDLDataLoader.setConfigureInternal` and stubbing `BDUploadUtil.xquicAvalilable()` to return `false`.

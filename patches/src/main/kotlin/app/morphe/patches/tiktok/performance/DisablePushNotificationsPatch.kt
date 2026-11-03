@@ -16,25 +16,36 @@ val disablePushNotificationsPatch = bytecodePatch(
         var patched = 0
         val isLite = packageMetadata.packageName == Constants.TIKTOK_LITE_PACKAGE_NAME
 
-        val targetClass = if (isLite) {
-            "Lcom/ss/android/ugc/aweme/legoImpl/task/PushInitTask;"
+        if (isLite) {
+            Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/push/interaction/PushService;",
+                name = "init",
+                parameters = listOf("Landroid/content/Context;"),
+                returnType = "V",
+            ).method.addInstructions(
+                0,
+                """
+                    return-void
+                """.trimIndent(),
+            )
+            println("[Disable Push Notifications] Neutralized Lite PushService.init() -> Background push polling & wake locks disabled.")
+            patched++
         } else {
-            "Lcom/ss/android/ugc/aweme/legoImp/task/InitPushTask;"
+            val targetClass = "Lcom/ss/android/ugc/aweme/legoImp/task/InitPushTask;"
+            Fingerprint(
+                definingClass = targetClass,
+                name = "run",
+                parameters = listOf("Landroid/content/Context;"),
+                returnType = "V",
+            ).method.addInstructions(
+                0,
+                """
+                    return-void
+                """.trimIndent(),
+            )
+            println("[Disable Push Notifications] Neutralized $targetClass.run() -> Background push polling & wake locks disabled.")
+            patched++
         }
-
-        Fingerprint(
-            definingClass = targetClass,
-            name = "run",
-            parameters = listOf("Landroid/content/Context;"),
-            returnType = "V",
-        ).method.addInstructions(
-            0,
-            """
-                return-void
-            """.trimIndent(),
-        )
-        println("[Disable Push Notifications] Neutralized $targetClass.run() -> Background push polling & wake locks disabled.")
-        patched++
 
         if (patched == 0) {
             println("[Disable Push Notifications] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
