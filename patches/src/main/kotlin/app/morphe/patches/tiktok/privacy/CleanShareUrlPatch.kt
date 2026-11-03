@@ -87,6 +87,21 @@ val cleanShareUrlPatch = bytecodePatch(
             )
             println("[Clean Share Links] Hooked Lite Cem.LBL() -> Link sanitization with host replacement active.")
             patched++
+
+            val liteTailFp = Fingerprint(
+                strings = listOf("https://www.tiktok.com/tiktoklite"),
+                parameters = emptyList(),
+                returnType = "Ljava/lang/String;",
+            )
+            liteTailFp.method.addInstructions(
+                0,
+                """
+                    const-string v0, ""
+                    return-object v0
+                """.trimIndent(),
+            )
+            println("[Clean Share Links] Neutralized Lite share promo tail text -> Only clean video link is shared.")
+            patched++
         } else {
             // TikTok main (musically): Hook Aweme.getShareUrl() return point
             val fp = Fingerprint(
