@@ -110,7 +110,7 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
 ### Usability & Playback
 - **Block Popups & Prompts**:
   - *Objective*: Blocks popups, nags and promo dialogs across the app.
-  - *How*: Skips first-launch onboarding via `NUJServiceImpl.L` and `LB` (returns `false`), and suppresses notification permission prompts via `minilite/nuj/PushServiceImpl.LB` and system push dialog checks in `01c.LBL`.
+  - *How*: Suppresses notification permission prompts via PushServiceImpl.LB and system push dialog checks in 01c.LBL, preserving onboarding completion state and login callback execution.
 - **Download Without Watermark**:
   - *Objective*: Unlocks downloading and saves videos without watermarks.
   - *How*: Unlocks share panel and feed download buttons in `D2M.L(Aweme)` (returns 2 and sanitizes ACL download permissions), forces unwatermarked playAddr stream routing via `7PV.L(Aweme)`, sets `ACLCommonShare` constructors to transcode=1, and injects clean stream URLs via `TikTokMediaHook.patchVideoObject` in `Aweme.getVideo()`.
