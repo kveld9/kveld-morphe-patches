@@ -81,7 +81,7 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
   - *How*: Stubs AppLog.onEvent and AppLog.onEventV3 across all overloads, Npth crash reporting tasks (run and LCCII), Npth.init, and UltraliteInitAppsFlyer, suppressing event logging and crash reporting while preserving device registration transport for account login.
 - **Block Trackers (Setup)**:
   - *Objective*: Removes tracking permissions and disables telemetry components.
-  - *How*: Strips advertising permissions (`AD_ID`, AdServices), disables analytics receivers and providers (AppLog, AppsFlyer, Google Analytics), removes discovery registrars, and injects opt-out metadata flags into `AndroidManifest.xml`.
+  - *How*: Strips advertising permissions (`AD_ID`, AdServices), disables analytics receivers and providers (AppLog, AppsFlyer, Google Analytics), removes analytics discovery registrars, and injects opt-out metadata flags into `AndroidManifest.xml`.
 - **Bypass Mandatory Login**:
   - *Objective*: Lets you browse videos and feeds without creating an account or logging in.
   - *How*: Forces Lite `MandatoryLoginService` decision methods (`LCC` and `L`) to return `false` and stubs `LBL` with `return-void` to bypass mandatory login barriers.
