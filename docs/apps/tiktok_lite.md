@@ -78,7 +78,7 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
   - *How*: Neutralizes screenshot detection task (`ScreenShotTask.run(Context)`) with early `return-void` to prevent screenshot monitoring and detection telemetry.
 - **Block Trackers**:
   - *Objective*: Neutralizes ByteDance AppLog tracking, crash monitors, and analytics.
-  - *How*: Stubs `AppLog.onEvent`, `AppLog.onEventV3`, `Npth` crash reporting tasks (`run` and `LCCII`), `Npth.init`, and `UltraliteInitAppsFlyer`, and mocks `AppLogNetworkClient` upload requests with synthetic success responses.
+  - *How*: Stubs AppLog.onEvent and AppLog.onEventV3 across all overloads, Npth crash reporting tasks (run and LCCII), Npth.init, and UltraliteInitAppsFlyer, suppressing event logging and crash reporting while preserving device registration transport for account login.
 - **Block Trackers (Setup)**:
   - *Objective*: Removes tracking permissions and disables telemetry components.
   - *How*: Strips advertising permissions (`AD_ID`, AdServices), disables analytics receivers and providers (AppLog, AppsFlyer, Google Analytics), removes discovery registrars, and injects opt-out metadata flags into `AndroidManifest.xml`.
