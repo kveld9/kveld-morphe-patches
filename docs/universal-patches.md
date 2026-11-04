@@ -772,4 +772,5 @@ The **`Remove Debug Info`** patch strips Dalvik executable debug metadata (sourc
 
 - **Opt-in by default**: Disabled by default (`default = false`).
 - **Stack traces**: Exception stack traces will report `Unknown Source` and lack line numbers since debug line tables and source file attributes are stripped.
+- **Large multi-DEX safety ceiling**: Applications with more than 50,000 classes carrying debug metadata (such as massive monoliths like TikTok) are skipped cleanly with an explicit log message to prevent JVM heap exhaustion during multi-DEX serialization.
 - **Clean skip**: When no debug info is found across the application bytecode, the patch makes zero changes and logs an explicit skip.
