@@ -408,6 +408,35 @@ The **`Strip Sensitive Permissions (Universal)`** patch selectively strips sensi
 - **Financial SMS (`stripFinancialSms`)**: Removes `SMS_FINANCIAL_TRANSACTIONS` from `AndroidManifest.xml`. This is the access apps use to read bank and card transaction messages for expense tracking; without it those features go silent, which is usually the point for anyone stripping it (Toggle, default: `false`).
 - **Battery optimization (`stripBatteryExemption`)**: Removes `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` from `AndroidManifest.xml`, so the app can no longer ask to be excluded from battery optimization and its entry disappears from that list. The system may then freeze its background work, which is desirable for trackers and harmful for apps whose notifications you rely on (Toggle, default: `false`).
 
+### Special-App-Access Grants on Update
+
+The six special-app-access toggles (`stripOverlay`, `stripInstallPackages`, `stripUsageAccess`,
+`stripExactAlarms`, `stripSms` for financial messages, `stripBatteryExemption`) target
+permissions whose grant is stored by the platform outside the permission system, as an app-op or
+a device-idle whitelist entry. Removing the `<uses-permission>` node does not retroactively clear
+a grant the user already gave, but the platform re-evaluates those grants when the package is
+replaced. Observed on Android 14 (API 34) with an in-place update signed with the same key:
+
+| Toggle | Grant given before patching | After in-place update |
+| :--- | :--- | :--- |
+| `stripOverlay` | overlay allowed | reset to default, no longer in the allow list |
+| `stripUsageAccess` | usage access allowed | reset to default, no longer in the allow list |
+| `stripExactAlarms` | exact alarms allowed | reset to default, no longer in the allow list |
+| `stripInstallPackages` | install unknown apps allowed | app-op record still reads `allow` and the package still appears in `query-op REQUEST_INSTALL_PACKAGES allow`, although the permission itself is no longer installed |
+| `stripBatteryExemption` | package whitelisted in device idle | whitelist entry survives the update |
+
+A clean install (uninstall, then install the patched APK) leaves no app-op records and no
+whitelist entry at all: `appops get` reports "No operations" and `dumpsys deviceidle whitelist`
+does not list the package.
+
+Practical consequence: for the three that reset, an in-place update is enough. For the install
+and battery rows the stale grant is inert but visible, so uninstall and reinstall the patched APK
+when you want a provably clean state. Verify with:
+```bash
+adb shell appops get <package>
+adb shell dumpsys deviceidle whitelist | grep <package>
+```
+
 ---
 
 ## 11. Allow Screenshots (Universal) (`universalScreenshotProtectionBypassPatch`)
