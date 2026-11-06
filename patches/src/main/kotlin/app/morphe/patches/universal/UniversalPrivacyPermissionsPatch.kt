@@ -96,6 +96,10 @@ private val INSTALL_PACKAGES_PERMISSIONS = setOf(
     "android.permission.REQUEST_INSTALL_PACKAGES",
 )
 
+private val USAGE_ACCESS_PERMISSIONS = setOf(
+    "android.permission.PACKAGE_USAGE_STATS",
+)
+
 private fun buildBlockedPermissions(
     stripNotifications: Boolean,
     stripCamera: Boolean,
@@ -111,6 +115,7 @@ private fun buildBlockedPermissions(
     stripSms: Boolean,
     stripOverlay: Boolean,
     stripInstallPackages: Boolean,
+    stripUsageAccess: Boolean,
 ): Set<String> {
     val blocked = mutableSetOf<String>()
     if (stripNotifications) blocked.addAll(NOTIFICATION_PERMISSIONS)
@@ -127,6 +132,7 @@ private fun buildBlockedPermissions(
     if (stripSms) blocked.addAll(SMS_PERMISSIONS)
     if (stripOverlay) blocked.addAll(OVERLAY_PERMISSIONS)
     if (stripInstallPackages) blocked.addAll(INSTALL_PACKAGES_PERMISSIONS)
+    if (stripUsageAccess) blocked.addAll(USAGE_ACCESS_PERMISSIONS)
     return blocked
 }
 
@@ -288,6 +294,14 @@ val universalPrivacyPermissionsPatch = resourcePatch(
         required = false,
     )
 
+    val stripUsageAccess by booleanOption(
+        key = "stripUsageAccess",
+        default = false,
+        title = "Usage access",
+        description = "Removes access to the app usage history.",
+        required = false,
+    )
+
     execute {
         val manifestFile = get("AndroidManifest.xml")
         if (!manifestFile.exists()) {
@@ -309,6 +323,7 @@ val universalPrivacyPermissionsPatch = resourcePatch(
         val removeSms = stripSms ?: false
         val removeOverlay = stripOverlay ?: false
         val removeInstallPackages = stripInstallPackages ?: false
+        val removeUsageAccess = stripUsageAccess ?: false
 
         val blockedPermissions = buildBlockedPermissions(
             stripNotifications = removeNotifications,
@@ -325,6 +340,7 @@ val universalPrivacyPermissionsPatch = resourcePatch(
             stripSms = removeSms,
             stripOverlay = removeOverlay,
             stripInstallPackages = removeInstallPackages,
+            stripUsageAccess = removeUsageAccess,
         )
 
         if (blockedPermissions.isEmpty()) {
