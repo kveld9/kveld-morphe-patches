@@ -100,6 +100,11 @@ private val USAGE_ACCESS_PERMISSIONS = setOf(
     "android.permission.PACKAGE_USAGE_STATS",
 )
 
+private val EXACT_ALARM_PERMISSIONS = setOf(
+    "android.permission.SCHEDULE_EXACT_ALARM",
+    "android.permission.USE_EXACT_ALARM",
+)
+
 private fun buildBlockedPermissions(
     stripNotifications: Boolean,
     stripCamera: Boolean,
@@ -116,6 +121,7 @@ private fun buildBlockedPermissions(
     stripOverlay: Boolean,
     stripInstallPackages: Boolean,
     stripUsageAccess: Boolean,
+    stripExactAlarms: Boolean,
 ): Set<String> {
     val blocked = mutableSetOf<String>()
     if (stripNotifications) blocked.addAll(NOTIFICATION_PERMISSIONS)
@@ -133,6 +139,7 @@ private fun buildBlockedPermissions(
     if (stripOverlay) blocked.addAll(OVERLAY_PERMISSIONS)
     if (stripInstallPackages) blocked.addAll(INSTALL_PACKAGES_PERMISSIONS)
     if (stripUsageAccess) blocked.addAll(USAGE_ACCESS_PERMISSIONS)
+    if (stripExactAlarms) blocked.addAll(EXACT_ALARM_PERMISSIONS)
     return blocked
 }
 
@@ -302,6 +309,14 @@ val universalPrivacyPermissionsPatch = resourcePatch(
         required = false,
     )
 
+    val stripExactAlarms by booleanOption(
+        key = "stripExactAlarms",
+        default = false,
+        title = "Exact alarms",
+        description = "Removes permission to schedule exact alarms and reminders.",
+        required = false,
+    )
+
     execute {
         val manifestFile = get("AndroidManifest.xml")
         if (!manifestFile.exists()) {
@@ -324,6 +339,7 @@ val universalPrivacyPermissionsPatch = resourcePatch(
         val removeOverlay = stripOverlay ?: false
         val removeInstallPackages = stripInstallPackages ?: false
         val removeUsageAccess = stripUsageAccess ?: false
+        val removeExactAlarms = stripExactAlarms ?: false
 
         val blockedPermissions = buildBlockedPermissions(
             stripNotifications = removeNotifications,
@@ -341,6 +357,7 @@ val universalPrivacyPermissionsPatch = resourcePatch(
             stripOverlay = removeOverlay,
             stripInstallPackages = removeInstallPackages,
             stripUsageAccess = removeUsageAccess,
+            stripExactAlarms = removeExactAlarms,
         )
 
         if (blockedPermissions.isEmpty()) {

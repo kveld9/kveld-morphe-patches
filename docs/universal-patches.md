@@ -383,6 +383,7 @@ The **`Strip Sensitive Permissions (Universal)`** patch selectively strips sensi
 | **Display over other apps** | `android.permission.SYSTEM_ALERT_WINDOW` |
 | **Install apps** | `android.permission.REQUEST_INSTALL_PACKAGES` |
 | **Usage access** | `android.permission.PACKAGE_USAGE_STATS` |
+| **Exact alarms** | `android.permission.SCHEDULE_EXACT_ALARM`, `android.permission.USE_EXACT_ALARM` |
 
 ### Configuration in Morphe Manager
 
@@ -401,6 +402,7 @@ The **`Strip Sensitive Permissions (Universal)`** patch selectively strips sensi
 - **Display over other apps (`stripOverlay`)**: Removes `SYSTEM_ALERT_WINDOW` from `AndroidManifest.xml`, so the app can no longer be granted overlay access and its entry disappears from the "Display over other apps" list. This is what draws ad overlays, floating players and chat bubbles, so expect those to stop working (Toggle, default: `false`).
 - **Install apps (`stripInstallPackages`)**: Removes `REQUEST_INSTALL_PACKAGES` from `AndroidManifest.xml`, so the app can no longer install or update other APKs and its entry disappears from the "Install unknown apps" list. Breaks in-app updaters and any feature that ships add-on APKs (Toggle, default: `false`).
 - **Usage access (`stripUsageAccess`)**: Removes `PACKAGE_USAGE_STATS` from `AndroidManifest.xml`, so the app can no longer be granted usage-history access and its entry disappears from the "Usage access" list. Breaks digital-wellbeing style screens, app timers and any feature that reports what you use (Toggle, default: `false`).
+- **Exact alarms (`stripExactAlarms`)**: Removes `SCHEDULE_EXACT_ALARM` and `USE_EXACT_ALARM` from `AndroidManifest.xml`, so the app can no longer schedule to-the-minute alarms and its entry disappears from the "Alarms and reminders" list. Inexact alarms still fire, but reminders, timers and scheduled notifications can drift or arrive late (Toggle, default: `false`).
 
 ---
 
