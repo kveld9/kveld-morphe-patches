@@ -22,10 +22,10 @@ val autoPauseFirstVideoPatch = bytecodePatch(
             definingClass = "Lcom/ss/android/ugc/aweme/feed/controller/PlayerController;",
         )
 
-        // 1. Hook PlayerController.l0 right before return to pause first video after engine setup (was m in v47.5.3)
+        // 1. Hook PlayerController.p0 right before return to pause first video after engine setup (was l0 in v47.6.3)
         val l0Method = playerControllerFp.classDef.methods.firstOrNull {
-            it.name == "l0" && it.parameterTypes.size == 3 && it.returnType == "Ljava/lang/String;"
-        } ?: error("Could not find l0(Aweme, I, Z)Ljava/lang/String; method in PlayerController")
+            it.name == "p0" && it.parameterTypes.size == 3 && it.returnType == "Ljava/lang/String;"
+        } ?: error("Could not find p0(Aweme, I, Z)Ljava/lang/String; method in PlayerController")
 
         val l0ReturnIndex = l0Method.implementation!!.instructions.indexOfLast {
             it.opcode.name.startsWith("return")
@@ -41,10 +41,10 @@ val autoPauseFirstVideoPatch = bytecodePatch(
         println("[Auto-Pause First Video] Hooked PlayerController.m -> Post-load pause & play icon active.")
         patched++
 
-        // 2. Hook PlayerController.C6 to block automatic playback resume by tryResumePlay (was A6 in v47.5.3)
+        // 2. Hook PlayerController.J6 to block automatic playback resume by tryResumePlay (was C6 in v47.6.3)
         val w6Method = playerControllerFp.classDef.methods.firstOrNull {
-            it.name == "C6" && it.parameterTypes.size == 3 && it.returnType == "Ljava/lang/String;"
-        } ?: error("Could not find C6(Aweme, I, Z)Ljava/lang/String; method in PlayerController")
+            it.name == "J6" && it.parameterTypes.size == 3 && it.returnType == "Ljava/lang/String;"
+        } ?: error("Could not find J6(Aweme, I, Z)Ljava/lang/String; method in PlayerController")
 
         w6Method.addInstructions(
             0,
