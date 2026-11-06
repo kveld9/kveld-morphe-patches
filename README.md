@@ -84,7 +84,7 @@ flowchart TD
 
 | Application | Package ID | Target Version | Architecture / Variant | Download Source | Complete Guide |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Brave Browser** | `com.brave.browser` | `1.98.63` | `arm64-v8a`<br>`armeabi-v7a` (single file) | [ARM64](https://github.com/brave/brave-browser/releases/download/v1.98.63/Bravemonoarm64.apk) · [ARM32](https://github.com/brave/brave-browser/releases/download/v1.98.63/BraveMonoarm.apk) | [Brave Guide](docs/apps/brave.md) |
+| **Brave Browser** | `com.brave.browser` | `1.99.55` | `arm64-v8a`<br>`armeabi-v7a` (single file) | [ARM64](https://github.com/brave/brave-browser/releases/download/v1.99.55/Bravemonoarm64.apk) · [ARM32](https://github.com/brave/brave-browser/releases/download/v1.99.55/BraveMonoarm.apk) | [Brave Guide](docs/apps/brave.md) |
 | **Gboard Lite** | `com.google.android.inputmethod.latin` | `18.5.1.993608717-lite_beta` | `arm64-v8a`<br>`armeabi-v7a` (any screen) | [APKMirror](https://www.apkmirror.com/apk/google-inc/gboard/gboard-the-google-keyboard-18-5-1-993608717-beta/) | [Gboard Lite Guide](docs/apps/gboard.md) |
 | **TikTok** | `com.zhiliaoapp.musically` | `47.6.3` | `arm64-v8a` (any screen) | [APKMirror](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-47-6-3-release/) | [TikTok Guide](docs/apps/tiktok.md) |
 | **TikTok Lite** | `com.tiktok.lite.go` | `47.5.52` | `arm64-v8a`<br>`armeabi-v7a` (multi-file) | [APKMirror](https://www.apkmirror.com/apk/tiktok-pte-ltd/tiktok-lite-faster-tiktok/tiktok-lite-faster-tiktok-47-5-52-release/) | [TikTok Lite Guide](docs/apps/tiktok_lite.md) |
@@ -175,7 +175,7 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 </details>
 
 <details>
-<summary>TikTok Lite&nbsp;&nbsp;•&nbsp;&nbsp;<b>25 patches</b></summary>
+<summary>TikTok Lite&nbsp;&nbsp;•&nbsp;&nbsp;<b>24 patches</b></summary>
 <br>
 
 **Supported versions:**
@@ -202,7 +202,6 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 | **Force Auto-Scroll** | Enables native auto-scrolling to the next video. |  |
 | **Friends & Suggestions Filter** | Keeps the Friends feed strictly mutual and hides suggested accounts across the app. | • Strict Mutual Friends Feed<br>• Filter Friends Feed Bloat<br>• Hide Suggested Accounts |
 | **In-App Browser Privacy Guard** | Opens web links in your browser and blocks tracking in the remaining web views. |  |
-| **Login Compatibility Fix** | Restores Google and Spotify sign-in on modified app builds. | • Fix Google Login<br>• Fix Spotify Login |
 | **Playback & Display Governor** | Limits playback resolution and HDR to save battery, and locks the screen refresh rate. | • Cap Playback Resolution<br>• Maximum Playback Resolution<br>• Avoid ByteVC2 Software Decoding<br>• Drop Undecodable Video Streams<br>• Disable HDR Video Playback<br>• Govern Display Refresh Rate<br>• Target Refresh Rate |
 | **Remember Clear Display** | Keeps clear-display mode active when scrolling to the next video. |  |
 | **Remember Playback Speed** | Keeps your chosen playback speed across videos and restarts. | • Default Playback Speed<br>• Hold-And-Slide 2x Speed Lock |
@@ -247,9 +246,9 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 
 **Supported versions:**
 
-| 1.98.63 |
+| 1.99.55 |
 | :---: |
-| Download Bravemonoarm64.apk (arm64) or BraveMonoarm.apk (arm32) v1.98.63 from github.com/brave/brave-browser/releases; Universal builds unsupported |
+| Download Bravemonoarm64.apk (arm64) or BraveMonoarm.apk (arm32) v1.99.55 from github.com/brave/brave-browser/releases; Universal builds unsupported |
 
 | Patch | Description | Options |
 |----------|----------------|-----------|

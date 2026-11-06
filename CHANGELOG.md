@@ -1,3 +1,18 @@
+## [2.10.2-experimental.1](https://github.com/kveld9/kveld-morphe-patches/compare/v2.10.1...v2.10.2-experimental.1) (2026-11-06)
+
+### Bug Fixes
+
+* **brave:** bump target version to 1.99.55 ([4f80a76](https://github.com/kveld9/kveld-morphe-patches/commit/4f80a76e2882ff8986e444a6ca0bc79a07c9a3ec))
+* **brave:** update native telemetry redirection offsets for 1.99.55 ([cb66f5f](https://github.com/kveld9/kveld-morphe-patches/commit/cb66f5f8303923c62bbfe750ec05d9fe448cfee2))
+* **brave:** update obfuscated origin preferences hooks for 1.99.55 ([2c2c8f8](https://github.com/kveld9/kveld-morphe-patches/commit/2c2c8f8c5537ed464e938948f091c66795f89a09))
+* **tiktoklite:** preserve DataTransport runtime in Block Trackers Setup ([6cc59a2](https://github.com/kveld9/kveld-morphe-patches/commit/6cc59a2f35d70b8d780127b31d2efc6e045d09b7))
+* **tiktoklite:** preserve native Google sign-in ([4996259](https://github.com/kveld9/kveld-morphe-patches/commit/499625956acb6d42bac45be236913d0d8df08f30))
+* **tiktoklite:** preserve onboarding completion state in Block Popups ([42ebe1f](https://github.com/kveld9/kveld-morphe-patches/commit/42ebe1fae33acee0695a7f747fd8527b85e0180d))
+* **tiktoklite:** resolve startup crash when disabling push ([238191d](https://github.com/kveld9/kveld-morphe-patches/commit/238191d1d03c1089894db23b656eb131861f81ec))
+* **tiktoklite:** restore device registration in Block Trackers ([04bb48f](https://github.com/kveld9/kveld-morphe-patches/commit/04bb48fe4e958810bb9cbed0d16495cabcc56420))
+* **tiktoklite:** strip promotional share tail in Clean Share Links ([c4644be](https://github.com/kveld9/kveld-morphe-patches/commit/c4644be099aa1557e49b542ed6d534fb491e7b99))
+* **universal:** guard Remove Debug Info against heap exhaustion ([24c924c](https://github.com/kveld9/kveld-morphe-patches/commit/24c924c7117a7902f5b15c422b23a7e3a56f9f14)), closes [MorpheApp/morphe-manager#1347](https://github.com/MorpheApp/morphe-manager/issues/1347)
+
 ## [2.10.1](https://github.com/kveld9/kveld-morphe-patches/compare/v2.10.0...v2.10.1) (2026-11-02)
 
 ### Bug Fixes
