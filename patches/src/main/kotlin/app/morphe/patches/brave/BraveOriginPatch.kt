@@ -11,12 +11,15 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patcher.string
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.clearTryBlocks
+import app.morphe.patches.shared.ensureRegisterCount
 import app.morphe.patches.shared.findXmlContaining
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import org.w3c.dom.Element
 
 // ════════════════════════════════════════════════════════════════════════════════
@@ -309,28 +312,42 @@ val braveOriginPatch = bytecodePatch(
             ?.mapNotNull { it.reference as? FieldReference }
             ?.firstOrNull { it.definingClass == "Landroidx/preference/Preference;" && it.type == "Ljava/lang/String;" }
             ?.name ?: "G"
+        val lockField = onPrefChangeFingerprint.method.implementation?.instructions
+            ?.filterIsInstance<ReferenceInstruction>()
+            ?.mapNotNull { it.reference as? FieldReference }
+            ?.firstOrNull { it.definingClass == "Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;" && it.type == "Z" }
+            ?.name ?: "O0"
+        val keyMappingMethod = onPrefChangeFingerprint.method.implementation?.instructions
+            ?.filterIsInstance<ReferenceInstruction>()
+            ?.mapNotNull { it.reference as? MethodReference }
+            ?.firstOrNull { it.definingClass == "Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;" && it.parameterTypes == listOf("Ljava/lang/String;") && it.returnType == "Ljava/lang/String;" }
+            ?.name ?: "U4"
+        val dismissSnackbarMethod = classDefByOrNull("Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;")
+            ?.methods
+            ?.firstOrNull { it.parameterTypes.isEmpty() && it.returnType == "V" && it.name != "<init>" && it.name != "<clinit>" && it.name != "a4" }
+            ?.name ?: "T4"
 
         onPrefChangeFingerprint.method.apply {
+            clearTryBlocks()
+            ensureRegisterCount(7)
             removeInstructions(0, implementation!!.instructions.count())
             addInstructionsWithLabels(
                 0,
                 """
-                    iget-boolean v0, p0, Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;->O0:Z
+                    iget-boolean v0, p0, Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;->$lockField:Z
                     if-eqz v0, :not_locked
                     const/4 v0, 0x0
                     return v0
                     :not_locked
                     iget-object v0, p1, Landroidx/preference/Preference;->$prefKeyField:Ljava/lang/String;
-                    invoke-static {v0}, Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;->M4(Ljava/lang/String;)Ljava/lang/String;
+                    invoke-static {v0}, Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;->$keyMappingMethod(Ljava/lang/String;)Ljava/lang/String;
                     move-result-object v0
                     if-eqz v0, :no_key
                     check-cast p2, Ljava/lang/Boolean;
                     invoke-virtual {p2}, Ljava/lang/Boolean;->booleanValue()Z
                     move-result v1
                     xor-int/lit8 v1, v1, 0x1
-                    invoke-virtual {p0}, Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;->u3()Landroid/content/Context;
-                    move-result-object v2
-                    invoke-virtual {v2}, Landroid/content/Context;->getApplicationContext()Landroid/content/Context;
+                    invoke-static {}, Landroid/app/ActivityThread;->currentApplication()Landroid/app/Application;
                     move-result-object v2
                     const-string v3, "$PREF_PREFIX"
                     invoke-virtual {v3, v0}, Ljava/lang/String;->concat(Ljava/lang/String;)Ljava/lang/String;
@@ -348,7 +365,7 @@ val braveOriginPatch = bytecodePatch(
                     move-result-object v2
                     :write_done
                     invoke-interface {v2}, Landroid/content/SharedPreferences${'$'}Editor;->apply()V
-                    invoke-virtual {p0}, Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;->L4()V
+                    invoke-virtual {p0}, Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;->$dismissSnackbarMethod()V
                     :no_key
                     const/4 v0, 0x1
                     return v0
@@ -363,24 +380,42 @@ val braveOriginPatch = bytecodePatch(
             returnType = "V",
             parameters = listOf("Ljava/lang/String;"),
         )
-        setupPrefFingerprint.method.addInstructionsWithLabels(
-            0,
-            """
-                invoke-virtual {p0, p1}, Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;->z4(Ljava/lang/CharSequence;)Landroidx/preference/Preference;
-                move-result-object v0
-                if-eqz v0, :setup_done
-                move-object v3, p0
-                const-string v1, "y"
-                const-class v2, Landroidx/preference/Preference;
-                invoke-virtual {v2, v1}, Ljava/lang/Class;->getDeclaredField(Ljava/lang/String;)Ljava/lang/reflect/Field;
-                move-result-object v1
-                const/4 v2, 0x1
-                invoke-virtual {v1, v2}, Ljava/lang/reflect/Field;->setAccessible(Z)V
-                invoke-virtual {v1, v0, v3}, Ljava/lang/reflect/Field;->set(Ljava/lang/Object;Ljava/lang/Object;)V
-                :setup_done
-                return-void
-            """,
-        )
+        val findPrefMethod = setupPrefFingerprint.method.implementation?.instructions
+            ?.filterIsInstance<ReferenceInstruction>()
+            ?.mapNotNull { it.reference as? MethodReference }
+            ?.firstOrNull { it.returnType == "Landroidx/preference/Preference;" }
+            ?.name ?: "H4"
+        val listenerField = classDefByOrNull("Landroidx/preference/Preference;")
+            ?.instanceFields
+            ?.firstOrNull { field ->
+                val typeDef = classDefByOrNull(field.type)
+                typeDef?.methods?.any { m ->
+                    m.returnType == "Z" && m.parameterTypes == listOf("Landroidx/preference/Preference;", "Ljava/lang/Object;")
+                } == true
+            }?.name ?: "y"
+
+        setupPrefFingerprint.method.apply {
+            clearTryBlocks()
+            ensureRegisterCount(6)
+            addInstructionsWithLabels(
+                0,
+                """
+                    invoke-virtual {p0, p1}, Lorg/chromium/chrome/browser/settings/BraveOriginPreferences;->$findPrefMethod(Ljava/lang/CharSequence;)Landroidx/preference/Preference;
+                    move-result-object v0
+                    if-eqz v0, :setup_done
+                    move-object v3, p0
+                    const-string v1, "$listenerField"
+                    const-class v2, Landroidx/preference/Preference;
+                    invoke-virtual {v2, v1}, Ljava/lang/Class;->getDeclaredField(Ljava/lang/String;)Ljava/lang/reflect/Field;
+                    move-result-object v1
+                    const/4 v2, 0x1
+                    invoke-virtual {v1, v2}, Ljava/lang/reflect/Field;->setAccessible(Z)V
+                    invoke-virtual {v1, v0, v3}, Ljava/lang/reflect/Field;->set(Ljava/lang/Object;Ljava/lang/Object;)V
+                    :setup_done
+                    return-void
+                """,
+            )
+        }
         hookedMethods.add("BraveOriginPreferences.setupPreference")
 
         // ── Phase C: Feature Policy Gatekeepers ────────────────────────────────────────
@@ -391,6 +426,8 @@ val braveOriginPatch = bytecodePatch(
                 strings = listOf(policy.policyPrefString),
             )
             gatekeeperFingerprint.method.apply {
+                clearTryBlocks()
+                ensureRegisterCount(3)
                 removeInstructions(0, implementation!!.instructions.count())
                 addInstructions(0, buildGatekeeperHook(policy.prefKey))
             }
@@ -403,6 +440,8 @@ val braveOriginPatch = bytecodePatch(
             strings = listOf("AIChat"),
         )
         leoFeatureFlagFingerprint.method.apply {
+            clearTryBlocks()
+            ensureRegisterCount(2)
             removeInstructions(0, implementation!!.instructions.count())
             addInstructionsWithLabels(0, buildLeoFeatureFlagHook())
         }
