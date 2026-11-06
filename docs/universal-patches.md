@@ -385,6 +385,7 @@ The **`Strip Sensitive Permissions (Universal)`** patch selectively strips sensi
 | **Usage access** | `android.permission.PACKAGE_USAGE_STATS` |
 | **Exact alarms** | `android.permission.SCHEDULE_EXACT_ALARM`, `android.permission.USE_EXACT_ALARM` |
 | **Financial SMS** | `android.permission.SMS_FINANCIAL_TRANSACTIONS` |
+| **Battery optimization** | `android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` |
 
 ### Configuration in Morphe Manager
 
@@ -405,6 +406,7 @@ The **`Strip Sensitive Permissions (Universal)`** patch selectively strips sensi
 - **Usage access (`stripUsageAccess`)**: Removes `PACKAGE_USAGE_STATS` from `AndroidManifest.xml`, so the app can no longer be granted usage-history access and its entry disappears from the "Usage access" list. Breaks digital-wellbeing style screens, app timers and any feature that reports what you use (Toggle, default: `false`).
 - **Exact alarms (`stripExactAlarms`)**: Removes `SCHEDULE_EXACT_ALARM` and `USE_EXACT_ALARM` from `AndroidManifest.xml`, so the app can no longer schedule to-the-minute alarms and its entry disappears from the "Alarms and reminders" list. Inexact alarms still fire, but reminders, timers and scheduled notifications can drift or arrive late (Toggle, default: `false`).
 - **Financial SMS (`stripFinancialSms`)**: Removes `SMS_FINANCIAL_TRANSACTIONS` from `AndroidManifest.xml`. This is the access apps use to read bank and card transaction messages for expense tracking; without it those features go silent, which is usually the point for anyone stripping it (Toggle, default: `false`).
+- **Battery optimization (`stripBatteryExemption`)**: Removes `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` from `AndroidManifest.xml`, so the app can no longer ask to be excluded from battery optimization and its entry disappears from that list. The system may then freeze its background work, which is desirable for trackers and harmful for apps whose notifications you rely on (Toggle, default: `false`).
 
 ---
 

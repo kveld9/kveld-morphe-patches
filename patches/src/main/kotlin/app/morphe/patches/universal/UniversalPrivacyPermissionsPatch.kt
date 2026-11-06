@@ -109,6 +109,10 @@ private val FINANCIAL_SMS_PERMISSIONS = setOf(
     "android.permission.SMS_FINANCIAL_TRANSACTIONS",
 )
 
+private val BATTERY_EXEMPTION_PERMISSIONS = setOf(
+    "android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS",
+)
+
 private fun buildBlockedPermissions(
     stripNotifications: Boolean,
     stripCamera: Boolean,
@@ -127,6 +131,7 @@ private fun buildBlockedPermissions(
     stripUsageAccess: Boolean,
     stripExactAlarms: Boolean,
     stripFinancialSms: Boolean,
+    stripBatteryExemption: Boolean,
 ): Set<String> {
     val blocked = mutableSetOf<String>()
     if (stripNotifications) blocked.addAll(NOTIFICATION_PERMISSIONS)
@@ -146,6 +151,7 @@ private fun buildBlockedPermissions(
     if (stripUsageAccess) blocked.addAll(USAGE_ACCESS_PERMISSIONS)
     if (stripExactAlarms) blocked.addAll(EXACT_ALARM_PERMISSIONS)
     if (stripFinancialSms) blocked.addAll(FINANCIAL_SMS_PERMISSIONS)
+    if (stripBatteryExemption) blocked.addAll(BATTERY_EXEMPTION_PERMISSIONS)
     return blocked
 }
 
@@ -331,6 +337,14 @@ val universalPrivacyPermissionsPatch = resourcePatch(
         required = false,
     )
 
+    val stripBatteryExemption by booleanOption(
+        key = "stripBatteryExemption",
+        default = false,
+        title = "Battery optimization",
+        description = "Removes the request to be excluded from battery optimization.",
+        required = false,
+    )
+
     execute {
         val manifestFile = get("AndroidManifest.xml")
         if (!manifestFile.exists()) {
@@ -355,6 +369,7 @@ val universalPrivacyPermissionsPatch = resourcePatch(
         val removeUsageAccess = stripUsageAccess ?: false
         val removeExactAlarms = stripExactAlarms ?: false
         val removeFinancialSms = stripFinancialSms ?: false
+        val removeBatteryExemption = stripBatteryExemption ?: false
 
         val blockedPermissions = buildBlockedPermissions(
             stripNotifications = removeNotifications,
@@ -374,6 +389,7 @@ val universalPrivacyPermissionsPatch = resourcePatch(
             stripUsageAccess = removeUsageAccess,
             stripExactAlarms = removeExactAlarms,
             stripFinancialSms = removeFinancialSms,
+            stripBatteryExemption = removeBatteryExemption,
         )
 
         if (blockedPermissions.isEmpty()) {
