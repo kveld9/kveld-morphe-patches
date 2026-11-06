@@ -378,6 +378,7 @@ The **`Strip Sensitive Permissions (Universal)`** patch selectively strips sensi
 | **Nearby devices** | `android.permission.BLUETOOTH_SCAN`, `android.permission.BLUETOOTH_CONNECT`, `android.permission.BLUETOOTH_ADVERTISE`, `android.permission.NEARBY_WIFI_DEVICES`, `android.permission.UWB_RANGING` |
 | **Body sensors** | `android.permission.BODY_SENSORS`, `android.permission.BODY_SENSORS_BACKGROUND`, `android.permission.ACTIVITY_RECOGNITION` |
 | **Installed apps** | `android.permission.QUERY_ALL_PACKAGES` |
+| **Phone** | `android.permission.CALL_PHONE`, `android.permission.CALL_PRIVILEGED`, `android.permission.ANSWER_PHONE_CALLS`, `android.permission.ACCEPT_HANDOVER`, `android.permission.READ_PHONE_STATE`, `android.permission.READ_PHONE_NUMBERS`, `android.permission.READ_CALL_LOG`, `android.permission.WRITE_CALL_LOG`, `android.permission.PROCESS_OUTGOING_CALLS`, `android.permission.USE_SIP` |
 
 ### Configuration in Morphe Manager
 
@@ -391,6 +392,7 @@ The **`Strip Sensitive Permissions (Universal)`** patch selectively strips sensi
 - **Nearby devices (`stripNearbyDevices`)**: Removes Bluetooth scan/connect/advertise and nearby Wi-Fi device permissions from `AndroidManifest.xml` (Toggle, default: `false`).
 - **Body sensors (`stripSensors`)**: Removes `BODY_SENSORS`, `BODY_SENSORS_BACKGROUND`, and `ACTIVITY_RECOGNITION` from `AndroidManifest.xml` (Toggle, default: `false`).
 - **Installed apps (`stripInstalledApps`)**: Removes `QUERY_ALL_PACKAGES` from `AndroidManifest.xml`. On Android 11+ with targetSdk 30 or higher, the app then only sees packages declared in its `<queries>` element (left untouched); apps targeting older SDKs are unaffected. May break launchers, app managers and share menus (Toggle, default: `false`).
+- **Phone (`stripPhone`)**: Removes call placement (`CALL_PHONE`, `CALL_PRIVILEGED`, `ANSWER_PHONE_CALLS`, `ACCEPT_HANDOVER`), call log (`READ_CALL_LOG`, `WRITE_CALL_LOG`, `PROCESS_OUTGOING_CALLS`), and phone identity (`READ_PHONE_STATE`, `READ_PHONE_NUMBERS`, `USE_SIP`) permissions from `AndroidManifest.xml`. Apps that read the device IMEI or carrier state without a permission check can throw `SecurityException`; keep it disabled for dialer, messaging, and call-recording apps (Toggle, default: `false`).
 
 ---
 

@@ -66,6 +66,19 @@ private val INSTALLED_APPS_PERMISSIONS = setOf(
     "android.permission.QUERY_ALL_PACKAGES",
 )
 
+private val PHONE_PERMISSIONS = setOf(
+    "android.permission.CALL_PHONE",
+    "android.permission.CALL_PRIVILEGED",
+    "android.permission.ANSWER_PHONE_CALLS",
+    "android.permission.ACCEPT_HANDOVER",
+    "android.permission.READ_PHONE_STATE",
+    "android.permission.READ_PHONE_NUMBERS",
+    "android.permission.READ_CALL_LOG",
+    "android.permission.WRITE_CALL_LOG",
+    "android.permission.PROCESS_OUTGOING_CALLS",
+    "android.permission.USE_SIP",
+)
+
 private fun buildBlockedPermissions(
     stripNotifications: Boolean,
     stripCamera: Boolean,
@@ -77,6 +90,7 @@ private fun buildBlockedPermissions(
     stripNearbyDevices: Boolean,
     stripSensors: Boolean,
     stripInstalledApps: Boolean,
+    stripPhone: Boolean,
 ): Set<String> {
     val blocked = mutableSetOf<String>()
     if (stripNotifications) blocked.addAll(NOTIFICATION_PERMISSIONS)
@@ -89,6 +103,7 @@ private fun buildBlockedPermissions(
     if (stripNearbyDevices) blocked.addAll(NEARBY_DEVICES_PERMISSIONS)
     if (stripSensors) blocked.addAll(SENSORS_PERMISSIONS)
     if (stripInstalledApps) blocked.addAll(INSTALLED_APPS_PERMISSIONS)
+    if (stripPhone) blocked.addAll(PHONE_PERMISSIONS)
     return blocked
 }
 
@@ -218,6 +233,14 @@ val universalPrivacyPermissionsPatch = resourcePatch(
         required = false,
     )
 
+    val stripPhone by booleanOption(
+        key = "stripPhone",
+        default = false,
+        title = "Phone",
+        description = "Removes phone calls, call log, and phone state permissions.",
+        required = false,
+    )
+
     execute {
         val manifestFile = get("AndroidManifest.xml")
         if (!manifestFile.exists()) {
@@ -235,6 +258,7 @@ val universalPrivacyPermissionsPatch = resourcePatch(
         val removeNearbyDevices = stripNearbyDevices ?: false
         val removeSensors = stripSensors ?: false
         val removeInstalledApps = stripInstalledApps ?: false
+        val removePhone = stripPhone ?: false
 
         val blockedPermissions = buildBlockedPermissions(
             stripNotifications = removeNotifications,
@@ -247,6 +271,7 @@ val universalPrivacyPermissionsPatch = resourcePatch(
             stripNearbyDevices = removeNearbyDevices,
             stripSensors = removeSensors,
             stripInstalledApps = removeInstalledApps,
+            stripPhone = removePhone,
         )
 
         if (blockedPermissions.isEmpty()) {
