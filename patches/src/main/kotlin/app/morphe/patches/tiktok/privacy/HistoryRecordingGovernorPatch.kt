@@ -58,29 +58,29 @@ val historyRecordingGovernorPatch = bytecodePatch(
                 ).method.replaceWithReturnVoid()
                 patched++
 
-                // 3. Neutralize PlaybackHistoryManager recordVideoPlayback routine (LX/03iW;->LIZ in v47.6.3, was LX/03hH;)
+                // 3. Neutralize PlaybackHistoryManager recordVideoPlayback routine (LX/042M;->LIZ in v47.7.2, was LX/03iW;)
                 Fingerprint(
-                    definingClass = "LX/03iW;",
+                    definingClass = "LX/042M;",
                     name = "LIZ",
-                    parameters = listOf("LX/038r;", "Ljava/lang/String;"),
+                    parameters = listOf("LX/03Yk;", "Ljava/lang/String;"),
                     returnType = "V",
                 ).method.replaceWithReturnVoid()
                 patched++
 
-                // 4. Neutralize PlaybackHistoryManager recordWatchDuration routine (LX/03iW;->LIZIZ in v47.6.3, was LX/03hH;)
+                // 4. Neutralize PlaybackHistoryManager recordWatchDuration routine (LX/042M;->LIZIZ in v47.7.2, was LX/03iW;)
                 Fingerprint(
-                    definingClass = "LX/03iW;",
+                    definingClass = "LX/042M;",
                     name = "LIZIZ",
-                    parameters = listOf("LX/038r;", "Ljava/lang/String;"),
+                    parameters = listOf("LX/03Yk;", "Ljava/lang/String;"),
                     returnType = "V",
                 ).method.replaceWithReturnVoid()
                 patched++
 
-                // 5. Neutralize fast stats report routine (LX/0ShW;->subscribe in v47.6.3, was LX/0SnM;)
+                // 5. Neutralize fast stats report routine (LX/0aHm;->subscribe in v47.7.2, was LX/0ShW;)
                 Fingerprint(
-                    definingClass = "LX/0ShW;",
+                    definingClass = "LX/0aHm;",
                     name = "subscribe",
-                    parameters = listOf("LX/08R3;"),
+                    parameters = listOf("LX/0ANp;"),
                     returnType = "V",
                 ).method.replaceWithReturnVoid()
                 patched++
@@ -101,9 +101,9 @@ val historyRecordingGovernorPatch = bytecodePatch(
 
         if (disableSearchHistory == true) {
             if (!isLite) {
-                // 1. Neutralize Search History Manager recordSearchHistory routine (LX/0CWE; in v47.6.3, was LX/0CW9;)
+                // 1. Neutralize Search History Manager recordSearchHistory routine (LX/0Ers; in v47.7.2, was LX/0CWE;)
                 Fingerprint(
-                    definingClass = "LX/0CWE;",
+                    definingClass = "LX/0Ers;",
                     name = "LIZ",
                     returnType = "V",
                     parameters = listOf(
