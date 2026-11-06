@@ -443,46 +443,34 @@ val customShareSheetPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = CREATE_GROUP_BUTTON_ASSEM_CLASS,
-                name = "Dd",
+                name = "Pd",
                 returnType = "V",
                 parameters = listOf("Z"),
             ).method.replaceWithReturnVoid()
-            println("[Custom Share Sheet] Hooked SharePanelCreateGroupButtonAssem.Dd -> return-void.")
+            println("[Custom Share Sheet] Hooked SharePanelCreateGroupButtonAssem.Pd -> return-void.")
             patched++
 
             // 6b. Hide SharePanelGroupChatHintAssem view and neutralize state updates
             val groupChatHintFp = Fingerprint(
                 definingClass = GROUP_CHAT_HINT_ASSEM_CLASS,
-                name = "onViewCreated",
+                name = "Tp",
                 returnType = "V",
-                parameters = listOf("Landroid/view/View;"),
             )
             val groupChatHintMethod = groupChatHintFp.method
             val hintImpl = groupChatHintMethod.implementation
             if (hintImpl != null) {
-                groupChatHintMethod.clearTryBlocks()
-                groupChatHintMethod.ensureRegisterCount(2)
-                groupChatHintMethod.removeInstructions(0, hintImpl.instructions.count())
-                groupChatHintMethod.addInstructions(
-                    0,
-                    """
-                        move-object/from16 v0, p1
-                        const/16 v1, 0x8
-                        invoke-virtual {v0, v1}, Landroid/view/View;->setVisibility(I)V
-                        return-void
-                    """.trimIndent(),
-                )
-                println("[Custom Share Sheet] Hooked SharePanelGroupChatHintAssem.onViewCreated -> View.GONE.")
+                groupChatHintMethod.replaceWithReturnVoid()
+                println("[Custom Share Sheet] Hooked SharePanelGroupChatHintAssem.Tp -> return-void.")
                 patched++
             }
 
             Fingerprint(
                 definingClass = GROUP_CHAT_HINT_ASSEM_CLASS,
-                name = "Dd",
+                name = "Pd",
                 returnType = "V",
                 parameters = listOf("Z"),
             ).method.replaceWithReturnVoid()
-            println("[Custom Share Sheet] Hooked SharePanelGroupChatHintAssem.Dd -> return-void.")
+            println("[Custom Share Sheet] Hooked SharePanelGroupChatHintAssem.Pd -> return-void.")
             patched++
         }
 
