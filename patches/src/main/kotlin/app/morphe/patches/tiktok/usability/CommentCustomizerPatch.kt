@@ -591,7 +591,6 @@ private fun BytecodePatchContext.applyEnableVoiceComments(): Int {
 
     Fingerprint(
         returnType = "Ljava/lang/Object;",
-        parameters = emptyList(),
         strings = listOf("audio_comment_publish"),
     ).method.replaceWithReturnIntegerObject(1)
     patched++
