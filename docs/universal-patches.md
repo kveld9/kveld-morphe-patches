@@ -381,6 +381,7 @@ The **`Strip Sensitive Permissions (Universal)`** patch selectively strips sensi
 | **Phone** | `android.permission.CALL_PHONE`, `android.permission.CALL_PRIVILEGED`, `android.permission.ANSWER_PHONE_CALLS`, `android.permission.ACCEPT_HANDOVER`, `android.permission.READ_PHONE_STATE`, `android.permission.READ_PHONE_NUMBERS`, `android.permission.READ_CALL_LOG`, `android.permission.WRITE_CALL_LOG`, `android.permission.PROCESS_OUTGOING_CALLS`, `android.permission.USE_SIP` |
 | **SMS** | `android.permission.SEND_SMS`, `android.permission.RECEIVE_SMS`, `android.permission.READ_SMS`, `android.permission.RECEIVE_MMS`, `android.permission.RECEIVE_WAP_PUSH`, `android.permission.READ_CELL_BROADCASTS` |
 | **Display over other apps** | `android.permission.SYSTEM_ALERT_WINDOW` |
+| **Install apps** | `android.permission.REQUEST_INSTALL_PACKAGES` |
 
 ### Configuration in Morphe Manager
 
@@ -397,6 +398,7 @@ The **`Strip Sensitive Permissions (Universal)`** patch selectively strips sensi
 - **Phone (`stripPhone`)**: Removes call placement (`CALL_PHONE`, `CALL_PRIVILEGED`, `ANSWER_PHONE_CALLS`, `ACCEPT_HANDOVER`), call log (`READ_CALL_LOG`, `WRITE_CALL_LOG`, `PROCESS_OUTGOING_CALLS`), and phone identity (`READ_PHONE_STATE`, `READ_PHONE_NUMBERS`, `USE_SIP`) permissions from `AndroidManifest.xml`. Apps that read the device IMEI or carrier state without a permission check can throw `SecurityException`; keep it disabled for dialer, messaging, and call-recording apps (Toggle, default: `false`).
 - **SMS (`stripSms`)**: Removes `SEND_SMS`, `RECEIVE_SMS`, `READ_SMS`, `RECEIVE_MMS`, `RECEIVE_WAP_PUSH`, and `READ_CELL_BROADCASTS` from `AndroidManifest.xml`. This also disables one-time-code autofill through the SMS Retriever API and emergency-alert broadcasts, so leave it disabled on messaging apps and on apps where you rely on OTP auto-fill (Toggle, default: `false`).
 - **Display over other apps (`stripOverlay`)**: Removes `SYSTEM_ALERT_WINDOW` from `AndroidManifest.xml`, so the app can no longer be granted overlay access and its entry disappears from the "Display over other apps" list. This is what draws ad overlays, floating players and chat bubbles, so expect those to stop working (Toggle, default: `false`).
+- **Install apps (`stripInstallPackages`)**: Removes `REQUEST_INSTALL_PACKAGES` from `AndroidManifest.xml`, so the app can no longer install or update other APKs and its entry disappears from the "Install unknown apps" list. Breaks in-app updaters and any feature that ships add-on APKs (Toggle, default: `false`).
 
 ---
 

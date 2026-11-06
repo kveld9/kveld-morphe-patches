@@ -92,6 +92,10 @@ private val OVERLAY_PERMISSIONS = setOf(
     "android.permission.SYSTEM_ALERT_WINDOW",
 )
 
+private val INSTALL_PACKAGES_PERMISSIONS = setOf(
+    "android.permission.REQUEST_INSTALL_PACKAGES",
+)
+
 private fun buildBlockedPermissions(
     stripNotifications: Boolean,
     stripCamera: Boolean,
@@ -106,6 +110,7 @@ private fun buildBlockedPermissions(
     stripPhone: Boolean,
     stripSms: Boolean,
     stripOverlay: Boolean,
+    stripInstallPackages: Boolean,
 ): Set<String> {
     val blocked = mutableSetOf<String>()
     if (stripNotifications) blocked.addAll(NOTIFICATION_PERMISSIONS)
@@ -121,6 +126,7 @@ private fun buildBlockedPermissions(
     if (stripPhone) blocked.addAll(PHONE_PERMISSIONS)
     if (stripSms) blocked.addAll(SMS_PERMISSIONS)
     if (stripOverlay) blocked.addAll(OVERLAY_PERMISSIONS)
+    if (stripInstallPackages) blocked.addAll(INSTALL_PACKAGES_PERMISSIONS)
     return blocked
 }
 
@@ -274,6 +280,14 @@ val universalPrivacyPermissionsPatch = resourcePatch(
         required = false,
     )
 
+    val stripInstallPackages by booleanOption(
+        key = "stripInstallPackages",
+        default = false,
+        title = "Install apps",
+        description = "Removes the permission that lets the app install other apps.",
+        required = false,
+    )
+
     execute {
         val manifestFile = get("AndroidManifest.xml")
         if (!manifestFile.exists()) {
@@ -294,6 +308,7 @@ val universalPrivacyPermissionsPatch = resourcePatch(
         val removePhone = stripPhone ?: false
         val removeSms = stripSms ?: false
         val removeOverlay = stripOverlay ?: false
+        val removeInstallPackages = stripInstallPackages ?: false
 
         val blockedPermissions = buildBlockedPermissions(
             stripNotifications = removeNotifications,
@@ -309,6 +324,7 @@ val universalPrivacyPermissionsPatch = resourcePatch(
             stripPhone = removePhone,
             stripSms = removeSms,
             stripOverlay = removeOverlay,
+            stripInstallPackages = removeInstallPackages,
         )
 
         if (blockedPermissions.isEmpty()) {
