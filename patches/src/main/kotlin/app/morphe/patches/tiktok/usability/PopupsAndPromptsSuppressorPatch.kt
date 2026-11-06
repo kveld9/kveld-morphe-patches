@@ -197,14 +197,14 @@ private fun BytecodePatchContext.applyAccountPromptHooks(): Int {
     println("[Block Popups & Prompts] Neutralized RecUserPopupInMainActivityController.LIZLLL() -> Follow friends popup blocked.")
     count++
 
-    // 2. "Get notifications from other accounts" multi-account push guide (LX/0cJY in v47.6.3, was LX/0caO)
+    // 2. "Get notifications from other accounts" multi-account push guide (LX/1CY0 in v47.7.2, was LX/0cJY)
     Fingerprint(
-        definingClass = "LX/0cJY;",
+        definingClass = "LX/1CY0;",
         name = "showPopup",
-        parameters = listOf("LX/06aN;", "LX/0Ff8;"),
+        parameters = listOf("LX/08dc;", "LX/0HVf;"),
         returnType = "V",
     ).method.replaceWithReturnVoid()
-    println("[Block Popups & Prompts] Neutralized LX/0cJY.showPopup() -> Multi-account push guide dialog blocked.")
+    println("[Block Popups & Prompts] Neutralized LX/1CY0.showPopup() -> Multi-account push guide dialog blocked.")
     count++
 
     // 3. "Find contacts" relation auth dialog pipeline
@@ -255,15 +255,15 @@ private fun BytecodePatchContext.applyAccountPromptHooks(): Int {
 
     Fingerprint(
         definingClass = "Lcom/ss/android/ugc/awemepushlib/manager/PushPermissionPopupManager;",
-        name = "LJIILJJIL",
+        name = "LJIIJ",
         parameters = listOf(
             "Landroid/app/Activity;",
             "Ljava/lang/String;",
-            "LX/1QK8;",
+            "LX/07UH;",
         ),
         returnType = "V",
     ).method.replaceWithReturnVoid()
-    println("[Block Popups & Prompts] Neutralized PushPermissionPopupManager.LJIILJJIL() -> Combined push permission popup blocked.")
+    println("[Block Popups & Prompts] Neutralized PushPermissionPopupManager.LJIIJ() -> Combined push permission popup blocked.")
     count++
 
     return count
@@ -310,13 +310,13 @@ private fun BytecodePatchContext.applyStickerRecommendationHooks(): Int {
     val featureEnableMethod = Fingerprint(
         definingClass = "Lcom/ss/android/ugc/aweme/im/strategy/businessconfig/ChatFeatureListConf;",
         name = "featureEnable",
-        parameters = listOf("LX/0pZb;"),
+        parameters = listOf("LX/0qxF;"),
         returnType = "Z",
     ).method
     featureEnableMethod.addInstructions(
         0,
         """
-            sget-object v0, LX/0pZb;->TYPING_RECOMMEND:LX/0pZb;
+            sget-object v0, LX/0qxF;->TYPING_RECOMMEND:LX/0qxF;
             if-ne p1, v0, :cond_orig
             const/4 v0, 0
             return v0
@@ -391,37 +391,37 @@ private fun BytecodePatchContext.applyStickerRecommendationHooks(): Int {
     }
 
     hookVoid(
-        name = "re",
+        name = "op",
         parameters = listOf(
             "Lcom/ss/android/ugc/aweme/im/common/model/StickerItem;",
             "Landroid/view/View;",
             "I",
-            "LX/0oxl;",
+            "LX/0qNT;",
         ),
     )
     hookVoid(
-        name = "Sp",
+        name = "mq",
         parameters = listOf(
             "Landroid/view/View;",
             "Lcom/ss/android/ugc/aweme/im/common/model/StickerItem;",
         ),
     )
     hookNull(
-        name = "Lp",
+        name = "jq",
         returnType = "Lcom/ss/android/ugc/aweme/im/sdk/chat/ui/base/assems/input/typingrecommendation/TypingRecommendationPanelViewModel;",
     )
     hookNull(
-        name = "Mp",
+        name = "kq",
         returnType = "Lcom/ss/android/ugc/aweme/viewmodel/ITypingRecommendationVM;",
     )
     hookNull(
-        name = "Kp",
+        name = "gq",
         returnType = "Lcom/ss/android/ugc/aweme/im/prompts/api/chatnotice/flow/base/viewmodel/ICommonChatNoticeViewModel;",
     )
-    hookVoid(name = "Ep")
-    hookVoid(name = "Fp")
-    hookVoid(name = "Gp")
-    hookVoid(name = "Vp")
+    hookVoid(name = "Yp")
+    hookVoid(name = "Zp")
+    hookVoid(name = "aq")
+    hookVoid(name = "rq")
     hookVoid(name = "checkParentScope")
 
     println("[Block Popups & Prompts] Hooked TypingRecommendationPanelAssem render/data methods ($renderDataHooks methods) -> sticker strip suppressed.")
@@ -434,7 +434,7 @@ private fun BytecodePatchContext.applyPopLayerFilterHook(): Int {
     var count = 0
 
     val method = Fingerprint(
-        definingClass = "LX/080R;",
+        definingClass = "LX/099O;",
         name = "canShow",
         returnType = "Z",
     ).method
@@ -449,23 +449,23 @@ private fun BytecodePatchContext.applyPopLayerFilterHook(): Int {
             :cond_allow
         """.trimIndent(),
     )
-    println("[Block Popups & Prompts] Hooked PopLayer LX/080R.canShow() -> Extension rule-based popup filter active.")
+    println("[Block Popups & Prompts] Hooked PopLayer LX/099O.canShow() -> Extension rule-based popup filter active.")
     count++
 
     Fingerprint(
-        definingClass = "LX/0a2n;",
+        definingClass = "LX/0ozF;",
         name = "LIZ",
         returnType = "V",
     ).method.replaceWithReturnVoid()
-    println("[Block Popups & Prompts] Neutralized LX/0a2n.LIZ() -> Profile view history turn-on sheet blocked.")
+    println("[Block Popups & Prompts] Neutralized LX/0ozF.LIZ() -> Profile view history turn-on sheet blocked.")
     count++
 
     Fingerprint(
-        definingClass = "LX/0MN9;",
+        definingClass = "LX/0O9H;",
         name = "invoke",
         returnType = "Ljava/lang/Object;",
     ).method.replaceWithReturnNull()
-    println("[Block Popups & Prompts] Neutralized LX/0MN9.invoke() -> Profile view history alternate sheet trigger blocked.")
+    println("[Block Popups & Prompts] Neutralized LX/0O9H.invoke() -> Profile view history alternate sheet trigger blocked.")
     count++
 
     return count
@@ -498,9 +498,9 @@ private fun BytecodePatchContext.applyLiveTeaserBubbleHooks(): Int {
 
 private fun BytecodePatchContext.applyStreakReminderHook(): Int {
     val method = Fingerprint(
-        definingClass = "LX/0M1X;",
+        definingClass = "LX/0Nlp;",
         name = "LIZ",
-        parameters = listOf("Ljava/lang/String;", "LX/0BdV;"),
+        parameters = listOf("Ljava/lang/String;", "LX/0Cyb;"),
         returnType = "Ljava/lang/Object;",
     ).method
     method.addInstructions(
@@ -515,7 +515,7 @@ private fun BytecodePatchContext.applyStreakReminderHook(): Int {
             :cond_orig
         """.trimIndent(),
     )
-    println("[Block Popups & Prompts] Hooked LX/0M1X.LIZ() -> DM streak expiration reminders blocked.")
+    println("[Block Popups & Prompts] Hooked LX/0Nlp.LIZ() -> DM streak expiration reminders blocked.")
     return 1
 }
 
