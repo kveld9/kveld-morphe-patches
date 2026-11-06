@@ -73,9 +73,9 @@ val devicePrivacyGuardPatch = bytecodePatch(
         println("[Device Privacy Guard] Neutralized FakeFragment.${fakeFragmentFp.method.name}() (PowerPermissions request dispatcher).")
         patched++
 
-        // 1.3 Permission denial cache checker (LX/0O6M;->LIZ in v47.6.3, was LX/0OBB;)
+        // 1.3 Permission denial cache checker (LX/07bV;->LIZ in v47.7.2, was LX/0O6M;)
         Fingerprint(
-            definingClass = "LX/0O6M;",
+            definingClass = "LX/07bV;",
             name = "LIZ",
             parameters = listOf("Ljava/lang/String;"),
             returnType = "Z",
@@ -90,12 +90,12 @@ val devicePrivacyGuardPatch = bytecodePatch(
                 :cond_check
             """.trimIndent(),
         )
-        println("[Device Privacy Guard] Intercepted LX/0O6M.LIZ() -> suppressed denial flag for blocked permissions.")
+        println("[Device Privacy Guard] Intercepted LX/07bV.LIZ() -> suppressed denial flag for blocked permissions.")
         patched++
 
-        // 1.4 Suppress permanently denied / open settings prompt redirector (LX/06Dz;->LJI in v47.6.3, was LX/06Ck;)
+        // 1.4 Suppress permanently denied / open settings prompt redirector (LX/07b0;->LJI in v47.7.2, was LX/06Dz;)
         Fingerprint(
-            definingClass = "LX/06Dz;",
+            definingClass = "LX/07b0;",
             name = "LJI",
             parameters = listOf("Landroid/app/Activity;", "Ljava/lang/String;", "Z"),
             returnType = "Z",
@@ -117,9 +117,9 @@ val devicePrivacyGuardPatch = bytecodePatch(
         // 2. LOCATION TRACKING & POPUP NEUTRALIZATION
         // ==========================================
 
-        // 2.1 Disable all scene permission apply (LX/0Bwu;->LJI -> false in v47.6.3, was LX/0AaV;)
+        // 2.1 Disable all scene permission apply (LX/0ELf;->LJI -> false in v47.7.2, was LX/0Bwu;)
         Fingerprint(
-            definingClass = "LX/0Bwu;",
+            definingClass = "LX/0ELf;",
             name = "LJI",
             returnType = "Z",
         ).method.addInstructions(
@@ -129,12 +129,12 @@ val devicePrivacyGuardPatch = bytecodePatch(
                 return v0
             """.trimIndent(),
         )
-        println("[Device Privacy Guard] Neutralized LX/0Bwu.LJI() -> location scene permission application disabled.")
+        println("[Device Privacy Guard] Neutralized LX/0ELf.LJI() -> location scene permission application disabled.")
         patched++
 
-        // 2.2 Disable pre-instruction location popups (LX/0Bwu;->LJII -> false in v47.6.3, was LX/0AaV;)
+        // 2.2 Disable pre-instruction location popups (LX/0ELf;->LJII -> false in v47.7.2, was LX/0Bwu;)
         Fingerprint(
-            definingClass = "LX/0Bwu;",
+            definingClass = "LX/0ELf;",
             name = "LJII",
             returnType = "Z",
         ).method.addInstructions(
@@ -144,12 +144,12 @@ val devicePrivacyGuardPatch = bytecodePatch(
                 return v0
             """.trimIndent(),
         )
-        println("[Device Privacy Guard] Neutralized LX/0Bwu.LJII() -> pre-instruction location popup disabled.")
+        println("[Device Privacy Guard] Neutralized LX/0ELf.LJII() -> pre-instruction location popup disabled.")
         patched++
 
-        // 2.3 Disable popup scenes (LX/0Bwu;->LJIIIIZZ -> false in v47.6.3, was LX/0AaV;)
+        // 2.3 Disable popup scenes (LX/0ELf;->LJIIIIZZ -> false in v47.7.2, was LX/0Bwu;)
         Fingerprint(
-            definingClass = "LX/0Bwu;",
+            definingClass = "LX/0ELf;",
             name = "LJIIIIZZ",
             returnType = "Z",
         ).method.addInstructions(
@@ -159,12 +159,12 @@ val devicePrivacyGuardPatch = bytecodePatch(
                 return v0
             """.trimIndent(),
         )
-        println("[Device Privacy Guard] Neutralized LX/0Bwu.LJIIIIZZ() -> location popup scenes disabled.")
+        println("[Device Privacy Guard] Neutralized LX/0ELf.LJIIIIZZ() -> location popup scenes disabled.")
         patched++
 
-        // 2.4 Force location scenes empty (LX/0Bwu;->LJIIL -> true in v47.6.3, was LX/0AaV;)
+        // 2.4 Force location scenes empty (LX/0ELf;->LJIIL -> true in v47.7.2, was LX/0Bwu;)
         Fingerprint(
-            definingClass = "LX/0Bwu;",
+            definingClass = "LX/0ELf;",
             name = "LJIIL",
             returnType = "Z",
         ).method.addInstructions(
@@ -174,11 +174,11 @@ val devicePrivacyGuardPatch = bytecodePatch(
                 return v0
             """.trimIndent(),
         )
-        println("[Device Privacy Guard] Neutralized LX/0Bwu.LJIIL() -> location scenes declared empty.")
+        println("[Device Privacy Guard] Neutralized LX/0ELf.LJIIL() -> location scenes declared empty.")
         patched++
 
         // 2.5 Neutralize LocationServiceImpl precise and coarse optimization flags
-        listOf("LJIIZILJ", "LJIJ").forEach { methodName ->
+        listOf("LJIJ", "LJIJI").forEach { methodName ->
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/tiktok/location/serviceimpl/LocationServiceImpl;",
                 name = methodName,
@@ -285,10 +285,11 @@ val devicePrivacyGuardPatch = bytecodePatch(
             patched++
         }
 
-        // 3.4 Neutralize relation onboarding and popup triggers (LX/0rwu, LX/0rwt, LX/0rwz in v47.6.3, was LX/0skV, LX/0skT, LX/0skX)
+        // 3.4 Neutralize relation onboarding and popup triggers (LX/0sZy, LX/0sZx, LX/0sZw in v47.7.2, was LX/0rwu, LX/0rwt, LX/0rwz)
         Fingerprint(
-            definingClass = "LX/0rwu;",
+            definingClass = "LX/0sZy;",
             name = "LIZJ",
+            parameters = listOf("LX/02I2;"),
             returnType = "Z",
         ).method.addInstructions(
             0,
@@ -297,12 +298,13 @@ val devicePrivacyGuardPatch = bytecodePatch(
                 return v0
             """.trimIndent(),
         )
-        println("[Device Privacy Guard] Neutralized LX/0rwu.LIZJ() -> contacts relation auth trigger suppressed.")
+        println("[Device Privacy Guard] Neutralized LX/0sZy.LIZJ() -> contacts relation auth trigger suppressed.")
         patched++
 
         Fingerprint(
-            definingClass = "LX/0rwt;",
+            definingClass = "LX/0sZx;",
             name = "LIZJ",
+            parameters = listOf("LX/02I2;"),
             returnType = "Z",
         ).method.addInstructions(
             0,
@@ -311,11 +313,11 @@ val devicePrivacyGuardPatch = bytecodePatch(
                 return v0
             """.trimIndent(),
         )
-        println("[Device Privacy Guard] Neutralized LX/0rwt.LIZJ() -> Facebook relation auth trigger suppressed.")
+        println("[Device Privacy Guard] Neutralized LX/0sZx.LIZJ() -> Facebook relation auth trigger suppressed.")
         patched++
 
         Fingerprint(
-            definingClass = "LX/0rwz;",
+            definingClass = "LX/0sZw;",
             name = "LIZIZ",
             returnType = "Z",
         ).method.addInstructions(
@@ -325,7 +327,7 @@ val devicePrivacyGuardPatch = bytecodePatch(
                 return v0
             """.trimIndent(),
         )
-        println("[Device Privacy Guard] Neutralized LX/0rwz.LIZIZ() -> enablePermissionPopup forced false.")
+        println("[Device Privacy Guard] Neutralized LX/0sZw.LIZIZ() -> relation onboarding popup flow neutralized.")
         patched++
 
         // ==========================================
@@ -333,7 +335,7 @@ val devicePrivacyGuardPatch = bytecodePatch(
         // ==========================================
 
         Fingerprint(
-            definingClass = "LX/032q;",
+            definingClass = "LX/03NI;",
             name = "LLLLIILL",
             returnType = "Lcom/google/android/gms/ads/identifier/AdvertisingIdClient${'$'}Info;",
         ).method.addInstructions(
@@ -343,11 +345,11 @@ val devicePrivacyGuardPatch = bytecodePatch(
                 return-object v0
             """.trimIndent(),
         )
-        println("[Device Privacy Guard] Neutralized LX/032q.LLLLIILL().")
+        println("[Device Privacy Guard] Neutralized LX/03NI.LLLLIILL().")
         patched++
 
         Fingerprint(
-            definingClass = "LX/032q;",
+            definingClass = "LX/03NI;",
             name = "LLLLIIL",
             returnType = "Ljava/lang/String;",
         ).method.addInstructions(
@@ -357,7 +359,7 @@ val devicePrivacyGuardPatch = bytecodePatch(
                 return-object v0
             """.trimIndent(),
         )
-        println("[Device Privacy Guard] Neutralized LX/032q.LLLLIIL().")
+        println("[Device Privacy Guard] Neutralized LX/03NI.LLLLIIL().")
         patched++
 
         // ==========================================
@@ -377,9 +379,9 @@ val devicePrivacyGuardPatch = bytecodePatch(
         println("[Device Privacy Guard] Neutralized IMMessageListClipboardServiceImpl.LIZ().")
         patched++
 
-        // 5.2 Intercept BPEA clipboard reading (LX/0ujs;->LIZIZ in v47.6.3, was LX/0jhp;, LX/1L4S;, LX/1Gmz;)
+        // 5.2 Intercept BPEA clipboard reading (LX/1I0R;->LIZIZ in v47.7.2, was LX/0ujs;, LX/0jhp;, LX/1L4S;, LX/1Gmz;)
         Fingerprint(
-            definingClass = "LX/0ujs;",
+            definingClass = "LX/1I0R;",
             name = "LIZIZ",
             parameters = listOf("Landroid/content/ClipboardManager;", "Lcom/bytedance/bpea/basics/Cert;"),
             returnType = "Landroid/content/ClipData;",
@@ -390,7 +392,7 @@ val devicePrivacyGuardPatch = bytecodePatch(
                 return-object v0
             """.trimIndent(),
         )
-        println("[Device Privacy Guard] Neutralized LX/0ujs.LIZIZ() (BPEA clipboard read) -> forced null.")
+        println("[Device Privacy Guard] Neutralized LX/1I0R.LIZIZ() (BPEA clipboard read) -> forced null.")
         patched++
 
         // ==========================================
