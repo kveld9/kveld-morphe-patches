@@ -88,6 +88,10 @@ private val SMS_PERMISSIONS = setOf(
     "android.permission.READ_CELL_BROADCASTS",
 )
 
+private val OVERLAY_PERMISSIONS = setOf(
+    "android.permission.SYSTEM_ALERT_WINDOW",
+)
+
 private fun buildBlockedPermissions(
     stripNotifications: Boolean,
     stripCamera: Boolean,
@@ -101,6 +105,7 @@ private fun buildBlockedPermissions(
     stripInstalledApps: Boolean,
     stripPhone: Boolean,
     stripSms: Boolean,
+    stripOverlay: Boolean,
 ): Set<String> {
     val blocked = mutableSetOf<String>()
     if (stripNotifications) blocked.addAll(NOTIFICATION_PERMISSIONS)
@@ -115,6 +120,7 @@ private fun buildBlockedPermissions(
     if (stripInstalledApps) blocked.addAll(INSTALLED_APPS_PERMISSIONS)
     if (stripPhone) blocked.addAll(PHONE_PERMISSIONS)
     if (stripSms) blocked.addAll(SMS_PERMISSIONS)
+    if (stripOverlay) blocked.addAll(OVERLAY_PERMISSIONS)
     return blocked
 }
 
@@ -260,6 +266,14 @@ val universalPrivacyPermissionsPatch = resourcePatch(
         required = false,
     )
 
+    val stripOverlay by booleanOption(
+        key = "stripOverlay",
+        default = false,
+        title = "Display over other apps",
+        description = "Removes the permission that lets the app draw over other apps.",
+        required = false,
+    )
+
     execute {
         val manifestFile = get("AndroidManifest.xml")
         if (!manifestFile.exists()) {
@@ -279,6 +293,7 @@ val universalPrivacyPermissionsPatch = resourcePatch(
         val removeInstalledApps = stripInstalledApps ?: false
         val removePhone = stripPhone ?: false
         val removeSms = stripSms ?: false
+        val removeOverlay = stripOverlay ?: false
 
         val blockedPermissions = buildBlockedPermissions(
             stripNotifications = removeNotifications,
@@ -293,6 +308,7 @@ val universalPrivacyPermissionsPatch = resourcePatch(
             stripInstalledApps = removeInstalledApps,
             stripPhone = removePhone,
             stripSms = removeSms,
+            stripOverlay = removeOverlay,
         )
 
         if (blockedPermissions.isEmpty()) {
