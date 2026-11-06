@@ -111,10 +111,10 @@ val forceAutoScrollPatch = bytecodePatch(
                 println("[Force Auto-Scroll] search_auto_scroll note: ${e.message}")
             }
 
-            // 5. Force panel_auto_scroll check on FeedBottomBarFacadeImpl (returns Boolean object in v47.6.3)
+            // 5. Force panel_auto_scroll check on FeedBottomBarFacadeImpl (returns Boolean object in v47.7.2)
             val feedBottomBarFp = Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/feed/bottombar/FeedBottomBarFacadeImpl;",
-                name = "LJIJJLI",
+                name = "Zq",
                 returnType = "Ljava/lang/Boolean;",
             )
             feedBottomBarFp.method.replaceWithReturnBooleanObject(true)
