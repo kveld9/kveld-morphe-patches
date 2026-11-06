@@ -79,6 +79,15 @@ private val PHONE_PERMISSIONS = setOf(
     "android.permission.USE_SIP",
 )
 
+private val SMS_PERMISSIONS = setOf(
+    "android.permission.SEND_SMS",
+    "android.permission.RECEIVE_SMS",
+    "android.permission.READ_SMS",
+    "android.permission.RECEIVE_MMS",
+    "android.permission.RECEIVE_WAP_PUSH",
+    "android.permission.READ_CELL_BROADCASTS",
+)
+
 private fun buildBlockedPermissions(
     stripNotifications: Boolean,
     stripCamera: Boolean,
@@ -91,6 +100,7 @@ private fun buildBlockedPermissions(
     stripSensors: Boolean,
     stripInstalledApps: Boolean,
     stripPhone: Boolean,
+    stripSms: Boolean,
 ): Set<String> {
     val blocked = mutableSetOf<String>()
     if (stripNotifications) blocked.addAll(NOTIFICATION_PERMISSIONS)
@@ -104,6 +114,7 @@ private fun buildBlockedPermissions(
     if (stripSensors) blocked.addAll(SENSORS_PERMISSIONS)
     if (stripInstalledApps) blocked.addAll(INSTALLED_APPS_PERMISSIONS)
     if (stripPhone) blocked.addAll(PHONE_PERMISSIONS)
+    if (stripSms) blocked.addAll(SMS_PERMISSIONS)
     return blocked
 }
 
@@ -241,6 +252,14 @@ val universalPrivacyPermissionsPatch = resourcePatch(
         required = false,
     )
 
+    val stripSms by booleanOption(
+        key = "stripSms",
+        default = false,
+        title = "SMS",
+        description = "Removes SMS and MMS sending, receiving, and reading permissions.",
+        required = false,
+    )
+
     execute {
         val manifestFile = get("AndroidManifest.xml")
         if (!manifestFile.exists()) {
@@ -259,6 +278,7 @@ val universalPrivacyPermissionsPatch = resourcePatch(
         val removeSensors = stripSensors ?: false
         val removeInstalledApps = stripInstalledApps ?: false
         val removePhone = stripPhone ?: false
+        val removeSms = stripSms ?: false
 
         val blockedPermissions = buildBlockedPermissions(
             stripNotifications = removeNotifications,
@@ -272,6 +292,7 @@ val universalPrivacyPermissionsPatch = resourcePatch(
             stripSensors = removeSensors,
             stripInstalledApps = removeInstalledApps,
             stripPhone = removePhone,
+            stripSms = removeSms,
         )
 
         if (blockedPermissions.isEmpty()) {

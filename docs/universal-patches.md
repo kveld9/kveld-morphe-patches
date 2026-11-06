@@ -379,6 +379,7 @@ The **`Strip Sensitive Permissions (Universal)`** patch selectively strips sensi
 | **Body sensors** | `android.permission.BODY_SENSORS`, `android.permission.BODY_SENSORS_BACKGROUND`, `android.permission.ACTIVITY_RECOGNITION` |
 | **Installed apps** | `android.permission.QUERY_ALL_PACKAGES` |
 | **Phone** | `android.permission.CALL_PHONE`, `android.permission.CALL_PRIVILEGED`, `android.permission.ANSWER_PHONE_CALLS`, `android.permission.ACCEPT_HANDOVER`, `android.permission.READ_PHONE_STATE`, `android.permission.READ_PHONE_NUMBERS`, `android.permission.READ_CALL_LOG`, `android.permission.WRITE_CALL_LOG`, `android.permission.PROCESS_OUTGOING_CALLS`, `android.permission.USE_SIP` |
+| **SMS** | `android.permission.SEND_SMS`, `android.permission.RECEIVE_SMS`, `android.permission.READ_SMS`, `android.permission.RECEIVE_MMS`, `android.permission.RECEIVE_WAP_PUSH`, `android.permission.READ_CELL_BROADCASTS` |
 
 ### Configuration in Morphe Manager
 
@@ -393,6 +394,7 @@ The **`Strip Sensitive Permissions (Universal)`** patch selectively strips sensi
 - **Body sensors (`stripSensors`)**: Removes `BODY_SENSORS`, `BODY_SENSORS_BACKGROUND`, and `ACTIVITY_RECOGNITION` from `AndroidManifest.xml` (Toggle, default: `false`).
 - **Installed apps (`stripInstalledApps`)**: Removes `QUERY_ALL_PACKAGES` from `AndroidManifest.xml`. On Android 11+ with targetSdk 30 or higher, the app then only sees packages declared in its `<queries>` element (left untouched); apps targeting older SDKs are unaffected. May break launchers, app managers and share menus (Toggle, default: `false`).
 - **Phone (`stripPhone`)**: Removes call placement (`CALL_PHONE`, `CALL_PRIVILEGED`, `ANSWER_PHONE_CALLS`, `ACCEPT_HANDOVER`), call log (`READ_CALL_LOG`, `WRITE_CALL_LOG`, `PROCESS_OUTGOING_CALLS`), and phone identity (`READ_PHONE_STATE`, `READ_PHONE_NUMBERS`, `USE_SIP`) permissions from `AndroidManifest.xml`. Apps that read the device IMEI or carrier state without a permission check can throw `SecurityException`; keep it disabled for dialer, messaging, and call-recording apps (Toggle, default: `false`).
+- **SMS (`stripSms`)**: Removes `SEND_SMS`, `RECEIVE_SMS`, `READ_SMS`, `RECEIVE_MMS`, `RECEIVE_WAP_PUSH`, and `READ_CELL_BROADCASTS` from `AndroidManifest.xml`. This also disables one-time-code autofill through the SMS Retriever API and emergency-alert broadcasts, so leave it disabled on messaging apps and on apps where you rely on OTP auto-fill (Toggle, default: `false`).
 
 ---
 
