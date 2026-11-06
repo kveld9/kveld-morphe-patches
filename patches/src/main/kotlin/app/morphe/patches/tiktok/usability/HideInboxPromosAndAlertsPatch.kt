@@ -80,19 +80,19 @@ val hideInboxPromosAndAlertsPatch = bytecodePatch(
                 patched++
             }
 
-            // Suppress contact recommendation cards inside multi-entrance inbox list (K23, L23 returning LX/0Lhp; in v47.6.3, was b33, c33 returning LX/0Ll9;)
+            // Suppress contact recommendation cards inside multi-entrance inbox list (h53, i53 returning LX/0NT6; in v47.7.2, was K23, L23)
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/inbox/widget/multi/MultiViewModel;",
-                name = "K23",
-                returnType = "LX/0Lhp;",
+                name = "h53",
+                returnType = "LX/0NT6;",
                 parameters = emptyList(),
             ).method.replaceWithReturnNull()
             patched++
 
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/inbox/widget/multi/MultiViewModel;",
-                name = "L23",
-                returnType = "LX/0Lhp;",
+                name = "i53",
+                returnType = "LX/0NT6;",
                 parameters = emptyList(),
             ).method.replaceWithReturnNull()
             patched++
@@ -116,10 +116,10 @@ val hideInboxPromosAndAlertsPatch = bytecodePatch(
                 patched++
             }
 
-            // Suppress follower migration guide tooltip ("New followers has moved", n33 in v47.6.3, was i33)
+            // Suppress follower migration guide tooltip ("New followers has moved", K53 in v47.7.2, was n33)
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/inbox/widget/multi/MultiViewModel;",
-                name = "n33",
+                name = "K53",
                 returnType = "V",
                 parameters = listOf("Ljava/util/List;"),
             ).method.replaceWithReturnVoid()
