@@ -158,7 +158,7 @@ object Constants {
         const val DEFAULT_CLIPBOARD_RETENTION_HOURS = 24
 
         const val MIN_CLIPBOARD_UNPINNED_LIMIT = 5
-        const val MAX_CLIPBOARD_UNPINNED_LIMIT = 100
+        const val MAX_CLIPBOARD_UNPINNED_LIMIT = 200
         const val DEFAULT_CLIPBOARD_UNPINNED_LIMIT = 50
 
         const val MIN_CLIPBOARD_GRID_COLUMNS = 1

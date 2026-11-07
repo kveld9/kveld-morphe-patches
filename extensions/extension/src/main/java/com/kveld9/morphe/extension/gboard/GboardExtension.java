@@ -65,7 +65,7 @@ public class GboardExtension {
     public static final int DEFAULT_CLIPBOARD_RETENTION_HOURS = 24;
 
     public static final int MIN_CLIPBOARD_UNPINNED_LIMIT = 5;
-    public static final int MAX_CLIPBOARD_UNPINNED_LIMIT = 100;
+    public static final int MAX_CLIPBOARD_UNPINNED_LIMIT = 200;
     public static final int DEFAULT_CLIPBOARD_UNPINNED_LIMIT = 50;
 
     public static final int MIN_CLIPBOARD_GRID_COLUMNS = 1;

@@ -14,6 +14,7 @@ import app.morphe.patches.shared.clearTryBlocks
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 
 val gboardClipboardEnhancementsPatch = bytecodePatch(
     default = true,
@@ -121,6 +122,57 @@ val gboardClipboardEnhancementsPatch = bytecodePatch(
             )
         }
         println("[Clipboard Enhancements] Hooked per-clip character limit to dynamic Morphe Patches preference.")
+        patched++
+
+        // 5. Raise the clipboard adapter prune cap: pinning an item runs this path,
+        //    which otherwise trims the unpinned list back to 5 timestamps.
+        val fpAdapter = Fingerprint(
+            strings = listOf("Incompatible type for view holder."),
+        )
+        val adapterClass = fpAdapter.matchAll().firstOrNull()?.method?.definingClass
+            ?: throw PatchException(
+                "[Clipboard Enhancements] Clipboard adapter anchor not found on this APK.",
+            )
+
+        val fpPrune = Fingerprint(
+            definingClass = adapterClass,
+            returnType = "V",
+            parameters = emptyList(),
+            custom = { method, _ ->
+                method.implementation?.instructions?.let { sequence ->
+                    sequence.any {
+                        it.opcode == Opcode.CONST_4 &&
+                            (it as? NarrowLiteralInstruction)?.narrowLiteral == 5
+                    } && sequence.any {
+                        (it as? ReferenceInstruction)?.reference?.toString() == "Ljava/util/Set;->size()I"
+                    }
+                } == true
+            },
+        )
+        val pruneMethod = try {
+            fpPrune.method
+        } catch (e: Exception) {
+            throw PatchException(
+                "[Clipboard Enhancements] Unpinned prune method not found in $adapterClass: ${e.message}",
+            )
+        }
+        pruneMethod.apply {
+            val body = instructions.toList()
+            val pruneIndex = body.indexOfFirst {
+                it.opcode == Opcode.CONST_4 &&
+                    (it as? NarrowLiteralInstruction)?.narrowLiteral == 5
+            }
+            if (pruneIndex < 0) {
+                throw PatchException("[Clipboard Enhancements] Prune limit constant not found in $definingClass.")
+            }
+            val pruneReg = (body[pruneIndex] as OneRegisterInstruction).registerA
+            replaceInstruction(
+                pruneIndex,
+                "invoke-static {}, ${Constants.GBOARD_EXTENSION_CLASS}->getClipboardUnpinnedLimit()I",
+            )
+            addInstructions(pruneIndex + 1, "move-result v$pruneReg")
+        }
+        println("[Clipboard Enhancements] Hooked unpinned prune cap in clipboard adapter -> dynamic preference.")
         patched++
 
         if (patched == 0) {
