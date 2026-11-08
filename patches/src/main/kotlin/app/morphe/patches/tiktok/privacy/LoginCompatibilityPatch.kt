@@ -56,21 +56,6 @@ val loginCompatibilityPatch = bytecodePatch(
                 println("[Login Compatibility Fix] GoogleAuth.isAvailable note: ${e.message}")
             }
 
-            // 2. GoogleOneTapAuth.isAvailable()Z -> return false (if present in variant)
-            if (classDefByOrNull("Lcom/bytedance/lobby/google/GoogleOneTapAuth;") != null) {
-                try {
-                    Fingerprint(
-                        definingClass = "Lcom/bytedance/lobby/google/GoogleOneTapAuth;",
-                        name = "isAvailable",
-                        returnType = "Z",
-                        parameters = emptyList(),
-                    ).method.replaceWithReturnBoolean(false)
-                    println("[Login Compatibility Fix] Forced GoogleOneTapAuth.isAvailable() -> false.")
-                    patched++
-                } catch (e: Exception) {
-                    println("[Login Compatibility Fix] GoogleOneTapAuth.isAvailable note: ${e.message}")
-                }
-            }
         }
 
         if (fixSpotifyLogin == true) {
