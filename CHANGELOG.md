@@ -1,3 +1,10 @@
+## [2.11.0-experimental.3](https://github.com/kveld9/kveld-morphe-patches/compare/v2.11.0-experimental.2...v2.11.0-experimental.3) (2026-11-08)
+
+### Bug Fixes
+
+* **tiktok:** keep Google sign-in working across app updates ([e0fdfe4](https://github.com/kveld9/kveld-morphe-patches/commit/e0fdfe4089abfb2f68043112ecd93e9ecf44690d))
+* **tiktok:** remove ProfileComponentUIConfig override that broke profile loading ([bf8389b](https://github.com/kveld9/kveld-morphe-patches/commit/bf8389b1b4d310d43cc8dbfe453ac4ceef4baad5))
+
 ## [2.11.0-experimental.2](https://github.com/kveld9/kveld-morphe-patches/compare/v2.11.0-experimental.1...v2.11.0-experimental.2) (2026-11-08)
 
 ### Bug Fixes
