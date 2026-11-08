@@ -1,3 +1,43 @@
+## [2.11.0-experimental.1](https://github.com/kveld9/kveld-morphe-patches/compare/v2.10.2-experimental.1...v2.11.0-experimental.1) (2026-11-08)
+
+### Bug Fixes
+
+* **gboard:** keep the raised unpinned clips limit after pinning ([cfe2c53](https://github.com/kveld9/kveld-morphe-patches/commit/cfe2c536ebe293b0abcdea923abe5b6c028ec792)), closes [#205](https://github.com/kveld9/kveld-morphe-patches/issues/205)
+* **gboard:** remove residual 100 cap for end-to-end 200 support ([939ec45](https://github.com/kveld9/kveld-morphe-patches/commit/939ec4539f2e273ddc2922ad35838396786b272c)), closes [#205](https://github.com/kveld9/kveld-morphe-patches/issues/205)
+* **tiktok:** keep the profile banner container hidden when there is no banner ([5a5e803](https://github.com/kveld9/kveld-morphe-patches/commit/5a5e80350cf5914d748f299bf00de15d2f998827)), closes [#214](https://github.com/kveld9/kveld-morphe-patches/issues/214)
+* **tiktok:** loosen voice comments fingerprint parameters on 47.7.2 ([4bba49b](https://github.com/kveld9/kveld-morphe-patches/commit/4bba49b904d5a748d700bf3a4396737afeba1664))
+* **tiktok:** restore auto-pause first video player controller on 47.7.2 ([2fd2d76](https://github.com/kveld9/kveld-morphe-patches/commit/2fd2d76e37a0ef751f147f64871fc36985c947c8))
+* **tiktok:** restore friends suggestions filter targets on 47.7.2 ([4e92aac](https://github.com/kveld9/kveld-morphe-patches/commit/4e92aac613d36378b7fce2dfab355df3e332102d))
+* **tiktok:** restore instant cold start hook on 47.7.2 ([d15e186](https://github.com/kveld9/kveld-morphe-patches/commit/d15e186bfde2fc49d20de7a467bdd71ae529c82e))
+* **tiktok:** restore system font patch on 47.7.2 ([6063eb7](https://github.com/kveld9/kveld-morphe-patches/commit/6063eb7b0dfcd47da22ae310500bfd08546c6bf9))
+* **tiktok:** restore video fit mode on 47.7.2 ([3608892](https://github.com/kveld9/kveld-morphe-patches/commit/360889271b9c71e6c335e215f5c60a8377a3c667))
+* **tiktok:** stop the black overlay on profiles without a banner ([3266744](https://github.com/kveld9/kveld-morphe-patches/commit/3266744ac6f5fe665ddac4082a5ec6f22a62b05f)), closes [#214](https://github.com/kveld9/kveld-morphe-patches/issues/214)
+* **tiktok:** update client ai governor targets on 47.7.2 ([6567cff](https://github.com/kveld9/kveld-morphe-patches/commit/6567cff1171661b9ee74cab5a20022f4288be310))
+* **tiktok:** update custom share sheet targets on 47.7.2 ([e714742](https://github.com/kveld9/kveld-morphe-patches/commit/e7147427407b3968fc9684f9c3698afc8aaf458c))
+* **tiktok:** update device privacy guard targets on 47.7.2 ([4873a12](https://github.com/kveld9/kveld-morphe-patches/commit/4873a121ba45cc9842ad1c3af9353477a2aef3a0))
+* **tiktok:** update direct message declutter targets on 47.7.2 ([99b84ff](https://github.com/kveld9/kveld-morphe-patches/commit/99b84ffa0bb8b6cda65180c9057b7a09eb27b286))
+* **tiktok:** update feed ads content filter targets on 47.7.2 ([63e7e69](https://github.com/kveld9/kveld-morphe-patches/commit/63e7e69907d1cbfabc8ef18837af7189addad3ab))
+* **tiktok:** update feed interface declutter assem and trigger targets on 47.7.2 ([cd5ae4b](https://github.com/kveld9/kveld-morphe-patches/commit/cd5ae4b577daae94f065f522294e784a3df53cb6))
+* **tiktok:** update feed navigation declutter targets on 47.7.2 ([9f80c24](https://github.com/kveld9/kveld-morphe-patches/commit/9f80c24000242d794867877972ab727df7b1568e))
+* **tiktok:** update force auto scroll bottom bar facade on 47.7.2 ([6724333](https://github.com/kveld9/kveld-morphe-patches/commit/672433349efc491b583a5a5ef97b42ab9c63402b))
+* **tiktok:** update hide inbox promos and alerts targets on 47.7.2 ([8c2acc6](https://github.com/kveld9/kveld-morphe-patches/commit/8c2acc623d5f51e6df904c9f6512aadbf5f73ec7))
+* **tiktok:** update history recording governor targets on 47.7.2 ([7204fc1](https://github.com/kveld9/kveld-morphe-patches/commit/7204fc13b678cb65ccc1e6c6624f49f50f444828))
+* **tiktok:** update popups and prompts suppressor targets on 47.7.2 ([dd59388](https://github.com/kveld9/kveld-morphe-patches/commit/dd593885ebe5b3d1ebeefe38a0ea42492e45f5fa))
+* **tiktok:** update search experience customizer targets on 47.7.2 ([65f3708](https://github.com/kveld9/kveld-morphe-patches/commit/65f3708d6f7c6b20dd38e6d912f449d3cfaebadd))
+* **tiktok:** use the exact opcode when guarding the banner visibility call ([021621b](https://github.com/kveld9/kveld-morphe-patches/commit/021621bdd0bd255df7b740b86997fe2b2cbb88f9))
+
+### New Features
+
+* **tiktok:** bump target version to 47.7.2 ([4952ef9](https://github.com/kveld9/kveld-morphe-patches/commit/4952ef988fba7a3d81ad972ad9e703fb8f753ae7))
+* **universal:** add a battery-optimization toggle to the permission stripper ([2cf5c9c](https://github.com/kveld9/kveld-morphe-patches/commit/2cf5c9c30a7d789dc8dc0be1393dda84c10a24ef))
+* **universal:** add a display-over-other-apps toggle to the permission stripper ([dc9eb7b](https://github.com/kveld9/kveld-morphe-patches/commit/dc9eb7bb2d1dfef5f9cd556ebca46a9ce0da3246))
+* **universal:** add a financial-SMS toggle to the permission stripper ([35f130f](https://github.com/kveld9/kveld-morphe-patches/commit/35f130f0d23e7aa346088b0396f8507844dbe14c))
+* **universal:** add a Phone permission toggle to the permission stripper ([34f9c79](https://github.com/kveld9/kveld-morphe-patches/commit/34f9c79b08cb7862e0a4bcde2c2ad1768fc3e393))
+* **universal:** add a usage-access toggle to the permission stripper ([f783444](https://github.com/kveld9/kveld-morphe-patches/commit/f783444e1add436081f15cc06149a064b7575891))
+* **universal:** add an exact-alarms toggle to the permission stripper ([7c36673](https://github.com/kveld9/kveld-morphe-patches/commit/7c366735da84e2c0c503d3b3de8028df1c6b201e))
+* **universal:** add an install-apps toggle to the permission stripper ([0d631c9](https://github.com/kveld9/kveld-morphe-patches/commit/0d631c9ac10756c2e6cadf30e4f15dec9b89716c))
+* **universal:** add an SMS permission toggle to the permission stripper ([607fc86](https://github.com/kveld9/kveld-morphe-patches/commit/607fc86ce3690317330324d3ca78cff4406fe099))
+
 ## [2.10.2-experimental.1](https://github.com/kveld9/kveld-morphe-patches/compare/v2.10.1...v2.10.2-experimental.1) (2026-11-06)
 
 ### Bug Fixes

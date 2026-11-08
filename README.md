@@ -86,7 +86,7 @@ flowchart TD
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Brave Browser** | `com.brave.browser` | `1.99.55` | `arm64-v8a`<br>`armeabi-v7a` (single file) | [ARM64](https://github.com/brave/brave-browser/releases/download/v1.99.55/Bravemonoarm64.apk) · [ARM32](https://github.com/brave/brave-browser/releases/download/v1.99.55/BraveMonoarm.apk) | [Brave Guide](docs/apps/brave.md) |
 | **Gboard Lite** | `com.google.android.inputmethod.latin` | `18.5.1.993608717-lite_beta` | `arm64-v8a`<br>`armeabi-v7a` (any screen) | [APKMirror](https://www.apkmirror.com/apk/google-inc/gboard/gboard-the-google-keyboard-18-5-1-993608717-beta/) | [Gboard Lite Guide](docs/apps/gboard.md) |
-| **TikTok** | `com.zhiliaoapp.musically` | `47.6.3` | `arm64-v8a` (any screen) | [APKMirror](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-47-6-3-release/) | [TikTok Guide](docs/apps/tiktok.md) |
+| **TikTok** | `com.zhiliaoapp.musically` | `47.7.2` | `arm64-v8a` (any screen) | [APKMirror](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-47-7-2-release/) | [TikTok Guide](docs/apps/tiktok.md) |
 | **TikTok Lite** | `com.tiktok.lite.go` | `47.5.52` | `arm64-v8a`<br>`armeabi-v7a` (multi-file) | [APKMirror](https://www.apkmirror.com/apk/tiktok-pte-ltd/tiktok-lite-faster-tiktok/tiktok-lite-faster-tiktok-47-5-52-release/) | [TikTok Lite Guide](docs/apps/tiktok_lite.md) |
 
 Labels: `single file` = one APK; `multi-file` = a package Morphe joins together; `any screen` = works on any screen size.
@@ -114,9 +114,9 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 
 **Supported versions:**
 
-| 47.6.3 |
+| 47.7.2 |
 | :---: |
-| Download com.zhiliaoapp.musically v47.6.3 (APK) arm64-v8a nodpi versionCode 2024706030 (APK) from APKMirror |
+| Download com.zhiliaoapp.musically v47.7.2 (APK) arm64-v8a nodpi versionCode 2024707020 (APK) from APKMirror |
 
 | Patch | Description | Options |
 |----------|----------------|-----------|
@@ -303,7 +303,7 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 | **Spoof Reinstall IDs** | Prevents apps from linking reinstalls to your device by resetting app and install IDs. | • App set ID<br>• Install ID<br>• Scope to single app |
 | **Spoof signature** | Presents the original release signature so modified-app checks pass. |  |
 | **Stop Background Sync (Universal)** | Stops background sync schedulers and boot wakeups. | • Strip Boot Permission<br>• Disable Boot Receivers<br>• Disable Background Schedulers<br>• Strip Wake Lock Permission |
-| **Strip Sensitive Permissions (Universal)** | Removes sensitive privacy and hardware permissions you select. | • Notifications<br>• Camera<br>• Microphone<br>• Photos & files<br>• Location<br>• Contacts<br>• Calendar<br>• Nearby devices<br>• Body sensors<br>• Installed apps |
+| **Strip Sensitive Permissions (Universal)** | Removes sensitive privacy and hardware permissions you select. | • Notifications<br>• Camera<br>• Microphone<br>• Photos & files<br>• Location<br>• Contacts<br>• Calendar<br>• Nearby devices<br>• Body sensors<br>• Installed apps<br>• Phone<br>• SMS<br>• Display over other apps<br>• Install apps<br>• Usage access<br>• Exact alarms<br>• Financial SMS<br>• Battery optimization |
 
 </details>
 
