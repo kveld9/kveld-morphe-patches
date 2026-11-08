@@ -635,6 +635,12 @@ public class GboardExtension {
         return Math.max(MIN_CLIPBOARD_UNPINNED_LIMIT, Math.min(MAX_CLIPBOARD_UNPINNED_LIMIT, limit));
     }
 
+    public static int getClipboardRemainingBudget(int pinnedCount) {
+        int limit = getClipboardUnpinnedLimit();
+        int remaining = limit - pinnedCount;
+        return remaining < 0 ? 0 : remaining;
+    }
+
     public static boolean isClipboardGridLayoutEnabled() {
         return getBooleanPref(PREF_KEY_CLIPBOARD_GRID_LAYOUT, true);
     }

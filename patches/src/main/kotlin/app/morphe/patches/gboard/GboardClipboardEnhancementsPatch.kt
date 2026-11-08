@@ -15,6 +15,7 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 
 val gboardClipboardEnhancementsPatch = bytecodePatch(
     default = true,
@@ -173,6 +174,119 @@ val gboardClipboardEnhancementsPatch = bytecodePatch(
             addInstructions(pruneIndex + 1, "move-result v$pruneReg")
         }
         println("[Clipboard Enhancements] Hooked unpinned prune cap in clipboard adapter -> dynamic preference.")
+        patched++
+
+        // 6. Remove residual 100 hardcoded caps in clipboard loader
+        val fpLoaderCaps = Fingerprint(
+            strings = listOf("timestamp DESC limit %d"),
+            returnType = "Ljava/lang/Object;",
+            parameters = emptyList(),
+        )
+        val loaderMethod = try {
+            fpLoaderCaps.method
+        } catch (e: Exception) {
+            throw PatchException(
+                "[Clipboard Enhancements] Clipboard loader method not found: ${e.message}",
+            )
+        }
+
+        val targetSites = loaderMethod.implementation?.instructions?.withIndex()
+            ?.filter { iv ->
+                val inst = iv.value
+                val isConst100 = inst.opcode == Opcode.CONST_16 &&
+                    (inst as? NarrowLiteralInstruction)?.narrowLiteral == 100
+                val isRsub100 = inst.opcode == Opcode.RSUB_INT_LIT8 &&
+                    (inst as? NarrowLiteralInstruction)?.narrowLiteral == 100
+                isConst100 || isRsub100
+            }
+            ?.map { it.index to it.value }
+            ?.toList() ?: emptyList()
+
+        if (targetSites.size != 6) {
+            throw PatchException(
+                "[Clipboard Enhancements] Expected 6 residual 100 cap sites in clipboard loader, found ${targetSites.size}.",
+            )
+        }
+
+        targetSites.asReversed().forEach { (idx, inst) ->
+            when (inst.opcode) {
+                Opcode.CONST_16 -> {
+                    val reg = (inst as OneRegisterInstruction).registerA
+                    loaderMethod.replaceInstruction(
+                        idx,
+                        "invoke-static {}, ${Constants.GBOARD_EXTENSION_CLASS}->getClipboardUnpinnedLimit()I",
+                    )
+                    loaderMethod.addInstructions(
+                        idx + 1,
+                        "move-result v$reg",
+                    )
+                }
+                Opcode.RSUB_INT_LIT8 -> {
+                    val twoReg = inst as TwoRegisterInstruction
+                    val regA = twoReg.registerA
+                    val regB = twoReg.registerB
+                    loaderMethod.replaceInstruction(
+                        idx,
+                        "invoke-static {v$regB}, ${Constants.GBOARD_EXTENSION_CLASS}->getClipboardRemainingBudget(I)I",
+                    )
+                    loaderMethod.addInstructions(
+                        idx + 1,
+                        "move-result v$regA",
+                    )
+                }
+                else -> {}
+            }
+        }
+        println("[Clipboard Enhancements] Hooked remaining budget across ${targetSites.size} site(s).")
+        patched++
+
+        // 7. Remove residual 100 hardcoded cap in clipboard adapter prune path
+        val fpAdapterPrune = Fingerprint(
+            definingClass = adapterClass,
+            returnType = "V",
+            parameters = emptyList(),
+            custom = { method, _ ->
+                method.implementation?.instructions?.any {
+                    it.opcode == Opcode.RSUB_INT_LIT8 &&
+                        (it as? NarrowLiteralInstruction)?.narrowLiteral == 100
+                } == true
+            },
+        )
+        val adapterPruneMethod = try {
+            fpAdapterPrune.method
+        } catch (e: Exception) {
+            throw PatchException(
+                "[Clipboard Enhancements] Adapter prune method with residual 100 cap not found in $adapterClass: ${e.message}",
+            )
+        }
+
+        val rsubSites = adapterPruneMethod.implementation?.instructions?.withIndex()
+            ?.filter { iv ->
+                val inst = iv.value
+                inst.opcode == Opcode.RSUB_INT_LIT8 &&
+                    (inst as? NarrowLiteralInstruction)?.narrowLiteral == 100
+            }
+            ?.map { it.index to it.value }
+            ?.toList() ?: emptyList()
+
+        if (rsubSites.isEmpty()) {
+            throw PatchException("[Clipboard Enhancements] Residual 100 cap not found in adapter prune method.")
+        }
+
+        rsubSites.asReversed().forEach { (idx, inst) ->
+            val twoReg = inst as TwoRegisterInstruction
+            val regA = twoReg.registerA
+            val regB = twoReg.registerB
+            adapterPruneMethod.replaceInstruction(
+                idx,
+                "invoke-static {v$regB}, ${Constants.GBOARD_EXTENSION_CLASS}->getClipboardRemainingBudget(I)I",
+            )
+            adapterPruneMethod.addInstructions(
+                idx + 1,
+                "move-result v$regA",
+            )
+        }
+        println("[Clipboard Enhancements] Hooked remaining budget in clipboard adapter.")
         patched++
 
         if (patched == 0) {
