@@ -625,11 +625,11 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = favClass,
-                name = "i4", // in v47.6.3, was j4 in v47.5.3, l4 in v47.4.3
+                name = "n4", // in v47.7.2, was i4 in v47.6.3, j4 in v47.5.3, l4 in v47.4.3
                 returnType = "V",
                 parameters = listOf("Ljava/lang/Object;"),
             ).method.replaceWithReturnVoid()
-            println("[Declutter Video Interface] Hooked VideoFavoriteAssem.i4() -> return-void.")
+            println("[Declutter Video Interface] Hooked VideoFavoriteAssem.n4() -> return-void.")
             patched++
         }
 
