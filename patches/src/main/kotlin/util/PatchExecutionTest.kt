@@ -333,7 +333,7 @@ private fun ensurePkcs12KeyStore(keystoreFile: File) {
 
 private fun verifyInputVersion(
     patcher: Patcher,
-    targetPatches: Set<Patch<*>>,
+    targetPatches: Set<Patch>,
     targetApp: TargetApp,
     inputFile: File,
 ) {
@@ -1119,7 +1119,7 @@ private fun isPatchSkipLine(line: String): Boolean {
     return PATCH_SKIP_PATTERN.containsMatchIn(line)
 }
 
-private fun applyPatchOptions(rawOptions: String?, targetPatches: Set<Patch<*>>) {
+private fun applyPatchOptions(rawOptions: String?, targetPatches: Set<Patch>) {
     if (rawOptions.isNullOrBlank()) return
 
     val entries = parsePatchOptionEntries(rawOptions)
@@ -1148,7 +1148,7 @@ private fun parsePatchOptionPair(entry: String): Pair<String, String> {
 
 private fun applyPatchOptionEntries(
     entries: List<Pair<String, String>>,
-    targetPatches: Set<Patch<*>>,
+    targetPatches: Set<Patch>,
 ): Int {
     var setCount = 0
     for ((key, rawValue) in entries) {
@@ -1160,7 +1160,7 @@ private fun applyPatchOptionEntries(
 private fun applySingleOptionToPatches(
     key: String,
     rawValue: String,
-    targetPatches: Set<Patch<*>>,
+    targetPatches: Set<Patch>,
 ): Int {
     val matchingPatches = targetPatches.filter { it.options.containsKey(key) }
     if (matchingPatches.isEmpty()) {
