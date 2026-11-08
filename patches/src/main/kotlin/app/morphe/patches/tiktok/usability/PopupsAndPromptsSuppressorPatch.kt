@@ -452,22 +452,6 @@ private fun BytecodePatchContext.applyPopLayerFilterHook(): Int {
     println("[Block Popups & Prompts] Hooked PopLayer LX/099O.canShow() -> Extension rule-based popup filter active.")
     count++
 
-    Fingerprint(
-        definingClass = "LX/0ozF;",
-        name = "LIZ",
-        returnType = "V",
-    ).method.replaceWithReturnVoid()
-    println("[Block Popups & Prompts] Neutralized LX/0ozF.LIZ() -> Profile view history turn-on sheet blocked.")
-    count++
-
-    Fingerprint(
-        definingClass = "LX/0O9H;",
-        name = "invoke",
-        returnType = "Ljava/lang/Object;",
-    ).method.replaceWithReturnNull()
-    println("[Block Popups & Prompts] Neutralized LX/0O9H.invoke() -> Profile view history alternate sheet trigger blocked.")
-    count++
-
     return count
 }
 
