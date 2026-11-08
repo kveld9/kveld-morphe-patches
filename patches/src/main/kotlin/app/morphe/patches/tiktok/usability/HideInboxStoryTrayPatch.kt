@@ -43,7 +43,7 @@ val hideInboxStoryTrayPatch = bytecodePatch(
             // Neutralizes the pod provider so no story or thought combine pods are created.
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/inbox/skylight/InboxSkylightWidgetV2;",
-                name = "Zp",
+                name = "wq",
                 returnType = "Ljava/util/List;",
                 parameters = emptyList(),
             ).method.replaceWithReturnEmptyList()
