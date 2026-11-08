@@ -1,3 +1,15 @@
+## [2.11.0-experimental.2](https://github.com/kveld9/kveld-morphe-patches/compare/v2.11.0-experimental.1...v2.11.0-experimental.2) (2026-11-08)
+
+### Bug Fixes
+
+* **tiktok:** hook the current favorite button handler ([e2ba081](https://github.com/kveld9/kveld-morphe-patches/commit/e2ba08118ff455b34b7f38b225ed3a89783f2a12))
+* **tiktok:** hook the current story tray pod provider ([688eaf6](https://github.com/kveld9/kveld-morphe-patches/commit/688eaf60da12cf8aec409831ddd7f3b50c7dd1b2))
+* **tiktok:** name the hooked method correctly in the direct message log ([afe10e7](https://github.com/kveld9/kveld-morphe-patches/commit/afe10e7772fb39302f48405813f78124afc8fc9d))
+* **tiktok:** name the hooked method correctly in the video fit logs ([ae1b4a0](https://github.com/kveld9/kveld-morphe-patches/commit/ae1b4a07262592cb43a5e91f02c9c032148db825))
+* **tiktok:** prune the dead GoogleOneTapAuth isAvailable hook ([9e3592a](https://github.com/kveld9/kveld-morphe-patches/commit/9e3592a990f2137f62771f3cdfba65a557e7d227))
+* **tiktok:** remove the ProfileBackgroundExp gate override that caused infinite profile loading loops ([7b5524e](https://github.com/kveld9/kveld-morphe-patches/commit/7b5524eace5223458a25e59a5d744bf5d38cc97d))
+* **tiktok:** stop hiding failures of the clean comment copying hook ([eaad72e](https://github.com/kveld9/kveld-morphe-patches/commit/eaad72e5b77236ff59e0f9359020598d767aab4d))
+
 ## [2.11.0-experimental.1](https://github.com/kveld9/kveld-morphe-patches/compare/v2.10.2-experimental.1...v2.11.0-experimental.1) (2026-11-08)
 
 ### Bug Fixes
