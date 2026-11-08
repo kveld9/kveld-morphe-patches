@@ -113,7 +113,7 @@ val profileBannerPatch = bytecodePatch(
         val visibilityInvoke = instructions[gateIndex + 4]
         val visibilityRef = visibilityInvoke.getReference<MethodReference>()
         check(
-            visibilityInvoke.opcode.name.startsWith("INVOKE") &&
+            visibilityInvoke.opcode == Opcode.INVOKE_STATIC &&
                 visibilityRef != null &&
                 visibilityRef.name == "LJLLL" &&
                 visibilityRef.parameterTypes == listOf("I", "Landroid/widget/FrameLayout;")
