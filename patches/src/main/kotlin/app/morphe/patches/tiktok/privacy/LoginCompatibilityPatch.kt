@@ -43,18 +43,19 @@ val loginCompatibilityPatch = bytecodePatch(
 
         if (fixGoogleLogin == true) {
             // 1. GoogleAuth.isAvailable()Z -> return false
-            try {
-                Fingerprint(
-                    definingClass = "Lcom/bytedance/lobby/google/GoogleAuth;",
-                    name = "isAvailable",
-                    returnType = "Z",
-                    parameters = emptyList(),
-                ).method.replaceWithReturnBoolean(false)
-                println("[Login Compatibility Fix] Forced GoogleAuth.isAvailable() -> false (Web OAuth fallback active).")
-                patched++
-            } catch (e: Exception) {
-                println("[Login Compatibility Fix] GoogleAuth.isAvailable note: ${e.message}")
+            Fingerprint(
+                accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.FINAL),
+                returnType = "Z",
+                parameters = emptyList(),
+                definingClass = "Lcom/bytedance/lobby/google/GoogleAuth;",
+            ).method.apply {
+                check(returnType == "Z") {
+                    "[Login Compatibility Fix] GoogleAuth availability target resolved to non-boolean $returnType; refusing to patch (target shifted)."
+                }
+                replaceWithReturnBoolean(false)
             }
+            println("[Login Compatibility Fix] Forced GoogleAuth.isAvailable() -> false (Web OAuth fallback active).")
+            patched++
 
         }
 
