@@ -275,7 +275,8 @@ private fun BytecodePatchContext.applyCopyWithoutUsername(): Int {
             )
             patched++
         }
-    } catch (_: Exception) {
+    } catch (e: Exception) {
+        println("[Comment Customizer] Clean comment copying note (clip-data builder): ${e.message}")
     }
 
     try {
@@ -331,7 +332,8 @@ private fun BytecodePatchContext.applyCopyWithoutUsername(): Int {
                 method.addCommentTextCaptureInstructions(getTextIndex)
             }
         }
-    } catch (_: Exception) {
+    } catch (e: Exception) {
+        println("[Comment Customizer] Clean comment copying note (comment copy builder): ${e.message}")
     }
 
     println("[Comment Customizer] Clean comment copying active.")
