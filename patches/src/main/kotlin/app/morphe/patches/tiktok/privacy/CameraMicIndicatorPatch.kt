@@ -8,6 +8,7 @@ import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.sharedExtensionPatch
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.ReferenceType
+import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
@@ -46,14 +47,6 @@ private val TARGET_TABLE = listOf(
         noParameters = false,
         type = SiteType.CAMERA_OPEN,
         isAfterMoveResult = true,
-    ),
-    Target(
-        definingClass = "Landroid/hardware/camera2/CameraManager;",
-        name = "openCamera",
-        returnType = "V",
-        noParameters = false,
-        type = SiteType.CAMERA_OPEN,
-        smali = "invoke-static {}, $HOOK->onCameraStart()V",
     ),
     Target(
         definingClass = "Landroid/hardware/Camera;",
@@ -139,6 +132,32 @@ private fun matchTarget(instruction: Instruction): Target? {
     }
 }
 
+private const val CAMERA_DEVICE = "Landroid/hardware/camera2/CameraDevice;"
+
+// Camera2 reports open success/failure asynchronously through CameraDevice.StateCallback.
+// Incrementing at the openCamera() call site leaked the count whenever opening failed, so the
+// counter is driven from the callback overrides: onOpened -> start, onError -> stop.
+private fun cameraCallbackHook(method: Method): String? {
+    if (method.returnType != "V" || method.implementation == null) return null
+    val params = method.parameterTypes
+    return when (method.name) {
+        "onOpened" -> if (params.size == 1 && params[0].toString() == CAMERA_DEVICE) {
+            "invoke-static {}, $HOOK->onCameraStart()V"
+        } else {
+            null
+        }
+        "onError" -> if (params.size == 2 &&
+            params[0].toString() == CAMERA_DEVICE &&
+            params[1].toString() == "I"
+        ) {
+            "invoke-static {}, $HOOK->onCameraStop()V"
+        } else {
+            null
+        }
+        else -> null
+    }
+}
+
 private fun computeEdit(
     target: Target,
     index: Int,
@@ -195,16 +214,25 @@ val cameraMicIndicatorPatch = bytecodePatch(
         // Single scan over all methods instead of five; name check before class check avoids decoding long class strings.
         var cameraOpens = 0
         var cameraReleases = 0
+        var cameraOpenedCallbacks = 0
+        var cameraErrorCallbacks = 0
         var micStarts = 0
         var micStops = 0
 
         val scanFp = Fingerprint(
             custom = { method, _ ->
-                method.implementation?.instructions?.any { matchTarget(it) != null } == true
+                cameraCallbackHook(method) != null ||
+                    method.implementation?.instructions?.any { matchTarget(it) != null } == true
             },
         )
         scanFp.matchAll().forEach { match ->
             val method = match.method
+            val callbackSmali = cameraCallbackHook(method)
+            if (callbackSmali != null) {
+                method.addInstructions(0, callbackSmali)
+                if (method.name == "onOpened") cameraOpenedCallbacks++ else cameraErrorCallbacks++
+                return@forEach
+            }
             val instructions = method.implementation?.instructions?.toList() ?: return@forEach
             val edits = mutableListOf<SiteEdit>()
             instructions.forEachIndexed { index, instruction ->
@@ -226,12 +254,13 @@ val cameraMicIndicatorPatch = bytecodePatch(
             }
         }
 
-        val totalSites = cameraOpens + cameraReleases + micStarts + micStops
+        val totalSites = cameraOpens + cameraReleases + cameraOpenedCallbacks + cameraErrorCallbacks +
+            micStarts + micStops
         if (totalSites == 0) {
             throw PatchException("Zero camera and microphone call sites found to instrument.")
         }
         var patched = totalSites
 
-        println("[Camera & Microphone Indicator] Instrumented $cameraOpens camera opens, $cameraReleases camera releases, $micStarts mic starts, $micStops mic stops across $totalSites call site(s) -> $patched indicator hook(s) active.")
+        println("[Camera & Microphone Indicator] Instrumented $cameraOpens camera opens, $cameraReleases camera releases, $cameraOpenedCallbacks camera open callbacks, $cameraErrorCallbacks camera error callbacks, $micStarts mic starts, $micStops mic stops across $totalSites site(s) -> $patched indicator hook(s) active.")
     }
 }
