@@ -376,7 +376,7 @@ val directMessageDeclutterPatch = bytecodePatch(
                         return-void
                     """.trimIndent(),
                 )
-                println("[Declutter Direct Messages] Hooked IMImageBtnViewAssem.Yq -> View.GONE.")
+                println("[Declutter Direct Messages] Hooked IMImageBtnViewAssem.Tp -> View.GONE.")
                 patched++
             }
 
