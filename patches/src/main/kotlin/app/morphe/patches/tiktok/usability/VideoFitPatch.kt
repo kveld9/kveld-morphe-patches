@@ -187,7 +187,7 @@ val videoFitPatch = bytecodePatch(
                 check-cast p1, $resultClass
             """.trimIndent(),
         )
-        println("[Video Fit Mode] Hooked CellAdaptionComponentV2.Yp(Result)V -> prepended fitted() swap.")
+        println("[Video Fit Mode] Hooked CellAdaptionComponentV2.wq(Result)V -> prepended fitted() swap.")
         patched++
 
         // 7. Hook FeedCellAdaptionComponentV2.wq(VideoAdaptionResult)V (was Yp in v47.6.3)
@@ -206,7 +206,7 @@ val videoFitPatch = bytecodePatch(
                 check-cast p1, $resultClass
             """.trimIndent(),
         )
-        println("[Video Fit Mode] Hooked FeedCellAdaptionComponentV2.Yp(Result)V -> prepended fitted() swap.")
+        println("[Video Fit Mode] Hooked FeedCellAdaptionComponentV2.wq(Result)V -> prepended fitted() swap.")
         patched++
 
         if (patched == 0) {
