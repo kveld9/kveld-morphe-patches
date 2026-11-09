@@ -35,17 +35,17 @@ val gboardDisablePhenotypeSyncPatch = bytecodePatch(
         hookedMethods.add("AccountRemovedBroadcastReceiver.onReceive")
 
         val fp3 = Fingerprint(
-            definingClass = "Lwzh;",
-            name = "dB",
-            parameters = listOf("Landroid/content/Context;", "Lwjf;"),
+            definingClass = "Lltw;",
+            name = "eS",
+            parameters = listOf("Landroid/content/Context;", "Llko;"),
             returnType = "V",
         )
         fp3.method.addInstructions(0, "return-void")
         val c3 = cleanClassName(fp3.originalClassDef.type)
-        hookedMethods.add("$c3.dB")
+        hookedMethods.add("$c3.eS")
 
         val fp4 = Fingerprint(
-            definingClass = "Lwzh;",
+            definingClass = "Lltw;",
             name = "e",
             parameters = emptyList(),
             returnType = "V",
@@ -54,7 +54,7 @@ val gboardDisablePhenotypeSyncPatch = bytecodePatch(
         hookedMethods.add("$c3.e")
 
         val fp5 = Fingerprint(
-            definingClass = "Lwzh;",
+            definingClass = "Lltw;",
             name = "g",
             parameters = emptyList(),
             returnType = "V",
