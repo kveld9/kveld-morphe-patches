@@ -123,13 +123,13 @@ val popupsAndPromptsSuppressorPatch = bytecodePatch(
 
                 // 4. Suppress system sheet push dialog check
                 Fingerprint(
-                    definingClass = "LX/01c;",
+                    definingClass = "LX/0lr;",
                     name = "LBL",
                     parameters = emptyList(),
                     returnType = "Z",
                     strings = listOf("count_system"),
                 ).method.replaceWithReturnBoolean(false)
-                println("[Block Popups & Prompts] Neutralized Lite LX/01c.LBL() -> System push dialog check forced false.")
+                println("[Block Popups & Prompts] Neutralized Lite LX/0lr.LBL() -> System push dialog check forced false.")
                 patched++
             }
 
