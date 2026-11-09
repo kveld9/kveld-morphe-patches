@@ -84,68 +84,46 @@ val playbackSpeedPatch = bytecodePatch(
             val speedVal = if (rawSpeed in 0.25f..4.0f) rawSpeed else 1.0f
             val speedHex = "0x" + java.lang.Float.floatToRawIntBits(speedVal).toUInt().toString(16)
 
+            // 1. Hook SimplifyPlayerImpl.LD(F)V to intercept and normalize speed selections
             val speedFp = Fingerprint(
-                definingClass = "LX/Ao6;",
-                name = "LFF",
-                parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;", "F"),
+                definingClass = "LX/2NC;",
+                name = "LD",
+                parameters = listOf("F"),
                 returnType = "V",
+                strings = listOf("SimplifyPlayerImpl", "setPlaySpeed mPlayer = "),
             )
-            val lffSpeedReg = if (AccessFlags.STATIC.isSet(speedFp.method.accessFlags)) "p1" else "p2"
-            speedFp.method.addInstructions(
+            val speedMethod = speedFp.method
+            speedMethod.addInstructions(
                 0,
                 """
-                    invoke-static {$lffSpeedReg}, ${Constants.TIKTOK_EXTENSION_SPEED_HOOK}->resolvePlayerSpeed(F)F
-                    move-result $lffSpeedReg
-                    invoke-static {$lffSpeedReg}, ${Constants.TIKTOK_EXTENSION_SPEED_HOOK}->onSpeedSelected(F)V
+                    invoke-static {p1}, ${Constants.TIKTOK_EXTENSION_SPEED_HOOK}->resolvePlayerSpeed(F)F
+                    move-result p1
+                    invoke-static {p1}, ${Constants.TIKTOK_EXTENSION_SPEED_HOOK}->onSpeedSelected(F)V
                 """.trimIndent(),
             )
-            println("[Remember Playback Speed] Hooked Lite speed selection Ao6.LFF -> state persisted.")
+            println("[Remember Playback Speed] Hooked Lite SimplifyPlayerImpl.LD -> state persisted.")
             patched++
 
-            val getSpeedFp = Fingerprint(
-                definingClass = "LX/Ao6;",
-                name = "LBL",
-                parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;"),
-                returnType = "F",
+            // 2. Hook SimplifyPlayerImpl.render()V to enforce saved speed on new video playback
+            val renderFp = Fingerprint(
+                definingClass = "LX/2NC;",
+                name = "render",
+                parameters = emptyList(),
+                returnType = "V",
+                strings = listOf("SimplifyPlayerImpl, render(), mSurface = "),
             )
-            val lblAwemeReg = if (AccessFlags.STATIC.isSet(getSpeedFp.method.accessFlags)) "p0" else "p1"
-            getSpeedFp.method.ensureRegisterCount(2)
-            getSpeedFp.method.addInstructions(
+            val renderMethod = renderFp.method
+            renderMethod.ensureRegisterCount(4)
+            renderMethod.addInstructions(
                 0,
                 """
                     const v1, $speedHex
-                    invoke-static {$lblAwemeReg, v1}, ${Constants.TIKTOK_EXTENSION_SPEED_HOOK}->getPlaybackSpeed(Ljava/lang/Object;F)F
+                    invoke-static {p0, v1}, ${Constants.TIKTOK_EXTENSION_SPEED_HOOK}->getPlaybackSpeed(Ljava/lang/Object;F)F
                     move-result v0
-                    return v0
+                    invoke-virtual {p0, v0}, LX/2NC;->LD(F)V
                 """.trimIndent(),
             )
-            println("[Remember Playback Speed] Hooked Lite speed query Ao6.LBL -> persistent speed returned.")
-            patched++
-
-            val s6Fp = Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/main/homepage/fragment/FeedFragment;",
-                name = "S6",
-                parameters = emptyList(),
-                returnType = "V",
-            )
-            s6Fp.method.ensureRegisterCount(4)
-            s6Fp.method.addInstructionsWithLabels(
-                0,
-                """
-                    const v2, $speedHex
-                    invoke-static {p0, v2}, ${Constants.TIKTOK_EXTENSION_SPEED_HOOK}->getPlaybackSpeed(Ljava/lang/Object;F)F
-                    move-result v1
-                    sput v1, LX/Ao6;->LCC:F
-                    sput v1, LX/Ao6;->LB:F
-                    invoke-virtual {p0}, Lcom/ss/android/ugc/aweme/main/homepage/fragment/FeedFragment;->E5()LX/1T5;
-                    move-result-object v0
-                    if-nez v0, :skip_speed
-                    invoke-interface {v0, v1}, LX/1T5;->setSpeed(F)V
-                    :skip_speed
-                    return-void
-                """.trimIndent(),
-            )
-            println("[Remember Playback Speed] Hooked Lite FeedFragment.S6 -> persistent speed enforced on scroll.")
+            println("[Remember Playback Speed] Hooked Lite SimplifyPlayerImpl.render -> persistent speed enforced on render.")
             patched++
 
             println("[Remember Playback Speed] Applied $patched playback speed hook(s).")
