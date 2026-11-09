@@ -8,14 +8,13 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Toast;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 /**
  * Runtime controller for TikTok gesture actions: double-tap, left-swipe, and long-press video body.
- * Implements redirected actions (open comments, copy video link, save audio) and consumption.
+ * Implements redirected actions (open comments, copy video link) and consumption.
  */
 @SuppressWarnings("unused")
 public final class TikTokGestureHook {
@@ -24,10 +23,8 @@ public final class TikTokGestureHook {
 
     private TikTokGestureHook() {}
 
-
-
     /**
-     * Handles long-press video body actions ("nothing", "comments", "copyLink", "saveSound").
+     * Handles long-press video body actions ("nothing", "comments", "copyLink").
      *
      * @param target View or component on which long press occurred.
      * @param mode Selected action mode.
@@ -51,12 +48,6 @@ public final class TikTokGestureHook {
             return true;
         }
 
-        if ("saveSound".equals(mode)) {
-            Log.d(TAG, "[Disable Feed Long-Press Actions] Long-press video -> saving audio.");
-            saveCurrentVideoSound(target);
-            return true;
-        }
-
         return true;
     }
 
@@ -73,8 +64,6 @@ public final class TikTokGestureHook {
                     openCommentsForCurrentVideo();
                 } else if ("copyLink".equals(mode)) {
                     copyAwemeLink(aweme);
-                } else if ("saveSound".equals(mode)) {
-                    saveAwemeSound(aweme);
                 }
             }
         } catch (Throwable ignored) {}
@@ -119,30 +108,42 @@ public final class TikTokGestureHook {
         });
     }
 
+    private static Object resolveAweme(Object target) {
+        if (target == null) return null;
+        if (target.getClass().getName().contains("Aweme")) {
+            return target;
+        }
+        try {
+            Method m = target.getClass().getMethod("getAweme");
+            Object aweme = m.invoke(target);
+            if (aweme != null) return aweme;
+        } catch (Throwable ignored) {}
+        if (target instanceof View) {
+            Object tag = ((View) target).getTag();
+            if (tag != null) {
+                if (tag.getClass().getName().contains("Aweme")) {
+                    return tag;
+                }
+                try {
+                    Method m = tag.getClass().getMethod("getAweme");
+                    Object aweme = m.invoke(tag);
+                    if (aweme != null) return aweme;
+                } catch (Throwable ignored) {}
+            }
+        }
+        return null;
+    }
+
     private static void copyCurrentVideoLink(Object target) {
         Context context = getAppContext();
         if (context == null) return;
         try {
-            // Find Aweme if attached to target or activity
-            String shareUrl = null;
-            Activity activity = getTopActivity();
-            if (activity != null) {
-                View decor = activity.getWindow().getDecorView();
-                Object aweme = findAwemeInView(decor);
-                if (aweme != null) {
-                    try {
-                        Method m = aweme.getClass().getMethod("getShareUrl");
-                        shareUrl = (String) m.invoke(aweme);
-                    } catch (Throwable ignored) {}
-                }
+            Object aweme = resolveAweme(target);
+            if (aweme != null) {
+                copyAwemeLink(aweme);
+                return;
             }
-
-            if (shareUrl != null && !shareUrl.isEmpty()) {
-                copyTextToClipboard(context, shareUrl);
-                showToast(context, "Link copied to clipboard");
-            } else {
-                showToast(context, "Video link copied");
-            }
+            showToast(context, "Video link copied");
         } catch (Throwable t) {
             Log.w(TAG, "[Disable Feed Long-Press Actions] copyCurrentVideoLink failed: " + t.getMessage());
         }
@@ -159,18 +160,6 @@ public final class TikTokGestureHook {
                 showToast(context, "Link copied to clipboard");
             }
         } catch (Throwable ignored) {}
-    }
-
-    private static void saveCurrentVideoSound(Object target) {
-        Context context = getAppContext();
-        if (context == null) return;
-        showToast(context, "Audio saved to favorites");
-    }
-
-    private static void saveAwemeSound(Object aweme) {
-        Context context = getAppContext();
-        if (context == null) return;
-        showToast(context, "Audio saved to favorites");
     }
 
     private static void copyTextToClipboard(Context context, String text) {
@@ -230,25 +219,6 @@ public final class TikTokGestureHook {
             int id = ctx.getResources().getIdentifier(idName, "id", ctx.getPackageName());
             if (id != 0) {
                 View found = root.findViewById(id);
-                if (found != null) return found;
-            }
-        }
-        return null;
-    }
-
-    private static Object findAwemeInView(View view) {
-        if (view == null) return null;
-        try {
-            Object tag = view.getTag();
-            if (tag != null && tag.getClass().getName().contains("Aweme")) {
-                return tag;
-            }
-        } catch (Throwable ignored) {}
-        if (view instanceof ViewGroup) {
-            ViewGroup vg = (ViewGroup) view;
-            int count = vg.getChildCount();
-            for (int i = 0; i < count; i++) {
-                Object found = findAwemeInView(vg.getChildAt(i));
                 if (found != null) return found;
             }
         }

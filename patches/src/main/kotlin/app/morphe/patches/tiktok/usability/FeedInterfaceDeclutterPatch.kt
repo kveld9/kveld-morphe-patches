@@ -146,9 +146,9 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
     val longPressVideo by stringOption(
         key = "longPressVideo",
         title = "Long Press Video Action",
-        description = "Action when long pressing feed video body: 'nothing' (default, suppresses menu/repost), 'comments' (opens comments), 'copyLink' (copies link to clipboard), or 'saveSound' (favorites/saves audio).",
+        description = "Action when long pressing feed video body: 'nothing' (default, suppresses menu/repost), 'comments' (opens comments), or 'copyLink' (copies link to clipboard).",
         default = "nothing",
-        values = mapOf("Do nothing" to "nothing", "Open comments" to "comments", "Copy link" to "copyLink", "Save sound" to "saveSound"),
+        values = mapOf("Do nothing" to "nothing", "Open comments" to "comments", "Copy link" to "copyLink"),
         required = false,
     )
 
