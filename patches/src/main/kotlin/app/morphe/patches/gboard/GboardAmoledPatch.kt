@@ -58,7 +58,7 @@ val gboardAmoledPatch = bytecodePatch(
         // Inject the AMOLED row before the flag branch so it is added always.
         val themeListingFragmentFingerprint = Fingerprint(
             definingClass = "Lcom/google/android/apps/inputmethod/libs/theme/listing/ThemeListingFragment;",
-            name = "f",
+            name = "e",
             parameters = listOf("Landroid/os/Bundle;"),
             returnType = "V",
             filters = OpcodesFilter.opcodesToFilters(
@@ -78,6 +78,6 @@ val gboardAmoledPatch = bytecodePatch(
         )
 
         val targetClass = themeListingFragmentFingerprint.originalClassDef.type.substringAfterLast('/').removeSuffix(";")
-        println("[AMOLED Theme] Injected dynamic AMOLED theme entry hook into $targetClass.f() at opcode index $matchIndex")
+        println("[AMOLED Theme] Injected dynamic AMOLED theme entry hook into $targetClass.e() at opcode index $matchIndex")
     }
 }
