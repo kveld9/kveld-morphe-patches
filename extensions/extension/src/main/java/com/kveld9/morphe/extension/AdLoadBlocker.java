@@ -2,8 +2,11 @@ package com.kveld9.morphe.extension;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Dispatches failure callbacks for Google AdMob ad loaders to prevent full-screen flows from hanging.
@@ -11,7 +14,27 @@ import java.lang.reflect.Method;
 @SuppressWarnings("unused")
 public class AdLoadBlocker {
 
+    private static final String TAG = "Morphe";
     private static final Handler MAIN_HANDLER = new Handler(Looper.getMainLooper());
+    private static final Map<Class<?>, ErrorConstructor> ERROR_CONSTRUCTOR_CACHE =
+            new ConcurrentHashMap<Class<?>, ErrorConstructor>();
+
+    private static final class ErrorConstructor {
+        final Constructor<?> constructor;
+        final int arity;
+
+        ErrorConstructor(Constructor<?> constructor, int arity) {
+            this.constructor = constructor;
+            this.arity = arity;
+        }
+
+        Object newInstance() throws Exception {
+            if (constructor == null) {
+                return null;
+            }
+            return invokeConstructor(constructor, arity);
+        }
+    }
 
     public static void notifyLoadFailed(final Object callback) {
         if (callback == null) {
@@ -70,36 +93,67 @@ public class AdLoadBlocker {
 
     private static Object createLoadAdError(Class<?> errorClass) {
         try {
-            Constructor<?>[] ctors = errorClass.getDeclaredConstructors();
-            Object instance = tryInstantiate(ctors);
-            if (instance != null) {
-                return instance;
-            }
-            Constructor<?> defaultCtor = errorClass.getDeclaredConstructor();
-            defaultCtor.setAccessible(true);
-            return defaultCtor.newInstance();
+            ErrorConstructor ec = resolveErrorConstructor(errorClass);
+            return ec.newInstance();
         } catch (Throwable ignored) {
             return null;
         }
     }
 
-    private static Object tryInstantiate(Constructor<?>[] ctors) {
-        for (int arity = 5; arity >= 3; arity--) {
-            Object obj = instantiateMatching(ctors, arity);
-            if (obj != null) {
-                return obj;
-            }
+    private static ErrorConstructor resolveErrorConstructor(Class<?> errorClass) {
+        ErrorConstructor cached = ERROR_CONSTRUCTOR_CACHE.get(errorClass);
+        if (cached != null) {
+            return cached;
         }
-        return instantiateMatching(ctors, 1);
+        synchronized (ERROR_CONSTRUCTOR_CACHE) {
+            cached = ERROR_CONSTRUCTOR_CACHE.get(errorClass);
+            if (cached != null) {
+                return cached;
+            }
+
+            ErrorConstructor found = findWorkingConstructor(errorClass);
+            if (found == null) {
+                Log.w(TAG, "[Remove Ads] No compatible constructor found for " + errorClass.getName());
+                found = new ErrorConstructor(null, -1);
+            }
+            ERROR_CONSTRUCTOR_CACHE.put(errorClass, found);
+            return found;
+        }
     }
 
-    private static Object instantiateMatching(Constructor<?>[] ctors, int targetArity) {
+    private static ErrorConstructor findWorkingConstructor(Class<?> errorClass) {
+        try {
+            Constructor<?>[] ctors = errorClass.getDeclaredConstructors();
+            for (int arity = 5; arity >= 3; arity--) {
+                ErrorConstructor match = findMatchingConstructor(ctors, arity);
+                if (match != null) {
+                    return match;
+                }
+            }
+            ErrorConstructor match1 = findMatchingConstructor(ctors, 1);
+            if (match1 != null) {
+                return match1;
+            }
+            try {
+                Constructor<?> defaultCtor = errorClass.getDeclaredConstructor();
+                defaultCtor.setAccessible(true);
+                defaultCtor.newInstance();
+                return new ErrorConstructor(defaultCtor, 0);
+            } catch (Throwable ignored) {
+            }
+        } catch (Throwable ignored) {
+        }
+        return null;
+    }
+
+    private static ErrorConstructor findMatchingConstructor(Constructor<?>[] ctors, int targetArity) {
         for (Constructor<?> ctor : ctors) {
             Class<?>[] params = ctor.getParameterTypes();
             if (params.length == targetArity && params[0] == int.class) {
                 try {
                     ctor.setAccessible(true);
-                    return invokeConstructor(ctor, targetArity);
+                    invokeConstructor(ctor, targetArity);
+                    return new ErrorConstructor(ctor, targetArity);
                 } catch (Throwable ignored) {
                 }
             }
@@ -117,6 +171,8 @@ public class AdLoadBlocker {
                 return ctor.newInstance(3, "blocked", "com.google.android.gms.ads");
             case 1:
                 return ctor.newInstance(3);
+            case 0:
+                return ctor.newInstance();
             default:
                 return null;
         }
