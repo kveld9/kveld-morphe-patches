@@ -33,77 +33,34 @@ val showSeekbarPatch = bytecodePatch(
         val isLite = packageMetadata.packageName == Constants.TIKTOK_LITE_PACKAGE_NAME
 
         // 1. Aweme.getVideoControl() -> force draftProgressBar = 1 and showProgressBar = 1 (musically) or 2 (Lite)
+        val awemeClass = if (isLite) "Lcom/ss/android/ugc/aweme/minilite/feed/model/Aweme;" else AWEME_CLASS
+        val videoControlClass = if (isLite) "Lcom/ss/android/ugc/aweme/minilite/feed/model/VideoControl;" else "Lcom/ss/android/ugc/aweme/feed/model/VideoControl;"
         val showProgressBarVal = if (isLite) 2 else 1
         val fp = Fingerprint(
-            definingClass = AWEME_CLASS,
+            definingClass = awemeClass,
             name = "getVideoControl",
-            returnType = "Lcom/ss/android/ugc/aweme/feed/model/VideoControl;",
+            returnType = videoControlClass,
         )
         val method = fp.method
         method.ensureRegisterCount(3)
         method.addInstructionsWithLabels(
             0,
             """
-                iget-object v0, p0, Lcom/ss/android/ugc/aweme/feed/model/Aweme;->videoControl:Lcom/ss/android/ugc/aweme/feed/model/VideoControl;
+                iget-object v0, p0, $awemeClass->videoControl:$videoControlClass
                 if-nez v0, :show_seekbar_init
-                new-instance v0, Lcom/ss/android/ugc/aweme/feed/model/VideoControl;
-                invoke-direct {v0}, Lcom/ss/android/ugc/aweme/feed/model/VideoControl;-><init>()V
-                iput-object v0, p0, Lcom/ss/android/ugc/aweme/feed/model/Aweme;->videoControl:Lcom/ss/android/ugc/aweme/feed/model/VideoControl;
+                new-instance v0, $videoControlClass
+                invoke-direct {v0}, $videoControlClass-><init>()V
+                iput-object v0, p0, $awemeClass->videoControl:$videoControlClass
                 :show_seekbar_init
                 const/4 v1, 0x1
-                iput v1, v0, Lcom/ss/android/ugc/aweme/feed/model/VideoControl;->draftProgressBar:I
+                iput v1, v0, $videoControlClass->draftProgressBar:I
                 const/4 v1, $showProgressBarVal
-                iput v1, v0, Lcom/ss/android/ugc/aweme/feed/model/VideoControl;->showProgressBar:I
+                iput v1, v0, $videoControlClass->showProgressBar:I
                 return-object v0
             """.trimIndent(),
         )
         println("[Show Seekbar] Hooked Aweme.getVideoControl() -> Forced draftProgressBar=1 and showProgressBar=$showProgressBarVal.")
         patched++
-
-        if (isLite) {
-            // 2. FeedFragment seekbar binder -> ensure Aweme.videoControl is initialized via getVideoControl()
-            val feedFragmentFp = Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/main/homepage/fragment/FeedFragment;",
-                accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC),
-                parameters = listOf(
-                    "Lcom/ss/android/ugc/aweme/main/homepage/fragment/FeedFragment;",
-                    AWEME_CLASS,
-                ),
-                returnType = "V",
-            )
-            val feedMethod = feedFragmentFp.method
-            feedMethod.addInstructionsWithLabels(
-                0,
-                """
-                    if-eqz p1, :skip_gvc
-                    invoke-virtual {p1}, Lcom/ss/android/ugc/aweme/feed/model/Aweme;->getVideoControl()Lcom/ss/android/ugc/aweme/feed/model/VideoControl;
-                    :skip_gvc
-                    nop
-                """.trimIndent(),
-            )
-            println("[Show Seekbar] Hooked FeedFragment seekbar binder -> Guaranteed Aweme.videoControl initialization.")
-            patched++
-
-            // 3. Lite seekbar controller (EdX) -> force seekbar visibility flag active
-            val edxFp = Fingerprint(
-                strings = listOf("progress_bar_show"),
-            )
-            val edxMethod = edxFp.method
-            val lfFp = Fingerprint(
-                definingClass = edxMethod.definingClass,
-                parameters = listOf(AWEME_CLASS, "Ljava/lang/String;", "Z", "Z"),
-                returnType = "V",
-            )
-            val lfMethod = lfFp.method
-            lfMethod.addInstructions(
-                0,
-                """
-                    const/4 p3, 0x1
-                """.trimIndent(),
-            )
-            println("[Show Seekbar] Hooked Lite seekbar controller LF() -> Forced seekbar visibility state active.")
-            patched++
-        }
 
         if (!isLite) {
             // 2. SetSeekBarShowType handler -> override hidden types (3 and 4) to visible type 0
