@@ -16,30 +16,12 @@ val forceAutoScrollPatch = bytecodePatch(
     description = "Enables native auto-scrolling to the next video.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_LITE)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
 
     execute {
         var patched = 0
-        val isLite = packageMetadata.packageName == Constants.TIKTOK_LITE_PACKAGE_NAME
 
-        if (isLite) {
-            // 1. Force native Feed Auto-Scroll A/B experiment flag for TikTok Lite
-            val fypAutoScrollFp = Fingerprint(
-                returnType = "Z",
-                parameters = emptyList(),
-                strings = listOf("fyp_auto_scroll_lite_client"),
-            )
-            fypAutoScrollFp.method.addInstructions(
-                0,
-                """
-                    const/4 v0, 0x1
-                    return v0
-                """.trimIndent(),
-            )
-            println("[Force Auto-Scroll] Forced fyp_auto_scroll_lite_client -> true.")
-            patched++
-        } else {
-            // 1. Force native Feed Auto-Scroll A/B experiment flag (fyp_auto_scroll)
+        // 1. Force native Feed Auto-Scroll A/B experiment flag (fyp_auto_scroll)
             try {
                 val fypAutoScrollFp = Fingerprint(
                     returnType = "Z",
@@ -157,7 +139,6 @@ val forceAutoScrollPatch = bytecodePatch(
             } catch (e: Exception) {
                 println("[Force Auto-Scroll] createAutoScrollItem note: ${e.message}")
             }
-        }
 
         if (patched == 0) {
             println("[Force Auto-Scroll] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")

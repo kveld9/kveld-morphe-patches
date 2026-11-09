@@ -14,37 +14,16 @@ val bypassScreenCapturePatch = bytecodePatch(
     description = "Removes screenshot and screen recording blocking.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_LITE)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
 
     execute {
         var patched = 0
-        val isLite = packageMetadata.packageName == Constants.TIKTOK_LITE_PACKAGE_NAME
 
         // ==========================================
         // 1. SCREENSHOT DETECTION & TELEMETRY SUPPRESSION
         // ==========================================
 
-        if (isLite) {
-            // TikTok Lite: only ScreenShotTask is present
-            try {
-                Fingerprint(
-                    definingClass = "Lcom/ss/android/ugc/aweme/legoImpl/task/ScreenShotTask;",
-                    name = "run",
-                    parameters = listOf("Landroid/content/Context;"),
-                    returnType = "V",
-                ).method.addInstructions(
-                    0,
-                    """
-                        return-void
-                    """.trimIndent(),
-                )
-                println("[Allow Screenshots] Neutralized Lcom/ss/android/ugc/aweme/legoImpl/task/ScreenShotTask;.run(Context).")
-                patched++
-            } catch (e: Exception) {
-                println("[Allow Screenshots] Task Lcom/ss/android/ugc/aweme/legoImpl/task/ScreenShotTask; note: ${e.message}")
-            }
-        } else {
-            // 1.1 Neutralize Lego Startup Screenshot Tasks
+        // 1.1 Neutralize Lego Startup Screenshot Tasks
             val contextTasks = listOf(
                 "Lcom/ss/android/ugc/aweme/legoImp/task/ScreenShotTaskHolder\$BootFinish;",
                 "Lcom/ss/android/ugc/aweme/legoImp/task/ScreenShotFeedbackTaskHolder\$BootFinish;",
@@ -162,14 +141,12 @@ val bypassScreenCapturePatch = bytecodePatch(
             } catch (e: Exception) {
                 println("[Allow Screenshots] ScreenShotFeedbackService.tryShowScreenShotFloatingView note: ${e.message}")
             }
-        }
 
         // ==========================================
         // 2. SCREEN CAPTURE & RECORDING UNRESTRICT (FLAG_SECURE BYPASS)
         // ==========================================
 
-        if (!isLite) {
-            // 2.1 Neutralize Live Paid Courses Anti-Screenshot Setting (LivePcsCourseVideoAntiScreenshotSetting.getValue() -> false)
+        // 2.1 Neutralize Live Paid Courses Anti-Screenshot Setting (LivePcsCourseVideoAntiScreenshotSetting.getValue() -> false)
             try {
                 Fingerprint(
                     definingClass = "Lcom/bytedance/android/livesdk/comp/api/pcs/data/setting/LivePcsCourseVideoAntiScreenshotSetting;",
@@ -372,7 +349,6 @@ val bypassScreenCapturePatch = bytecodePatch(
             } catch (e: Exception) {
                 println("[Allow Screenshots] setFlagsSecure(Activity) note: ${e.message}")
             }
-        }
 
         if (patched == 0) {
             println("[Allow Screenshots] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
