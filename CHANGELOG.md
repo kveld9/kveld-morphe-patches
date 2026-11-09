@@ -1,3 +1,14 @@
+## [2.11.0-experimental.7](https://github.com/kveld9/kveld-morphe-patches/compare/v2.11.0-experimental.6...v2.11.0-experimental.7) (2026-11-09)
+
+### Bug Fixes
+
+* **tiktok:** include the exact APK link in update issues ([070596c](https://github.com/kveld9/kveld-morphe-patches/commit/070596c1b6fd25458dc152ae955e4caa3b6bd0ff))
+* **update-check:** clarify the update issue title ([e85e251](https://github.com/kveld9/kveld-morphe-patches/commit/e85e2517b51258b72e65b53faceae8054193d489))
+
+### New Features
+
+* **tiktoklite:** report TikTok Lite updates ([cca6ad4](https://github.com/kveld9/kveld-morphe-patches/commit/cca6ad4aa03691f5268e0229a1a49b24c87c8b88))
+
 ## [2.11.0-experimental.6](https://github.com/kveld9/kveld-morphe-patches/compare/v2.11.0-experimental.5...v2.11.0-experimental.6) (2026-11-09)
 
 ### Bug Fixes

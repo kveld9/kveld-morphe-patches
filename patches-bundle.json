@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-11-09T13:58:50",
-  "description": "## [2.11.0-experimental.6](https://github.com/kveld9/kveld-morphe-patches/compare/v2.11.0-experimental.5...v2.11.0-experimental.6) (2026-11-09)\n\n### Bug Fixes\n\n* **update-check:** resume update notifications for Gboard Lite and TikTok ([de7f11a](https://github.com/kveld9/kveld-morphe-patches/commit/de7f11a94f006dfee42a97c069a731d5839d2689))",
-  "download_url": "https://github.com/kveld9/kveld-morphe-patches/releases/download/v2.11.0-experimental.6/patches-2.11.0-experimental.6.mpp",
+  "created_at": "2026-11-09T14:23:15",
+  "description": "## [2.11.0-experimental.7](https://github.com/kveld9/kveld-morphe-patches/compare/v2.11.0-experimental.6...v2.11.0-experimental.7) (2026-11-09)\n\n### Bug Fixes\n\n* **tiktok:** include the exact APK link in update issues ([070596c](https://github.com/kveld9/kveld-morphe-patches/commit/070596c1b6fd25458dc152ae955e4caa3b6bd0ff))\n* **update-check:** clarify the update issue title ([e85e251](https://github.com/kveld9/kveld-morphe-patches/commit/e85e2517b51258b72e65b53faceae8054193d489))\n\n### New Features\n\n* **tiktoklite:** report TikTok Lite updates ([cca6ad4](https://github.com/kveld9/kveld-morphe-patches/commit/cca6ad4aa03691f5268e0229a1a49b24c87c8b88))",
+  "download_url": "https://github.com/kveld9/kveld-morphe-patches/releases/download/v2.11.0-experimental.7/patches-2.11.0-experimental.7.mpp",
   "signature_download_url": "",
-  "version": "2.11.0-experimental.6"
+  "version": "2.11.0-experimental.7"
 }
