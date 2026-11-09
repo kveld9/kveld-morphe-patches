@@ -39,16 +39,48 @@ public final class TikTokVideoQualityHook {
     public static volatile int maxAllowedResolution = 480;
     public static volatile int downloadAllowedResolution = 1080;
 
-    private static final Map<Object, Object> uncappedDownloadAddrs =
-        Collections.synchronizedMap(new WeakHashMap<Object, Object>());
+    /**
+     * Immutable metadata record per video ID stored in bounded LRU cache.
+     */
+    private static final class VideoQualityMetadata {
+        final Object cappedPlayAddr;
 
-    private static final Map<String, Object> videoIdToCappedPlayAddr =
-        Collections.synchronizedMap(new LinkedHashMap<String, Object>(64, 0.75f, true) {
+        VideoQualityMetadata(Object cappedPlayAddr) {
+            this.cappedPlayAddr = cappedPlayAddr;
+        }
+    }
+
+    private static final int MAX_VIDEO_ID_CACHE_SIZE = 100;
+
+    // Bounded LRU cache for persistent ID-keyed video quality metadata.
+    private static final Map<String, VideoQualityMetadata> videoIdToMetadata =
+        Collections.synchronizedMap(new LinkedHashMap<String, VideoQualityMetadata>(64, 0.75f, true) {
             @Override
-            protected boolean removeEldestEntry(Map.Entry<String, Object> eldest) {
-                return size() > 100;
+            protected boolean removeEldestEntry(Map.Entry<String, VideoQualityMetadata> eldest) {
+                return size() > MAX_VIDEO_ID_CACHE_SIZE;
             }
         });
+
+    private static Object getCappedPlayAddr(String id) {
+        if (id == null) return null;
+        VideoQualityMetadata meta = videoIdToMetadata.get(id);
+        return meta != null ? meta.cappedPlayAddr : null;
+    }
+
+    private static void putCappedPlayAddr(String id, Object playAddr) {
+        if (id == null || playAddr == null) return;
+        videoIdToMetadata.put(id, new VideoQualityMetadata(playAddr));
+    }
+
+    // WeakHashMap-based caches for live object lifecycle tracking:
+    // 1. uncappedDownloadAddrs: maps live Video model instances to their download-quality play address
+    //    without preventing garbage collection when the video cell is recycled.
+    // 2. videoToAwemeId: tracks aweme IDs for live Video models during feed item binding.
+    // 3. cappedVideos: tracks which Video instances have already had resolution capping applied.
+    // 4. playAddrIsBytevc: records codec classification for live play address objects.
+    // These must remain WeakHashMaps so they are automatically collected when TikTok drops the video views.
+    private static final Map<Object, Object> uncappedDownloadAddrs =
+        Collections.synchronizedMap(new WeakHashMap<Object, Object>());
 
     private static final Map<Object, String> videoToAwemeId =
         Collections.synchronizedMap(new WeakHashMap<Object, String>());
@@ -218,7 +250,7 @@ public final class TikTokVideoQualityHook {
 
         String vid = getVideoId(videoObj);
         if (isValidVideoId(vid)) {
-            cached = videoIdToCappedPlayAddr.get(vid);
+            cached = getCappedPlayAddr(vid);
             if (cached != null) {
                 uncappedDownloadAddrs.put(videoObj, cached);
                 return cached;
@@ -236,7 +268,7 @@ public final class TikTokVideoQualityHook {
                         Object playAddr = extractPlayAddrFromBitrate(bestBitrate);
                         if (playAddr != null) {
                             uncappedDownloadAddrs.put(videoObj, playAddr);
-                            if (isValidVideoId(vid)) videoIdToCappedPlayAddr.put(vid, playAddr);
+                            if (isValidVideoId(vid)) putCappedPlayAddr(vid, playAddr);
                             return playAddr;
                         }
                     }
@@ -795,7 +827,12 @@ public final class TikTokVideoQualityHook {
     }
 
     private static final Map<String, Integer> hwMaxLongSideCache =
-        Collections.synchronizedMap(new HashMap<String, Integer>());
+        Collections.synchronizedMap(new LinkedHashMap<String, Integer>(16, 0.75f, true) {
+            @Override
+            protected boolean removeEldestEntry(Map.Entry<String, Integer> eldest) {
+                return size() > 16;
+            }
+        });
 
     /**
      * Queries MediaCodecList once per mime for the largest supported long side
@@ -1169,7 +1206,7 @@ public final class TikTokVideoQualityHook {
                     videoToAwemeId.put(videoObj, aid);
                     Object existingPlayAddr = uncappedDownloadAddrs.get(videoObj);
                     if (existingPlayAddr != null) {
-                        videoIdToCappedPlayAddr.put(aid, existingPlayAddr);
+                        putCappedPlayAddr(aid, existingPlayAddr);
                     }
                 }
             }
@@ -1224,7 +1261,7 @@ public final class TikTokVideoQualityHook {
                             if (bestDownloadPlayAddr != null) {
                                 uncappedDownloadAddrs.put(videoObj, bestDownloadPlayAddr);
                                 if (isValidVideoId(vid)) {
-                                    videoIdToCappedPlayAddr.put(vid, bestDownloadPlayAddr);
+                                    putCappedPlayAddr(vid, bestDownloadPlayAddr);
                                 }
 
                                 // Directly sync Video's download stream fields so all downloaders receive the capped stream
