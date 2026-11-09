@@ -41,7 +41,7 @@ private fun isCheckAccessMethod(method: MutableMethod): Boolean {
 private fun forceAllowVerdict(method: MutableMethod) {
     val impl = method.implementation ?: return
     method.clearTryBlocks()
-    method.ensureRegisterCount(1)
+    method.ensureRegisterCount(3)
     method.removeInstructions(0, impl.instructions.count())
     method.addInstructions(
         0,

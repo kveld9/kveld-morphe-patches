@@ -369,7 +369,8 @@ public class GboardExtension {
                         restoreImeNavBar(window, f);
                         return true;
                     }
-                    return !hideImeNavBar(window, f);
+                    hideImeNavBar(window, f);
+                    return true;
                 });
             }
         } catch (Throwable ignored) {}
@@ -1178,7 +1179,22 @@ public class GboardExtension {
 
                     android.app.AlarmManager mgr = (android.app.AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
                     if (mgr != null) {
-                        mgr.set(android.app.AlarmManager.RTC, System.currentTimeMillis() + 350, pendingIntent);
+                        long triggerAtMillis = System.currentTimeMillis() + 350;
+                        try {
+                            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                                if (mgr.canScheduleExactAlarms()) {
+                                    mgr.setExactAndAllowWhileIdle(android.app.AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
+                                } else {
+                                    mgr.set(android.app.AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
+                                }
+                            } else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                                mgr.setExactAndAllowWhileIdle(android.app.AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
+                            } else {
+                                mgr.setExact(android.app.AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
+                            }
+                        } catch (SecurityException ignored) {
+                            mgr.set(android.app.AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
+                        }
                     }
                 } catch (Throwable ignored) {}
             }
