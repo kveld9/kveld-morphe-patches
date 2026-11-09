@@ -50,84 +50,30 @@ val cleanShareUrlPatch = bytecodePatch(
             println("[Clean Share Links] Configured custom share host: $host")
         }
 
-        if (isLite) {
-            // TikTok Lite share path: HomePageShareServiceImpl (share sheet/copy link) and Cem (direct share)
-            val homePageFp = Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/share/arch/HomePageShareServiceImpl;",
-                strings = listOf("share_convert_loading_duration", "checksum_invitation_scene"),
-                returnType = "Ljava/lang/String;",
-            )
-            val homePageMethod = homePageFp.method
-            val homePageUrlReg = if (AccessFlags.STATIC.isSet(homePageMethod.accessFlags)) "p0" else "p1"
-            homePageMethod.addInstructions(
-                0,
+        val awemeClass = if (isLite) "Lcom/ss/android/ugc/aweme/minilite/feed/model/Aweme;" else "Lcom/ss/android/ugc/aweme/feed/model/Aweme;"
+        val fp = Fingerprint(
+            definingClass = awemeClass,
+            name = "getShareUrl",
+            returnType = "Ljava/lang/String;",
+        )
+        val method = fp.method
+        val returnIndices = method.implementation?.instructions?.withIndex()
+            ?.filter { it.value.opcode == Opcode.RETURN_OBJECT }
+            ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
+            ?.toList() ?: emptyList()
+
+        returnIndices.asReversed().forEach { (returnIndex, reg) ->
+            method.addInstructions(
+                returnIndex,
                 """
-                    invoke-static/range {$homePageUrlReg .. $homePageUrlReg}, ${Constants.TIKTOK_EXTENSION_SHARE_HOST_HOOK}->sanitizeShareUrlWithHost(Ljava/lang/String;)Ljava/lang/String;
-                    move-result-object $homePageUrlReg
-                    return-object $homePageUrlReg
+                    invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_SHARE_HOST_HOOK}->sanitizeShareUrlWithHost(Ljava/lang/String;)Ljava/lang/String;
+                    move-result-object v$reg
                 """.trimIndent(),
             )
-            println("[Clean Share Links] Hooked Lite HomePageShareServiceImpl.LFFLLL() -> Link sanitization with host replacement active.")
+        }
+        if (returnIndices.isNotEmpty()) {
+            println("[Clean Share Links] Hooked Aweme.getShareUrl() (${returnIndices.size} return point(s)) -> Link sanitization with host replacement active.")
             patched++
-
-            val cemFp = Fingerprint(
-                definingClass = "LX/Cem;",
-                strings = listOf("share_convert_loading_duration", "checksum_invitation_scene"),
-                returnType = "Ljava/lang/String;",
-            )
-            val cemMethod = cemFp.method
-            val cemUrlReg = if (AccessFlags.STATIC.isSet(cemMethod.accessFlags)) "p0" else "p1"
-            cemMethod.addInstructions(
-                0,
-                """
-                    invoke-static/range {$cemUrlReg .. $cemUrlReg}, ${Constants.TIKTOK_EXTENSION_SHARE_HOST_HOOK}->sanitizeShareUrlWithHost(Ljava/lang/String;)Ljava/lang/String;
-                    move-result-object $cemUrlReg
-                    return-object $cemUrlReg
-                """.trimIndent(),
-            )
-            println("[Clean Share Links] Hooked Lite Cem.LBL() -> Link sanitization with host replacement active.")
-            patched++
-
-            val liteTailFp = Fingerprint(
-                strings = listOf("https://www.tiktok.com/tiktoklite"),
-                parameters = emptyList(),
-                returnType = "Ljava/lang/String;",
-            )
-            liteTailFp.method.addInstructions(
-                0,
-                """
-                    const-string v0, ""
-                    return-object v0
-                """.trimIndent(),
-            )
-            println("[Clean Share Links] Neutralized Lite share promo tail text -> Only clean video link is shared.")
-            patched++
-        } else {
-            // TikTok main (musically): Hook Aweme.getShareUrl() return point
-            val fp = Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
-                name = "getShareUrl",
-                returnType = "Ljava/lang/String;",
-            )
-            val method = fp.method
-            val returnIndices = method.implementation?.instructions?.withIndex()
-                ?.filter { it.value.opcode == Opcode.RETURN_OBJECT }
-                ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
-                ?.toList() ?: emptyList()
-
-            returnIndices.asReversed().forEach { (returnIndex, reg) ->
-                method.addInstructions(
-                    returnIndex,
-                    """
-                        invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_SHARE_HOST_HOOK}->sanitizeShareUrlWithHost(Ljava/lang/String;)Ljava/lang/String;
-                        move-result-object v$reg
-                    """.trimIndent(),
-                )
-            }
-            if (returnIndices.isNotEmpty()) {
-                println("[Clean Share Links] Hooked Aweme.getShareUrl() (${returnIndices.size} return point(s)) -> Link sanitization with host replacement active.")
-                patched++
-            }
         }
 
         if (patched == 0) {
