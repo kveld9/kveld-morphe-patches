@@ -553,13 +553,26 @@ def _extract_row_type(row_html: str) -> str:
 
 
 def _extract_cells_text(row_html: str) -> List[str]:
-    """Extract stripped text contents from all cells in a table row."""
-    parts = re.split(
-        r'<(?:div|td)[^>]*class="[^"]*table-cell[^"]*"[^>]*>|<td[^>]*>', row_html
-    )
-    if len(parts) <= 1:
-        return []
-    return [re.sub(r"<[^>]+>", "", p).strip() for p in parts[1:]]
+    """Extract stripped text contents from all cells in a table row.
+
+    Each cell is cut at its own closing tag: the final row of a variants table is
+    followed by unrelated page sections, which would otherwise be appended to the
+    last cell (DPI) and break exact variant matching.
+    """
+    cells = [
+        re.sub(r"<[^>]+>", "", match.group(1)).strip()
+        for match in re.finditer(
+            r'<div[^>]*class="[^"]*table-cell[^"]*"[^>]*>(.*?)</div>',
+            row_html,
+            re.DOTALL,
+        )
+    ]
+    if cells:
+        return cells
+    return [
+        re.sub(r"<[^>]+>", "", match.group(1)).strip()
+        for match in re.finditer(r"<td[^>]*>(.*?)</td>", row_html, re.DOTALL)
+    ]
 
 
 def _find_cell_by_keyword(cells: List[str], keywords: Tuple[str, ...]) -> str:
@@ -711,8 +724,17 @@ def _resolve_download_url_if_available(
         return ""
     release_html = fetcher(release_url)  # type: ignore[arg-type]
     if not release_html:
+        print(
+            f"[WARN] Release page unavailable, no direct download link: {release_url}",
+            file=sys.stderr,
+        )
         return ""
     resolved = resolve_apkmirror_variant_download_url(release_html, variant_match)  # type: ignore[arg-type]
+    if not resolved:
+        print(
+            f"[WARN] No row matches the pinned variant {variant_match} on {release_url}",
+            file=sys.stderr,
+        )
     return resolved or ""
 
 
@@ -1431,6 +1453,39 @@ class TestUpdateChecker(unittest.TestCase):
             {"arch": "arm64-v8a", "dpi": "nodpi", "type": "APK"},
         )
         self.assertIsNone(tie_url)
+
+        # 6. Final row followed by unrelated page sections keeps its DPI cell clean
+        trailing_html = """
+        <div class="variants-table">
+          <div class="table-row">
+            <div class="table-cell">
+              <span class="apkm-badge">BUNDLE</span>
+              <a class="accent_color" href="/apk/app/app-bundle-apk-download/">1.0</a>
+            </div>
+            <div class="table-cell">arm64-v8a + armeabi-v7a</div>
+            <div class="table-cell">Android 6.0+</div>
+            <div class="table-cell">120-640dpi</div>
+          </div>
+          <div class="table-row">
+            <div class="table-cell">
+              <span class="apkm-badge">APK</span>
+              <a class="accent_color" href="/apk/app/app-nodpi-apk-download/">1.0</a>
+            </div>
+            <div class="table-cell">arm64-v8a + armeabi-v7a</div>
+            <div class="table-cell">Android 6.0+</div>
+            <div class="table-cell">nodpi</div>
+          </div>
+        </div>
+        <div class="related"> Apps related to App </div>
+        """
+        trailing_url = resolve_apkmirror_variant_download_url(
+            trailing_html,
+            {"arch": "arm64-v8a", "dpi": "nodpi", "type": "APK"},
+        )
+        self.assertEqual(
+            trailing_url,
+            "https://www.apkmirror.com/apk/app/app-nodpi-apk-download/",
+        )
 
     def test_run_update_checks_variant_plumbing(self) -> None:
         """Verify end-to-end update check plumbing with variant download link resolution."""
