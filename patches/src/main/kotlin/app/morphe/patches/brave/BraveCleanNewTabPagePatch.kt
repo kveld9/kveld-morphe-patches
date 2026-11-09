@@ -2,15 +2,20 @@ package app.morphe.patches.brave
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.sharedExtensionPatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
+import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 
 private class PrefTarget(val searchString: String, val tag: String)
@@ -67,14 +72,56 @@ val braveCleanNewTabPagePatch = bytecodePatch(
         val hookedMethods = mutableListOf<String>()
 
         // 1. Force NTP marketing preference gates in PrefService getBoolean at return
-        val prefFp = Fingerprint(
-            definingClass = "Lorg/chromium/components/prefs/PrefService;",
-            name = "b",
-            returnType = "Z",
-            parameters = listOf("Ljava/lang/String;"),
-        )
-        val prefMethod = prefFp.method
-        val prefInstructions = prefMethod.implementation?.instructions?.toList() ?: emptyList()
+        val prefClass = mutableClassDefByOrNull("Lorg/chromium/components/prefs/PrefService;")
+            ?: throw PatchException("Required class Lorg/chromium/components/prefs/PrefService; not found")
+
+        val candidates = prefClass.methods.filter { method ->
+            !AccessFlags.STATIC.isSet(method.accessFlags) &&
+                !method.name.startsWith("<") &&
+                method.returnType == "Z" &&
+                method.parameterTypes == listOf("Ljava/lang/String;")
+        }
+        if (candidates.isEmpty()) {
+            throw PatchException("No virtual (Ljava/lang/String;)Z method found in PrefService")
+        }
+
+        val inspectedCandidates = candidates.map { method ->
+            val instructions = method.implementation?.instructions?.toList()
+                ?: throw PatchException("Candidate method PrefService.${method.name} has no implementation")
+            val invokeInstructions = instructions.filter {
+                it is ReferenceInstruction && (it.reference is MethodReference)
+            }
+            if (invokeInstructions.size != 1) {
+                throw PatchException(
+                    "PrefService.${method.name} is not a thin JNI wrapper: expected 1 invoke, found ${invokeInstructions.size}",
+                )
+            }
+            val invokeInst = invokeInstructions.single()
+            if (invokeInst.opcode != Opcode.INVOKE_STATIC && invokeInst.opcode != Opcode.INVOKE_STATIC_RANGE) {
+                throw PatchException(
+                    "PrefService.${method.name} invoke is not invoke-static (${invokeInst.opcode})",
+                )
+            }
+            val methodRef = (invokeInst as ReferenceInstruction).reference as MethodReference
+            if (methodRef.returnType != "Z" || methodRef.parameterTypes != listOf("I", "J", "Ljava/lang/Object;")) {
+                throw PatchException(
+                    "PrefService.${method.name} JNI signature mismatch: ${methodRef.parameterTypes} -> ${methodRef.returnType}",
+                )
+            }
+            val firstArgReg = (invokeInst as? FiveRegisterInstruction)?.registerC
+            val constInst = instructions.takeWhile { it !== invokeInst }
+                .filterIsInstance<NarrowLiteralInstruction>()
+                .firstOrNull { inst ->
+                    firstArgReg == null || (inst as? OneRegisterInstruction)?.registerA == firstArgReg
+                } ?: throw PatchException(
+                    "PrefService.${method.name} does not load a JNI index constant for invoke-static",
+                )
+            Triple(method, constInst.narrowLiteral, instructions)
+        }
+
+        val (prefMethod, prefJniIndex, prefInstructions) = inspectedCandidates.minByOrNull { it.second }
+            ?: throw PatchException("No candidate methods found")
+
         val returnIndices = prefInstructions.withIndex()
             .filter { it.value.opcode == Opcode.RETURN }
             .mapNotNull { iv ->
@@ -90,7 +137,7 @@ val braveCleanNewTabPagePatch = bytecodePatch(
 
         returnIndices.asReversed().forEach { (returnIndex, reg) ->
             if (reg > 15) {
-                error("PrefService.b return register v$reg exceeds 4-bit range for non-range invoke-static")
+                error("PrefService.${prefMethod.name} return register v$reg exceeds 4-bit range for non-range invoke-static")
             }
             prefMethod.addInstructions(
                 returnIndex,
@@ -101,7 +148,7 @@ val braveCleanNewTabPagePatch = bytecodePatch(
             )
         }
         if (returnIndices.isNotEmpty()) {
-            hookedMethods.add("PrefService.b (NTP gates)")
+            hookedMethods.add("PrefService.${prefMethod.name} (NTP gates)")
         }
 
         val shouldHideTopSites = hideTopSites ?: false
@@ -132,7 +179,7 @@ val braveCleanNewTabPagePatch = bytecodePatch(
         if (hookedMethods.isEmpty()) {
             println("[Clean New Tab] Warning: 0 NTP marketing & layout components were resolved.")
         } else {
-            println("[Clean New Tab] Neutralized ${hookedMethods.size} NTP marketing & layout components across ${targetClasses.size} classes")
+            println("[Clean New Tab] Neutralized ${hookedMethods.size} NTP marketing & layout components across ${targetClasses.size} classes (PrefService.${prefMethod.name}=$prefJniIndex)")
         }
     }
 }
