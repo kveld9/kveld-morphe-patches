@@ -18,7 +18,7 @@ val disablePushNotificationsPatch = bytecodePatch(
 
         if (isLite) {
             Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/push/interaction/PushService;",
+                definingClass = "Lcom/ss/android/ugc/aweme/minilite/remotepush/interaction/PushService;",
                 name = "init",
                 parameters = listOf("Landroid/content/Context;"),
                 returnType = "V",
