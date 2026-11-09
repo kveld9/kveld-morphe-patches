@@ -299,28 +299,19 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 }
             }
 
-            // Hook FeedItemList.getItems() (covers feed, cached, and home consumers on Lite)
+            // Hook FeedItemList.getItems() and getAwemeList() (covers feed, cached, and home consumers on Lite)
             hookReturnList(
-                definingClass = "Lcom/ss/android/ugc/aweme/main/homepage/fragment/data/model/FeedItemList;",
+                definingClass = "Lcom/ss/android/ugc/aweme/minilite/feed/data/bean/FeedItemList;",
                 name = "getItems",
                 returnType = "Ljava/util/List;",
-                logLabel = "All Lite feed model consumers",
+                logLabel = "All Lite feed model consumers (getItems)",
             )
 
-            // Hook SearchMix.getAwemeList() (Search mix and grid streams on Lite)
             hookReturnList(
-                definingClass = "Lcom/ss/android/ugc/aweme/main/homepage/fragment/data/discover/SearchMix;",
+                definingClass = "Lcom/ss/android/ugc/aweme/minilite/feed/data/bean/FeedItemList;",
                 name = "getAwemeList",
                 returnType = "Ljava/util/List;",
-                logLabel = "Lite Search mix feed",
-            )
-
-            // Hook SearchMixFeedList.getAwemeList() (Search mix feed list on Lite)
-            hookReturnList(
-                definingClass = "Lcom/ss/android/ugc/aweme/main/homepage/fragment/data/discover/SearchMixFeedList;",
-                name = "getAwemeList",
-                returnType = "Ljava/util/List;",
-                logLabel = "Lite Search mix feed list",
+                logLabel = "All Lite feed model consumers (getAwemeList)",
             )
 
             println("[Feed Ads & Content Filter] Applied $patched feed and search content filter hook(s).")

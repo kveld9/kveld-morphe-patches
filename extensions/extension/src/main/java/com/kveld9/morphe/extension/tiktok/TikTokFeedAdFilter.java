@@ -200,11 +200,19 @@ public final class TikTokFeedAdFilter {
                 awemeClass = classLoader.loadClass("com.ss.android.ugc.aweme.feed.model.Aweme");
             } catch (Throwable t) {
                 try {
-                    ClassLoader fallback = TikTokFeedAdFilter.class.getClassLoader();
-                    if (fallback != null && fallback != classLoader) {
-                        awemeClass = fallback.loadClass("com.ss.android.ugc.aweme.feed.model.Aweme");
-                    }
-                } catch (Throwable ignored) {}
+                    awemeClass = classLoader.loadClass("com.ss.android.ugc.aweme.minilite.feed.model.Aweme");
+                } catch (Throwable t2) {
+                    try {
+                        ClassLoader fallback = TikTokFeedAdFilter.class.getClassLoader();
+                        if (fallback != null && fallback != classLoader) {
+                            try {
+                                awemeClass = fallback.loadClass("com.ss.android.ugc.aweme.feed.model.Aweme");
+                            } catch (Throwable t3) {
+                                awemeClass = fallback.loadClass("com.ss.android.ugc.aweme.minilite.feed.model.Aweme");
+                            }
+                        }
+                    } catch (Throwable ignored) {}
+                }
             }
 
             if (awemeClass == null) {
