@@ -172,9 +172,7 @@ public class BraveExtension {
             Resources res = app.getResources();
             if (res == null) return 0;
             int id = res.getIdentifier(NTP_WALLPAPER_DRAWABLE, "drawable", app.getPackageName());
-            if (id != 0) {
-                sCustomDrawableId = id;
-            }
+            sCustomDrawableId = id;
             return id;
         } catch (Throwable t) {
             return 0;
