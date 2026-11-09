@@ -10,6 +10,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
@@ -25,6 +27,13 @@ public class SpoofSignaturePatch {
             Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<SigningInfo, Boolean>()));
 
     private static Signature[] sOriginalSignatures;
+    private static final Map<Signature, byte[]> sSignatureRaw =
+            Collections.synchronizedMap(new IdentityHashMap<Signature, byte[]>());
+    private static final Map<Signature, byte[]> sSignatureDigests =
+            Collections.synchronizedMap(new IdentityHashMap<Signature, byte[]>());
+    private static final int CERT_MEMO_MAX_ENTRIES = 16;
+    private static final Map<byte[], byte[]> sCertificateDigestMemo =
+            new IdentityHashMap<byte[], byte[]>();
 
     private static String ownPackage() {
         return ""; // Baked during patching.
@@ -44,6 +53,12 @@ public class SpoofSignaturePatch {
                 Signature[] sigs = new Signature[hexArray.length];
                 for (int i = 0; i < hexArray.length; i++) {
                     sigs[i] = new Signature(hexArray[i].trim());
+                    byte[] raw = sigs[i].toByteArray();
+                    sSignatureRaw.put(sigs[i], raw);
+                    byte[] digest = sha256Digest(raw);
+                    if (digest != null) {
+                        sSignatureDigests.put(sigs[i], digest);
+                    }
                 }
                 sOriginalSignatures = sigs;
             }
@@ -166,18 +181,66 @@ public class SpoofSignaturePatch {
     }
 
     private static boolean matchesCertificate(Signature sig, byte[] certificate, int type) {
-        byte[] raw = sig.toByteArray();
+        if (sig == null || certificate == null) {
+            return false;
+        }
+        byte[] cachedSha256 = sSignatureDigests.get(sig);
+        if (cachedSha256 == null) {
+            byte[] raw = sig.toByteArray();
+            cachedSha256 = sha256Digest(raw);
+            if (cachedSha256 == null) {
+                return false;
+            }
+        }
+
         if (type == 0 /* PackageManager.CERT_INPUT_RAW_X509 */) {
-            return Arrays.equals(raw, certificate);
+            byte[] raw = sSignatureRaw.get(sig);
+            if (raw == null) {
+                raw = sig.toByteArray();
+            }
+            if (raw.length != certificate.length) {
+                return false;
+            }
+            byte[] certDigest = getDigestForCertificate(certificate);
+            return certDigest != null && Arrays.equals(cachedSha256, certDigest);
         }
+
         if (type == 1 /* PackageManager.CERT_INPUT_SHA256 */) {
-            byte[] sha256 = sha256Digest(raw);
-            return sha256 != null && Arrays.equals(sha256, certificate);
+            if (certificate.length != 32) {
+                return false;
+            }
+            return Arrays.equals(cachedSha256, certificate);
         }
+
         return false;
     }
 
+    private static byte[] getDigestForCertificate(byte[] certificate) {
+        if (certificate == null) {
+            return null;
+        }
+        synchronized (sCertificateDigestMemo) {
+            byte[] cached = sCertificateDigestMemo.get(certificate);
+            if (cached != null) {
+                return cached;
+            }
+        }
+        byte[] digest = sha256Digest(certificate);
+        if (digest != null) {
+            synchronized (sCertificateDigestMemo) {
+                if (sCertificateDigestMemo.size() >= CERT_MEMO_MAX_ENTRIES) {
+                    sCertificateDigestMemo.clear();
+                }
+                sCertificateDigestMemo.put(certificate, digest);
+            }
+        }
+        return digest;
+    }
+
     private static byte[] sha256Digest(byte[] data) {
+        if (data == null) {
+            return null;
+        }
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             return md.digest(data);
