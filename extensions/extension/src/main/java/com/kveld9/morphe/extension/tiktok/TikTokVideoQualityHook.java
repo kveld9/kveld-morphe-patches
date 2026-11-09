@@ -320,7 +320,12 @@ public final class TikTokVideoQualityHook {
             if (classLoader == null) return;
 
             try {
-                Class<?> videoClass = classLoader.loadClass("com.ss.android.ugc.aweme.feed.model.Video");
+                Class<?> videoClass = null;
+                try {
+                    videoClass = classLoader.loadClass("com.ss.android.ugc.aweme.feed.model.Video");
+                } catch (Throwable t) {
+                    videoClass = classLoader.loadClass("com.ss.android.ugc.aweme.minilite.feed.model.Video");
+                }
                 try {
                     videoBitRateListField = videoClass.getDeclaredField("bitRateList");
                     videoBitRateListField.setAccessible(true);
@@ -371,7 +376,12 @@ public final class TikTokVideoQualityHook {
                     videoGetAidMethod.setAccessible(true);
                 } catch (Throwable ignored) {}
 
-                Class<?> bitRateClass = classLoader.loadClass("com.ss.android.ugc.aweme.feed.model.BitRate");
+                Class<?> bitRateClass = null;
+                try {
+                    bitRateClass = classLoader.loadClass("com.ss.android.ugc.aweme.feed.model.BitRate");
+                } catch (Throwable t) {
+                    bitRateClass = classLoader.loadClass("com.ss.android.ugc.aweme.minilite.feed.model.BitRate");
+                }
                 try {
                     bitrateGetHeightMethod = bitRateClass.getMethod("getVideoHeight");
                     bitrateGetHeightMethod.setAccessible(true);
