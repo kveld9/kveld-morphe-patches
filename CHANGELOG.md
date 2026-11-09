@@ -1,3 +1,9 @@
+## [2.11.0-experimental.6](https://github.com/kveld9/kveld-morphe-patches/compare/v2.11.0-experimental.5...v2.11.0-experimental.6) (2026-11-09)
+
+### Bug Fixes
+
+* **update-check:** resume update notifications for Gboard Lite and TikTok ([de7f11a](https://github.com/kveld9/kveld-morphe-patches/commit/de7f11a94f006dfee42a97c069a731d5839d2689))
+
 ## [2.11.0-experimental.5](https://github.com/kveld9/kveld-morphe-patches/compare/v2.11.0-experimental.4...v2.11.0-experimental.5) (2026-11-09)
 
 ### Bug Fixes
