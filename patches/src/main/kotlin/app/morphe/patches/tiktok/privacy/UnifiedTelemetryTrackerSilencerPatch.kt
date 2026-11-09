@@ -52,78 +52,33 @@ val unifiedTelemetryTrackerSilencerPatch = bytecodePatch(
         multiOverloadTargets++
 
         // 2. AppLog onEventV3 (modern bytedance package), every overload
-        multiOverloadBodies += silenceEveryOverload(
-            Fingerprint(
-                definingClass = "Lcom/bytedance/applog/AppLog;",
-                name = "onEventV3",
-                returnType = "V",
-            ),
-            label = "AppLog.onEventV3",
-            effect = "event logging disabled.",
-        )
-        patched++
-        multiOverloadTargets++
+        if (!isLite) {
+            multiOverloadBodies += silenceEveryOverload(
+                Fingerprint(
+                    definingClass = "Lcom/bytedance/applog/AppLog;",
+                    name = "onEventV3",
+                    returnType = "V",
+                ),
+                label = "AppLog.onEventV3",
+                effect = "event logging disabled.",
+            )
+            patched++
+            multiOverloadTargets++
+        }
 
         if (isLite) {
-            // 3. Npth Task (Lite crash reporter)
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/legoImpl/task/NpthTask;",
-                name = "run",
-                parameters = listOf("Landroid/content/Context;"),
-                returnType = "V",
-            ).method.addInstructions(
-                0,
-                """
-                    return-void
-                """,
+            // 3. Npth crash reporter core initialization
+            multiOverloadBodies += silenceEveryOverload(
+                Fingerprint(
+                    definingClass = "Lcom/bytedance/crash/Npth;",
+                    name = "init",
+                    returnType = "V",
+                ),
+                label = "Npth.init",
+                effect = "crash reporting disabled.",
             )
-            println("[Block Trackers] Successfully neutralized NpthTask (primary crash & stack trace reporter).")
             patched++
-
-            // 4. UltraliteInitAppsFlyer.run()
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/launcher/task/UltraliteInitAppsFlyer;",
-                name = "run",
-                parameters = listOf("Landroid/content/Context;"),
-                returnType = "V",
-            ).method.addInstructions(
-                0,
-                """
-                    return-void
-                """,
-            )
-            println("[Block Trackers] Neutralized UltraliteInitAppsFlyer.run() -> AppsFlyer attribution disabled.")
-            patched++
-
-            // 5. NpthTask secondary initialization path (LCCII)
-            Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/legoImpl/task/NpthTask;",
-                name = "LCCII",
-                parameters = listOf("Landroid/content/Context;"),
-                returnType = "V",
-            ).method.addInstructions(
-                0,
-                """
-                    return-void
-                """,
-            )
-            println("[Block Trackers] Successfully neutralized NpthTask.LCCII() secondary crash reporter init.")
-            patched++
-
-            // 6. Npth crash reporter core initialization
-            Fingerprint(
-                definingClass = "Lcom/bytedance/crash/Npth;",
-                name = "init",
-                parameters = listOf("Landroid/content/Context;", "Lcom/bytedance/crash/ICommonParams;", "Z", "Z", "Z"),
-                returnType = "V",
-            ).method.addInstructions(
-                0,
-                """
-                    return-void
-                """,
-            )
-            println("[Block Trackers] Successfully neutralized Npth.init() -> Crash and monitor reporting suppressed.")
-            patched++
+            multiOverloadTargets++
         } else {
             // 3. Npth Core Init Task, every overload
             multiOverloadBodies += silenceEveryOverload(
