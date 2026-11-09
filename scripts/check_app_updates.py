@@ -64,6 +64,8 @@ APP_SPECS: List[Dict[str, Any]] = [
     #     "path_prefix": "/apk/slug/app/app-",      # URL path prefix for release links (apkmirror-only). Release-level vs directory-level prefix both work with startswith.
     #     "api_url": "https://api.github.com/...",  # GitHub releases API endpoint URL (github-only)
     #     "release_prefix": "Release v",            # Release title prefix to match channel (github-only)
+    #     # "asset_names": ["App-arm64.apk"],       # Optional: exact release asset names to link in the issue
+    #     #                                         # (github-only); omitted otherwise (consumer reads via .get)
     #     "allow_beta": False,                      # Pre-release filter (typically False for stable patch releases)
     #     # "require_variant_marker": "...",        # Optional: substring present on release pages shipping the tracked
     #     #                                         # variant (e.g. "lite_"); omitted otherwise (consumer reads via .get)
@@ -87,10 +89,10 @@ APP_SPECS: List[Dict[str, Any]] = [
         "api_url": "https://api.github.com/repos/brave/brave-browser/releases?per_page=100",
         "release_prefix": "Release v",
         "allow_beta": False,
-        # variant_match decision: Constants.kt pins "Bravemonoarm64.apk (arm64) or
-        # BraveMonoarm.apk (arm32)" from GitHub releases without a DPI marker.
-        # Leaving variant_match unconfigured avoids guessing links and uses
-        # the safe fallback (no Direct download line).
+        # Constants.kt pins "Bravemonoarm64.apk (arm64) or BraveMonoarm.apk
+        # (arm32)"; both asset names are exact so the .aab/.sha256 files of the
+        # same release are never picked.
+        "asset_names": ["BraveMonoarm64.apk", "BraveMonoarm.apk"],
     },
     {
         "id": "gboard",
@@ -802,6 +804,7 @@ def format_issue_body(
     remote_ver: str,
     source_url: str,
     download_url: str = "",
+    download_urls: Optional[Dict[str, str]] = None,
 ) -> str:
     """Format GitHub issue body for an app update."""
     body = (
@@ -811,6 +814,8 @@ def format_issue_body(
     )
     if download_url:
         body += f"Direct download: {download_url}\n"
+    for name, url in (download_urls or {}).items():
+        body += f"Direct download ({name}): {url}\n"
     return body
 
 
@@ -924,6 +929,37 @@ def _extract_github_release_version(
     return raw_v if core else None
 
 
+def _select_github_release_item(
+    payload: str,
+    prefix: str,
+) -> Tuple[Optional[str], Optional[Dict[str, Any]]]:
+    """Return the highest matching stable release version and its raw payload item."""
+    if not payload:
+        return None, None
+
+    try:
+        data = json.loads(payload)
+    except Exception:
+        return None, None
+
+    if not isinstance(data, list):
+        return None, None
+
+    candidates: List[Tuple[str, Dict[str, Any]]] = []
+    for item in data:
+        if not isinstance(item, dict):
+            continue
+        ver = _extract_github_release_version(item, prefix)
+        if ver:
+            candidates.append((ver, item))
+
+    if not candidates:
+        return None, None
+
+    winner = max(candidates, key=lambda c: parse_version(c[0])[0])
+    return winner[0], winner[1]
+
+
 def extract_github_channel_latest(
     payload: str,
     prefix: str,
@@ -936,30 +972,35 @@ def extract_github_channel_latest(
     Selects the winner with highest version using parse_version.
     Returns (version, html_url) or (None, None) if no matching release is found.
     """
-    if not payload:
+    version, item = _select_github_release_item(payload, prefix)
+    if not version or not item:
         return None, None
+    return version, item.get("html_url")
 
-    try:
-        data = json.loads(payload)
-    except Exception:
-        return None, None
 
-    if not isinstance(data, list):
-        return None, None
+def extract_github_asset_urls(
+    payload: str,
+    prefix: str,
+    asset_names: Optional[List[str]],
+) -> Dict[str, str]:
+    """Map each requested asset name to its download URL on the selected release.
 
-    candidates: List[Tuple[str, Optional[str]]] = []
-    for item in data:
-        if not isinstance(item, dict):
-            continue
-        ver = _extract_github_release_version(item, prefix)
-        if ver:
-            candidates.append((ver, item.get("html_url")))
+    Only assets present on the newest matching release are returned, so a renamed
+    or dropped asset yields no link instead of a guessed one.
+    """
+    if not asset_names:
+        return {}
 
-    if not candidates:
-        return None, None
+    _, item = _select_github_release_item(payload, prefix)
+    if not item:
+        return {}
 
-    winner = max(candidates, key=lambda c: parse_version(c[0])[0])
-    return winner[0], winner[1]
+    assets = {
+        asset.get("name"): asset.get("browser_download_url")
+        for asset in item.get("assets", [])
+        if isinstance(asset, dict)
+    }
+    return {name: assets[name] for name in asset_names if assets.get(name)}
 
 
 def _collect_listing_candidates(
@@ -1015,6 +1056,7 @@ def run_update_checks(
 
         remote_version: Optional[str] = None
         release_url: Optional[str] = None
+        asset_urls: Dict[str, str] = {}
         if source_type == "apkmirror":
             remote_version, release_url = _select_latest_release(
                 _collect_listing_candidates(spec, page_fetcher),
@@ -1030,6 +1072,9 @@ def run_update_checks(
             if payload:
                 remote_version, release_url = extract_github_channel_latest(
                     payload, spec["release_prefix"]
+                )
+                asset_urls = extract_github_asset_urls(
+                    payload, spec["release_prefix"], spec.get("asset_names")
                 )
 
         if not remote_version:
@@ -1061,6 +1106,7 @@ def run_update_checks(
                 "source_name": source_name,
                 "source_url": source_url,
                 "download_url": download_url,
+                "download_urls": asset_urls,
                 "remote_channel": variant_channel_from_url(download_url),
             }
         )
@@ -1127,6 +1173,7 @@ def _check_toolchain_spec(
         "source_url": spec["source_url"],
         "run_patch_test_id": "",
         "download_url": "",
+        "download_urls": {},
         "remote_channel": "",
     }
 
@@ -1704,6 +1751,23 @@ class TestUpdateChecker(unittest.TestCase):
         )
         self.assertEqual(body_without_link, expected_body)
 
+        body_with_assets = format_issue_body(
+            local_ver="1.99.54",
+            remote_ver="1.99.55",
+            source_url="https://github.com/brave/brave-browser/releases",
+            download_urls={
+                "BraveMonoarm64.apk": "https://github.com/brave/brave-browser/releases/download/v1.99.55/BraveMonoarm64.apk",
+                "BraveMonoarm.apk": "https://github.com/brave/brave-browser/releases/download/v1.99.55/BraveMonoarm.apk",
+            },
+        )
+        self.assertIn(
+            "Direct download (BraveMonoarm64.apk): https://github.com/brave/brave-browser/releases/download/v1.99.55/BraveMonoarm64.apk\n",
+            body_with_assets,
+        )
+        self.assertTrue(body_with_assets.endswith(
+            "Direct download (BraveMonoarm.apk): https://github.com/brave/brave-browser/releases/download/v1.99.55/BraveMonoarm.apk\n"
+        ))
+
     def test_issue_title_channel_display(self) -> None:
         """Verify the update issue title shows the variant channel on both sides."""
         self.assertEqual(
@@ -1731,6 +1795,46 @@ class TestUpdateChecker(unittest.TestCase):
             "lite_release",
         )
         self.assertEqual(variant_channel_from_url(""), "")
+
+    def test_brave_asset_links(self) -> None:
+        """Verify Brave release assets map to their direct download URLs."""
+        payload = json.dumps([
+            {
+                "name": "Release v1.99.55",
+                "tag_name": "v1.99.55",
+                "draft": False,
+                "prerelease": False,
+                "html_url": "https://github.com/brave/brave-browser/releases/tag/v1.99.55",
+                "assets": [
+                    {
+                        "name": "BraveMonoarm64.apk",
+                        "browser_download_url": "https://github.com/brave/brave-browser/releases/download/v1.99.55/BraveMonoarm64.apk",
+                    },
+                    {
+                        "name": "BraveMonoarm64.aab",
+                        "browser_download_url": "https://github.com/brave/brave-browser/releases/download/v1.99.55/BraveMonoarm64.aab",
+                    },
+                    {
+                        "name": "BraveMonoarm.apk",
+                        "browser_download_url": "https://github.com/brave/brave-browser/releases/download/v1.99.55/BraveMonoarm.apk",
+                    },
+                ],
+            }
+        ])
+
+        urls = extract_github_asset_urls(
+            payload, "Release v", ["BraveMonoarm64.apk", "BraveMonoarm.apk"]
+        )
+        self.assertEqual(
+            urls,
+            {
+                "BraveMonoarm64.apk": "https://github.com/brave/brave-browser/releases/download/v1.99.55/BraveMonoarm64.apk",
+                "BraveMonoarm.apk": "https://github.com/brave/brave-browser/releases/download/v1.99.55/BraveMonoarm.apk",
+            },
+        )
+        self.assertNotIn("BraveMonoarm64.aab", urls)
+        self.assertEqual(extract_github_asset_urls(payload, "Release v", None), {})
+        self.assertEqual(extract_github_asset_urls(payload, "Release v", ["Missing.apk"]), {})
 
     def test_brave_github_release_channel_filter(self) -> None:
         """Verify GitHub release channel filtering and exclusion of drafts/prereleases."""

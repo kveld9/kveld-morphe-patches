@@ -90,13 +90,14 @@ jobs:
                   return "older"
               return "equal"
 
-          def create_issue(repo, app_name, local_ver, remote_ver, source_url, download_url, remote_channel):
+          def create_issue(repo, app_name, local_ver, remote_ver, source_url, download_url, remote_channel, download_urls):
               title = format_issue_title(app_name, local_ver, remote_ver, remote_channel)
               body = format_issue_body(
                   local_ver=local_ver,
                   remote_ver=remote_ver,
                   source_url=source_url,
                   download_url=download_url,
+                  download_urls=download_urls,
               )
 
               print(f"[INFO] Creating issue for {app_name}: {title}")
@@ -134,6 +135,7 @@ jobs:
               source_url = app.get("source_url", "")
               download_url = app.get("download_url", "")
               remote_channel = app.get("remote_channel", "")
+              download_urls = app.get("download_urls", {})
 
               print(f"[INFO] Checking existing issues for {app_name}...")
               list_cmd = [
@@ -162,7 +164,7 @@ jobs:
               ]
 
               if not matching_issues:
-                  create_issue(repo, app_name, local_ver, remote_ver, source_url, download_url, remote_channel)
+                  create_issue(repo, app_name, local_ver, remote_ver, source_url, download_url, remote_channel, download_urls)
                   continue
 
               if len(matching_issues) > 1:
@@ -210,7 +212,7 @@ jobs:
                   continue
 
               print(f"[INFO] Closed stale issue #{num} successfully.")
-              create_issue(repo, app_name, local_ver, remote_ver, source_url, download_url, remote_channel)
+              create_issue(repo, app_name, local_ver, remote_ver, source_url, download_url, remote_channel, download_urls)
           EOF
 
       - name: Close stale update issues
