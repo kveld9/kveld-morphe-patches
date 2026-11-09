@@ -25,7 +25,26 @@ USER_AGENT = (
     "Chrome/124.0.0.0 Safari/537.36"
 )
 
+# APKMirror serves a Cloudflare managed challenge to plain browser requests and
+# allows the crawler user agent through. Retrying with it keeps the scheduled
+# check working from datacenter IPs, which plain browser requests do not reach.
+CRAWLER_USER_AGENT = (
+    "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+)
+
+CHALLENGE_MARKERS = (
+    "just a moment",
+    "_cf_chl_opt",
+    "enable javascript and cookies",
+)
+
 HTTP_TIMEOUT_SECONDS = 15
+
+VERSION_PATTERN = r"(\d+(?:\.\d+)+(?:[a-zA-Z]+)?(?:\s+(?:beta|alpha|rc\d*))?)"
+
+RSS_ITEM_PATTERN = re.compile(r"<item>(.*?)</item>", re.DOTALL | re.I)
+RSS_TITLE_PATTERN = re.compile(r"<title>(.*?)</title>", re.DOTALL | re.I)
+RSS_LINK_PATTERN = re.compile(r"<link>(.*?)</link>", re.DOTALL | re.I)
 
 APP_SPECS: List[Dict[str, Any]] = [
     # ==============================================================================
@@ -47,11 +66,14 @@ APP_SPECS: List[Dict[str, Any]] = [
     #     "api_url": "https://api.github.com/...",  # GitHub releases API endpoint URL (github-only)
     #     "release_prefix": "Release v",            # Release title prefix to match channel (github-only)
     #     "allow_beta": False,                      # Pre-release filter (typically False for stable patch releases)
-    #     # "require_variant_marker": "...",        # Optional: set for variant-pinned listings (e.g. Gboard); omitted otherwise (consumer reads via .get)
+    #     # "require_variant_marker": "...",        # Optional: substring present on release pages shipping the tracked
+    #     #                                         # variant (e.g. "lite_"); omitted otherwise (consumer reads via .get)
     #     # "variant_match": {                      # Optional: exact variant criteria to resolve direct download link
     #     #     "arch": "arm64-v8a",                # Pinned architecture token (exact or composite)
     #     #     "dpi": "nodpi",                     # Pinned screen DPI (case-insensitive)
     #     #     "type": "APK",                      # Package type ("APK" or "BUNDLE"/"APKM")
+    #     #     "href_marker": "-lite_",            # Optional: substring the download row URL must contain to
+    #     #                                         # disambiguate variants sharing arch, DPI and type
     #     # },
     # },
     # ==============================================================================
@@ -81,11 +103,15 @@ APP_SPECS: List[Dict[str, Any]] = [
         "source_url": "https://www.apkmirror.com/apk/google-inc/gboard/",
         "path_prefix": "/apk/google-inc/gboard/gboard-the-google-keyboard-",
         "allow_beta": True,
-        "require_variant_marker": "lite_beta",
+        # Both lite channels (lite_release, lite_beta) ship rows named
+        # "<version>-lite_<channel>-<arch>-android-apk-download"; matching "lite_"
+        # tracks whichever lite build APKMirror publishes first.
+        "require_variant_marker": "lite_",
         "variant_match": {
             "arch": "arm64-v8a",
             "dpi": "nodpi",
             "type": "APK",
+            "href_marker": "-lite_",
         },
     },
     {
@@ -225,9 +251,15 @@ def compare_versions(local_ver: str, remote_ver: str) -> str:
     return "current"
 
 
-def fetch_html(url: str) -> Optional[str]:
-    """Fetch HTML content from a public URL using standard urllib."""
-    headers = {"User-Agent": USER_AGENT}
+def _is_anti_bot_challenge(body: str) -> bool:
+    """Check whether a response is an anti-bot interstitial instead of real content."""
+    lower = body.lower()
+    return any(marker in lower for marker in CHALLENGE_MARKERS)
+
+
+def fetch_html(url: str, user_agent: str = USER_AGENT) -> Optional[str]:
+    """Fetch content from a public URL using standard urllib."""
+    headers = {"User-Agent": user_agent}
     if url.startswith("https://api.github.com/"):
         token = os.environ.get("GITHUB_TOKEN")
         if token:
@@ -237,13 +269,27 @@ def fetch_html(url: str) -> Optional[str]:
     req = urllib.request.Request(url, headers=headers)
     try:
         with urllib.request.urlopen(req, timeout=HTTP_TIMEOUT_SECONDS) as resp:
-            return resp.read().decode("utf-8", errors="ignore")
+            body = resp.read().decode("utf-8", errors="ignore")
     except (urllib.error.URLError, urllib.error.HTTPError, OSError) as exc:
         print(f"[WARN] HTTP error fetching {url}: {exc}", file=sys.stderr)
         return None
     except Exception as exc:
         print(f"[WARN] Unexpected error fetching {url}: {exc}", file=sys.stderr)
         return None
+
+    if _is_anti_bot_challenge(body):
+        print(f"[WARN] Anti-bot challenge instead of content: {url}", file=sys.stderr)
+        return None
+    return body
+
+
+def fetch_page_html(url: str) -> Optional[str]:
+    """Fetch a page, retrying with the crawler user agent when a browser UA is gated."""
+    body = fetch_html(url)
+    if body is not None:
+        return body
+    print(f"[INFO] Retrying with crawler user agent: {url}", file=sys.stderr)
+    return fetch_html(url, user_agent=CRAWLER_USER_AGENT)
 
 
 def _build_release_url(href: str) -> str:
@@ -255,28 +301,26 @@ def _build_release_url(href: str) -> str:
     return f"https://www.apkmirror.com/{href.lstrip('/')}"
 
 
-def _release_has_marker(
-    release_url: str,
-    marker: str,
-    fetcher: Callable[[str], Optional[str]],
-) -> bool:
-    """Check whether a candidate release page contains the variant marker."""
-    page_html = fetcher(release_url)
-    if not page_html:
-        return False
-    return marker.lower() in page_html.lower()
-
-
 def _find_marked_release(
     candidates: List[Tuple[Tuple[int, ...], str, str, str]],
-    source_url: str,
     marker: str,
     fetcher: Callable[[str], Optional[str]],
 ) -> Tuple[Optional[str], Optional[str]]:
-    """Walk candidate releases newest-first and return the first matching release."""
+    """Walk candidate releases newest-first and return the first matching release.
+
+    Returns (None, None) when no page carries the marker or when a page cannot be
+    fetched: an unverifiable variant must never be reported as an update.
+    """
     for _, _, raw_v, href in candidates:
         release_url = _build_release_url(href)
-        if _release_has_marker(release_url, marker, fetcher):
+        page_html = fetcher(release_url)
+        if page_html is None:
+            print(
+                f"[WARN] Release page unavailable, cannot verify variant marker: {release_url}",
+                file=sys.stderr,
+            )
+            return None, None
+        if marker.lower() in page_html.lower():
             return raw_v, release_url
     return None, None
 
@@ -303,65 +347,111 @@ def _filter_candidate_link(
     return True
 
 
+def _normalize_release_href(href: str) -> str:
+    """Strip the APKMirror host so listing and feed links share one prefix form."""
+    for prefix in ("https://www.apkmirror.com", "http://www.apkmirror.com"):
+        if href.startswith(prefix):
+            return href[len(prefix):]
+    return href
+
+
+def _candidate_from_link(
+    href: str,
+    title: str,
+    path_prefix: str,
+    allow_beta: bool,
+) -> Optional[Tuple[Tuple[int, ...], str, str, str]]:
+    """Parse a single release link into a candidate tuple, or None when unusable."""
+    href = _normalize_release_href(href)
+    if not _filter_candidate_link(href, title, path_prefix, allow_beta):
+        return None
+    v_match = re.search(VERSION_PATTERN, title, re.I)
+    if not v_match:
+        return None
+    raw_v = v_match.group(1).strip()
+    core, sfx = parse_version(raw_v)
+    if not core:
+        return None
+    return core, sfx, raw_v, href
+
+
 def _collect_apkmirror_candidates(
     html: str,
     path_prefix: str,
     allow_beta: bool,
 ) -> List[Tuple[Tuple[int, ...], str, str, str]]:
     """Collect and parse candidate release version links from APKMirror HTML."""
-    candidates: List[Tuple[Tuple[int, ...], str, str, str]] = []
     link_pattern = r'<a[^>]*class="[^"]*fontBlack[^"]*"[^>]*href="([^"]+)"[^>]*>(.*?)</a>'
+    candidates: List[Tuple[Tuple[int, ...], str, str, str]] = []
     for m in re.finditer(link_pattern, html, re.DOTALL):
-        href = m.group(1)
-        title = m.group(2).strip()
-        if not _filter_candidate_link(href, title, path_prefix, allow_beta):
-            continue
-        v_match = re.search(
-            r"(\d+(?:\.\d+)+(?:[a-zA-Z]+)?(?:\s+(?:beta|alpha|rc\d*))?)",
-            title,
-            re.I,
-        )
-        if not v_match:
-            continue
-        raw_v = v_match.group(1).strip()
-        core, sfx = parse_version(raw_v)
-        if core:
-            candidates.append((core, sfx, raw_v, href))
+        candidate = _candidate_from_link(m.group(1), m.group(2).strip(), path_prefix, allow_beta)
+        if candidate:
+            candidates.append(candidate)
     return candidates
 
 
-def extract_apkmirror_latest_release(
-    html: str,
+def _collect_apkmirror_feed_candidates(
+    feed_xml: str,
     path_prefix: str,
-    allow_beta: bool = False,
-    source_url: Optional[str] = None,
+    allow_beta: bool,
+) -> List[Tuple[Tuple[int, ...], str, str, str]]:
+    """Collect candidate releases from the APKMirror listing RSS feed.
+
+    The feed stays reachable when the HTML listing is gated, so it keeps the
+    scheduled check working with the newest release slugs and channel titles.
+    """
+    candidates: List[Tuple[Tuple[int, ...], str, str, str]] = []
+    for item in RSS_ITEM_PATTERN.findall(feed_xml):
+        title_match = RSS_TITLE_PATTERN.search(item)
+        link_match = RSS_LINK_PATTERN.search(item)
+        if not title_match or not link_match:
+            continue
+        href = link_match.group(1).strip()
+        title = title_match.group(1).strip()
+        candidate = _candidate_from_link(href, title, path_prefix, allow_beta)
+        if candidate:
+            candidates.append(candidate)
+    return candidates
+
+
+def _select_latest_release(
+    candidates: List[Tuple[Tuple[int, ...], str, str, str]],
     require_variant_marker: Optional[str] = None,
     fetch_fn: Optional[Callable[[str], Optional[str]]] = None,
 ) -> Tuple[Optional[str], Optional[str]]:
-    """Extract latest version and release URL from APKMirror listing HTML."""
-    candidates = _collect_apkmirror_candidates(html, path_prefix, allow_beta)
+    """Select the newest candidate release, optionally requiring a variant marker."""
     if not candidates:
         return None, None
 
     candidates.sort(key=lambda c: (c[0], c[1]), reverse=True)
 
     if require_variant_marker:
-        if not source_url:
-            return None, None
-        fetcher = fetch_fn if fetch_fn is not None else fetch_html
-        return _find_marked_release(
-            candidates, source_url, require_variant_marker, fetcher
-        )
+        fetcher = fetch_fn if fetch_fn is not None else fetch_page_html
+        return _find_marked_release(candidates, require_variant_marker, fetcher)
 
     top = candidates[0]
     return top[2], _build_release_url(top[3])
+
+
+def extract_apkmirror_latest_release(
+    html: str,
+    path_prefix: str,
+    allow_beta: bool = False,
+    require_variant_marker: Optional[str] = None,
+    fetch_fn: Optional[Callable[[str], Optional[str]]] = None,
+) -> Tuple[Optional[str], Optional[str]]:
+    """Extract latest version and release URL from APKMirror listing HTML."""
+    return _select_latest_release(
+        _collect_apkmirror_candidates(html, path_prefix, allow_beta),
+        require_variant_marker=require_variant_marker,
+        fetch_fn=fetch_fn,
+    )
 
 
 def extract_apkmirror_version(
     html: str,
     path_prefix: str,
     allow_beta: bool = False,
-    source_url: Optional[str] = None,
     require_variant_marker: Optional[str] = None,
     fetch_fn: Optional[Callable[[str], Optional[str]]] = None,
 ) -> Optional[str]:
@@ -379,7 +469,6 @@ def extract_apkmirror_version(
         html,
         path_prefix,
         allow_beta=allow_beta,
-        source_url=source_url,
         require_variant_marker=require_variant_marker,
         fetch_fn=fetch_fn,
     )
@@ -531,6 +620,13 @@ def _extract_variant_row_blocks(html: str) -> List[str]:
     ]
 
 
+def _match_href_marker(href: str, marker: Optional[str]) -> bool:
+    """Check whether a download row URL carries the configured variant marker."""
+    if not marker:
+        return True
+    return marker.lower() in href.lower()
+
+
 def _parse_candidate_from_block(
     block: str,
     variant_match: Dict[str, str],
@@ -538,6 +634,8 @@ def _parse_candidate_from_block(
     """Parse a single variant row block and return (score, href) if matched."""
     href = _extract_download_href(block)
     if not href:
+        return None
+    if not _match_href_marker(href, variant_match.get("href_marker")):
         return None
     row_type = _extract_row_type(block)
     row_arch, row_dpi = _extract_arch_and_dpi(_extract_cells_text(block))
@@ -783,6 +881,28 @@ def extract_github_channel_latest(
     return winner[0], winner[1]
 
 
+def _collect_listing_candidates(
+    spec: Dict[str, Any],
+    page_fetcher: Callable[[str], Optional[str]],
+) -> List[Tuple[Tuple[int, ...], str, str, str]]:
+    """Collect APKMirror release candidates from the listing, falling back to its feed."""
+    path_prefix = spec["path_prefix"]
+    allow_beta = spec["allow_beta"]
+
+    html = page_fetcher(spec["source_url"])
+    if html:
+        candidates = _collect_apkmirror_candidates(html, path_prefix, allow_beta)
+        if candidates:
+            return candidates
+
+    feed_url = f"{spec['source_url'].rstrip('/')}/feed/"
+    print(f"[INFO] Falling back to upstream feed: {feed_url}", file=sys.stderr)
+    feed_xml = page_fetcher(feed_url)
+    if not feed_xml:
+        return []
+    return _collect_apkmirror_feed_candidates(feed_xml, path_prefix, allow_beta)
+
+
 def run_update_checks(
     constants_path: Path,
     fetch_fn: Optional[Callable[[str], Optional[str]]] = None,
@@ -791,6 +911,7 @@ def run_update_checks(
     constants = parse_constants(constants_path)
     results: List[Dict[str, Any]] = []
     fetcher = fetch_fn if fetch_fn is not None else fetch_html
+    page_fetcher = fetch_fn if fetch_fn is not None else fetch_page_html
 
     for spec in APP_SPECS:
         app_id = spec["id"]
@@ -814,16 +935,11 @@ def run_update_checks(
         remote_version: Optional[str] = None
         release_url: Optional[str] = None
         if source_type == "apkmirror":
-            html = fetcher(source_url)
-            if html:
-                remote_version, release_url = extract_apkmirror_latest_release(
-                    html,
-                    spec["path_prefix"],
-                    allow_beta,
-                    source_url=source_url,
-                    require_variant_marker=require_variant_marker,
-                    fetch_fn=fetcher,
-                )
+            remote_version, release_url = _select_latest_release(
+                _collect_listing_candidates(spec, page_fetcher),
+                require_variant_marker=require_variant_marker,
+                fetch_fn=page_fetcher,
+            )
         elif source_type == "apkpure":
             html = fetcher(source_url)
             if html:
@@ -845,7 +961,7 @@ def run_update_checks(
             source_type=source_type,
             variant_match=spec.get("variant_match"),
             release_url=release_url,
-            fetcher=fetcher,
+            fetcher=page_fetcher,
         )
 
         display_remote = remote_version if remote_version else "unknown"
@@ -1314,12 +1430,19 @@ class TestUpdateChecker(unittest.TestCase):
 
             gboard_release_page = """
             <div class="variants-table">
-              <!-- Marker token for require_variant_marker -->
-              <p>Contains lite_beta builds</p>
               <div class="table-row">
                 <div class="table-cell">
                   <span class="apkm-badge">APK</span>
-                  <a class="accent_color" href="/apk/google-inc/gboard/gboard-download-arm64/">18.5.1</a>
+                  <a class="accent_color" href="/apk/google-inc/gboard/gboard-the-google-keyboard-18-5-1-993608717-release/gboard-the-google-keyboard-18-5-1-993608717-release-arm64-v8a-android-apk-download/">18.5.1.993608717-release-arm64-v8a</a>
+                </div>
+                <div class="table-cell">arm64-v8a</div>
+                <div class="table-cell">Android 8.0+</div>
+                <div class="table-cell">nodpi</div>
+              </div>
+              <div class="table-row">
+                <div class="table-cell">
+                  <span class="apkm-badge">APK</span>
+                  <a class="accent_color" href="/apk/google-inc/gboard/gboard-the-google-keyboard-18-5-1-993608717-release/gboard-the-google-keyboard-18-5-1-993608717-lite_beta-arm64-v8a-android-apk-download/">18.5.1.993608717-lite_beta-arm64-v8a</a>
                 </div>
                 <div class="table-cell">arm64-v8a</div>
                 <div class="table-cell">Android 8.0+</div>
@@ -1368,12 +1491,77 @@ class TestUpdateChecker(unittest.TestCase):
             self.assertEqual(gboard_res["status"], "update-available")
             self.assertEqual(
                 gboard_res["download_url"],
-                "https://www.apkmirror.com/apk/google-inc/gboard/gboard-download-arm64/",
+                "https://www.apkmirror.com/apk/google-inc/gboard/gboard-the-google-keyboard-18-5-1-993608717-release/gboard-the-google-keyboard-18-5-1-993608717-lite_beta-arm64-v8a-android-apk-download/",
             )
 
             brave_res = next(r for r in results if r["id"] == "brave")
             self.assertEqual(brave_res["status"], "update-available")
             self.assertEqual(brave_res["download_url"], "")
+
+    def test_apkmirror_feed_fallback_and_lite_channel(self) -> None:
+        """Verify the listing feed fallback and lite marker across lite channels."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            constants_file = Path(tmpdir) / "Constants.kt"
+            constants_file.write_text(
+                'const val GBOARD_TARGET_VERSION = "18.5.1.993608717-lite_beta-arm64-v8a"\n',
+                encoding="utf-8",
+            )
+
+            release_url = (
+                "https://www.apkmirror.com/apk/google-inc/gboard/"
+                "gboard-the-google-keyboard-18-6-3-1002251336-release/"
+            )
+            feed_xml = f"""
+            <rss><channel>
+              <item>
+                <title>Gboard - the Google Keyboard 18.6.3.1002251336 by Google LLC</title>
+                <link>{release_url}</link>
+              </item>
+              <item>
+                <title>Gboard - the Google Keyboard 18.5.9.993608717 by Google LLC</title>
+                <link>https://www.apkmirror.com/apk/google-inc/gboard/gboard-the-google-keyboard-18-5-9-993608717-release/</link>
+              </item>
+            </channel></rss>
+            """
+            release_page = f"""
+            <div class="variants-table">
+              <div class="table-row">
+                <div class="table-cell">
+                  <span class="apkm-badge">APK</span>
+                  <a class="accent_color" href="{release_url}gboard-the-google-keyboard-18-6-3-1002251336-release-arm64-v8a-android-apk-download/">18.6.3.1002251336-release-arm64-v8a</a>
+                </div>
+                <div class="table-cell">arm64-v8a</div>
+                <div class="table-cell">Android 8.1+</div>
+                <div class="table-cell">nodpi</div>
+              </div>
+              <div class="table-row">
+                <div class="table-cell">
+                  <span class="apkm-badge">APK</span>
+                  <a class="accent_color" href="{release_url}gboard-the-google-keyboard-18-6-3-1002251336-lite_release-arm64-v8a-android-apk-download/">18.6.3.1002251336-lite_release-arm64-v8a</a>
+                </div>
+                <div class="table-cell">arm64-v8a</div>
+                <div class="table-cell">Android 8.1+</div>
+                <div class="table-cell">nodpi</div>
+              </div>
+            </div>
+            """
+
+            def fake_fetcher(url: str) -> Optional[str]:
+                if url.endswith("/feed/"):
+                    return feed_xml
+                if url == release_url:
+                    return release_page
+                return None
+
+            results = run_update_checks(constants_file, fetch_fn=fake_fetcher)
+
+            gboard_res = next(r for r in results if r["id"] == "gboard")
+            self.assertEqual(gboard_res["remote_version"], "18.6.3.1002251336")
+            self.assertEqual(gboard_res["status"], "update-available")
+            self.assertEqual(
+                gboard_res["download_url"],
+                f"{release_url}gboard-the-google-keyboard-18-6-3-1002251336-lite_release-arm64-v8a-android-apk-download/",
+            )
 
     def test_format_issue_body_direct_download_line(self) -> None:
         """Verify Direct download line presence in issue body template."""
@@ -1526,6 +1714,15 @@ def main() -> int:
         report_data = {"apps": results}
         out_path.write_text(json.dumps(report_data, indent=2), encoding="utf-8")
         print(f"[INFO] Saved JSON report to {args.json_path}")
+
+    unresolved = [entry["name"] for entry in results if entry["status"] == "unknown"]
+    if unresolved:
+        print(
+            "[ERROR] Upstream version could not be determined for: "
+            f"{', '.join(unresolved)}",
+            file=sys.stderr,
+        )
+        return 1
 
     return 0
 

@@ -29,6 +29,8 @@ jobs:
           python-version: '3.x'
 
       - name: Run update check
+        id: update_check
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python3 scripts/check_app_updates.py --check --json updates.json
@@ -284,3 +286,10 @@ jobs:
                   else:
                       print(f"[WARN] Failed to close issue #{num} for {app_name}: {close_res.stderr.strip()}", file=sys.stderr)
           EOF
+
+      - name: Fail when an upstream version could not be determined
+        if: steps.update_check.outcome == 'failure'
+        run: |
+          echo "[ERROR] One or more upstream versions could not be determined; see the 'Run update check' step."
+          echo "A silent 'unknown' hides real updates, so this run is reported as failed."
+          exit 1
