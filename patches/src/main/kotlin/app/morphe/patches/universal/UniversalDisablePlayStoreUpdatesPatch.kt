@@ -50,14 +50,20 @@ import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 private const val EXTENSION_CLASS = "Lcom/kveld9/morphe/extension/DisablePlayStoreUpdatesPatch;"
 
-private var originalVersionCode: Int = 0
-private var alreadyDetached: Boolean = false
+private object PlayStoreUpdatesState {
+    var originalVersionCode: Int = 0
+    var alreadyDetached: Boolean = false
+
+    fun reset() {
+        originalVersionCode = 0
+        alreadyDetached = false
+    }
+}
 
 @Suppress("unused")
 private val disablePlayStoreUpdatesResourcePatch = resourcePatch {
     execute {
-        originalVersionCode = 0
-        alreadyDetached = false
+        PlayStoreUpdatesState.reset()
 
         val manifestFile = get("AndroidManifest.xml")
         if (!manifestFile.exists()) {
@@ -74,21 +80,21 @@ private val disablePlayStoreUpdatesResourcePatch = resourcePatch {
 
             val parsed = raw.toIntOrNull() ?: 0
             if (parsed == Int.MAX_VALUE) {
-                alreadyDetached = true
-                originalVersionCode = Int.MAX_VALUE
+                PlayStoreUpdatesState.alreadyDetached = true
+                PlayStoreUpdatesState.originalVersionCode = Int.MAX_VALUE
                 println("[Disable Play Store updates] APK was already detached (manifest versionCode is already Int.MAX_VALUE); in-app checks will keep seeing Int.MAX_VALUE.")
                 return@use
             }
 
-            originalVersionCode = parsed
-            if (originalVersionCode == 0) {
+            PlayStoreUpdatesState.originalVersionCode = parsed
+            if (PlayStoreUpdatesState.originalVersionCode == 0) {
                 println("[Disable Play Store updates] Warning: manifest versionCode missing or unparsable, using 0.")
             }
         }
     }
 
     finalize {
-        if (alreadyDetached) {
+        if (PlayStoreUpdatesState.alreadyDetached) {
             return@finalize
         }
 
@@ -114,7 +120,7 @@ val universalDisablePlayStoreUpdatesPatch = bytecodePatch(
     dependsOn(sharedExtensionPatch)
 
     finalize {
-        if (!alreadyDetached) {
+        if (!PlayStoreUpdatesState.alreadyDetached) {
             val extClass = mutableClassDefByOrNull(EXTENSION_CLASS)
             val originalVersionMethod = extClass?.methods?.firstOrNull { it.name == "originalVersionCode" }
             if (originalVersionMethod != null) {
@@ -123,7 +129,7 @@ val universalDisablePlayStoreUpdatesPatch = bytecodePatch(
                     originalVersionMethod.clearTryBlocks()
                     originalVersionMethod.ensureRegisterCount(1)
                     originalVersionMethod.removeInstructions(0, impl.instructions.count())
-                    originalVersionMethod.addInstructions(0, "const v0, $originalVersionCode\nreturn v0")
+                    originalVersionMethod.addInstructions(0, "const v0, ${PlayStoreUpdatesState.originalVersionCode}\nreturn v0")
                 }
             }
         }
@@ -176,10 +182,10 @@ val universalDisablePlayStoreUpdatesPatch = bytecodePatch(
         val highRegMsg = if (skippedHighRegisters > 0) " ($skippedHighRegisters high-register call site(s) left unhooked)" else ""
 
         if (patched == 0) {
-            val statusMsg = if (alreadyDetached) {
+            val statusMsg = if (PlayStoreUpdatesState.alreadyDetached) {
                 "Manifest versionCode was already ${Int.MAX_VALUE}"
             } else {
-                "Set manifest versionCode to $originalVersionCode -> ${Int.MAX_VALUE}"
+                "Set manifest versionCode to ${PlayStoreUpdatesState.originalVersionCode} -> ${Int.MAX_VALUE}"
             }
             println(
                 "[Disable Play Store updates] $statusMsg (0 bytecode version check calls found)$highRegMsg."
@@ -187,10 +193,10 @@ val universalDisablePlayStoreUpdatesPatch = bytecodePatch(
             return@finalize
         }
 
-        val statusMsg = if (alreadyDetached) {
+        val statusMsg = if (PlayStoreUpdatesState.alreadyDetached) {
             "Manifest versionCode was already ${Int.MAX_VALUE}"
         } else {
-            "Set manifest versionCode to $originalVersionCode -> ${Int.MAX_VALUE}"
+            "Set manifest versionCode to ${PlayStoreUpdatesState.originalVersionCode} -> ${Int.MAX_VALUE}"
         }
         println(
             "[Disable Play Store updates] $statusMsg and applied $patched version check hook(s) across $touchedClasses class(es) " +
