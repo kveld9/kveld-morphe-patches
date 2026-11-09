@@ -38,50 +38,6 @@ private fun isCallSiteCandidate(ins: Instruction): Boolean {
     return ref.definingClass in CALL_SITE_TARGET_CLASSES
 }
 
-private fun buildFilterCursorSmali(uriReg: Int, resultReg: Int): String {
-    val hook = "${Constants.TIKTOK_EXTENSION_PRIVACY_HOOK}->filterCursor(Landroid/net/Uri;Landroid/database/Cursor;)Landroid/database/Cursor;"
-    return if (uriReg <= 15 && resultReg <= 15) {
-        """
-            invoke-static {v$uriReg, v$resultReg}, $hook
-            move-result-object v$resultReg
-        """.trimIndent()
-    } else if (resultReg == uriReg + 1) {
-        """
-            invoke-static/range {v$uriReg .. v$resultReg}, $hook
-            move-result-object v$resultReg
-        """.trimIndent()
-    } else {
-        """
-            move-object/from16 v0, v$uriReg
-            move-object/from16 v1, v$resultReg
-            invoke-static {v0, v1}, $hook
-            move-result-object v$resultReg
-        """.trimIndent()
-    }
-}
-
-private fun buildFilterIntentSmali(intentReg: Int, resultReg: Int): String {
-    val hook = "${Constants.TIKTOK_EXTENSION_PRIVACY_HOOK}->filterIntent(Landroid/content/Intent;Ljava/util/List;)Ljava/util/List;"
-    return if (intentReg <= 15 && resultReg <= 15) {
-        """
-            invoke-static {v$intentReg, v$resultReg}, $hook
-            move-result-object v$resultReg
-        """.trimIndent()
-    } else if (resultReg == intentReg + 1) {
-        """
-            invoke-static/range {v$intentReg .. v$resultReg}, $hook
-            move-result-object v$resultReg
-        """.trimIndent()
-    } else {
-        """
-            move-object/from16 v0, v$intentReg
-            move-object/from16 v1, v$resultReg
-            invoke-static {v0, v1}, $hook
-            move-result-object v$resultReg
-        """.trimIndent()
-    }
-}
-
 val devicePrivacyGuardPatch = bytecodePatch(
     name = "Device Privacy Guard",
     description = "Blocks access to your contacts, location, apps and sensors.",
@@ -539,7 +495,11 @@ val devicePrivacyGuardPatch = bytecodePatch(
                 edits.forEach { (insertIndex, uriReg, resultReg) ->
                     method.addInstructions(
                         insertIndex,
-                        buildFilterCursorSmali(uriReg, resultReg),
+                        """
+                            invoke-static/range {v$uriReg .. v$uriReg}, ${Constants.TIKTOK_EXTENSION_PRIVACY_HOOK}->noteQueryUri(Landroid/net/Uri;)V
+                            invoke-static/range {v$resultReg .. v$resultReg}, ${Constants.TIKTOK_EXTENSION_PRIVACY_HOOK}->filterCursor(Landroid/database/Cursor;)Landroid/database/Cursor;
+                            move-result-object v$resultReg
+                        """.trimIndent(),
                     )
                     querySites++
                 }
@@ -596,7 +556,11 @@ val devicePrivacyGuardPatch = bytecodePatch(
                 edits.forEach { (insertIndex, uriReg, resultReg) ->
                     method.addInstructions(
                         insertIndex,
-                        buildFilterCursorSmali(uriReg, resultReg),
+                        """
+                            invoke-static/range {v$uriReg .. v$uriReg}, ${Constants.TIKTOK_EXTENSION_PRIVACY_HOOK}->noteQueryUri(Landroid/net/Uri;)V
+                            invoke-static/range {v$resultReg .. v$resultReg}, ${Constants.TIKTOK_EXTENSION_PRIVACY_HOOK}->filterCursor(Landroid/database/Cursor;)Landroid/database/Cursor;
+                            move-result-object v$resultReg
+                        """.trimIndent(),
                     )
                     querySites++
                 }
@@ -649,7 +613,11 @@ val devicePrivacyGuardPatch = bytecodePatch(
                 edits.forEach { (insertIndex, uriReg, resultReg) ->
                     method.addInstructions(
                         insertIndex,
-                        buildFilterCursorSmali(uriReg, resultReg),
+                        """
+                            invoke-static/range {v$uriReg .. v$uriReg}, ${Constants.TIKTOK_EXTENSION_PRIVACY_HOOK}->noteQueryUri(Landroid/net/Uri;)V
+                            invoke-static/range {v$resultReg .. v$resultReg}, ${Constants.TIKTOK_EXTENSION_PRIVACY_HOOK}->filterCursor(Landroid/database/Cursor;)Landroid/database/Cursor;
+                            move-result-object v$resultReg
+                        """.trimIndent(),
                     )
                     querySites++
                 }
@@ -704,7 +672,11 @@ val devicePrivacyGuardPatch = bytecodePatch(
                 edits.forEach { (insertIndex, intentReg, resultReg) ->
                     method.addInstructions(
                         insertIndex,
-                        buildFilterIntentSmali(intentReg, resultReg),
+                        """
+                            invoke-static/range {v$intentReg .. v$intentReg}, ${Constants.TIKTOK_EXTENSION_PRIVACY_HOOK}->notePackageIntent(Landroid/content/Intent;)V
+                            invoke-static/range {v$resultReg .. v$resultReg}, ${Constants.TIKTOK_EXTENSION_PRIVACY_HOOK}->filterPackageList(Ljava/util/List;)Ljava/util/List;
+                            move-result-object v$resultReg
+                        """.trimIndent(),
                     )
                     packageSites++
                 }
