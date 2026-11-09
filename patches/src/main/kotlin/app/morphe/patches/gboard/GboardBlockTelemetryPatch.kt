@@ -36,12 +36,16 @@ val gboardBlockTelemetryPatch = bytecodePatch(
     execute {
         val hookedMethods = mutableListOf<String>()
 
-        // 1. Clearcut & Event Telemetry (wgn, orh, sne)
-        listOf("n", "p", "s").forEach { methodName ->
+        // 1. Clearcut & Event Telemetry (lix, hbt, jfk)
+        listOf(
+            "n" to listOf("Llit;"),
+            "q" to emptyList(),
+            "t" to emptyList(),
+        ).forEach { (methodName, params) ->
             val fp = Fingerprint(
-                definingClass = "Lwgn;",
+                definingClass = "Llix;",
                 name = methodName,
-                parameters = if (methodName == "n") listOf("Lwgi;") else emptyList(),
+                parameters = params,
                 returnType = "V",
             )
             fp.method.addInstructions(0, "return-void")
@@ -50,9 +54,9 @@ val gboardBlockTelemetryPatch = bytecodePatch(
         }
 
         val fpHcg = Fingerprint(
-            definingClass = "Lorh;",
+            definingClass = "Lhbt;",
             name = "b",
-            parameters = listOf("Lotx;"),
+            parameters = listOf("Lhdl;"),
             returnType = "V",
         )
         fpHcg.method.addInstructions(0, "return-void")
@@ -60,14 +64,14 @@ val gboardBlockTelemetryPatch = bytecodePatch(
         hookedMethods.add("$cHcg.b")
 
         val fpJga = Fingerprint(
-            definingClass = "Lsne;",
-            name = "dB",
-            parameters = listOf("Landroid/content/Context;", "Lwjf;"),
+            definingClass = "Ljfk;",
+            name = "eS",
+            parameters = listOf("Landroid/content/Context;", "Llko;"),
             returnType = "V",
         )
         fpJga.method.addInstructions(0, "return-void")
         val cJga = cleanClassName(fpJga.originalClassDef.type)
-        hookedMethods.add("$cJga.dB")
+        hookedMethods.add("$cJga.eS")
 
         // 2. Daily Ping Worker (DailyPingWorker.c)
         val fpDailyPing = Fingerprint(
@@ -78,19 +82,19 @@ val gboardBlockTelemetryPatch = bytecodePatch(
         fpDailyPing.method.addInstructions(
             0,
             """
-                new-instance v0, Lcni;
-                invoke-direct {v0}, Lcni;-><init>()V
-                new-instance v1, Lahli;
-                invoke-direct {v1, v0}, Lahli;-><init>(Ljava/lang/Object;)V
+                new-instance v0, Lbeq;
+                invoke-direct {v0}, Lbeq;-><init>()V
+                new-instance v1, Lrjs;
+                invoke-direct {v1, v0}, Lrjs;-><init>(Ljava/lang/Object;)V
                 return-object v1
             """.trimIndent(),
         )
         hookedMethods.add("DailyPingWorker.c")
 
-        // 3. Google Primes & Crash Diagnostics (LifeboatReceiver, xhx, NativeCrashHandlerImpl, aaka)
-        // Note (18.5.1): the legacy Primes client singleton (acud) is gone upstream
-        // (class repurposed, config type removed); coverage retained via the
-        // Clearcut logger, LifeboatReceiver and PrimesModule hooks below.
+        // 3. Google Primes & Crash Diagnostics (LifeboatReceiver, lyu, NativeCrashHandlerImpl)
+        // Note (18.5.1/18.6.3): the legacy Primes client singleton (acud) and provider (aaka)
+        // are gone/inlined upstream; coverage retained via Clearcut logger, LifeboatReceiver,
+        // PrimesModule (lyu) and NativeCrashHandlerImpl.
         val fpLifeboat = Fingerprint(
             definingClass = "Lcom/google/android/libraries/performance/primes/transmitter/LifeboatReceiver;",
             name = "onReceive",
@@ -101,42 +105,23 @@ val gboardBlockTelemetryPatch = bytecodePatch(
         hookedMethods.add("LifeboatReceiver.onReceive")
 
         val fpLxd = Fingerprint(
-            definingClass = "Lxhx;",
-            name = "dB",
-            parameters = listOf("Landroid/content/Context;", "Lwjf;"),
+            definingClass = "Llyu;",
+            name = "eS",
+            parameters = listOf("Landroid/content/Context;", "Llko;"),
             returnType = "V",
         )
         fpLxd.method.addInstructions(0, "return-void")
         val cLxd = cleanClassName(fpLxd.originalClassDef.type)
-        hookedMethods.add("$cLxd.dB")
+        hookedMethods.add("$cLxd.eS")
 
         val fpCrash = Fingerprint(
             definingClass = "Lcom/google/android/libraries/performance/primes/metrics/crash/NativeCrashHandlerImpl;",
             name = "a",
-            parameters = listOf("Ladnh;"),
+            parameters = listOf("Loyk;"),
             returnType = "V",
         )
         fpCrash.method.addInstructions(0, "return-void")
         hookedMethods.add("NativeCrashHandlerImpl.a")
-
-        val fpNjv = Fingerprint(
-            definingClass = "Laaka;",
-            name = "get",
-            parameters = emptyList(),
-            returnType = "Ljava/lang/Object;",
-        )
-        fpNjv.method.addInstructions(
-            0,
-            """
-                invoke-static {}, Landroid/os/Looper;->getMainLooper()Landroid/os/Looper;
-                move-result-object v0
-                new-instance v1, Landroid/os/Handler;
-                invoke-direct {v1, v0}, Landroid/os/Handler;-><init>(Landroid/os/Looper;)V
-                return-object v1
-            """.trimIndent(),
-        )
-        val cNjv = cleanClassName(fpNjv.originalClassDef.type)
-        hookedMethods.add("$cNjv.get")
 
         // 4. AppDoctor Diagnostics (AppDoctorReceiver)
         val fpAppDoctorRecv = Fingerprint(
@@ -148,16 +133,24 @@ val gboardBlockTelemetryPatch = bytecodePatch(
         fpAppDoctorRecv.method.addInstructions(0, "return-void")
         hookedMethods.add("AppDoctorReceiver.onReceive")
 
-        // 5. Tenor Share Tracking (ita.F)
+        // 5. Tenor Share Tracking (Lehl.O event 328)
         val fpTenor = Fingerprint(
-            definingClass = "Lita;",
-            name = "F",
-            parameters = listOf("Laguf;"),
+            definingClass = "Lehl;",
+            name = "O",
+            parameters = listOf("Lsfs;", "I"),
             returnType = "V",
         )
-        fpTenor.method.addInstructions(0, "return-void")
+        fpTenor.method.addInstructions(
+            0,
+            """
+                const/16 v0, 328
+                if-ne p2, v0, :cond_skip_morphe_tenor
+                return-void
+                :cond_skip_morphe_tenor
+            """.trimIndent(),
+        )
         val cTenor = cleanClassName(fpTenor.originalClassDef.type)
-        hookedMethods.add("$cTenor.F")
+        hookedMethods.add("$cTenor.O")
 
         val targetClasses = hookedMethods.map { it.substringBefore('.') }.distinct()
 
