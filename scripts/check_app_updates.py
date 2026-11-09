@@ -716,6 +716,48 @@ def _resolve_download_url_if_available(
     return resolved or ""
 
 
+# APKMirror variant naming: "<version>-<channel>-<arch>" and "<version>-<channel>-<arch>-2".
+# The arch token is noise for a human reading an update title, the channel is not.
+ARCH_TOKENS = ("arm64-v8a", "armeabi-v7a", "x86_64", "x86")
+CHANNEL_TOKENS = ("lite_beta", "lite_release")
+
+
+def display_variant_version(version: str) -> str:
+    """Render "<version>-<channel>-<arch>" as "<version> (<channel>)" for issue titles."""
+    if not version:
+        return "unknown"
+    rendered = version
+    for arch in ARCH_TOKENS:
+        rendered = rendered.replace(f"-{arch}", "")
+    channel = next((token for token in CHANNEL_TOKENS if f"-{token}" in rendered), "")
+    if not channel:
+        return rendered
+    return f"{rendered.replace(f'-{channel}', '')} ({channel})"
+
+
+def variant_channel_from_url(url: str) -> str:
+    """Extract the APKMirror variant channel token (e.g. lite_release) from a download URL."""
+    if not url:
+        return ""
+    for token in CHANNEL_TOKENS:
+        if f"-{token}-" in url:
+            return token
+    return ""
+
+
+def format_issue_title(
+    app_name: str,
+    local_ver: str,
+    remote_ver: str,
+    remote_channel: str = "",
+) -> str:
+    """Format an update issue title with the variant channel shown on both sides."""
+    remote_display = display_variant_version(remote_ver)
+    if remote_channel and f"({remote_channel})" not in remote_display:
+        remote_display = f"{remote_display} ({remote_channel})"
+    return f"Update: {app_name} {display_variant_version(local_ver)} -> {remote_display}"
+
+
 def format_issue_body(
     local_ver: str,
     remote_ver: str,
@@ -980,6 +1022,7 @@ def run_update_checks(
                 "source_name": source_name,
                 "source_url": source_url,
                 "download_url": download_url,
+                "remote_channel": variant_channel_from_url(download_url),
             }
         )
 
@@ -1587,6 +1630,34 @@ class TestUpdateChecker(unittest.TestCase):
             "Source link: https://www.apkmirror.com/apk/brave/\n"
         )
         self.assertEqual(body_without_link, expected_body)
+
+    def test_issue_title_channel_display(self) -> None:
+        """Verify the update issue title shows the variant channel on both sides."""
+        self.assertEqual(
+            format_issue_title(
+                "Gboard",
+                "18.5.1.993608717-lite_beta-arm64-v8a",
+                "18.6.3.1002251336",
+                "lite_release",
+            ),
+            "Update: Gboard 18.5.1.993608717 (lite_beta) -> 18.6.3.1002251336 (lite_release)",
+        )
+        self.assertEqual(
+            format_issue_title("TikTok", "47.7.2", "47.7.3"),
+            "Update: TikTok 47.7.2 -> 47.7.3",
+        )
+        # Version suffixes that are not arch or channel tokens stay untouched
+        self.assertEqual(
+            format_issue_title("Sample", "12.40.1-prod.01", "12.41.0-prod.01"),
+            "Update: Sample 12.40.1-prod.01 -> 12.41.0-prod.01",
+        )
+        self.assertEqual(
+            variant_channel_from_url(
+                "https://www.apkmirror.com/x/gboard-the-google-keyboard-18-6-3-1002251336-lite_release-arm64-v8a-android-apk-download/"
+            ),
+            "lite_release",
+        )
+        self.assertEqual(variant_channel_from_url(""), "")
 
     def test_brave_github_release_channel_filter(self) -> None:
         """Verify GitHub release channel filtering and exclusion of drafts/prereleases."""

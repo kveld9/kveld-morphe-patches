@@ -58,6 +58,7 @@ jobs:
           from scripts.check_app_updates import (
               compare_versions,
               format_issue_body,
+              format_issue_title,
               parse_version,
           )
 
@@ -75,7 +76,7 @@ jobs:
               core, _ = parse_version(candidate)
               if not core:
                   return None
-              return candidate
+              return ".".join(str(part) for part in core)
 
           def compare_app_versions(v_issue, v_check):
               fwd = compare_versions(v_issue, v_check)
@@ -88,8 +89,8 @@ jobs:
                   return "older"
               return "equal"
 
-          def create_issue(repo, app_name, local_ver, remote_ver, source_url, download_url):
-              title = f"Update: {app_name} {local_ver} -> {remote_ver}"
+          def create_issue(repo, app_name, local_ver, remote_ver, source_url, download_url, remote_channel):
+              title = format_issue_title(app_name, local_ver, remote_ver, remote_channel)
               body = format_issue_body(
                   local_ver=local_ver,
                   remote_ver=remote_ver,
@@ -131,6 +132,7 @@ jobs:
               remote_ver = app.get("remote_version", "")
               source_url = app.get("source_url", "")
               download_url = app.get("download_url", "")
+              remote_channel = app.get("remote_channel", "")
 
               print(f"[INFO] Checking existing issues for {app_name}...")
               list_cmd = [
@@ -158,7 +160,7 @@ jobs:
               ]
 
               if not matching_issues:
-                  create_issue(repo, app_name, local_ver, remote_ver, source_url, download_url)
+                  create_issue(repo, app_name, local_ver, remote_ver, source_url, download_url, remote_channel)
                   continue
 
               if len(matching_issues) > 1:
@@ -206,7 +208,7 @@ jobs:
                   continue
 
               print(f"[INFO] Closed stale issue #{num} successfully.")
-              create_issue(repo, app_name, local_ver, remote_ver, source_url, download_url)
+              create_issue(repo, app_name, local_ver, remote_ver, source_url, download_url, remote_channel)
           EOF
 
       - name: Close stale update issues
