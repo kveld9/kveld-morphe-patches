@@ -130,6 +130,24 @@ APP_SPECS: List[Dict[str, Any]] = [
             "type": "APK",
         },
     },
+    {
+        "id": "tiktok_lite",
+        "name": "TikTok Lite",
+        "package_name": "com.tiktok.lite.go",
+        "constant_key": "TIKTOK_LITE_TARGET_VERSION",
+        "source_type": "apkmirror",
+        "source_name": "APKMirror",
+        "source_url": "https://www.apkmirror.com/apk/tiktok-pte-ltd/tiktok-lite-faster-tiktok/",
+        "path_prefix": "/apk/tiktok-pte-ltd/tiktok-lite-faster-tiktok/tiktok-lite-faster-tiktok-",
+        "allow_beta": False,
+        # The listing ships a single multi-file bundle per release, which is what
+        # the patches are built from.
+        "variant_match": {
+            "arch": "arm64-v8a",
+            "dpi": "120-640dpi",
+            "type": "BUNDLE",
+        },
+    },
 ]
 
 # Build dependencies (toolchain components, not apps)
@@ -1110,6 +1128,7 @@ def _check_toolchain_spec(
         "source_url": spec["source_url"],
         "run_patch_test_id": "",
         "download_url": "",
+        "remote_channel": "",
     }
 
 

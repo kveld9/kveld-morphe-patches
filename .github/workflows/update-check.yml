@@ -50,6 +50,7 @@ jobs:
           python3 - <<'EOF'
           import json
           import os
+          import re
           import subprocess
           import sys
 
@@ -154,9 +155,10 @@ jobs:
                   print(f"[WARN] Failed to parse gh issue list output for {app_name}: {exc}", file=sys.stderr)
                   open_issues = []
 
+              title_pattern = re.compile(rf"^Update: {re.escape(app_name)} \d", re.I)
               matching_issues = [
                   issue for issue in open_issues
-                  if app_name in (issue.get("title") or "")
+                  if title_pattern.match((issue.get("title") or "").strip())
               ]
 
               if not matching_issues:
@@ -224,6 +226,7 @@ jobs:
           python3 - <<'EOF'
           import json
           import os
+          import re
           import subprocess
           import sys
 
@@ -264,12 +267,13 @@ jobs:
                   print(f"[WARN] Failed to parse gh issue list output for {app_name}: {exc}", file=sys.stderr)
                   open_issues = []
 
+              title_pattern = re.compile(rf"^Update: {re.escape(app_name)} \d", re.I)
               for issue in open_issues:
                   num = issue.get("number")
                   title = issue.get("title", "")
                   if not num:
                       continue
-                  if app_name.lower() not in title.lower():
+                  if not title_pattern.match(title.strip()):
                       continue
 
                   issue_url = issue.get("url") or f"https://github.com/{repo}/issues/{num}"
