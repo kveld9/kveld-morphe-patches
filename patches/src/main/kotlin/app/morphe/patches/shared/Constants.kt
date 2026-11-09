@@ -22,8 +22,8 @@ object Constants {
     )
 
     const val GBOARD_PACKAGE_NAME = "com.google.android.inputmethod.latin"
-    const val GBOARD_TARGET_VERSION = "18.5.1.993608717-lite_beta-arm64-v8a"
-    const val GBOARD_TARGET_VERSION_V7A = "18.5.1.993608717-lite_beta-armeabi-v7a"
+    const val GBOARD_TARGET_VERSION = "18.6.3.1002251336-lite_release-arm64-v8a"
+    const val GBOARD_TARGET_VERSION_V7A = "18.6.3.1002251336-lite_release-armeabi-v7a"
 
     val COMPATIBILITY_GBOARD = Compatibility(
         name = "Gboard Lite",
@@ -37,7 +37,7 @@ object Constants {
             ),
             AppTarget(
                 version = GBOARD_TARGET_VERSION,
-                description = "Download com.google.android.inputmethod.latin v$GBOARD_TARGET_VERSION (APK) arm64-v8a nodpi versionCode 176049546 (APK) from APKMirror"
+                description = "Download com.google.android.inputmethod.latin v$GBOARD_TARGET_VERSION (APK) arm64-v8a nodpi versionCode 176071770 (APK) from APKMirror"
             )
         )
     )
