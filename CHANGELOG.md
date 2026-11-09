@@ -1,3 +1,13 @@
+## [2.11.0-experimental.8](https://github.com/kveld9/kveld-morphe-patches/compare/v2.11.0-experimental.7...v2.11.0-experimental.8) (2026-11-09)
+
+### Bug Fixes
+
+* **update-check:** use a user agent APKMirror accepts for app pages ([90c8a86](https://github.com/kveld9/kveld-morphe-patches/commit/90c8a86ca33c096cb1abbba02c456f3b1e85b4ac))
+
+### New Features
+
+* **brave:** link both release APKs in update issues ([74ebfa3](https://github.com/kveld9/kveld-morphe-patches/commit/74ebfa38e2a131b996bbffc45359eabed62cccec))
+
 ## [2.11.0-experimental.7](https://github.com/kveld9/kveld-morphe-patches/compare/v2.11.0-experimental.6...v2.11.0-experimental.7) (2026-11-09)
 
 ### Bug Fixes

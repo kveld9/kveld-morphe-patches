@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-11-09T14:23:15",
-  "description": "## [2.11.0-experimental.7](https://github.com/kveld9/kveld-morphe-patches/compare/v2.11.0-experimental.6...v2.11.0-experimental.7) (2026-11-09)\n\n### Bug Fixes\n\n* **tiktok:** include the exact APK link in update issues ([070596c](https://github.com/kveld9/kveld-morphe-patches/commit/070596c1b6fd25458dc152ae955e4caa3b6bd0ff))\n* **update-check:** clarify the update issue title ([e85e251](https://github.com/kveld9/kveld-morphe-patches/commit/e85e2517b51258b72e65b53faceae8054193d489))\n\n### New Features\n\n* **tiktoklite:** report TikTok Lite updates ([cca6ad4](https://github.com/kveld9/kveld-morphe-patches/commit/cca6ad4aa03691f5268e0229a1a49b24c87c8b88))",
-  "download_url": "https://github.com/kveld9/kveld-morphe-patches/releases/download/v2.11.0-experimental.7/patches-2.11.0-experimental.7.mpp",
+  "created_at": "2026-11-09T14:29:46",
+  "description": "## [2.11.0-experimental.8](https://github.com/kveld9/kveld-morphe-patches/compare/v2.11.0-experimental.7...v2.11.0-experimental.8) (2026-11-09)\n\n### Bug Fixes\n\n* **update-check:** use a user agent APKMirror accepts for app pages ([90c8a86](https://github.com/kveld9/kveld-morphe-patches/commit/90c8a86ca33c096cb1abbba02c456f3b1e85b4ac))\n\n### New Features\n\n* **brave:** link both release APKs in update issues ([74ebfa3](https://github.com/kveld9/kveld-morphe-patches/commit/74ebfa38e2a131b996bbffc45359eabed62cccec))",
+  "download_url": "https://github.com/kveld9/kveld-morphe-patches/releases/download/v2.11.0-experimental.8/patches-2.11.0-experimental.8.mpp",
   "signature_download_url": "",
-  "version": "2.11.0-experimental.7"
+  "version": "2.11.0-experimental.8"
 }
