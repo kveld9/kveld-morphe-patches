@@ -16,74 +16,74 @@ val gboardDisableBackgroundSyncPatch = bytecodePatch(
     execute {
         val hookedMethods = mutableListOf<String>()
 
-        // Immediate-success future snippet (18.5.1 future framework: Lcni; value + Lahli; future).
+        // Immediate-success future snippet (18.6.3 future framework: Lbeq; value + Lrjs; future).
         val immediateFutureSnippet = """
-            new-instance v0, Lcni;
-            invoke-direct {v0}, Lcni;-><init>()V
-            new-instance v1, Lahli;
-            invoke-direct {v1, v0}, Lahli;-><init>(Ljava/lang/Object;)V
+            new-instance v0, Lbeq;
+            invoke-direct {v0}, Lbeq;-><init>()V
+            new-instance v1, Lrjs;
+            invoke-direct {v1, v0}, Lrjs;-><init>(Ljava/lang/Object;)V
             return-object v1
         """.trimIndent()
 
-        // 1. AndroidX WorkManager Schedulers & Sinks (abcx)
+        // 1. AndroidX WorkManager Schedulers & Sinks (nwe)
         Fingerprint(
-            definingClass = "Labcx;",
+            definingClass = "Lnwe;",
             name = "a",
             parameters = listOf("Ljava/lang/String;"),
-            returnType = "Lahlo;",
+            returnType = "Lrjw;",
         ).method.apply {
             addInstructions(0, immediateFutureSnippet)
-            hookedMethods.add("Labcx.a")
+            hookedMethods.add("Lnwe.a")
         }
 
         Fingerprint(
-            definingClass = "Labcx;",
+            definingClass = "Lnwe;",
             name = "c",
-            parameters = listOf("Ljava/lang/String;", "I", "Lcnp;"),
-            returnType = "Lahlo;",
+            parameters = listOf("Ljava/lang/String;", "I", "Lrmr;"),
+            returnType = "Lrjw;",
         ).method.apply {
             addInstructions(0, immediateFutureSnippet)
-            hookedMethods.add("Labcx.c")
+            hookedMethods.add("Lnwe.c")
         }
 
         Fingerprint(
-            definingClass = "Labcx;",
+            definingClass = "Lnwe;",
             name = "d",
-            parameters = listOf("Ljava/lang/String;", "I", "Lcnp;", "Ljava/lang/Runnable;", "Ljava/lang/Runnable;"),
+            parameters = listOf("Ljava/lang/String;", "I", "Lrmr;", "Ljava/lang/Runnable;", "Ljava/lang/Runnable;"),
             returnType = "V",
         ).method.apply {
             addInstructions(0, "return-void")
-            hookedMethods.add("Labcx.d")
+            hookedMethods.add("Lnwe.d")
         }
 
         Fingerprint(
-            definingClass = "Labcx;",
+            definingClass = "Lnwe;",
             name = "f",
-            parameters = listOf("Ljava/lang/String;", "Lcoa;"),
-            returnType = "Lahlo;",
+            parameters = listOf("Ljava/lang/String;", "Lrmr;"),
+            returnType = "Lrjw;",
         ).method.apply {
             addInstructions(0, immediateFutureSnippet)
-            hookedMethods.add("Labcx.f")
+            hookedMethods.add("Lnwe.f")
         }
 
         Fingerprint(
-            definingClass = "Labcx;",
+            definingClass = "Lnwe;",
             name = "h",
             parameters = emptyList(),
-            returnType = "Lahlo;",
+            returnType = "Lrjw;",
         ).method.apply {
             addInstructions(0, immediateFutureSnippet)
-            hookedMethods.add("Labcx.h")
+            hookedMethods.add("Lnwe.h")
         }
 
         Fingerprint(
-            definingClass = "Labcx;",
+            definingClass = "Lnwe;",
             name = "l",
-            parameters = listOf("Lahlo;", "Ljava/lang/Runnable;", "Ljava/lang/Runnable;"),
+            parameters = listOf("Lrjw;", "Ljava/lang/Runnable;", "Ljava/lang/Runnable;"),
             returnType = "V",
         ).method.apply {
             addInstructions(0, "return-void")
-            hookedMethods.add("Labcx.l")
+            hookedMethods.add("Lnwe.l")
         }
 
         Fingerprint(
@@ -140,27 +140,27 @@ val gboardDisableBackgroundSyncPatch = bytecodePatch(
 
         // 2. MDD (Mobile Data Download) Workers & Listeners
         val fpMdd1 = Fingerprint(
-            definingClass = "Labom;",
-            name = "a",
-            parameters = listOf("Lvvm;", "Laboq;"),
+            definingClass = "Lleo;",
+            name = "af",
+            parameters = listOf("Llci;", "Locp;"),
             returnType = "V",
         )
         fpMdd1.method.addInstructions(0, "return-void")
         val cMdd1 = cleanClassName(fpMdd1.originalClassDef.type)
-        hookedMethods.add("$cMdd1.a")
+        hookedMethods.add("$cMdd1.af")
 
         val fpMdd2 = Fingerprint(
-            definingClass = "Lvut;",
-            name = "t",
-            parameters = listOf("Lvus;"),
+            definingClass = "Llca;",
+            name = "s",
+            parameters = listOf("Llbz;"),
             returnType = "V",
         )
         fpMdd2.method.addInstructions(0, "return-void")
         val cMdd2 = cleanClassName(fpMdd2.originalClassDef.type)
-        hookedMethods.add("$cMdd2.t")
+        hookedMethods.add("$cMdd2.s")
 
         val fpMdd3 = Fingerprint(
-            definingClass = "Lvut;",
+            definingClass = "Llca;",
             name = "l",
             parameters = emptyList(),
             returnType = "V",
@@ -169,10 +169,10 @@ val gboardDisableBackgroundSyncPatch = bytecodePatch(
         hookedMethods.add("$cMdd2.l")
 
         val fpMdd4 = Fingerprint(
-            definingClass = "Lvut;",
+            definingClass = "Llca;",
             name = "g",
-            parameters = listOf("Lvuv;"),
-            returnType = "Lahlo;",
+            parameters = listOf("Llcb;"),
+            returnType = "Lrjw;",
         )
         fpMdd4.method.addInstructions(
             0,
@@ -180,8 +180,8 @@ val gboardDisableBackgroundSyncPatch = bytecodePatch(
                 const/4 v0, 0x1
                 invoke-static {v0}, Ljava/lang/Boolean;->valueOf(Z)Ljava/lang/Boolean;
                 move-result-object v0
-                new-instance v1, Lahli;
-                invoke-direct {v1, v0}, Lahli;-><init>(Ljava/lang/Object;)V
+                new-instance v1, Lrjs;
+                invoke-direct {v1, v0}, Lrjs;-><init>(Ljava/lang/Object;)V
                 return-object v1
             """.trimIndent(),
         )
@@ -191,7 +191,7 @@ val gboardDisableBackgroundSyncPatch = bytecodePatch(
             definingClass = "Lcom/google/android/libraries/inputmethod/mdd/MDDTaskScheduler${'$'}Worker;",
             name = "c",
             parameters = emptyList(),
-            returnType = "Lahlo;",
+            returnType = "Lrjw;",
         )
         fpMdd5.method.addInstructions(0, immediateFutureSnippet)
         hookedMethods.add("MDDTaskSchedulerWorker.c")
@@ -200,13 +200,13 @@ val gboardDisableBackgroundSyncPatch = bytecodePatch(
             definingClass = "Lcom/google/android/libraries/inputmethod/mdd/cleanup/MddMetadataCleanupWorker;",
             name = "k",
             parameters = emptyList(),
-            returnType = "Lcnj;",
+            returnType = "Labf;",
         )
         fpMdd6.method.addInstructions(
             0,
             """
-                new-instance v0, Lcni;
-                invoke-direct {v0}, Lcni;-><init>()V
+                new-instance v0, Lbeq;
+                invoke-direct {v0}, Lbeq;-><init>()V
                 return-object v0
             """.trimIndent(),
         )
@@ -216,7 +216,7 @@ val gboardDisableBackgroundSyncPatch = bytecodePatch(
             definingClass = "Lcom/google/android/libraries/inputmethod/mdd/ForegroundDownloadTaskWorker;",
             name = "c",
             parameters = emptyList(),
-            returnType = "Lahlo;",
+            returnType = "Lrjw;",
         )
         fpMdd7.method.addInstructions(0, immediateFutureSnippet)
         hookedMethods.add("ForegroundDownloadTaskWorker.c")
