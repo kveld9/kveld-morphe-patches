@@ -675,7 +675,7 @@ public final class TikTokMediaHook {
         if (root == null) return;
         try {
             int id = resolveDescResId(root);
-            if (id == 0) return;
+            if (id <= 0) return;
             applyDescGone(root, id);
             ensureDescLayoutWatch(root, id);
         } catch (Throwable ignored) {}
@@ -690,7 +690,7 @@ public final class TikTokMediaHook {
 
     @SuppressWarnings("unchecked")
     private static void ensureDescLayoutWatch(final View root, final int descId) {
-        if (root == null || descId == 0) return;
+        if (root == null || descId <= 0) return;
         if (!DESC_LISTENED_ROOTS.add(root)) return;
         final WeakReference<View>[] cached = (WeakReference<View>[]) new WeakReference[1];
         root.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
@@ -712,17 +712,15 @@ public final class TikTokMediaHook {
         });
     }
 
-    private static volatile int cachedDescResId = 0;
+    private static volatile int cachedDescResId = -1;
 
     private static int resolveDescResId(View view) {
         int id = cachedDescResId;
-        if (id != 0) return id;
+        if (id != -1) return id;
         Context ctx = view.getContext();
         if (ctx == null) return 0;
         id = ctx.getResources().getIdentifier("desc", "id", ctx.getPackageName());
-        if (id != 0) {
-            cachedDescResId = id;
-        }
+        cachedDescResId = id;
         return id;
     }
 
@@ -730,7 +728,7 @@ public final class TikTokMediaHook {
         if (view == null) return;
         try {
             int id = resolveDescResId(view);
-            if (id == 0) return;
+            if (id <= 0) return;
             if (view.getId() == id) {
                 view.setVisibility(View.GONE);
                 return;
