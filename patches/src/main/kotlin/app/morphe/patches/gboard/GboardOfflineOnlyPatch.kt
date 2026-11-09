@@ -106,17 +106,17 @@ val gboardOfflineOnlyPatch: BytecodePatch = bytecodePatch(
     execute {
         var hookedMethods = 0
 
-        // 1. DeviceStatusMonitor (xsy): force NO_CONNECTION
+        // 1. DeviceStatusMonitor (mfb): force NO_CONNECTION
         Fingerprint(
-            definingClass = "Lxsy;",
+            definingClass = "Lmfb;",
             name = "a",
             parameters = listOf("Landroid/content/Intent;"),
-            returnType = "Lxtc;",
+            returnType = "Lmff;",
         ).method.apply {
             addInstructions(
                 0,
                 """
-                    sget-object v0, Lxtc;->b:Lxtc;
+                    sget-object v0, Lmff;->b:Lmff;
                     return-object v0
                 """.trimIndent(),
             )
@@ -124,24 +124,24 @@ val gboardOfflineOnlyPatch: BytecodePatch = bytecodePatch(
         }
 
         Fingerprint(
-            definingClass = "Lxsy;",
-            name = "g",
+            definingClass = "Lmfb;",
+            name = "h",
             parameters = listOf("Landroid/net/Network;"),
-            returnType = "Lxtc;",
+            returnType = "Lmff;",
         ).method.apply {
             addInstructions(
                 0,
                 """
-                    sget-object v0, Lxtc;->b:Lxtc;
+                    sget-object v0, Lmff;->b:Lmff;
                     return-object v0
                 """.trimIndent(),
             )
             hookedMethods++
         }
 
-        // 2. NetworkInfoNotification (xtd): spoof offline
+        // 2. NetworkInfoNotification (mfg): spoof offline
         Fingerprint(
-            definingClass = "Lxtd;",
+            definingClass = "Lmfg;",
             name = "a",
             parameters = emptyList(),
             returnType = "Z",
@@ -157,9 +157,9 @@ val gboardOfflineOnlyPatch: BytecodePatch = bytecodePatch(
         }
 
         Fingerprint(
-            definingClass = "Lxtd;",
+            definingClass = "Lmfg;",
             name = "c",
-            parameters = listOf("Lxtd;"),
+            parameters = listOf("Lmfg;"),
             returnType = "Z",
         ).method.apply {
             addInstructions(
@@ -179,11 +179,11 @@ val gboardOfflineOnlyPatch: BytecodePatch = bytecodePatch(
         // connectivity spoofs above plus the downloader/queue hooks below.
         println("[Offline Only] Pruned obsolete HTTP wrapper hooks: targets removed upstream.")
 
-        // 4. Superpacks HTTP Downloader (adbc): force connectivity false and throw on socket open
+        // 4. Superpacks HTTP Downloader (otm): force connectivity false and throw on socket open
         Fingerprint(
-            definingClass = "Ladbc;",
+            definingClass = "Lotm;",
             name = "k",
-            parameters = listOf("Ladap;"),
+            parameters = listOf("Lotd;"),
             returnType = "Z",
         ).method.apply {
             addInstructions(
@@ -197,7 +197,7 @@ val gboardOfflineOnlyPatch: BytecodePatch = bytecodePatch(
         }
 
         Fingerprint(
-            definingClass = "Ladbc;",
+            definingClass = "Lotm;",
             name = "b",
             parameters = listOf("Ljava/lang/String;", "Ljava/lang/String;"),
             returnType = "Ljava/net/HttpURLConnection;",
@@ -214,22 +214,22 @@ val gboardOfflineOnlyPatch: BytecodePatch = bytecodePatch(
             hookedMethods++
         }
 
-        // 5. LanguageDownloadQueue (zyp): neutralize download queueing
+        // 5. LanguageDownloadQueue (nhq): neutralize download queueing
         Fingerprint(
-            definingClass = "Lzyp;",
+            definingClass = "Lnhq;",
             name = "c",
-            parameters = listOf("Ljava/lang/String;", "Lzzu;", "Ljava/util/function/Consumer;"),
+            parameters = listOf("Ljava/lang/String;", "Lnii;", "Ljava/util/function/Consumer;"),
             returnType = "V",
         ).method.apply {
             addInstructions(0, "return-void")
             hookedMethods++
         }
 
-        // 6. Glide ConnectivityMonitor (eby): neutralize callback registration
+        // 6. Glide ConnectivityMonitor (chf): neutralize callback registration
         Fingerprint(
-            definingClass = "Leby;",
+            definingClass = "Lchf;",
             name = "b",
-            parameters = listOf("Leay;"),
+            parameters = listOf("Lcgj;"),
             returnType = "V",
         ).method.apply {
             addInstructions(0, "return-void")
@@ -237,32 +237,32 @@ val gboardOfflineOnlyPatch: BytecodePatch = bytecodePatch(
         }
 
         Fingerprint(
-            definingClass = "Leby;",
+            definingClass = "Lchf;",
             name = "c",
-            parameters = listOf("Leay;"),
+            parameters = listOf("Lcgj;"),
             returnType = "V",
         ).method.apply {
             addInstructions(0, "return-void")
             hookedMethods++
         }
 
-        // 7. WorkManager NetworkStateTracker (cud & cuf): return offline state and prevent callbacks
+        // 7. WorkManager NetworkStateTracker (bja & bjc): return offline state and prevent callbacks
         Fingerprint(
-            definingClass = "Lcud;",
+            definingClass = "Lbja;",
             name = "a",
             parameters = listOf("Landroid/net/ConnectivityManager;", "Z"),
-            returnType = "Lcst;",
+            returnType = "Lbhz;",
         ).method.apply {
             addInstructions(
                 0,
                 """
-                    new-instance v0, Lcst;
+                    new-instance v0, Lbhz;
                     const/4 v1, 0x0
                     const/4 v2, 0x0
                     const/4 v3, 0x0
                     const/4 v4, 0x1
                     const/4 v5, 0x0
-                    invoke-direct/range {v0 .. v5}, Lcst;-><init>(ZZZZZ)V
+                    invoke-direct/range {v0 .. v5}, Lbhz;-><init>(ZZZZZ)V
                     return-object v0
                 """.trimIndent(),
             )
@@ -270,7 +270,7 @@ val gboardOfflineOnlyPatch: BytecodePatch = bytecodePatch(
         }
 
         Fingerprint(
-            definingClass = "Lcuf;",
+            definingClass = "Lbjc;",
             name = "d",
             parameters = emptyList(),
             returnType = "V",
@@ -280,7 +280,7 @@ val gboardOfflineOnlyPatch: BytecodePatch = bytecodePatch(
         }
 
         Fingerprint(
-            definingClass = "Lcuf;",
+            definingClass = "Lbjc;",
             name = "e",
             parameters = emptyList(),
             returnType = "V",
