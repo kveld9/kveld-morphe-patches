@@ -369,7 +369,8 @@ public class GboardExtension {
                         restoreImeNavBar(window, f);
                         return true;
                     }
-                    return !hideImeNavBar(window, f);
+                    hideImeNavBar(window, f);
+                    return true;
                 });
             }
         } catch (Throwable ignored) {}
