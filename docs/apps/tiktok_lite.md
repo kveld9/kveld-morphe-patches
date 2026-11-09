@@ -33,9 +33,18 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
 
 ### Group B: Feature Absent / Inert
 
+- **Allow Screenshots**: Anchor absent; `ScreenShotTask` was located in the optional dynamic feature split absent in 47.7.51.
 - **Always Show Publish Date**: Anchor absent; `VideoItemParams.getAweme()` and `aweme.getCreateTime()` feed item UI hook absent in Lite DEX.
+- **Bypass Mandatory Login**: Anchor absent; `MandatoryLoginService` was located in the optional dynamic feature split absent in 47.7.51.
+- **Camera & Microphone Indicator**: Anchor absent; `MainActivity` hook and camera/mic call sites absent in Lite DEX.
+- **Disable History Recording**: Anchor absent; `AwemeStatsApi` was located in the optional dynamic feature split absent in 47.7.51.
 - **Disable Live Gift Effects**: Anchor absent; `LiveGiftPlayer` and `GiftEffectWidget` live gift rendering widgets absent in Lite DEX.
 - **Block P2P Video Relay**: Anchor absent; P2P relay binaries (`libns_p2p.so`, `libbytedance_p2p.so`) absent in Lite APK bundle.
+- **Download Without Watermark**: Anchor absent; Aweme ACL share and download components (`AwemeACLShare`, `ACLCommonShare`) absent in Lite DEX.
+- **Force Auto-Scroll**: Anchor absent; feed auto-scroll experiment flag getter absent in Lite DEX.
+- **Friends & Suggestions Filter**: Anchor absent; `FriendsFeedResponse` was located in the optional dynamic feature split absent in 47.7.51.
+- **In-App Browser Privacy Guard**: Anchor absent; `SparkThird` browser engine absent in Lite DEX.
+- **Remember Clear Display**: Anchor absent; clear-display view models and long-press toggles absent in Lite DEX.
 - **Remove Creator Tools**: Anchor absent; `CreatorToolsActivity` and creator studio entrypoints absent in Lite DEX.
 - **Remove Live Stream Files**: Anchor absent; live stream assets and `LivePlayActivity` stream player absent in Lite DEX.
 - **Remove Voice Tools**: Anchor absent; `VoiceConversionService` and audio filter voice engines absent in Lite DEX.
@@ -70,36 +79,18 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
 ## 4. Technical Breakdown
 
 ### Privacy & Governance
-- **Disable History Recording**:
-  - *Objective*: Prevent viewed videos from recording in account watch history.
-  - *How*: Neutralizes video stats reporting routine (`AwemeStatsApi.L`) with `return-void` when `disableWatchHistory` is enabled.
-- **Allow Screenshots**:
-  - *Objective*: Removes screenshot and screen recording blocking.
-  - *How*: Neutralizes screenshot detection task (`ScreenShotTask.run(Context)`) with early `return-void` to prevent screenshot monitoring and detection telemetry.
 - **Block Trackers**:
   - *Objective*: Neutralizes ByteDance AppLog tracking, crash monitors, and analytics.
-  - *How*: Stubs AppLog.onEvent and AppLog.onEventV3 across all overloads, Npth crash reporting tasks (run and LCCII), Npth.init, and UltraliteInitAppsFlyer, suppressing event logging and crash reporting while preserving device registration transport for account login.
+  - *How*: Stubs `AppLog.onEvent` and every overload of `Npth.init`, suppressing telemetry and crash reporting while preserving device registration transport for account login.
 - **Block Trackers (Setup)**:
   - *Objective*: Removes tracking permissions and disables telemetry components.
   - *How*: Strips advertising permissions (`AD_ID`, AdServices), disables analytics receivers and providers (AppLog, AppsFlyer, Google Analytics), removes analytics discovery registrars, and injects opt-out metadata flags into `AndroidManifest.xml`.
-- **Bypass Mandatory Login**:
-  - *Objective*: Lets you browse videos and feeds without creating an account or logging in.
-  - *How*: Forces Lite `MandatoryLoginService` decision methods (`LCC` and `L`) to return `false` and stubs `LBL` with `return-void` to bypass mandatory login barriers.
-- **Camera & Microphone Indicator**:
-  - *Objective*: Shows a corner mark while TikTok holds camera/mic open.
-  - *How*: Installs visual indicator overlay in `MainActivity.onCreate` via `TikTokCameraMicHook.install` and instruments camera and microphone start and release call sites.
 - **Clean Share Links**:
   - *Objective*: Removes tracking parameters and promotional tail text from shared links.
-  - *How*: Sanitizes shared link URLs (supporting `tiktok.com` and `tiktxk.com` domains and Lite tracking parameters), applies optional custom hostname replacement via `TikTokShareHostHook` in Lite share services `HomePageShareServiceImpl` and `Cem`, and neutralizes the promotional share tail text generator (`X.Cev.LB`) to ensure only clean video URLs are shared or copied.
+  - *How*: Intercepts `minilite.feed.model.Aweme.getShareUrl()` to sanitize shared link URLs, strips tracking parameters, and applies custom hostname replacement via `TikTokShareHostHook`.
 - **Feed Ads & Content Filter**:
   - *Objective*: Filters ads, shopping tags, live cards, and clutter from your feed.
-  - *How*: Intercepts feed list getters `FeedItemList.getItems()`, `SearchMix.getAwemeList()`, and `SearchMixFeedList.getAwemeList()` to filter ads, bloat, shop anchors, live streams, AI content, and matching content rules via `TikTokFeedAdFilter` and `TikTokContentFilterHook`.
-- **Friends & Suggestions Filter**:
-  - *Objective*: Keeps the Friends feed strictly mutual and hides suggested accounts across the app.
-  - *How*: Filters non-mutual recommendations in `FriendsFeedResponse.<init>` via `TikTokFeedAdFilter.filterSuggestedVideosInFriendsFeedData` and disables profile recommendation cards by zeroing `ProfileRecUserViewModel.LILII`.
-- **In-App Browser Privacy Guard**:
-  - *Objective*: Opens web links in your browser and blocks tracking in the remaining web views.
-  - *How*: Redirects SparkThird external web links and popup dispatchers to the system browser via `TikTokBrowserHook.redirectSparkThird`.
+  - *How*: Intercepts feed list getters `FeedItemList.getItems()` and `FeedItemList.getAwemeList()` to filter ads, bloat, shop anchors, live streams, and matching content rules via `TikTokFeedAdFilter`.
 - **SIM Region Selector**:
   - *Objective*: Locks the app to a chosen country to unlock regional content.
   - *How*: Spoofs `TelephonyManager.getSimCountryIso` return value to configured ISO country code and overrides operator numeric (MCC+MNC) and operator name call sites.
@@ -110,25 +101,16 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
 ### Usability & Playback
 - **Block Popups & Prompts**:
   - *Objective*: Blocks popups, nags and promo dialogs across the app.
-  - *How*: Suppresses notification permission prompts via PushServiceImpl.LB and system push dialog checks in 01c.LBL, preserving onboarding completion state and login callback execution.
-- **Download Without Watermark**:
-  - *Objective*: Unlocks downloading and saves videos without watermarks.
-  - *How*: Unlocks share panel and feed download buttons in `D2M.L(Aweme)` (returns 2 and sanitizes ACL download permissions), forces unwatermarked playAddr stream routing via `7PV.L(Aweme)`, sets `ACLCommonShare` constructors to transcode=1, and injects clean stream URLs via `TikTokMediaHook.patchVideoObject` in `Aweme.getVideo()`.
-- **Force Auto-Scroll**:
-  - *Objective*: Enables native auto-scrolling to the next video.
-  - *How*: Forces native feed auto-scroll experiment flag getter (`fyp_auto_scroll_lite_client`) to return `true`.
-- **Remember Clear Display**:
-  - *Objective*: Keeps clear-display mode active when scrolling to the next video.
-  - *How*: Tracks clear mode intention across `7iG.LC` and long-press toggle `8iD.LC` via `TikTokClearDisplayHook`, and re-triggers clear mode in `FeedFragment.r5` on video switch.
+  - *How*: Suppresses notification permission prompts via `PushServiceImpl.LB` and system push dialog checks in `0lr.LBL()Z`, preserving onboarding completion state and login callback execution.
 - **Remember Playback Speed**:
   - *Objective*: Keeps your chosen playback speed across videos and restarts.
-  - *How*: Persists selected speed via `TikTokSpeedHook` in `Ao6.LFF`, returns stored speed in `Ao6.LBL`, and enforces it across feed scrolls in `FeedFragment.S6`.
+  - *How*: Persists selected speed via `TikTokSpeedHook` in `SimplifyPlayerImpl.LD(F)V` and enforces saved speed on new video playback in `SimplifyPlayerImpl.render()V`.
 - **Show Exact Counts**:
   - *Objective*: Shows exact numbers on likes, comments, views and followers.
   - *How*: Intercepts static count formatters matching `1.0M` to format raw metric values using `TikTokCountsHook.exact(J)`.
 - **Show Seekbar**:
   - *Objective*: Restores the video progress seekbar and scrubbing controls.
-  - *How*: Forces `VideoControl` progress bar flags (`draftProgressBar=1`, `showProgressBar=2`) in `Aweme.getVideoControl()`, ensures initialization in `FeedFragment`, and forces seekbar visibility active in seekbar controller `LF()`.
+  - *How*: Forces `VideoControl` progress bar flags (`draftProgressBar=1`, `showProgressBar=2`) in `minilite.feed.model.Aweme.getVideoControl()`.
 - **Stop Video Looping**:
   - *Objective*: Stops videos at the end instead of replaying them in an infinite loop.
   - *How*: Forces looping parameter to `false` in `TTVideoEngineImpl` looping dispatcher and `MediaPlayer.setLooping` delegator.
@@ -139,13 +121,13 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
   - *How*: Forces `PreloadStrategyConfig.isEnableBufferPreload()` to return `false`, throttling aggressive buffer preloading.
 - **Disable Push Notifications**:
   - *Objective*: Stops background push notifications.
-  - *How*: Neutralizes push service initialization (`PushService.init(Context)`) with early `return-void` to prevent background push polling and wake locks without breaking Play Feature Delivery (`SplitCompat.install`).
+  - *How*: Neutralizes push service initialization (`com.ss.android.ugc.aweme.minilite.remotepush.interaction.PushService.init(Context)`) with early `return-void` to prevent background push polling and wake locks without breaking Play Feature Delivery (`SplitCompat.install`).
 - **Disable QUIC**:
   - *Objective*: Loads videos, uploads, and live connections over standard HTTPS instead of QUIC.
-  - *How*: Forces TCP/TLS fallback by clearing `mEnableTTQuicHeLoader` in `AVMDLDataLoader.setConfigureInternal` and stubbing `BDUploadUtil.xquicAvalilable()` to return `false`.
+  - *How*: Forces TCP/TLS fallback by clearing `mEnableTTQuicHeLoader` in `AVMDLDataLoader.setConfigureInternal`.
 - **Playback & Display Governor**:
   - *Objective*: Limits playback resolution and HDR to save battery, and locks the screen refresh rate.
-  - *How*: Caps video playback resolution and filters bitrates via `TikTokVideoQualityHook` in `Aweme.getVideo()` and `Video` play address getters, avoids ByteVC2 software decoding, and locks display refresh rate in `MainActivity.onResume` and `onWindowFocusChanged` using `TikTokRefreshRateHook`.
+  - *How*: Caps video playback resolution and filters bitrates via `TikTokVideoQualityHook` in `minilite.feed.model.Aweme.getVideo()` and `minilite.feed.model.Video` play address getters, avoids ByteVC2 software decoding, and locks display refresh rate in `MainActivity.onResume` and `onWindowFocusChanged` using `TikTokRefreshRateHook`.
 
 ---
 
