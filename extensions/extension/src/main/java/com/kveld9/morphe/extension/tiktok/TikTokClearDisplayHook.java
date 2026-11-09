@@ -1,6 +1,8 @@
 package com.kveld9.morphe.extension.tiktok;
 
 import android.util.Log;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 
 /**
  * Runtime state for the Remember Clear Display patch.
@@ -18,6 +20,11 @@ public final class TikTokClearDisplayHook {
 
     private static volatile boolean clearDisplayRemembered = false;
     private static volatile boolean wantsClear = false;
+
+    private static volatile Class<?> cachedEventType = null;
+    private static volatile Field cachedCleanField = null;
+    private static volatile Field cachedTypeField = null;
+    private static volatile boolean loggedResolutionPath = false;
 
     private TikTokClearDisplayHook() {}
 
@@ -50,12 +57,73 @@ public final class TikTokClearDisplayHook {
         }
     }
 
+    private static synchronized void resolveFields(Class<?> type) {
+        if (cachedEventType == type) {
+            return;
+        }
+        Field boolField = null;
+        Field intField = null;
+        int boolCount = 0;
+        int intCount = 0;
+
+        for (Field f : type.getDeclaredFields()) {
+            int mods = f.getModifiers();
+            if (Modifier.isStatic(mods) || f.isSynthetic()) {
+                continue;
+            }
+            if (f.getType() == boolean.class) {
+                boolField = f;
+                boolCount++;
+            } else if (f.getType() == int.class) {
+                intField = f;
+                intCount++;
+            }
+        }
+
+        if (boolCount == 1 && intCount == 1) {
+            boolField.setAccessible(true);
+            intField.setAccessible(true);
+            cachedCleanField = boolField;
+            cachedTypeField = intField;
+            cachedEventType = type;
+            if (!loggedResolutionPath) {
+                loggedResolutionPath = true;
+                Log.i(TAG, "[Clear Display] Resolved event fields structurally: " + boolField.getName() + " (boolean), " + intField.getName() + " (int)");
+            }
+            return;
+        }
+
+        try {
+            Field legacyBool = type.getDeclaredField("LIZ");
+            Field legacyInt = type.getDeclaredField("LIZIZ");
+            legacyBool.setAccessible(true);
+            legacyInt.setAccessible(true);
+            cachedCleanField = legacyBool;
+            cachedTypeField = legacyInt;
+            cachedEventType = type;
+            if (!loggedResolutionPath) {
+                loggedResolutionPath = true;
+                Log.i(TAG, "[Clear Display] Falling back to legacy event field names (LIZ, LIZIZ)");
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "[Clear Display] Could not resolve legacy event fields: " + t.getMessage());
+        }
+    }
+
     public static void rememberClearDisplayEvent(Object event) {
         if (event == null) return;
         try {
             Class<?> type = event.getClass();
-            boolean isClean = type.getDeclaredField("LIZ").getBoolean(event);
-            int eventType = type.getDeclaredField("LIZIZ").getInt(event);
+            if (cachedEventType != type) {
+                resolveFields(type);
+            }
+            Field cleanField = cachedCleanField;
+            Field typeField = cachedTypeField;
+            if (cleanField == null || typeField == null) {
+                return;
+            }
+            boolean isClean = cleanField.getBoolean(event);
+            int eventType = typeField.getInt(event);
             if (eventType == EVENT_SWITCH_PAGE || eventType == EVENT_NOTIFY_EXIT) {
                 return;
             }

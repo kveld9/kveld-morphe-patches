@@ -19,7 +19,7 @@ public final class TikTokFontHook {
             return;
         }
         logged = true;
-        android.util.Log.e(TAG, "[System Font] TikTok system font redirection active (weight=" + weight + ", italic=" + italic + ")");
+        android.util.Log.i(TAG, "[System Font] TikTok system font redirection active (weight=" + weight + ", italic=" + italic + ")");
     }
 
     private static Typeface resolveModernTypeface(int weight, boolean italic) {

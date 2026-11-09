@@ -14,46 +14,27 @@ public final class TikTokSearchHook {
 
     private TikTokSearchHook() {}
 
-    private static boolean isSuggestedSearch(String type, String source, String title) {
-        if (type != null) {
-            String t = type.toLowerCase();
-            if (t.contains("recom") || t.contains("guess") || t.contains("suggest")) {
-                return true;
-            }
-        }
-        if (source != null) {
-            String s = source.toLowerCase();
-            if (s.contains("recom") || s.contains("guess") || s.contains("suggest")) {
-                return true;
-            }
-        }
-        if (title != null) {
-            String ti = title.toLowerCase();
-            if (ti.contains("suggest") || ti.contains("interesarte") || ti.contains("you may like")) {
-                return true;
-            }
-        }
+    private static boolean isSuggestedSearch(String type, String source, String cardType, String kind) {
+        if (containsAny(type, "recom", "guess", "suggest")) return true;
+        if (containsAny(source, "recom", "guess", "suggest")) return true;
+        if (containsAny(cardType, "recom", "guess", "suggest")) return true;
+        if (containsAny(kind, "recom", "guess", "suggest")) return true;
         return false;
     }
 
-    private static boolean isPopularLive(String type, String source, String title) {
-        if (type != null) {
-            String t = type.toLowerCase();
-            if (t.contains("live") || t.contains("rank") || t.contains("billboard")) {
-                return true;
-            }
-        }
-        if (source != null) {
-            String s = source.toLowerCase();
-            if (s.contains("live") || s.contains("rank") || s.contains("billboard")) {
-                return true;
-            }
-        }
-        if (title != null) {
-            String ti = title.toLowerCase();
-            if (ti.contains("live") || ti.contains("en vivo") || ti.contains("populares")) {
-                return true;
-            }
+    private static boolean isPopularLive(String type, String source, String cardType, String kind) {
+        if (containsAny(type, "live", "rank", "billboard", "popular")) return true;
+        if (containsAny(source, "live", "rank", "billboard", "popular")) return true;
+        if (containsAny(cardType, "live", "rank", "billboard", "popular")) return true;
+        if (containsAny(kind, "live", "rank", "billboard", "popular")) return true;
+        return false;
+    }
+
+    private static boolean containsAny(String value, String... targets) {
+        if (value == null) return false;
+        String lower = value.toLowerCase();
+        for (String target : targets) {
+            if (lower.contains(target)) return true;
         }
         return false;
     }
@@ -134,14 +115,26 @@ public final class TikTokSearchHook {
                     if (item != null) {
                         String type = item.optString("type");
                         String source = item.optString("source");
-                        String title = null;
+                        String cardType = item.optString("card_type");
+                        String kind = item.optString("kind");
+                        if (kind.isEmpty()) kind = item.optString("sub_type");
+
                         JSONObject params = item.optJSONObject("params");
                         if (params != null) {
-                            title = params.optString("title");
+                            if (cardType.isEmpty()) cardType = params.optString("card_type");
+                            if (kind.isEmpty()) kind = params.optString("business_type");
                         }
-                        boolean match = isSuggestedSearchFilter ? isSuggestedSearch(type, source, title) : isPopularLive(type, source, title);
+
+                        boolean isGuessFlag = item.optBoolean("is_guess", false)
+                                || item.optBoolean("is_recommend", false)
+                                || (params != null && (params.optBoolean("is_guess", false) || params.optBoolean("is_recommend", false)));
+
+                        boolean match = isSuggestedSearchFilter
+                                ? (isGuessFlag || isSuggestedSearch(type, source, cardType, kind))
+                                : isPopularLive(type, source, cardType, kind);
+
                         if (match) {
-                            Log.i(TAG, "[Search Filter] Filtered card: type=" + type + ", source=" + source + ", title=" + title);
+                            Log.i(TAG, "[Search Filter] Filtered card: type=" + type + ", source=" + source + ", cardType=" + cardType);
                             modified = true;
                             continue;
                         }
@@ -170,21 +163,15 @@ public final class TikTokSearchHook {
                 while (it.hasNext()) {
                     Object item = it.next();
                     if (item != null) {
-                        String typeStr = null;
-                        try {
-                            Method getTypeMethod = item.getClass().getMethod("getType");
-                            Object type = getTypeMethod.invoke(item);
-                            if (type instanceof String) typeStr = (String) type;
-                        } catch (Throwable ignored) {}
+                        String typeStr = invokeStringMethodQuiet(item, "getType");
+                        String sourceStr = invokeStringMethodQuiet(item, "getSource");
+                        String cardTypeStr = invokeStringMethodQuiet(item, "getCardType");
+                        String kindStr = invokeStringMethodQuiet(item, "getKind");
+                        if (kindStr == null) kindStr = invokeStringMethodQuiet(item, "getSubType");
 
-                        String sourceStr = null;
-                        try {
-                            Method getSourceMethod = item.getClass().getMethod("getSource");
-                            Object source = getSourceMethod.invoke(item);
-                            if (source instanceof String) sourceStr = (String) source;
-                        } catch (Throwable ignored) {}
-
-                        boolean match = isSuggestedSearchFilter ? isSuggestedSearch(typeStr, sourceStr, null) : isPopularLive(typeStr, sourceStr, null);
+                        boolean match = isSuggestedSearchFilter
+                                ? isSuggestedSearch(typeStr, sourceStr, cardTypeStr, kindStr)
+                                : isPopularLive(typeStr, sourceStr, cardTypeStr, kindStr);
                         if (match) {
                             it.remove();
                             Log.i(TAG, "[Search Filter] Removed response item: type=" + typeStr + ", source=" + sourceStr);
@@ -195,5 +182,15 @@ public final class TikTokSearchHook {
         } catch (Throwable t) {
             Log.e(TAG, "[Search Filter] filterResponse error: " + t.getMessage());
         }
+    }
+
+    private static String invokeStringMethodQuiet(Object obj, String methodName) {
+        if (obj == null) return null;
+        try {
+            Method m = obj.getClass().getMethod(methodName);
+            Object res = m.invoke(obj);
+            if (res instanceof String) return (String) res;
+        } catch (Throwable ignored) {}
+        return null;
     }
 }
