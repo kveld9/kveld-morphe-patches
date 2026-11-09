@@ -1,3 +1,9 @@
+## [2.11.0-experimental.4](https://github.com/kveld9/kveld-morphe-patches/compare/v2.11.0-experimental.3...v2.11.0-experimental.4) (2026-11-09)
+
+### Bug Fixes
+
+* **tiktok:** restrict content rules strictly to For You feed ([b422468](https://github.com/kveld9/kveld-morphe-patches/commit/b422468e39e4cb1233824e7daf5febfc4e615136))
+
 ## [2.11.0-experimental.3](https://github.com/kveld9/kveld-morphe-patches/compare/v2.11.0-experimental.2...v2.11.0-experimental.3) (2026-11-08)
 
 ### Bug Fixes
