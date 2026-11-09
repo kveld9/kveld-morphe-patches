@@ -25,12 +25,11 @@ USER_AGENT = (
     "Chrome/124.0.0.0 Safari/537.36"
 )
 
-# APKMirror serves a Cloudflare managed challenge to plain browser requests and
-# allows the crawler user agent through. Retrying with it keeps the scheduled
-# check working from datacenter IPs, which plain browser requests do not reach.
-CRAWLER_USER_AGENT = (
-    "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
-)
+# APKMirror serves a Cloudflare managed challenge to plain browser requests. The
+# crawler agent it currently lets through for heavy app pages is Discordbot: the
+# Googlebot agent passes the Gboard listing but is still challenged on the TikTok
+# pages, which left those issues without a direct download link.
+CRAWLER_USER_AGENT = "Discordbot/2.0; +https://discordapp.com"
 
 CHALLENGE_MARKERS = (
     "just a moment",
