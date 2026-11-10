@@ -86,8 +86,8 @@ flowchart TD
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Brave Browser** | `com.brave.browser` | `1.99.55` | `arm64-v8a`<br>`armeabi-v7a` (single file) | [ARM64](https://github.com/brave/brave-browser/releases/download/v1.99.55/Bravemonoarm64.apk) · [ARM32](https://github.com/brave/brave-browser/releases/download/v1.99.55/BraveMonoarm.apk) | [Brave Guide](docs/apps/brave.md) |
 | **Gboard Lite** | `com.google.android.inputmethod.latin` | `18.6.3.1002251336-lite_release` | `arm64-v8a`<br>`armeabi-v7a` (any screen) | [APKMirror](https://www.apkmirror.com/apk/google-inc/gboard/gboard-the-google-keyboard-18-6-3-1002251336-release/) | [Gboard Lite Guide](docs/apps/gboard.md) |
-| **TikTok** | `com.zhiliaoapp.musically` | `47.7.2` | `arm64-v8a` (any screen) | [APKMirror](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-47-7-2-release/) | [TikTok Guide](docs/apps/tiktok.md) |
-| **TikTok Lite** | `com.tiktok.lite.go` | `47.5.52` | `arm64-v8a`<br>`armeabi-v7a` (multi-file) | [APKMirror](https://www.apkmirror.com/apk/tiktok-pte-ltd/tiktok-lite-faster-tiktok/tiktok-lite-faster-tiktok-47-5-52-release/) | [TikTok Lite Guide](docs/apps/tiktok_lite.md) |
+| **TikTok** | `com.zhiliaoapp.musically` | `47.7.3` | `arm64-v8a` (any screen) | [APKMirror](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-47-7-3-release/) | [TikTok Guide](docs/apps/tiktok.md) |
+| **TikTok Lite** | `com.tiktok.lite.go` | `47.7.51` | `arm64-v8a`<br>`armeabi-v7a` (multi-file) | [APKMirror](https://www.apkmirror.com/apk/tiktok-pte-ltd/tiktok-lite-faster-tiktok/tiktok-lite-faster-tiktok-47-7-51-release/) | [TikTok Lite Guide](docs/apps/tiktok_lite.md) |
 
 Labels: `single file` = one APK; `multi-file` = a package Morphe joins together; `any screen` = works on any screen size.
 
@@ -114,9 +114,9 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 
 **Supported versions:**
 
-| 47.7.2 |
+| 47.7.3 |
 | :---: |
-| Download com.zhiliaoapp.musically v47.7.2 (APK) arm64-v8a nodpi versionCode 2024707020 (APK) from APKMirror |
+| Download com.zhiliaoapp.musically v47.7.3 (APK) arm64-v8a nodpi versionCode 2024707030 (APK) from APKMirror |
 
 | Patch | Description | Options |
 |----------|----------------|-----------|
@@ -175,35 +175,26 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 </details>
 
 <details>
-<summary>TikTok Lite&nbsp;&nbsp;•&nbsp;&nbsp;<b>24 patches</b></summary>
+<summary>TikTok Lite&nbsp;&nbsp;•&nbsp;&nbsp;<b>15 patches</b></summary>
 <br>
 
 **Supported versions:**
 
-| 47.5.52 |
+| 47.7.51 |
 | :---: |
-| Download com.tiktok.lite.go v47.5.52 (APKM) arm64-v8a versionCode 470552 (APKM) from APKMirror |
+| Download com.tiktok.lite.go v47.7.51 (APKM) arm64-v8a versionCode 470751 (APKM) from APKMirror |
 
 | Patch | Description | Options |
 |----------|----------------|-----------|
-| **Allow Screenshots** | Removes screenshot and screen recording blocking. |  |
 | **Battery & Resource Saver** | Stops 3D ad sensors and aggressive video preloading to save battery and data. |  |
 | **Block Popups & Prompts** | Blocks popups, nags and promo dialogs across the app. | • Suppress Account & Permission Nags<br>• Hide Notification Prompts<br>• Suppress Sticker Recommendations<br>• Filter PopLayer Prompts & Nags<br>• Suppress Live Teaser Bubbles<br>• Suppress DM Streak Reminders<br>• Disable Post-Download Share Dialog<br>• Update Prompt Suppressor<br>• Skip First-Launch Onboarding<br>• Skip Content Warnings |
 | **Block Trackers** | Neutralizes ByteDance AppLog tracking, crash monitors, and analytics. |  |
 | **Block Trackers (Setup)** | Removes tracking permissions and disables telemetry components. |  |
-| **Bypass Mandatory Login** | Lets you browse videos and feeds without creating an account or logging in. |  |
-| **Camera & Microphone Indicator** | Shows a corner mark while TikTok holds camera/mic open. |  |
 | **Clean Share Links** | Removes tracking parameters from shared links. | • Custom Share Host |
-| **Disable History Recording** | Prevents TikTok from recording your watch history and search queries. | • Disable Watch History<br>• Disable Search History |
 | **Disable Push Notifications** | Stops background push notifications. |  |
 | **Disable QUIC** | Loads videos, uploads, and live connections over standard HTTPS instead of QUIC. |  |
-| **Download Without Watermark** | Unlocks downloading and saves videos without watermarks. | • Remove Watermark<br>• Saved-Video Quality Preference<br>• Disable Post-Download Share Dialog |
 | **Feed Ads & Content Filter** | Filters ads, shopping tags, live cards, and clutter from your feed. | • Filter Feed Ads<br>• Filter Feed Bloat<br>• Hide Video Product Anchors<br>• Block Live Streams<br>• Hide AI-Generated Content<br>• Hide Seen Videos<br>• Minimum Views<br>• Maximum Views<br>• Minimum Likes<br>• Maximum Likes<br>• Blocked Creators<br>• Blocked Hashtags<br>• Blocked Keywords<br>• Hidden Regions<br>• Maximum Post Age<br>• Minimum Video Length<br>• Maximum Video Length<br>• Hide Stories<br>• Hide Photo Posts |
-| **Force Auto-Scroll** | Enables native auto-scrolling to the next video. |  |
-| **Friends & Suggestions Filter** | Keeps the Friends feed strictly mutual and hides suggested accounts across the app. | • Strict Mutual Friends Feed<br>• Filter Friends Feed Bloat<br>• Hide Suggested Accounts |
-| **In-App Browser Privacy Guard** | Opens web links in your browser and blocks tracking in the remaining web views. |  |
 | **Playback & Display Governor** | Limits playback resolution and HDR to save battery, and locks the screen refresh rate. | • Cap Playback Resolution<br>• Maximum Playback Resolution<br>• Avoid ByteVC2 Software Decoding<br>• Drop Undecodable Video Streams<br>• Disable HDR Video Playback<br>• Govern Display Refresh Rate<br>• Target Refresh Rate |
-| **Remember Clear Display** | Keeps clear-display mode active when scrolling to the next video. |  |
 | **Remember Playback Speed** | Keeps your chosen playback speed across videos and restarts. | • Default Playback Speed<br>• Hold-And-Slide 2x Speed Lock |
 | **SIM Region Selector** | Locks the app to a chosen country to unlock regional content. | • Spoofed Region ISO Code<br>• Spoofed Operator Numeric Code (MCC+MNC)<br>• Spoofed Operator Name |
 | **Show Exact Counts** | Shows exact numbers on likes, comments, views and followers. |  |
