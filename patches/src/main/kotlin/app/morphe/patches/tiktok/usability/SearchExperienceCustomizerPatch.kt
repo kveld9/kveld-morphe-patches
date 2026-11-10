@@ -316,12 +316,19 @@ val searchExperienceCustomizerPatch = bytecodePatch(
             )
             patched++
 
+            // Dynamically discover autoplay method name from SearchServiceCenter$AutoPlayAbility
+            val autoPlayAbilityDef = classDefByOrNull("Lcom/ss/android/ugc/aweme/search/arch/v2/services/SearchServiceCenter\$AutoPlayAbility;")
+            val autoPlayMethodName = autoPlayAbilityDef?.methods?.firstOrNull { method ->
+                method.returnType == "Z" && method.parameterTypes.isEmpty() &&
+                    method.name != "isPlaying" && method.name != "nn"
+            }?.name ?: "b2"
+
             // Hook SearchCardVideoPlayerAssem$autoPlayAbility$2$1 to disable card autoplay ability and playback triggers
             val videoCardAbilityClass = "Lcom/ss/android/ugc/aweme/search/arch/v2/protocol/card/components/SearchCardVideoPlayerAssem${'$'}autoPlayAbility${'$'}2${'$'}1;"
 
             val videoCardL2Fp = Fingerprint(
                 definingClass = videoCardAbilityClass,
-                name = "b2",
+                name = autoPlayMethodName,
                 returnType = "Z",
             )
             videoCardL2Fp.method.addInstructions(
@@ -351,7 +358,7 @@ val searchExperienceCustomizerPatch = bytecodePatch(
 
             val lynxVideoL2Fp = Fingerprint(
                 definingClass = lynxVideoAbilityClass,
-                name = "b2",
+                name = autoPlayMethodName,
                 returnType = "Z",
             )
             lynxVideoL2Fp.method.addInstructions(
@@ -381,7 +388,7 @@ val searchExperienceCustomizerPatch = bytecodePatch(
 
             val photoCardL2Fp = Fingerprint(
                 definingClass = photoCardAbilityClass,
-                name = "b2",
+                name = autoPlayMethodName,
                 returnType = "Z",
             )
             photoCardL2Fp.method.addInstructions(
