@@ -41,10 +41,10 @@ val autoPauseFirstVideoPatch = bytecodePatch(
         println("[Auto-Pause First Video] Hooked PlayerController.m -> Post-load pause & play icon active.")
         patched++
 
-        // 2. Hook PlayerController.J6 to block automatic playback resume by tryResumePlay (was C6 in v47.6.3)
+        // 2. Hook PlayerController.I6 to block automatic playback resume by tryResumePlay (was J6 in v47.7.2)
         val w6Method = playerControllerFp.classDef.methods.firstOrNull {
-            it.name == "J6" && it.parameterTypes.size == 3 && it.returnType == "Ljava/lang/String;"
-        } ?: error("Could not find J6(Aweme, I, Z)Ljava/lang/String; method in PlayerController")
+            it.name == "I6" && it.parameterTypes.size == 3 && it.returnType == "Ljava/lang/String;"
+        } ?: error("Could not find I6(Aweme, I, Z)Ljava/lang/String; method in PlayerController")
 
         w6Method.addInstructions(
             0,
