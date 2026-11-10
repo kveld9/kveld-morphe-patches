@@ -241,10 +241,10 @@ val feedNavigationDeclutterPatch = bytecodePatch(
 
             val serviceFp = Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/explore/service/ExploreFeedServiceImpl;",
-                name = "LJJIFFI", // in v47.7.2, was LJJ in v47.6.3
+                name = "LJJIIJ", // in v47.7.3, was LJJIFFI in v47.7.2, LJJ in v47.6.3
                 parameters = emptyList(),
             )
-            var tabProviderClass = "LX/04sZ;" // in v47.7.2, was LX/03nU; in v47.6.3
+            var tabProviderClass = "LX/04sd;" // in v47.7.3, was LX/04sZ; in v47.7.2, LX/03nU; in v47.6.3
             val insns = serviceFp.method.implementation?.instructions
             if (insns != null) {
                 for (insn in insns) {
@@ -483,8 +483,8 @@ val feedNavigationDeclutterPatch = bytecodePatch(
 
         val tabManagerClasses by lazy {
             val avatarAbilityClass = "Lcom/ss/android/ugc/aweme/friendstab/ability/BaseBottomTabAvatarAbility;"
-            val ksMethod = classDefByOrNull(avatarAbilityClass)?.methods?.firstOrNull { it.name == "mR" || it.name == "XQ" || it.name == "br0" || it.name == "uR" || it.name == "kS" || it.name == "HQ" }
-            val tabManagerBaseType = ksMethod?.returnType ?: "LX/06KJ;"
+            val ksMethod = classDefByOrNull(avatarAbilityClass)?.methods?.firstOrNull { it.name == "CR" || it.name == "mR" || it.name == "XQ" || it.name == "br0" || it.name == "uR" || it.name == "kS" || it.name == "HQ" }
+            val tabManagerBaseType = ksMethod?.returnType ?: "LX/06KN;"
 
             val managers = mutableListOf<String>()
             classDefForEach { cls ->
@@ -493,7 +493,7 @@ val feedNavigationDeclutterPatch = bytecodePatch(
                 }
             }
             if (managers.isEmpty()) {
-                managers.addAll(listOf("LX/08Yc;", "LX/08Yt;"))
+                managers.addAll(listOf("LX/08Yg;", "LX/08Yx;"))
             }
             managers
         }
