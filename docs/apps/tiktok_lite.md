@@ -67,7 +67,7 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
 - **Hide Inbox Promos & Alerts**: Anchor absent; `TopBannerWidgetContainerInjector` and promo banner widgets absent in Lite DEX.
 - **Hide Inbox Story Tray**: Anchor absent; `StoryGetFeedByPageResponse` class and story tray container absent in Lite DEX.
 - **Instant Launch**: Anchor absent; `SplashAdManagerPreloadTask` and splash ad preloader absent in Lite DEX.
-- **Login Compatibility Fix**: Not applicable on Lite; the patch is now compiled for `com.zhiliaoapp.musically` only. Web-based OAuth fallback and third-party login compatibility wrappers are absent in the Lite DEX, and the device registration transport fix is handled by Block Trackers Setup instead.
+- **Login Compatibility Fix**: Not applicable on Lite; the patch is compiled for `com.zhiliaoapp.musically` only. TikTok Lite relies exclusively on native Google Play Services auth (`play-services-auth` / `SignInHubActivity`) and lacks the browser-based Web OAuth fallback (`GoogleWebAuth`) found in standard TikTok's Lobby. On re-signed APKs, native GMS token acquisition is rejected server-side by Google due to signing certificate SHA-1 mismatch. Device registration transport is preserved separately by Block Trackers Setup.
 - **Offline Video Limit**: Anchor absent; `OfflineModeSheetPageAssem` and user-facing offline videos download sheet absent in Lite DEX.
 - **Resume Video After Scroll**: Anchor absent; `ScrollAutoPlayManager` and video resume on scroll handlers absent in Lite DEX.
 - **Show Author Region**: Anchor absent; `VideoAuthorInfoVM` and author region metadata badge absent in Lite DEX.
@@ -133,6 +133,7 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
 
 ## 5. Known Limitations
 
+- **Google Sign-In on Re-signed Builds**: Native Google sign-in fails with a "Couldn't log in" toast on patched TikTok Lite APKs. Google Play Services validates the APK certificate SHA-1 against ByteDance's production OAuth 2.0 Client ID registration on Google servers. Because TikTok Lite replaced ByteDance's Lobby with `mini_lobby` that completely strips browser-based Web OAuth fallback (`GoogleWebAuth`), native Google sign-in cannot succeed on non-rooted environments. Users must sign in via username/email and password, or use standard TikTok if Google authentication is required.
 - **Search History Suppression**: Search history query recording is not supported on TikTok Lite because the search history analytics and recommendation stores (`SuggestWordResponse`, `ManualSearchPvStore`) are absent in the Lite build.
 - **Offline Video Limit**: TikTok Lite does not feature user-facing offline video limit selection (`OfflineModeSheetPageAssem` is absent); caching is handled automatically based on storage tiers.
 
