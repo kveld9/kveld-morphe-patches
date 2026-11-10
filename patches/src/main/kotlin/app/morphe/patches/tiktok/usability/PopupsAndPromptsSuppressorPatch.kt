@@ -376,48 +376,40 @@ private fun BytecodePatchContext.applyStickerRecommendationHooks(): Int {
         }
     }
 
-    fun hookNull(name: String, returnType: String) {
+    fun hookNull(returnType: String) {
         try {
             Fingerprint(
                 definingClass = assemClass,
-                name = name,
                 parameters = emptyList(),
                 returnType = returnType,
             ).method.replaceWithReturnNull()
             renderDataHooks++
         } catch (e: Exception) {
-            throw PatchException("Failed to resolve TypingRecommendationPanelAssem.$name", e)
+            throw PatchException("Failed to resolve TypingRecommendationPanelAssem getter for $returnType", e)
         }
     }
 
-    hookVoid(
-        name = "tp",
-        parameters = listOf(
-            "Lcom/ss/android/ugc/aweme/im/common/model/StickerItem;",
-            "Landroid/view/View;",
-            "I",
-            "LX/0itR;",
-        ),
-    )
-    hookVoid(
-        name = "rq",
-        parameters = listOf(
-            "Landroid/view/View;",
-            "Lcom/ss/android/ugc/aweme/im/common/model/StickerItem;",
-        ),
-    )
-    hookNull(
-        name = "jq",
-        returnType = "Lcom/ss/android/ugc/aweme/im/sdk/chat/ui/base/assems/input/typingrecommendation/TypingRecommendationPanelViewModel;",
-    )
-    hookNull(
-        name = "pq",
-        returnType = "Lcom/ss/android/ugc/aweme/viewmodel/ITypingRecommendationVM;",
-    )
-    hookNull(
-        name = "hq",
-        returnType = "Lcom/ss/android/ugc/aweme/im/prompts/api/chatnotice/flow/base/viewmodel/ICommonChatNoticeViewModel;",
-    )
+    val assemDef = mutableClassDefBy(assemClass)
+    val itemClickMethod = assemDef.methods.firstOrNull {
+        it.returnType == "V" && it.parameterTypes.size == 4 &&
+            it.parameterTypes[0] == "Lcom/ss/android/ugc/aweme/im/common/model/StickerItem;" &&
+            it.parameterTypes[1] == "Landroid/view/View;" &&
+            it.parameterTypes[2] == "I"
+    } ?: throw PatchException("Failed to resolve TypingRecommendationPanelAssem sticker item click method")
+    itemClickMethod.replaceWithReturnVoid()
+    renderDataHooks++
+
+    val itemViewMethod = assemDef.methods.firstOrNull {
+        it.returnType == "V" && it.parameterTypes.size == 2 &&
+            it.parameterTypes[0] == "Landroid/view/View;" &&
+            it.parameterTypes[1] == "Lcom/ss/android/ugc/aweme/im/common/model/StickerItem;"
+    } ?: throw PatchException("Failed to resolve TypingRecommendationPanelAssem sticker item view method")
+    itemViewMethod.replaceWithReturnVoid()
+    renderDataHooks++
+
+    hookNull("Lcom/ss/android/ugc/aweme/im/sdk/chat/ui/base/assems/input/typingrecommendation/TypingRecommendationPanelViewModel;")
+    hookNull("Lcom/ss/android/ugc/aweme/viewmodel/ITypingRecommendationVM;")
+    hookNull("Lcom/ss/android/ugc/aweme/im/prompts/api/chatnotice/flow/base/viewmodel/ICommonChatNoticeViewModel;")
     hookVoid(name = "Xp")
     hookVoid(name = "Zp")
     hookVoid(name = "dq")
