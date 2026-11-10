@@ -357,7 +357,7 @@ val directMessageDeclutterPatch = bytecodePatch(
         if (hideGalleryButton == true) {
             val galleryAssemFp = Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/im/chatroom/input/components/misc/IMImageBtnViewAssem;",
-                name = "Tp",
+                name = "Sp",
                 parameters = listOf("Landroid/view/View;"),
                 returnType = "V",
             )
@@ -376,7 +376,7 @@ val directMessageDeclutterPatch = bytecodePatch(
                         return-void
                     """.trimIndent(),
                 )
-                println("[Declutter Direct Messages] Hooked IMImageBtnViewAssem.Tp -> View.GONE.")
+                println("[Declutter Direct Messages] Hooked IMImageBtnViewAssem.Sp -> View.GONE.")
                 patched++
             }
 
