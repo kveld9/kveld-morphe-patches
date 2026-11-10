@@ -44,7 +44,6 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
 - **Force Auto-Scroll**: Anchor absent; feed auto-scroll experiment flag getter absent in Lite DEX.
 - **Friends & Suggestions Filter**: Anchor absent; `FriendsFeedResponse` was located in the optional dynamic feature split absent in 47.7.51.
 - **In-App Browser Privacy Guard**: Anchor absent; `SparkThird` browser engine absent in Lite DEX.
-- **Remember Clear Display**: Anchor absent; while TikTok Lite natively includes a long-press clear display button, it uses a lightweight feed architecture (`LX/7iG`, `FeedFragment.r5`) rather than standard TikTok's `ClearModePanelComponent` and `PlayerController`. Lite resets clear mode on every video switch (`switch_video`), so cross-video state persistence is not supported.
 - **Remove Creator Tools**: Anchor absent; `CreatorToolsActivity` and creator studio entrypoints absent in Lite DEX.
 - **Remove Live Stream Files**: Anchor absent; live stream assets and `LivePlayActivity` stream player absent in Lite DEX.
 - **Remove Voice Tools**: Anchor absent; `VoiceConversionService` and audio filter voice engines absent in Lite DEX.
@@ -102,6 +101,9 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
 - **Block Popups & Prompts**:
   - *Objective*: Blocks popups, nags and promo dialogs across the app.
   - *How*: Suppresses notification permission prompts via `PushServiceImpl.LB` and system push dialog checks in `0lr.LBL()Z`, preserving onboarding completion state and login callback execution.
+- **Remember Clear Display**:
+  - *Objective*: Keeps clear-display mode active when scrolling to the next video.
+  - *How*: Intercepts Lite clear-mode dispatcher (`LX/7iG.LC`) and suppresses exit on `switch_video`, neutralizes `FeedFragment.r5` video switch dismissal, bypasses cell clear mode validation in `LX/ElQ.LILZIL`, and enforces UI overlay hiding in `LX/ElQ.LILLI`.
 - **Remember Playback Speed**:
   - *Objective*: Keeps your chosen playback speed across videos and restarts.
   - *How*: Persists selected speed via `TikTokSpeedHook` in `SimplifyPlayerImpl.LD(F)V` and enforces saved speed on new video playback in `SimplifyPlayerImpl.render()V`.

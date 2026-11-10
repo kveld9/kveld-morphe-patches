@@ -41,20 +41,25 @@ public final class TikTokClearDisplayHook {
         Log.i(TAG, "[Clear Display Lite] wantsClear=" + wants);
     }
 
-    public static void onClearModeCall(Object enumStatus, String reason) {
-        if (enumStatus == null) return;
+    public static boolean onClearModeCall(Object enumStatus, String reason) {
+        if (enumStatus == null) return true;
         String status = enumStatus.toString();
         if ("OPEN".equals(status)) {
+            clearDisplayRemembered = true;
             wantsClear = true;
-            Log.i(TAG, "[Clear Display Lite] onClearModeCall OPEN (reason=" + reason + ") -> wantsClear=true");
+            Log.i(TAG, "[Clear Display Lite] onClearModeCall OPEN (reason=" + reason + ") -> clearDisplayRemembered=true");
+            return true;
         } else if ("CLOSE".equals(status)) {
-            if (!"switch_video".equals(reason)) {
-                wantsClear = false;
-                Log.i(TAG, "[Clear Display Lite] onClearModeCall CLOSE (reason=" + reason + ") -> wantsClear=false");
-            } else {
-                Log.i(TAG, "[Clear Display Lite] onClearModeCall CLOSE (switch_video ignored for wantsClear)");
+            if ("switch_video".equals(reason) && clearDisplayRemembered) {
+                Log.i(TAG, "[Clear Display Lite] Suppressing CLOSE for switch_video (clear display remembered)");
+                return false;
             }
+            clearDisplayRemembered = false;
+            wantsClear = false;
+            Log.i(TAG, "[Clear Display Lite] onClearModeCall CLOSE (reason=" + reason + ") -> clearDisplayRemembered=false");
+            return true;
         }
+        return true;
     }
 
     private static synchronized void resolveFields(Class<?> type) {
