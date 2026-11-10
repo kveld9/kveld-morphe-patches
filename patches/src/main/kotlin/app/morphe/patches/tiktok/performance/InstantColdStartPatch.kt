@@ -82,8 +82,8 @@ val instantColdStartPatch = bytecodePatch(
         println("[Instant Launch] Disabled RealTimeSplashManagerImpl splash gate -> Real-time splash execution disabled.")
         patched++
 
-        // 8. Disable SplashAdServiceImpl methods (LJFF, LJIILJJIL, LJJIJIIJIL in v47.7.2)
-        for (mName in listOf("LJFF", "LJIILJJIL", "LJJIJIIJIL")) {
+        // 8. Disable SplashAdServiceImpl methods (LJFF, LJIILJJIL, LJJIJIL in v47.7.3, was LJJIJIIJIL in v47.7.2)
+        for (mName in listOf("LJFF", "LJIILJJIL", "LJJIJIL")) {
             Fingerprint(
                 definingClass = "Lcom/bytedance/ies/ugc/aweme/commercialize/splash/core/SplashAdServiceImpl;",
                 name = mName,
@@ -111,22 +111,22 @@ val instantColdStartPatch = bytecodePatch(
         println("[Instant Launch] Neutralized TopViewJsonManager.LIZIZ() -> TopView cache parsed Aweme returns null.")
         patched++
 
-        // 11. Disable SplashAdManager global splash check (LX/04Eq.LJFF() in v47.7.2, was LX/03fZ;)
+        // 11. Disable SplashAdManager global splash check (LX/04Eu.LJFF() in v47.7.3, was LX/04Eq;)
         Fingerprint(
-            definingClass = "LX/04Eq;",
+            definingClass = "LX/04Eu;",
             name = "LJFF",
             returnType = "Z",
         ).method.replaceWithReturnBoolean(false)
-        println("[Instant Launch] Disabled LX/04Eq.LJFF() -> Global splash enable flag neutralized.")
+        println("[Instant Launch] Disabled LX/04Eu.LJFF() -> Global splash enable flag neutralized.")
         patched++
 
-        // 12. Disable CommercializeSplashManager dispatch (LX/04Mp.LJIIIZ() in v47.7.2, was LX/03k1;)
+        // 12. Disable CommercializeSplashManager dispatch (LX/04Mt.LJIIIZ() in v47.7.3, was LX/04Mp;)
         Fingerprint(
-            definingClass = "LX/04Mp;",
+            definingClass = "LX/04Mt;",
             name = "LJIIIZ",
             returnType = "Z",
         ).method.replaceWithReturnBoolean(false)
-        println("[Instant Launch] Disabled LX/04Mp.LJIIIZ() -> Resume activity splash trigger neutralized.")
+        println("[Instant Launch] Disabled LX/04Mt.LJIIIZ() -> Resume activity splash trigger neutralized.")
         patched++
 
         // 15. Fail-safe instant finish for NormalSplashAdActivity
