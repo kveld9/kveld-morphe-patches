@@ -179,11 +179,10 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
         if (hideRepostBadge == true) {
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/feed/platform/cell/interact/info/UpvoteVideoTrigger;",
-                name = "qq",
                 returnType = "Z",
                 parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"),
             ).method.replaceWithReturnBoolean(false)
-            println("[Declutter Video Interface] Hooked UpvoteVideoTrigger.qq() -> return false.")
+            println("[Declutter Video Interface] Hooked UpvoteVideoTrigger -> return false.")
             patched++
 
             val assemClass = "Lcom/ss/android/ugc/aweme/upvote/detail/whitebar/UpvoteVideoAssemNew;"
@@ -291,7 +290,6 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
 
             val descJs = Fingerprint(
                 definingClass = descTargetClass,
-                name = "zq",
                 returnType = "V",
                 parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"),
             ).method
@@ -307,7 +305,7 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
                     """.trimIndent(),
                 )
             }
-            println("[Declutter Video Interface] Hooked VideoDescAssem.zq() -> appended GONE enforcement.")
+            println("[Declutter Video Interface] Hooked VideoDescAssem feed desc binding -> appended GONE enforcement.")
             patched++
 
             // 2b. Redirect feed desc visibility calls to always-GONE wrappers
@@ -549,11 +547,10 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
             val triggerClass = "Lcom/ss/android/ugc/feed/platform/cell/interact/bottom/bar/PlayListBottomBarAssemTrigger;"
             Fingerprint(
                 definingClass = triggerClass,
-                name = "qq", // in v47.7.3, was lq in v47.7.2, Np in v47.6.3, Qp in v47.5.3
                 returnType = "Z",
                 parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"),
             ).method.replaceWithReturnBoolean(false)
-            println("[Declutter Video Interface] Hooked PlayListBottomBarAssemTrigger.qq() -> return false.")
+            println("[Declutter Video Interface] Hooked PlayListBottomBarAssemTrigger -> return false.")
             patched++
 
             val bottomBarClass = "Lcom/ss/android/ugc/feed/platform/cell/interact/bottom/bar/InteractPlayListBottomBarAssem;"
@@ -773,11 +770,10 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
         if (hideFeedbackButtons == true) {
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/feed/assem/earlyfeedback/EarlyFeedbackButtonTrigger;",
-                name = "qq", // in v47.7.3, was lq in v47.7.2, Np in v47.6.3
                 returnType = "Z",
                 parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"),
             ).method.replaceWithReturnBoolean(false)
-            println("[Declutter Video Interface] Hooked EarlyFeedbackButtonTrigger.qq() -> return false.")
+            println("[Declutter Video Interface] Hooked EarlyFeedbackButtonTrigger -> return false.")
             patched++
 
             val feedbackAssems = listOf(
@@ -819,11 +815,10 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
 
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/feed/assem/earlyfeedback/EarlyFeedbackStandardButtonAssem;",
-                name = "Eq", // in v47.7.3, was Cq in v47.7.2, oq in v47.6.3
                 returnType = "V",
                 parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"),
             ).method.replaceWithReturnVoid()
-            println("[Declutter Video Interface] Hooked EarlyFeedbackStandardButtonAssem.Eq() -> return-void.")
+            println("[Declutter Video Interface] Hooked EarlyFeedbackStandardButtonAssem -> return-void.")
             patched++
         }
 
