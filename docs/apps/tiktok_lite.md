@@ -44,7 +44,7 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
 - **Force Auto-Scroll**: Anchor absent; feed auto-scroll experiment flag getter absent in Lite DEX.
 - **Friends & Suggestions Filter**: Anchor absent; `FriendsFeedResponse` was located in the optional dynamic feature split absent in 47.7.51.
 - **In-App Browser Privacy Guard**: Anchor absent; `SparkThird` browser engine absent in Lite DEX.
-- **Remember Clear Display**: Anchor absent; clear-display view models and long-press toggles absent in Lite DEX.
+- **Remember Clear Display**: Anchor absent; while TikTok Lite natively includes a long-press clear display button, it uses a lightweight feed architecture (`LX/7iG`, `FeedFragment.r5`) rather than standard TikTok's `ClearModePanelComponent` and `PlayerController`. Lite resets clear mode on every video switch (`switch_video`), so cross-video state persistence is not supported.
 - **Remove Creator Tools**: Anchor absent; `CreatorToolsActivity` and creator studio entrypoints absent in Lite DEX.
 - **Remove Live Stream Files**: Anchor absent; live stream assets and `LivePlayActivity` stream player absent in Lite DEX.
 - **Remove Voice Tools**: Anchor absent; `VoiceConversionService` and audio filter voice engines absent in Lite DEX.
