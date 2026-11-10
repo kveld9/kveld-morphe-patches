@@ -118,33 +118,33 @@ val searchExperienceCustomizerPatch = bytecodePatch(
             )
             patched++
 
-            // Suppress cached preloaded guess search data (JSONObject) (LX/0Hcn; in v47.7.2, was LX/0GdX;)
+            // Suppress cached preloaded guess search data (JSONObject) (LX/0Hcl; in v47.7.3, was LX/0Hcn; in v47.7.2)
             Fingerprint(
-                definingClass = "LX/0Hcn;",
+                definingClass = "LX/0Hcl;",
                 name = "LIZ",
                 returnType = "Lorg/json/JSONObject;",
             ).method.replaceWithReturnNull()
             patched++
 
-            // Suppress cached preloaded guess search data (String) (LX/0Hcn; in v47.7.2, was LX/0GdX;)
+            // Suppress cached preloaded guess search data (String) (LX/0Hcl; in v47.7.3, was LX/0Hcn; in v47.7.2)
             Fingerprint(
-                definingClass = "LX/0Hcn;",
+                definingClass = "LX/0Hcl;",
                 name = "LIZIZ",
                 returnType = "Ljava/lang/String;",
             ).method.replaceWithReturnNull()
             patched++
 
-            // Force disable native guess search fallback flag in search middle page (WZ in v47.7.2, was bZ)
+            // Force disable native guess search fallback flag in search middle page (f00 in v47.7.3, was WZ in v47.7.2)
             Fingerprint(
                 definingClass = "Lcom/ss/android/ugc/aweme/search/middle/DynamicSingleIntermediateFragmentNew;",
-                name = "WZ",
+                name = "f00",
                 returnType = "Z",
             ).method.replaceWithReturnBoolean(false)
             patched++
 
-            // Force disable show_suggest_search_words in AB evaluator method (LX/0HXY; in v47.7.2, was LX/0FjG;)
+            // Force disable show_suggest_search_words in AB evaluator method (LX/0HXW; in v47.7.3, was LX/0HXY; in v47.7.2)
             Fingerprint(
-                definingClass = "LX/0HXY;",
+                definingClass = "LX/0HXW;",
                 name = "LIZ",
                 returnType = "I",
                 parameters = listOf(
@@ -154,9 +154,9 @@ val searchExperienceCustomizerPatch = bytecodePatch(
             ).method.replaceWithReturnInt(0)
             patched++
 
-            // Reset static field in <clinit> to prevent observer initialization (LX/0HXY; in v47.7.2, was LX/0FjG;)
+            // Reset static field in <clinit> to prevent observer initialization (LX/0HXW; in v47.7.3, was LX/0HXY; in v47.7.2)
             val hatClinitFp = Fingerprint(
-                definingClass = "LX/0HXY;",
+                definingClass = "LX/0HXW;",
                 name = "<clinit>",
                 returnType = "V",
             )
@@ -200,9 +200,9 @@ val searchExperienceCustomizerPatch = bytecodePatch(
             }
             patched++
 
-            // Sanitize Lynx schema URL to strip show_suggest_search_words (LX/0HYw; in v47.7.2, was LX/0Fmx;)
+            // Sanitize Lynx schema URL to strip show_suggest_search_words (LX/0HYu; in v47.7.3, was LX/0HYw; in v47.7.2)
             val schemaFp = Fingerprint(
-                definingClass = "LX/0HYw;",
+                definingClass = "LX/0HYu;",
                 name = "LIZ",
                 returnType = "Ljava/lang/String;",
             )
@@ -275,9 +275,9 @@ val searchExperienceCustomizerPatch = bytecodePatch(
             }
             patched++
 
-            // Sanitize Lynx schema URL to strip intermediate_show_trending_billboard (LX/0HYw; in v47.7.2, was LX/0Fmx;)
+            // Sanitize Lynx schema URL to strip intermediate_show_trending_billboard (LX/0HYu; in v47.7.3, was LX/0HYw; in v47.7.2)
             val schemaFp = Fingerprint(
-                definingClass = "LX/0HYw;",
+                definingClass = "LX/0HYu;",
                 name = "LIZ",
                 returnType = "Ljava/lang/String;",
             )
@@ -321,7 +321,7 @@ val searchExperienceCustomizerPatch = bytecodePatch(
 
             val videoCardL2Fp = Fingerprint(
                 definingClass = videoCardAbilityClass,
-                name = "c2",
+                name = "b2",
                 returnType = "Z",
             )
             videoCardL2Fp.method.addInstructions(
@@ -351,7 +351,7 @@ val searchExperienceCustomizerPatch = bytecodePatch(
 
             val lynxVideoL2Fp = Fingerprint(
                 definingClass = lynxVideoAbilityClass,
-                name = "c2",
+                name = "b2",
                 returnType = "Z",
             )
             lynxVideoL2Fp.method.addInstructions(
@@ -381,7 +381,7 @@ val searchExperienceCustomizerPatch = bytecodePatch(
 
             val photoCardL2Fp = Fingerprint(
                 definingClass = photoCardAbilityClass,
-                name = "c2",
+                name = "b2",
                 returnType = "Z",
             )
             photoCardL2Fp.method.addInstructions(
