@@ -1,3 +1,14 @@
+## [2.11.0-experimental.11](https://github.com/kveld9/kveld-morphe-patches/compare/v2.11.0-experimental.10...v2.11.0-experimental.11) (2026-11-11)
+
+### Bug Fixes
+
+* **gboard:** bypass signature validation in SignatureUtils instead of aborting dispatcher ([250d738](https://github.com/kveld9/kveld-morphe-patches/commit/250d738a7a5d7ad5be78a18b0f912e34a7b766f0))
+* **gboard:** prune obsolete 5-item array limit replacement in clipboard loader ([3952931](https://github.com/kveld9/kveld-morphe-patches/commit/395293111aa6551f903f8ceea98d4679d436028d))
+
+### New Features
+
+* **tiktok:** port hide seen videos feed filter to tiktok lite ([7d7cedc](https://github.com/kveld9/kveld-morphe-patches/commit/7d7cedcf9ba671ce759a82a934451de7737db63c))
+
 ## [2.11.0-experimental.10](https://github.com/kveld9/kveld-morphe-patches/compare/v2.11.0-experimental.9...v2.11.0-experimental.10) (2026-11-11)
 
 ### Bug Fixes
