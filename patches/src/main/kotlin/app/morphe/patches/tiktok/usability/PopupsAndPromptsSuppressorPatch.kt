@@ -132,6 +132,51 @@ val popupsAndPromptsSuppressorPatch = bytecodePatch(
                 patched++
             }
 
+            // Suppress Universal Popup dispatch & GeoBlocking takeover prompts (e.g. "TikTok Lite is not available in your region/country")
+            if (filterPopLayerPrompts != false) {
+                val universalPopupDispatchFp = Fingerprint(
+                    returnType = "V",
+                    strings = listOf("universal_popup_response", "universal_popup_activity_id"),
+                )
+                universalPopupDispatchFp.method.replaceWithReturnVoid()
+                println("[Block Popups & Prompts] Neutralized Lite UniversalPopup dispatch (${universalPopupDispatchFp.method.definingClass}.${universalPopupDispatchFp.method.name}).")
+                patched++
+
+                val geoBlockStrategyFp = Fingerprint(
+                    returnType = "V",
+                    strings = listOf("GeoBlocking_strategy_execute", "pns_geoblock_strategy_execute"),
+                )
+                geoBlockStrategyFp.method.replaceWithReturnVoid()
+                println("[Block Popups & Prompts] Neutralized Lite GeoBlocking strategy (${geoBlockStrategyFp.method.definingClass}.${geoBlockStrategyFp.method.name}).")
+                patched++
+
+                classDefByOrNull("Lcom/ss/android/ugc/aweme/pns/universalpopup/core/ui/UniversalPopupActivity;")?.let { upClass ->
+                    mutableClassDefBy(upClass.type).methods.firstOrNull { it.name == "onResume" && it.parameterTypes.isEmpty() }?.let { onResumeMethod ->
+                        onResumeMethod.addInstructions(
+                            0,
+                            """
+                            invoke-virtual {p0}, Landroid/app/Activity;->finish()V
+                            return-void
+                            """.trimIndent(),
+                        )
+                        println("[Block Popups & Prompts] Neutralized UniversalPopupActivity -> Auto-finish onResume().")
+                        patched++
+                    }
+                }
+
+                // Neutralize TTNet URLDispatcher traffic control drop (-555 / ERR_TTNET_TRAFFIC_CONTROL_DROP)
+                // which ByteDance uses to drop feed requests locally in countries where TikTok Lite is unreleased.
+                classDefByOrNull("Lcom/bytedance/frameworks/baselib/network/http/ok3/impl/urldispatcher/URLDispatcher;")?.let { dispatcherClass ->
+                    mutableClassDefBy(dispatcherClass.type).methods.firstOrNull {
+                        it.name == "getDispatchResultForUrl"
+                    }?.let { dispatchMethod ->
+                        dispatchMethod.replaceWithReturnNull()
+                        println("[Block Popups & Prompts] Neutralized Lite URLDispatcher.getDispatchResultForUrl() -> return null (bypasses -555 traffic control drops).")
+                        patched++
+                    }
+                }
+            }
+
             println("[Block Popups & Prompts] Applied $patched popup & prompt suppressor hook(s).")
             return@execute
         }
