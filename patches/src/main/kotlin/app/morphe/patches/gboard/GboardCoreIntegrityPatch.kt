@@ -30,19 +30,29 @@ val gboardCoreIntegrityPatch = bytecodePatch(
 }
 
 private fun BytecodePatchContext.patchSignatureBypass() {
-    val fp = Fingerprint(
-        returnType = "V",
-        strings = listOf("APK is signed by unrecognized certificates: "),
+    val fpAnchor = Fingerprint(
+        strings = listOf("SignatureUtils.java", "failed to get SHA-256 digest"),
     )
-    fp.method.addInstructions(
-        0,
-        """
-            return-void
-        """.trimIndent(),
+    val sigClass = fpAnchor.originalClassDef.type
+    val fpValidate = Fingerprint(
+        definingClass = sigClass,
+        returnType = "Z",
+        parameters = listOf("Landroid/content/Context;", "Ljava/lang/String;"),
     )
+    fpValidate.method.apply {
+        clearTryBlocks()
+        removeInstructions(0, implementation!!.instructions.count())
+        addInstructions(
+            0,
+            """
+                const/4 v0, 1
+                return v0
+            """.trimIndent(),
+        )
+    }
 
-    val targetClass = cleanClassName(fp.originalClassDef.type)
-    println("[Core Integrity] Neutralized signature validation check in $targetClass.${fp.method.name}()")
+    val targetClass = cleanClassName(sigClass)
+    println("[Core Integrity] Neutralized signature validation check in $targetClass.${fpValidate.method.name}()")
 }
 
 private fun BytecodePatchContext.patchLauncherTrampoline() {
