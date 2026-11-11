@@ -88,8 +88,8 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
   - *Objective*: Removes tracking parameters and promotional tail text from shared links.
   - *How*: Intercepts `minilite.feed.model.Aweme.getShareUrl()` to sanitize shared link URLs, strips tracking parameters, and applies custom hostname replacement via `TikTokShareHostHook`.
 - **Feed Ads & Content Filter**:
-  - *Objective*: Filters ads, shopping tags, live cards, and clutter from your feed.
-  - *How*: Intercepts feed list getters `FeedItemList.getItems()` and `FeedItemList.getAwemeList()` to filter ads, bloat, shop anchors, live streams, and matching content rules via `TikTokFeedAdFilter`.
+  - *Objective*: Filters ads, shopping tags, live cards, clutter, and previously watched videos from your feed.
+  - *How*: Intercepts feed list getters `FeedItemList.getItems()` and `FeedItemList.getAwemeList()` to filter ads, bloat, shop anchors, live streams, matching content rules, and previously seen videos (`hideSeenVideos`) via `TikTokFeedAdFilter` and `TikTokSeenVideoHook`. Tracks viewed videos on playback preparation via `Aweme.getVideo()`.
 - **SIM Region Selector**:
   - *Objective*: Locks the app to a chosen country to unlock regional content.
   - *How*: Spoofs `TelephonyManager.getSimCountryIso` return value to configured ISO country code and overrides operator numeric (MCC+MNC) and operator name call sites.

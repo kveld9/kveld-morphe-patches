@@ -283,6 +283,9 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 if (contentFilterActive) {
                     callSnippets.add("invoke-static/range {v\$reg .. v\$reg}, ${Constants.TIKTOK_EXTENSION_CONTENT_FILTER_HOOK}->filterContentInList(Ljava/lang/Object;)V")
                 }
+                if (hideSeenVideos != false) {
+                    callSnippets.add("invoke-static/range {v\$reg .. v\$reg}, ${Constants.TIKTOK_EXTENSION_SEEN_VIDEO_HOOK}->filterSeenVideosInList(Ljava/lang/Object;)V")
+                }
 
                 if (callSnippets.isEmpty()) return
 
@@ -313,6 +316,22 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 returnType = "Ljava/util/List;",
                 logLabel = "All Lite feed model consumers (getAwemeList)",
             )
+
+            if (hideSeenVideos != false) {
+                val awemeGetVideoFp = Fingerprint(
+                    definingClass = "Lcom/ss/android/ugc/aweme/minilite/feed/model/Aweme;",
+                    name = "getVideo",
+                    returnType = "Lcom/ss/android/ugc/aweme/minilite/feed/model/Video;",
+                )
+                awemeGetVideoFp.method.addInstructions(
+                    0,
+                    """
+                        invoke-static {p0}, ${Constants.TIKTOK_EXTENSION_SEEN_VIDEO_HOOK}->onAwemeLoaded(Ljava/lang/Object;)V
+                    """.trimIndent(),
+                )
+                println("[Feed Ads & Content Filter] Hooked Aweme.getVideo() -> Lite seen video tracking active.")
+                patched++
+            }
 
             println("[Feed Ads & Content Filter] Applied $patched feed and search content filter hook(s).")
             return@execute
