@@ -84,7 +84,7 @@ flowchart TD
 
 | Application | Package ID | Target Version | Architecture / Variant | Download Source | Complete Guide |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Brave Browser** | `com.brave.browser` | `1.99.55` | `arm64-v8a`<br>`armeabi-v7a` (single file) | [ARM64](https://github.com/brave/brave-browser/releases/download/v1.99.55/Bravemonoarm64.apk) · [ARM32](https://github.com/brave/brave-browser/releases/download/v1.99.55/BraveMonoarm.apk) | [Brave Guide](docs/apps/brave.md) |
+| **Brave Browser** | `com.brave.browser` | `1.99.56` | `arm64-v8a`<br>`armeabi-v7a` (single file) | [ARM64](https://github.com/brave/brave-browser/releases/download/v1.99.56/Bravemonoarm64.apk) · [ARM32](https://github.com/brave/brave-browser/releases/download/v1.99.56/BraveMonoarm.apk) | [Brave Guide](docs/apps/brave.md) |
 | **Gboard Lite** | `com.google.android.inputmethod.latin` | `18.6.3.1002251336-lite_release` | `arm64-v8a`<br>`armeabi-v7a` (any screen) | [APKMirror](https://www.apkmirror.com/apk/google-inc/gboard/gboard-the-google-keyboard-18-6-3-1002251336-release/) | [Gboard Lite Guide](docs/apps/gboard.md) |
 | **TikTok** | `com.zhiliaoapp.musically` | `47.7.3` | `arm64-v8a` (any screen) | [APKMirror](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-47-7-3-release/) | [TikTok Guide](docs/apps/tiktok.md) |
 | **TikTok Lite** | `com.tiktok.lite.go` | `47.7.51` | `arm64-v8a`<br>`armeabi-v7a` (multi-file) | [APKMirror](https://www.apkmirror.com/apk/tiktok-pte-ltd/tiktok-lite-faster-tiktok/tiktok-lite-faster-tiktok-47-7-51-release/) | [TikTok Lite Guide](docs/apps/tiktok_lite.md) |
