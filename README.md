@@ -87,7 +87,7 @@ flowchart TD
 | **Brave Browser** | `com.brave.browser` | `1.99.56` | `arm64-v8a`<br>`armeabi-v7a` (single file) | [ARM64](https://github.com/brave/brave-browser/releases/download/v1.99.56/Bravemonoarm64.apk) · [ARM32](https://github.com/brave/brave-browser/releases/download/v1.99.56/BraveMonoarm.apk) | [Brave Guide](docs/apps/brave.md) |
 | **Gboard Lite** | `com.google.android.inputmethod.latin` | `18.6.3.1002251336-lite_release` | `arm64-v8a`<br>`armeabi-v7a` (any screen) | [APKMirror](https://www.apkmirror.com/apk/google-inc/gboard/gboard-the-google-keyboard-18-6-3-1002251336-release/) | [Gboard Lite Guide](docs/apps/gboard.md) |
 | **TikTok** | `com.zhiliaoapp.musically` | `47.7.3` | `arm64-v8a` (any screen) | [APKMirror](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-47-7-3-release/) | [TikTok Guide](docs/apps/tiktok.md) |
-| **TikTok Lite** | `com.tiktok.lite.go` | `47.7.51` | `arm64-v8a`<br>`armeabi-v7a` (multi-file) | [APKMirror](https://www.apkmirror.com/apk/tiktok-pte-ltd/tiktok-lite-faster-tiktok/tiktok-lite-faster-tiktok-47-7-51-release/) | [TikTok Lite Guide](docs/apps/tiktok_lite.md) |
+| **TikTok Lite** | `com.tiktok.lite.go` | `47.6.51` | `arm64-v8a`<br>`armeabi-v7a` (multi-file) | [APKMirror](https://www.apkmirror.com/apk/tiktok-pte-ltd/tiktok-lite-faster-tiktok/tiktok-lite-faster-tiktok-47-6-51-release/) | [TikTok Lite Guide](docs/apps/tiktok_lite.md) |
 
 Labels: `single file` = one APK; `multi-file` = a package Morphe joins together; `any screen` = works on any screen size.
 
@@ -175,14 +175,14 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 </details>
 
 <details>
-<summary>TikTok Lite&nbsp;&nbsp;•&nbsp;&nbsp;<b>15 patches</b></summary>
+<summary>TikTok Lite&nbsp;&nbsp;•&nbsp;&nbsp;<b>16 patches</b></summary>
 <br>
 
 **Supported versions:**
 
-| 47.7.51 |
+| 47.6.51 |
 | :---: |
-| Download com.tiktok.lite.go v47.7.51 (APKM) arm64-v8a versionCode 470751 (APKM) from APKMirror |
+| Download com.tiktok.lite.go v47.6.51 (APKM) arm64-v8a versionCode 470651 (APKM) from APKMirror |
 
 | Patch | Description | Options |
 |----------|----------------|-----------|
@@ -195,6 +195,7 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 | **Disable QUIC** | Loads videos, uploads, and live connections over standard HTTPS instead of QUIC. |  |
 | **Feed Ads & Content Filter** | Filters ads, shopping tags, live cards, and clutter from your feed. | • Filter Feed Ads<br>• Filter Feed Bloat<br>• Hide Video Product Anchors<br>• Block Live Streams<br>• Hide AI-Generated Content<br>• Hide Seen Videos<br>• Minimum Views<br>• Maximum Views<br>• Minimum Likes<br>• Maximum Likes<br>• Blocked Creators<br>• Blocked Hashtags<br>• Blocked Keywords<br>• Hidden Regions<br>• Maximum Post Age<br>• Minimum Video Length<br>• Maximum Video Length<br>• Hide Stories<br>• Hide Photo Posts |
 | **Playback & Display Governor** | Limits playback resolution and HDR to save battery, and locks the screen refresh rate. | • Cap Playback Resolution<br>• Maximum Playback Resolution<br>• Avoid ByteVC2 Software Decoding<br>• Drop Undecodable Video Streams<br>• Disable HDR Video Playback<br>• Govern Display Refresh Rate<br>• Target Refresh Rate |
+| **Remember Clear Display** | Keeps clear-display mode active when scrolling to the next video. |  |
 | **Remember Playback Speed** | Keeps your chosen playback speed across videos and restarts. | • Default Playback Speed<br>• Hold-And-Slide 2x Speed Lock |
 | **SIM Region Selector** | Locks the app to a chosen country to unlock regional content. | • Spoofed Region ISO Code<br>• Spoofed Operator Numeric Code (MCC+MNC)<br>• Spoofed Operator Name |
 | **Show Exact Counts** | Shows exact numbers on likes, comments, views and followers. |  |
@@ -237,9 +238,9 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 
 **Supported versions:**
 
-| 1.99.55 |
+| 1.99.56 |
 | :---: |
-| Download Bravemonoarm64.apk (arm64) or BraveMonoarm.apk (arm32) v1.99.55 from github.com/brave/brave-browser/releases; Universal builds unsupported |
+| Download Bravemonoarm64.apk (arm64) or BraveMonoarm.apk (arm32) v1.99.56 from github.com/brave/brave-browser/releases; Universal builds unsupported |
 
 | Patch | Description | Options |
 |----------|----------------|-----------|

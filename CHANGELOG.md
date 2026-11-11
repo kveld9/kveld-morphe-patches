@@ -1,3 +1,16 @@
+## [2.11.0-experimental.10](https://github.com/kveld9/kveld-morphe-patches/compare/v2.11.0-experimental.9...v2.11.0-experimental.10) (2026-11-11)
+
+### Bug Fixes
+
+* **brave:** update supported version to 1.99.56 ([a8fdfd4](https://github.com/kveld9/kveld-morphe-patches/commit/a8fdfd48396c50b6051ef219f4109493e803f265))
+* **tiktoklite:** bypass geoblocking popup and traffic drops ([f8ee40d](https://github.com/kveld9/kveld-morphe-patches/commit/f8ee40d4978fd3394a1fb73a645165f426c67941))
+* **update-check:** fetch only the latest Brave release to keep the check reliable ([d9c83ef](https://github.com/kveld9/kveld-morphe-patches/commit/d9c83efb608d54cf637b251694fefdfa5af0c37e))
+
+### New Features
+
+* **tiktoklite:** bump target version to 47.6.51 and restore complete ui bundle ([e8c06b1](https://github.com/kveld9/kveld-morphe-patches/commit/e8c06b1f1bc502bf824de294f51d1dc00b4845b7))
+* **tiktoklite:** implement persistent clear display mode across video scrolls ([740b28c](https://github.com/kveld9/kveld-morphe-patches/commit/740b28c15978dd8aeb4fa2dbbfbe4e7ce49d5dc4))
+
 ## [2.11.0-experimental.9](https://github.com/kveld9/kveld-morphe-patches/compare/v2.11.0-experimental.8...v2.11.0-experimental.9) (2026-11-10)
 
 ### Bug Fixes
