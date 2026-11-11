@@ -86,7 +86,11 @@ APP_SPECS: List[Dict[str, Any]] = [
         "source_type": "github",
         "source_name": "GitHub",
         "source_url": "https://github.com/brave/brave-browser/releases",
-        "api_url": "https://api.github.com/repos/brave/brave-browser/releases?per_page=100",
+        # The 100-release listing is about 18 MB because every release carries 213
+        # assets and GitHub truncates the download, while /releases/latest returns
+        # just the newest non-draft non-prerelease release (the stable Release v...
+        # one) in a few hundred KB.
+        "api_url": "https://api.github.com/repos/brave/brave-browser/releases/latest",
         "release_prefix": "Release v",
         "allow_beta": False,
         # Constants.kt pins "Bravemonoarm64.apk (arm64) or BraveMonoarm.apk
@@ -942,6 +946,8 @@ def _select_github_release_item(
     except Exception:
         return None, None
 
+    if isinstance(data, dict):
+        data = [data]
     if not isinstance(data, list):
         return None, None
 
@@ -966,6 +972,8 @@ def extract_github_channel_latest(
 ) -> Tuple[Optional[str], Optional[str]]:
     """Extract latest release version and html_url matching prefix from GitHub releases JSON.
 
+    The payload may be either the releases array or the single release object
+    returned by the /releases/latest endpoint.
     Parses JSON list of releases, filters out draft and prerelease entries,
     and matches entries whose name starts with prefix (e.g. 'Release v').
     Extracts version from tag_name (stripping leading v/V), falling back to name.
@@ -985,6 +993,8 @@ def extract_github_asset_urls(
 ) -> Dict[str, str]:
     """Map each requested asset name to its download URL on the selected release.
 
+    The payload may be either the releases array or the single release object
+    returned by the /releases/latest endpoint.
     Only assets present on the newest matching release are returned, so a renamed
     or dropped asset yields no link instead of a guessed one.
     """
@@ -1835,6 +1845,81 @@ class TestUpdateChecker(unittest.TestCase):
         self.assertNotIn("BraveMonoarm64.aab", urls)
         self.assertEqual(extract_github_asset_urls(payload, "Release v", None), {})
         self.assertEqual(extract_github_asset_urls(payload, "Release v", ["Missing.apk"]), {})
+
+    def test_github_single_release_payload(self) -> None:
+        """Verify GitHub release parsers handle single release object payloads."""
+        tag_url = "https://github.com/brave/brave-browser/releases/tag/v1.99.56"
+        release_obj = {
+            "name": "Release v1.99.56",
+            "tag_name": "v1.99.56",
+            "draft": False,
+            "prerelease": False,
+            "html_url": tag_url,
+            "assets": [
+                {
+                    "name": "BraveMonoarm64.apk",
+                    "browser_download_url": "https://github.com/brave/brave-browser/releases/download/v1.99.56/BraveMonoarm64.apk",
+                },
+                {
+                    "name": "BraveMonoarm64.aab",
+                    "browser_download_url": "https://github.com/brave/brave-browser/releases/download/v1.99.56/BraveMonoarm64.aab",
+                },
+                {
+                    "name": "BraveMonoarm.apk",
+                    "browser_download_url": "https://github.com/brave/brave-browser/releases/download/v1.99.56/BraveMonoarm.apk",
+                },
+            ],
+        }
+        payload = json.dumps(release_obj)
+        expected_urls = {
+            "BraveMonoarm64.apk": "https://github.com/brave/brave-browser/releases/download/v1.99.56/BraveMonoarm64.apk",
+            "BraveMonoarm.apk": "https://github.com/brave/brave-browser/releases/download/v1.99.56/BraveMonoarm.apk",
+        }
+
+        # 1. Single-object payload with matching prefix and assets
+        self.assertEqual(
+            extract_github_channel_latest(payload, prefix="Release v"),
+            ("1.99.56", tag_url),
+        )
+        asset_urls = extract_github_asset_urls(
+            payload, "Release v", ["BraveMonoarm64.apk", "BraveMonoarm.apk"]
+        )
+        self.assertEqual(asset_urls, expected_urls)
+        self.assertNotIn("BraveMonoarm64.aab", asset_urls)
+
+        # 2. Same single object with prerelease=True
+        prerelease_obj = dict(release_obj, prerelease=True)
+        prerelease_payload = json.dumps(prerelease_obj)
+        self.assertEqual(
+            extract_github_channel_latest(prerelease_payload, prefix="Release v"),
+            (None, None),
+        )
+        self.assertEqual(
+            extract_github_asset_urls(
+                prerelease_payload, "Release v", ["BraveMonoarm64.apk", "BraveMonoarm.apk"]
+            ),
+            {},
+        )
+
+        # 3. Single object named "Nightly v1.101.2"
+        nightly_obj = dict(release_obj, name="Nightly v1.101.2", tag_name="v1.101.2")
+        nightly_payload = json.dumps(nightly_obj)
+        self.assertEqual(
+            extract_github_channel_latest(nightly_payload, prefix="Release v"),
+            (None, None),
+        )
+
+        # 4. Backwards compatibility: wrapping the same object in a list
+        list_payload = json.dumps([release_obj])
+        self.assertEqual(
+            extract_github_channel_latest(list_payload, prefix="Release v"),
+            ("1.99.56", tag_url),
+        )
+        list_asset_urls = extract_github_asset_urls(
+            list_payload, "Release v", ["BraveMonoarm64.apk", "BraveMonoarm.apk"]
+        )
+        self.assertEqual(list_asset_urls, expected_urls)
+        self.assertNotIn("BraveMonoarm64.aab", list_asset_urls)
 
     def test_brave_github_release_channel_filter(self) -> None:
         """Verify GitHub release channel filtering and exclusion of drafts/prereleases."""
