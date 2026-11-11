@@ -47,37 +47,7 @@ val gboardClipboardEnhancementsPatch = bytecodePatch(
         println("[Clipboard Enhancements] Hooked retention limit to dynamic Morphe Patches preference.")
         patched++
 
-        // 2. Raise UI unpinned clips throttle from 5 to dynamic limit
-        val fpLoader = Fingerprint(
-            strings = listOf("timestamp DESC limit %d", "(%s & %d) = 0 AND (%s & %d) = 0 AND %s >= ?"),
-            returnType = "Ljava/lang/Object;",
-            parameters = emptyList(),
-        )
-        val method = fpLoader.method
-        val targetIndices = method.implementation?.instructions?.withIndex()
-            ?.filter {
-                it.value.opcode == Opcode.CONST_4 &&
-                    (it.value as? NarrowLiteralInstruction)?.narrowLiteral == 5
-            }
-            ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
-            ?.toList() ?: emptyList()
-
-        targetIndices.asReversed().forEach { (idx, reg) ->
-            method.replaceInstruction(
-                idx,
-                "invoke-static {}, ${Constants.GBOARD_EXTENSION_CLASS}->getClipboardUnpinnedLimit()I",
-            )
-            method.addInstructions(
-                idx + 1,
-                "move-result v$reg",
-            )
-        }
-        if (targetIndices.isNotEmpty()) {
-            println("[Clipboard Enhancements] Injected dynamic unpinned clips limit hook across ${targetIndices.size} opcode site(s).")
-            patched++
-        }
-
-        // 3. Customize clipboard grid columns
+        // 2. Customize clipboard grid columns
         val fpKeyboard = Fingerprint(
             definingClass = "Lcom/google/android/apps/inputmethod/libs/clipboard/ClipboardKeyboard;",
             returnType = "I",
@@ -98,7 +68,7 @@ val gboardClipboardEnhancementsPatch = bytecodePatch(
         println("[Clipboard Enhancements] Hooked clipboard grid columns to dynamic Morphe Patches preference.")
         patched++
 
-        // 4. Per-item text clip character limit (text_clip_item_char_limit Phenotype long flag)
+        // 3. Per-item text clip character limit (text_clip_item_char_limit Phenotype long flag)
         val fpCharLimit = Fingerprint(
             name = "<clinit>",
             returnType = "V",
@@ -125,7 +95,7 @@ val gboardClipboardEnhancementsPatch = bytecodePatch(
         println("[Clipboard Enhancements] Hooked per-clip character limit to dynamic Morphe Patches preference.")
         patched++
 
-        // 5. Raise the clipboard adapter prune cap: pinning an item runs this path,
+        // 4. Raise the clipboard adapter prune cap: pinning an item runs this path,
         //    which otherwise trims the unpinned list back to 5 timestamps.
         val fpAdapter = Fingerprint(
             strings = listOf("Incompatible type for view holder."),
@@ -176,9 +146,9 @@ val gboardClipboardEnhancementsPatch = bytecodePatch(
         println("[Clipboard Enhancements] Hooked unpinned prune cap in clipboard adapter -> dynamic preference.")
         patched++
 
-        // 6. Remove residual 100 hardcoded caps in clipboard loader
+        // 5. Dynamic unpinned caps and budget in clipboard loader
         val fpLoaderCaps = Fingerprint(
-            strings = listOf("timestamp DESC limit %d"),
+            strings = listOf("timestamp DESC limit %d", "(%s & %d) = 0 AND (%s & %d) = 0 AND %s >= ?"),
             returnType = "Ljava/lang/Object;",
             parameters = emptyList(),
         )
@@ -240,7 +210,7 @@ val gboardClipboardEnhancementsPatch = bytecodePatch(
         println("[Clipboard Enhancements] Hooked remaining budget across ${targetSites.size} site(s).")
         patched++
 
-        // 7. Remove residual 100 hardcoded cap in clipboard adapter prune path
+        // 6. Remove residual 100 hardcoded cap in clipboard adapter prune path
         val fpAdapterPrune = Fingerprint(
             definingClass = adapterClass,
             returnType = "V",
