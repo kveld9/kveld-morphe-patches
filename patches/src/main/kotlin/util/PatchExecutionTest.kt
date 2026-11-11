@@ -70,6 +70,7 @@ enum class TargetApp(
         appName = "TikTok Lite",
         packageName = Constants.TIKTOK_LITE_PACKAGE_NAME,
         candidateFilenames = listOf(
+            "com.tiktok.lite.go_${Constants.TIKTOK_LITE_TARGET_VERSION}-470651_2arch_7dpi_24lang_13feat_caaf155e9aa376b4d86cfac336f23c3a_apkmirror.com.apkm",
             "com.tiktok.lite.go_${Constants.TIKTOK_LITE_TARGET_VERSION}-470552_2arch_7dpi_24lang_13feat_8277a28008ff07d5ab077942599e6e13_apkmirror.com.apkm",
             "tiktok_lite_${Constants.TIKTOK_LITE_TARGET_VERSION}.apkm",
             "tiktok_lite_${Constants.TIKTOK_LITE_TARGET_VERSION}.apk",

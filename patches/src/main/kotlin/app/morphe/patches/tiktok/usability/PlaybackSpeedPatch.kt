@@ -84,15 +84,16 @@ val playbackSpeedPatch = bytecodePatch(
             val speedVal = if (rawSpeed in 0.25f..4.0f) rawSpeed else 1.0f
             val speedHex = "0x" + java.lang.Float.floatToRawIntBits(speedVal).toUInt().toString(16)
 
-            // 1. Hook SimplifyPlayerImpl.LD(F)V to intercept and normalize speed selections
+            // 1. Hook SimplifyPlayerImpl.setPlaySpeed(F)V to intercept and normalize speed selections
             val speedFp = Fingerprint(
-                definingClass = "LX/2NC;",
-                name = "LD",
                 parameters = listOf("F"),
                 returnType = "V",
                 strings = listOf("SimplifyPlayerImpl", "setPlaySpeed mPlayer = "),
             )
             val speedMethod = speedFp.method
+            val playerClass = speedMethod.definingClass
+            val speedMethodName = speedMethod.name
+
             speedMethod.addInstructions(
                 0,
                 """
@@ -101,16 +102,15 @@ val playbackSpeedPatch = bytecodePatch(
                     invoke-static {p1}, ${Constants.TIKTOK_EXTENSION_SPEED_HOOK}->onSpeedSelected(F)V
                 """.trimIndent(),
             )
-            println("[Remember Playback Speed] Hooked Lite SimplifyPlayerImpl.LD -> state persisted.")
+            println("[Remember Playback Speed] Hooked Lite $playerClass.$speedMethodName -> state persisted.")
             patched++
 
             // 2. Hook SimplifyPlayerImpl.render()V to enforce saved speed on new video playback
             val renderFp = Fingerprint(
-                definingClass = "LX/2NC;",
+                definingClass = playerClass,
                 name = "render",
                 parameters = emptyList(),
                 returnType = "V",
-                strings = listOf("SimplifyPlayerImpl, render(), mSurface = "),
             )
             val renderMethod = renderFp.method
             renderMethod.ensureRegisterCount(4)
@@ -120,10 +120,10 @@ val playbackSpeedPatch = bytecodePatch(
                     const v1, $speedHex
                     invoke-static {p0, v1}, ${Constants.TIKTOK_EXTENSION_SPEED_HOOK}->getPlaybackSpeed(Ljava/lang/Object;F)F
                     move-result v0
-                    invoke-virtual {p0, v0}, LX/2NC;->LD(F)V
+                    invoke-virtual {p0, v0}, $playerClass->$speedMethodName(F)V
                 """.trimIndent(),
             )
-            println("[Remember Playback Speed] Hooked Lite SimplifyPlayerImpl.render -> persistent speed enforced on render.")
+            println("[Remember Playback Speed] Hooked Lite $playerClass.render -> persistent speed enforced on render.")
             patched++
 
             println("[Remember Playback Speed] Applied $patched playback speed hook(s).")

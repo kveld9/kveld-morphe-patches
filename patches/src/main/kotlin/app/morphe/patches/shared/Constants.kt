@@ -60,7 +60,7 @@ object Constants {
     )
 
     const val TIKTOK_LITE_PACKAGE_NAME = "com.tiktok.lite.go"
-    const val TIKTOK_LITE_TARGET_VERSION = "47.7.51"
+    const val TIKTOK_LITE_TARGET_VERSION = "47.6.51"
 
     val COMPATIBILITY_TIKTOK_LITE = Compatibility(
         name = "TikTok Lite",
@@ -70,7 +70,7 @@ object Constants {
         targets = listOf(
             AppTarget(
                 version = TIKTOK_LITE_TARGET_VERSION,
-                description = "Download com.tiktok.lite.go v$TIKTOK_LITE_TARGET_VERSION (APKM) arm64-v8a versionCode 470751 (APKM) from APKMirror"
+                description = "Download com.tiktok.lite.go v$TIKTOK_LITE_TARGET_VERSION (APKM) arm64-v8a versionCode 470651 (APKM) from APKMirror"
             )
         )
     )

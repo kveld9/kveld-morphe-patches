@@ -33,16 +33,16 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
 
 ### Group B: Feature Absent / Inert
 
-- **Allow Screenshots**: Anchor absent; `ScreenShotTask` was located in the optional dynamic feature split absent in 47.7.51.
+- **Allow Screenshots**: Anchor absent; `ScreenShotTask` was located in an optional dynamic feature split absent from the distribution bundle.
 - **Always Show Publish Date**: Anchor absent; `VideoItemParams.getAweme()` and `aweme.getCreateTime()` feed item UI hook absent in Lite DEX.
-- **Bypass Mandatory Login**: Anchor absent; `MandatoryLoginService` was located in the optional dynamic feature split absent in 47.7.51.
+- **Bypass Mandatory Login**: Anchor absent; `MandatoryLoginService` was located in an optional dynamic feature split absent from the distribution bundle.
 - **Camera & Microphone Indicator**: Anchor absent; `MainActivity` hook and camera/mic call sites absent in Lite DEX.
-- **Disable History Recording**: Anchor absent; `AwemeStatsApi` was located in the optional dynamic feature split absent in 47.7.51.
+- **Disable History Recording**: Anchor absent; `AwemeStatsApi` was located in an optional dynamic feature split absent from the distribution bundle.
 - **Disable Live Gift Effects**: Anchor absent; `LiveGiftPlayer` and `GiftEffectWidget` live gift rendering widgets absent in Lite DEX.
 - **Block P2P Video Relay**: Anchor absent; P2P relay binaries (`libns_p2p.so`, `libbytedance_p2p.so`) absent in Lite APK bundle.
 - **Download Without Watermark**: Anchor absent; Aweme ACL share and download components (`AwemeACLShare`, `ACLCommonShare`) absent in Lite DEX.
 - **Force Auto-Scroll**: Anchor absent; feed auto-scroll experiment flag getter absent in Lite DEX.
-- **Friends & Suggestions Filter**: Anchor absent; `FriendsFeedResponse` was located in the optional dynamic feature split absent in 47.7.51.
+- **Friends & Suggestions Filter**: Anchor absent; `FriendsFeedResponse` was located in an optional dynamic feature split absent from the distribution bundle.
 - **In-App Browser Privacy Guard**: Anchor absent; `SparkThird` browser engine absent in Lite DEX.
 - **Remove Creator Tools**: Anchor absent; `CreatorToolsActivity` and creator studio entrypoints absent in Lite DEX.
 - **Remove Live Stream Files**: Anchor absent; live stream assets and `LivePlayActivity` stream player absent in Lite DEX.
@@ -100,13 +100,13 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
 ### Usability & Playback
 - **Block Popups & Prompts**:
   - *Objective*: Blocks popups, nags and promo dialogs across the app.
-  - *How*: Suppresses notification permission prompts via `PushServiceImpl.LB` and system push dialog checks in `0lr.LBL()Z`, preserving onboarding completion state and login callback execution.
+  - *How*: Suppresses notification permission prompts via `PushServiceImpl.LB` and system push dialog checks reading `count_system` (`0Co.LBL()Z`), preserving onboarding completion state and login callback execution.
 - **Remember Clear Display**:
   - *Objective*: Keeps clear-display mode active when scrolling to the next video.
-  - *How*: Intercepts Lite clear-mode dispatcher (`LX/7iG.LC`) and suppresses exit on `switch_video`, neutralizes `FeedFragment.r5` video switch dismissal, bypasses cell clear mode validation in `LX/ElQ.LILZIL`, and enforces UI overlay hiding in `LX/ElQ.LILLI`.
+  - *How*: Intercepts Lite clear-mode dispatcher matching `change_clear_mode_status` (`LX/7t3.LC`) to suppress exit on `switch_video`, and neutralizes `FeedFragment.r5` video switch dismissal.
 - **Remember Playback Speed**:
   - *Objective*: Keeps your chosen playback speed across videos and restarts.
-  - *How*: Persists selected speed via `TikTokSpeedHook` in `SimplifyPlayerImpl.LD(F)V` and enforces saved speed on new video playback in `SimplifyPlayerImpl.render()V`.
+  - *How*: Persists selected speed via `TikTokSpeedHook` in `SimplifyPlayerImpl` (`LFF(F)V`) and enforces saved speed on new video playback in `SimplifyPlayerImpl.render()V`.
 - **Show Exact Counts**:
   - *Objective*: Shows exact numbers on likes, comments, views and followers.
   - *How*: Intercepts static count formatters matching `1.0M` to format raw metric values using `TikTokCountsHook.exact(J)`.
