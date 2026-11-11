@@ -135,6 +135,8 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
 
 ## 5. Known Limitations
 
+- **Incomplete Distribution Bundles**: TikTok Lite ships most of its feature code in separate modules that Google Play installs on demand, and some public bundle uploads are captured before those modules are fetched, so they arrive without them. On such a bundle the app stays in its reduced mode and asks for the full resources, and that download cannot complete on a patched build because Play only serves the modules to apps it installed itself with the original signature. Import a bundle that already contains every module; a bundle missing them cannot be completed on the device.
+
 - **Google Sign-In on Re-signed Builds**: Native Google sign-in fails with a "Couldn't log in" toast on patched TikTok Lite APKs. Google Play Services validates the APK certificate SHA-1 against ByteDance's production OAuth 2.0 Client ID registration on Google servers. Because TikTok Lite replaced ByteDance's Lobby with `mini_lobby` that completely strips browser-based Web OAuth fallback (`GoogleWebAuth`), native Google sign-in cannot succeed on non-rooted environments. Users must sign in via username/email and password, or use standard TikTok if Google authentication is required.
 - **Search History Suppression**: Search history query recording is not supported on TikTok Lite because the search history analytics and recommendation stores (`SuggestWordResponse`, `ManualSearchPvStore`) are absent in the Lite build.
 - **Offline Video Limit**: TikTok Lite does not feature user-facing offline video limit selection (`OfflineModeSheetPageAssem` is absent); caching is handled automatically based on storage tiers.
