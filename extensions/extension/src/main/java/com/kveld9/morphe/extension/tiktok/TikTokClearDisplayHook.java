@@ -1,7 +1,10 @@
 package com.kveld9.morphe.extension.tiktok;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
 /**
@@ -26,6 +29,18 @@ public final class TikTokClearDisplayHook {
     private static volatile Field cachedTypeField = null;
     private static volatile boolean loggedResolutionPath = false;
 
+    private static final long REAPPLY_DELAY_MS = 250L;
+    private static volatile boolean reapplyPending = false;
+
+    private static volatile String dispatcherClassName = null;
+    private static volatile ClassLoader dispatcherLoader = null;
+
+    private static volatile Class<?> cachedDispatcherClass = null;
+    private static volatile Field cachedStateField = null;
+    private static volatile Method cachedLcMethod = null;
+    private static volatile Object cachedOpenConstant = null;
+    private static volatile Object cachedCloseConstant = null;
+
     private TikTokClearDisplayHook() {}
 
     public static boolean getClearDisplayState() {
@@ -41,6 +56,107 @@ public final class TikTokClearDisplayHook {
         Log.i(TAG, "[Clear Display Lite] wantsClear=" + wants);
     }
 
+    public static void onVideoSwitchR5() { scheduleReapply("r5"); }
+    public static void onVideoSwitchBind() { scheduleReapply("bind"); }
+    public static void onVideoSwitchFirstFrame() { scheduleReapply("first_frame"); }
+    public static void onVideoSwitchBindAll() { scheduleReapply("bind_all"); }
+    public static void onVideoSwitchPager() { scheduleReapply("pager"); }
+    public static void onVideoSwitchStateGet() { scheduleReapply("state_get"); }
+    public static void onVideoSwitchStateQuery() { scheduleReapply("state_query"); }
+    public static void onVideoSwitchPagerWrapper() { scheduleReapply("pager_wrapper"); }
+    public static void onVideoSwitchSelectIndex() { scheduleReapply("select_index"); }
+    public static void onVideoSwitchSdkFirstFrame() { scheduleReapply("sdk_first_frame"); }
+    public static void onVideoSwitchSdkChainA() { scheduleReapply("sdk_chain_a"); }
+    public static void onVideoSwitchSdkChainB() { scheduleReapply("sdk_chain_b"); }
+
+    private static void scheduleReapply(final String tag) {
+        if (!clearDisplayRemembered || reapplyPending) {
+            return;
+        }
+        reapplyPending = true;
+        try {
+            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    reapplyPending = false;
+                    if (!clearDisplayRemembered) {
+                        return;
+                    }
+                    try {
+                        applyClearMode(tag);
+                    } catch (Throwable t) {
+                        Log.w(TAG, "[Clear Display Lite] Re-apply failed (" + tag + "): " + t);
+                    }
+                }
+            }, REAPPLY_DELAY_MS);
+        } catch (Throwable t) {
+            reapplyPending = false;
+            Log.w(TAG, "[Clear Display Lite] Could not schedule re-apply (" + tag + "): " + t);
+        }
+    }
+
+    private static synchronized void captureDispatcher(Object enumStatus) {
+        if (dispatcherClassName != null) {
+            return;
+        }
+        StackTraceElement[] frames = new Throwable().getStackTrace();
+        for (StackTraceElement f : frames) {
+            if (f.getClassName().equals(TikTokClearDisplayHook.class.getName())) {
+                continue;
+            }
+            dispatcherClassName = f.getClassName();
+            break;
+        }
+        if (enumStatus != null) {
+            dispatcherLoader = enumStatus.getClass().getClassLoader();
+        }
+        if (dispatcherClassName != null) {
+            Log.i(TAG, "[Clear Display Lite] Dispatcher resolved: " + dispatcherClassName);
+        }
+    }
+
+    private static Class<?> resolveDispatcherClass() {
+        if (cachedDispatcherClass != null) {
+            return cachedDispatcherClass;
+        }
+        String name = dispatcherClassName;
+        if (name == null) {
+            return null;
+        }
+        Class<?> resolved = null;
+        if (dispatcherLoader != null) {
+            try {
+                resolved = Class.forName(name, false, dispatcherLoader);
+            } catch (Throwable ignored) {
+            }
+        }
+        if (resolved == null) {
+            try {
+                ClassLoader ccl = Thread.currentThread().getContextClassLoader();
+                if (ccl != null) {
+                    resolved = Class.forName(name, false, ccl);
+                }
+            } catch (Throwable ignored) {
+            }
+        }
+        if (resolved == null) {
+            try {
+                ClassLoader cl = TikTokClearDisplayHook.class.getClassLoader();
+                if (cl != null) {
+                    resolved = Class.forName(name, false, cl);
+                }
+            } catch (Throwable ignored) {
+            }
+        }
+        if (resolved == null) {
+            try {
+                resolved = Class.forName(name);
+            } catch (Throwable ignored) {
+            }
+        }
+        return resolved;
+    }
+
     public static boolean onClearModeCall(Object enumStatus, String reason) {
         if (enumStatus == null) return true;
         String status = enumStatus.toString();
@@ -48,18 +164,136 @@ public final class TikTokClearDisplayHook {
             clearDisplayRemembered = true;
             wantsClear = true;
             Log.i(TAG, "[Clear Display Lite] onClearModeCall OPEN (reason=" + reason + ") -> clearDisplayRemembered=true");
+            captureDispatcher(enumStatus);
             return true;
         } else if ("CLOSE".equals(status)) {
             if ("switch_video".equals(reason) && clearDisplayRemembered) {
                 Log.i(TAG, "[Clear Display Lite] Suppressing CLOSE for switch_video (clear display remembered)");
+                captureDispatcher(enumStatus);
                 return false;
             }
             clearDisplayRemembered = false;
             wantsClear = false;
             Log.i(TAG, "[Clear Display Lite] onClearModeCall CLOSE (reason=" + reason + ") -> clearDisplayRemembered=false");
+            captureDispatcher(enumStatus);
             return true;
         }
+        captureDispatcher(enumStatus);
         return true;
+    }
+
+    private static synchronized void resolveDispatcherFields(Class<?> dispatcher) {
+        if (cachedDispatcherClass == dispatcher) {
+            return;
+        }
+
+        Field stateField = null;
+        for (Field f : dispatcher.getDeclaredFields()) {
+            if (Modifier.isStatic(f.getModifiers()) && (f.getType().isEnum() || Enum.class.isAssignableFrom(f.getType()))) {
+                stateField = f;
+                break;
+            }
+        }
+
+        Method lcMethod = null;
+        for (Method m : dispatcher.getDeclaredMethods()) {
+            if ("LC".equals(m.getName()) && Modifier.isStatic(m.getModifiers()) && m.getParameterTypes().length == 4) {
+                lcMethod = m;
+                break;
+            }
+        }
+        if (lcMethod == null) {
+            Log.w(TAG, "[Clear Display Lite] Could not find static 4-argument method LC on " + dispatcher.getName());
+            return;
+        }
+        lcMethod.setAccessible(true);
+
+        Class<?> enumType = lcMethod.getParameterTypes()[0];
+        if (stateField == null) {
+            for (Field f : dispatcher.getDeclaredFields()) {
+                if (Modifier.isStatic(f.getModifiers()) && f.getType() == enumType) {
+                    stateField = f;
+                    break;
+                }
+            }
+        }
+        if (stateField == null) {
+            Log.w(TAG, "[Clear Display Lite] Could not find static state field of type " + enumType.getName() + " on " + dispatcher.getName());
+            return;
+        }
+        stateField.setAccessible(true);
+
+        Object openConstant = null;
+        Object closeConstant = null;
+        try {
+            Field openField = enumType.getDeclaredField("OPEN");
+            openField.setAccessible(true);
+            openConstant = openField.get(null);
+        } catch (Throwable ignored) {
+        }
+
+        try {
+            Field closeField = enumType.getDeclaredField("CLOSE");
+            closeField.setAccessible(true);
+            closeConstant = closeField.get(null);
+        } catch (Throwable ignored) {
+        }
+
+        if (openConstant == null || closeConstant == null) {
+            Object[] enumConstants = enumType.getEnumConstants();
+            if (enumConstants != null) {
+                for (Object c : enumConstants) {
+                    if ("OPEN".equals(c.toString())) {
+                        openConstant = c;
+                    } else if ("CLOSE".equals(c.toString())) {
+                        closeConstant = c;
+                    }
+                }
+            }
+        }
+
+        if (openConstant == null || closeConstant == null) {
+            Log.w(TAG, "[Clear Display Lite] Could not resolve OPEN/CLOSE constants on " + enumType.getName());
+            return;
+        }
+
+        cachedStateField = stateField;
+        cachedOpenConstant = openConstant;
+        cachedCloseConstant = closeConstant;
+        cachedLcMethod = lcMethod;
+        cachedDispatcherClass = dispatcher;
+    }
+
+    private static void applyClearMode(String tag) {
+        if (!clearDisplayRemembered) {
+            return;
+        }
+        Class<?> dispatcher = resolveDispatcherClass();
+        if (dispatcher == null) {
+            Log.w(TAG, "[Clear Display Lite] Dispatcher class unresolvable (" + tag + ")");
+            return;
+        }
+        try {
+            if (cachedDispatcherClass != dispatcher) {
+                resolveDispatcherFields(dispatcher);
+            }
+            Field stateField = cachedStateField;
+            Method lcMethod = cachedLcMethod;
+            Object openConstant = cachedOpenConstant;
+            Object closeConstant = cachedCloseConstant;
+
+            if (stateField == null || lcMethod == null || openConstant == null || closeConstant == null) {
+                Log.w(TAG, "[Clear Display Lite] Dispatcher reflection targets unresolvable (" + tag + ")");
+                return;
+            }
+
+            stateField.set(null, closeConstant);
+            lcMethod.invoke(null, openConstant, "switch_video_reapply", false, null);
+
+            Log.i(TAG, "[Clear Display Lite] Re-applied clear mode (" + tag + ")");
+        } catch (Throwable t) {
+            Log.w(TAG, "[Clear Display Lite] Re-apply failed (" + tag + "): " + t);
+        }
     }
 
     private static synchronized void resolveFields(Class<?> type) {

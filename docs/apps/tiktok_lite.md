@@ -103,7 +103,7 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
   - *How*: Suppresses notification permission prompts via `PushServiceImpl.LB` and system push dialog checks reading `count_system` (`0Co.LBL()Z`), preserving onboarding completion state and login callback execution.
 - **Remember Clear Display**:
   - *Objective*: Keeps clear-display mode active when scrolling to the next video.
-  - *How*: Intercepts Lite clear-mode dispatcher matching `change_clear_mode_status` (`LX/7t3.LC`) to suppress exit on `switch_video`, and neutralizes `FeedFragment.r5` video switch dismissal.
+  - *How*: Re-applies clear mode shortly after a video switch, so the action buttons and caption stay hidden until you leave clear mode yourself.
 - **Remember Playback Speed**:
   - *Objective*: Keeps your chosen playback speed across videos and restarts.
   - *How*: Persists selected speed via `TikTokSpeedHook` in `SimplifyPlayerImpl` (`LFF(F)V`) and enforces saved speed on new video playback in `SimplifyPlayerImpl.render()V`.
