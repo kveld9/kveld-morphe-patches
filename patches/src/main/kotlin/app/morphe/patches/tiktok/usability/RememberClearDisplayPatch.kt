@@ -54,6 +54,12 @@ val rememberClearDisplayPatch = bytecodePatch(
 
             println("[Remember Clear Display] Resolved Lite dispatcher $holderClass (${stateField.name}, OPEN=${openField.name}, CLOSE=${closeField.name}).")
 
+            val lcField = holderDef.staticFields.firstOrNull {
+                it.type == "Ljava/lang/String;" && it.name == "LC"
+            } ?: holderDef.staticFields.firstOrNull {
+                it.type == "Ljava/lang/String;"
+            } ?: error("[Remember Clear Display] Could not resolve static String key field in $holderClass")
+
             switchMethod.addInstructionsWithLabels(
                 0,
                 """
@@ -66,6 +72,29 @@ val rememberClearDisplayPatch = bytecodePatch(
                 """.trimIndent(),
             )
             println("[Remember Clear Display] Hooked Lite $holderClass.${switchMethod.name}() -> user choice recording active.")
+            patched++
+
+            val keyMethod = Fingerprint(
+                definingClass = holderClass,
+                name = "L",
+                parameters = listOf("Landroid/content/Context;", "Lcom/ss/android/ugc/aweme/feed/model/Aweme;"),
+                returnType = "Ljava/lang/String;",
+            ).method
+
+            keyMethod.addInstructionsWithLabels(
+                0,
+                """
+                    invoke-static {}, ${Constants.TIKTOK_EXTENSION_CLEARDISPLAY_HOOK}->getClearDisplayState()Z
+                    move-result v0
+                    if-eqz v0, :cond_orig
+                    const-string v0, "CLEARDISPLAY"
+                    sput-object v0, $holderClass->${lcField.name}:Ljava/lang/String;
+                    return-object v0
+                    :cond_orig
+                    nop
+                """.trimIndent(),
+            )
+            println("[Remember Clear Display] Hooked Lite $holderClass.${keyMethod.name}() -> persistent clear key bridge active.")
             patched++
 
             // 2. Hook per-video anchors to re-apply clear mode on video switches.
@@ -121,20 +150,6 @@ val rememberClearDisplayPatch = bytecodePatch(
                     name = "setCurrentItemInternal",
                     parameters = listOf("I", "Z", "Z"),
                     hookMethod = "onVideoSwitchPager",
-                ),
-                Anchor(
-                    label = "state_get",
-                    definingClass = "LX/7t3;",
-                    name = "LB",
-                    parameters = listOf(),
-                    hookMethod = "onVideoSwitchStateGet",
-                ),
-                Anchor(
-                    label = "state_query",
-                    definingClass = "LX/7t3;",
-                    name = "LBL",
-                    parameters = listOf("LX/7t4;"),
-                    hookMethod = "onVideoSwitchStateQuery",
                 ),
                 Anchor(
                     label = "pager_wrapper",

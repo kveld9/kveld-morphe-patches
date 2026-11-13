@@ -61,8 +61,6 @@ public final class TikTokClearDisplayHook {
     public static void onVideoSwitchFirstFrame() { scheduleReapply("first_frame"); }
     public static void onVideoSwitchBindAll() { scheduleReapply("bind_all"); }
     public static void onVideoSwitchPager() { scheduleReapply("pager"); }
-    public static void onVideoSwitchStateGet() { scheduleReapply("state_get"); }
-    public static void onVideoSwitchStateQuery() { scheduleReapply("state_query"); }
     public static void onVideoSwitchPagerWrapper() { scheduleReapply("pager_wrapper"); }
     public static void onVideoSwitchSelectIndex() { scheduleReapply("select_index"); }
     public static void onVideoSwitchSdkFirstFrame() { scheduleReapply("sdk_first_frame"); }
@@ -167,9 +165,12 @@ public final class TikTokClearDisplayHook {
             captureDispatcher(enumStatus);
             return true;
         } else if ("CLOSE".equals(status)) {
-            if ("switch_video".equals(reason) && clearDisplayRemembered) {
-                Log.i(TAG, "[Clear Display Lite] Suppressing CLOSE for switch_video (clear display remembered)");
+            if (("switch_video".equals(reason) || "gesture".equals(reason)) && clearDisplayRemembered) {
+                Log.i(TAG, "[Clear Display Lite] Suppressing CLOSE for " + reason + " (clear display remembered)");
                 captureDispatcher(enumStatus);
+                return false;
+            }
+            if ("switch_video_reapply".equals(reason)) {
                 return false;
             }
             clearDisplayRemembered = false;
