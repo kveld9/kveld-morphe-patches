@@ -1,3 +1,16 @@
+## [2.11.0-experimental.12](https://github.com/kveld9/kveld-morphe-patches/compare/v2.11.0-experimental.11...v2.11.0-experimental.12) (2026-11-13)
+
+### Bug Fixes
+
+* **brave:** update libchrome tracking server offsets for 1.99.57 ([c62b8de](https://github.com/kveld9/kveld-morphe-patches/commit/c62b8decb5960e6dd12a7818ad77b2de1bfdb68b))
+* **brave:** update supported version to 1.99.57 ([cb7a675](https://github.com/kveld9/kveld-morphe-patches/commit/cb7a67575caa263f5e90a1c677cf3c3b631d419e))
+* **tiktoklite:** keep clear display active when switching videos ([f7ebcda](https://github.com/kveld9/kveld-morphe-patches/commit/f7ebcdaf6da0a473fb3b96ce7b6643c674ae082d))
+* **tiktoklite:** remember clear display mode across feed videos ([5498037](https://github.com/kveld9/kveld-morphe-patches/commit/54980373352a334975f8b9662162b810b6262b4f))
+
+### New Features
+
+* **tiktoklite:** bypass mandatory login wall ([e51cd88](https://github.com/kveld9/kveld-morphe-patches/commit/e51cd8837ec7fb09038bd7eeaa70b4da68f90850))
+
 ## [2.11.0-experimental.11](https://github.com/kveld9/kveld-morphe-patches/compare/v2.11.0-experimental.10...v2.11.0-experimental.11) (2026-11-11)
 
 ### Bug Fixes

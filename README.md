@@ -175,7 +175,7 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 </details>
 
 <details>
-<summary>TikTok Lite&nbsp;&nbsp;•&nbsp;&nbsp;<b>16 patches</b></summary>
+<summary>TikTok Lite&nbsp;&nbsp;•&nbsp;&nbsp;<b>17 patches</b></summary>
 <br>
 
 **Supported versions:**
@@ -190,6 +190,7 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 | **Block Popups & Prompts** | Blocks popups, nags and promo dialogs across the app. | • Suppress Account & Permission Nags<br>• Hide Notification Prompts<br>• Suppress Sticker Recommendations<br>• Filter PopLayer Prompts & Nags<br>• Suppress Live Teaser Bubbles<br>• Suppress DM Streak Reminders<br>• Disable Post-Download Share Dialog<br>• Update Prompt Suppressor<br>• Skip First-Launch Onboarding<br>• Skip Content Warnings |
 | **Block Trackers** | Neutralizes ByteDance AppLog tracking, crash monitors, and analytics. |  |
 | **Block Trackers (Setup)** | Removes tracking permissions and disables telemetry components. |  |
+| **Bypass Mandatory Login** | Lets you browse videos and feeds without creating an account or logging in. |  |
 | **Clean Share Links** | Removes tracking parameters from shared links. | • Custom Share Host |
 | **Disable Push Notifications** | Stops background push notifications. |  |
 | **Disable QUIC** | Loads videos, uploads, and live connections over standard HTTPS instead of QUIC. |  |
@@ -238,9 +239,9 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 
 **Supported versions:**
 
-| 1.99.56 |
+| 1.99.57 |
 | :---: |
-| Download Bravemonoarm64.apk (arm64) or BraveMonoarm.apk (arm32) v1.99.56 from github.com/brave/brave-browser/releases; Universal builds unsupported |
+| Download Bravemonoarm64.apk (arm64) or BraveMonoarm.apk (arm32) v1.99.57 from github.com/brave/brave-browser/releases; Universal builds unsupported |
 
 | Patch | Description | Options |
 |----------|----------------|-----------|
