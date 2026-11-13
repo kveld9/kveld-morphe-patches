@@ -9,16 +9,57 @@ import app.morphe.patches.shared.replaceWithReturnBoolean
 
 private const val MANDATORY_LOGIN_SERVICE = "Lcom/ss/android/ugc/aweme/services/MandatoryLoginService;"
 private const val GUEST_MODE_SERVICE_IMPL = "Lcom/ss/android/ugc/aweme/account/guestmode/GuestModeServiceImpl;"
+private const val LITE_MANDATORY_LOGIN_SERVICE = "Lcom/ss/android/ugc/aweme/mini_account_impl/MandatoryLoginService;"
+
 val mandatoryLoginBypassPatch = bytecodePatch(
     name = "Bypass Mandatory Login",
     description = "Lets you browse videos and feeds without creating an account or logging in.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_LITE)
     dependsOn(sharedExtensionPatch)
 
     execute {
         var patched = 0
+        val isLite = packageMetadata.packageName == Constants.TIKTOK_LITE_PACKAGE_NAME
+
+        if (isLite) {
+            // 1. Lite gate: LCC(String, String)Z is the master forced-login decision
+            Fingerprint(
+                definingClass = LITE_MANDATORY_LOGIN_SERVICE,
+                name = "LCC",
+                parameters = listOf("Ljava/lang/String;", "Ljava/lang/String;"),
+                returnType = "Z",
+            ).method.replaceWithReturnBoolean(false)
+            println("[Bypass Mandatory Login] Neutralized Lite MandatoryLoginService.LCC() -> Forced login decision suppressed.")
+            patched++
+
+            // 2. Lite fragment gate: MainRootFragment calls L(String)Z and skips login panel when false
+            Fingerprint(
+                definingClass = LITE_MANDATORY_LOGIN_SERVICE,
+                name = "L",
+                parameters = listOf("Ljava/lang/String;"),
+                returnType = "Z",
+            ).method.replaceWithReturnBoolean(false)
+            println("[Bypass Mandatory Login] Neutralized Lite MandatoryLoginService.L() -> Feed fragment login check suppressed.")
+            patched++
+
+            // 3. Lite shower: LC(String, ...)V launches the login UI. Stub it to return-void.
+            val lcMethod = Fingerprint(
+                definingClass = LITE_MANDATORY_LOGIN_SERVICE,
+                name = "LC",
+                returnType = "V",
+            ).method
+            lcMethod.addInstructions(
+                0,
+                "return-void",
+            )
+            println("[Bypass Mandatory Login] Neutralized Lite MandatoryLoginService.LC() -> Login UI launch suppressed.")
+            patched++
+
+            println("[Bypass Mandatory Login] Applied $patched hooks -> Mandatory login wall bypassed on Lite.")
+            return@execute
+        }
 
         // 1. MandatoryLoginService.shouldShowForcedLogin(Z)Z -> return false
         try {

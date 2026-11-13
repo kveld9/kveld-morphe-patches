@@ -35,7 +35,6 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
 
 - **Allow Screenshots**: Anchor absent; `ScreenShotTask` was located in an optional dynamic feature split absent from the distribution bundle.
 - **Always Show Publish Date**: Anchor absent; `VideoItemParams.getAweme()` and `aweme.getCreateTime()` feed item UI hook absent in Lite DEX.
-- **Bypass Mandatory Login**: Anchor absent; `MandatoryLoginService` was located in an optional dynamic feature split absent from the distribution bundle.
 - **Camera & Microphone Indicator**: Anchor absent; `MainActivity` hook and camera/mic call sites absent in Lite DEX.
 - **Disable History Recording**: Anchor absent; `AwemeStatsApi` was located in an optional dynamic feature split absent from the distribution bundle.
 - **Disable Live Gift Effects**: Anchor absent; `LiveGiftPlayer` and `GiftEffectWidget` live gift rendering widgets absent in Lite DEX.
@@ -84,6 +83,9 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
 - **Block Trackers (Setup)**:
   - *Objective*: Removes tracking permissions and disables telemetry components.
   - *How*: Strips advertising permissions (`AD_ID`, AdServices), disables analytics receivers and providers (AppLog, AppsFlyer, Google Analytics), removes analytics discovery registrars, and injects opt-out metadata flags into `AndroidManifest.xml`.
+- **Bypass Mandatory Login**:
+  - *Objective*: Lets you browse videos and feeds without creating an account or logging in.
+  - *How*: Neutralizes forced login decision methods (`LCC`, `L`) and suppresses login UI launch (`LC`) in Lite's `mini_account_impl.MandatoryLoginService`.
 - **Clean Share Links**:
   - *Objective*: Removes tracking parameters and promotional tail text from shared links.
   - *How*: Intercepts `minilite.feed.model.Aweme.getShareUrl()` to sanitize shared link URLs, strips tracking parameters, and applies custom hostname replacement via `TikTokShareHostHook`.
