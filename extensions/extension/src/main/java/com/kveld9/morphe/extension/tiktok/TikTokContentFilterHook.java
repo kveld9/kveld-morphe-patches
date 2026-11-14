@@ -415,10 +415,18 @@ public final class TikTokContentFilterHook {
             Method m = aweme.getClass().getMethod("getIsTikTokStory");
             return Boolean.TRUE.equals(m.invoke(aweme));
         } catch (Throwable ignored) {}
+        try {
+            Method m = aweme.getClass().getMethod("isStory");
+            return Boolean.TRUE.equals(m.invoke(aweme));
+        } catch (Throwable ignored) {}
         return false;
     }
 
     private static boolean isPhotoPost(Object aweme) {
+        try {
+            Method m = aweme.getClass().getMethod("isPhotoMode");
+            if (Boolean.TRUE.equals(m.invoke(aweme))) return true;
+        } catch (Throwable ignored) {}
         try {
             Method imageInfo = aweme.getClass().getMethod("getPhotoModeImageInfo");
             if (imageInfo.invoke(aweme) != null) return true;

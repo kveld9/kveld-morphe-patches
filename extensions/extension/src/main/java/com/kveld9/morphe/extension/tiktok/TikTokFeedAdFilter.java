@@ -55,6 +55,11 @@ public final class TikTokFeedAdFilter {
     private static Field adLinkTypeField;
     private static Method getCommercialVideoInfoMethod;
     private static Field commercialVideoInfoField;
+    private static Method isReferralFakeAwemeMethod;
+    private static Field isReferralFakeAwemeField;
+    private static Field hasPromoteEntryField;
+    private static Method getCommerceInfoMethod;
+    private static Field commerceInfoField;
 
     private static Method isFriendsTabFakeAwemeMethod;
     private static Method getRecommendCardTypeMethod;
@@ -184,34 +189,44 @@ public final class TikTokFeedAdFilter {
     private TikTokFeedAdFilter() {}
 
     private static void ensureInitialized(ClassLoader classLoader) {
+        ensureInitialized(null, classLoader);
+    }
+
+    private static void ensureInitialized(Class<?> callerClass, ClassLoader classLoader) {
         if (initialized) return;
         synchronized (TikTokFeedAdFilter.class) {
             if (initialized) return;
+            if (callerClass != null && (callerClass.getName().endsWith(".Aweme") || callerClass.getName().endsWith("Aweme"))) {
+                awemeClass = callerClass;
+            }
             if (classLoader == null || classLoader.getClass().getName().contains("BootClassLoader")) {
-                classLoader = TikTokFeedAdFilter.class.getClassLoader();
+                if (callerClass != null && callerClass.getClassLoader() != null) {
+                    classLoader = callerClass.getClassLoader();
+                } else {
+                    classLoader = TikTokFeedAdFilter.class.getClassLoader();
+                }
             }
             if (classLoader == null) {
                 classLoader = Thread.currentThread().getContextClassLoader();
             }
-            if (classLoader == null) return;
-
-            awemeClass = null;
-            try {
-                awemeClass = classLoader.loadClass("com.ss.android.ugc.aweme.feed.model.Aweme");
-            } catch (Throwable t) {
+            if (awemeClass == null && classLoader != null) {
                 try {
-                    awemeClass = classLoader.loadClass("com.ss.android.ugc.aweme.minilite.feed.model.Aweme");
-                } catch (Throwable t2) {
+                    awemeClass = classLoader.loadClass("com.ss.android.ugc.aweme.feed.model.Aweme");
+                } catch (Throwable t) {
                     try {
-                        ClassLoader fallback = TikTokFeedAdFilter.class.getClassLoader();
-                        if (fallback != null && fallback != classLoader) {
-                            try {
-                                awemeClass = fallback.loadClass("com.ss.android.ugc.aweme.feed.model.Aweme");
-                            } catch (Throwable t3) {
-                                awemeClass = fallback.loadClass("com.ss.android.ugc.aweme.minilite.feed.model.Aweme");
+                        awemeClass = classLoader.loadClass("com.ss.android.ugc.aweme.minilite.feed.model.Aweme");
+                    } catch (Throwable t2) {
+                        try {
+                            ClassLoader fallback = TikTokFeedAdFilter.class.getClassLoader();
+                            if (fallback != null && fallback != classLoader) {
+                                try {
+                                    awemeClass = fallback.loadClass("com.ss.android.ugc.aweme.feed.model.Aweme");
+                                } catch (Throwable t3) {
+                                    awemeClass = fallback.loadClass("com.ss.android.ugc.aweme.minilite.feed.model.Aweme");
+                                }
                             }
-                        }
-                    } catch (Throwable ignored) {}
+                        } catch (Throwable ignored) {}
+                    }
                 }
             }
 
@@ -255,7 +270,18 @@ public final class TikTokFeedAdFilter {
             try { getAdAwemeSourceMethod = awemeClass.getMethod("getAdAwemeSource"); getAdAwemeSourceMethod.setAccessible(true); } catch (Throwable ignored) {}
             try { adAwemeSourceField = awemeClass.getDeclaredField("adAwemeSource"); adAwemeSourceField.setAccessible(true); } catch (Throwable ignored) {}
             try { isAdField = awemeClass.getDeclaredField("_isAd"); isAdField.setAccessible(true); } catch (Throwable ignored) {}
+            if (isAdField == null) {
+                try { isAdField = awemeClass.getDeclaredField("isAd"); isAdField.setAccessible(true); } catch (Throwable ignored) {}
+            }
             try { isSoftAdField = awemeClass.getDeclaredField("_isSoftAd"); isSoftAdField.setAccessible(true); } catch (Throwable ignored) {}
+            if (isSoftAdField == null) {
+                try { isSoftAdField = awemeClass.getDeclaredField("isSoftAd"); isSoftAdField.setAccessible(true); } catch (Throwable ignored) {}
+            }
+            try { isReferralFakeAwemeMethod = awemeClass.getMethod("isReferralFakeAweme"); isReferralFakeAwemeMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { isReferralFakeAwemeField = awemeClass.getDeclaredField("isReferralFakeAweme"); isReferralFakeAwemeField.setAccessible(true); } catch (Throwable ignored) {}
+            try { hasPromoteEntryField = awemeClass.getDeclaredField("hasPromoteEntry"); hasPromoteEntryField.setAccessible(true); } catch (Throwable ignored) {}
+            try { getCommerceInfoMethod = awemeClass.getMethod("getCommerceInfo"); getCommerceInfoMethod.setAccessible(true); } catch (Throwable ignored) {}
+            try { commerceInfoField = awemeClass.getDeclaredField("commerceInfo"); commerceInfoField.setAccessible(true); } catch (Throwable ignored) {}
             try { awemeRawAdField = awemeClass.getDeclaredField("awemeRawAd"); awemeRawAdField.setAccessible(true); } catch (Throwable ignored) {}
             try { linkAdDataField = awemeClass.getDeclaredField("linkAdData"); linkAdDataField.setAccessible(true); } catch (Throwable ignored) {}
             try { getAdLinkTypeMethod = awemeClass.getMethod("getAdLinkType"); getAdLinkTypeMethod.setAccessible(true); } catch (Throwable ignored) {}
@@ -543,7 +569,7 @@ public final class TikTokFeedAdFilter {
     public static boolean isAd(Object aweme) {
         if (aweme == null) return false;
         if (!initialized) {
-            ensureInitialized(aweme.getClass().getClassLoader());
+            ensureInitialized(aweme.getClass(), aweme.getClass().getClassLoader());
         }
         if (awemeClass != null && !awemeClass.isInstance(aweme)) {
             return isSearchAdItem(aweme);
@@ -560,6 +586,35 @@ public final class TikTokFeedAdFilter {
                     if (Boolean.TRUE.equals(val) || (val instanceof Number && ((Number) val).intValue() > 0)) {
                         return true;
                     }
+                } catch (Throwable ignored) {}
+            }
+            if (isReferralFakeAwemeMethod != null) {
+                try {
+                    if (Boolean.TRUE.equals(isReferralFakeAwemeMethod.invoke(aweme))) return true;
+                } catch (Throwable ignored) {}
+            }
+            if (isReferralFakeAwemeField != null) {
+                try {
+                    Object val = isReferralFakeAwemeField.get(aweme);
+                    if (Boolean.TRUE.equals(val) || (val instanceof Number && ((Number) val).intValue() > 0)) {
+                        return true;
+                    }
+                } catch (Throwable ignored) {}
+            }
+            if (hasPromoteEntryField != null) {
+                try {
+                    Object val = hasPromoteEntryField.get(aweme);
+                    if (val instanceof Number && ((Number) val).intValue() > 0) return true;
+                } catch (Throwable ignored) {}
+            }
+            if (getCommerceInfoMethod != null) {
+                try {
+                    if (getCommerceInfoMethod.invoke(aweme) != null) return true;
+                } catch (Throwable ignored) {}
+            }
+            if (commerceInfoField != null) {
+                try {
+                    if (commerceInfoField.get(aweme) != null) return true;
                 } catch (Throwable ignored) {}
             }
             if (isSoftAdMethod != null) {
@@ -681,7 +736,7 @@ public final class TikTokFeedAdFilter {
     public static boolean isLiveStream(Object aweme) {
         if (aweme == null) return false;
         if (!initialized) {
-            ensureInitialized(aweme.getClass().getClassLoader());
+            ensureInitialized(aweme.getClass(), aweme.getClass().getClassLoader());
         }
         if (awemeClass != null && !awemeClass.isInstance(aweme)) {
             return false;
@@ -755,7 +810,7 @@ public final class TikTokFeedAdFilter {
     public static void stripCommercialAnchors(Object aweme) {
         if (!stripShopAnchors || aweme == null) return;
         if (!initialized) {
-            ensureInitialized(aweme.getClass().getClassLoader());
+            ensureInitialized(aweme.getClass(), aweme.getClass().getClassLoader());
         }
         if (awemeClass != null && !awemeClass.isInstance(aweme)) {
             return;
@@ -835,14 +890,7 @@ public final class TikTokFeedAdFilter {
 
         synchronized (items) {
             try {
-                if (!initialized) {
-                    for (Object item : items) {
-                        if (item != null) {
-                            ensureInitialized(item.getClass().getClassLoader());
-                            break;
-                        }
-                    }
-                }
+                ensureInitializedFromList(items);
 
                 int removed = 0;
                 Iterator<Object> iterator = items.iterator();
@@ -994,14 +1042,7 @@ public final class TikTokFeedAdFilter {
 
         synchronized (items) {
             try {
-                if (!initialized) {
-                    for (Object item : items) {
-                        if (item != null) {
-                            ensureInitialized(item.getClass().getClassLoader());
-                            break;
-                        }
-                    }
-                }
+                ensureInitializedFromList(items);
 
                 int removed = 0;
                 Iterator<Object> iterator = items.iterator();
@@ -1237,7 +1278,7 @@ public final class TikTokFeedAdFilter {
     public static boolean isFeedBloat(Object aweme) {
         if (aweme == null) return false;
         if (!initialized) {
-            ensureInitialized(aweme.getClass().getClassLoader());
+            ensureInitialized(aweme.getClass(), aweme.getClass().getClassLoader());
         }
         if (awemeClass != null && !awemeClass.isInstance(aweme)) {
             return false;
@@ -1258,9 +1299,20 @@ public final class TikTokFeedAdFilter {
                 }
             }
 
-            // 2. Friends Tab Fake Aweme Placeholders
+            // 2. Friends Tab & Referral Fake Aweme Placeholders
             if (isFriendsTabFakeAwemeMethod != null && Boolean.TRUE.equals(isFriendsTabFakeAwemeMethod.invoke(aweme))) {
                 return true;
+            }
+            if (isReferralFakeAwemeMethod != null && Boolean.TRUE.equals(isReferralFakeAwemeMethod.invoke(aweme))) {
+                return true;
+            }
+            if (isReferralFakeAwemeField != null) {
+                try {
+                    Object val = isReferralFakeAwemeField.get(aweme);
+                    if (Boolean.TRUE.equals(val) || (val instanceof Number && ((Number) val).intValue() > 0)) {
+                        return true;
+                    }
+                } catch (Throwable ignored) {}
             }
 
             // 3. CardInsertInfo checks:
@@ -1323,14 +1375,7 @@ public final class TikTokFeedAdFilter {
 
         synchronized (items) {
             try {
-                if (!initialized) {
-                    for (Object item : items) {
-                        if (item != null) {
-                            ensureInitialized(item.getClass().getClassLoader());
-                            break;
-                        }
-                    }
-                }
+                ensureInitializedFromList(items);
 
                 int removed = 0;
                 Iterator<Object> iterator = items.iterator();
@@ -1530,14 +1575,7 @@ public final class TikTokFeedAdFilter {
 
         synchronized (items) {
             try {
-                if (!initialized) {
-                    for (Object item : items) {
-                        if (item != null) {
-                            ensureInitialized(item.getClass().getClassLoader());
-                            break;
-                        }
-                    }
-                }
+                ensureInitializedFromList(items);
 
                 int removed = 0;
                 Iterator<Object> iterator = items.iterator();
@@ -1568,14 +1606,7 @@ public final class TikTokFeedAdFilter {
 
         synchronized (items) {
             try {
-                if (!initialized) {
-                    for (Object item : items) {
-                        if (item != null) {
-                            ensureInitialized(item.getClass().getClassLoader());
-                            break;
-                        }
-                    }
-                }
+                ensureInitializedFromList(items);
 
                 int removed = 0;
                 Iterator<Object> iterator = items.iterator();
@@ -1968,14 +1999,7 @@ public final class TikTokFeedAdFilter {
 
         synchronized (items) {
             try {
-                if (!initialized) {
-                    for (Object item : items) {
-                        if (item != null) {
-                            ensureInitialized(item.getClass().getClassLoader());
-                            break;
-                        }
-                    }
-                }
+                ensureInitializedFromList(items);
 
                 int removed = 0;
                 Iterator<Object> iterator = items.iterator();
@@ -2045,14 +2069,7 @@ public final class TikTokFeedAdFilter {
 
         synchronized (items) {
             try {
-                if (!initialized) {
-                    for (Object item : items) {
-                        if (item != null) {
-                            ensureInitialized(item.getClass().getClassLoader());
-                            break;
-                        }
-                    }
-                }
+                ensureInitializedFromList(items);
 
                 int removed = 0;
                 Iterator<Object> iterator = items.iterator();
@@ -2079,14 +2096,7 @@ public final class TikTokFeedAdFilter {
 
         synchronized (items) {
             try {
-                if (!initialized) {
-                    for (Object item : items) {
-                        if (item != null) {
-                            ensureInitialized(item.getClass().getClassLoader());
-                            break;
-                        }
-                    }
-                }
+                ensureInitializedFromList(items);
 
                 int removed = 0;
                 Iterator<Object> iterator = items.iterator();
@@ -2618,10 +2628,10 @@ public final class TikTokFeedAdFilter {
     }
 
     private static void ensureInitializedFromList(List<Object> items) {
-        if (initialized) return;
+        if (initialized || items == null) return;
         for (Object item : items) {
             if (item != null) {
-                ensureInitialized(item.getClass().getClassLoader());
+                ensureInitialized(item.getClass(), item.getClass().getClassLoader());
                 return;
             }
         }

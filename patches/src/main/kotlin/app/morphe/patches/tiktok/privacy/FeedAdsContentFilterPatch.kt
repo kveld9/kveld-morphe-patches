@@ -302,6 +302,45 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 }
             }
 
+            // Hook FeedFragment.C2(List, ...) (primary ingestion point for all feed items before display)
+            val c2Fp = Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/minilite/feed/FeedFragment;",
+                name = "C2",
+                returnType = "V",
+            )
+            val c2Method = c2Fp.method
+            val c2CallSnippets = mutableListOf<String>()
+            if (filterAds != false) {
+                c2CallSnippets.add("invoke-static/range {p1 .. p1}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAdsInList(Ljava/lang/Object;)V")
+            }
+            if (filterBloat != false) {
+                c2CallSnippets.add("invoke-static/range {p1 .. p1}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterFeedBloatInList(Ljava/lang/Object;)V")
+            }
+            if (stripShopAnchors != false) {
+                c2CallSnippets.add("invoke-static/range {p1 .. p1}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->stripShopAnchorsInList(Ljava/lang/Object;)V")
+            }
+            if (blockLiveStreams != false) {
+                c2CallSnippets.add("invoke-static/range {p1 .. p1}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterLiveStreamsInList(Ljava/lang/Object;)V")
+            }
+            if (hideAiContent != false) {
+                c2CallSnippets.add("invoke-static/range {p1 .. p1}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAiContentInList(Ljava/lang/Object;)V")
+            }
+            if (contentFilterActive) {
+                c2CallSnippets.add("invoke-static/range {p1 .. p1}, ${Constants.TIKTOK_EXTENSION_CONTENT_FILTER_HOOK}->filterContentInList(Ljava/lang/Object;)V")
+            }
+            if (hideSeenVideos != false) {
+                c2CallSnippets.add("invoke-static/range {p1 .. p1}, ${Constants.TIKTOK_EXTENSION_SEEN_VIDEO_HOOK}->filterSeenVideosInList(Ljava/lang/Object;)V")
+            }
+
+            if (c2CallSnippets.isNotEmpty()) {
+                c2Method.addInstructions(
+                    0,
+                    c2CallSnippets.joinToString("\n"),
+                )
+                println("[Feed Ads & Content Filter] Hooked FeedFragment.C2(List, ...) -> Ingested feed stream protected at UI entry point.")
+                patched++
+            }
+
             // Hook FeedItemList.getItems() and getAwemeList() (covers feed, cached, and home consumers on Lite)
             hookReturnList(
                 definingClass = "Lcom/ss/android/ugc/aweme/minilite/feed/data/bean/FeedItemList;",
@@ -316,6 +355,25 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 returnType = "Ljava/util/List;",
                 logLabel = "All Lite feed model consumers (getAwemeList)",
             )
+
+            // Suppress Touchpoint Rewards & Ad Pendants (floating activity widgets)
+            if (filterBloat != false) {
+                val feedPendantDef = classDefByOrNull("Lcom/bytedance/touchpoint/serviceimp/FeedPendantService;")
+                val targetMethod = feedPendantDef?.methods?.firstOrNull {
+                    it.parameterTypes.size == 1 && it.parameterTypes[0] == "Ljava/lang/String;" && it.returnType == "V"
+                }
+                if (targetMethod != null) {
+                    val pendantFp = Fingerprint(
+                        definingClass = "Lcom/bytedance/touchpoint/serviceimp/FeedPendantService;",
+                        name = targetMethod.name,
+                        parameters = listOf("Ljava/lang/String;"),
+                        returnType = "V",
+                    )
+                    pendantFp.method.addInstructions(0, "return-void")
+                    println("[Feed Ads & Content Filter] Neutralized FeedPendantService.${targetMethod.name}(String).")
+                    patched++
+                }
+            }
 
             if (hideSeenVideos != false) {
                 val awemeGetVideoFp = Fingerprint(
