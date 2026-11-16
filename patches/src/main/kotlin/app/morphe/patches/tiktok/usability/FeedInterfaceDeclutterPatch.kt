@@ -12,6 +12,7 @@ import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.sharedExtensionPatch
 import app.morphe.patches.shared.clearTryBlocks
 import app.morphe.patches.shared.ensureRegisterCount
+import app.morphe.patches.shared.setRegisterCount
 import app.morphe.patches.shared.replaceWithReturnBoolean
 import app.morphe.patches.shared.replaceWithReturnInt
 import app.morphe.patches.shared.replaceWithReturnIntegerObject
@@ -1398,7 +1399,87 @@ private fun BytecodePatchContext.executeLite(
 
     // 5. Hide Video Descriptions
     if (hideVideoDescriptions == true) {
-        // In LX/435; (description container), set GONE on <init> and neutralize L(LX/4Wh;)V
+        // 5a. In LX/Fpb; (feed video description presenter), force container View to GONE
+        val descPresenterFp = Fingerprint(
+            returnType = "V",
+            parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;"),
+            strings = listOf("VideoDescView"),
+        )
+        val descPresenterDef = mutableClassDefBy(descPresenterFp.method.definingClass)
+
+        // Resolve container View field name from LILLLZ()Landroid/view/View;
+        val lillzMethod = descPresenterDef.methods.firstOrNull {
+            it.name == "LILLLZ" && it.returnType == "Landroid/view/View;" && it.parameterTypes.isEmpty()
+        } ?: error("[Declutter Video Interface] Failed to find LILLLZ() in ${descPresenterDef.type}")
+        val containerFieldName = lillzMethod.implementation!!.instructions.firstNotNullOfOrNull { ins ->
+            ((ins as? ReferenceInstruction)?.reference as? FieldReference)?.name
+        } ?: error("[Declutter Video Interface] Failed to resolve description container field in ${descPresenterDef.type}")
+
+        val ljlMethod = descPresenterDef.methods.firstOrNull {
+            it.name == "LJL" && it.returnType == "V" && it.parameterTypes == listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;")
+        }
+        if (ljlMethod != null) {
+            ljlMethod.clearTryBlocks()
+            ljlMethod.setRegisterCount(3)
+            val count = ljlMethod.implementation!!.instructions.count()
+            ljlMethod.removeInstructions(0, count)
+            ljlMethod.addInstructions(
+                0,
+                """
+                    iget-object v0, p0, ${descPresenterDef.type}->$containerFieldName:Landroid/view/View;
+                    if-nez v0, :cond_desc_skip
+                    const/16 v1, 0x8
+                    invoke-virtual {v0, v1}, Landroid/view/View;->setVisibility(I)V
+                    :cond_desc_skip
+                    return-void
+                """.trimIndent(),
+            )
+            println("[Declutter Video Interface] Hooked ${descPresenterDef.type}.LJL(Aweme) -> description container set to GONE.")
+            patched++
+        }
+
+        val llfMethod = descPresenterDef.methods.firstOrNull {
+            it.name == "LLF" && it.returnType == "V" && it.parameterTypes == listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;")
+        }
+        if (llfMethod != null) {
+            llfMethod.replaceWithReturnVoid()
+            println("[Declutter Video Interface] Hooked ${descPresenterDef.type}.LLF(Aweme) -> return-void.")
+            patched++
+        }
+
+        val ljjlllMethod = descPresenterDef.methods.firstOrNull {
+            it.name == "LJJLLL" && it.returnType == "V" && it.parameterTypes == listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;")
+        }
+        if (ljjlllMethod != null) {
+            ljjlllMethod.replaceWithReturnVoid()
+            println("[Declutter Video Interface] Hooked ${descPresenterDef.type}.LJJLLL(Aweme) -> return-void.")
+            patched++
+        }
+
+        // 5b. In LX/HBZ; (custom description TextView), hook LIILLLL
+        val descViewField = descPresenterDef.fields.firstOrNull { it.name == "LILIIL" }
+        if (descViewField != null) {
+            val descViewDef = mutableClassDefBy(descViewField.type)
+            val bindTextMethod = descViewDef.methods.firstOrNull { it.name == "LIILLLL" }
+            if (bindTextMethod != null) {
+                bindTextMethod.clearTryBlocks()
+                bindTextMethod.setRegisterCount(4)
+                val count = bindTextMethod.implementation!!.instructions.count()
+                bindTextMethod.removeInstructions(0, count)
+                bindTextMethod.addInstructions(
+                    0,
+                    """
+                        const/16 v0, 0x8
+                        invoke-virtual {p0, v0}, Landroid/view/View;->setVisibility(I)V
+                        return-void
+                    """.trimIndent(),
+                )
+                println("[Declutter Video Interface] Hooked ${descViewDef.type}.LIILLLL -> forced GONE.")
+                patched++
+            }
+        }
+
+        // 5c. In LX/435; (description container), set GONE on <init> and neutralize L(LX/4Wh;)V
         val descContainerClass = "LX/435;"
         val descDef = mutableClassDefBy(descContainerClass)
 

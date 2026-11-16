@@ -54,18 +54,23 @@ fun Method.clearTryBlocks() {
 fun Method.ensureRegisterCount(min: Int) {
     val impl = implementation ?: return
     if (impl.registerCount < min) {
-        var clazz: Class<*>? = impl.javaClass
-        while (clazz != null) {
-            try {
-                val field = clazz.getDeclaredField("registerCount")
-                field.isAccessible = true
-                field.setInt(impl, min)
-                break
-            } catch (_: NoSuchFieldException) {
-                clazz = clazz.superclass
-            } catch (_: Exception) {
-                break
-            }
+        setRegisterCount(min)
+    }
+}
+
+fun Method.setRegisterCount(count: Int) {
+    val impl = implementation ?: return
+    var clazz: Class<*>? = impl.javaClass
+    while (clazz != null) {
+        try {
+            val field = clazz.getDeclaredField("registerCount")
+            field.isAccessible = true
+            field.setInt(impl, count)
+            break
+        } catch (_: NoSuchFieldException) {
+            clazz = clazz.superclass
+        } catch (_: Exception) {
+            break
         }
     }
 }
