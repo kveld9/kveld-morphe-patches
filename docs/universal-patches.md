@@ -36,6 +36,7 @@ Reference for universal optimization and resource slimming patches provided by M
 | **[Bypass Play License](#26-bypass-play-license-universalbypassplaylicensepatch)** | `bytecodePatch` | Dalvik Bytecode Methods | Intercepts `LicenseChecker.checkAccess(LicenseCheckerCallback)` and delivers the licensed verdict locally without contacting Play | Lets apps using the legacy Play licensing client library run after re-signing; cannot affect server-side Play Integrity or subscription entitlements |
 | **[Neutralize Play Billing](#27-neutralize-play-billing-universalneutralizeplaybillingpatch)** | `resourcePatch` | Manifest (`AndroidManifest.xml`) | Strips `com.android.vending.BILLING` permission and unbinds Play Billing service queries; preserves proxy activities for crash safety | Enables graceful degradation on devices without Google Mobile Services; prevents IPC to Play Billing while avoiding `ActivityNotFoundException` |
 | **[Remove Debug Info](#28-remove-debug-info-universalremovedebuginfopatch)** | `bytecodePatch` | Dalvik Bytecode (`classes*.dex`) | Strips DEX debug info (source names and line tables) | Reduces APK size; stack traces lose line numbers |
+| **[Wake Locks Off (Universal)](#29-wake-locks-off-universal-wakelockneutralizerpatch)** | `bytecodePatch` | Dalvik Bytecode Call Sites | Neutralizes `PowerManager.WakeLock.acquire()` and `release()` calls | Stops apps from holding CPU wake locks and keeping the device awake |
 
 ---
 
@@ -822,3 +823,30 @@ The **`Remove Debug Info`** patch strips Dalvik executable debug metadata (sourc
 - **Stack traces**: Exception stack traces will report `Unknown Source` and lack line numbers since debug line tables and source file attributes are stripped.
 - **Large multi-DEX safety ceiling**: Applications with more than 50,000 classes carrying debug metadata (such as massive monoliths like TikTok) are skipped cleanly with an explicit log message to prevent JVM heap exhaustion during multi-DEX serialization.
 - **Clean skip**: When no debug info is found across the application bytecode, the patch makes zero changes and logs an explicit skip.
+
+## 29. Wake Locks Off (Universal) (`wakeLockNeutralizerPatch`)
+
+The **`Wake Locks Off (Universal)`** patch stops applications from keeping the phone CPU awake with wake locks.
+
+### How It Works
+
+The patch scans the application bytecode in a single pass and neutralizes the application's own calls to `PowerManager.WakeLock.acquire()` and `PowerManager.WakeLock.release()` by replacing the invocation instructions with `nop`. This prevents the application from acquiring or releasing CPU wake locks at runtime.
+
+### Why the Manifest Permission Is Kept
+
+The patch deliberately leaves `android.permission.WAKE_LOCK` declared in `AndroidManifest.xml`.
+
+Deleting the permission from the manifest does not stop an application from trying to acquire a wake lock. Instead, Android's `PowerManagerService` checks the calling process for `android.permission.WAKE_LOCK` and throws a `java.lang.SecurityException` if the permission is missing. If the application calls `acquire()` from a background thread without a try-catch block (such as an unmanaged video player worker thread), the uncaught exception terminates the host process immediately.
+
+Leaving the permission declared while neutralizing the `acquire()` and `release()` call sites directly in bytecode ensures calls become harmless no-ops without triggering runtime security crashes.
+
+### Known Limitations
+
+- **Native wake locks**: Wake locks acquired in native code (such as Chromium `libchrome.so` or third-party C++ libraries) are not covered because Dalvik bytecode rewriting only inspects Java and Kotlin call sites.
+- **Background downloads and uploads**: Applications that legitimately require a wake lock to keep a screen-off network transfer running may have their background operations suspended by the operating system when the device goes to sleep.
+- **AlarmManager and JobScheduler**: This patch does not affect `AlarmManager` alarms or `JobScheduler` tasks that wake the device on a timer or system event.
+
+### Options
+
+- **Options**: None. The patch operates plug-and-play without user configuration (`default = false`).
+
