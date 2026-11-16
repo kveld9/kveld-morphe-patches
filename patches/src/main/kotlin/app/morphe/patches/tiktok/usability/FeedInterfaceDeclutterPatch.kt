@@ -1217,35 +1217,7 @@ private fun BytecodePatchContext.executeLite(
         val favClass = favPresenterFp.method.definingClass
         val favDef = mutableClassDefBy(favClass)
 
-        // Resolve container View field name from LILLLZ()Landroid/view/View;
-        val lillzMethod = favDef.methods.firstOrNull {
-            it.name == "LILLLZ" && it.returnType == "Landroid/view/View;" && it.parameterTypes.isEmpty()
-        } ?: error("[Declutter Video Interface] Failed to find LILLLZ() in ${favDef.type}")
-        val containerFieldName = lillzMethod.implementation!!.instructions.firstNotNullOfOrNull { ins ->
-            ((ins as? ReferenceInstruction)?.reference as? FieldReference)?.name
-        } ?: error("[Declutter Video Interface] Failed to resolve favorite container field in ${favDef.type}")
-
-        // 2a. Inject setVisibility(GONE) at the end of <init>
-        val initMethod = favDef.methods.first { it.name == "<init>" }
-        val initInstructions = initMethod.implementation!!.instructions
-        val returnIndex = initInstructions.indexOfLast { it.opcode == Opcode.RETURN_VOID }
-        if (returnIndex < 0) {
-            error("[Declutter Video Interface] Failed to find RETURN_VOID in ${favDef.type}.<init>")
-        }
-        initMethod.addInstructions(
-            returnIndex,
-            """
-                iget-object v0, p0, ${favDef.type}->$containerFieldName:Landroid/view/View;
-                if-eqz v0, :cond_fav_init_skip
-                const/16 v1, 0x8
-                invoke-virtual {v0, v1}, Landroid/view/View;->setVisibility(I)V
-                :cond_fav_init_skip
-            """.trimIndent(),
-        )
-        println("[Declutter Video Interface] Hooked ${favDef.type}.<init> -> Favorite container View default set to GONE.")
-        patched++
-
-        // 2b. Neutralize onClick in standard feed favorite presenter
+        // 2a. Neutralize onClick in standard feed favorite presenter
         val onClickMethod = favDef.methods.firstOrNull {
             it.name == "onClick" && it.returnType == "V" && it.parameterTypes == listOf("Landroid/view/View;")
         }
@@ -1255,7 +1227,7 @@ private fun BytecodePatchContext.executeLite(
             patched++
         }
 
-        // 2c. Force global favorite feed flag LX/DAx;->LC()Z to return false (forces LILZZL to set GONE)
+        // 2b. Force global favorite feed flag LX/DAx;->LC()Z to return false (forces LILZZL to set GONE)
         Fingerprint(
             definingClass = "LX/DAx;",
             name = "LC",
@@ -1265,7 +1237,7 @@ private fun BytecodePatchContext.executeLite(
         println("[Declutter Video Interface] Hooked LX/DAx.LC() -> return false (feed favorite disabled).")
         patched++
 
-        // 2d. Hook MiniLite feed mode favorite presenter (LX/Bwk;)
+        // 2c. Hook MiniLite feed mode favorite presenter (LX/Bwk;)
         val miniLiteFavFp = Fingerprint(
             returnType = "Landroid/view/ViewGroup;",
             parameters = listOf("Landroid/view/View;"),
@@ -1412,31 +1384,7 @@ private fun BytecodePatchContext.executeLite(
             it.returnType == "V" && it.parameterTypes == listOf("I", "I")
         } ?: error("[Declutter Video Interface] Failed to find (II)V visibility method in ${avatarDef.type}")
 
-        // Find the follow container View field populated from findViewById(0x7f090147 / 2131296583)
-        val initMethod = avatarDef.methods.first { it.name == "<init>" }
-        val initInstructions = initMethod.implementation!!.instructions
-        var followContainerField: String? = null
-        val constIndex = initInstructions.indexOfFirst { ins ->
-            ins is NarrowLiteralInstruction && ins.narrowLiteral == 2131296583
-        }
-        if (constIndex >= 0) {
-            for (i in constIndex + 1 until (constIndex + 10).coerceAtMost(initInstructions.size)) {
-                val ins = initInstructions[i]
-                if (ins is ReferenceInstruction && ins.reference is FieldReference) {
-                    val fieldRef = ins.reference as FieldReference
-                    if (fieldRef.definingClass == avatarDef.type && fieldRef.type == "Landroid/view/View;") {
-                        followContainerField = fieldRef.name
-                        break
-                    }
-                }
-            }
-        }
-        if (followContainerField == null) {
-            error("[Declutter Video Interface] Failed to resolve follow container View field in ${avatarDef.type}")
-        }
-
-        // 4a. In LILZ(II)V, force parameters to 0x8 (GONE) and disable clickability
-        lilzMethod.ensureRegisterCount(4)
+        // In LILZ(II)V, force parameters to 0x8 (GONE)
         lilzMethod.addInstructions(
             0,
             """
@@ -1444,47 +1392,13 @@ private fun BytecodePatchContext.executeLite(
                 const/16 p2, 0x8
             """.trimIndent(),
         )
-        val lilzInstructions = lilzMethod.implementation!!.instructions
-        val lilzReturnIndex = lilzInstructions.indexOfLast { it.opcode == Opcode.RETURN_VOID }
-        if (lilzReturnIndex >= 0) {
-            lilzMethod.addInstructions(
-                lilzReturnIndex,
-                """
-                    iget-object v0, p0, ${avatarDef.type}->$followContainerField:Landroid/view/View;
-                    if-eqz v0, :cond_follow_click_skip
-                    const/4 v1, 0x0
-                    invoke-virtual {v0, v1}, Landroid/view/View;->setClickable(Z)V
-                    :cond_follow_click_skip
-                """.trimIndent(),
-            )
-        }
-        println("[Declutter Video Interface] Hooked ${avatarDef.type}.${lilzMethod.name}(II) -> forced GONE (0x8) and non-clickable.")
+        println("[Declutter Video Interface] Hooked ${avatarDef.type}.${lilzMethod.name}(II) -> forced GONE (0x8).")
         patched++
-
-        // 4b. In <init>, trigger initial hide
-        val initReturnIndex = initInstructions.indexOfLast { it.opcode == Opcode.RETURN_VOID }
-        if (initReturnIndex >= 0) {
-            initMethod.addInstructions(
-                initReturnIndex,
-                """
-                    move-object/from16 v0, p0
-                    iget-object v1, v0, ${avatarDef.type}->$followContainerField:Landroid/view/View;
-                    if-eqz v1, :cond_follow_init_skip
-                    const/16 v2, 0x8
-                    invoke-virtual {v1, v2}, Landroid/view/View;->setVisibility(I)V
-                    const/4 v2, 0x0
-                    invoke-virtual {v1, v2}, Landroid/view/View;->setClickable(Z)V
-                    :cond_follow_init_skip
-                """.trimIndent(),
-            )
-            println("[Declutter Video Interface] Hooked ${avatarDef.type}.<init> -> Initial follow badge hidden.")
-            patched++
-        }
     }
 
     // 5. Hide Video Descriptions
     if (hideVideoDescriptions == true) {
-        // 5a. In LX/435; (description container), set GONE on <init> and neutralize L(LX/4Wh;)V
+        // In LX/435; (description container), set GONE on <init> and neutralize L(LX/4Wh;)V
         val descContainerClass = "LX/435;"
         val descDef = mutableClassDefBy(descContainerClass)
 
@@ -1522,51 +1436,6 @@ private fun BytecodePatchContext.executeLite(
             )
             println("[Declutter Video Interface] Hooked LX/435;.L(LX/4Wh;) -> forced GONE.")
             patched++
-        }
-
-        // 5b. In LX/Eqk; (Feed cell presenter), force LILZZ (LX/435;) to GONE
-        val feedCellClass = "LX/Eqk;"
-        val feedCellDef = mutableClassDefBy(feedCellClass)
-
-        val cellInit = feedCellDef.methods.first { it.name == "<init>" }
-        val cellInitInstructions = cellInit.implementation!!.instructions
-        val cellReturnIndex = cellInitInstructions.indexOfLast { it.opcode == Opcode.RETURN_VOID }
-        if (cellReturnIndex >= 0) {
-            cellInit.addInstructions(
-                cellReturnIndex,
-                """
-                    iget-object v0, p0, LX/Eqk;->LILZZ:LX/435;
-                    if-eqz v0, :cond_cell_desc_skip
-                    const/16 v1, 0x8
-                    invoke-virtual {v0, v1}, Landroid/view/View;->setVisibility(I)V
-                    :cond_cell_desc_skip
-                """.trimIndent(),
-            )
-            println("[Declutter Video Interface] Hooked LX/Eqk;.<init> -> LILZZ forced GONE.")
-            patched++
-        }
-
-        val cellBind = feedCellDef.methods.firstOrNull {
-            it.name == "LIILLZLL" && it.returnType == "V" && it.parameterTypes.size == 2
-        }
-        if (cellBind != null) {
-            val bindInstructions = cellBind.implementation!!.instructions
-            val bindReturnIndex = bindInstructions.indexOfLast { it.opcode == Opcode.RETURN_VOID }
-            if (bindReturnIndex >= 0) {
-                cellBind.addInstructions(
-                    bindReturnIndex,
-                    """
-                        move-object/from16 v0, p0
-                        iget-object v1, v0, LX/Eqk;->LILZZ:LX/435;
-                        if-eqz v1, :cond_bind_desc_skip
-                        const/16 v2, 0x8
-                        invoke-virtual {v1, v2}, Landroid/view/View;->setVisibility(I)V
-                        :cond_bind_desc_skip
-                    """.trimIndent(),
-                )
-                println("[Declutter Video Interface] Hooked LX/Eqk;.LIILLZLL() -> LILZZ forced GONE.")
-                patched++
-            }
         }
     }
 
