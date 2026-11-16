@@ -13,6 +13,7 @@ import json
 import logging
 import os
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -72,6 +73,7 @@ class DeviceInfo:
     abilist: list[str]
     sdk: int
     model: str
+    is_waydroid: bool = False
 
 
 @dataclass
@@ -220,10 +222,27 @@ def inspect_device(serial: str) -> DeviceInfo:
     sdk_str = _query_device_prop(serial, "ro.build.version.sdk")
     sdk = _parse_int_or_none(sdk_str) or 0
     model = _query_device_prop(serial, "ro.product.model") or "unknown"
-    return DeviceInfo(serial=serial, abilist=abilist, sdk=sdk, model=model)
+    is_wd = (
+        "waydroid" in model.lower()
+        or "waydroid" in serial.lower()
+        or serial.startswith("192.168.240.")
+        or "waydroid" in _query_device_prop(serial, "ro.build.flavor").lower()
+    )
+    return DeviceInfo(serial=serial, abilist=abilist, sdk=sdk, model=model, is_waydroid=is_wd)
+
+
+def _ensure_waydroid_connected() -> None:
+    if shutil.which("waydroid"):
+        try:
+            st = run_cmd(["waydroid", "status"], timeout=5)
+            if "RUNNING" in st.stdout:
+                run_cmd(["waydroid", "adb", "connect"], timeout=5)
+        except Exception:
+            pass
 
 
 def list_connected_serials() -> list[str]:
+    _ensure_waydroid_connected()
     res = run_cmd(["adb", "devices"], timeout=60)
     serials: list[str] = []
     for line in res.stdout.splitlines():
@@ -265,10 +284,10 @@ def _select_explicit_device(
     return device
 
 
-def _device_sort_key(d: DeviceInfo, required_abis: set[str]) -> tuple[bool, int, str]:
+def _device_sort_key(d: DeviceInfo, required_abis: set[str]) -> tuple[bool, bool, int, str]:
     primary_abi = d.abilist[0] if d.abilist else ""
     primary_match = (primary_abi in required_abis) if required_abis else True
-    return (not primary_match, -d.sdk, d.serial)
+    return (not primary_match, not d.is_waydroid, -d.sdk, d.serial)
 
 
 def _select_automatic_device(
@@ -286,8 +305,9 @@ def _select_automatic_device(
         sys.exit(2)
     compatible.sort(key=lambda d: _device_sort_key(d, required_abis))
     chosen = compatible[0]
+    dev_type = "Waydroid container" if chosen.is_waydroid else "physical device"
     log_info(
-        f"Selected device '{chosen.serial}' ({chosen.model}): "
+        f"Selected device '{chosen.serial}' ({chosen.model}, {dev_type}): "
         f"primary ABI='{chosen.abilist[0] if chosen.abilist else 'none'}', SDK={chosen.sdk}"
     )
     return chosen
