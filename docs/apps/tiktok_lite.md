@@ -115,6 +115,9 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
 - **Disable Double Tap to Like**:
   - *Objective*: Disables the double tap gesture to like videos in the feed, preventing accidental likes while scrolling or pausing. Videos can still be liked using the like button.
   - *How*: Neutralizes `(Float, Float)V` double-tap event handlers and heart animations in standard feed `DiggPresenter` (`right_container_digg`) and MiniLite feed like controller (`click_double_like`).
+- **Hide Comment Button**:
+  - *Objective*: Hides the comment button and count from videos in the feed.
+  - *How*: Sets the comment container view to `GONE` and clears touch/click listeners in standard feed `CommentPresenter` (`right_container_comment`) and MiniLite feed comment controller (`(View)ViewGroup` with `0x7f0900d7`).
 - **Remember Clear Display**:
   - *Objective*: Keeps clear-display mode active when scrolling to the next video.
   - *How*: Re-applies clear mode shortly after a video switch, so the action buttons and caption stay hidden until you leave clear mode yourself.
