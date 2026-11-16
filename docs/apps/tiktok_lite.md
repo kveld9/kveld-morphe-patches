@@ -58,7 +58,6 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
 - **Declutter Direct Messages**: Anchor absent; DM / IM messaging components and inbox message protocols absent in Lite DEX.
 - **Declutter Navigation Bar**: Anchor absent; DEX inventory of the pinned Lite target shows none of `ShopBottomTabProtocol`, `NearbyServiceImpl`, `ExploreFeedServiceImpl`, `ExploreBottomTabProtocol`, `LiveIconGenerator`, `PublishTabProtocol`, `FeedSearchBottomBarAssemTrigger`, `AwemeTrendingBar` or `HotSearchInfo` --
   the Lite main page (MainActivity -> MainRootFragment -> MainPageFragment -> FeedFragment) builds its top strip programmatically from a static single-entry tab list and its bottom navigation, LIVE entrance and feed search pill have no statically resolvable anchors (server/Lynx-driven candidates: lite_bottom_tab_2/4/5, lite_live_add_toplive_entrance, short_drama_inner_feed_search_entry_enabled experiments).
-- **Declutter Video Interface**: Anchor absent; `UpvoteVideoTrigger.Qp` and declutter anchor classes absent in Lite DEX.
 - **Device Privacy Guard**: Anchor absent; `LX/0OBB` device identifier collector class absent in Lite DEX.
 - **Disable On-Device AI**: Anchor absent; `PitayaBootLoader` class and Pitaya AI engine absent in Lite DEX.
 - **Enable Profile Banner**: Anchor absent; `ProfileBackgroundExp` class and profile banner customization absent in Lite DEX.
