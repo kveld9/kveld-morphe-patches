@@ -1467,14 +1467,152 @@ private fun BytecodePatchContext.executeLite(
             initMethod.addInstructions(
                 initReturnIndex,
                 """
-                    const/16 v0, 0x8
-                    const/16 v1, 0x8
-                    invoke-virtual {p0, v0, v1}, ${avatarDef.type}->${lilzMethod.name}(II)V
+                    move-object/from16 v0, p0
+                    iget-object v1, v0, ${avatarDef.type}->$followContainerField:Landroid/view/View;
+                    if-eqz v1, :cond_follow_init_skip
+                    const/16 v2, 0x8
+                    invoke-virtual {v1, v2}, Landroid/view/View;->setVisibility(I)V
+                    const/4 v2, 0x0
+                    invoke-virtual {v1, v2}, Landroid/view/View;->setClickable(Z)V
+                    :cond_follow_init_skip
                 """.trimIndent(),
             )
             println("[Declutter Video Interface] Hooked ${avatarDef.type}.<init> -> Initial follow badge hidden.")
             patched++
         }
+    }
+
+    // 5. Hide Video Descriptions
+    if (hideVideoDescriptions == true) {
+        // 5a. In LX/435; (description container), set GONE on <init> and neutralize L(LX/4Wh;)V
+        val descContainerClass = "LX/435;"
+        val descDef = mutableClassDefBy(descContainerClass)
+
+        for (initM in descDef.methods.filter { it.name == "<init>" }) {
+            val instructions = initM.implementation?.instructions ?: continue
+            val returnIndex = instructions.indexOfLast { it.opcode == Opcode.RETURN_VOID }
+            if (returnIndex >= 0) {
+                initM.addInstructions(
+                    returnIndex,
+                    """
+                        const/16 v0, 0x8
+                        invoke-virtual {p0, v0}, Landroid/view/View;->setVisibility(I)V
+                    """.trimIndent(),
+                )
+            }
+        }
+        println("[Declutter Video Interface] Hooked LX/435;.<init> constructors -> default GONE.")
+        patched++
+
+        val bindDescMethod = descDef.methods.firstOrNull {
+            it.name == "L" && it.returnType == "V" && it.parameterTypes == listOf("LX/4Wh;")
+        }
+        if (bindDescMethod != null) {
+            bindDescMethod.clearTryBlocks()
+            bindDescMethod.ensureRegisterCount(2)
+            val count = bindDescMethod.implementation!!.instructions.count()
+            bindDescMethod.removeInstructions(0, count)
+            bindDescMethod.addInstructions(
+                0,
+                """
+                    const/16 v0, 0x8
+                    invoke-virtual {p0, v0}, Landroid/view/View;->setVisibility(I)V
+                    return-void
+                """.trimIndent(),
+            )
+            println("[Declutter Video Interface] Hooked LX/435;.L(LX/4Wh;) -> forced GONE.")
+            patched++
+        }
+
+        // 5b. In LX/Eqk; (Feed cell presenter), force LILZZ (LX/435;) to GONE
+        val feedCellClass = "LX/Eqk;"
+        val feedCellDef = mutableClassDefBy(feedCellClass)
+
+        val cellInit = feedCellDef.methods.first { it.name == "<init>" }
+        val cellInitInstructions = cellInit.implementation!!.instructions
+        val cellReturnIndex = cellInitInstructions.indexOfLast { it.opcode == Opcode.RETURN_VOID }
+        if (cellReturnIndex >= 0) {
+            cellInit.addInstructions(
+                cellReturnIndex,
+                """
+                    iget-object v0, p0, LX/Eqk;->LILZZ:LX/435;
+                    if-eqz v0, :cond_cell_desc_skip
+                    const/16 v1, 0x8
+                    invoke-virtual {v0, v1}, Landroid/view/View;->setVisibility(I)V
+                    :cond_cell_desc_skip
+                """.trimIndent(),
+            )
+            println("[Declutter Video Interface] Hooked LX/Eqk;.<init> -> LILZZ forced GONE.")
+            patched++
+        }
+
+        val cellBind = feedCellDef.methods.firstOrNull {
+            it.name == "LIILLZLL" && it.returnType == "V" && it.parameterTypes.size == 2
+        }
+        if (cellBind != null) {
+            val bindInstructions = cellBind.implementation!!.instructions
+            val bindReturnIndex = bindInstructions.indexOfLast { it.opcode == Opcode.RETURN_VOID }
+            if (bindReturnIndex >= 0) {
+                cellBind.addInstructions(
+                    bindReturnIndex,
+                    """
+                        move-object/from16 v0, p0
+                        iget-object v1, v0, LX/Eqk;->LILZZ:LX/435;
+                        if-eqz v1, :cond_bind_desc_skip
+                        const/16 v2, 0x8
+                        invoke-virtual {v1, v2}, Landroid/view/View;->setVisibility(I)V
+                        :cond_bind_desc_skip
+                    """.trimIndent(),
+                )
+                println("[Declutter Video Interface] Hooked LX/Eqk;.LIILLZLL() -> LILZZ forced GONE.")
+                patched++
+            }
+        }
+    }
+
+    // 6. Disable Story Feed Indicators
+    if (disableStoryRings == true) {
+        Fingerprint(
+            definingClass = "Lcom/ss/android/ugc/aweme/profile/model/User;",
+            name = "getStoryStatus",
+            returnType = "I",
+        ).method.replaceWithReturnInt(0)
+        println("[Declutter Video Interface] Hooked User.getStoryStatus() -> 0.")
+        patched++
+    }
+
+    // 7. Disable Double Tap to Like
+    if (disableDoubleTapLike == true) {
+        val diggPresenterFp = Fingerprint(
+            returnType = "Ljava/lang/String;",
+            parameters = emptyList(),
+            strings = listOf("right_container_digg"),
+        )
+        val diggClass = diggPresenterFp.method.definingClass
+        val diggDef = mutableClassDefBy(diggClass)
+        var standardHooks = 0
+        for (method in diggDef.methods) {
+            if (method.returnType == "V" &&
+                method.parameterTypes == listOf("Ljava/lang/Float;", "Ljava/lang/Float;")
+            ) {
+                method.replaceWithReturnVoid()
+                println("[Declutter Video Interface] Hooked ${diggDef.type}.${method.name}(Float, Float) -> Standard feed double tap neutralized.")
+                standardHooks++
+                patched++
+            }
+        }
+        if (standardHooks == 0) {
+            error("[Declutter Video Interface] Failed to find (Float, Float)V methods in standard feed presenter ${diggDef.type}")
+        }
+
+        val miniLiteDiggFp = Fingerprint(
+            returnType = "V",
+            parameters = listOf("Ljava/lang/Float;", "Ljava/lang/Float;"),
+            strings = listOf("click_double_like"),
+        )
+        miniLiteDiggFp.method.replaceWithReturnVoid()
+        println("[Declutter Video Interface] Hooked ${miniLiteDiggFp.method.definingClass}.${miniLiteDiggFp.method.name}(Float, Float) -> MiniLite double tap like neutralized.")
+        patched++
     }
 
     println("[Declutter Video Interface] Successfully applied $patched hook(s) across selected feed interface options on TikTok Lite.")
