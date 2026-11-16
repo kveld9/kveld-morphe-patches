@@ -4,6 +4,7 @@ import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstructions
+import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.stringOption
@@ -16,11 +17,14 @@ import app.morphe.patches.shared.replaceWithReturnInt
 import app.morphe.patches.shared.replaceWithReturnIntegerObject
 import app.morphe.patches.shared.replaceWithReturnNull
 import app.morphe.patches.shared.replaceWithReturnVoid
+import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
+import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 val feedInterfaceDeclutterPatch = bytecodePatch(
@@ -28,7 +32,7 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
     description = "Cleans up the buttons and overlays on top of videos.",
     default = false,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_LITE)
     dependsOn(sharedExtensionPatch)
 
     val hideRepostBadge by booleanOption(
@@ -68,6 +72,14 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
         default = true,
         title = "Hide Playlist Bottom Bar",
         description = "Hides the playlist indicator bar displayed above the bottom navigation when a video is part of a playlist.",
+        required = false,
+    )
+
+    val hideCommentButton by booleanOption(
+        key = "hideCommentButton",
+        default = false,
+        title = "Hide Comment Button",
+        description = "Hides the comment button on the right-side action rail of feed videos.",
         required = false,
     )
 
@@ -153,11 +165,14 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
     )
 
     execute {
+        val isLite = packageMetadata.packageName == Constants.TIKTOK_LITE_PACKAGE_NAME
+
         if (hideRepostBadge != true &&
             hideVideoDescriptions != true &&
             hideAvatarFollowButton != true &&
             disableStoryRings != true &&
             hidePlaylistBar != true &&
+            hideCommentButton != true &&
             hideSaveButton != true &&
             hideMusicCover != true &&
             hideFullscreenButton != true &&
@@ -170,6 +185,19 @@ val feedInterfaceDeclutterPatch = bytecodePatch(
             (longPressVideo == null || longPressVideo == "nothing")
         ) {
             println("[Declutter Video Interface] Skipped: All declutter options are disabled.")
+            return@execute
+        }
+
+        if (isLite) {
+            executeLite(
+                hideCommentButton = hideCommentButton,
+                hideSaveButton = hideSaveButton,
+                hideMusicCover = hideMusicCover,
+                hideAvatarFollowButton = hideAvatarFollowButton,
+                hideVideoDescriptions = hideVideoDescriptions,
+                disableStoryRings = disableStoryRings,
+                disableDoubleTapLike = disableDoubleTapLike,
+            )
             return@execute
         }
 
@@ -1041,5 +1069,144 @@ private fun extractInstructionRegisters(instruction: Instruction): List<Int>? {
         is RegisterRangeInstruction -> (instruction.startRegister until instruction.startRegister + instruction.registerCount).toList()
         else -> null
     }
+}
+
+private fun BytecodePatchContext.executeLite(
+    hideCommentButton: Boolean?,
+    hideSaveButton: Boolean?,
+    hideMusicCover: Boolean?,
+    hideAvatarFollowButton: Boolean?,
+    hideVideoDescriptions: Boolean?,
+    disableStoryRings: Boolean?,
+    disableDoubleTapLike: Boolean?,
+) {
+    var patched = 0
+
+    // 1. Hide Comment Button
+    if (hideCommentButton == true) {
+        val commentPresenterFp = Fingerprint(
+            returnType = "Ljava/lang/String;",
+            parameters = emptyList(),
+            strings = listOf("right_container_comment"),
+        )
+        val commentClass = commentPresenterFp.method.definingClass
+        val commentDef = mutableClassDefBy(commentClass)
+
+        // Find the container View field populated from findViewById(0x7f0900d7 / 2131296471)
+        val initMethod = commentDef.methods.first { it.name == "<init>" }
+        val initInstructions = initMethod.implementation!!.instructions
+        var containerFieldName: String? = null
+        val constIndex = initInstructions.indexOfFirst { ins ->
+            ins is NarrowLiteralInstruction && ins.narrowLiteral == 2131296471
+        }
+        if (constIndex >= 0) {
+            for (i in constIndex + 1 until (constIndex + 10).coerceAtMost(initInstructions.size)) {
+                val ins = initInstructions[i]
+                if (ins is ReferenceInstruction && ins.reference is FieldReference) {
+                    val fieldRef = ins.reference as FieldReference
+                    if (fieldRef.definingClass == commentDef.type && fieldRef.type == "Landroid/view/View;") {
+                        containerFieldName = fieldRef.name
+                        break
+                    }
+                }
+            }
+        }
+        if (containerFieldName == null) {
+            error("[Declutter Video Interface] Failed to resolve comment container View field in ${commentDef.type}")
+        }
+
+        // Inject setVisibility(GONE) at the end of <init>
+        val returnIndex = initInstructions.indexOfLast { it.opcode == Opcode.RETURN_VOID }
+        if (returnIndex < 0) {
+            error("[Declutter Video Interface] Failed to find RETURN_VOID in ${commentDef.type}.<init>")
+        }
+        initMethod.addInstructions(
+            returnIndex,
+            """
+                iget-object v0, p0, ${commentDef.type}->$containerFieldName:Landroid/view/View;
+                if-eqz v0, :cond_comment_init_skip
+                const/16 v1, 0x8
+                invoke-virtual {v0, v1}, Landroid/view/View;->setVisibility(I)V
+                :cond_comment_init_skip
+            """.trimIndent(),
+        )
+        println("[Declutter Video Interface] Hooked ${commentDef.type}.<init> -> Container View default set to GONE.")
+        patched++
+
+        // Override bind method to keep View GONE and clear click/touch listeners
+        val bindMethod = commentDef.methods.firstOrNull {
+            it.returnType == "V" && it.parameterTypes == listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;")
+        } ?: error("[Declutter Video Interface] Failed to find bind method in ${commentDef.type}")
+
+        bindMethod.clearTryBlocks()
+        bindMethod.ensureRegisterCount(4)
+        val bindCount = bindMethod.implementation!!.instructions.count()
+        bindMethod.removeInstructions(0, bindCount)
+        bindMethod.addInstructions(
+            0,
+            """
+                iget-object v0, p0, ${commentDef.type}->$containerFieldName:Landroid/view/View;
+                if-eqz v0, :cond_comment_bind_skip
+                const/16 v1, 0x8
+                invoke-virtual {v0, v1}, Landroid/view/View;->setVisibility(I)V
+                const/4 v1, 0x0
+                invoke-virtual {v0, v1}, Landroid/view/View;->setOnClickListener(Landroid/view/View${'$'}OnClickListener;)V
+                invoke-virtual {v0, v1}, Landroid/view/View;->setOnTouchListener(Landroid/view/View${'$'}OnTouchListener;)V
+                :cond_comment_bind_skip
+                return-void
+            """.trimIndent(),
+        )
+        println("[Declutter Video Interface] Hooked ${commentDef.type}.${bindMethod.name}(Aweme) -> Bind replaced with GONE + null click/touch listeners.")
+        patched++
+
+        // Hook Lite MiniLite feed mode comment presenter (LX/Bwc;)
+        val miniLiteCommentFp = Fingerprint(
+            returnType = "Landroid/view/ViewGroup;",
+            parameters = listOf("Landroid/view/View;"),
+            custom = { method, _ ->
+                method.implementation?.instructions?.any { ins ->
+                    ins is NarrowLiteralInstruction && ins.narrowLiteral == 2131296471
+                } == true
+            },
+        )
+        val miniLiteDef = mutableClassDefBy(miniLiteCommentFp.method.definingClass)
+        val miniLiteMethod = miniLiteCommentFp.method
+
+        val miniLiteCount = miniLiteMethod.implementation!!.instructions.count()
+        miniLiteMethod.clearTryBlocks()
+        miniLiteMethod.ensureRegisterCount(4)
+        miniLiteMethod.removeInstructions(0, miniLiteCount)
+        miniLiteMethod.addInstructions(
+            0,
+            """
+                const v0, 2131296471
+                invoke-virtual {p1, v0}, Landroid/view/View;->findViewById(I)Landroid/view/View;
+                move-result-object v0
+                check-cast v0, Landroid/view/ViewGroup;
+                if-eqz v0, :cond_skip
+                const/16 v1, 0x8
+                invoke-virtual {v0, v1}, Landroid/view/View;->setVisibility(I)V
+                :cond_skip
+                return-object v0
+            """.trimIndent(),
+        )
+        println("[Declutter Video Interface] Hooked ${miniLiteDef.type}.${miniLiteMethod.name}(View)ViewGroup -> ViewGroup set to GONE before return.")
+        patched++
+
+        var miniLiteHelpersHooked = 0
+        for (m in miniLiteDef.methods) {
+            if (m.name != "<init>" && m.returnType == "V" && m.parameterTypes.isEmpty()) {
+                m.replaceWithReturnVoid()
+                miniLiteHelpersHooked++
+            }
+        }
+        if (miniLiteHelpersHooked == 0) {
+            error("[Declutter Video Interface] Failed to find ()V helper methods in ${miniLiteDef.type}")
+        }
+        println("[Declutter Video Interface] Hooked $miniLiteHelpersHooked helper method(s) in ${miniLiteDef.type} -> return-void.")
+        patched += miniLiteHelpersHooked
+    }
+
+    println("[Declutter Video Interface] Successfully applied $patched hook(s) across selected feed interface options on TikTok Lite.")
 }
 
