@@ -1,3 +1,26 @@
+## [2.12.0-experimental.1](https://github.com/kveld9/kveld-morphe-patches/compare/v2.11.0...v2.12.0-experimental.1) (2026-11-16)
+
+### Bug Fixes
+
+* **gboard:** stop offering the 32-bit build as an update ([6a2d9f4](https://github.com/kveld9/kveld-morphe-patches/commit/6a2d9f41017ae2799332ba1afa77583a99aca61a))
+* **tiktok-lite:** refine declutter hooks to pass ART dex2oat verification ([a4c277b](https://github.com/kveld9/kveld-morphe-patches/commit/a4c277be05a9270ae6f1c86ee6f9500e3228d937))
+* **universal:** stop stripping the wake lock permission that crashed apps ([e13f396](https://github.com/kveld9/kveld-morphe-patches/commit/e13f39695d7d07708be2efb2c6a9d140c8b7e836))
+
+### New Features
+
+* **tiktok-lite:** add Declutter Video Interface with hideCommentButton ([ac3ff08](https://github.com/kveld9/kveld-morphe-patches/commit/ac3ff08105a843845e40c5cab1997a5961ffcebf))
+* **tiktok-lite:** add descriptions, story rings, and double tap like to Declutter Video Interface ([fc4a933](https://github.com/kveld9/kveld-morphe-patches/commit/fc4a9332536f259b152899f43b1995a8053c4d42))
+* **tiktok-lite:** add Disable Double Tap to Like patch (closes [#251](https://github.com/kveld9/kveld-morphe-patches/issues/251)) ([cf141de](https://github.com/kveld9/kveld-morphe-patches/commit/cf141de22d6f6d8fb2827fd0ec746cf44c78fc51))
+* **tiktok-lite:** add Hide Comment Button patch (closes [#250](https://github.com/kveld9/kveld-morphe-patches/issues/250)) ([aef0fe0](https://github.com/kveld9/kveld-morphe-patches/commit/aef0fe0ee25afbeaa1735f166be6aa897a308dce))
+* **tiktok-lite:** add hideAvatarFollowButton to Declutter Video Interface ([efec462](https://github.com/kveld9/kveld-morphe-patches/commit/efec462358205635e2e08e23307d65116d1641f8))
+* **tiktok-lite:** add hideMusicCover to Declutter Video Interface ([858f60c](https://github.com/kveld9/kveld-morphe-patches/commit/858f60c9fc9735faef2fa356243fccdb81f955d5))
+* **tiktok-lite:** add hideSaveButton to Declutter Video Interface ([41a6c77](https://github.com/kveld9/kveld-morphe-patches/commit/41a6c774ae73f4e43dd9f41b499e89f4cbf4eb65))
+* **tiktok-lite:** complete video descriptions declutter hook and add setRegisterCount ([25e13ba](https://github.com/kveld9/kveld-morphe-patches/commit/25e13ba3cafd885a894751f9eaf5bb2471607972))
+* **tiktok:** port navigation declutter patch to tiktok lite and add friends/inbox tabs ([44e5cbd](https://github.com/kveld9/kveld-morphe-patches/commit/44e5cbd37ea5b6f9cedd79a9a78ed34932f2ee90))
+* **universal:** block ad network components in Block Trackers ([cc9f6e7](https://github.com/kveld9/kveld-morphe-patches/commit/cc9f6e7df16dc75f1dd7f0a32cb4056d7089d8ca)), closes [#217](https://github.com/kveld9/kveld-morphe-patches/issues/217)
+* **universal:** cover Backtrace, AltBeacon and ad measurement SDKs ([cdda40b](https://github.com/kveld9/kveld-morphe-patches/commit/cdda40b37dbad8c35f04f4eb73a4812ee1ab9c04)), closes [#217](https://github.com/kveld9/kveld-morphe-patches/issues/217) [#217](https://github.com/kveld9/kveld-morphe-patches/issues/217)
+* **universal:** keep apps from holding wake locks ([6dbc54a](https://github.com/kveld9/kveld-morphe-patches/commit/6dbc54a2dc40c98cf3e7ddd4ea467867a6422cfc))
+
 ## [2.11.0](https://github.com/kveld9/kveld-morphe-patches/compare/v2.10.1...v2.11.0) (2026-11-16)
 
 ### Bug Fixes

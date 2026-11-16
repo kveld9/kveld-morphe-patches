@@ -135,8 +135,8 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 | **Custom Share Sheet** | Lets you hide share menu entries you do not use. | • Hide WhatsApp<br>• Hide Instagram<br>• Hide Facebook & Messenger<br>• Hide Telegram<br>• Hide X / Twitter<br>• Hide Snapchat<br>• Hide Reddit & Discord<br>• Hide SMS & Messages<br>• Hide Secondary Networks<br>• Hide 'Repost' Button<br>• Hide QR Code<br>• Hide 'Copy Link'<br>• Hide System Share ('More')<br>• Hide Friends / Direct Messages Row<br>• Hide Quick Emojis<br>• Hide 'Send to New Group'<br>• Hide 'Promote' Action<br>• Hide 'Why This Video'<br>• Hide 'Create Group' Action<br>• Hide 'Add to Story'<br>• Hide 'Create Sticker'<br>• Hide 'Duet' Action<br>• Hide 'Stitch' Action<br>• Hide 'Use This Effect'<br>• Hide 'Picture-in-Picture' (PiP)<br>• Hide 'Clear Display'<br>• Hide 'Background Audio'<br>• Hide Live Wallpaper & GIF<br>• Hide 'Not Interested'<br>• Hide 'Report' |
 | **Customize Search** | Customizes search suggestions, live recommendations, and autoplay. | • Hide Suggested Searches<br>• Hide Popular Lives<br>• Disable Search Autoplay<br>• Non-Personalized Search<br>• Enable Live Search |
 | **Declutter Direct Messages** | Cleans up chat and DM screens by hiding extra buttons. | • Hide Chat List Camera Button<br>• Hide Header Call Button<br>• Hide Message Forward Button<br>• Hide Reaction and Streak Bar<br>• Hide Input Bar Camera Button<br>• Hide Gallery Button<br>• Hide Emoji/Stickers Button<br>• Hide Voice Recording Button<br>• Hide Try Effect Button<br>• Hide Sticker Reply Suggestions |
-| **Declutter Navigation Bar** | Removes extra tabs and buttons from navigation bars. | • Hide Shop Navigation Tab<br>• Hide Nearby Feed Tab<br>• Hide Community Tab<br>• Hide Top-Left LIVE Button<br>• Hide Feed Search Bar<br>• Hide Create / Publish Button<br>• Hide Friends Tab Avatar Preview<br>• Hide Inbox Notification Badge |
-| **Declutter Video Interface** | Cleans up the buttons and overlays on top of videos. | • Hide Repost Badge<br>• Hide Video Descriptions<br>• Hide Profile Photo Follow Button<br>• Disable Story Feed Indicators<br>• Hide Playlist Bottom Bar<br>• Hide Save Button<br>• Hide Music Cover Disc<br>• Hide Full Screen Button<br>• Hide Feedback Buttons<br>• Disable Double Tap to Like<br>• Disable Profile Photo LIVE Status<br>• Disable Long-Press Like (Repost)<br>• Disable Long-Press Share (Quick DMs)<br>• Disable Long-Press Comment (Quick Emojis)<br>• Long Press Video Action |
+| **Declutter Navigation Bar** | Removes extra tabs and buttons from navigation bars. | • Hide Shop Navigation Tab<br>• Hide Nearby Feed Tab<br>• Hide Community Tab<br>• Hide Top-Left LIVE Button<br>• Hide Feed Search Bar<br>• Hide Create / Publish Button<br>• Hide Friends Tab Avatar Preview<br>• Hide Inbox Notification Badge<br>• Hide Friends Tab<br>• Hide Inbox Tab<br>• Hide STEM Feed Tab |
+| **Declutter Video Interface** | Cleans up the buttons and overlays on top of videos. | • Hide Repost Badge<br>• Hide Video Descriptions<br>• Hide Profile Photo Follow Button<br>• Disable Story Feed Indicators<br>• Hide Playlist Bottom Bar<br>• Hide Comment Button<br>• Hide Save Button<br>• Hide Music Cover Disc<br>• Hide Full Screen Button<br>• Hide Feedback Buttons<br>• Disable Double Tap to Like<br>• Disable Profile Photo LIVE Status<br>• Disable Long-Press Like (Repost)<br>• Disable Long-Press Share (Quick DMs)<br>• Disable Long-Press Comment (Quick Emojis)<br>• Long Press Video Action |
 | **Device Privacy Guard** | Blocks access to your contacts, location, apps and sensors. |  |
 | **Disable History Recording** | Prevents TikTok from recording your watch history and search queries. | • Disable Watch History<br>• Disable Search History |
 | **Disable Live Gift Effects** | Disables 3D gift animations in live streams to prevent frame drops. |  |
@@ -178,7 +178,7 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 </details>
 
 <details>
-<summary>TikTok Lite&nbsp;&nbsp;•&nbsp;&nbsp;<b>20 patches</b></summary>
+<summary>TikTok Lite&nbsp;&nbsp;•&nbsp;&nbsp;<b>22 patches</b></summary>
 <br>
 
 **Supported versions:**
@@ -195,6 +195,8 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 | **Block Trackers (Setup)** | Removes tracking permissions and disables telemetry components. |  |
 | **Bypass Mandatory Login** | Lets you browse videos and feeds without creating an account or logging in. |  |
 | **Clean Share Links** | Removes tracking parameters from shared links. | • Custom Share Host |
+| **Declutter Navigation Bar** | Removes extra tabs and buttons from navigation bars. | • Hide Shop Navigation Tab<br>• Hide Nearby Feed Tab<br>• Hide Community Tab<br>• Hide Top-Left LIVE Button<br>• Hide Feed Search Bar<br>• Hide Create / Publish Button<br>• Hide Friends Tab Avatar Preview<br>• Hide Inbox Notification Badge<br>• Hide Friends Tab<br>• Hide Inbox Tab<br>• Hide STEM Feed Tab |
+| **Declutter Video Interface** | Cleans up the buttons and overlays on top of videos. | • Hide Repost Badge<br>• Hide Video Descriptions<br>• Hide Profile Photo Follow Button<br>• Disable Story Feed Indicators<br>• Hide Playlist Bottom Bar<br>• Hide Comment Button<br>• Hide Save Button<br>• Hide Music Cover Disc<br>• Hide Full Screen Button<br>• Hide Feedback Buttons<br>• Disable Double Tap to Like<br>• Disable Profile Photo LIVE Status<br>• Disable Long-Press Like (Repost)<br>• Disable Long-Press Share (Quick DMs)<br>• Disable Long-Press Comment (Quick Emojis)<br>• Long Press Video Action |
 | **Disable Push Notifications** | Stops background push notifications. |  |
 | **Disable QUIC** | Loads videos, uploads, and live connections over standard HTTPS instead of QUIC. |  |
 | **Feed Ad Blocker** | Removes commercial advertisements, brand promotions, and promotional audio from the For You, Following, and Search feeds. |  |
@@ -218,9 +220,9 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 
 **Supported versions:**
 
-| 18.6.3.1002251336-lite_release-armeabi-v7a | 18.6.3.1002251336-lite_release-arm64-v8a |
-| :---: | :---: |
-| Download 18.6.3.1002251336-lite_release-armeabi-v7a (APK nodpi) from APKMirror | Download com.google.android.inputmethod.latin v18.6.3.1002251336-lite_release-arm64-v8a (APK) arm64-v8a nodpi versionCode 176071770 (APK) from APKMirror |
+| 18.6.3.1002251336-lite_release-arm64-v8a |
+| :---: |
+| Download com.google.android.inputmethod.latin v18.6.3.1002251336-lite_release-arm64-v8a (APK) arm64-v8a nodpi versionCode 176071770 (APK) from APKMirror |
 
 | Patch | Description | Options |
 |----------|----------------|-----------|
@@ -270,14 +272,14 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 </details>
 
 <details>
-<summary>Universal&nbsp;&nbsp;•&nbsp;&nbsp;<b>28 patches</b></summary>
+<summary>Universal&nbsp;&nbsp;•&nbsp;&nbsp;<b>29 patches</b></summary>
 <br>
 
 | Patch | Description | Options |
 |----------|----------------|-----------|
 | **Allow Screenshots (Universal)** | Removes screenshot blocking and capture detection. |  |
-| **Block Trackers (Universal)** | Removes ad IDs, disables tracking components, and adds opt-out flags. | • Ad permissions<br>• Tracking providers<br>• Tracking services<br>• Tracking receivers<br>• Opt-out flags<br>• Firebase init (may break apps)<br>• Push services (breaks push!)<br>• Google Analytics<br>• Meta analytics<br>• Crash uploaders<br>• Device ID (may break login!)<br>• ML Kit vision (breaks scanner!)<br>• Remote config (may break app!)<br>• Crashlytics (may break app!)<br>• Ad auto-start |
-| **Block Tracking SDKs** | Disables analytics, crash and ad SDKs inside the app. | • Performance monitors<br>• Crash reporters<br>• Analytics<br>• Ad attribution<br>• Old Google Analytics<br>• Push SDKs (breaks push!)<br>• Screen recorders<br>• Location trackers<br>• Bandwidth-sharing SDKs<br>• SDKs to keep |
+| **Block Trackers (Universal)** | Removes ad IDs, disables tracking components, and adds opt-out flags. | • Ad permissions<br>• Tracking providers<br>• Tracking services<br>• Tracking receivers<br>• Ad network components<br>• Opt-out flags<br>• Firebase init (may break apps)<br>• Push services (breaks push!)<br>• Google Analytics<br>• Meta analytics<br>• Crash uploaders<br>• Device ID (may break login!)<br>• ML Kit vision (breaks scanner!)<br>• Remote config (may break app!)<br>• Crashlytics (may break app!)<br>• Ad auto-start |
+| **Block Tracking SDKs** | Disables analytics, crash and ad SDKs inside the app. | • Performance monitors<br>• Crash reporters<br>• Analytics<br>• Ad attribution<br>• Old Google Analytics<br>• Push SDKs (breaks push!)<br>• Screen recorders<br>• Location trackers<br>• Ad measurement SDKs<br>• Bandwidth-sharing SDKs<br>• SDKs to keep |
 | **Block Tracking Servers (Universal)** | Rewrites tracking addresses to nowhere using your blocklist. | • Blocklist file<br>• Replace with<br>• Include subdomains |
 | **Bypass Play License** | Stops apps that use the legacy Play licensing client library from blocking a re-signed install. Cannot affect server-side Play Integrity or subscription entitlements. |  |
 | **Clean App Packaging** | Removes build leftovers and duplicate files. |  |
@@ -301,8 +303,9 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 | **Silence System Logs** | Stops apps from writing debug and diagnostic messages to the system log. | • Log level |
 | **Spoof Reinstall IDs** | Prevents apps from linking reinstalls to your device by resetting app and install IDs. | • App set ID<br>• Install ID<br>• Scope to single app |
 | **Spoof signature** | Presents the original release signature so modified-app checks pass. |  |
-| **Stop Background Sync (Universal)** | Stops background sync schedulers and boot wakeups. | • Strip Boot Permission<br>• Disable Boot Receivers<br>• Disable Background Schedulers<br>• Strip Wake Lock Permission |
+| **Stop Background Sync (Universal)** | Stops background sync schedulers and boot wakeups. | • Strip Boot Permission<br>• Disable Boot Receivers<br>• Disable Background Schedulers |
 | **Strip Sensitive Permissions (Universal)** | Removes sensitive privacy and hardware permissions you select. | • Notifications<br>• Camera<br>• Microphone<br>• Photos & files<br>• Location<br>• Contacts<br>• Calendar<br>• Nearby devices<br>• Body sensors<br>• Installed apps<br>• Phone<br>• SMS<br>• Display over other apps<br>• Install apps<br>• Usage access<br>• Exact alarms<br>• Financial SMS<br>• Battery optimization |
+| **Wake Locks Off (Universal)** | Stops apps from keeping the phone awake with wake locks. |  |
 
 </details>
 
@@ -413,9 +416,6 @@ Additionally, ensure all Gradle checks pass cleanly:
       <td align="center" valign="top" width="20%"><a href="https://github.com/nadr21a21"><img src="https://github.com/nadr21a21.png" alt="" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@nadr21a21</b></sub></a></td>
       <td align="center" valign="top" width="20%"><a href="https://github.com/polosugars-sketch"><img src="https://github.com/polosugars-sketch.png" alt="" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@polosugars-sketch</b></sub></a></td>
       <td align="center" valign="top" width="20%"><a href="https://github.com/AlexanderQueen"><img src="https://github.com/AlexanderQueen.png" alt="" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@AlexanderQueen</b></sub></a></td>
-    </tr>
-    <tr>
-      <td align="center" valign="top" width="20%"><a href="https://github.com/Spirito90"><img src="https://github.com/Spirito90.png" alt="" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@Spirito90</b></sub></a></td>
     </tr>
   </tbody>
 </table>
