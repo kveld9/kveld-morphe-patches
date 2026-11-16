@@ -28,6 +28,7 @@ from pathlib import Path
 
 START_MARKER = "<!-- CONTRIBUTORS_START -->"
 END_MARKER = "<!-- CONTRIBUTORS_END -->"
+COLUMNS_PER_ROW = 5
 
 
 def get_default_repo() -> str:
@@ -81,9 +82,14 @@ def save_contributors_data(path: Path, data: dict) -> None:
 def format_avatar(username: str) -> str:
     return (
         f'<a href="https://github.com/{username}">'
-        f'<img src="https://github.com/{username}.png" alt="@{username}" width="48" height="48" style="border-radius: 50%;" />'
-        f"<br><b>@{username}</b></a>"
+        f'<img src="https://github.com/{username}.png" alt="@{username}" width="64" height="64" style="border-radius: 50%;" />'
+        f"<br /><sub><b>@{username}</b></sub></a>"
     )
+
+
+def format_contributor_cell(username: str, col_width: str = "20%") -> str:
+    avatar = format_avatar(username)
+    return f'<td align="center" valign="top" width="{col_width}">{avatar}</td>'
 
 
 def format_contribution_items(items: list, repo: str) -> str:
@@ -116,14 +122,20 @@ def format_contributor_row(entry: dict, repo: str) -> str:
     return f"| {avatar} | {text} |"
 
 
-def generate_markdown_table(data: dict, repo: str) -> str:
-    rows = [
-        "| Contributor | Role & Contributions |",
-        "| :--- | :--- |",
-    ]
-    for c in data.get("contributors", []):
-        rows.append(format_contributor_row(c, repo))
-    return "\n".join(rows)
+def generate_markdown_table(data: dict, repo: str = "", cols: int = COLUMNS_PER_ROW) -> str:
+    contributors = data.get("contributors", [])
+    if not contributors:
+        return ""
+
+    width_pct = f"{100 // cols}%"
+    cells = [format_contributor_cell(c["username"], width_pct) for c in contributors]
+
+    rows = []
+    for i in range(0, len(cells), cols):
+        row_cells = cells[i : i + cols]
+        rows.append("    <tr>\n      " + "\n      ".join(row_cells) + "\n    </tr>")
+
+    return "<table>\n  <tbody>\n" + "\n".join(rows) + "\n  </tbody>\n</table>"
 
 
 def inject_table_into_readme(readme_path: Path, table_content: str) -> bool:
@@ -145,7 +157,7 @@ def inject_table_into_readme(readme_path: Path, table_content: str) -> bool:
     else:
         # Fallback: locate ## Credits & Contributors and wrap existing table
         credits_pattern = re.compile(
-            r"(##\s*[^\n]*Credits & Contributors[^\n]*\n\n)(\| Contributor \| Role & Contributions \|.*?\n\n)",
+            r"(##\s*[^\n]*Credits & Contributors[^\n]*\n(?:\!\[.*?\]\([^\n]+\)\n)?\n)(?:\| Contributor \| Role & Contributions \|.*?\n\n|<table>.*?</table>\n\n)?",
             re.DOTALL,
         )
         if not credits_pattern.search(content):

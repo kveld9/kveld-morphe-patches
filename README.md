@@ -391,23 +391,31 @@ Additionally, ensure all Gradle checks pass cleanly:
 ![](images/divider-purple.svg)
 
 <!-- CONTRIBUTORS_START -->
-| Contributor | Role & Contributions |
-| :--- | :--- |
-| <a href="https://github.com/Lxchoooo"><img src="https://github.com/Lxchoooo.png" alt="@Lxchoooo" width="48" height="48" style="border-radius: 50%;" /><br><b>@Lxchoooo</b></a> | Testing: Daily patch testing, runtime APK validation, and bug diagnostics. |
-| <a href="https://github.com/Diego694"><img src="https://github.com/Diego694.png" alt="@Diego694" width="48" height="48" style="border-radius: 50%;" /><br><b>@Diego694</b></a> | Testing: Daily patch testing, runtime APK validation, and bug diagnostics. |
-| <a href="https://github.com/ll0r3nt3"><img src="https://github.com/ll0r3nt3.png" alt="@ll0r3nt3" width="48" height="48" style="border-radius: 50%;" /><br><b>@ll0r3nt3</b></a> | Feature request: Proposed DPI Resource Slimmer ([#16](https://github.com/kveld9/kveld-morphe-patches/issues/16)) and Remove Debug Info ([#198](https://github.com/kveld9/kveld-morphe-patches/issues/198)) feature requests. |
-| <a href="https://github.com/aidenking2102-dotcom"><img src="https://github.com/aidenking2102-dotcom.png" alt="@aidenking2102-dotcom" width="48" height="48" style="border-radius: 50%;" /><br><b>@aidenking2102-dotcom</b></a> | Feature request: Proposed TikTok Feed Ad Blocker ([#23](https://github.com/kveld9/kveld-morphe-patches/issues/23)), Playback Speed Setter ([#25](https://github.com/kveld9/kveld-morphe-patches/issues/25)), and Floating Ad Pendant / Sticker Blocker ([#33](https://github.com/kveld9/kveld-morphe-patches/issues/33)) feature requests. |
-| <a href="https://github.com/mparvezalam808"><img src="https://github.com/mparvezalam808.png" alt="@mparvezalam808" width="48" height="48" style="border-radius: 50%;" /><br><b>@mparvezalam808</b></a> | Feature request: Proposed TikTok Always show publish date, Copy comments without username, Fix Google login, and Show seekbar ([#35](https://github.com/kveld9/kveld-morphe-patches/issues/35)) and TikTok Custom offline videos limit ([#40](https://github.com/kveld9/kveld-morphe-patches/issues/40)) feature requests. |
-| <a href="https://github.com/raxelbyte"><img src="https://github.com/raxelbyte.png" alt="@raxelbyte" width="48" height="48" style="border-radius: 50%;" /><br><b>@raxelbyte</b></a> | Feature request: Proposed Gboard Lite Clipboard Enhancements feature request ([#17](https://github.com/kveld9/kveld-morphe-patches/issues/17)). |
-| <a href="https://github.com/rafipasya"><img src="https://github.com/rafipasya.png" alt="@rafipasya" width="48" height="48" style="border-radius: 50%;" /><br><b>@rafipasya</b></a> | Feature request: Proposed TikTok Auto-translate comments feature request ([#48](https://github.com/kveld9/kveld-morphe-patches/issues/48)). |
-| <a href="https://github.com/Fahry-a"><img src="https://github.com/Fahry-a.png" alt="@Fahry-a" width="48" height="48" style="border-radius: 50%;" /><br><b>@Fahry-a</b></a> | Feature request: Proposed Brave ARMv7a (32-bit) architecture support feature request ([#50](https://github.com/kveld9/kveld-morphe-patches/issues/50)). |
-| <a href="https://github.com/marcoodhb"><img src="https://github.com/marcoodhb.png" alt="@marcoodhb" width="48" height="48" style="border-radius: 50%;" /><br><b>@marcoodhb</b></a> | Feature request: Proposed TikTok Disable double tap to like feature request ([#55](https://github.com/kveld9/kveld-morphe-patches/issues/55)). |
-| <a href="https://github.com/miyqwx-dev"><img src="https://github.com/miyqwx-dev.png" alt="@miyqwx-dev" width="48" height="48" style="border-radius: 50%;" /><br><b>@miyqwx-dev</b></a> | Feature request: Proposed Gboard Lite Hide Incognito Icon toggle feature request. |
-| <a href="https://github.com/rdx011"><img src="https://github.com/rdx011.png" alt="@rdx011" width="48" height="48" style="border-radius: 50%;" /><br><b>@rdx011</b></a> | Feature request: Proposed Gboard Lite Decouple keyboard vibration from system touch feedback ([#69](https://github.com/kveld9/kveld-morphe-patches/issues/69)) and A Universal Patch to Disable Browser File Associations ([#93](https://github.com/kveld9/kveld-morphe-patches/issues/93)) feature requests. |
-| <a href="https://github.com/nightsper"><img src="https://github.com/nightsper.png" alt="@nightsper" width="48" height="48" style="border-radius: 50%;" /><br><b>@nightsper</b></a> | Feature request: Proposed Tab selection after deleting a tab in a tab group feature request ([#76](https://github.com/kveld9/kveld-morphe-patches/issues/76)). |
-| <a href="https://github.com/nadr21a21"><img src="https://github.com/nadr21a21.png" alt="@nadr21a21" width="48" height="48" style="border-radius: 50%;" /><br><b>@nadr21a21</b></a> | Feature request: Proposed Gboard lite Option to pause automatic deletion in clipboard feature request ([#61](https://github.com/kveld9/kveld-morphe-patches/issues/61)). |
-| <a href="https://github.com/polosugars-sketch"><img src="https://github.com/polosugars-sketch.png" alt="@polosugars-sketch" width="48" height="48" style="border-radius: 50%;" /><br><b>@polosugars-sketch</b></a> | Feature request: Proposed Include other monetization SDKs in the patches feature request ([#164](https://github.com/kveld9/kveld-morphe-patches/issues/164)). |
-| <a href="https://github.com/AlexanderQueen"><img src="https://github.com/AlexanderQueen.png" alt="@AlexanderQueen" width="48" height="48" style="border-radius: 50%;" /><br><b>@AlexanderQueen</b></a> | Feature request: Proposed a user-chosen New Tab Page background image ([#197](https://github.com/kveld9/kveld-morphe-patches/issues/197)). |
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="top" width="20%"><a href="https://github.com/Lxchoooo"><img src="https://github.com/Lxchoooo.png" alt="@Lxchoooo" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@Lxchoooo</b></sub></a></td>
+      <td align="center" valign="top" width="20%"><a href="https://github.com/Diego694"><img src="https://github.com/Diego694.png" alt="@Diego694" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@Diego694</b></sub></a></td>
+      <td align="center" valign="top" width="20%"><a href="https://github.com/ll0r3nt3"><img src="https://github.com/ll0r3nt3.png" alt="@ll0r3nt3" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@ll0r3nt3</b></sub></a></td>
+      <td align="center" valign="top" width="20%"><a href="https://github.com/aidenking2102-dotcom"><img src="https://github.com/aidenking2102-dotcom.png" alt="@aidenking2102-dotcom" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@aidenking2102-dotcom</b></sub></a></td>
+      <td align="center" valign="top" width="20%"><a href="https://github.com/mparvezalam808"><img src="https://github.com/mparvezalam808.png" alt="@mparvezalam808" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@mparvezalam808</b></sub></a></td>
+    </tr>
+    <tr>
+      <td align="center" valign="top" width="20%"><a href="https://github.com/raxelbyte"><img src="https://github.com/raxelbyte.png" alt="@raxelbyte" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@raxelbyte</b></sub></a></td>
+      <td align="center" valign="top" width="20%"><a href="https://github.com/rafipasya"><img src="https://github.com/rafipasya.png" alt="@rafipasya" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@rafipasya</b></sub></a></td>
+      <td align="center" valign="top" width="20%"><a href="https://github.com/Fahry-a"><img src="https://github.com/Fahry-a.png" alt="@Fahry-a" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@Fahry-a</b></sub></a></td>
+      <td align="center" valign="top" width="20%"><a href="https://github.com/marcoodhb"><img src="https://github.com/marcoodhb.png" alt="@marcoodhb" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@marcoodhb</b></sub></a></td>
+      <td align="center" valign="top" width="20%"><a href="https://github.com/miyqwx-dev"><img src="https://github.com/miyqwx-dev.png" alt="@miyqwx-dev" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@miyqwx-dev</b></sub></a></td>
+    </tr>
+    <tr>
+      <td align="center" valign="top" width="20%"><a href="https://github.com/rdx011"><img src="https://github.com/rdx011.png" alt="@rdx011" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@rdx011</b></sub></a></td>
+      <td align="center" valign="top" width="20%"><a href="https://github.com/nightsper"><img src="https://github.com/nightsper.png" alt="@nightsper" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@nightsper</b></sub></a></td>
+      <td align="center" valign="top" width="20%"><a href="https://github.com/nadr21a21"><img src="https://github.com/nadr21a21.png" alt="@nadr21a21" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@nadr21a21</b></sub></a></td>
+      <td align="center" valign="top" width="20%"><a href="https://github.com/polosugars-sketch"><img src="https://github.com/polosugars-sketch.png" alt="@polosugars-sketch" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@polosugars-sketch</b></sub></a></td>
+      <td align="center" valign="top" width="20%"><a href="https://github.com/AlexanderQueen"><img src="https://github.com/AlexanderQueen.png" alt="@AlexanderQueen" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@AlexanderQueen</b></sub></a></td>
+    </tr>
+  </tbody>
+</table>
 <!-- CONTRIBUTORS_END -->
 
 ---

@@ -96,6 +96,30 @@ class TestSyncContributorsInjection(unittest.TestCase):
             self.assertIn("| a | b |", content)
             self.assertNotIn("old", content)
 
+    def test_generate_table_creates_grid_with_avatars_and_usernames(self):
+        data = {
+            "contributors": [
+                {"username": "user1"},
+                {"username": "user2"},
+                {"username": "user3"},
+            ]
+        }
+        table = contributors.generate_markdown_table(data, cols=2)
+        self.assertIn("<table>", table)
+        self.assertIn("<tbody>", table)
+        self.assertIn("@user1", table)
+        self.assertIn("@user2", table)
+        self.assertIn("@user3", table)
+        self.assertIn("https://github.com/user1.png", table)
+        self.assertIn("border-radius: 50%;", table)
+        # With 3 items and 2 columns, there should be 2 <tr> rows
+        self.assertEqual(table.count("<tr>"), 2)
+        self.assertEqual(table.count("</tr>"), 2)
+        self.assertEqual(table.count("<td"), 3)
+
+    def test_generate_table_empty_data_returns_empty_string(self):
+        self.assertEqual(contributors.generate_markdown_table({"contributors": []}), "")
+
 
 if __name__ == "__main__":
     unittest.main()
