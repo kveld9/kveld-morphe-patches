@@ -117,7 +117,7 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
   - *How*: Neutralizes `(Float, Float)V` double-tap event handlers and heart animations in standard feed `DiggPresenter` (`right_container_digg`) and MiniLite feed like controller (`click_double_like`).
 - **Declutter Video Interface**:
   - *Objective*: Cleans up the buttons and overlays on top of videos.
-  - *How*: Hides selected action rail buttons and overlays (such as comment and save/favorite buttons) by setting container views to `GONE`, disabling click handlers, and clearing listeners across both standard feed presenters and MiniLite mode controllers.
+  - *How*: Hides selected action rail buttons and overlays (such as comment, save/favorite, and vinyl music cover buttons) by setting container views to `GONE`, disabling click handlers, neutralizing rotation animations, and clearing listeners across both standard feed presenters and MiniLite mode controllers.
 - **Remember Clear Display**:
   - *Objective*: Keeps clear-display mode active when scrolling to the next video.
   - *How*: Re-applies clear mode shortly after a video switch, so the action buttons and caption stay hidden until you leave clear mode yourself.

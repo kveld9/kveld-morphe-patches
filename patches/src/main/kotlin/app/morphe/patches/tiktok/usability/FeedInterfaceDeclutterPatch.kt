@@ -1313,6 +1313,90 @@ private fun BytecodePatchContext.executeLite(
         patched += miniLiteFavHelpersHooked
     }
 
+    // 3. Hide Music Cover Disc
+    if (hideMusicCover == true) {
+        val musicPresenterFp = Fingerprint(
+            returnType = "Ljava/lang/String;",
+            parameters = emptyList(),
+            strings = listOf("right_container_music_cover"),
+        )
+        val musicClass = musicPresenterFp.method.definingClass
+        val musicDef = mutableClassDefBy(musicClass)
+
+        // Resolve container View field name from LILLLZ()Landroid/view/View;
+        val lillzMethod = musicDef.methods.firstOrNull {
+            it.name == "LILLLZ" && it.returnType == "Landroid/view/View;" && it.parameterTypes.isEmpty()
+        } ?: error("[Declutter Video Interface] Failed to find LILLLZ() in ${musicDef.type}")
+        val containerFieldName = lillzMethod.implementation!!.instructions.firstNotNullOfOrNull { ins ->
+            ((ins as? ReferenceInstruction)?.reference as? FieldReference)?.name
+        } ?: error("[Declutter Video Interface] Failed to resolve music cover container field in ${musicDef.type}")
+
+        // 3a. Inject setVisibility(GONE) at the end of <init>
+        val initMethod = musicDef.methods.first { it.name == "<init>" }
+        val initInstructions = initMethod.implementation!!.instructions
+        val returnIndex = initInstructions.indexOfLast { it.opcode == Opcode.RETURN_VOID }
+        if (returnIndex < 0) {
+            error("[Declutter Video Interface] Failed to find RETURN_VOID in ${musicDef.type}.<init>")
+        }
+        initMethod.addInstructions(
+            returnIndex,
+            """
+                iget-object v0, p0, ${musicDef.type}->$containerFieldName:Landroid/view/View;
+                if-eqz v0, :cond_music_init_skip
+                const/16 v1, 0x8
+                invoke-virtual {v0, v1}, Landroid/view/View;->setVisibility(I)V
+                :cond_music_init_skip
+            """.trimIndent(),
+        )
+        println("[Declutter Video Interface] Hooked ${musicDef.type}.<init> -> Music cover container View default set to GONE.")
+        patched++
+
+        // 3b. Override bind method to keep View GONE and clear click listeners
+        val bindMethod = musicDef.methods.firstOrNull {
+            it.returnType == "V" && it.parameterTypes == listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;")
+        } ?: error("[Declutter Video Interface] Failed to find bind method in ${musicDef.type}")
+
+        bindMethod.clearTryBlocks()
+        bindMethod.ensureRegisterCount(4)
+        val bindCount = bindMethod.implementation!!.instructions.count()
+        bindMethod.removeInstructions(0, bindCount)
+        bindMethod.addInstructions(
+            0,
+            """
+                iget-object v0, p0, ${musicDef.type}->$containerFieldName:Landroid/view/View;
+                if-eqz v0, :cond_music_bind_skip
+                const/16 v1, 0x8
+                invoke-virtual {v0, v1}, Landroid/view/View;->setVisibility(I)V
+                const/4 v1, 0x0
+                invoke-virtual {v0, v1}, Landroid/view/View;->setOnClickListener(Landroid/view/View${'$'}OnClickListener;)V
+                :cond_music_bind_skip
+                return-void
+            """.trimIndent(),
+        )
+        println("[Declutter Video Interface] Hooked ${musicDef.type}.${bindMethod.name}(Aweme) -> Bind replaced with GONE + null click listener.")
+        patched++
+
+        // 3c. Neutralize onClick in standard feed music cover presenter
+        val onClickMethod = musicDef.methods.firstOrNull {
+            it.name == "onClick" && it.returnType == "V" && it.parameterTypes == listOf("Landroid/view/View;")
+        }
+        if (onClickMethod != null) {
+            onClickMethod.replaceWithReturnVoid()
+            println("[Declutter Video Interface] Hooked ${musicDef.type}.onClick(View) -> return-void.")
+            patched++
+        }
+
+        // 3d. Neutralize disc animation/rotation triggers
+        val animMethod = musicDef.methods.firstOrNull {
+            it.name == "LILLZLZ" && it.returnType == "V" && it.parameterTypes.isEmpty()
+        }
+        if (animMethod != null) {
+            animMethod.replaceWithReturnVoid()
+            println("[Declutter Video Interface] Hooked ${musicDef.type}.LILLZLZ() -> return-void (disc animation neutralized).")
+            patched++
+        }
+    }
+
     println("[Declutter Video Interface] Successfully applied $patched hook(s) across selected feed interface options on TikTok Lite.")
 }
 
