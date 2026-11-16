@@ -14,21 +14,13 @@ import app.morphe.patches.shared.sharedExtensionPatch
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
-val feedAdsContentFilterPatch = bytecodePatch(
-    name = "Feed Ads & Content Filter",
-    description = "Filters ads, shopping tags, live cards, and clutter from your feed.",
+val feedContentFilterPatch = bytecodePatch(
+    name = "Feed Content & Bloat Filter",
+    description = "Filters bloat, shopping tags, live cards, and clutter from your feed.",
     default = true,
 ) {
     compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_LITE)
     dependsOn(sharedExtensionPatch)
-
-    val filterAds by booleanOption(
-        key = "filterAds",
-        title = "Filter Feed Ads",
-        description = "Removes sponsored advertisements, brand promotions, and promotional audio from the For You, Following, and Search feeds.",
-        default = true,
-        required = false,
-    )
 
     val filterBloat by booleanOption(
         key = "filterBloat",
@@ -50,14 +42,6 @@ val feedAdsContentFilterPatch = bytecodePatch(
         key = "blockLiveStreams",
         title = "Block Live Streams",
         description = "Removes live stream broadcast cards and live recommendations from the For You and Following feeds.",
-        default = false,
-        required = false,
-    )
-
-    val hideAiContent by booleanOption(
-        key = "hideAiContent",
-        title = "Hide AI-Generated Content",
-        description = "Filters and skips videos tagged with native AI-generated metadata, C2PA content credentials, or creator AI disclosure tags across the For You, Following, and Friends feeds.",
         default = false,
         required = false,
     )
@@ -184,15 +168,13 @@ val feedAdsContentFilterPatch = bytecodePatch(
         val durationConfigured = (minDurationSec ?: 0) > 0 || (maxDurationSec ?: 0) > 0
         val contentFilterActive = viewsLikesConfigured || authorsConfigured || hashtagsConfigured || keywordsConfigured || regionsConfigured || ageConfigured || durationConfigured || hideStories == true || hidePhotoPosts == true
 
-        if (filterAds != true &&
-            filterBloat != true &&
+        if (filterBloat != true &&
             stripShopAnchors != true &&
             blockLiveStreams != true &&
-            hideAiContent != true &&
             hideSeenVideos != true &&
             !contentFilterActive
         ) {
-            println("[Feed Ads & Content Filter] Skipped: All content filter options are disabled.")
+            println("[Feed Content & Bloat Filter] Skipped: All content filter options are disabled.")
             return@execute
         }
 
@@ -245,10 +227,10 @@ val feedAdsContentFilterPatch = bytecodePatch(
                             sput-boolean v0, $hook->hidePhotoPosts:Z$authorInstructions$hashtagInstructions$keywordInstructions$regionInstructions
                         """.trimIndent(),
                     )
-                    println("[Feed Ads & Content Filter] Pushed Lite content filter configuration.")
+                    println("[Feed Content & Bloat Filter] Pushed Lite content filter configuration.")
                     patched++
                 } catch (e: Exception) {
-                    println("[Feed Ads & Content Filter] Lite content filter config note: ${e.message}")
+                    println("[Feed Content & Bloat Filter] Lite content filter config note: ${e.message}")
                 }
             }
 
@@ -265,9 +247,6 @@ val feedAdsContentFilterPatch = bytecodePatch(
                     ?.toList() ?: emptyList()
 
                 val callSnippets = mutableListOf<String>()
-                if (filterAds != false) {
-                    callSnippets.add("invoke-static/range {v\$reg .. v\$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAdsInList(Ljava/lang/Object;)V")
-                }
                 if (filterBloat != false) {
                     callSnippets.add("invoke-static/range {v\$reg .. v\$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterFeedBloatInList(Ljava/lang/Object;)V")
                 }
@@ -276,9 +255,6 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 }
                 if (blockLiveStreams != false) {
                     callSnippets.add("invoke-static/range {v\$reg .. v\$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterLiveStreamsInList(Ljava/lang/Object;)V")
-                }
-                if (hideAiContent != false) {
-                    callSnippets.add("invoke-static/range {v\$reg .. v\$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAiContentInList(Ljava/lang/Object;)V")
                 }
                 if (contentFilterActive) {
                     callSnippets.add("invoke-static/range {v\$reg .. v\$reg}, ${Constants.TIKTOK_EXTENSION_CONTENT_FILTER_HOOK}->filterContentInList(Ljava/lang/Object;)V")
@@ -297,7 +273,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
                     )
                 }
                 if (returnIndices.isNotEmpty()) {
-                    println("[Feed Ads & Content Filter] Hooked $definingClass->$name() (${returnIndices.size} return point(s)) -> $logLabel protected.")
+                    println("[Feed Content & Bloat Filter] Hooked $definingClass->$name() (${returnIndices.size} return point(s)) -> $logLabel protected.")
                     patched++
                 }
             }
@@ -310,9 +286,6 @@ val feedAdsContentFilterPatch = bytecodePatch(
             )
             val c2Method = c2Fp.method
             val c2CallSnippets = mutableListOf<String>()
-            if (filterAds != false) {
-                c2CallSnippets.add("invoke-static/range {p1 .. p1}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAdsInList(Ljava/lang/Object;)V")
-            }
             if (filterBloat != false) {
                 c2CallSnippets.add("invoke-static/range {p1 .. p1}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterFeedBloatInList(Ljava/lang/Object;)V")
             }
@@ -321,9 +294,6 @@ val feedAdsContentFilterPatch = bytecodePatch(
             }
             if (blockLiveStreams != false) {
                 c2CallSnippets.add("invoke-static/range {p1 .. p1}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterLiveStreamsInList(Ljava/lang/Object;)V")
-            }
-            if (hideAiContent != false) {
-                c2CallSnippets.add("invoke-static/range {p1 .. p1}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAiContentInList(Ljava/lang/Object;)V")
             }
             if (contentFilterActive) {
                 c2CallSnippets.add("invoke-static/range {p1 .. p1}, ${Constants.TIKTOK_EXTENSION_CONTENT_FILTER_HOOK}->filterContentInList(Ljava/lang/Object;)V")
@@ -337,7 +307,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
                     0,
                     c2CallSnippets.joinToString("\n"),
                 )
-                println("[Feed Ads & Content Filter] Hooked FeedFragment.C2(List, ...) -> Ingested feed stream protected at UI entry point.")
+                println("[Feed Content & Bloat Filter] Hooked FeedFragment.C2(List, ...) -> Ingested feed stream protected at UI entry point.")
                 patched++
             }
 
@@ -370,7 +340,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
                         returnType = "V",
                     )
                     pendantFp.method.addInstructions(0, "return-void")
-                    println("[Feed Ads & Content Filter] Neutralized FeedPendantService.${targetMethod.name}(String).")
+                    println("[Feed Content & Bloat Filter] Neutralized FeedPendantService.${targetMethod.name}(String).")
                     patched++
                 }
             }
@@ -387,153 +357,12 @@ val feedAdsContentFilterPatch = bytecodePatch(
                         invoke-static {p0}, ${Constants.TIKTOK_EXTENSION_SEEN_VIDEO_HOOK}->onAwemeLoaded(Ljava/lang/Object;)V
                     """.trimIndent(),
                 )
-                println("[Feed Ads & Content Filter] Hooked Aweme.getVideo() -> Lite seen video tracking active.")
+                println("[Feed Content & Bloat Filter] Hooked Aweme.getVideo() -> Lite seen video tracking active.")
                 patched++
             }
 
-            println("[Feed Ads & Content Filter] Applied $patched feed and search content filter hook(s).")
+            println("[Feed Content & Bloat Filter] Applied $patched feed and search content filter hook(s).")
             return@execute
-        }
-
-        // 1. Branch: filterAds
-        if (filterAds != false) {
-            fun hookReturnList(definingClass: String, name: String, returnType: String, logLabel: String) {
-                val fingerprint = Fingerprint(
-                    definingClass = definingClass,
-                    name = name,
-                    returnType = returnType,
-                )
-                val method = fingerprint.method
-                val returnIndices = method.implementation?.instructions?.withIndex()
-                    ?.filter { it.value.opcode == Opcode.RETURN_OBJECT }
-                    ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
-                    ?.toList() ?: emptyList()
-
-                returnIndices.asReversed().forEach { (returnIndex, reg) ->
-                    method.addInstructionsAtControlFlowLabel(
-                        returnIndex,
-                        """
-                            invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAdsInList(Ljava/lang/Object;)V
-                        """,
-                    )
-                }
-                if (returnIndices.isNotEmpty()) {
-                    println("[Feed Ads & Content Filter] Hooked $definingClass->$name() (${returnIndices.size} return point(s)) -> $logLabel protected.")
-                    patched++
-                }
-            }
-
-            // Hook FeedApiService.fetchFeedList return points (live FYP/Home responses)
-            val feedApiFingerprint = Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/feed/FeedApiService;",
-                name = "fetchFeedList",
-                returnType = "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;",
-            )
-            val feedApiMethod = feedApiFingerprint.method
-            val feedApiReturns = feedApiMethod.implementation?.instructions?.withIndex()
-                ?.filter { it.value.opcode == Opcode.RETURN_OBJECT }
-                ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
-                ?.toList() ?: emptyList()
-
-            feedApiReturns.asReversed().forEach { (returnIndex, reg) ->
-                feedApiMethod.addInstructionsAtControlFlowLabel(
-                    returnIndex,
-                    """
-                        invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAdsInFeedItemList(Ljava/lang/Object;)V
-                    """,
-                )
-            }
-            if (feedApiReturns.isNotEmpty()) {
-                println("[Feed Ads & Content Filter] Hooked FeedApiService.fetchFeedList() (${feedApiReturns.size} return point(s)) -> FYP stream protected.")
-                patched++
-            }
-
-            // Hook FeedItemList.getItems() (covers cached, offline, and UI adapter consumers)
-            hookReturnList(
-                definingClass = "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;",
-                name = "getItems",
-                returnType = "Ljava/util/List;",
-                logLabel = "All feed model consumers",
-            )
-
-            // Hook FollowFeedList.getItems() (covers Following feed UI consumers)
-            val followFeedListFingerprint = Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;",
-                name = "getItems",
-                returnType = "Ljava/util/List;",
-            )
-            val followMethod = followFeedListFingerprint.method
-            val followReturns = followMethod.implementation?.instructions?.withIndex()
-                ?.filter { it.value.opcode == Opcode.RETURN_OBJECT }
-                ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
-                ?.toList() ?: emptyList()
-
-            followReturns.asReversed().forEach { (returnIndex, reg) ->
-                followMethod.addInstructionsAtControlFlowLabel(
-                    returnIndex,
-                    """
-                        invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAdsInFollowFeedList(Ljava/lang/Object;)V
-                    """,
-                )
-            }
-            if (followReturns.isNotEmpty()) {
-                println("[Feed Ads & Content Filter] Hooked FollowFeedList.getItems() (${followReturns.size} return point(s)) -> Following feed protected.")
-                patched++
-            }
-
-            // Hook ContinuousLoadingAwemeList.LIZLLL() (Search video continuous loading feed)
-            hookReturnList(
-                definingClass = "Lcom/ss/android/ugc/aweme/search/common/model/ContinuousLoadingAwemeList;",
-                name = "LIZLLL",
-                returnType = "Ljava/util/List;",
-                logLabel = "Search continuous video feed",
-            )
-
-            // Hook DynamicPatch.getAwemeList() (Search video detail launcher & Lynx cards)
-            hookReturnList(
-                definingClass = "Lcom/ss/android/ugc/aweme/discover/mixfeed/DynamicPatch;",
-                name = "getAwemeList",
-                returnType = "Ljava/util/List;",
-                logLabel = "Search video detail launcher",
-            )
-
-            // Hook SearchMix.getAwemeList() (Search mix and grid aweme streams)
-            hookReturnList(
-                definingClass = "Lcom/ss/android/ugc/aweme/search/pages/result/topsearch/core/model/SearchMix;",
-                name = "getAwemeList",
-                returnType = "Ljava/util/List;",
-                logLabel = "Search mix feed",
-            )
-
-            // Hook BaseDetailShareVM.getAwemeList() (Search and detail video viewer shared VM)
-            hookReturnList(
-                definingClass = "Lcom/ss/android/ugc/aweme/detail/vm/BaseDetailShareVM;",
-                name = "getAwemeList",
-                returnType = "Ljava/util/List;",
-                logLabel = "Detail video player shared VM",
-            )
-
-            // Hook profile ad request launcher to stop ads between profile videos
-            val profileAdFingerprint = Fingerprint(
-                strings = listOf("don't insert: author is empty."),
-            )
-            val profileAdClass = mutableClassDefBy(profileAdFingerprint.classDef)
-            val profileAdMethods = profileAdClass.methods.filter {
-                it.returnType == "V" &&
-                    it.parameterTypes == listOf("I", "Ljava/lang/String;", "I", "Ljava/lang/String;", "Ljava/util/List;")
-            }
-            if (profileAdMethods.size != 1) {
-                throw PatchException("Expected exactly 1 profile ad request method in ${profileAdClass.type}, found ${profileAdMethods.size}")
-            }
-            val profileAdMethod = profileAdMethods.first()
-            profileAdMethod.addInstructions(
-                0,
-                """
-                    return-void
-                """.trimIndent(),
-            )
-            println("[Feed Ads & Content Filter] Hooked ${profileAdClass.type}->${profileAdMethod.name}() -> Profile ads disabled.")
-            patched++
         }
 
         // 2. Branch: filterBloat (excluding Section 7 Friends-feed blocks)
@@ -560,11 +389,11 @@ val feedAdsContentFilterPatch = bytecodePatch(
                     )
                 }
                 if (returnIndices.isNotEmpty()) {
-                    println("[Feed Ads & Content Filter] Hooked FeedApiService.fetchFeedList() (${returnIndices.size} return point(s)) -> FYP stream protected from bloat cards.")
+                    println("[Feed Content & Bloat Filter] Hooked FeedApiService.fetchFeedList() (${returnIndices.size} return point(s)) -> FYP stream protected from bloat cards.")
                     patched++
                 }
             } catch (e: Exception) {
-                println("[Feed Ads & Content Filter] FeedApiService note: ${e.message}")
+                println("[Feed Content & Bloat Filter] FeedApiService note: ${e.message}")
             }
 
             // 2.2 Hook FeedItemList.getItems() (covers cached, offline, and UI adapter consumers)
@@ -589,11 +418,11 @@ val feedAdsContentFilterPatch = bytecodePatch(
                     )
                 }
                 if (returnIndices.isNotEmpty()) {
-                    println("[Feed Ads & Content Filter] Hooked FeedItemList.getItems() (${returnIndices.size} return point(s)) -> Feed bloat filtered.")
+                    println("[Feed Content & Bloat Filter] Hooked FeedItemList.getItems() (${returnIndices.size} return point(s)) -> Feed bloat filtered.")
                     patched++
                 }
             } catch (e: Exception) {
-                println("[Feed Ads & Content Filter] FeedItemList.getItems note: ${e.message}")
+                println("[Feed Content & Bloat Filter] FeedItemList.getItems note: ${e.message}")
             }
 
             // 2.3 Hook FollowFeedList.getItems() (covers Following feed UI consumers)
@@ -618,11 +447,11 @@ val feedAdsContentFilterPatch = bytecodePatch(
                     )
                 }
                 if (returnIndices.isNotEmpty()) {
-                    println("[Feed Ads & Content Filter] Hooked FollowFeedList.getItems() (${returnIndices.size} return point(s)) -> Following bloat filtered.")
+                    println("[Feed Content & Bloat Filter] Hooked FollowFeedList.getItems() (${returnIndices.size} return point(s)) -> Following bloat filtered.")
                     patched++
                 }
             } catch (e: Exception) {
-                println("[Feed Ads & Content Filter] FollowFeedList.getItems note: ${e.message}")
+                println("[Feed Content & Bloat Filter] FollowFeedList.getItems note: ${e.message}")
             }
 
             // 2.4 Neutralize Lemon8 cross-promotion feed task
@@ -638,10 +467,10 @@ val feedAdsContentFilterPatch = bytecodePatch(
                         return-void
                     """.trimIndent(),
                 )
-                println("[Feed Ads & Content Filter] Neutralized Lemon8ServiceInitTask.run(Context).")
+                println("[Feed Content & Bloat Filter] Neutralized Lemon8ServiceInitTask.run(Context).")
                 patched++
             } catch (e: Exception) {
-                println("[Feed Ads & Content Filter] Lemon8ServiceInitTask note: ${e.message}")
+                println("[Feed Content & Bloat Filter] Lemon8ServiceInitTask note: ${e.message}")
             }
 
             // 2.5 Suppress Touchpoint Rewards & Ad Pendants (floating activity widgets / Issue #33)
@@ -657,10 +486,10 @@ val feedAdsContentFilterPatch = bytecodePatch(
                         return-void
                     """.trimIndent(),
                 )
-                println("[Feed Ads & Content Filter] Suppressed SpecActWidget.bind(ViewGroup) -> Floating pendant inflation blocked.")
+                println("[Feed Content & Bloat Filter] Suppressed SpecActWidget.bind(ViewGroup) -> Floating pendant inflation blocked.")
                 patched++
             } catch (e: Exception) {
-                println("[Feed Ads & Content Filter] SpecActWidget.bind note: ${e.message}")
+                println("[Feed Content & Bloat Filter] SpecActWidget.bind note: ${e.message}")
             }
 
             try {
@@ -675,10 +504,10 @@ val feedAdsContentFilterPatch = bytecodePatch(
                         return-void
                     """.trimIndent(),
                 )
-                println("[Feed Ads & Content Filter] Suppressed SpecActWidget.showOrHidePendant(ZZ).")
+                println("[Feed Content & Bloat Filter] Suppressed SpecActWidget.showOrHidePendant(ZZ).")
                 patched++
             } catch (e: Exception) {
-                println("[Feed Ads & Content Filter] SpecActWidget.showOrHidePendant note: ${e.message}")
+                println("[Feed Content & Bloat Filter] SpecActWidget.showOrHidePendant note: ${e.message}")
             }
 
             try {
@@ -692,10 +521,10 @@ val feedAdsContentFilterPatch = bytecodePatch(
                         return-void
                     """.trimIndent(),
                 )
-                println("[Feed Ads & Content Filter] Suppressed SpecActWidget.showNormalPendant().")
+                println("[Feed Content & Bloat Filter] Suppressed SpecActWidget.showNormalPendant().")
                 patched++
             } catch (e: Exception) {
-                println("[Feed Ads & Content Filter] SpecActWidget.showNormalPendant note: ${e.message}")
+                println("[Feed Content & Bloat Filter] SpecActWidget.showNormalPendant note: ${e.message}")
             }
 
             try {
@@ -710,10 +539,10 @@ val feedAdsContentFilterPatch = bytecodePatch(
                         return-void
                     """.trimIndent(),
                 )
-                println("[Feed Ads & Content Filter] Neutralized FeedPendantService.LIZ(String).")
+                println("[Feed Content & Bloat Filter] Neutralized FeedPendantService.LIZ(String).")
                 patched++
             } catch (e: Exception) {
-                println("[Feed Ads & Content Filter] FeedPendantService.LIZ note: ${e.message}")
+                println("[Feed Content & Bloat Filter] FeedPendantService.LIZ note: ${e.message}")
             }
 
             try {
@@ -728,10 +557,10 @@ val feedAdsContentFilterPatch = bytecodePatch(
                         return-void
                     """.trimIndent(),
                 )
-                println("[Feed Ads & Content Filter] Neutralized AdPendantService.LIZ(String).")
+                println("[Feed Content & Bloat Filter] Neutralized AdPendantService.LIZ(String).")
                 patched++
             } catch (e: Exception) {
-                println("[Feed Ads & Content Filter] AdPendantService.LIZ note: ${e.message}")
+                println("[Feed Content & Bloat Filter] AdPendantService.LIZ note: ${e.message}")
             }
 
             // 2.6 Suppress In-Video Floating Bloat, Commercial Stickers & Activity Pendants on Aweme
@@ -747,10 +576,10 @@ val feedAdsContentFilterPatch = bytecodePatch(
                         return-object v0
                     """.trimIndent(),
                 )
-                println("[Feed Ads & Content Filter] Neutralized Aweme.getActivityPendant() -> Null returned.")
+                println("[Feed Content & Bloat Filter] Neutralized Aweme.getActivityPendant() -> Null returned.")
                 patched++
             } catch (e: Exception) {
-                println("[Feed Ads & Content Filter] Aweme.getActivityPendant note: ${e.message}")
+                println("[Feed Content & Bloat Filter] Aweme.getActivityPendant note: ${e.message}")
             }
 
             try {
@@ -765,10 +594,10 @@ val feedAdsContentFilterPatch = bytecodePatch(
                         return-object v0
                     """.trimIndent(),
                 )
-                println("[Feed Ads & Content Filter] Neutralized Aweme.getCommerceStickerInfo() -> Null returned.")
+                println("[Feed Content & Bloat Filter] Neutralized Aweme.getCommerceStickerInfo() -> Null returned.")
                 patched++
             } catch (e: Exception) {
-                println("[Feed Ads & Content Filter] Aweme.getCommerceStickerInfo note: ${e.message}")
+                println("[Feed Content & Bloat Filter] Aweme.getCommerceStickerInfo note: ${e.message}")
             }
 
             try {
@@ -783,10 +612,10 @@ val feedAdsContentFilterPatch = bytecodePatch(
                         return-object v0
                     """.trimIndent(),
                 )
-                println("[Feed Ads & Content Filter] Neutralized Aweme.getSpecialSticker() -> Null returned.")
+                println("[Feed Content & Bloat Filter] Neutralized Aweme.getSpecialSticker() -> Null returned.")
                 patched++
             } catch (e: Exception) {
-                println("[Feed Ads & Content Filter] Aweme.getSpecialSticker note: ${e.message}")
+                println("[Feed Content & Bloat Filter] Aweme.getSpecialSticker note: ${e.message}")
             }
 
             try {
@@ -801,10 +630,10 @@ val feedAdsContentFilterPatch = bytecodePatch(
                         return-object v0
                     """.trimIndent(),
                 )
-                println("[Feed Ads & Content Filter] Neutralized Aweme.getFloatingCardInfo() -> Null returned.")
+                println("[Feed Content & Bloat Filter] Neutralized Aweme.getFloatingCardInfo() -> Null returned.")
                 patched++
             } catch (e: Exception) {
-                println("[Feed Ads & Content Filter] Aweme.getFloatingCardInfo note: ${e.message}")
+                println("[Feed Content & Bloat Filter] Aweme.getFloatingCardInfo note: ${e.message}")
             }
 
             try {
@@ -819,10 +648,10 @@ val feedAdsContentFilterPatch = bytecodePatch(
                         return-object v0
                     """.trimIndent(),
                 )
-                println("[Feed Ads & Content Filter] Neutralized Aweme.getBannerTip() -> Null returned.")
+                println("[Feed Content & Bloat Filter] Neutralized Aweme.getBannerTip() -> Null returned.")
                 patched++
             } catch (e: Exception) {
-                println("[Feed Ads & Content Filter] Aweme.getBannerTip note: ${e.message}")
+                println("[Feed Content & Bloat Filter] Aweme.getBannerTip note: ${e.message}")
             }
 
             try {
@@ -837,10 +666,10 @@ val feedAdsContentFilterPatch = bytecodePatch(
                         return-object v0
                     """.trimIndent(),
                 )
-                println("[Feed Ads & Content Filter] Neutralized Aweme.getStandardComponentInfo() -> Null returned.")
+                println("[Feed Content & Bloat Filter] Neutralized Aweme.getStandardComponentInfo() -> Null returned.")
                 patched++
             } catch (e: Exception) {
-                println("[Feed Ads & Content Filter] Aweme.getStandardComponentInfo note: ${e.message}")
+                println("[Feed Content & Bloat Filter] Aweme.getStandardComponentInfo note: ${e.message}")
             }
 
             // 2.8 Neutralize In-Feed Safety Surveys, Evaluation Cards & Questionnaires
@@ -856,10 +685,10 @@ val feedAdsContentFilterPatch = bytecodePatch(
                         return-void
                     """.trimIndent(),
                 )
-                println("[Feed Ads & Content Filter] Suppressed CellSurveyComponent.onViewCreated(View) -> Survey inflation blocked.")
+                println("[Feed Content & Bloat Filter] Suppressed CellSurveyComponent.onViewCreated(View) -> Survey inflation blocked.")
                 patched++
             } catch (e: Exception) {
-                println("[Feed Ads & Content Filter] CellSurveyComponent.onViewCreated note: ${e.message}")
+                println("[Feed Content & Bloat Filter] CellSurveyComponent.onViewCreated note: ${e.message}")
             }
 
             Fingerprint(
@@ -873,7 +702,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
                     return-void
                 """.trimIndent(),
             )
-            println("[Feed Ads & Content Filter] Neutralized CellSurveyComponent.pq(Aweme).")
+            println("[Feed Content & Bloat Filter] Neutralized CellSurveyComponent.pq(Aweme).")
             patched++
 
             Fingerprint(
@@ -887,7 +716,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
                     return-void
                 """.trimIndent(),
             )
-            println("[Feed Ads & Content Filter] Neutralized CellSurveyComponent.qq(Aweme, Z).")
+            println("[Feed Content & Bloat Filter] Neutralized CellSurveyComponent.qq(Aweme, Z).")
             patched++
 
             try {
@@ -903,10 +732,10 @@ val feedAdsContentFilterPatch = bytecodePatch(
                         return v0
                     """.trimIndent(),
                 )
-                println("[Feed Ads & Content Filter] Neutralized AwemeExtKt.isWithSurvey(Aweme) -> False returned.")
+                println("[Feed Content & Bloat Filter] Neutralized AwemeExtKt.isWithSurvey(Aweme) -> False returned.")
                 patched++
             } catch (e: Exception) {
-                println("[Feed Ads & Content Filter] AwemeExtKt.isWithSurvey note: ${e.message}")
+                println("[Feed Content & Bloat Filter] AwemeExtKt.isWithSurvey note: ${e.message}")
             }
 
             try {
@@ -921,10 +750,10 @@ val feedAdsContentFilterPatch = bytecodePatch(
                         return v0
                     """.trimIndent(),
                 )
-                println("[Feed Ads & Content Filter] Neutralized PNSSurveyService.LIZIZ() -> Safety surveys disabled.")
+                println("[Feed Content & Bloat Filter] Neutralized PNSSurveyService.LIZIZ() -> Safety surveys disabled.")
                 patched++
             } catch (e: Exception) {
-                println("[Feed Ads & Content Filter] PNSSurveyService.LIZIZ note: ${e.message}")
+                println("[Feed Content & Bloat Filter] PNSSurveyService.LIZIZ note: ${e.message}")
             }
 
             Fingerprint(
@@ -939,7 +768,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
                     return v0
                 """.trimIndent(),
             )
-            println("[Feed Ads & Content Filter] Neutralized PushSurveyAssemTrigger.qq(VideoItemParams) -> Push survey triggers disabled.")
+            println("[Feed Content & Bloat Filter] Neutralized PushSurveyAssemTrigger.qq(VideoItemParams) -> Push survey triggers disabled.")
             patched++
 
             try {
@@ -953,10 +782,10 @@ val feedAdsContentFilterPatch = bytecodePatch(
                         return-void
                     """.trimIndent(),
                 )
-                println("[Feed Ads & Content Filter] Suppressed FeedBottomSurveyButtonComponent.onParentViewCreated().")
+                println("[Feed Content & Bloat Filter] Suppressed FeedBottomSurveyButtonComponent.onParentViewCreated().")
                 patched++
             } catch (e: Exception) {
-                println("[Feed Ads & Content Filter] FeedBottomSurveyButtonComponent.onParentViewCreated note: ${e.message}")
+                println("[Feed Content & Bloat Filter] FeedBottomSurveyButtonComponent.onParentViewCreated note: ${e.message}")
             }
 
             try {
@@ -971,10 +800,10 @@ val feedAdsContentFilterPatch = bytecodePatch(
                         return v0
                     """.trimIndent(),
                 )
-                println("[Feed Ads & Content Filter] Neutralized Aweme.getWithSurvey() -> False returned.")
+                println("[Feed Content & Bloat Filter] Neutralized Aweme.getWithSurvey() -> False returned.")
                 patched++
             } catch (e: Exception) {
-                println("[Feed Ads & Content Filter] Aweme.getWithSurvey note: ${e.message}")
+                println("[Feed Content & Bloat Filter] Aweme.getWithSurvey note: ${e.message}")
             }
 
             try {
@@ -989,10 +818,10 @@ val feedAdsContentFilterPatch = bytecodePatch(
                         return-object v0
                     """.trimIndent(),
                 )
-                println("[Feed Ads & Content Filter] Neutralized Aweme.getSurveyInfo() -> Null returned.")
+                println("[Feed Content & Bloat Filter] Neutralized Aweme.getSurveyInfo() -> Null returned.")
                 patched++
             } catch (e: Exception) {
-                println("[Feed Ads & Content Filter] Aweme.getSurveyInfo note: ${e.message}")
+                println("[Feed Content & Bloat Filter] Aweme.getSurveyInfo note: ${e.message}")
             }
 
             try {
@@ -1007,10 +836,10 @@ val feedAdsContentFilterPatch = bytecodePatch(
                         return-object v0
                     """.trimIndent(),
                 )
-                println("[Feed Ads & Content Filter] Neutralized Aweme.getSurveyInfos() -> Null returned.")
+                println("[Feed Content & Bloat Filter] Neutralized Aweme.getSurveyInfos() -> Null returned.")
                 patched++
             } catch (e: Exception) {
-                println("[Feed Ads & Content Filter] Aweme.getSurveyInfos note: ${e.message}")
+                println("[Feed Content & Bloat Filter] Aweme.getSurveyInfos note: ${e.message}")
             }
 
             try {
@@ -1025,10 +854,10 @@ val feedAdsContentFilterPatch = bytecodePatch(
                         return-object v0
                     """.trimIndent(),
                 )
-                println("[Feed Ads & Content Filter] Neutralized Aweme.getPersonalizedSurveyUI() -> Null returned.")
+                println("[Feed Content & Bloat Filter] Neutralized Aweme.getPersonalizedSurveyUI() -> Null returned.")
                 patched++
             } catch (e: Exception) {
-                println("[Feed Ads & Content Filter] Aweme.getPersonalizedSurveyUI note: ${e.message}")
+                println("[Feed Content & Bloat Filter] Aweme.getPersonalizedSurveyUI note: ${e.message}")
             }
 
             try {
@@ -1043,10 +872,10 @@ val feedAdsContentFilterPatch = bytecodePatch(
                         return-object v0
                     """.trimIndent(),
                 )
-                println("[Feed Ads & Content Filter] Neutralized Aweme.getOnboardingSurvey() -> Null returned.")
+                println("[Feed Content & Bloat Filter] Neutralized Aweme.getOnboardingSurvey() -> Null returned.")
                 patched++
             } catch (e: Exception) {
-                println("[Feed Ads & Content Filter] Aweme.getOnboardingSurvey note: ${e.message}")
+                println("[Feed Content & Bloat Filter] Aweme.getOnboardingSurvey note: ${e.message}")
             }
 
             try {
@@ -1061,10 +890,10 @@ val feedAdsContentFilterPatch = bytecodePatch(
                         return-object v0
                     """.trimIndent(),
                 )
-                println("[Feed Ads & Content Filter] Neutralized Aweme.getPersonalizedOnboardingSurvey() -> Null returned.")
+                println("[Feed Content & Bloat Filter] Neutralized Aweme.getPersonalizedOnboardingSurvey() -> Null returned.")
                 patched++
             } catch (e: Exception) {
-                println("[Feed Ads & Content Filter] Aweme.getPersonalizedOnboardingSurvey note: ${e.message}")
+                println("[Feed Content & Bloat Filter] Aweme.getPersonalizedOnboardingSurvey note: ${e.message}")
             }
 
             // 2.10 Neutralize In-Feed Explore Community / Topic Cards on Aweme
@@ -1080,10 +909,10 @@ val feedAdsContentFilterPatch = bytecodePatch(
                         return-object v0
                     """.trimIndent(),
                 )
-                println("[Feed Ads & Content Filter] Neutralized Aweme.getExploreCommunityCommentShowType() -> Null returned.")
+                println("[Feed Content & Bloat Filter] Neutralized Aweme.getExploreCommunityCommentShowType() -> Null returned.")
                 patched++
             } catch (e: Exception) {
-                println("[Feed Ads & Content Filter] Aweme.getExploreCommunityCommentShowType note: ${e.message}")
+                println("[Feed Content & Bloat Filter] Aweme.getExploreCommunityCommentShowType note: ${e.message}")
             }
         }
 
@@ -1111,7 +940,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 )
             }
             if (returnIndices.isNotEmpty()) {
-                println("[Feed Ads & Content Filter] Hooked FeedApiService.fetchFeedList() (${returnIndices.size} return point(s)) -> FYP feed shop anchors stripped.")
+                println("[Feed Content & Bloat Filter] Hooked FeedApiService.fetchFeedList() (${returnIndices.size} return point(s)) -> FYP feed shop anchors stripped.")
                 patched++
             }
 
@@ -1136,7 +965,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 )
             }
             if (feedItemListReturnIndices.isNotEmpty()) {
-                println("[Feed Ads & Content Filter] Hooked FeedItemList.getItems() (${feedItemListReturnIndices.size} return point(s)) -> Feed video shop anchors stripped.")
+                println("[Feed Content & Bloat Filter] Hooked FeedItemList.getItems() (${feedItemListReturnIndices.size} return point(s)) -> Feed video shop anchors stripped.")
                 patched++
             }
 
@@ -1161,7 +990,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 )
             }
             if (followFeedListReturnIndices.isNotEmpty()) {
-                println("[Feed Ads & Content Filter] Hooked FollowFeedList.getItems() (${followFeedListReturnIndices.size} return point(s)) -> Following feed shop anchors stripped.")
+                println("[Feed Content & Bloat Filter] Hooked FollowFeedList.getItems() (${followFeedListReturnIndices.size} return point(s)) -> Following feed shop anchors stripped.")
                 patched++
             }
         }
@@ -1191,11 +1020,11 @@ val feedAdsContentFilterPatch = bytecodePatch(
                     )
                 }
                 if (returnIndices.isNotEmpty()) {
-                    println("[Feed Ads & Content Filter] Hooked FeedApiService.fetchFeedList() (${returnIndices.size} return point(s)) -> FYP stream protected from live cards.")
+                    println("[Feed Content & Bloat Filter] Hooked FeedApiService.fetchFeedList() (${returnIndices.size} return point(s)) -> FYP stream protected from live cards.")
                     patched++
                 }
             } catch (e: Exception) {
-                println("[Feed Ads & Content Filter] FeedApiService note: ${e.message}")
+                println("[Feed Content & Bloat Filter] FeedApiService note: ${e.message}")
             }
 
             // Hook FeedItemList.getItems() (covers cached, offline, and UI adapter consumers)
@@ -1220,11 +1049,11 @@ val feedAdsContentFilterPatch = bytecodePatch(
                     )
                 }
                 if (returnIndices.isNotEmpty()) {
-                    println("[Feed Ads & Content Filter] Hooked FeedItemList.getItems() (${returnIndices.size} return point(s)) -> Feed live streams filtered.")
+                    println("[Feed Content & Bloat Filter] Hooked FeedItemList.getItems() (${returnIndices.size} return point(s)) -> Feed live streams filtered.")
                     patched++
                 }
             } catch (e: Exception) {
-                println("[Feed Ads & Content Filter] FeedItemList.getItems note: ${e.message}")
+                println("[Feed Content & Bloat Filter] FeedItemList.getItems note: ${e.message}")
             }
 
             // Hook FollowFeedList.getItems() (covers Following feed UI consumers)
@@ -1249,127 +1078,11 @@ val feedAdsContentFilterPatch = bytecodePatch(
                     )
                 }
                 if (returnIndices.isNotEmpty()) {
-                    println("[Feed Ads & Content Filter] Hooked FollowFeedList.getItems() (${returnIndices.size} return point(s)) -> Following live streams filtered.")
+                    println("[Feed Content & Bloat Filter] Hooked FollowFeedList.getItems() (${returnIndices.size} return point(s)) -> Following live streams filtered.")
                     patched++
                 }
             } catch (e: Exception) {
-                println("[Feed Ads & Content Filter] FollowFeedList.getItems note: ${e.message}")
-            }
-        }
-
-        // 5. Branch: hideAiContent
-        if (hideAiContent != false) {
-            // Hook FeedApiService.fetchFeedList return points (live FYP/Home responses)
-            val feedApiFingerprint = Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/feed/FeedApiService;",
-                name = "fetchFeedList",
-                returnType = "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;",
-            )
-            val feedApiMethod = feedApiFingerprint.method
-            val feedApiReturns = feedApiMethod.implementation?.instructions?.withIndex()
-                ?.filter { it.value.opcode == Opcode.RETURN_OBJECT }
-                ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
-                ?.toList() ?: emptyList()
-
-            feedApiReturns.asReversed().forEach { (returnIndex, reg) ->
-                feedApiMethod.addInstructionsAtControlFlowLabel(
-                    returnIndex,
-                    """
-                        invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAiContentInFeedItemList(Ljava/lang/Object;)V
-                    """.trimIndent(),
-                )
-            }
-            if (feedApiReturns.isNotEmpty()) {
-                println("[Feed Ads & Content Filter] Hooked FeedApiService.fetchFeedList() (${feedApiReturns.size} return point(s)) -> FYP stream protected.")
-                patched++
-            }
-
-            // Hook FeedItemList.getItems() (covers cached, offline, and UI adapter consumers)
-            val feedItemListFingerprint = Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;",
-                name = "getItems",
-                returnType = "Ljava/util/List;",
-            )
-            val feedItemListMethod = feedItemListFingerprint.method
-            val feedItemListReturns = feedItemListMethod.implementation?.instructions?.withIndex()
-                ?.filter { it.value.opcode == Opcode.RETURN_OBJECT }
-                ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
-                ?.toList() ?: emptyList()
-
-            feedItemListReturns.asReversed().forEach { (returnIndex, reg) ->
-                feedItemListMethod.addInstructionsAtControlFlowLabel(
-                    returnIndex,
-                    """
-                        invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAiContentInList(Ljava/lang/Object;)V
-                    """.trimIndent(),
-                )
-            }
-            if (feedItemListReturns.isNotEmpty()) {
-                println("[Feed Ads & Content Filter] Hooked FeedItemList.getItems() (${feedItemListReturns.size} return point(s)) -> AI-generated feed items filtered.")
-                patched++
-            }
-
-            // Hook FollowFeedList.getItems() (covers Following feed UI consumers)
-            val followFeedListFingerprint = Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;",
-                name = "getItems",
-                returnType = "Ljava/util/List;",
-            )
-            val followFeedListMethod = followFeedListFingerprint.method
-            val followFeedListReturns = followFeedListMethod.implementation?.instructions?.withIndex()
-                ?.filter { it.value.opcode == Opcode.RETURN_OBJECT }
-                ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
-                ?.toList() ?: emptyList()
-
-            followFeedListReturns.asReversed().forEach { (returnIndex, reg) ->
-                followFeedListMethod.addInstructionsAtControlFlowLabel(
-                    returnIndex,
-                    """
-                        invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAiContentInFollowFeedList(Ljava/lang/Object;)V
-                    """.trimIndent(),
-                )
-            }
-            if (followFeedListReturns.isNotEmpty()) {
-                println("[Feed Ads & Content Filter] Hooked FollowFeedList.getItems() (${followFeedListReturns.size} return point(s)) -> Following feed protected.")
-                patched++
-            }
-
-            // Hook FriendsFeedApi network fetch return points (LX/07KR;->LIZLLL in v47.7.3, was LX/07KN; in v47.7.2, LX/065q; in v47.6.3)
-            val friendsFeedApiFingerprint = Fingerprint(
-                definingClass = "LX/07KR;",
-                name = "LIZLLL",
-                parameters = listOf(
-                    "I",
-                    "I",
-                    "Ljava/lang/String;",
-                    "Ljava/util/List;",
-                    "Ljava/util/List;",
-                    "Ljava/util/List;",
-                    "Ljava/util/List;",
-                    "Ljava/lang/String;",
-                    "Ljava/lang/String;",
-                    "Z",
-                    "Z",
-                ),
-                returnType = "Lcom/ss/android/ugc/aweme/friendstab/api/FriendsFeedResponse;",
-            )
-            val friendsFeedApiMethod = friendsFeedApiFingerprint.method
-            val friendsFeedApiReturns = friendsFeedApiMethod.implementation?.instructions?.withIndex()
-                ?.filter { it.value.opcode == Opcode.RETURN_OBJECT }
-                ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
-                ?.toList() ?: emptyList()
-
-            friendsFeedApiReturns.asReversed().forEach { (returnIndex, reg) ->
-                friendsFeedApiMethod.addInstructionsAtControlFlowLabel(
-                    returnIndex,
-                    """
-                        invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_FILTER_CLASS}->filterAiContentInFriendsFeedResponse(Ljava/lang/Object;)V
-                    """.trimIndent(),
-                )
-            }
-            if (friendsFeedApiReturns.isNotEmpty()) {
-                println("[Feed Ads & Content Filter] Hooked FriendsFeedApi.LIZLLL (${friendsFeedApiReturns.size} return point(s)) -> Friends V2 network responses protected.")
-                patched++
+                println("[Feed Content & Bloat Filter] FollowFeedList.getItems note: ${e.message}")
             }
         }
 
@@ -1391,10 +1104,10 @@ val feedAdsContentFilterPatch = bytecodePatch(
                         invoke-static/range {p1 .. p5}, ${Constants.TIKTOK_EXTENSION_SEEN_VIDEO_HOOK}->onPlayProgressChange(Ljava/lang/String;JJ)V
                     """.trimIndent(),
                 )
-                println("[Feed Ads & Content Filter] Hooked PlayerController.onPlayProgressChange -> Playback threshold tracker active.")
+                println("[Feed Content & Bloat Filter] Hooked PlayerController.onPlayProgressChange -> Playback threshold tracker active.")
                 patched++
             } else {
-                println("[Feed Ads & Content Filter] Skipped: PlayerController.onPlayProgressChange(String, long, long) not found.")
+                println("[Feed Content & Bloat Filter] Skipped: PlayerController.onPlayProgressChange(String, long, long) not found.")
             }
 
             val onCompletedMethod = playerControllerFp.classDef.methods.firstOrNull {
@@ -1409,10 +1122,10 @@ val feedAdsContentFilterPatch = bytecodePatch(
                         invoke-static/range {p1 .. p1}, ${Constants.TIKTOK_EXTENSION_SEEN_VIDEO_HOOK}->onPlayCompleted(Ljava/lang/String;)V
                     """.trimIndent(),
                 )
-                println("[Feed Ads & Content Filter] Hooked PlayerController.onPlayCompleted -> Completion tracker active.")
+                println("[Feed Content & Bloat Filter] Hooked PlayerController.onPlayCompleted -> Completion tracker active.")
                 patched++
             } else {
-                println("[Feed Ads & Content Filter] Skipped: PlayerController.onPlayCompleted(String) not found.")
+                println("[Feed Content & Bloat Filter] Skipped: PlayerController.onPlayCompleted(String) not found.")
             }
 
             // Hook FeedApiService.fetchFeedList return points (live FYP network responses)
@@ -1436,7 +1149,7 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 )
             }
             if (feedApiReturns.isNotEmpty()) {
-                println("[Feed Ads & Content Filter] Hooked FeedApiService.fetchFeedList() (${feedApiReturns.size} return point(s)) -> FYP incoming batch filter active.")
+                println("[Feed Content & Bloat Filter] Hooked FeedApiService.fetchFeedList() (${feedApiReturns.size} return point(s)) -> FYP incoming batch filter active.")
                 patched++
             }
         }
@@ -1493,10 +1206,10 @@ val feedAdsContentFilterPatch = bytecodePatch(
                 val hashtagCount = countCsvEntries(blockedHashtags)
                 val keywordCount = countCsvEntries(blockedKeywords)
                 val regionCount = countCsvEntries(hiddenRegions)
-                println("[Feed Ads & Content Filter] Pushed configuration (views ${minViews ?: 0}..${maxViews ?: 0}, likes ${minLikes ?: 0}..${maxLikes ?: 0}, maxAge=${maxAge}d, duration=${minDur}..${maxDur}s, stories=$hideStories, photos=$hidePhotoPosts, authors=$authorCount entries, hashtags=$hashtagCount entries, keywords=$keywordCount entries, regions=$regionCount entries).")
+                println("[Feed Content & Bloat Filter] Pushed configuration (views ${minViews ?: 0}..${maxViews ?: 0}, likes ${minLikes ?: 0}..${maxLikes ?: 0}, maxAge=${maxAge}d, duration=${minDur}..${maxDur}s, stories=$hideStories, photos=$hidePhotoPosts, authors=$authorCount entries, hashtags=$hashtagCount entries, keywords=$keywordCount entries, regions=$regionCount entries).")
                 patched++
             } catch (e: Exception) {
-                println("[Feed Ads & Content Filter] Configuration note: ${e.message}")
+                println("[Feed Content & Bloat Filter] Configuration note: ${e.message}")
             }
 
             // Hook FeedApiService.fetchFeedList return points (live FYP responses).
@@ -1519,14 +1232,14 @@ val feedAdsContentFilterPatch = bytecodePatch(
                     "invoke-static/range {v$reg .. v$reg}, $hook->filterContentInFeedItemList(Ljava/lang/Object;)V",
                 )
             }
-            println("[Feed Ads & Content Filter] Hooked FeedApiService.fetchFeedList (${feedApiReturns.size} return(s)).")
+            println("[Feed Content & Bloat Filter] Hooked FeedApiService.fetchFeedList (${feedApiReturns.size} return(s)).")
             patched++
         }
 
         if (patched == 0) {
-            println("[Feed Ads & Content Filter] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+            println("[Feed Content & Bloat Filter] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
         } else {
-            println("[Feed Ads & Content Filter] Applied $patched feed ads and content filter hook(s).")
+            println("[Feed Content & Bloat Filter] Applied $patched feed ads and content filter hook(s).")
         }
     }
 }

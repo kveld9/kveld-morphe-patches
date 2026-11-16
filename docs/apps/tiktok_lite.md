@@ -89,9 +89,18 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
 - **Clean Share Links**:
   - *Objective*: Removes tracking parameters and promotional tail text from shared links.
   - *How*: Intercepts `minilite.feed.model.Aweme.getShareUrl()` to sanitize shared link URLs, strips tracking parameters, and applies custom hostname replacement via `TikTokShareHostHook`.
-- **Feed Ads & Content Filter**:
-  - *Objective*: Filters ads, shopping tags, live cards, clutter, and previously watched videos from your feed.
-  - *How*: Intercepts feed list getters `FeedItemList.getItems()` and `FeedItemList.getAwemeList()` to filter ads, bloat, shop anchors, live streams, matching content rules, and previously seen videos (`hideSeenVideos`) via `TikTokFeedAdFilter` and `TikTokSeenVideoHook`. Tracks viewed videos on playback preparation via `Aweme.getVideo()`.
+- **Feed Ad Blocker**:
+  - *Objective*: Removes commercial advertisements, brand promotions, and promotional audio from the feed.
+  - *How*: Intercepts `FeedFragment.C2` entry point and feed list getters `FeedItemList.getItems()` and `FeedItemList.getAwemeList()` via `TikTokFeedAdFilter.filterAdsInList`.
+- **Hide Sponsored & Paid Partnership**:
+  - *Objective*: Removes creator commercial disclosures, branded content, and posts labeled "Sponsored" or "Paid partnership".
+  - *How*: Intercepts `FeedFragment.C2` and feed list getters to filter creator commercial disclosures (`isPaidContent`, `mPaidContentInfo`, `promoteToast`, `commerceInfo`, `textVideoLabels`) via `TikTokFeedAdFilter.filterPaidPartnershipInList`.
+- **Hide AI-Generated Content**:
+  - *Objective*: Filters and skips videos tagged with native AI-generated metadata, C2PA content credentials, or creator AI disclosure tags across the feed.
+  - *How*: Intercepts `FeedFragment.C2` and feed list getters via `TikTokFeedAdFilter.filterAiContentInList`.
+- **Feed Content & Bloat Filter**:
+  - *Objective*: Filters shopping tags, live cards, non-video clutter, and custom content thresholds from your feed.
+  - *How*: Intercepts feed list getters `FeedItemList.getItems()` and `FeedItemList.getAwemeList()` to filter bloat, shop anchors, live streams, matching content rules, and previously seen videos (`hideSeenVideos`) via `TikTokFeedAdFilter` and `TikTokSeenVideoHook`. Tracks viewed videos on playback preparation via `Aweme.getVideo()`.
 - **SIM Region Selector**:
   - *Objective*: Locks the app to a chosen country to unlock regional content.
   - *How*: Spoofs `TelephonyManager.getSimCountryIso` return value to configured ISO country code and overrides operator numeric (MCC+MNC) and operator name call sites.

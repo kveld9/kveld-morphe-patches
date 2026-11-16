@@ -32,9 +32,18 @@ The authoritative patch catalog with descriptions and options is generated in RE
 - **Clean Share Links**:
   - *Objective*: Removes tracking parameters from shared links and supports optional custom share host replacement.
   - *How*: Purges tracking tokens, device telemetry, and marketing campaign parameters from shared links across `tiktok.com` and `tiktxk.com` domains with optional custom hostname replacement via `TikTokShareHostHook`.
-- **Feed Ads & Content Filter**:
-  - *Objective*: Provide a clean feed without promotional interruptions, sponsored product links, or commerce anchors.
-  - *How*: Filters sponsored feed items, live cards, and shopping anchors during feed model parsing, removes ads inserted between a profile's videos, hides posts from chosen creators, with blocked hashtags, matching blocked keywords, or from hidden regions, and filters videos outside configured duration limits, exceeding post age, or outside configured view or like thresholds across the For You feed.
+- **Feed Ad Blocker**:
+  - *Objective*: Removes commercial advertisements, brand promotions, and promotional audio from the For You, Following, and Search feeds.
+  - *How*: Filters ads in live feed responses (`FeedApiService.fetchFeedList`), feed consumers (`FeedItemList.getItems()`, `FollowFeedList.getItems()`), and search feeds via `TikTokFeedAdFilter.filterAdsInList`.
+- **Hide Sponsored & Paid Partnership**:
+  - *Objective*: Removes creator commercial disclosures, branded content, and posts labeled "Sponsored" or "Paid partnership".
+  - *How*: Filters posts with commercial disclosure metadata across FYP, Following, and Search feeds via `TikTokFeedAdFilter.filterPaidPartnershipInList`.
+- **Hide AI-Generated Content**:
+  - *Objective*: Filters and skips videos tagged with native AI-generated metadata, C2PA content credentials, or creator AI disclosure tags across the For You, Following, and Friends feeds.
+  - *How*: Intercepts feed response and consumer streams via `TikTokFeedAdFilter.filterAiContentInList`.
+- **Feed Content & Bloat Filter**:
+  - *Objective*: Provide a clean feed without promotional interruptions, non-video clutter, live cards, or commerce anchors, with optional view/like/age/keyword filtering.
+  - *How*: Filters shopping anchors and bloat cards, live cards, removes ads inserted between profile videos, hides posts from chosen creators, hashtags, keywords, or regions, and filters videos outside configured duration, age, or view/like thresholds across the For You feed.
 - **Block Trackers**:
   - *Objective*: Prevent analytics tracking, event logging, and advertising profiling.
   - *How*: Neutralizes internal event dispatchers and strips tracking permissions from the manifest.
@@ -108,7 +117,7 @@ These need a target refresh on most bumps: they depend on obfuscated class or me
 - **Disable On-Device AI** (assistant launch, router and search card services)
 - **Disable History Recording** (watch history and search history APIs)
 - **Friends & Suggestions Filter** (recommendation cards and swipe view model)
-- **Feed Ads & Content Filter** (widest surface of the set: feed API, feed items, pendants, surveys)
+- **Feed Content & Bloat Filter** (widest surface of the set: feed API, feed items, pendants, surveys)
 - **Declutter Navigation Bar** (bottom and top tab protocols, red dot services)
 - **Declutter Video Interface** (feed cell and view-binding methods)
 - **Declutter Direct Messages** (message list view holders and input bar components)
@@ -123,7 +132,7 @@ These need a target refresh on most bumps: they depend on obfuscated class or me
 
 These catch their own hook errors, so a release that moves their targets leaves the patching run reporting success while the feature is simply gone. They need an applied-hook count check in the run log plus an on-screen check, not just a green result.
 
-- **Feed Ads & Content Filter**, **Allow Screenshots**, **Download Without Watermark**, **Friends & Suggestions Filter**, **Offline Video Limit**, **SIM Region Selector**, **Bypass Mandatory Login**
+- **Feed Content & Bloat Filter**, **Allow Screenshots**, **Download Without Watermark**, **Friends & Suggestions Filter**, **Offline Video Limit**, **SIM Region Selector**, **Bypass Mandatory Login**
 
 ### D. Holds across releases
 

@@ -646,78 +646,6 @@ public final class TikTokFeedAdFilter {
                     if (val instanceof Number && ((Number) val).intValue() > 0) return true;
                 } catch (Throwable ignored) {}
             }
-            if (isPaidContentMethod != null) {
-                try {
-                    if (Boolean.TRUE.equals(isPaidContentMethod.invoke(aweme))) return true;
-                } catch (Throwable ignored) {}
-            }
-            if (isPaidContentField != null) {
-                try {
-                    if (isPaidContentField.getBoolean(aweme)) return true;
-                } catch (Throwable ignored) {}
-            }
-            if (isPaidContentField == null && isPaidContentMethod == null) {
-                try {
-                    Field f = aweme.getClass().getDeclaredField("isPaidContent");
-                    f.setAccessible(true);
-                    if (f.getBoolean(aweme)) return true;
-                } catch (Throwable ignored) {}
-            }
-            if (getPaidContentInfoMethod != null) {
-                try {
-                    if (getPaidContentInfoMethod.invoke(aweme) != null) return true;
-                } catch (Throwable ignored) {}
-            }
-            if (paidContentInfoField != null) {
-                try {
-                    if (paidContentInfoField.get(aweme) != null) return true;
-                } catch (Throwable ignored) {}
-            }
-            if (mPaidContentInfoField != null) {
-                try {
-                    if (mPaidContentInfoField.get(aweme) != null) return true;
-                } catch (Throwable ignored) {}
-            }
-            if (promoteToastField != null) {
-                try {
-                    Object pt = promoteToastField.get(aweme);
-                    if (pt instanceof String && !((String) pt).trim().isEmpty()) return true;
-                } catch (Throwable ignored) {}
-            }
-            if (promoteToastKeyField != null) {
-                try {
-                    Object ptk = promoteToastKeyField.get(aweme);
-                    if (ptk instanceof String && !((String) ptk).trim().isEmpty()) return true;
-                } catch (Throwable ignored) {}
-            }
-            if (getCommerceInfoMethod != null) {
-                try {
-                    Object ci = getCommerceInfoMethod.invoke(aweme);
-                    if (ci != null && isCommercialInfoActive(ci)) return true;
-                } catch (Throwable ignored) {}
-            }
-            if (commerceInfoField != null) {
-                try {
-                    Object ci = commerceInfoField.get(aweme);
-                    if (ci != null && isCommercialInfoActive(ci)) return true;
-                } catch (Throwable ignored) {}
-            }
-            // Check textVideoLabels for sponsored/paid partnership labels
-            Object labels = null;
-            if (getTextVideoLabelsMethod != null) {
-                try { labels = getTextVideoLabelsMethod.invoke(aweme); } catch (Throwable ignored) {}
-            }
-            if (labels == null && textVideoLabelsField != null) {
-                try { labels = textVideoLabelsField.get(aweme); } catch (Throwable ignored) {}
-            }
-            if (labels instanceof List) {
-                for (Object lbl : (List<?>) labels) {
-                    String text = extractLabelText(lbl);
-                    if (isSponsoredOrPaidLabel(text)) {
-                        return true;
-                    }
-                }
-            }
             if (isSoftAdMethod != null) {
                 try {
                     if (Boolean.TRUE.equals(isSoftAdMethod.invoke(aweme))) return true;
@@ -829,6 +757,91 @@ public final class TikTokFeedAdFilter {
                     Object inner = m.invoke(item);
                     if (inner != null && isAd(inner)) return true;
                 } catch (Throwable ignored) {}
+            }
+        } catch (Throwable ignored) {}
+        return false;
+    }
+
+    public static boolean isPaidPartnership(Object aweme) {
+        if (aweme == null) return false;
+        if (!initialized) {
+            ensureInitialized(aweme.getClass(), aweme.getClass().getClassLoader());
+        }
+        if (awemeClass != null && !awemeClass.isInstance(aweme)) {
+            return false;
+        }
+        try {
+            if (isPaidContentMethod != null) {
+                try {
+                    if (Boolean.TRUE.equals(isPaidContentMethod.invoke(aweme))) return true;
+                } catch (Throwable ignored) {}
+            }
+            if (isPaidContentField != null) {
+                try {
+                    if (isPaidContentField.getBoolean(aweme)) return true;
+                } catch (Throwable ignored) {}
+            }
+            if (isPaidContentField == null && isPaidContentMethod == null) {
+                try {
+                    Field f = aweme.getClass().getDeclaredField("isPaidContent");
+                    f.setAccessible(true);
+                    if (f.getBoolean(aweme)) return true;
+                } catch (Throwable ignored) {}
+            }
+            if (getPaidContentInfoMethod != null) {
+                try {
+                    if (getPaidContentInfoMethod.invoke(aweme) != null) return true;
+                } catch (Throwable ignored) {}
+            }
+            if (paidContentInfoField != null) {
+                try {
+                    if (paidContentInfoField.get(aweme) != null) return true;
+                } catch (Throwable ignored) {}
+            }
+            if (mPaidContentInfoField != null) {
+                try {
+                    if (mPaidContentInfoField.get(aweme) != null) return true;
+                } catch (Throwable ignored) {}
+            }
+            if (promoteToastField != null) {
+                try {
+                    Object pt = promoteToastField.get(aweme);
+                    if (pt instanceof String && !((String) pt).trim().isEmpty()) return true;
+                } catch (Throwable ignored) {}
+            }
+            if (promoteToastKeyField != null) {
+                try {
+                    Object ptk = promoteToastKeyField.get(aweme);
+                    if (ptk instanceof String && !((String) ptk).trim().isEmpty()) return true;
+                } catch (Throwable ignored) {}
+            }
+            if (getCommerceInfoMethod != null) {
+                try {
+                    Object ci = getCommerceInfoMethod.invoke(aweme);
+                    if (ci != null && isCommercialInfoActive(ci)) return true;
+                } catch (Throwable ignored) {}
+            }
+            if (commerceInfoField != null) {
+                try {
+                    Object ci = commerceInfoField.get(aweme);
+                    if (ci != null && isCommercialInfoActive(ci)) return true;
+                } catch (Throwable ignored) {}
+            }
+            // Check textVideoLabels for sponsored/paid partnership labels
+            Object labels = null;
+            if (getTextVideoLabelsMethod != null) {
+                try { labels = getTextVideoLabelsMethod.invoke(aweme); } catch (Throwable ignored) {}
+            }
+            if (labels == null && textVideoLabelsField != null) {
+                try { labels = textVideoLabelsField.get(aweme); } catch (Throwable ignored) {}
+            }
+            if (labels instanceof List) {
+                for (Object lbl : (List<?>) labels) {
+                    String text = extractLabelText(lbl);
+                    if (isSponsoredOrPaidLabel(text)) {
+                        return true;
+                    }
+                }
             }
         } catch (Throwable ignored) {}
         return false;
@@ -1173,6 +1186,80 @@ public final class TikTokFeedAdFilter {
                 }
                 if (removed > 0) {
                     Log.i(TAG, "[Feed Ad Blocker] Pruned " + removed + " sponsored ad(s) from Following feed.");
+                }
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    // =========================================================================
+    // 1B. HIDE SPONSORED & PAID PARTNERSHIP (Creator Commercial Disclosures)
+    // =========================================================================
+
+    @SuppressWarnings("unchecked")
+    public static void filterPaidPartnershipInList(Object listObj) {
+        if (!(listObj instanceof List)) return;
+        List<Object> items = (List<Object>) listObj;
+        if (items.isEmpty()) return;
+
+        synchronized (items) {
+            try {
+                ensureInitializedFromList(items);
+
+                int removed = 0;
+                Iterator<Object> iterator = items.iterator();
+                while (iterator.hasNext()) {
+                    Object item = iterator.next();
+                    if (isPaidPartnership(item)) {
+                        iterator.remove();
+                        removed++;
+                    }
+                }
+                if (removed > 0) {
+                    Log.i(TAG, "[Hide Paid Partnership] Pruned " + removed + " sponsored/paid partnership post(s) from feed.");
+                }
+            } catch (Throwable ignored) {}
+        }
+    }
+
+    public static void filterPaidPartnershipInFeedItemList(Object feedItemList) {
+        if (feedItemList == null) return;
+        try {
+            ensureInitialized(feedItemList.getClass().getClassLoader());
+            List<Object> items = extractFeedItems(feedItemList);
+            if (items != null) {
+                filterPaidPartnershipInList(items);
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    public static void filterPaidPartnershipInFollowFeedList(Object followFeedList) {
+        if (followFeedList == null) return;
+        try {
+            List<Object> items = extractFollowList(followFeedList);
+            if (items == null || items.isEmpty()) return;
+
+            synchronized (items) {
+                if (!initialized) {
+                    for (Object followItem : items) {
+                        if (followItem != null) {
+                            ensureInitialized(followItem.getClass().getClassLoader());
+                            break;
+                        }
+                    }
+                }
+
+                int removed = 0;
+                Iterator<Object> iterator = items.iterator();
+                while (iterator.hasNext()) {
+                    Object followItem = iterator.next();
+                    Object aweme = extractAwemeFromFollowItem(followItem);
+                    if (isPaidPartnership(aweme)) {
+                        iterator.remove();
+                        removed++;
+                    }
+                }
+                if (removed > 0) {
+                    Log.i(TAG, "[Hide Paid Partnership] Pruned " + removed + " sponsored/paid partnership post(s) from Following feed.");
                 }
             }
         } catch (Throwable ignored) {}
