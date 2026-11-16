@@ -11,7 +11,7 @@ Each application has an authoritative, all-in-one guide covering prerequisites, 
 | Application | Architectures | Target Format | Complete Documentation |
 | :--- | :--- | :--- | :--- |
 | **Brave Browser** | `arm64-v8a`, `armeabi-v7a` | Standalone APK (`Bravemonoarm64.apk` / `BraveMonoarm.apk`) | [Brave Guide](apps/brave.md) |
-| **Gboard Lite** | `arm64-v8a`, `armeabi-v7a` | Standalone nodpi APK | [Gboard Lite Guide](apps/gboard.md) |
+| **Gboard Lite** | `arm64-v8a` | Standalone nodpi APK | [Gboard Lite Guide](apps/gboard.md) |
 | **TikTok** | `arm64-v8a` | Standalone nodpi APK | [TikTok Guide](apps/tiktok.md) |
 | **TikTok Lite** | `arm64-v8a`, `armeabi-v7a` | APKM bundle (Morphe joins splits) | [TikTok Lite Guide](apps/tiktok_lite.md) |
 | **Universal Optimizations** | All Architectures | Any Android APK | [Universal Patches Guide](universal-patches.md) |
@@ -22,11 +22,12 @@ Each application has an authoritative, all-in-one guide covering prerequisites, 
 
 > [!NOTE]
 > **Architecture Matrix Summary:**
-> - **Gboard Lite & Brave Browser**: Officially support both **`arm64-v8a` (64-bit)** and **`armeabi-v7a` (32-bit)**.
+> - **Gboard Lite**: Officially supports **`arm64-v8a`** (64-bit) only. The 32-bit build of the same release carries its own version name, which makes version comparison unreliable, so this suite pins the 64-bit variant.
+> - **Brave Browser**: Officially supports both **`arm64-v8a` (64-bit)** and **`armeabi-v7a` (32-bit)**.
 > - **TikTok**: Officially supports **`arm64-v8a`** (Global APK nodpi). Legacy `armeabi-v7a` libraries in dual-ABI APKs can be purged via debloat patches.
 
-### Why Gboard Lite supports 32-bit:
-All Gboard Lite patches in this suite operate strictly on Dalvik/ART DEX bytecode and Android XML resources. They contain **zero native `.so` binary dependencies** and run identically on both 64-bit and 32-bit Android runtimes. Consult the [Gboard Lite Guide](apps/gboard.md) for dictionary setup instructions.
+### Why Gboard Lite ships a single 64-bit target:
+All Gboard Lite patches in this suite operate strictly on Dalvik/ART DEX bytecode and Android XML resources, so they apply identically to either ABI. The 32-bit APK of a Gboard Lite release carries a different version name from its 64-bit counterpart, though, so a bundle listing both makes the manager read the 32-bit build as a newer release and offer it as an update to a 64-bit install. Declaring one `arm64-v8a` target keeps version comparison exact. Consult the [Gboard Lite Guide](apps/gboard.md) for dictionary setup instructions.
 
 ### Why Brave Browser supports both 64-bit and 32-bit:
 Brave Browser provides official Monochrome release APKs for both architectures (`Bravemonoarm64.apk` and `BraveMonoarm.apk`). All Dalvik bytecode and XML resource patches apply identically across ABIs, while native patches (`Block Telemetry` and `Remove Unused AI & VPN`) maintain deterministic string redirection offsets and companion `.so` pruning across both `lib/arm64-v8a` and `lib/armeabi-v7a` without runtime memory overhead. Consult the [Brave Guide](apps/brave.md).

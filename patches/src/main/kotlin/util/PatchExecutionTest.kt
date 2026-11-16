@@ -46,7 +46,6 @@ enum class TargetApp(
         packageName = Constants.GBOARD_PACKAGE_NAME,
         candidateFilenames = listOf(
             "gboard-${Constants.GBOARD_TARGET_VERSION}.apk",
-            "gboard-${Constants.GBOARD_TARGET_VERSION_V7A}.apk",
         ),
         filePattern = Regex("(?i).*gboard.*\\.apk$"),
         patchDirectoryPart = "gboard",

@@ -23,7 +23,6 @@ object Constants {
 
     const val GBOARD_PACKAGE_NAME = "com.google.android.inputmethod.latin"
     const val GBOARD_TARGET_VERSION = "18.6.3.1002251336-lite_release-arm64-v8a"
-    const val GBOARD_TARGET_VERSION_V7A = "18.6.3.1002251336-lite_release-armeabi-v7a"
 
     val COMPATIBILITY_GBOARD = Compatibility(
         name = "Gboard Lite",
@@ -31,10 +30,6 @@ object Constants {
         apkFileType = ApkFileType.APK,
         appIconColor = 0x4285F4,
         targets = listOf(
-            AppTarget(
-                version = GBOARD_TARGET_VERSION_V7A,
-                description = "Download $GBOARD_TARGET_VERSION_V7A (APK nodpi) from APKMirror"
-            ),
             AppTarget(
                 version = GBOARD_TARGET_VERSION,
                 description = "Download com.google.android.inputmethod.latin v$GBOARD_TARGET_VERSION (APK) arm64-v8a nodpi versionCode 176071770 (APK) from APKMirror"
