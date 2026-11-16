@@ -71,7 +71,7 @@ Exception: Block Tracking Servers (Universal) remains a valid opt-in patch on ma
 | **Clean App Packaging** | ✅ Yes | Prunes compiler properties, Kotlin debug tables, and duplicate license files from the APK root. |
 | **Remove Unused Screen Sizes** | ✅ Yes | Safely retains target device screen density and preserves orphan resources. |
 | **Remove Extra Languages (Universal)** | ✅ Yes | Prunes unselected translation folders from `res/values-*`. |
-| **Stop Background Sync (Universal)** | ⚠️ Safe by Default | Keep `stripWakeLock = false` (default) on web browsers (Brave) to prevent suspending background file downloads when the screen turns off. |
+| **Stop Background Sync (Universal)** | ⚠️ Safe by Default | Wake-lock suppression now lives in the new patch, so nothing strips the permission anymore. |
 | **Strip Sensitive Permissions (Universal)** | ⚠️ Safe by Default | All toggles are opt-in (default: `false`). Revoke only permissions you wish to strip for your target application to prevent runtime `SecurityException` crashes in apps that lack error handling. |
 | **Allow Screenshots (Universal)** | ✅ Yes | Safely neutralizes `FLAG_SECURE` bitwise and silences screenshot/screen recording callbacks across any application. |
 | **Force Screen Timeout** | ✅ Yes | Safely neutralizes `FLAG_KEEP_SCREEN_ON` bitwise and silences view `setKeepScreenOn` calls to enforce system sleep timeout. |
@@ -348,7 +348,9 @@ The **`Stop Background Sync (Universal)`** patch stops unneeded background wakeu
 - **Strip RECEIVE_BOOT_COMPLETED Permission (`stripBootPermission`)**: Removes `android.permission.RECEIVE_BOOT_COMPLETED` and HTC/OEM quickboot permissions from `AndroidManifest.xml` (Toggle, default: `true`).
 - **Disable Boot & Package Receivers (`disableBootReceivers`)**: Removes device startup, reboot, and app replacement actions from broadcast receiver intent filters, disabling the receiver only when no other action remains so unrelated actions keep working (Toggle, default: `true`).
 - **Disable WorkManager & Job Schedulers (`disableWorkManager`)**: Disables WorkManager background services and constraint-checking broadcast receivers (Toggle, default: `true`).
-- **Strip WAKE_LOCK Permission (`stripWakeLock`)**: Removes `android.permission.WAKE_LOCK` from `AndroidManifest.xml` (Toggle, default: `false`). *Keep disabled if the target application requires wake locks for continuous audio playback, video recording, screen-off background downloads (Brave), or foreground navigation.*
+
+> [!NOTE]
+> Wake-lock suppression now lives in the new patch, so nothing strips the permission anymore.
 
 ---
 

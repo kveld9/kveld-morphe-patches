@@ -196,14 +196,6 @@ val backgroundSyncPurgePatch = resourcePatch(
         required = false,
     )
 
-    val stripWakeLock by booleanOption(
-        key = "stripWakeLock",
-        default = false,
-        title = "Strip Wake Lock Permission",
-        description = "Removes wake-lock permissions (may interrupt background downloads).",
-        required = false,
-    )
-
     execute {
         val manifestFile = get("AndroidManifest.xml")
         if (!manifestFile.exists()) {
@@ -212,13 +204,11 @@ val backgroundSyncPurgePatch = resourcePatch(
         }
 
         val removeBootPerm = stripBootPermission ?: true
-        val removeWakeLock = stripWakeLock ?: false
         val shouldDisableBoot = disableBootReceivers ?: true
         val shouldDisableWorkManager = disableWorkManager ?: true
 
         val permissionsToStrip = mutableSetOf<String>()
         if (removeBootPerm) permissionsToStrip.add("android.permission.RECEIVE_BOOT_COMPLETED")
-        if (removeWakeLock) permissionsToStrip.add("android.permission.WAKE_LOCK")
 
         var removedPerms: List<String> = emptyList()
         var disabledReceiversCount = 0
