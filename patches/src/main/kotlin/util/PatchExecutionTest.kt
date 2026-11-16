@@ -1168,7 +1168,7 @@ private fun applySingleOptionToPatches(
         error("Unknown patch option key '$key': does not match any target patch option")
     }
     for (patch in matchingPatches) {
-        val option = patch.options[key]!!
+        val option = patch.options[key]
         val convertedValue = parseOptionValue(key, rawValue, option.default)
         patch.options[key] = convertedValue
     }
