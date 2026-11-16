@@ -112,6 +112,9 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
 - **Block Popups & Prompts**:
   - *Objective*: Blocks popups, nags and promo dialogs across the app.
   - *How*: Suppresses notification permission prompts via `PushServiceImpl.LB` and system push dialog checks reading `count_system` (`0Co.LBL()Z`), preserving onboarding completion state and login callback execution.
+- **Disable Double Tap to Like**:
+  - *Objective*: Disables the double tap gesture to like videos in the feed, preventing accidental likes while scrolling or pausing. Videos can still be liked using the like button.
+  - *How*: Neutralizes `(Float, Float)V` double-tap event handlers and heart animations in standard feed `DiggPresenter` (`right_container_digg`) and MiniLite feed like controller (`click_double_like`).
 - **Remember Clear Display**:
   - *Objective*: Keeps clear-display mode active when scrolling to the next video.
   - *How*: Re-applies clear mode shortly after a video switch, so the action buttons and caption stay hidden until you leave clear mode yourself.
