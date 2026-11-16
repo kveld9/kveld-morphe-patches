@@ -1,3 +1,10 @@
+## [2.11.0-experimental.13](https://github.com/kveld9/kveld-morphe-patches/compare/v2.11.0-experimental.12...v2.11.0-experimental.13) (2026-11-16)
+
+### Bug Fixes
+
+* **tiktok:** filter AI content and paid partnership posts in feed ([2f1965c](https://github.com/kveld9/kveld-morphe-patches/commit/2f1965c9dcf8b4e59754279d988211a876807435))
+* **tiktoklite:** filter ads and coin rewards on feed fragment ingestion ([7d04dda](https://github.com/kveld9/kveld-morphe-patches/commit/7d04dda9db08a7d4ebed76a835dd7d3600636bd3))
+
 ## [2.11.0-experimental.12](https://github.com/kveld9/kveld-morphe-patches/compare/v2.11.0-experimental.11...v2.11.0-experimental.12) (2026-11-13)
 
 ### Bug Fixes

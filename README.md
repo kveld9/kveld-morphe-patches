@@ -109,7 +109,7 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 
 <!-- PATCHES_START -->
 <details>
-<summary>TikTok&nbsp;&nbsp;•&nbsp;&nbsp;<b>51 patches</b></summary>
+<summary>TikTok&nbsp;&nbsp;•&nbsp;&nbsp;<b>54 patches</b></summary>
 <br>
 
 **Supported versions:**
@@ -145,11 +145,14 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 | **Disable QUIC** | Loads videos, uploads, and live connections over standard HTTPS instead of QUIC. |  |
 | **Download Without Watermark** | Unlocks downloading and saves videos without watermarks. | • Remove Watermark<br>• Saved-Video Quality Preference<br>• Disable Post-Download Share Dialog |
 | **Enable Profile Banner** | Unlocks the profile banner and its editing tools. |  |
-| **Feed Ads & Content Filter** | Filters ads, shopping tags, live cards, and clutter from your feed. | • Filter Feed Ads<br>• Filter Feed Bloat<br>• Hide Video Product Anchors<br>• Block Live Streams<br>• Hide AI-Generated Content<br>• Hide Seen Videos<br>• Minimum Views<br>• Maximum Views<br>• Minimum Likes<br>• Maximum Likes<br>• Blocked Creators<br>• Blocked Hashtags<br>• Blocked Keywords<br>• Hidden Regions<br>• Maximum Post Age<br>• Minimum Video Length<br>• Maximum Video Length<br>• Hide Stories<br>• Hide Photo Posts |
+| **Feed Ad Blocker** | Removes commercial advertisements, brand promotions, and promotional audio from the For You, Following, and Search feeds. |  |
+| **Feed Content & Bloat Filter** | Filters bloat, shopping tags, live cards, and clutter from your feed. | • Filter Feed Bloat<br>• Hide Video Product Anchors<br>• Block Live Streams<br>• Hide Seen Videos<br>• Minimum Views<br>• Maximum Views<br>• Minimum Likes<br>• Maximum Likes<br>• Blocked Creators<br>• Blocked Hashtags<br>• Blocked Keywords<br>• Hidden Regions<br>• Maximum Post Age<br>• Minimum Video Length<br>• Maximum Video Length<br>• Hide Stories<br>• Hide Photo Posts |
 | **Force Auto-Scroll** | Enables native auto-scrolling to the next video. |  |
 | **Friends & Suggestions Filter** | Keeps the Friends feed strictly mutual and hides suggested accounts across the app. | • Strict Mutual Friends Feed<br>• Filter Friends Feed Bloat<br>• Hide Suggested Accounts |
+| **Hide AI-Generated Content** | Filters and skips videos tagged with native AI-generated metadata, C2PA content credentials, or creator AI disclosure tags across the For You, Following, and Friends feeds. |  |
 | **Hide Inbox Promos & Alerts** | Hides promo banners, streak cards and suggestions in your inbox. | • Hide Top Promotional Banners<br>• Hide Contact & Friend Recommendations<br>• Hide Navigation Notices & Tooltips |
 | **Hide Inbox Story Tray** | Hides the stories and status tray at the top of the inbox. | • Hide Suggested Stories Only |
+| **Hide Sponsored & Paid Partnership** | Removes creator commercial disclosures, branded content, and posts labeled 'Sponsored' or 'Paid partnership' from the feed. |  |
 | **In-App Browser Privacy Guard** | Opens web links in your browser and blocks tracking in the remaining web views. |  |
 | **Instant Launch** | Opens the app immediately without splash screens or ad delays. |  |
 | **Login Compatibility Fix** | Restores Google and Spotify sign-in on modified app builds. | • Fix Google Login<br>• Fix Spotify Login |
@@ -175,7 +178,7 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 </details>
 
 <details>
-<summary>TikTok Lite&nbsp;&nbsp;•&nbsp;&nbsp;<b>17 patches</b></summary>
+<summary>TikTok Lite&nbsp;&nbsp;•&nbsp;&nbsp;<b>20 patches</b></summary>
 <br>
 
 **Supported versions:**
@@ -194,7 +197,10 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 | **Clean Share Links** | Removes tracking parameters from shared links. | • Custom Share Host |
 | **Disable Push Notifications** | Stops background push notifications. |  |
 | **Disable QUIC** | Loads videos, uploads, and live connections over standard HTTPS instead of QUIC. |  |
-| **Feed Ads & Content Filter** | Filters ads, shopping tags, live cards, and clutter from your feed. | • Filter Feed Ads<br>• Filter Feed Bloat<br>• Hide Video Product Anchors<br>• Block Live Streams<br>• Hide AI-Generated Content<br>• Hide Seen Videos<br>• Minimum Views<br>• Maximum Views<br>• Minimum Likes<br>• Maximum Likes<br>• Blocked Creators<br>• Blocked Hashtags<br>• Blocked Keywords<br>• Hidden Regions<br>• Maximum Post Age<br>• Minimum Video Length<br>• Maximum Video Length<br>• Hide Stories<br>• Hide Photo Posts |
+| **Feed Ad Blocker** | Removes commercial advertisements, brand promotions, and promotional audio from the For You, Following, and Search feeds. |  |
+| **Feed Content & Bloat Filter** | Filters bloat, shopping tags, live cards, and clutter from your feed. | • Filter Feed Bloat<br>• Hide Video Product Anchors<br>• Block Live Streams<br>• Hide Seen Videos<br>• Minimum Views<br>• Maximum Views<br>• Minimum Likes<br>• Maximum Likes<br>• Blocked Creators<br>• Blocked Hashtags<br>• Blocked Keywords<br>• Hidden Regions<br>• Maximum Post Age<br>• Minimum Video Length<br>• Maximum Video Length<br>• Hide Stories<br>• Hide Photo Posts |
+| **Hide AI-Generated Content** | Filters and skips videos tagged with native AI-generated metadata, C2PA content credentials, or creator AI disclosure tags across the For You, Following, and Friends feeds. |  |
+| **Hide Sponsored & Paid Partnership** | Removes creator commercial disclosures, branded content, and posts labeled 'Sponsored' or 'Paid partnership' from the feed. |  |
 | **Playback & Display Governor** | Limits playback resolution and HDR to save battery, and locks the screen refresh rate. | • Cap Playback Resolution<br>• Maximum Playback Resolution<br>• Avoid ByteVC2 Software Decoding<br>• Drop Undecodable Video Streams<br>• Disable HDR Video Playback<br>• Govern Display Refresh Rate<br>• Target Refresh Rate |
 | **Remember Clear Display** | Keeps clear-display mode active when scrolling to the next video. |  |
 | **Remember Playback Speed** | Keeps your chosen playback speed across videos and restarts. | • Default Playback Speed<br>• Hold-And-Slide 2x Speed Lock |
