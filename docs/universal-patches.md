@@ -378,6 +378,14 @@ The **`Strip Sensitive Permissions (Universal)`** patch selectively strips sensi
 | **Nearby devices** | `android.permission.BLUETOOTH_SCAN`, `android.permission.BLUETOOTH_CONNECT`, `android.permission.BLUETOOTH_ADVERTISE`, `android.permission.NEARBY_WIFI_DEVICES`, `android.permission.UWB_RANGING` |
 | **Body sensors** | `android.permission.BODY_SENSORS`, `android.permission.BODY_SENSORS_BACKGROUND`, `android.permission.ACTIVITY_RECOGNITION` |
 | **Installed apps** | `android.permission.QUERY_ALL_PACKAGES` |
+| **Phone** | `android.permission.CALL_PHONE`, `android.permission.CALL_PRIVILEGED`, `android.permission.ANSWER_PHONE_CALLS`, `android.permission.ACCEPT_HANDOVER`, `android.permission.READ_PHONE_STATE`, `android.permission.READ_PHONE_NUMBERS`, `android.permission.READ_CALL_LOG`, `android.permission.WRITE_CALL_LOG`, `android.permission.PROCESS_OUTGOING_CALLS`, `android.permission.USE_SIP` |
+| **SMS** | `android.permission.SEND_SMS`, `android.permission.RECEIVE_SMS`, `android.permission.READ_SMS`, `android.permission.RECEIVE_MMS`, `android.permission.RECEIVE_WAP_PUSH`, `android.permission.READ_CELL_BROADCASTS` |
+| **Display over other apps** | `android.permission.SYSTEM_ALERT_WINDOW` |
+| **Install apps** | `android.permission.REQUEST_INSTALL_PACKAGES` |
+| **Usage access** | `android.permission.PACKAGE_USAGE_STATS` |
+| **Exact alarms** | `android.permission.SCHEDULE_EXACT_ALARM`, `android.permission.USE_EXACT_ALARM` |
+| **Financial SMS** | `android.permission.SMS_FINANCIAL_TRANSACTIONS` |
+| **Battery optimization** | `android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` |
 
 ### Configuration in Morphe Manager
 
@@ -391,6 +399,43 @@ The **`Strip Sensitive Permissions (Universal)`** patch selectively strips sensi
 - **Nearby devices (`stripNearbyDevices`)**: Removes Bluetooth scan/connect/advertise and nearby Wi-Fi device permissions from `AndroidManifest.xml` (Toggle, default: `false`).
 - **Body sensors (`stripSensors`)**: Removes `BODY_SENSORS`, `BODY_SENSORS_BACKGROUND`, and `ACTIVITY_RECOGNITION` from `AndroidManifest.xml` (Toggle, default: `false`).
 - **Installed apps (`stripInstalledApps`)**: Removes `QUERY_ALL_PACKAGES` from `AndroidManifest.xml`. On Android 11+ with targetSdk 30 or higher, the app then only sees packages declared in its `<queries>` element (left untouched); apps targeting older SDKs are unaffected. May break launchers, app managers and share menus (Toggle, default: `false`).
+- **Phone (`stripPhone`)**: Removes call placement (`CALL_PHONE`, `CALL_PRIVILEGED`, `ANSWER_PHONE_CALLS`, `ACCEPT_HANDOVER`), call log (`READ_CALL_LOG`, `WRITE_CALL_LOG`, `PROCESS_OUTGOING_CALLS`), and phone identity (`READ_PHONE_STATE`, `READ_PHONE_NUMBERS`, `USE_SIP`) permissions from `AndroidManifest.xml`. Apps that read the device IMEI or carrier state without a permission check can throw `SecurityException`; keep it disabled for dialer, messaging, and call-recording apps (Toggle, default: `false`).
+- **SMS (`stripSms`)**: Removes `SEND_SMS`, `RECEIVE_SMS`, `READ_SMS`, `RECEIVE_MMS`, `RECEIVE_WAP_PUSH`, and `READ_CELL_BROADCASTS` from `AndroidManifest.xml`. This also disables one-time-code autofill through the SMS Retriever API and emergency-alert broadcasts, so leave it disabled on messaging apps and on apps where you rely on OTP auto-fill (Toggle, default: `false`).
+- **Display over other apps (`stripOverlay`)**: Removes `SYSTEM_ALERT_WINDOW` from `AndroidManifest.xml`, so the app can no longer be granted overlay access and its entry disappears from the "Display over other apps" list. This is what draws ad overlays, floating players and chat bubbles, so expect those to stop working (Toggle, default: `false`).
+- **Install apps (`stripInstallPackages`)**: Removes `REQUEST_INSTALL_PACKAGES` from `AndroidManifest.xml`, so the app can no longer install or update other APKs and its entry disappears from the "Install unknown apps" list. Breaks in-app updaters and any feature that ships add-on APKs (Toggle, default: `false`).
+- **Usage access (`stripUsageAccess`)**: Removes `PACKAGE_USAGE_STATS` from `AndroidManifest.xml`, so the app can no longer be granted usage-history access and its entry disappears from the "Usage access" list. Breaks digital-wellbeing style screens, app timers and any feature that reports what you use (Toggle, default: `false`).
+- **Exact alarms (`stripExactAlarms`)**: Removes `SCHEDULE_EXACT_ALARM` and `USE_EXACT_ALARM` from `AndroidManifest.xml`, so the app can no longer schedule to-the-minute alarms and its entry disappears from the "Alarms and reminders" list. Inexact alarms still fire, but reminders, timers and scheduled notifications can drift or arrive late (Toggle, default: `false`).
+- **Financial SMS (`stripFinancialSms`)**: Removes `SMS_FINANCIAL_TRANSACTIONS` from `AndroidManifest.xml`. This is the access apps use to read bank and card transaction messages for expense tracking; without it those features go silent, which is usually the point for anyone stripping it (Toggle, default: `false`).
+- **Battery optimization (`stripBatteryExemption`)**: Removes `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` from `AndroidManifest.xml`, so the app can no longer ask to be excluded from battery optimization and its entry disappears from that list. The system may then freeze its background work, which is desirable for trackers and harmful for apps whose notifications you rely on (Toggle, default: `false`).
+
+### Special-App-Access Grants on Update
+
+The six special-app-access toggles (`stripOverlay`, `stripInstallPackages`, `stripUsageAccess`,
+`stripExactAlarms`, `stripSms` for financial messages, `stripBatteryExemption`) target
+permissions whose grant is stored by the platform outside the permission system, as an app-op or
+a device-idle whitelist entry. Removing the `<uses-permission>` node does not retroactively clear
+a grant the user already gave, but the platform re-evaluates those grants when the package is
+replaced. Observed on Android 14 (API 34) with an in-place update signed with the same key:
+
+| Toggle | Grant given before patching | After in-place update |
+| :--- | :--- | :--- |
+| `stripOverlay` | overlay allowed | reset to default, no longer in the allow list |
+| `stripUsageAccess` | usage access allowed | reset to default, no longer in the allow list |
+| `stripExactAlarms` | exact alarms allowed | reset to default, no longer in the allow list |
+| `stripInstallPackages` | install unknown apps allowed | app-op record still reads `allow` and the package still appears in `query-op REQUEST_INSTALL_PACKAGES allow`, although the permission itself is no longer installed |
+| `stripBatteryExemption` | package whitelisted in device idle | whitelist entry survives the update |
+
+A clean install (uninstall, then install the patched APK) leaves no app-op records and no
+whitelist entry at all: `appops get` reports "No operations" and `dumpsys deviceidle whitelist`
+does not list the package.
+
+Practical consequence: for the three that reset, an in-place update is enough. For the install
+and battery rows the stale grant is inert but visible, so uninstall and reinstall the patched APK
+when you want a provably clean state. Verify with:
+```bash
+adb shell appops get <package>
+adb shell dumpsys deviceidle whitelist | grep <package>
+```
 
 ---
 
@@ -772,4 +817,5 @@ The **`Remove Debug Info`** patch strips Dalvik executable debug metadata (sourc
 
 - **Opt-in by default**: Disabled by default (`default = false`).
 - **Stack traces**: Exception stack traces will report `Unknown Source` and lack line numbers since debug line tables and source file attributes are stripped.
+- **Large multi-DEX safety ceiling**: Applications with more than 50,000 classes carrying debug metadata (such as massive monoliths like TikTok) are skipped cleanly with an explicit log message to prevent JVM heap exhaustion during multi-DEX serialization.
 - **Clean skip**: When no debug info is found across the application bytecode, the patch makes zero changes and logs an explicit skip.

@@ -24,8 +24,7 @@ val mandatoryLoginBypassPatch = bytecodePatch(
         val isLite = packageMetadata.packageName == Constants.TIKTOK_LITE_PACKAGE_NAME
 
         if (isLite) {
-            // Lite gate: LCC(String, String)Z is the master forced-login decision
-            // (LC + isLogin + pre-login journey + region force-login). False skips the wall.
+            // 1. Lite gate: LCC(String, String)Z is the master forced-login decision
             Fingerprint(
                 definingClass = LITE_MANDATORY_LOGIN_SERVICE,
                 name = "LCC",
@@ -35,8 +34,7 @@ val mandatoryLoginBypassPatch = bytecodePatch(
             println("[Bypass Mandatory Login] Neutralized Lite MandatoryLoginService.LCC() -> Forced login decision suppressed.")
             patched++
 
-            // Lite fragment gate: MainRootFragment.onViewCreated calls L(String)Z and
-            // skips the login panel when it returns false (if-nez v9, +079h).
+            // 2. Lite fragment gate: MainRootFragment calls L(String)Z and skips login panel when false
             Fingerprint(
                 definingClass = LITE_MANDATORY_LOGIN_SERVICE,
                 name = "L",
@@ -46,19 +44,17 @@ val mandatoryLoginBypassPatch = bytecodePatch(
             println("[Bypass Mandatory Login] Neutralized Lite MandatoryLoginService.L() -> Feed fragment login check suppressed.")
             patched++
 
-            // Lite shower: LBL(String, X/7Db)V forwards to IAccountService.LIIL (login page). Stub it.
-            Fingerprint(
+            // 3. Lite shower: LC(String, ...)V launches the login UI. Stub it to return-void.
+            val lcMethod = Fingerprint(
                 definingClass = LITE_MANDATORY_LOGIN_SERVICE,
-                name = "LBL",
-                parameters = listOf("Ljava/lang/String;", "LX/7Db;"),
+                name = "LC",
                 returnType = "V",
-            ).method.addInstructions(
+            ).method
+            lcMethod.addInstructions(
                 0,
-                """
-                    return-void
-                """.trimIndent(),
+                "return-void",
             )
-            println("[Bypass Mandatory Login] Neutralized Lite MandatoryLoginService.LBL() -> Login page display suppressed.")
+            println("[Bypass Mandatory Login] Neutralized Lite MandatoryLoginService.LC() -> Login UI launch suppressed.")
             patched++
 
             println("[Bypass Mandatory Login] Applied $patched hooks -> Mandatory login wall bypassed on Lite.")

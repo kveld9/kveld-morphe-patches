@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
@@ -18,6 +19,8 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import java.lang.reflect.Method;
 
 /**
@@ -152,7 +155,41 @@ public final class TikTokSpotifyAuthHook {
         });
 
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialog.setContentView(webView, new ViewGroup.LayoutParams(
+
+        LinearLayout container = new LinearLayout(activity);
+        container.setOrientation(LinearLayout.VERTICAL);
+        container.setLayoutParams(new ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+
+        ImageButton closeButton = new ImageButton(activity);
+        closeButton.setImageResource(android.R.drawable.ic_menu_close_clear_cancel);
+        closeButton.setContentDescription("Close");
+        closeButton.setBackgroundColor(0);
+        int padding = (int) (12 * activity.getResources().getDisplayMetrics().density);
+        closeButton.setPadding(padding, padding, padding, padding);
+        LinearLayout.LayoutParams btnParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        btnParams.gravity = Gravity.END;
+        closeButton.setLayoutParams(btnParams);
+
+        closeButton.setOnClickListener(v -> {
+            if (!delivered[0]) {
+                delivered[0] = true;
+                Log.i(TAG, LOG_PREFIX + "Web OAuth cancelled by user.");
+                deliverResult(requestCode, activity, Activity.RESULT_CANCELED, null);
+            }
+            clearSessionCookies();
+            dismissQuietly(dialog);
+        });
+
+        LinearLayout.LayoutParams webParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, 0, 1.0f);
+        webView.setLayoutParams(webParams);
+
+        container.addView(closeButton);
+        container.addView(webView);
+
+        dialog.setContentView(container, new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         dialog.setOnCancelListener(d -> {
             if (!delivered[0]) {
@@ -160,6 +197,7 @@ public final class TikTokSpotifyAuthHook {
                 Log.i(TAG, LOG_PREFIX + "Web OAuth cancelled by user.");
                 deliverResult(requestCode, activity, Activity.RESULT_CANCELED, null);
             }
+            clearSessionCookies();
         });
         dialog.setOnDismissListener(d -> webView.destroy());
 
@@ -219,6 +257,15 @@ public final class TikTokSpotifyAuthHook {
     private static void dismissQuietly(Dialog dialog) {
         try {
             dialog.dismiss();
+        } catch (Throwable ignored) {
+        }
+    }
+
+    private static void clearSessionCookies() {
+        try {
+            CookieManager cookieManager = CookieManager.getInstance();
+            cookieManager.removeSessionCookies(null);
+            cookieManager.flush();
         } catch (Throwable ignored) {
         }
     }

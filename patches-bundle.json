@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-11-02T21:10:58",
-  "description": "## [2.10.1](https://github.com/kveld9/kveld-morphe-patches/compare/v2.10.0...v2.10.1) (2026-11-02)\n\n### Bug Fixes\n\n* **brave:** restore Brave Origin patch name in catalog ([4f323af](https://github.com/kveld9/kveld-morphe-patches/commit/4f323af8fe7ac030c052ba6f7d6340a5a0c49dac)), closes [#209](https://github.com/kveld9/kveld-morphe-patches/issues/209)",
-  "download_url": "https://github.com/kveld9/kveld-morphe-patches/releases/download/v2.10.1/patches-2.10.1.mpp",
+  "created_at": "2026-11-16T00:12:22",
+  "description": "## [2.11.0-experimental.13](https://github.com/kveld9/kveld-morphe-patches/compare/v2.11.0-experimental.12...v2.11.0-experimental.13) (2026-11-16)\n\n### Bug Fixes\n\n* **tiktok:** filter AI content and paid partnership posts in feed ([2f1965c](https://github.com/kveld9/kveld-morphe-patches/commit/2f1965c9dcf8b4e59754279d988211a876807435))\n* **tiktoklite:** filter ads and coin rewards on feed fragment ingestion ([7d04dda](https://github.com/kveld9/kveld-morphe-patches/commit/7d04dda9db08a7d4ebed76a835dd7d3600636bd3))",
+  "download_url": "https://github.com/kveld9/kveld-morphe-patches/releases/download/v2.11.0-experimental.13/patches-2.11.0-experimental.13.mpp",
   "signature_download_url": "",
-  "version": "2.10.1"
+  "version": "2.11.0-experimental.13"
 }

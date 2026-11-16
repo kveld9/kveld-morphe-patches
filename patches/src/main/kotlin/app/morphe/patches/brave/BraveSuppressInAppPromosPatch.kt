@@ -7,6 +7,7 @@ import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.shared.Constants
+import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
@@ -35,14 +36,27 @@ val braveSuppressInAppPromosPatch = bytecodePatch(
         }
 
         // 2. BraveAdsSignupDialog: Force eligibility check to false
-        Fingerprint(
-            definingClass = "Lorg/chromium/chrome/browser/dialogs/BraveAdsSignupDialog;",
-            name = "a",
-            returnType = "Z",
-            parameters = emptyList(),
-        ).method.apply {
+        val adsDialogClass = mutableClassDefByOrNull("Lorg/chromium/chrome/browser/dialogs/BraveAdsSignupDialog;")
+            ?: throw PatchException("Required class Lorg/chromium/chrome/browser/dialogs/BraveAdsSignupDialog; not found")
+
+        var candidates = adsDialogClass.methods.filter { method ->
+            !method.name.startsWith("<") &&
+                method.returnType == "Z" &&
+                method.parameterTypes.isEmpty()
+        }
+        if (candidates.isEmpty()) {
+            throw PatchException("No ()Z method found in BraveAdsSignupDialog")
+        }
+        if (candidates.size > 1) {
+            candidates = candidates.filter { AccessFlags.STATIC.isSet(it.accessFlags) }
+            if (candidates.size != 1) {
+                throw PatchException("Ambiguous ()Z method in BraveAdsSignupDialog: ${candidates.map { it.name }}")
+            }
+        }
+        val adsMethod = candidates.single()
+        adsMethod.apply {
             addInstructions(0, "const/4 v0, 0x0\nreturn v0")
-            hookedMethods.add("BraveAdsSignupDialog.a")
+            hookedMethods.add("BraveAdsSignupDialog.${adsMethod.name}")
         }
 
         // 3. BraveDialogFragment: Drop promotional dialog tags before display

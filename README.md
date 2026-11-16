@@ -84,10 +84,10 @@ flowchart TD
 
 | Application | Package ID | Target Version | Architecture / Variant | Download Source | Complete Guide |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Brave Browser** | `com.brave.browser` | `1.98.63` | `arm64-v8a`<br>`armeabi-v7a` (single file) | [ARM64](https://github.com/brave/brave-browser/releases/download/v1.98.63/Bravemonoarm64.apk) · [ARM32](https://github.com/brave/brave-browser/releases/download/v1.98.63/BraveMonoarm.apk) | [Brave Guide](docs/apps/brave.md) |
-| **Gboard Lite** | `com.google.android.inputmethod.latin` | `18.5.1.993608717-lite_beta` | `arm64-v8a`<br>`armeabi-v7a` (any screen) | [APKMirror](https://www.apkmirror.com/apk/google-inc/gboard/gboard-the-google-keyboard-18-5-1-993608717-beta/) | [Gboard Lite Guide](docs/apps/gboard.md) |
-| **TikTok** | `com.zhiliaoapp.musically` | `47.6.3` | `arm64-v8a` (any screen) | [APKMirror](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-47-6-3-release/) | [TikTok Guide](docs/apps/tiktok.md) |
-| **TikTok Lite** | `com.tiktok.lite.go` | `47.5.52` | `arm64-v8a`<br>`armeabi-v7a` (multi-file) | [APKMirror](https://www.apkmirror.com/apk/tiktok-pte-ltd/tiktok-lite-faster-tiktok/tiktok-lite-faster-tiktok-47-5-52-release/) | [TikTok Lite Guide](docs/apps/tiktok_lite.md) |
+| **Brave Browser** | `com.brave.browser` | `1.99.57` | `arm64-v8a`<br>`armeabi-v7a` (single file) | [ARM64](https://github.com/brave/brave-browser/releases/download/v1.99.57/Bravemonoarm64.apk) · [ARM32](https://github.com/brave/brave-browser/releases/download/v1.99.57/BraveMonoarm.apk) | [Brave Guide](docs/apps/brave.md) |
+| **Gboard Lite** | `com.google.android.inputmethod.latin` | `18.6.3.1002251336-lite_release` | `arm64-v8a`<br>`armeabi-v7a` (any screen) | [APKMirror](https://www.apkmirror.com/apk/google-inc/gboard/gboard-the-google-keyboard-18-6-3-1002251336-release/) | [Gboard Lite Guide](docs/apps/gboard.md) |
+| **TikTok** | `com.zhiliaoapp.musically` | `47.7.3` | `arm64-v8a` (any screen) | [APKMirror](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-47-7-3-release/) | [TikTok Guide](docs/apps/tiktok.md) |
+| **TikTok Lite** | `com.tiktok.lite.go` | `47.6.51` | `arm64-v8a`<br>`armeabi-v7a` (multi-file) | [APKMirror](https://www.apkmirror.com/apk/tiktok-pte-ltd/tiktok-lite-faster-tiktok/tiktok-lite-faster-tiktok-47-6-51-release/) | [TikTok Lite Guide](docs/apps/tiktok_lite.md) |
 
 Labels: `single file` = one APK; `multi-file` = a package Morphe joins together; `any screen` = works on any screen size.
 
@@ -109,14 +109,14 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 
 <!-- PATCHES_START -->
 <details>
-<summary>TikTok&nbsp;&nbsp;•&nbsp;&nbsp;<b>51 patches</b></summary>
+<summary>TikTok&nbsp;&nbsp;•&nbsp;&nbsp;<b>54 patches</b></summary>
 <br>
 
 **Supported versions:**
 
-| 47.6.3 |
+| 47.7.3 |
 | :---: |
-| Download com.zhiliaoapp.musically v47.6.3 (APK) arm64-v8a nodpi versionCode 2024706030 (APK) from APKMirror |
+| Download com.zhiliaoapp.musically v47.7.3 (APK) arm64-v8a nodpi versionCode 2024707030 (APK) from APKMirror |
 
 | Patch | Description | Options |
 |----------|----------------|-----------|
@@ -145,11 +145,14 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 | **Disable QUIC** | Loads videos, uploads, and live connections over standard HTTPS instead of QUIC. |  |
 | **Download Without Watermark** | Unlocks downloading and saves videos without watermarks. | • Remove Watermark<br>• Saved-Video Quality Preference<br>• Disable Post-Download Share Dialog |
 | **Enable Profile Banner** | Unlocks the profile banner and its editing tools. |  |
-| **Feed Ads & Content Filter** | Filters ads, shopping tags, live cards, and clutter from your feed. | • Filter Feed Ads<br>• Filter Feed Bloat<br>• Hide Video Product Anchors<br>• Block Live Streams<br>• Hide AI-Generated Content<br>• Hide Seen Videos<br>• Minimum Views<br>• Maximum Views<br>• Minimum Likes<br>• Maximum Likes<br>• Blocked Creators<br>• Blocked Hashtags<br>• Blocked Keywords<br>• Hidden Regions<br>• Maximum Post Age<br>• Minimum Video Length<br>• Maximum Video Length<br>• Hide Stories<br>• Hide Photo Posts |
+| **Feed Ad Blocker** | Removes commercial advertisements, brand promotions, and promotional audio from the For You, Following, and Search feeds. |  |
+| **Feed Content & Bloat Filter** | Filters bloat, shopping tags, live cards, and clutter from your feed. | • Filter Feed Bloat<br>• Hide Video Product Anchors<br>• Block Live Streams<br>• Hide Seen Videos<br>• Minimum Views<br>• Maximum Views<br>• Minimum Likes<br>• Maximum Likes<br>• Blocked Creators<br>• Blocked Hashtags<br>• Blocked Keywords<br>• Hidden Regions<br>• Maximum Post Age<br>• Minimum Video Length<br>• Maximum Video Length<br>• Hide Stories<br>• Hide Photo Posts |
 | **Force Auto-Scroll** | Enables native auto-scrolling to the next video. |  |
 | **Friends & Suggestions Filter** | Keeps the Friends feed strictly mutual and hides suggested accounts across the app. | • Strict Mutual Friends Feed<br>• Filter Friends Feed Bloat<br>• Hide Suggested Accounts |
+| **Hide AI-Generated Content** | Filters and skips videos tagged with native AI-generated metadata, C2PA content credentials, or creator AI disclosure tags across the For You, Following, and Friends feeds. |  |
 | **Hide Inbox Promos & Alerts** | Hides promo banners, streak cards and suggestions in your inbox. | • Hide Top Promotional Banners<br>• Hide Contact & Friend Recommendations<br>• Hide Navigation Notices & Tooltips |
 | **Hide Inbox Story Tray** | Hides the stories and status tray at the top of the inbox. | • Hide Suggested Stories Only |
+| **Hide Sponsored & Paid Partnership** | Removes creator commercial disclosures, branded content, and posts labeled 'Sponsored' or 'Paid partnership' from the feed. |  |
 | **In-App Browser Privacy Guard** | Opens web links in your browser and blocks tracking in the remaining web views. |  |
 | **Instant Launch** | Opens the app immediately without splash screens or ad delays. |  |
 | **Login Compatibility Fix** | Restores Google and Spotify sign-in on modified app builds. | • Fix Google Login<br>• Fix Spotify Login |
@@ -175,34 +178,29 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 </details>
 
 <details>
-<summary>TikTok Lite&nbsp;&nbsp;•&nbsp;&nbsp;<b>25 patches</b></summary>
+<summary>TikTok Lite&nbsp;&nbsp;•&nbsp;&nbsp;<b>20 patches</b></summary>
 <br>
 
 **Supported versions:**
 
-| 47.5.52 |
+| 47.6.51 |
 | :---: |
-| Download com.tiktok.lite.go v47.5.52 (APKM) arm64-v8a versionCode 470552 (APKM) from APKMirror |
+| Download com.tiktok.lite.go v47.6.51 (APKM) arm64-v8a versionCode 470651 (APKM) from APKMirror |
 
 | Patch | Description | Options |
 |----------|----------------|-----------|
-| **Allow Screenshots** | Removes screenshot and screen recording blocking. |  |
 | **Battery & Resource Saver** | Stops 3D ad sensors and aggressive video preloading to save battery and data. |  |
 | **Block Popups & Prompts** | Blocks popups, nags and promo dialogs across the app. | • Suppress Account & Permission Nags<br>• Hide Notification Prompts<br>• Suppress Sticker Recommendations<br>• Filter PopLayer Prompts & Nags<br>• Suppress Live Teaser Bubbles<br>• Suppress DM Streak Reminders<br>• Disable Post-Download Share Dialog<br>• Update Prompt Suppressor<br>• Skip First-Launch Onboarding<br>• Skip Content Warnings |
 | **Block Trackers** | Neutralizes ByteDance AppLog tracking, crash monitors, and analytics. |  |
 | **Block Trackers (Setup)** | Removes tracking permissions and disables telemetry components. |  |
 | **Bypass Mandatory Login** | Lets you browse videos and feeds without creating an account or logging in. |  |
-| **Camera & Microphone Indicator** | Shows a corner mark while TikTok holds camera/mic open. |  |
 | **Clean Share Links** | Removes tracking parameters from shared links. | • Custom Share Host |
-| **Disable History Recording** | Prevents TikTok from recording your watch history and search queries. | • Disable Watch History<br>• Disable Search History |
 | **Disable Push Notifications** | Stops background push notifications. |  |
 | **Disable QUIC** | Loads videos, uploads, and live connections over standard HTTPS instead of QUIC. |  |
-| **Download Without Watermark** | Unlocks downloading and saves videos without watermarks. | • Remove Watermark<br>• Saved-Video Quality Preference<br>• Disable Post-Download Share Dialog |
-| **Feed Ads & Content Filter** | Filters ads, shopping tags, live cards, and clutter from your feed. | • Filter Feed Ads<br>• Filter Feed Bloat<br>• Hide Video Product Anchors<br>• Block Live Streams<br>• Hide AI-Generated Content<br>• Hide Seen Videos<br>• Minimum Views<br>• Maximum Views<br>• Minimum Likes<br>• Maximum Likes<br>• Blocked Creators<br>• Blocked Hashtags<br>• Blocked Keywords<br>• Hidden Regions<br>• Maximum Post Age<br>• Minimum Video Length<br>• Maximum Video Length<br>• Hide Stories<br>• Hide Photo Posts |
-| **Force Auto-Scroll** | Enables native auto-scrolling to the next video. |  |
-| **Friends & Suggestions Filter** | Keeps the Friends feed strictly mutual and hides suggested accounts across the app. | • Strict Mutual Friends Feed<br>• Filter Friends Feed Bloat<br>• Hide Suggested Accounts |
-| **In-App Browser Privacy Guard** | Opens web links in your browser and blocks tracking in the remaining web views. |  |
-| **Login Compatibility Fix** | Restores Google and Spotify sign-in on modified app builds. | • Fix Google Login<br>• Fix Spotify Login |
+| **Feed Ad Blocker** | Removes commercial advertisements, brand promotions, and promotional audio from the For You, Following, and Search feeds. |  |
+| **Feed Content & Bloat Filter** | Filters bloat, shopping tags, live cards, and clutter from your feed. | • Filter Feed Bloat<br>• Hide Video Product Anchors<br>• Block Live Streams<br>• Hide Seen Videos<br>• Minimum Views<br>• Maximum Views<br>• Minimum Likes<br>• Maximum Likes<br>• Blocked Creators<br>• Blocked Hashtags<br>• Blocked Keywords<br>• Hidden Regions<br>• Maximum Post Age<br>• Minimum Video Length<br>• Maximum Video Length<br>• Hide Stories<br>• Hide Photo Posts |
+| **Hide AI-Generated Content** | Filters and skips videos tagged with native AI-generated metadata, C2PA content credentials, or creator AI disclosure tags across the For You, Following, and Friends feeds. |  |
+| **Hide Sponsored & Paid Partnership** | Removes creator commercial disclosures, branded content, and posts labeled 'Sponsored' or 'Paid partnership' from the feed. |  |
 | **Playback & Display Governor** | Limits playback resolution and HDR to save battery, and locks the screen refresh rate. | • Cap Playback Resolution<br>• Maximum Playback Resolution<br>• Avoid ByteVC2 Software Decoding<br>• Drop Undecodable Video Streams<br>• Disable HDR Video Playback<br>• Govern Display Refresh Rate<br>• Target Refresh Rate |
 | **Remember Clear Display** | Keeps clear-display mode active when scrolling to the next video. |  |
 | **Remember Playback Speed** | Keeps your chosen playback speed across videos and restarts. | • Default Playback Speed<br>• Hold-And-Slide 2x Speed Lock |
@@ -220,9 +218,9 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 
 **Supported versions:**
 
-| 18.5.1.993608717-lite_beta-armeabi-v7a | 18.5.1.993608717-lite_beta-arm64-v8a |
+| 18.6.3.1002251336-lite_release-armeabi-v7a | 18.6.3.1002251336-lite_release-arm64-v8a |
 | :---: | :---: |
-| Download 18.5.1.993608717-lite_beta-armeabi-v7a (APK nodpi) from APKMirror | Download com.google.android.inputmethod.latin v18.5.1.993608717-lite_beta-arm64-v8a (APK) arm64-v8a nodpi versionCode 176049546 (APK) from APKMirror |
+| Download 18.6.3.1002251336-lite_release-armeabi-v7a (APK nodpi) from APKMirror | Download com.google.android.inputmethod.latin v18.6.3.1002251336-lite_release-arm64-v8a (APK) arm64-v8a nodpi versionCode 176071770 (APK) from APKMirror |
 
 | Patch | Description | Options |
 |----------|----------------|-----------|
@@ -247,9 +245,9 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 
 **Supported versions:**
 
-| 1.98.63 |
+| 1.99.57 |
 | :---: |
-| Download Bravemonoarm64.apk (arm64) or BraveMonoarm.apk (arm32) v1.98.63 from github.com/brave/brave-browser/releases; Universal builds unsupported |
+| Download Bravemonoarm64.apk (arm64) or BraveMonoarm.apk (arm32) v1.99.57 from github.com/brave/brave-browser/releases; Universal builds unsupported |
 
 | Patch | Description | Options |
 |----------|----------------|-----------|
@@ -304,7 +302,7 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 | **Spoof Reinstall IDs** | Prevents apps from linking reinstalls to your device by resetting app and install IDs. | • App set ID<br>• Install ID<br>• Scope to single app |
 | **Spoof signature** | Presents the original release signature so modified-app checks pass. |  |
 | **Stop Background Sync (Universal)** | Stops background sync schedulers and boot wakeups. | • Strip Boot Permission<br>• Disable Boot Receivers<br>• Disable Background Schedulers<br>• Strip Wake Lock Permission |
-| **Strip Sensitive Permissions (Universal)** | Removes sensitive privacy and hardware permissions you select. | • Notifications<br>• Camera<br>• Microphone<br>• Photos & files<br>• Location<br>• Contacts<br>• Calendar<br>• Nearby devices<br>• Body sensors<br>• Installed apps |
+| **Strip Sensitive Permissions (Universal)** | Removes sensitive privacy and hardware permissions you select. | • Notifications<br>• Camera<br>• Microphone<br>• Photos & files<br>• Location<br>• Contacts<br>• Calendar<br>• Nearby devices<br>• Body sensors<br>• Installed apps<br>• Phone<br>• SMS<br>• Display over other apps<br>• Install apps<br>• Usage access<br>• Exact alarms<br>• Financial SMS<br>• Battery optimization |
 
 </details>
 

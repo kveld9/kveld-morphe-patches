@@ -8,10 +8,17 @@ import java.text.NumberFormat;
 public final class TikTokCountsHook {
     private TikTokCountsHook() {}
 
+    private static final ThreadLocal<NumberFormat> NUMBER_FORMAT = new ThreadLocal<NumberFormat>() {
+        @Override
+        protected NumberFormat initialValue() {
+            return NumberFormat.getIntegerInstance();
+        }
+    };
+
     public static String exact(long count) {
         if (count < 0) {
             return "0";
         }
-        return NumberFormat.getIntegerInstance().format(count);
+        return NUMBER_FORMAT.get().format(count);
     }
 }

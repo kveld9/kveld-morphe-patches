@@ -29,7 +29,7 @@ public final class SensitiveWarnings {
 
             clearAwemeWarnings(aweme);
         } catch (Throwable t) {
-            Log.w(TAG, "[Always Show Publish Date] Failed to clear sensitive warnings: " + t.getMessage());
+            Log.w(TAG, "[Block Popups & Prompts] Failed to clear sensitive warnings: " + t.getMessage());
         }
     }
 
@@ -79,7 +79,7 @@ public final class SensitiveWarnings {
             setBooleanField(clazz, aweme, "isSensitive", false);
         }
 
-        Log.d(TAG, "[Always Show Publish Date] Neutralized content warning and mask flags.");
+        Log.d(TAG, "[Block Popups & Prompts] Neutralized content warning and mask flags.");
     }
 
     private static void clearField(Class<?> clazz, Object target, String fieldName) {

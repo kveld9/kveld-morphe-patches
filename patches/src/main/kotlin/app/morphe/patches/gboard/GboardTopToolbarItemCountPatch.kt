@@ -56,10 +56,10 @@ val gboardTopToolbarItemCountPatch = bytecodePatch(
             patched++
         }
 
-        // 3. Dynamic runtime limit hook on AccessPointsBar.i()
+        // 3. Dynamic runtime limit hook on AccessPointsBar.h()
         val fpBar = Fingerprint(
             definingClass = "Lcom/google/android/libraries/inputmethod/accesspoint/widget/AccessPointsBar;",
-            name = "i",
+            name = "h",
             parameters = emptyList(),
             returnType = "I",
         )

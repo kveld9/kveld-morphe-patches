@@ -5,7 +5,7 @@ import app.morphe.patcher.patch.AppTarget
 import app.morphe.patcher.patch.Compatibility
 
 object Constants {
-    const val BRAVE_TARGET_VERSION = "1.98.63"
+    const val BRAVE_TARGET_VERSION = "1.99.57"
     const val BRAVE_PACKAGE_NAME = "com.brave.browser"
 
     val COMPATIBILITY_BRAVE = Compatibility(
@@ -22,8 +22,8 @@ object Constants {
     )
 
     const val GBOARD_PACKAGE_NAME = "com.google.android.inputmethod.latin"
-    const val GBOARD_TARGET_VERSION = "18.5.1.993608717-lite_beta-arm64-v8a"
-    const val GBOARD_TARGET_VERSION_V7A = "18.5.1.993608717-lite_beta-armeabi-v7a"
+    const val GBOARD_TARGET_VERSION = "18.6.3.1002251336-lite_release-arm64-v8a"
+    const val GBOARD_TARGET_VERSION_V7A = "18.6.3.1002251336-lite_release-armeabi-v7a"
 
     val COMPATIBILITY_GBOARD = Compatibility(
         name = "Gboard Lite",
@@ -37,14 +37,14 @@ object Constants {
             ),
             AppTarget(
                 version = GBOARD_TARGET_VERSION,
-                description = "Download com.google.android.inputmethod.latin v$GBOARD_TARGET_VERSION (APK) arm64-v8a nodpi versionCode 176049546 (APK) from APKMirror"
+                description = "Download com.google.android.inputmethod.latin v$GBOARD_TARGET_VERSION (APK) arm64-v8a nodpi versionCode 176071770 (APK) from APKMirror"
             )
         )
     )
 
 
     const val TIKTOK_PACKAGE_NAME = "com.zhiliaoapp.musically"
-    const val TIKTOK_TARGET_VERSION = "47.6.3"
+    const val TIKTOK_TARGET_VERSION = "47.7.3"
 
     val COMPATIBILITY_TIKTOK = Compatibility(
         name = "TikTok",
@@ -54,13 +54,13 @@ object Constants {
         targets = listOf(
             AppTarget(
                 version = TIKTOK_TARGET_VERSION,
-                description = "Download com.zhiliaoapp.musically v$TIKTOK_TARGET_VERSION (APK) arm64-v8a nodpi versionCode 2024706030 (APK) from APKMirror"
+                description = "Download com.zhiliaoapp.musically v$TIKTOK_TARGET_VERSION (APK) arm64-v8a nodpi versionCode 2024707030 (APK) from APKMirror"
             )
         )
     )
 
     const val TIKTOK_LITE_PACKAGE_NAME = "com.tiktok.lite.go"
-    const val TIKTOK_LITE_TARGET_VERSION = "47.5.52"
+    const val TIKTOK_LITE_TARGET_VERSION = "47.6.51"
 
     val COMPATIBILITY_TIKTOK_LITE = Compatibility(
         name = "TikTok Lite",
@@ -70,7 +70,7 @@ object Constants {
         targets = listOf(
             AppTarget(
                 version = TIKTOK_LITE_TARGET_VERSION,
-                description = "Download com.tiktok.lite.go v$TIKTOK_LITE_TARGET_VERSION (APKM) arm64-v8a versionCode 470552 (APKM) from APKMirror"
+                description = "Download com.tiktok.lite.go v$TIKTOK_LITE_TARGET_VERSION (APKM) arm64-v8a versionCode 470651 (APKM) from APKMirror"
             )
         )
     )
@@ -158,7 +158,7 @@ object Constants {
         const val DEFAULT_CLIPBOARD_RETENTION_HOURS = 24
 
         const val MIN_CLIPBOARD_UNPINNED_LIMIT = 5
-        const val MAX_CLIPBOARD_UNPINNED_LIMIT = 100
+        const val MAX_CLIPBOARD_UNPINNED_LIMIT = 200
         const val DEFAULT_CLIPBOARD_UNPINNED_LIMIT = 50
 
         const val MIN_CLIPBOARD_GRID_COLUMNS = 1

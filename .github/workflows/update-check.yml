@@ -29,6 +29,8 @@ jobs:
           python-version: '3.x'
 
       - name: Run update check
+        id: update_check
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python3 scripts/check_app_updates.py --check --json updates.json
@@ -48,6 +50,7 @@ jobs:
           python3 - <<'EOF'
           import json
           import os
+          import re
           import subprocess
           import sys
 
@@ -56,6 +59,7 @@ jobs:
           from scripts.check_app_updates import (
               compare_versions,
               format_issue_body,
+              format_issue_title,
               parse_version,
           )
 
@@ -73,7 +77,7 @@ jobs:
               core, _ = parse_version(candidate)
               if not core:
                   return None
-              return candidate
+              return ".".join(str(part) for part in core)
 
           def compare_app_versions(v_issue, v_check):
               fwd = compare_versions(v_issue, v_check)
@@ -86,13 +90,14 @@ jobs:
                   return "older"
               return "equal"
 
-          def create_issue(repo, app_name, local_ver, remote_ver, source_url, download_url):
-              title = f"Update: {app_name} {local_ver} -> {remote_ver}"
+          def create_issue(repo, app_name, local_ver, remote_ver, source_url, download_url, remote_channel, download_urls):
+              title = format_issue_title(app_name, local_ver, remote_ver, remote_channel)
               body = format_issue_body(
                   local_ver=local_ver,
                   remote_ver=remote_ver,
                   source_url=source_url,
                   download_url=download_url,
+                  download_urls=download_urls,
               )
 
               print(f"[INFO] Creating issue for {app_name}: {title}")
@@ -129,6 +134,8 @@ jobs:
               remote_ver = app.get("remote_version", "")
               source_url = app.get("source_url", "")
               download_url = app.get("download_url", "")
+              remote_channel = app.get("remote_channel", "")
+              download_urls = app.get("download_urls", {})
 
               print(f"[INFO] Checking existing issues for {app_name}...")
               list_cmd = [
@@ -150,13 +157,14 @@ jobs:
                   print(f"[WARN] Failed to parse gh issue list output for {app_name}: {exc}", file=sys.stderr)
                   open_issues = []
 
+              title_pattern = re.compile(rf"^Update: {re.escape(app_name)} \d", re.I)
               matching_issues = [
                   issue for issue in open_issues
-                  if app_name in (issue.get("title") or "")
+                  if title_pattern.match((issue.get("title") or "").strip())
               ]
 
               if not matching_issues:
-                  create_issue(repo, app_name, local_ver, remote_ver, source_url, download_url)
+                  create_issue(repo, app_name, local_ver, remote_ver, source_url, download_url, remote_channel, download_urls)
                   continue
 
               if len(matching_issues) > 1:
@@ -204,7 +212,7 @@ jobs:
                   continue
 
               print(f"[INFO] Closed stale issue #{num} successfully.")
-              create_issue(repo, app_name, local_ver, remote_ver, source_url, download_url)
+              create_issue(repo, app_name, local_ver, remote_ver, source_url, download_url, remote_channel, download_urls)
           EOF
 
       - name: Close stale update issues
@@ -220,6 +228,7 @@ jobs:
           python3 - <<'EOF'
           import json
           import os
+          import re
           import subprocess
           import sys
 
@@ -260,12 +269,13 @@ jobs:
                   print(f"[WARN] Failed to parse gh issue list output for {app_name}: {exc}", file=sys.stderr)
                   open_issues = []
 
+              title_pattern = re.compile(rf"^Update: {re.escape(app_name)} \d", re.I)
               for issue in open_issues:
                   num = issue.get("number")
                   title = issue.get("title", "")
                   if not num:
                       continue
-                  if app_name.lower() not in title.lower():
+                  if not title_pattern.match(title.strip()):
                       continue
 
                   issue_url = issue.get("url") or f"https://github.com/{repo}/issues/{num}"
@@ -284,3 +294,10 @@ jobs:
                   else:
                       print(f"[WARN] Failed to close issue #{num} for {app_name}: {close_res.stderr.strip()}", file=sys.stderr)
           EOF
+
+      - name: Fail when an upstream version could not be determined
+        if: steps.update_check.outcome == 'failure'
+        run: |
+          echo "[ERROR] One or more upstream versions could not be determined; see the 'Run update check' step."
+          echo "A silent 'unknown' hides real updates, so this run is reported as failed."
+          exit 1

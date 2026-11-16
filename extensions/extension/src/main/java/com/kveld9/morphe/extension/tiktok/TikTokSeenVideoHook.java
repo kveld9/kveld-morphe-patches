@@ -114,6 +114,18 @@ public final class TikTokSeenVideoHook {
     }
 
     /**
+     * Records an Aweme as seen when loaded for playback/display.
+     */
+    public static void onAwemeLoaded(Object aweme) {
+        if (!enabled || aweme == null) return;
+        String aid = getAid(aweme);
+        if (aid == null || aid.isEmpty()) return;
+        ensureHistoryLoaded();
+        seenVideos.put(aid, System.currentTimeMillis());
+        scheduleSave();
+    }
+
+    /**
      * Records video as seen upon full playback completion.
      */
     public static void onPlayCompleted(String aid) {
@@ -142,12 +154,29 @@ public final class TikTokSeenVideoHook {
      */
     public static void filterSeenVideosInFeedItemList(Object feedItemList) {
         if (!enabled || feedItemList == null) return;
+        try {
+            List<Object> items = extractFeedItems(feedItemList);
+            if (items != null) {
+                filterSeenVideosInList(items);
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "[Hide Seen Videos] Error filtering feed item list: " + t.getMessage());
+        }
+    }
+
+    /**
+     * Filters previously watched videos from a direct List of Aweme items (used by TikTok Lite).
+     */
+    @SuppressWarnings("unchecked")
+    public static void filterSeenVideosInList(Object listObj) {
+        if (!enabled || listObj == null) return;
         ensureHistoryLoaded();
         if (seenVideos.isEmpty()) return;
 
         try {
-            List<Object> items = extractFeedItems(feedItemList);
-            if (items == null || items.isEmpty()) return;
+            if (!(listObj instanceof List)) return;
+            List<Object> items = (List<Object>) listObj;
+            if (items.isEmpty()) return;
 
             int originalCount = items.size();
             int pruned = 0;
@@ -176,7 +205,7 @@ public final class TikTokSeenVideoHook {
                 Log.i(TAG, "[Hide Seen Videos] Filtered " + pruned + " previously viewed video(s) from incoming feed batch.");
             }
         } catch (Throwable t) {
-            Log.w(TAG, "[Hide Seen Videos] Error filtering feed item list: " + t.getMessage());
+            Log.w(TAG, "[Hide Seen Videos] Error filtering feed list: " + t.getMessage());
         }
     }
 
@@ -210,7 +239,10 @@ public final class TikTokSeenVideoHook {
     }
 
     private static void initReflection(Class<?> awemeClass, Class<?> feedListClass) {
-        if (reflectionInitialized) return;
+        if ((awemeClass == null || getAidMethod != null) &&
+            (feedListClass == null || itemsField != null || mItemsField != null)) {
+            return;
+        }
         synchronized (TikTokSeenVideoHook.class) {
             if (awemeClass != null && getAidMethod == null) {
                 try {
@@ -227,9 +259,6 @@ public final class TikTokSeenVideoHook {
                     mItemsField = feedListClass.getDeclaredField("mItems");
                     mItemsField.setAccessible(true);
                 } catch (Throwable ignored) {}
-            }
-            if (getAidMethod != null && (itemsField != null || mItemsField != null)) {
-                reflectionInitialized = true;
             }
         }
     }

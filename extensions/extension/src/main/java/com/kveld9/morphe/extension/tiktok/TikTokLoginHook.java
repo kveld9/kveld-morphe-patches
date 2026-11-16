@@ -8,6 +8,10 @@ import java.lang.reflect.Method;
 public final class TikTokLoginHook {
     private static final String TAG = "MorpheTikTok";
 
+    private static volatile Method cachedUserServiceMethod = null;
+    private static volatile Method cachedIsLoginMethod = null;
+    private static volatile boolean loggedAccountMiss = false;
+
     private TikTokLoginHook() {}
 
     /**
@@ -54,30 +58,74 @@ public final class TikTokLoginHook {
                 Class<?> accServiceClass = Class.forName("com.ss.android.ugc.aweme.IAccountService");
                 Object accService = smClass.getMethod("getService", Class.class).invoke(sm, accServiceClass);
                 if (accService != null) {
-                    Object accUser = null;
-                    for (String methodName : new String[]{"LJIIJ", "LJIIJJI"}) {
+                    Method userMethod = cachedUserServiceMethod;
+                    Method isLoginMethod = cachedIsLoginMethod;
+                    if (userMethod != null && isLoginMethod != null) {
                         try {
-                            Method m = accService.getClass().getMethod(methodName);
-                            Object candidate = m.invoke(accService);
-                            if (candidate != null) {
-                                try {
-                                    candidate.getClass().getMethod("isLogin");
-                                    accUser = candidate;
-                                    break;
-                                } catch (NoSuchMethodException ignored) {}
+                            Object userObj = userMethod.invoke(accService);
+                            if (userObj != null) {
+                                boolean loggedIn = (Boolean) isLoginMethod.invoke(userObj);
+                                return !loggedIn;
+                            }
+                        } catch (Throwable ignored) {
+                            cachedUserServiceMethod = null;
+                            cachedIsLoginMethod = null;
+                        }
+                    }
+
+                    // Cheap attempt with legacy obfuscated method names
+                    for (String legacyName : new String[]{"LJIIJ", "LJIIJJI"}) {
+                        try {
+                            Method m = accService.getClass().getMethod(legacyName);
+                            if (m.getParameterTypes().length == 0 && m.getReturnType() != void.class) {
+                                Object candidate = m.invoke(accService);
+                                if (candidate != null) {
+                                    Method isLogin = candidate.getClass().getMethod("isLogin");
+                                    if (isLogin.getParameterTypes().length == 0 &&
+                                        (isLogin.getReturnType() == boolean.class || isLogin.getReturnType() == Boolean.class)) {
+                                        cachedUserServiceMethod = m;
+                                        cachedIsLoginMethod = isLogin;
+                                        boolean loggedIn = (Boolean) isLogin.invoke(candidate);
+                                        return !loggedIn;
+                                    }
+                                }
                             }
                         } catch (Throwable ignored) {}
                     }
-                    if (accUser != null) {
-                        Method isLoginMethod = accUser.getClass().getMethod("isLogin");
-                        boolean loggedIn = (Boolean) isLoginMethod.invoke(accUser);
-                        return !loggedIn;
+
+                    // Structural introspection over all public zero-arg non-void methods
+                    for (Method m : accService.getClass().getMethods()) {
+                        if (m.getParameterTypes().length != 0 || m.getReturnType() == void.class) {
+                            continue;
+                        }
+                        try {
+                            Object candidate = m.invoke(accService);
+                            if (candidate != null) {
+                                Method isLogin = candidate.getClass().getMethod("isLogin");
+                                if (isLogin.getParameterTypes().length == 0 &&
+                                    (isLogin.getReturnType() == boolean.class || isLogin.getReturnType() == Boolean.class)) {
+                                    cachedUserServiceMethod = m;
+                                    cachedIsLoginMethod = isLogin;
+                                    boolean loggedIn = (Boolean) isLogin.invoke(candidate);
+                                    return !loggedIn;
+                                }
+                            }
+                        } catch (Throwable ignored) {}
                     }
+
+                    if (!loggedAccountMiss) {
+                        loggedAccountMiss = true;
+                        Log.w(TAG, "[MandatoryLoginBypass] Could not resolve account user candidate; treating session as signed in.");
+                    }
+                    return false;
                 }
             }
         } catch (Throwable t) {
-            Log.w(TAG, "[MandatoryLoginBypass] Error checking login status: " + t.getMessage());
+            if (!loggedAccountMiss) {
+                loggedAccountMiss = true;
+                Log.w(TAG, "[MandatoryLoginBypass] Error checking login status: " + t.getMessage() + "; treating session as signed in.");
+            }
         }
-        return true;
+        return false;
     }
 }

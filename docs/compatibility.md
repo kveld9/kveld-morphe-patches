@@ -39,7 +39,7 @@ Brave Browser provides official Monochrome release APKs for both architectures (
 Download `Bravemonoarm64.apk` (for 64-bit ARM devices) or `BraveMonoarm.apk` (for 32-bit ARM devices) from [Brave GitHub Releases](https://github.com/brave/brave-browser/releases). Do **NOT** use `Bravearm64Universal.apk`, `Bravearm64.apk`, or x86 builds. Details in [Brave Guide](apps/brave.md).
 
 ### ⌨️ Gboard Lite: Standalone nodpi APK
-Download the standalone `lite` or `lite_beta` APK (nodpi) from [APKMirror](https://www.apkmirror.com/apk/google-inc/gboard/). Do **NOT** download split packages or bundle formats. Details in [Gboard Lite Guide](apps/gboard.md).
+Download the standalone `lite` or `lite_release` APK (nodpi) from [APKMirror](https://www.apkmirror.com/apk/google-inc/gboard/). Do **NOT** download split packages or bundle formats. Details in [Gboard Lite Guide](apps/gboard.md).
 
 ### 🎵 TikTok (`com.zhiliaoapp.musically`)
 Download the official standalone APK release from [APKMirror (TikTok)](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/). Details in [TikTok Guide](apps/tiktok.md).

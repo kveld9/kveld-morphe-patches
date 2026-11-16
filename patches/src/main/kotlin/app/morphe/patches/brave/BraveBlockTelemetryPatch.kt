@@ -145,6 +145,8 @@ private fun writeHostEntries(
     return writtenHosts
 }
 
+private const val SINK_HOST = "0.0.0.0"
+
 private val braveHostsBlockerPatch = rawResourcePatch(
     name = "Block Tracking Servers",
     description = "Redirects tracking servers to 0.0.0.0.",
@@ -154,18 +156,18 @@ private val braveHostsBlockerPatch = rawResourcePatch(
 
     execute {
         val hostEntries = listOf(
-            HostEntry(0x00210902L, 0x005a8948L, "star-randsrv.bsg.brave.com"),
-            HostEntry(0x00210933L, 0x005a8979L, "collector.bsg.brave.com"),
-            HostEntry(0x0021096aL, 0x005a89b0L, "usage-ping.brave.com"),
-            HostEntry(0x0021078dL, 0x005a87d3L, "patterns.wdp.brave.com"),
-            HostEntry(0x002107a4L, 0x005a87eaL, "collector.wdp.brave.com"),
-            HostEntry(0x002107bcL, 0x005a8802L, "star.wdp.brave.com"),
-            HostEntry(0x002107cfL, 0x005a8815L, "quorum.wdp.brave.com"),
-            HostEntry(0x00210780L, 0x005a87c6L, "cr.brave.com"),
-            HostEntry(0x0008d68fL, 0x0042bc0aL, "crashpad.chromium.org"),
-            HostEntry(0x004e0fb8L, 0x0086d374L, "crashpad.chromium.org"),
-            HostEntry(0x00210614L, 0x005a865aL, "variations.brave.com"),
-            HostEntry(0x0035865cL, 0x006e71b6L, "variations.brave.com"),
+            HostEntry(0x00215504L, 0x005b377aL, "star-randsrv.bsg.brave.com"),
+            HostEntry(0x00215535L, 0x005b37abL, "collector.bsg.brave.com"),
+            HostEntry(0x0021556cL, 0x005b37e2L, "usage-ping.brave.com"),
+            HostEntry(0x0021538fL, 0x005b3605L, "patterns.wdp.brave.com"),
+            HostEntry(0x002153a6L, 0x005b361cL, "collector.wdp.brave.com"),
+            HostEntry(0x002153beL, 0x005b3634L, "star.wdp.brave.com"),
+            HostEntry(0x002153d1L, 0x005b3647L, "quorum.wdp.brave.com"),
+            HostEntry(0x00215382L, 0x005b35f8L, "cr.brave.com"),
+            HostEntry(0x0008e307L, 0x00432b81L, "crashpad.chromium.org"),
+            HostEntry(0x004acbedL, 0x0083f0fcL, "crashpad.chromium.org"),
+            HostEntry(0x00215216L, 0x005b348cL, "variations.brave.com"),
+            HostEntry(0x0035f056L, 0x006f3c91L, "variations.brave.com"),
         )
 
         val targets = listOf(
@@ -191,7 +193,7 @@ private val braveHostsBlockerPatch = rawResourcePatch(
         }
 
         // Phase 2: Write replacement bytes and verify each entry in-situ
-        val redirectionIp = "0.0.0.0".toByteArray(Charsets.US_ASCII)
+        val redirectionIp = SINK_HOST.toByteArray(Charsets.US_ASCII)
         for ((relPath, soFile, offsetSelector) in existingTargets) {
             val writtenHosts = RandomAccessFile(soFile, "rw").use { raf ->
                 writeHostEntries(raf, relPath, hostEntries, offsetSelector, redirectionIp)
@@ -317,7 +319,6 @@ val braveBlockTelemetryPatch = bytecodePatch(
 }
 
 private const val OFFERS_HOST = "offers.brave.com"
-private const val SINK_HOST = "0.0.0.0"
 
 private data class PendingOffersRewrite(
     val index: Int,

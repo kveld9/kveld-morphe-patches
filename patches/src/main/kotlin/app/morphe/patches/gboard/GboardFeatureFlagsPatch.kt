@@ -130,14 +130,9 @@ val gboardFeatureFlagsPatch = bytecodePatch(
             hookFlag("enable_use_bluetooth_setting", "isBluetoothMicEnabled", "Bluetooth Microphone")
         }
 
-        // 7. Emoji Scale Setting (enables keyboard engine support for emoji scaling)
-        val fpEmoji = flagFingerprint("emoji_scale_supported")
-        fpEmoji.method.overrideFlagDefault(fpEmoji.instructionMatches.first().index, "emoji_scale_supported") { reg ->
-            "const/4 v$reg, 0x1"
-        }
-        val targetClassEmoji = cleanClassName(fpEmoji.originalClassDef.type)
-        println("[Feature Flags] Emoji Scale Setting: Injected isolated flag override into $targetClassEmoji.<clinit>()")
-        patched++
+        // 7. Emoji Scale Setting
+        // Note (18.6.3): the legacy Phenotype experiment flag (emoji_scale_supported) was
+        // removed upstream; native keyboard engine support for emoji scaling is active by default.
 
         if (patched == 0) {
             println("[Feature Flags] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")

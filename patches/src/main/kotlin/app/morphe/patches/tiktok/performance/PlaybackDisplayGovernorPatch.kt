@@ -142,9 +142,9 @@ val playbackDisplayGovernorPatch = bytecodePatch(
                 patched++
 
                 val awemeGetVideoFp = Fingerprint(
-                    definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
+                    definingClass = "Lcom/ss/android/ugc/aweme/minilite/feed/model/Aweme;",
                     name = "getVideo",
-                    returnType = "Lcom/ss/android/ugc/aweme/feed/model/Video;",
+                    returnType = "Lcom/ss/android/ugc/aweme/minilite/feed/model/Video;",
                 )
                 val method = awemeGetVideoFp.method
                 val returnIndices = method.implementation?.instructions?.withIndex()
@@ -166,7 +166,7 @@ val playbackDisplayGovernorPatch = bytecodePatch(
                 }
 
                 val videoGetBitrateFp = Fingerprint(
-                    definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Video;",
+                    definingClass = "Lcom/ss/android/ugc/aweme/minilite/feed/model/Video;",
                     name = "getBitRate",
                     returnType = "Ljava/util/List;",
                 )
@@ -191,9 +191,9 @@ val playbackDisplayGovernorPatch = bytecodePatch(
                 }
 
                 val videoGetProperPlayAddrFp = Fingerprint(
-                    definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Video;",
+                    definingClass = "Lcom/ss/android/ugc/aweme/minilite/feed/model/Video;",
                     name = "getProperPlayAddr",
-                    returnType = "Lcom/ss/android/ugc/aweme/feed/model/VideoUrlModel;",
+                    returnType = "Lcom/ss/android/ugc/aweme/minilite/feed/model/VideoUrlModel;",
                 )
                 val properPlayAddrMethod = videoGetProperPlayAddrFp.method
                 val properPlayAddrReturnIndices = properPlayAddrMethod.implementation?.instructions?.withIndex()
@@ -215,9 +215,9 @@ val playbackDisplayGovernorPatch = bytecodePatch(
                 }
 
                 val videoGetPlayAddrFp = Fingerprint(
-                    definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Video;",
+                    definingClass = "Lcom/ss/android/ugc/aweme/minilite/feed/model/Video;",
                     name = "getPlayAddr",
-                    returnType = "Lcom/ss/android/ugc/aweme/feed/model/VideoUrlModel;",
+                    returnType = "Lcom/ss/android/ugc/aweme/minilite/feed/model/VideoUrlModel;",
                 )
                 val playAddrMethod = videoGetPlayAddrFp.method
                 val playAddrReturnIndices = playAddrMethod.implementation?.instructions?.withIndex()
@@ -241,9 +241,9 @@ val playbackDisplayGovernorPatch = bytecodePatch(
                 val codecPlayAddrMethods = listOf("getPlayAddrBytevc1", "getPlayAddrH264", "getH264PlayAddr")
                 for (getterName in codecPlayAddrMethods) {
                     val getterFp = Fingerprint(
-                        definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Video;",
+                        definingClass = "Lcom/ss/android/ugc/aweme/minilite/feed/model/Video;",
                         name = getterName,
-                        returnType = "Lcom/ss/android/ugc/aweme/feed/model/VideoUrlModel;",
+                        returnType = "Lcom/ss/android/ugc/aweme/minilite/feed/model/VideoUrlModel;",
                     )
                     val getterMethod = getterFp.method
                     val getterReturnIndices = getterMethod.implementation?.instructions?.withIndex()

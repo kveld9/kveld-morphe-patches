@@ -8,7 +8,6 @@ import app.morphe.patches.shared.Constants
 import app.morphe.patches.shared.ensureRegisterCount
 import app.morphe.patches.shared.sharedExtensionPatch
 import com.android.tools.smali.dexlib2.AccessFlags
-import com.android.tools.smali.dexlib2.Opcode
 
 val rememberClearDisplayPatch = bytecodePatch(
     name = "Remember Clear Display",
@@ -23,82 +22,199 @@ val rememberClearDisplayPatch = bytecodePatch(
         val isLite = packageMetadata.packageName == Constants.TIKTOK_LITE_PACKAGE_NAME
 
         if (isLite) {
-            // 1. Clear-mode dispatcher state tracking: observe all OPEN and manual CLOSE calls.
+            // 1. Hook clear-mode state dispatcher (LC) to track user clear-display intent.
             val switchFp = Fingerprint(
-                definingClass = "LX/7iG;",
                 name = "LC",
-                parameters = listOf("LX/7iH;", "Ljava/lang/String;", "Z", "Lcom/ss/android/ugc/aweme/feed/model/Aweme;"),
                 returnType = "V",
                 strings = listOf("change_clear_mode_status"),
             )
-            switchFp.method.addInstructions(
-                0,
-                "invoke-static/range {p0 .. p1}, ${Constants.TIKTOK_EXTENSION_CLEARDISPLAY_HOOK}->onClearModeCall(Ljava/lang/Object;Ljava/lang/String;)V",
-            )
-            println("[Remember Clear Display] Hooked Lite LX/7iG;.LC() -> intention tracking active.")
-            patched++
+            val switchMethod = switchFp.method
+            val holderClass = switchMethod.definingClass
+            val enumType = switchMethod.parameterTypes.firstOrNull()?.toString()
+                ?: error("[Remember Clear Display] Lite dispatcher LC has no parameters")
 
-            // 2. Long-press menu toggle: set user intention flag true when entering clear mode.
-            val longPressFp = Fingerprint(
-                definingClass = "LX/8iD;",
-                name = "LC",
-                parameters = listOf("Landroid/view/View;"),
-                returnType = "V",
-                strings = listOf("long_press"),
-            )
-            longPressFp.method.addInstructionsWithLabels(
+            val holderDef = classDefByOrNull(holderClass)
+                ?: error("[Remember Clear Display] Could not resolve class $holderClass")
+            val stateFields = holderDef.fields.filter {
+                AccessFlags.STATIC.isSet(it.accessFlags) && it.type.toString() == enumType
+            }
+            if (stateFields.size != 1) {
+                error("[Remember Clear Display] Expected exactly 1 static field of type $enumType in $holderClass, found ${stateFields.size}")
+            }
+            val stateField = stateFields.first()
+
+            val enumDef = classDefByOrNull(enumType)
+                ?: error("[Remember Clear Display] Could not resolve enum class $enumType")
+            val openField = enumDef.fields.firstOrNull {
+                it.name == "OPEN" && AccessFlags.STATIC.isSet(it.accessFlags) && it.type.toString() == enumType
+            } ?: error("[Remember Clear Display] Could not resolve static field OPEN in $enumType")
+            val closeField = enumDef.fields.firstOrNull {
+                it.name == "CLOSE" && AccessFlags.STATIC.isSet(it.accessFlags) && it.type.toString() == enumType
+            } ?: error("[Remember Clear Display] Could not resolve static field CLOSE in $enumType")
+
+            println("[Remember Clear Display] Resolved Lite dispatcher $holderClass (${stateField.name}, OPEN=${openField.name}, CLOSE=${closeField.name}).")
+
+            val lcField = holderDef.staticFields.firstOrNull {
+                it.type == "Ljava/lang/String;" && it.name == "LC"
+            } ?: holderDef.staticFields.firstOrNull {
+                it.type == "Ljava/lang/String;"
+            } ?: error("[Remember Clear Display] Could not resolve static String key field in $holderClass")
+
+            switchMethod.addInstructionsWithLabels(
                 0,
                 """
-                    iget-boolean v0, p0, LX/8iD;->LIILZZLLZ:Z
-                    if-nez v0, :skip_open
-                    const/4 v0, 1
-                    invoke-static {v0}, ${Constants.TIKTOK_EXTENSION_CLEARDISPLAY_HOOK}->setWantsClear(Z)V
-                    :skip_open
+                    invoke-static/range {p0 .. p1}, ${Constants.TIKTOK_EXTENSION_CLEARDISPLAY_HOOK}->onClearModeCall(Ljava/lang/Object;Ljava/lang/String;)Z
+                    move-result v0
+                    if-nez v0, :continue_lc
+                    return-void
+                    :continue_lc
                     nop
                 """.trimIndent(),
             )
-            println("[Remember Clear Display] Hooked Lite LX/8iD;.LC() -> long-press intent recorded.")
+            println("[Remember Clear Display] Hooked Lite $holderClass.${switchMethod.name}() -> user choice recording active.")
             patched++
 
-            // 3. FeedFragment.r5: re-link clear mode token and re-emit OPEN event on video switch.
-            val feedFp = Fingerprint(
-                definingClass = "Lcom/ss/android/ugc/aweme/main/homepage/fragment/FeedFragment;",
-                name = "r5",
-                parameters = listOf("Z"),
-                returnType = "V",
-                strings = listOf("switch_video"),
-            )
-            // NOTE: do NOT call ensureRegisterCount here. r5 already carries 6 registers;
-            // ensureRegisterCount(6) on this method breaks ART verification (FeedFragment
-            // marked erroneous, 9-subclass cascade) while the bare edit passes clean.
-            val returnIndex = feedFp.method.implementation?.instructions?.indexOfLast {
-                it.opcode == Opcode.RETURN_VOID
-            } ?: error("No RETURN_VOID in FeedFragment.r5")
+            val keyMethod = Fingerprint(
+                definingClass = holderClass,
+                name = "L",
+                parameters = listOf("Landroid/content/Context;", "Lcom/ss/android/ugc/aweme/feed/model/Aweme;"),
+                returnType = "Ljava/lang/String;",
+            ).method
 
-            // Single insertion so the :skip_replay label resolves inside one batch.
-            feedFp.method.addInstructionsWithLabels(
-                returnIndex,
+            keyMethod.addInstructionsWithLabels(
+                0,
                 """
-                    invoke-static {}, ${Constants.TIKTOK_EXTENSION_CLEARDISPLAY_HOOK}->getWantsClear()Z
+                    invoke-static {}, ${Constants.TIKTOK_EXTENSION_CLEARDISPLAY_HOOK}->getClearDisplayState()Z
                     move-result v0
-                    if-eqz v0, :skip_replay
-                    invoke-virtual {p0}, Lcom/ss/android/ugc/aweme/main/homepage/fragment/FeedFragment;->LLIIILLIL()Lcom/ss/android/ugc/aweme/feed/model/Aweme;
-                    move-result-object v0
-                    if-eqz v0, :skip_replay
-                    const/4 v1, 0x0
-                    invoke-static {v1, v0}, LX/7iG;->LCC(Landroid/content/Context;Lcom/ss/android/ugc/aweme/feed/model/Aweme;)V
-                    sget-object v1, LX/7iH;->OPEN:LX/7iH;
-                    const-string v2, "switch_video"
-                    const/4 v3, 0x0
-                    invoke-static {v1, v2, v3, v0}, LX/7iG;->LC(LX/7iH;Ljava/lang/String;ZLcom/ss/android/ugc/aweme/feed/model/Aweme;)V
-                    :skip_replay
-                    return-void
+                    if-eqz v0, :cond_orig
+                    const-string v0, "CLEARDISPLAY"
+                    sput-object v0, $holderClass->${lcField.name}:Ljava/lang/String;
+                    return-object v0
+                    :cond_orig
+                    nop
                 """.trimIndent(),
             )
-            println("[Remember Clear Display] Hooked Lite FeedFragment.r5() -> video switch replay active.")
+            println("[Remember Clear Display] Hooked Lite $holderClass.${keyMethod.name}() -> persistent clear key bridge active.")
             patched++
 
-            println("[Remember Clear Display] Applied $patched clear-display hook(s).")
+            // 2. Hook per-video anchors to re-apply clear mode on video switches.
+            data class Anchor(
+                val label: String,
+                val definingClass: String,
+                val name: String,
+                val parameters: List<String>,
+                val strings: List<String> = emptyList(),
+                val hookMethod: String,
+            )
+
+            val anchors = listOf(
+                Anchor(
+                    label = "r5",
+                    definingClass = "Lcom/ss/android/ugc/aweme/main/homepage/fragment/FeedFragment;",
+                    name = "r5",
+                    parameters = listOf("Z"),
+                    strings = listOf("switch_video"),
+                    hookMethod = "onVideoSwitchR5",
+                ),
+                Anchor(
+                    label = "bind",
+                    definingClass = "LX/Eqi;",
+                    name = "LIILLZLL",
+                    parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;", "I"),
+                    hookMethod = "onVideoSwitchBind",
+                ),
+                Anchor(
+                    label = "first_frame",
+                    definingClass = "LX/Eqi;",
+                    name = "onRenderFirstFrame",
+                    parameters = listOf("Ljava/lang/String;", "LX/1gF;"),
+                    hookMethod = "onVideoSwitchFirstFrame",
+                ),
+                Anchor(
+                    label = "bind_all",
+                    definingClass = "LX/Eqi;",
+                    name = "LILZL",
+                    parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;"),
+                    hookMethod = "onVideoSwitchBindAll",
+                ),
+                Anchor(
+                    label = "page_selected",
+                    definingClass = "Landroidx/viewpager/widget/ViewPager;",
+                    name = "dispatchOnPageSelected",
+                    parameters = listOf("I"),
+                    hookMethod = "onVideoSwitchPager",
+                ),
+                Anchor(
+                    label = "page_internal",
+                    definingClass = "Landroidx/viewpager/widget/ViewPager;",
+                    name = "setCurrentItemInternal",
+                    parameters = listOf("I", "Z", "Z"),
+                    hookMethod = "onVideoSwitchPager",
+                ),
+                Anchor(
+                    label = "pager_wrapper",
+                    definingClass = "LX/67h;",
+                    name = "setCurrentItem",
+                    parameters = listOf("I"),
+                    hookMethod = "onVideoSwitchPagerWrapper",
+                ),
+                Anchor(
+                    label = "select_index",
+                    definingClass = "LX/5ag;",
+                    name = "setCurrentSelectIndex",
+                    parameters = listOf("I"),
+                    hookMethod = "onVideoSwitchSelectIndex",
+                ),
+                Anchor(
+                    label = "sdk_first_frame",
+                    definingClass = "LX/1Gi;",
+                    name = "run",
+                    parameters = listOf(),
+                    hookMethod = "onVideoSwitchSdkFirstFrame",
+                ),
+                Anchor(
+                    label = "sdk_chain_a",
+                    definingClass = "LX/28R;",
+                    name = "onRenderFirstFrame",
+                    parameters = listOf("Ljava/lang/String;", "LX/1gF;"),
+                    hookMethod = "onVideoSwitchSdkChainA",
+                ),
+                Anchor(
+                    label = "sdk_chain_b",
+                    definingClass = "LX/2L5;",
+                    name = "onRenderFirstFrame",
+                    parameters = listOf("Ljava/lang/String;", "LX/1gF;"),
+                    hookMethod = "onVideoSwitchSdkChainB",
+                ),
+            )
+
+            for (anchor in anchors) {
+                try {
+                    val returnType = if (anchor.name == "LB" || anchor.name == "LBL") "Z" else "V"
+                    val fp = Fingerprint(
+                        definingClass = anchor.definingClass,
+                        name = anchor.name,
+                        parameters = anchor.parameters,
+                        returnType = returnType,
+                        strings = anchor.strings,
+                    )
+                    val method = fp.method
+                    method.addInstructions(
+                        0,
+                        "invoke-static {}, ${Constants.TIKTOK_EXTENSION_CLEARDISPLAY_HOOK}->${anchor.hookMethod}()V",
+                    )
+                    println("[Remember Clear Display] Hooked Lite ${anchor.definingClass}.${anchor.name}() -> ${anchor.label} trigger active.")
+                    patched++
+                } catch (e: Exception) {
+                    println("[Remember Clear Display] ${anchor.label} note: ${e.message}")
+                }
+            }
+
+            if (patched == 0) {
+                println("[Remember Clear Display] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
+            } else {
+                println("[Remember Clear Display] Applied $patched clear-display hook(s).")
+            }
             return@execute
         }
 

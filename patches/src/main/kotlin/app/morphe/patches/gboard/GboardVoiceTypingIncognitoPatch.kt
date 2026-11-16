@@ -28,7 +28,9 @@ val gboardVoiceTypingIncognitoPatch = bytecodePatch(
                 "Z",
             ),
             filters = OpcodesFilter.opcodesToFilters(
-                Opcode.RETURN,
+                Opcode.INVOKE_STATIC,
+                Opcode.MOVE_RESULT,
+                Opcode.IF_NEZ,
                 Opcode.INVOKE_STATIC,
                 Opcode.MOVE_RESULT,
                 Opcode.IF_NEZ,
@@ -37,7 +39,7 @@ val gboardVoiceTypingIncognitoPatch = bytecodePatch(
         )
 
         fp.method.apply {
-            val match = fp.instructionMatches.last()
+            val match = fp.instructionMatches[2]
             val insn = getInstruction<OneRegisterInstruction>(match.index)
             val reg = insn.registerA
             addInstructions(

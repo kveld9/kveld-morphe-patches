@@ -20,7 +20,7 @@ val gboardForceIncognitoPatch: BytecodePatch = bytecodePatch(
 
     execute {
         val fp1 = Fingerprint(
-            definingClass = "Lssp;",
+            definingClass = "Ljiu;",
             name = "z",
             parameters = listOf("Landroid/view/inputmethod/EditorInfo;"),
             returnType = "Z",
@@ -30,15 +30,15 @@ val gboardForceIncognitoPatch: BytecodePatch = bytecodePatch(
             """
                 invoke-static {}, ${Constants.GBOARD_EXTENSION_CLASS}->isForceIncognitoEnabled()Z
                 move-result v0
-                if-eqz v0, :cond_skip_morphe_incognito_ssp
+                if-eqz v0, :cond_skip_morphe_incognito_jiu
                 const/4 v0, 0x1
                 return v0
-                :cond_skip_morphe_incognito_ssp
+                :cond_skip_morphe_incognito_jiu
             """.trimIndent(),
         )
 
         val fp2 = Fingerprint(
-            definingClass = "Lftu;",
+            definingClass = "Lctz;",
             name = "G",
             parameters = emptyList(),
             returnType = "Z",
@@ -48,7 +48,7 @@ val gboardForceIncognitoPatch: BytecodePatch = bytecodePatch(
             """
                 invoke-static {}, ${Constants.GBOARD_EXTENSION_CLASS}->isForceIncognitoEnabled()Z
                 move-result v0
-                if-eqz v0, :cond_skip_morphe_incognito_ftu
+                if-eqz v0, :cond_skip_morphe_incognito_ctz
                 invoke-static {}, ${Constants.GBOARD_EXTENSION_CLASS}->isHideIncognitoIconEnabled()Z
                 move-result v0
                 if-eqz v0, :cond_show_incognito_mask
@@ -57,7 +57,7 @@ val gboardForceIncognitoPatch: BytecodePatch = bytecodePatch(
                 :cond_show_incognito_mask
                 const/4 v0, 1
                 return v0
-                :cond_skip_morphe_incognito_ftu
+                :cond_skip_morphe_incognito_ctz
             """.trimIndent(),
         )
 
@@ -68,7 +68,8 @@ val gboardForceIncognitoPatch: BytecodePatch = bytecodePatch(
             filters = OpcodesFilter.opcodesToFilters(
                 Opcode.INVOKE_STATIC,
                 Opcode.MOVE_RESULT,
-                Opcode.IF_EQZ,
+                Opcode.IF_NEZ,
+                Opcode.INVOKE_VIRTUAL,
                 Opcode.RETURN_VOID,
             ),
             strings = listOf("clipboard_primary_uri", ""),

@@ -65,7 +65,7 @@ public class GboardExtension {
     public static final int DEFAULT_CLIPBOARD_RETENTION_HOURS = 24;
 
     public static final int MIN_CLIPBOARD_UNPINNED_LIMIT = 5;
-    public static final int MAX_CLIPBOARD_UNPINNED_LIMIT = 100;
+    public static final int MAX_CLIPBOARD_UNPINNED_LIMIT = 200;
     public static final int DEFAULT_CLIPBOARD_UNPINNED_LIMIT = 50;
 
     public static final int MIN_CLIPBOARD_GRID_COLUMNS = 1;
@@ -369,7 +369,8 @@ public class GboardExtension {
                         restoreImeNavBar(window, f);
                         return true;
                     }
-                    return !hideImeNavBar(window, f);
+                    hideImeNavBar(window, f);
+                    return true;
                 });
             }
         } catch (Throwable ignored) {}
@@ -633,6 +634,12 @@ public class GboardExtension {
         }
         int limit = getIntPref(PREF_KEY_CLIPBOARD_UNPINNED_LIMIT, DEFAULT_CLIPBOARD_UNPINNED_LIMIT);
         return Math.max(MIN_CLIPBOARD_UNPINNED_LIMIT, Math.min(MAX_CLIPBOARD_UNPINNED_LIMIT, limit));
+    }
+
+    public static int getClipboardRemainingBudget(int pinnedCount) {
+        int limit = getClipboardUnpinnedLimit();
+        int remaining = limit - pinnedCount;
+        return remaining < 0 ? 0 : remaining;
     }
 
     public static boolean isClipboardGridLayoutEnabled() {
@@ -1172,7 +1179,22 @@ public class GboardExtension {
 
                     android.app.AlarmManager mgr = (android.app.AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
                     if (mgr != null) {
-                        mgr.set(android.app.AlarmManager.RTC, System.currentTimeMillis() + 350, pendingIntent);
+                        long triggerAtMillis = System.currentTimeMillis() + 350;
+                        try {
+                            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                                if (mgr.canScheduleExactAlarms()) {
+                                    mgr.setExactAndAllowWhileIdle(android.app.AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
+                                } else {
+                                    mgr.set(android.app.AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
+                                }
+                            } else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                                mgr.setExactAndAllowWhileIdle(android.app.AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
+                            } else {
+                                mgr.setExact(android.app.AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
+                            }
+                        } catch (SecurityException ignored) {
+                            mgr.set(android.app.AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
+                        }
                     }
                 } catch (Throwable ignored) {}
             }

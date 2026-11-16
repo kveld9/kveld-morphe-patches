@@ -20,6 +20,13 @@ public final class TikTokVideoFitHook {
     // Bounded diagnostics: which video views reach fitted() per process (avoids log spam).
     private static final AtomicInteger diagCount = new AtomicInteger(0);
 
+    private static volatile Class<?> cachedClass = null;
+    private static volatile Field cachedWidthField = null;
+    private static volatile Field cachedHeightField = null;
+    private static volatile Field cachedTransXField = null;
+    private static volatile Field cachedTransYField = null;
+    private static volatile Method cachedCopyMethod = null;
+
     private TikTokVideoFitHook() {}
 
     public static Object fitted(View view, Object originalResult) {
@@ -80,6 +87,56 @@ public final class TikTokVideoFitHook {
         }
     }
 
+    private static synchronized void resolveMembers(Class<?> clazz) {
+        if (cachedClass == clazz) {
+            return;
+        }
+
+        Field w = null;
+        Field h = null;
+        Field tx = null;
+        Field ty = null;
+        try {
+            w = clazz.getDeclaredField("width");
+            w.setAccessible(true);
+        } catch (Throwable ignored) {}
+        try {
+            h = clazz.getDeclaredField("height");
+            h.setAccessible(true);
+        } catch (Throwable ignored) {}
+        try {
+            tx = clazz.getDeclaredField("translateX");
+            tx.setAccessible(true);
+        } catch (Throwable ignored) {}
+        try {
+            ty = clazz.getDeclaredField("translateY");
+            ty.setAccessible(true);
+        } catch (Throwable ignored) {}
+
+        Method copy = null;
+        try {
+            for (Method m : clazz.getMethods()) {
+                if (!"copy".equals(m.getName())) {
+                    continue;
+                }
+                Class<?>[] pts = m.getParameterTypes();
+                if (pts.length < 4 || pts[0] != int.class || pts[1] != int.class
+                        || !isFloatLike(pts[2]) || !isFloatLike(pts[3])) {
+                    continue;
+                }
+                copy = m;
+                break;
+            }
+        } catch (Throwable ignored) {}
+
+        cachedWidthField = w;
+        cachedHeightField = h;
+        cachedTransXField = tx;
+        cachedTransYField = ty;
+        cachedCopyMethod = copy;
+        cachedClass = clazz;
+    }
+
     private static Object fittedInner(Object originalResult, int containerW, int containerH) {
         if (containerW <= 0 || containerH <= 0) {
             return originalResult;
@@ -87,25 +144,27 @@ public final class TikTokVideoFitHook {
 
         try {
             Class<?> clazz = originalResult.getClass();
-            Field widthField = clazz.getDeclaredField("width");
-            widthField.setAccessible(true);
-            int origW = widthField.getInt(originalResult);
+            if (cachedClass != clazz) {
+                resolveMembers(clazz);
+            }
 
-            Field heightField = clazz.getDeclaredField("height");
-            heightField.setAccessible(true);
+            Field widthField = cachedWidthField;
+            Field heightField = cachedHeightField;
+            if (widthField == null || heightField == null) {
+                return originalResult;
+            }
+
+            int origW = widthField.getInt(originalResult);
             int origH = heightField.getInt(originalResult);
 
             if (origW <= 0 || origH <= 0) {
                 return originalResult;
             }
 
-            Field transXField = clazz.getDeclaredField("translateX");
-            transXField.setAccessible(true);
-            Object origTransX = transXField.get(originalResult);
-
-            Field transYField = clazz.getDeclaredField("translateY");
-            transYField.setAccessible(true);
-            Object origTransY = transYField.get(originalResult);
+            Field transXField = cachedTransXField;
+            Field transYField = cachedTransYField;
+            Object origTransX = transXField != null ? transXField.get(originalResult) : null;
+            Object origTransY = transYField != null ? transYField.get(originalResult) : null;
 
             int newW;
             int newH;
@@ -154,20 +213,18 @@ public final class TikTokVideoFitHook {
             // the returned instance still see the fitted dimensions.
             widthField.setInt(originalResult, newW);
             heightField.setInt(originalResult, newH);
-            setFloatField(transXField, originalResult, newTransX);
-            setFloatField(transYField, originalResult, newTransY);
+            if (transXField != null) {
+                setFloatField(transXField, originalResult, newTransX);
+            }
+            if (transYField != null) {
+                setFloatField(transYField, originalResult, newTransY);
+            }
 
             // Attempt copy(...) for callers that rely on a new instance
-            try {
-                for (Method m : clazz.getMethods()) {
-                    if (!"copy".equals(m.getName())) {
-                        continue;
-                    }
-                    Class<?>[] pts = m.getParameterTypes();
-                    if (pts.length < 4 || pts[0] != int.class || pts[1] != int.class
-                            || !isFloatLike(pts[2]) || !isFloatLike(pts[3])) {
-                        continue;
-                    }
+            Method copyMethod = cachedCopyMethod;
+            if (copyMethod != null) {
+                try {
+                    Class<?>[] pts = copyMethod.getParameterTypes();
                     Object[] args = new Object[pts.length];
                     args[0] = newW;
                     args[1] = newH;
@@ -184,19 +241,18 @@ public final class TikTokVideoFitHook {
                             args[i] = null;
                         }
                     }
-                    if (!ok) {
-                        continue;
+                    if (ok) {
+                        Object out = copyMethod.invoke(originalResult, args);
+                        if (out != null) {
+                            Log.i(TAG, "[Video Fit] " + fitMode + " " + origW + "x" + origH
+                                    + " -> " + newW + "x" + newH
+                                    + " container=" + containerW + "x" + containerH);
+                            return out;
+                        }
                     }
-                    Object out = m.invoke(originalResult, args);
-                    if (out != null) {
-                        Log.i(TAG, "[Video Fit] " + fitMode + " " + origW + "x" + origH
-                                + " -> " + newW + "x" + newH
-                                + " container=" + containerW + "x" + containerH);
-                        return out;
-                    }
+                } catch (Throwable t) {
+                    Log.w(TAG, "[Video Fit] copy failed, returning mutated original: " + t.getMessage());
                 }
-            } catch (Throwable t) {
-                Log.w(TAG, "[Video Fit] copy failed, returning mutated original: " + t.getMessage());
             }
 
             Log.i(TAG, "[Video Fit] " + fitMode + " (in place) " + origW + "x" + origH

@@ -32,9 +32,18 @@ The authoritative patch catalog with descriptions and options is generated in RE
 - **Clean Share Links**:
   - *Objective*: Removes tracking parameters from shared links and supports optional custom share host replacement.
   - *How*: Purges tracking tokens, device telemetry, and marketing campaign parameters from shared links across `tiktok.com` and `tiktxk.com` domains with optional custom hostname replacement via `TikTokShareHostHook`.
-- **Feed Ads & Content Filter**:
-  - *Objective*: Provide a clean feed without promotional interruptions, sponsored product links, or commerce anchors.
-  - *How*: Filters sponsored feed items, live cards, and shopping anchors during feed model parsing, removes ads inserted between a profile's videos, hides posts from chosen creators, with blocked hashtags, matching blocked keywords, or from hidden regions, and filters videos outside configured duration limits, exceeding post age, or outside configured view or like thresholds across For You, Following, and search feeds.
+- **Feed Ad Blocker**:
+  - *Objective*: Removes commercial advertisements, brand promotions, and promotional audio from the For You, Following, and Search feeds.
+  - *How*: Filters ads in live feed responses (`FeedApiService.fetchFeedList`), feed consumers (`FeedItemList.getItems()`, `FollowFeedList.getItems()`), and search feeds via `TikTokFeedAdFilter.filterAdsInList`.
+- **Hide Sponsored & Paid Partnership**:
+  - *Objective*: Removes creator commercial disclosures, branded content, and posts labeled "Sponsored" or "Paid partnership".
+  - *How*: Filters posts with commercial disclosure metadata across FYP, Following, and Search feeds via `TikTokFeedAdFilter.filterPaidPartnershipInList`.
+- **Hide AI-Generated Content**:
+  - *Objective*: Filters and skips videos tagged with native AI-generated metadata, C2PA content credentials, or creator AI disclosure tags across the For You, Following, and Friends feeds.
+  - *How*: Intercepts feed response and consumer streams via `TikTokFeedAdFilter.filterAiContentInList`.
+- **Feed Content & Bloat Filter**:
+  - *Objective*: Provide a clean feed without promotional interruptions, non-video clutter, live cards, or commerce anchors, with optional view/like/age/keyword filtering.
+  - *How*: Filters shopping anchors and bloat cards, live cards, removes ads inserted between profile videos, hides posts from chosen creators, hashtags, keywords, or regions, and filters videos outside configured duration, age, or view/like thresholds across the For You feed.
 - **Block Trackers**:
   - *Objective*: Prevent analytics tracking, event logging, and advertising profiling.
   - *How*: Neutralizes internal event dispatchers and strips tracking permissions from the manifest.
@@ -89,3 +98,53 @@ The authoritative patch catalog with descriptions and options is generated in RE
 - **Binary Debloating Side Effects**: Zeroing creator or live streaming libraries disables video recording, camera effects, and live broadcast features.
 - **Voice Tools**: Stripping speech engine binaries ceases text-to-speech narration and voice search functionality.
 - **Server Enforcement**: Region selection spoofs client carrier and locale indicators; server-side geoblocks or IP-level enforcement require corresponding network routing.
+
+## 5. Maintenance Risk Between Updates
+
+TikTok renames or re-obfuscates a large part of its own code on every release, so how long a patch survives depends on what it anchors to, not on how complex it is. The tiers below come from the patches that needed a dedicated fix on each of the last three consecutive releases.
+
+### A. Breaks on every release
+
+- **Video Fit Mode**: hooks a player component method by its obfuscated name and runs two whole-APK scans that must each resolve to exactly one method, so a single new method with the same shape fails the patch.
+- **Use System Font**: identifies the font provider by an obfuscated class and method name with no fallback anchor, and rewrites the full body of the matched methods, so any signature or body change breaks it.
+
+### B. Breaks on most releases
+
+These need a target refresh on most bumps: they depend on obfuscated class or method names, on view-binding methods the app renames wholesale, or on service interfaces that move between builds.
+
+- **Instant Launch** (splash ad services and preload tasks)
+- **Device Privacy Guard** (permission, location and sensor services)
+- **Disable On-Device AI** (assistant launch, router and search card services)
+- **Disable History Recording** (watch history and search history APIs)
+- **Friends & Suggestions Filter** (recommendation cards and swipe view model)
+- **Feed Content & Bloat Filter** (widest surface of the set: feed API, feed items, pendants, surveys)
+- **Declutter Navigation Bar** (bottom and top tab protocols, red dot services)
+- **Declutter Video Interface** (feed cell and view-binding methods)
+- **Declutter Direct Messages** (message list view holders and input bar components)
+- **Customize Search** (search middle page and card abilities)
+- **Block Popups & Prompts** (popup, campaign and onboarding services)
+- **Hide Inbox Promos & Alerts** (inbox multi view model)
+- **Force Auto-Scroll** (feed bottom bar facade)
+- **Custom Share Sheet** (share panel components)
+- **Auto-Pause First Video** (player controller)
+
+### C. Fails silently
+
+These catch their own hook errors, so a release that moves their targets leaves the patching run reporting success while the feature is simply gone. They need an applied-hook count check in the run log plus an on-screen check, not just a green result.
+
+- **Feed Content & Bloat Filter**, **Allow Screenshots**, **Download Without Watermark**, **Friends & Suggestions Filter**, **Offline Video Limit**, **SIM Region Selector**, **Bypass Mandatory Login**
+
+### D. Holds across releases
+
+Manifest, asset, resource and native library work does not depend on obfuscated names and survives bumps.
+
+- **Slimmer axes**: **Remove Creator Tools**, **Remove Live Stream Files**, **Remove Voice Tools**, **Remove Extra Languages**, **Remove Extra Files**
+- **Manifest and permission work**: **Block Trackers (Setup)**, **Strip Sensitive Permissions**
+- **Native and configuration work**: **Disable Push Notifications**, **Disable QUIC**, **Block P2P Video Relay**, **Disable Live Gift Effects**, **Battery & Resource Saver**
+- **Stable bytecode targets**: **Clean Share Links**, **Login Compatibility Fix**
+
+### Triage order for the next release
+
+1. **Video Fit Mode** and **Use System Font** first: they break on every bump.
+2. Then the patches in section B, widest surface first.
+3. Then search the run log for `WARNING: applied 0 hook(s)` and `Skipped:` to find the silent group in section C, which the exit code never reports.

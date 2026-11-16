@@ -136,15 +136,6 @@ public final class TikTokCommentHook {
                 @Override
                 public void onViewAttachedToWindow(final View v) {
                     v.setVisibility(View.GONE);
-                    v.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
-                        @Override
-                        public boolean onPreDraw() {
-                            if (v.getVisibility() != View.GONE) {
-                                v.setVisibility(View.GONE);
-                            }
-                            return true;
-                        }
-                    });
                 }
 
                 @Override

@@ -66,6 +66,53 @@ private val INSTALLED_APPS_PERMISSIONS = setOf(
     "android.permission.QUERY_ALL_PACKAGES",
 )
 
+private val PHONE_PERMISSIONS = setOf(
+    "android.permission.CALL_PHONE",
+    "android.permission.CALL_PRIVILEGED",
+    "android.permission.ANSWER_PHONE_CALLS",
+    "android.permission.ACCEPT_HANDOVER",
+    "android.permission.READ_PHONE_STATE",
+    "android.permission.READ_PHONE_NUMBERS",
+    "android.permission.READ_CALL_LOG",
+    "android.permission.WRITE_CALL_LOG",
+    "android.permission.PROCESS_OUTGOING_CALLS",
+    "android.permission.USE_SIP",
+)
+
+private val SMS_PERMISSIONS = setOf(
+    "android.permission.SEND_SMS",
+    "android.permission.RECEIVE_SMS",
+    "android.permission.READ_SMS",
+    "android.permission.RECEIVE_MMS",
+    "android.permission.RECEIVE_WAP_PUSH",
+    "android.permission.READ_CELL_BROADCASTS",
+)
+
+private val OVERLAY_PERMISSIONS = setOf(
+    "android.permission.SYSTEM_ALERT_WINDOW",
+)
+
+private val INSTALL_PACKAGES_PERMISSIONS = setOf(
+    "android.permission.REQUEST_INSTALL_PACKAGES",
+)
+
+private val USAGE_ACCESS_PERMISSIONS = setOf(
+    "android.permission.PACKAGE_USAGE_STATS",
+)
+
+private val EXACT_ALARM_PERMISSIONS = setOf(
+    "android.permission.SCHEDULE_EXACT_ALARM",
+    "android.permission.USE_EXACT_ALARM",
+)
+
+private val FINANCIAL_SMS_PERMISSIONS = setOf(
+    "android.permission.SMS_FINANCIAL_TRANSACTIONS",
+)
+
+private val BATTERY_EXEMPTION_PERMISSIONS = setOf(
+    "android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS",
+)
+
 private fun buildBlockedPermissions(
     stripNotifications: Boolean,
     stripCamera: Boolean,
@@ -77,6 +124,14 @@ private fun buildBlockedPermissions(
     stripNearbyDevices: Boolean,
     stripSensors: Boolean,
     stripInstalledApps: Boolean,
+    stripPhone: Boolean,
+    stripSms: Boolean,
+    stripOverlay: Boolean,
+    stripInstallPackages: Boolean,
+    stripUsageAccess: Boolean,
+    stripExactAlarms: Boolean,
+    stripFinancialSms: Boolean,
+    stripBatteryExemption: Boolean,
 ): Set<String> {
     val blocked = mutableSetOf<String>()
     if (stripNotifications) blocked.addAll(NOTIFICATION_PERMISSIONS)
@@ -89,6 +144,14 @@ private fun buildBlockedPermissions(
     if (stripNearbyDevices) blocked.addAll(NEARBY_DEVICES_PERMISSIONS)
     if (stripSensors) blocked.addAll(SENSORS_PERMISSIONS)
     if (stripInstalledApps) blocked.addAll(INSTALLED_APPS_PERMISSIONS)
+    if (stripPhone) blocked.addAll(PHONE_PERMISSIONS)
+    if (stripSms) blocked.addAll(SMS_PERMISSIONS)
+    if (stripOverlay) blocked.addAll(OVERLAY_PERMISSIONS)
+    if (stripInstallPackages) blocked.addAll(INSTALL_PACKAGES_PERMISSIONS)
+    if (stripUsageAccess) blocked.addAll(USAGE_ACCESS_PERMISSIONS)
+    if (stripExactAlarms) blocked.addAll(EXACT_ALARM_PERMISSIONS)
+    if (stripFinancialSms) blocked.addAll(FINANCIAL_SMS_PERMISSIONS)
+    if (stripBatteryExemption) blocked.addAll(BATTERY_EXEMPTION_PERMISSIONS)
     return blocked
 }
 
@@ -218,6 +281,70 @@ val universalPrivacyPermissionsPatch = resourcePatch(
         required = false,
     )
 
+    val stripPhone by booleanOption(
+        key = "stripPhone",
+        default = false,
+        title = "Phone",
+        description = "Removes phone calls, call log, and phone state permissions.",
+        required = false,
+    )
+
+    val stripSms by booleanOption(
+        key = "stripSms",
+        default = false,
+        title = "SMS",
+        description = "Removes SMS and MMS sending, receiving, and reading permissions.",
+        required = false,
+    )
+
+    val stripOverlay by booleanOption(
+        key = "stripOverlay",
+        default = false,
+        title = "Display over other apps",
+        description = "Removes the permission that lets the app draw over other apps.",
+        required = false,
+    )
+
+    val stripInstallPackages by booleanOption(
+        key = "stripInstallPackages",
+        default = false,
+        title = "Install apps",
+        description = "Removes the permission that lets the app install other apps.",
+        required = false,
+    )
+
+    val stripUsageAccess by booleanOption(
+        key = "stripUsageAccess",
+        default = false,
+        title = "Usage access",
+        description = "Removes access to the app usage history.",
+        required = false,
+    )
+
+    val stripExactAlarms by booleanOption(
+        key = "stripExactAlarms",
+        default = false,
+        title = "Exact alarms",
+        description = "Removes permission to schedule exact alarms and reminders.",
+        required = false,
+    )
+
+    val stripFinancialSms by booleanOption(
+        key = "stripFinancialSms",
+        default = false,
+        title = "Financial SMS",
+        description = "Removes access to financial transaction messages.",
+        required = false,
+    )
+
+    val stripBatteryExemption by booleanOption(
+        key = "stripBatteryExemption",
+        default = false,
+        title = "Battery optimization",
+        description = "Removes the request to be excluded from battery optimization.",
+        required = false,
+    )
+
     execute {
         val manifestFile = get("AndroidManifest.xml")
         if (!manifestFile.exists()) {
@@ -235,6 +362,14 @@ val universalPrivacyPermissionsPatch = resourcePatch(
         val removeNearbyDevices = stripNearbyDevices ?: false
         val removeSensors = stripSensors ?: false
         val removeInstalledApps = stripInstalledApps ?: false
+        val removePhone = stripPhone ?: false
+        val removeSms = stripSms ?: false
+        val removeOverlay = stripOverlay ?: false
+        val removeInstallPackages = stripInstallPackages ?: false
+        val removeUsageAccess = stripUsageAccess ?: false
+        val removeExactAlarms = stripExactAlarms ?: false
+        val removeFinancialSms = stripFinancialSms ?: false
+        val removeBatteryExemption = stripBatteryExemption ?: false
 
         val blockedPermissions = buildBlockedPermissions(
             stripNotifications = removeNotifications,
@@ -247,6 +382,14 @@ val universalPrivacyPermissionsPatch = resourcePatch(
             stripNearbyDevices = removeNearbyDevices,
             stripSensors = removeSensors,
             stripInstalledApps = removeInstalledApps,
+            stripPhone = removePhone,
+            stripSms = removeSms,
+            stripOverlay = removeOverlay,
+            stripInstallPackages = removeInstallPackages,
+            stripUsageAccess = removeUsageAccess,
+            stripExactAlarms = removeExactAlarms,
+            stripFinancialSms = removeFinancialSms,
+            stripBatteryExemption = removeBatteryExemption,
         )
 
         if (blockedPermissions.isEmpty()) {

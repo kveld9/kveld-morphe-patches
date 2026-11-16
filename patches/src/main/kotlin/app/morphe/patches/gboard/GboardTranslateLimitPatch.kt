@@ -24,7 +24,7 @@ val gboardTranslateLimitPatch = bytecodePatch(
 
         val fp = Fingerprint(
             definingClass = "Lcom/google/android/apps/inputmethod/libs/translate/TranslateKeyboard;",
-            name = "dE",
+            name = "eg",
             parameters = listOf(
                 "Lcom/google/android/libraries/inputmethod/widgets/SoftKeyboardView;",
                 "Lcom/google/android/libraries/inputmethod/metadata/KeyboardViewDef;",

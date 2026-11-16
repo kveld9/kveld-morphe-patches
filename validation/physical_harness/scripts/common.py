@@ -4,8 +4,8 @@ Common ADB, Device and Environment utilities for Physical ARM64 Test Harness.
 
 from __future__ import annotations
 
+import functools
 import http.server
-import os
 import socketserver
 import subprocess
 import threading
@@ -160,6 +160,10 @@ class AdbDevice:
         return self.cmd(["logcat", "-d", "-v", "threadtime"], check=False).stdout
 
 
+class _ReusableTCPServer(socketserver.TCPServer):
+    allow_reuse_address = True
+
+
 class LocalTestServer:
     """Spawns a local HTTP server serving validation pages and manages port forwarding."""
     def __init__(self, directory: Path, port: int = SERVER_PORT):
@@ -169,9 +173,8 @@ class LocalTestServer:
         self.thread: Optional[threading.Thread] = None
 
     def start(self):
-        os.chdir(self.directory)
-        handler = http.server.SimpleHTTPRequestHandler
-        self.server = socketserver.TCPServer(("127.0.0.1", self.port), handler)
+        handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=str(self.directory))
+        self.server = _ReusableTCPServer(("127.0.0.1", self.port), handler)
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
         self.thread.start()
 

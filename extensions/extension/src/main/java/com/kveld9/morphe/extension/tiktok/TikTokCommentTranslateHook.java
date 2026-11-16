@@ -3,7 +3,9 @@ package com.kveld9.morphe.extension.tiktok;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Build;
+import android.os.Handler;
 import android.os.LocaleList;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 
@@ -45,6 +47,9 @@ public final class TikTokCommentTranslateHook {
     private static volatile Object nativeLanguageSettings;
     private static volatile Method nativeDoNotTranslateGetter;
 
+    private static final Handler MAIN_HANDLER = new Handler(Looper.getMainLooper());
+    private static volatile boolean retryScheduled = false;
+
     public static volatile boolean enabled = true;
 
     private TikTokCommentTranslateHook() {}
@@ -68,7 +73,6 @@ public final class TikTokCommentTranslateHook {
             }
 
             translateLoadedBatchIfReady(manager, false);
-            itemView.postDelayed(() -> translateLoadedBatchIfReady(manager, true), 350);
         } catch (Throwable ex) {
             Log.d(TAG, "[Comment Auto Translate] registerCommentCell note: " + ex.getMessage());
         }
@@ -110,10 +114,51 @@ public final class TikTokCommentTranslateHook {
                 trimLoadedBatchesLocked();
             }
 
-            translateLoadedBatchIfReady(lastManager.get(), false);
+            Object anchor = lastManager.get();
+            if (anchor == null) {
+                synchronized (LOCK) {
+                    for (VisibleComment vc : visibleComments.values()) {
+                        Object m = vc.manager.get();
+                        if (m != null) {
+                            anchor = m;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (anchor != null) {
+                translateLoadedBatchIfReady(anchor, true);
+            } else {
+                scheduleSingleRetry();
+            }
         } catch (Throwable ex) {
             Log.d(TAG, "[Comment Auto Translate] onCommentListLoaded note: " + ex.getMessage());
         }
+    }
+
+    private static void scheduleSingleRetry() {
+        if (retryScheduled) return;
+        retryScheduled = true;
+        MAIN_HANDLER.postDelayed(() -> {
+            retryScheduled = false;
+            if (!enabled) return;
+            Object retryAnchor = lastManager.get();
+            if (retryAnchor == null) {
+                synchronized (LOCK) {
+                    for (VisibleComment vc : visibleComments.values()) {
+                        Object m = vc.manager.get();
+                        if (m != null) {
+                            retryAnchor = m;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (retryAnchor != null) {
+                translateLoadedBatchIfReady(retryAnchor, true);
+            }
+        }, 150);
     }
 
     private static void captureContext(View itemView) {

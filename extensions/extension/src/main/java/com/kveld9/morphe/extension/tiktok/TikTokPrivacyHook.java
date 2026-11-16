@@ -17,8 +17,8 @@ import java.util.Set;
 public final class TikTokPrivacyHook {
     private static final String TAG = "MorpheTikTok";
 
-    private static final ThreadLocal<Uri> LAST_URI = new ThreadLocal<>();
-    private static final ThreadLocal<Intent> LAST_INTENT = new ThreadLocal<>();
+    private static final ThreadLocal<Uri> PENDING_QUERY_URI = new ThreadLocal<>();
+    private static final ThreadLocal<Intent> PENDING_PACKAGE_INTENT = new ThreadLocal<>();
 
     private static final Set<String> CONTACTS_AUTHORITIES = new HashSet<>(Arrays.asList(
         "contacts",
@@ -118,42 +118,60 @@ public final class TikTokPrivacyHook {
         return false;
     }
 
-    public static void noteUri(Uri uri) {
-        LAST_URI.set(uri);
+    public static void noteQueryUri(Uri uri) {
+        if (uri != null) {
+            PENDING_QUERY_URI.set(uri);
+        } else {
+            PENDING_QUERY_URI.remove();
+        }
     }
 
-    public static Cursor filterNotedResult(Cursor cursor) {
-        Uri uri = LAST_URI.get();
-        LAST_URI.remove();
-        if (isContactsUri(uri)) {
-            Log.w(TAG, "[Device Privacy Guard] Filtered contacts query for URI: " + uri);
-            String[] columns = null;
-            if (cursor != null) {
+    public static Cursor filterCursor(Cursor cursor) {
+        Uri uri = PENDING_QUERY_URI.get();
+        try {
+            if (cursor == null) {
+                return null;
+            }
+            if (isContactsUri(uri)) {
+                Log.w(TAG, "[Device Privacy Guard] Filtered contacts query for URI: " + uri);
+                String[] columns = null;
                 try {
                     columns = cursor.getColumnNames();
                 } catch (Throwable ignored) {}
                 try {
                     cursor.close();
                 } catch (Throwable ignored) {}
+                // Same column shape as the original cursor but zero rows, so callers
+                // using getColumnIndexOrThrow() keep working instead of crashing.
+                return new MatrixCursor(columns != null ? columns : new String[0]);
             }
-            // Same column shape as the original cursor but zero rows, so callers
-            // using getColumnIndexOrThrow() keep working instead of crashing.
-            return new MatrixCursor(columns != null ? columns : new String[0]);
+            return cursor;
+        } finally {
+            PENDING_QUERY_URI.remove();
         }
-        return cursor;
     }
 
-    public static void noteIntent(Intent intent) {
-        LAST_INTENT.set(intent);
+    public static void notePackageIntent(Intent intent) {
+        if (intent != null) {
+            PENDING_PACKAGE_INTENT.set(intent);
+        } else {
+            PENDING_PACKAGE_INTENT.remove();
+        }
     }
 
-    public static List<ResolveInfo> filterNotedIntentResult(List<ResolveInfo> activities) {
-        Intent intent = LAST_INTENT.get();
-        LAST_INTENT.remove();
-        if (intent != null && (intent.getPackage() != null || intent.getComponent() != null)) {
-            return activities;
+    public static List<ResolveInfo> filterPackageList(List<ResolveInfo> activities) {
+        Intent intent = PENDING_PACKAGE_INTENT.get();
+        try {
+            if (activities == null) {
+                return null;
+            }
+            if (intent != null && (intent.getPackage() != null || intent.getComponent() != null)) {
+                return activities;
+            }
+            Log.w(TAG, "[Device Privacy Guard] Filtered broad package inventory query: " + intent);
+            return Collections.emptyList();
+        } finally {
+            PENDING_PACKAGE_INTENT.remove();
         }
-        Log.w(TAG, "[Device Privacy Guard] Filtered broad package inventory query: " + intent);
-        return Collections.emptyList();
     }
 }

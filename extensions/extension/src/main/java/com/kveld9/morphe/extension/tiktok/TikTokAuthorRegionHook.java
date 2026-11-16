@@ -25,9 +25,9 @@ public final class TikTokAuthorRegionHook {
     public static void install(Activity activity) {
         if (activity == null) return;
         try {
-            Log.i(TAG, "[Always Show Publish Date] Installed author region monitor on " + activity.getClass().getSimpleName());
+            Log.i(TAG, "[Show Author Region] Installed author region monitor on " + activity.getClass().getSimpleName());
         } catch (Throwable t) {
-            Log.w(TAG, "[Always Show Publish Date] install failed: " + t.getMessage());
+            Log.w(TAG, "[Show Author Region] install failed: " + t.getMessage());
         }
     }
 
@@ -43,7 +43,7 @@ public final class TikTokAuthorRegionHook {
 
             applyAuthorRegion(aweme);
         } catch (Throwable t) {
-            Log.w(TAG, "[Always Show Publish Date] onVideoItemParams failed: " + t.getMessage());
+            Log.w(TAG, "[Show Author Region] onVideoItemParams failed: " + t.getMessage());
         }
     }
 
@@ -74,10 +74,10 @@ public final class TikTokAuthorRegionHook {
                     nicknameField.setAccessible(true);
                     nicknameField.set(author, taggedName);
                 }
-                Log.d(TAG, "[Always Show Publish Date] Tagged creator with region: " + countryCode);
+                Log.d(TAG, "[Show Author Region] Tagged creator with region: " + countryCode);
             }
         } catch (Throwable t) {
-            Log.w(TAG, "[Always Show Publish Date] applyAuthorRegion failed: " + t.getMessage());
+            Log.w(TAG, "[Show Author Region] applyAuthorRegion failed: " + t.getMessage());
         }
     }
 

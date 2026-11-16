@@ -31,15 +31,7 @@ val disableQuicPatch = bytecodePatch(
             ).method
             hookVideoLoader(videoLoaderMethod)
 
-            val uploadMethod = Fingerprint(
-                definingClass = "Lcom/ss/bduploader/BDUploadUtil;",
-                name = "xquicAvalilable",
-                returnType = "Z",
-                parameters = emptyList(),
-            ).method
-            hookUploadUtil(uploadMethod)
-
-            println("[Disable QUIC] Applied 2 QUIC suppression hook(s).")
+            println("[Disable QUIC] Applied 1 QUIC suppression hook(s).")
             return@execute
         }
 

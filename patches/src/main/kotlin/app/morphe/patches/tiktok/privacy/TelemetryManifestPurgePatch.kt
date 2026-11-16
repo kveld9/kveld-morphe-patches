@@ -21,13 +21,9 @@ private val BLOCKED_COMPONENTS = setOf(
     "com.ss.android.common.applog.HotsoonReceiver",
     "com.appsflyer.MultipleInstallBroadcastReceiver",
     "com.appsflyer.SingleInstallBroadcastReceiver",
-    "com.bytedance.applog.collector.Collector",
     "com.google.android.gms.measurement.AppMeasurementReceiver",
-    "com.google.android.datatransport.runtime.scheduling.jobscheduling.AlarmManagerSchedulerBroadcastReceiver",
     "com.google.android.gms.measurement.AppMeasurementService",
     "com.google.android.gms.measurement.AppMeasurementJobService",
-    "com.google.android.datatransport.runtime.backends.TransportBackendDiscovery",
-    "com.google.android.datatransport.runtime.scheduling.jobscheduling.JobInfoSchedulerService",
     "com.appsflyer.referrer.INSTALL_PROVIDER",
     "com.appsflyer.internal.platform_extension.PluginInfoContentProvider",
     "com.google.android.gms.measurement.AppMeasurementContentProvider",
@@ -82,7 +78,7 @@ val telemetryManifestPurgePatch = resourcePatch(
                 }
 
                 removedRegistrarsCount = application.removeComponentDiscoveryRegistrarsWhere { name ->
-                    name.contains("Analytics", ignoreCase = true) || name.contains("Transport", ignoreCase = true)
+                    name.contains("Analytics", ignoreCase = true)
                 }
 
                 OPT_OUT_METADATA.forEach { (name, value) ->

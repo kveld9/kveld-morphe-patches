@@ -26,7 +26,27 @@ public final class TikTokAutoPauseHook {
     private static volatile String firstAwemeAid = null;
     private static final AtomicBoolean isAwaitingFirstPlay = new AtomicBoolean(true);
 
+    private static final Handler MAIN_HANDLER = new Handler(Looper.getMainLooper());
+    private static Runnable pendingPauseRunnable = null;
+    private static Runnable pendingPlayIconRunnable150 = null;
+    private static Runnable pendingPlayIconRunnable500 = null;
+
     private TikTokAutoPauseHook() {}
+
+    private static synchronized void cancelPendingCallbacks() {
+        if (pendingPauseRunnable != null) {
+            MAIN_HANDLER.removeCallbacks(pendingPauseRunnable);
+            pendingPauseRunnable = null;
+        }
+        if (pendingPlayIconRunnable150 != null) {
+            MAIN_HANDLER.removeCallbacks(pendingPlayIconRunnable150);
+            pendingPlayIconRunnable150 = null;
+        }
+        if (pendingPlayIconRunnable500 != null) {
+            MAIN_HANDLER.removeCallbacks(pendingPlayIconRunnable500);
+            pendingPlayIconRunnable500 = null;
+        }
+    }
 
     /**
      * Called at the end of PlayerController.d0 after video engine setup.
@@ -43,6 +63,7 @@ public final class TikTokAutoPauseHook {
         } else if (firstAwemeAid != null && aid != null && !aid.equals(firstAwemeAid)) {
             Log.i(TAG, "[AutoPauseFirstVideo] New video loaded (aid=" + aid + ") -> auto-pause unlocked.");
             isAwaitingFirstPlay.set(false);
+            cancelPendingCallbacks();
             return;
         }
 
@@ -71,6 +92,7 @@ public final class TikTokAutoPauseHook {
         if (aid != null && firstAwemeAid != null && !aid.equals(firstAwemeAid)) {
             Log.i(TAG, "[AutoPauseFirstVideo] Scrolled to new video in Q6 (aid=" + aid + ") -> auto-pause unlocked.");
             isAwaitingFirstPlay.set(false);
+            cancelPendingCallbacks();
             return false;
         }
 
@@ -85,6 +107,7 @@ public final class TikTokAutoPauseHook {
      */
     public static void onUserResumePlay() {
         if (isAwaitingFirstPlay.compareAndSet(true, false)) {
+            cancelPendingCallbacks();
             Log.i(TAG, "[AutoPauseFirstVideo] User resumed playback -> auto-pause unlocked.");
         }
     }
@@ -95,6 +118,7 @@ public final class TikTokAutoPauseHook {
     public static void onPageScroll(int state) {
         if (state != 0) {
             if (isAwaitingFirstPlay.compareAndSet(true, false)) {
+                cancelPendingCallbacks();
                 Log.i(TAG, "[AutoPauseFirstVideo] Feed scrolled (state=" + state + ") -> auto-pause unlocked.");
             }
         }
@@ -110,18 +134,27 @@ public final class TikTokAutoPauseHook {
         }
 
         // Schedule brief follow-up pause on main looper in case underlying player setup is asynchronous
-        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (isAwaitingFirstPlay.get()) {
-                    try {
-                        Method pauseMethod = controller.getClass().getMethod("pauseVideo");
-                        pauseMethod.setAccessible(true);
-                        pauseMethod.invoke(controller);
-                    } catch (Throwable ignored) {}
-                }
+        synchronized (TikTokAutoPauseHook.class) {
+            if (pendingPauseRunnable != null) {
+                MAIN_HANDLER.removeCallbacks(pendingPauseRunnable);
             }
-        }, 200);
+            pendingPauseRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    synchronized (TikTokAutoPauseHook.class) {
+                        pendingPauseRunnable = null;
+                    }
+                    if (isAwaitingFirstPlay.get()) {
+                        try {
+                            Method pauseMethod = controller.getClass().getMethod("pauseVideo");
+                            pauseMethod.setAccessible(true);
+                            pauseMethod.invoke(controller);
+                        } catch (Throwable ignored) {}
+                    }
+                }
+            };
+            MAIN_HANDLER.postDelayed(pendingPauseRunnable, 200);
+        }
     }
 
     private static void showPlayIcon(final Object controller) {
@@ -129,23 +162,38 @@ public final class TikTokAutoPauseHook {
             invokeShowIvPlay(controller);
         }
 
-        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (isAwaitingFirstPlay.get()) {
-                    invokeShowIvPlay(controller);
-                }
+        synchronized (TikTokAutoPauseHook.class) {
+            if (pendingPlayIconRunnable150 != null) {
+                MAIN_HANDLER.removeCallbacks(pendingPlayIconRunnable150);
             }
-        }, 150);
-
-        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (isAwaitingFirstPlay.get()) {
-                    invokeShowIvPlay(controller);
-                }
+            if (pendingPlayIconRunnable500 != null) {
+                MAIN_HANDLER.removeCallbacks(pendingPlayIconRunnable500);
             }
-        }, 500);
+            pendingPlayIconRunnable150 = new Runnable() {
+                @Override
+                public void run() {
+                    synchronized (TikTokAutoPauseHook.class) {
+                        pendingPlayIconRunnable150 = null;
+                    }
+                    if (isAwaitingFirstPlay.get()) {
+                        invokeShowIvPlay(controller);
+                    }
+                }
+            };
+            pendingPlayIconRunnable500 = new Runnable() {
+                @Override
+                public void run() {
+                    synchronized (TikTokAutoPauseHook.class) {
+                        pendingPlayIconRunnable500 = null;
+                    }
+                    if (isAwaitingFirstPlay.get()) {
+                        invokeShowIvPlay(controller);
+                    }
+                }
+            };
+            MAIN_HANDLER.postDelayed(pendingPlayIconRunnable150, 150);
+            MAIN_HANDLER.postDelayed(pendingPlayIconRunnable500, 500);
+        }
     }
 
     private static boolean invokeShowIvPlay(Object controller) {
@@ -183,6 +231,7 @@ public final class TikTokAutoPauseHook {
      * Resets the auto-pause state (e.g. for testing).
      */
     public static void reset() {
+        cancelPendingCallbacks();
         firstAwemeAid = null;
         isAwaitingFirstPlay.set(true);
     }
