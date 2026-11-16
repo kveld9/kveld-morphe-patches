@@ -69,6 +69,49 @@ private val TELEMETRY_RECEIVERS = setOf(
     "com.appsalt.lib.BootReceiver",
 )
 
+// Prefix-based matching covers mediation SDK activities, services, providers and receivers
+// whose exact class names shift between releases. Opt-in because disabling ad activities
+// stops full-screen and rewarded ads, which breaks reward-gated content.
+private val AD_NETWORK_COMPONENT_PREFIXES = listOf(
+    "com.google.android.gms.ads.",
+    "com.applovin.",
+    "com.ironsource.",
+    "com.unity3d.services.ads.",
+    "com.unity3d.ads.",
+    "com.facebook.ads.",
+    "com.mbridge.msdk.",
+    "com.bytedance.sdk.",
+    "com.vungle.ads.",
+    "com.chartboost.sdk.",
+    "com.inmobi.",
+    "com.amazon.device.ads.",
+    "com.amazon.aps.",
+    "com.appodeal.",
+    "io.bidmachine.",
+    "com.fyber.",
+    "com.fyber.inneractive.",
+    "com.tapjoy.",
+    "com.adcolony.",
+    "com.smaato.sdk.",
+    "com.ogury.",
+    "net.pubnative.lite.",
+    "com.pubnative.",
+    "com.my.target.",
+    "com.yandex.mobile.ads.",
+    "com.maio.",
+    "com.hyprmx.",
+    "com.superawesome.",
+    "com.appmonet.",
+    "com.appbrain.",
+    "sg.bigo.ads.",
+    "com.moloco.sdk.",
+    "com.pubmatic.sdk.",
+    "com.tappx.sdk.",
+)
+
+private fun isAdNetworkComponent(name: String): Boolean =
+    AD_NETWORK_COMPONENT_PREFIXES.any { name.startsWith(it) }
+
 private val PUSH_SERVICES = setOf(
     "com.facebook.rti.push.service.FbnsService",
     "com.facebook.rti.pushv2.inapp.InappFbnsService",
@@ -255,6 +298,14 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
         required = false,
     )
 
+    val disableAdNetworkComponents by booleanOption(
+        key = "disableAdNetworkComponents",
+        default = false,
+        title = "Ad network components",
+        description = "Disables ad network activities, services and providers.",
+        required = false,
+    )
+
     val injectOptOutFlags by booleanOption(
         key = "injectOptOutFlags",
         default = true,
@@ -354,6 +405,7 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
         val shouldDisableProviders = disableProviders ?: true
         val shouldDisableServices = disableServices ?: true
         val shouldDisableReceivers = disableReceivers ?: true
+        val shouldDisableAdNetworks = disableAdNetworkComponents ?: false
         val shouldInjectOptOut = injectOptOutFlags ?: true
         val shouldDisableFirebase = disableFirebaseInit ?: false
         val shouldDisablePush = disablePushServices ?: false
@@ -370,6 +422,10 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
         var disabledProvidersCount = 0
         var disabledServicesCount = 0
         var disabledReceiversCount = 0
+        var disabledAdActivitiesCount = 0
+        var disabledAdServicesCount = 0
+        var disabledAdProvidersCount = 0
+        var disabledAdReceiversCount = 0
         var disabledPushCount = 0
         var disabledPushReceiversCount = 0
         var disabledGaServicesCount = 0
@@ -413,6 +469,13 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
 
                 if (shouldDisableReceivers) {
                     disabledReceiversCount = application.disableComponentsWhere("receiver") { it in TELEMETRY_RECEIVERS }
+                }
+
+                if (shouldDisableAdNetworks) {
+                    disabledAdActivitiesCount = application.disableComponentsWhere("activity") { isAdNetworkComponent(it) }
+                    disabledAdServicesCount = application.disableComponentsWhere("service") { isAdNetworkComponent(it) }
+                    disabledAdProvidersCount = application.disableComponentsWhere("provider") { isAdNetworkComponent(it) }
+                    disabledAdReceiversCount = application.disableComponentsWhere("receiver") { isAdNetworkComponent(it) }
                 }
 
                 if (shouldDisablePush) {
@@ -498,7 +561,7 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
             }
         }
 
-        val totalDisabled = disabledProvidersCount + disabledServicesCount + disabledReceiversCount + disabledPushCount + disabledPushReceiversCount + disabledGaServicesCount + disabledGaReceiversCount + disabledMetaServicesCount + disabledMetaReceiversCount + disabledCrashServicesCount + disabledCrashReceiversCount + disabledDeviceIdProvidersCount + disabledDeviceIdServicesCount + disabledDeviceIdReceiversCount
+        val totalDisabled = disabledProvidersCount + disabledServicesCount + disabledReceiversCount + disabledAdActivitiesCount + disabledAdServicesCount + disabledAdProvidersCount + disabledAdReceiversCount + disabledPushCount + disabledPushReceiversCount + disabledGaServicesCount + disabledGaReceiversCount + disabledMetaServicesCount + disabledMetaReceiversCount + disabledCrashServicesCount + disabledCrashReceiversCount + disabledDeviceIdProvidersCount + disabledDeviceIdServicesCount + disabledDeviceIdReceiversCount
         if (removedPerms.isEmpty() && totalDisabled == 0 && injectedFlagsCount == 0 && removedRegistrarsCount == 0 && removedStartupInitCount == 0 && removedAdServicesConfigCount == 0) {
             println("[Block Trackers (Universal)] AndroidManifest.xml is already clean (0 tracking elements found).")
             return@execute
@@ -516,6 +579,7 @@ val universalTelemetryNeutralizerPatch = resourcePatch(
             "providers" to disabledProvidersCount,
             "services" to disabledServicesCount,
             "receivers" to disabledReceiversCount,
+            "ads" to (disabledAdActivitiesCount + disabledAdServicesCount + disabledAdProvidersCount + disabledAdReceiversCount),
             "push" to (disabledPushCount + disabledPushReceiversCount),
             "ga" to (disabledGaServicesCount + disabledGaReceiversCount),
             "meta" to (disabledMetaServicesCount + disabledMetaReceiversCount),
