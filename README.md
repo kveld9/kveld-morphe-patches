@@ -394,25 +394,25 @@ Additionally, ensure all Gradle checks pass cleanly:
 <table>
   <tbody>
     <tr>
-      <td align="center" valign="top" width="20%"><a href="https://github.com/Lxchoooo"><img src="https://github.com/Lxchoooo.png" alt="@Lxchoooo" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@Lxchoooo</b></sub></a></td>
-      <td align="center" valign="top" width="20%"><a href="https://github.com/Diego694"><img src="https://github.com/Diego694.png" alt="@Diego694" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@Diego694</b></sub></a></td>
-      <td align="center" valign="top" width="20%"><a href="https://github.com/ll0r3nt3"><img src="https://github.com/ll0r3nt3.png" alt="@ll0r3nt3" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@ll0r3nt3</b></sub></a></td>
-      <td align="center" valign="top" width="20%"><a href="https://github.com/aidenking2102-dotcom"><img src="https://github.com/aidenking2102-dotcom.png" alt="@aidenking2102-dotcom" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@aidenking2102-dotcom</b></sub></a></td>
-      <td align="center" valign="top" width="20%"><a href="https://github.com/mparvezalam808"><img src="https://github.com/mparvezalam808.png" alt="@mparvezalam808" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@mparvezalam808</b></sub></a></td>
+      <td align="center" valign="top" width="20%"><a href="https://github.com/Lxchoooo"><img src="https://github.com/Lxchoooo.png" alt="" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@Lxchoooo</b></sub></a></td>
+      <td align="center" valign="top" width="20%"><a href="https://github.com/dicowerrr"><img src="https://github.com/dicowerrr.png" alt="" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@dicowerrr</b></sub></a></td>
+      <td align="center" valign="top" width="20%"><a href="https://github.com/ll0r3nt3"><img src="https://github.com/ll0r3nt3.png" alt="" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@ll0r3nt3</b></sub></a></td>
+      <td align="center" valign="top" width="20%"><a href="https://github.com/aidenking2102-dotcom"><img src="https://github.com/aidenking2102-dotcom.png" alt="" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@aidenking2102-dotcom</b></sub></a></td>
+      <td align="center" valign="top" width="20%"><a href="https://github.com/mparvezalam808"><img src="https://github.com/mparvezalam808.png" alt="" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@mparvezalam808</b></sub></a></td>
     </tr>
     <tr>
-      <td align="center" valign="top" width="20%"><a href="https://github.com/raxelbyte"><img src="https://github.com/raxelbyte.png" alt="@raxelbyte" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@raxelbyte</b></sub></a></td>
-      <td align="center" valign="top" width="20%"><a href="https://github.com/rafipasya"><img src="https://github.com/rafipasya.png" alt="@rafipasya" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@rafipasya</b></sub></a></td>
-      <td align="center" valign="top" width="20%"><a href="https://github.com/Fahry-a"><img src="https://github.com/Fahry-a.png" alt="@Fahry-a" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@Fahry-a</b></sub></a></td>
-      <td align="center" valign="top" width="20%"><a href="https://github.com/marcoodhb"><img src="https://github.com/marcoodhb.png" alt="@marcoodhb" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@marcoodhb</b></sub></a></td>
-      <td align="center" valign="top" width="20%"><a href="https://github.com/miyqwx-dev"><img src="https://github.com/miyqwx-dev.png" alt="@miyqwx-dev" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@miyqwx-dev</b></sub></a></td>
+      <td align="center" valign="top" width="20%"><a href="https://github.com/raxelbyte"><img src="https://github.com/raxelbyte.png" alt="" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@raxelbyte</b></sub></a></td>
+      <td align="center" valign="top" width="20%"><a href="https://github.com/rafipasya"><img src="https://github.com/rafipasya.png" alt="" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@rafipasya</b></sub></a></td>
+      <td align="center" valign="top" width="20%"><a href="https://github.com/Fahry-a"><img src="https://github.com/Fahry-a.png" alt="" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@Fahry-a</b></sub></a></td>
+      <td align="center" valign="top" width="20%"><a href="https://github.com/marcoodhb"><img src="https://github.com/marcoodhb.png" alt="" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@marcoodhb</b></sub></a></td>
+      <td align="center" valign="top" width="20%"><a href="https://github.com/miyqwx-dev"><img src="https://github.com/miyqwx-dev.png" alt="" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@miyqwx-dev</b></sub></a></td>
     </tr>
     <tr>
-      <td align="center" valign="top" width="20%"><a href="https://github.com/rdx011"><img src="https://github.com/rdx011.png" alt="@rdx011" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@rdx011</b></sub></a></td>
-      <td align="center" valign="top" width="20%"><a href="https://github.com/nightsper"><img src="https://github.com/nightsper.png" alt="@nightsper" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@nightsper</b></sub></a></td>
-      <td align="center" valign="top" width="20%"><a href="https://github.com/nadr21a21"><img src="https://github.com/nadr21a21.png" alt="@nadr21a21" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@nadr21a21</b></sub></a></td>
-      <td align="center" valign="top" width="20%"><a href="https://github.com/polosugars-sketch"><img src="https://github.com/polosugars-sketch.png" alt="@polosugars-sketch" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@polosugars-sketch</b></sub></a></td>
-      <td align="center" valign="top" width="20%"><a href="https://github.com/AlexanderQueen"><img src="https://github.com/AlexanderQueen.png" alt="@AlexanderQueen" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@AlexanderQueen</b></sub></a></td>
+      <td align="center" valign="top" width="20%"><a href="https://github.com/rdx011"><img src="https://github.com/rdx011.png" alt="" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@rdx011</b></sub></a></td>
+      <td align="center" valign="top" width="20%"><a href="https://github.com/nightsper"><img src="https://github.com/nightsper.png" alt="" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@nightsper</b></sub></a></td>
+      <td align="center" valign="top" width="20%"><a href="https://github.com/nadr21a21"><img src="https://github.com/nadr21a21.png" alt="" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@nadr21a21</b></sub></a></td>
+      <td align="center" valign="top" width="20%"><a href="https://github.com/polosugars-sketch"><img src="https://github.com/polosugars-sketch.png" alt="" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@polosugars-sketch</b></sub></a></td>
+      <td align="center" valign="top" width="20%"><a href="https://github.com/AlexanderQueen"><img src="https://github.com/AlexanderQueen.png" alt="" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@AlexanderQueen</b></sub></a></td>
     </tr>
   </tbody>
 </table>

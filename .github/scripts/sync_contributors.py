@@ -82,7 +82,7 @@ def save_contributors_data(path: Path, data: dict) -> None:
 def format_avatar(username: str) -> str:
     return (
         f'<a href="https://github.com/{username}">'
-        f'<img src="https://github.com/{username}.png" alt="@{username}" width="64" height="64" style="border-radius: 50%;" />'
+        f'<img src="https://github.com/{username}.png" alt="" width="64" height="64" style="border-radius: 50%;" />'
         f"<br /><sub><b>@{username}</b></sub></a>"
     )
 
