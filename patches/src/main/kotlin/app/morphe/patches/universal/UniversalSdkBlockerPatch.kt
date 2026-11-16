@@ -368,6 +368,17 @@ private val REPLAY_INSTANCE = setOf(
     "identify",
 )
 
+private val AD_MEASUREMENT_STATIC = setOf(
+    "activate",
+    "init",
+    "initialize",
+)
+
+private val AD_MEASUREMENT_INSTANCE = setOf(
+    "start",
+    "finish",
+)
+
 private val LOCATION_STATIC = setOf(
     "initialize",
     "init",
@@ -437,6 +448,7 @@ private val CRASH_RULES = listOf(
     SdkPrefixRule("Lcom/instabug", "Instabug", CRASH_STATIC_METHODS, CRASH_INSTANCE_METHODS),
     SdkPrefixRule("Lly/count/android", "Countly", CRASH_STATIC_METHODS, CRASH_INSTANCE_METHODS),
     SdkPrefixRule("Lnet/hockeyapp", "HockeyApp", CRASH_STATIC_METHODS, CRASH_INSTANCE_METHODS),
+    SdkPrefixRule("Lbacktraceio/library", "Backtrace", CRASH_STATIC_METHODS, CRASH_INSTANCE_METHODS),
 )
 
 private val ANALYTICS_RULES = listOf(
@@ -501,6 +513,11 @@ private val LOCATION_RULES = listOf(
     SdkPrefixRule("Lio/radar", "Radar", LOCATION_STATIC, LOCATION_INSTANCE),
     SdkPrefixRule("Lcom/gimbal", "Gimbal", LOCATION_STATIC, LOCATION_INSTANCE),
     SdkPrefixRule("Lcom/estimote", "Estimote", LOCATION_STATIC, LOCATION_INSTANCE),
+    SdkPrefixRule("Lorg/altbeacon", "AltBeacon", LOCATION_STATIC, LOCATION_INSTANCE),
+)
+
+private val AD_MEASUREMENT_RULES = listOf(
+    SdkPrefixRule("Lcom/iab/omid", "IAB Open Measurement", AD_MEASUREMENT_STATIC, AD_MEASUREMENT_INSTANCE),
 )
 
 private val LEGACY_RULES = listOf(
@@ -619,6 +636,14 @@ val universalSdkBlockerPatch = bytecodePatch(
         required = false,
     )
 
+    val blockAdMeasurement by booleanOption(
+        key = "blockAdMeasurement",
+        default = false,
+        title = "Ad measurement SDKs",
+        description = "Stops ad viewability measurement libraries from running.",
+        required = false,
+    )
+
     val blockBandwidthSharing by booleanOption(
         key = "blockBandwidthSharing",
         default = true,
@@ -650,6 +675,7 @@ val universalSdkBlockerPatch = bytecodePatch(
             blockPush = blockPushEngagement ?: false,
             blockSessionReplay = blockSessionReplay ?: true,
             blockLocationTrackers = blockLocationTrackers ?: true,
+            blockAdMeasurement = blockAdMeasurement ?: false,
             blockBandwidthSharing = blockBandwidthSharing ?: true,
         )
 
@@ -706,6 +732,7 @@ private fun buildActiveRules(
     blockPush: Boolean,
     blockSessionReplay: Boolean,
     blockLocationTrackers: Boolean,
+    blockAdMeasurement: Boolean,
     blockBandwidthSharing: Boolean,
 ): List<SdkPrefixRule> {
     val categories = listOf(
@@ -717,6 +744,7 @@ private fun buildActiveRules(
         blockPush to PUSH_RULES,
         blockSessionReplay to SESSION_REPLAY_RULES,
         blockLocationTrackers to LOCATION_RULES,
+        blockAdMeasurement to AD_MEASUREMENT_RULES,
         blockBandwidthSharing to BANDWIDTH_SHARING_RULES,
     )
     return categories.filter { it.first }.flatMap { it.second }
