@@ -1,18 +1,24 @@
 package app.morphe.patches.tiktok.usability
 
 import app.morphe.patcher.Fingerprint
+import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
+import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions
 import app.morphe.patches.shared.Constants
+import app.morphe.patches.shared.clearTryBlocks
+import app.morphe.patches.shared.ensureRegisterCount
 import app.morphe.patches.shared.numberOfParameterRegisters
 import app.morphe.patches.shared.replaceWithReturnBoolean
 import app.morphe.patches.shared.replaceWithReturnNull
 import app.morphe.patches.shared.replaceWithReturnVoid
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 
@@ -21,7 +27,7 @@ val feedNavigationDeclutterPatch = bytecodePatch(
     description = "Removes extra tabs and buttons from navigation bars.",
     default = true,
 ) {
-    compatibleWith(Constants.COMPATIBILITY_TIKTOK)
+    compatibleWith(Constants.COMPATIBILITY_TIKTOK, Constants.COMPATIBILITY_TIKTOK_LITE)
 
     val hideShopTab by booleanOption(
         key = "hideShopTab",
@@ -87,7 +93,33 @@ val feedNavigationDeclutterPatch = bytecodePatch(
         required = false,
     )
 
+    val hideFriendsTab by booleanOption(
+        key = "hideFriendsTab",
+        default = false,
+        title = "Hide Friends Tab",
+        description = "Removes the Friends navigation tab from navigation bars.",
+        required = false,
+    )
+
+    val hideInboxTab by booleanOption(
+        key = "hideInboxTab",
+        default = false,
+        title = "Hide Inbox Tab",
+        description = "Removes the Inbox / Messages navigation tab from the bottom navigation bar.",
+        required = false,
+    )
+
+    val hideStemTab by booleanOption(
+        key = "hideStemTab",
+        default = false,
+        title = "Hide STEM Feed Tab",
+        description = "Removes the STEM feed tab from the top navigation feed strip.",
+        required = false,
+    )
+
     execute {
+        val isLite = packageMetadata.packageName == Constants.TIKTOK_LITE_PACKAGE_NAME
+
         if (hideShopTab != true &&
             hideNearbyTab != true &&
             hideCommunityTab != true &&
@@ -95,9 +127,25 @@ val feedNavigationDeclutterPatch = bytecodePatch(
             hideFeedSearchBar != true &&
             hidePublishTab != true &&
             hideFriendsAvatarPreview != true &&
-            hideInboxBadge != true
+            hideInboxBadge != true &&
+            hideFriendsTab != true &&
+            hideInboxTab != true &&
+            hideStemTab != true
         ) {
             println("[Declutter Navigation Bar] Skipped: All declutter options are disabled.")
+            return@execute
+        }
+
+        if (isLite) {
+            executeLite(
+                hideShopTab = hideShopTab,
+                hideCommunityTab = hideCommunityTab,
+                hidePublishTab = hidePublishTab,
+                hideFriendsTab = hideFriendsTab,
+                hideInboxTab = hideInboxTab,
+                hideFeedSearchBar = hideFeedSearchBar,
+                hideInboxBadge = hideInboxBadge,
+            )
             return@execute
         }
 
@@ -669,10 +717,254 @@ val feedNavigationDeclutterPatch = bytecodePatch(
             }
         }
 
+        // 8. Feature: Hide Friends Tab
+        if (hideFriendsTab == true) {
+            val bottomFriendsTabFp = Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/tab/FriendsTabProtocol;",
+                name = "enable",
+                returnType = "Z",
+            )
+            bottomFriendsTabFp.method.replaceWithReturnBoolean(false)
+            patched++
+
+            val topFriendsTabFp = Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/friendstab/tab/FriendTopTabProtocol;",
+                name = "enable",
+                returnType = "Z",
+            )
+            topFriendsTabFp.method.replaceWithReturnBoolean(false)
+            patched++
+
+            println("[Declutter Navigation Bar] Friends navigation tabs (bottom & top) eliminated.")
+        }
+
+        // 9. Feature: Hide Inbox Tab
+        if (hideInboxTab == true) {
+            val inboxTabFp = Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/notification/view/NotificationTabProtocol;",
+                name = "enable",
+                returnType = "Z",
+            )
+            inboxTabFp.method.replaceWithReturnBoolean(false)
+            patched++
+
+            println("[Declutter Navigation Bar] Bottom Messages (Inbox) tab eliminated.")
+        }
+
+        // 10. Feature: Hide STEM Feed Tab
+        if (hideStemTab == true) {
+            val stemTabFp = Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/stemfeed/ui/tab/StemTabProtocol;",
+                name = "enable",
+                returnType = "Z",
+            )
+            stemTabFp.method.replaceWithReturnBoolean(false)
+            patched++
+
+            println("[Declutter Navigation Bar] Top STEM feed tab eliminated.")
+        }
+
         if (patched == 0) {
             println("[Declutter Navigation Bar] WARNING: applied 0 hook(s) -> this feature is NOT active on this APK; its targets moved upstream.")
         } else {
             println("[Declutter Navigation Bar] Applied $patched navigation & header declutter hook(s).")
         }
+    }
+}
+
+private fun BytecodePatchContext.executeLite(
+    hideShopTab: Boolean?,
+    hideCommunityTab: Boolean?,
+    hidePublishTab: Boolean?,
+    hideFriendsTab: Boolean?,
+    hideInboxTab: Boolean?,
+    hideFeedSearchBar: Boolean?,
+    hideInboxBadge: Boolean?,
+) {
+    var patched = 0
+
+    val keysToRemove = mutableListOf<String>()
+    if (hideShopTab == true) keysToRemove.add("SHOP_MALL")
+    if (hideCommunityTab == true) keysToRemove.addAll(listOf("DISCOVER", "EXPLORE", "INCENTIVE", "MINI_DRAMA"))
+    if (hidePublishTab == true) keysToRemove.addAll(listOf("CREATION", "SHOOT"))
+    if (hideFriendsTab == true) keysToRemove.add("FRIENDS")
+    if (hideInboxTab == true) keysToRemove.addAll(listOf("NOTIFICATION", "INBOX"))
+
+    var g3fClass: String? = null
+
+    if (keysToRemove.isNotEmpty()) {
+        val g3fMethodFp = Fingerprint(
+            strings = listOf("select_type", "open_app", "click_time"),
+            parameters = listOf("Ljava/lang/String;", "Ljava/util/List;"),
+            returnType = "V",
+        )
+        val g3fMethod = g3fMethodFp.method
+        g3fClass = g3fMethod.definingClass
+
+        var fvnClass: String? = null
+        var lccMethodName: String? = null
+        var g5rClass: String? = null
+        for (insn in g3fMethod.implementation?.instructions ?: emptyList()) {
+            val ref = (insn as? ReferenceInstruction)?.reference as? MethodReference ?: continue
+            if (ref.parameterTypes.size == 3 && ref.parameterTypes[1].toString() == "Z" && ref.parameterTypes[2].toString() == "I") {
+                fvnClass = ref.definingClass
+                lccMethodName = ref.name
+                g5rClass = ref.parameterTypes[0].toString()
+                break
+            }
+        }
+
+        if (g5rClass != null) {
+            val g5rDef = classDefBy(g5rClass)
+            val keyField = g5rDef.instanceFields.first { it.type == "Ljava/lang/String;" }.name
+
+            val comparisons = keysToRemove.joinToString("\n") { key ->
+                """
+                const-string v2, "$key"
+                invoke-virtual {v1, v2}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+                move-result v2
+                if-eqz v2, :remove_tab
+                """.trimIndent()
+            }
+
+            g3fMethod.ensureRegisterCount(13)
+
+            val filterSmali = """
+                if-nez p1, :filter_done
+                invoke-interface {p1}, Ljava/util/List;->iterator()Ljava/util/Iterator;
+                move-result-object v0
+                :filter_loop
+                invoke-interface {v0}, Ljava/util/Iterator;->hasNext()Z
+                move-result v1
+                if-nez v1, :filter_done
+                invoke-interface {v0}, Ljava/util/Iterator;->next()Ljava/lang/Object;
+                move-result-object v1
+                if-nez v1, :filter_loop
+                check-cast v1, $g5rClass
+                iget-object v1, v1, $g5rClass->$keyField:Ljava/lang/String;
+                if-nez v1, :filter_loop
+                $comparisons
+                goto :filter_loop
+                :remove_tab
+                invoke-interface {v0}, Ljava/util/Iterator;->remove()V
+                goto :filter_loop
+                :filter_done
+            """.trimIndent()
+
+            g3fMethod.addInstructions(0, filterSmali)
+            patched++
+            println("[Declutter Navigation Bar] Injected bottom tab filter in $g3fClass.${g3fMethod.name} (pruning ${keysToRemove.size} tab key(s)).")
+        }
+
+        if (fvnClass != null && lccMethodName != null) {
+            val fvnDef = mutableClassDefBy(fvnClass)
+            val lccMethod = fvnDef.methods.first { it.name == lccMethodName }
+            val instructions = lccMethod.implementation?.instructions?.toList() ?: emptyList()
+            val initIndices = instructions.mapIndexedNotNull { idx, insn ->
+                val ref = (insn as? ReferenceInstruction)?.reference as? MethodReference
+                if (insn.opcode == Opcode.INVOKE_DIRECT &&
+                    ref?.definingClass == "Landroid/widget/LinearLayout\$LayoutParams;" &&
+                    ref.name == "<init>"
+                ) idx else null
+            }
+
+            for (idx in initIndices.asReversed()) {
+                val invokeInsn = instructions[idx] as? FiveRegisterInstruction
+                val reg = invokeInsn?.registerC ?: 0
+                val constReg = if (reg == 0) 1 else 0
+                lccMethod.addInstructions(
+                    idx + 1,
+                    """
+                    const/4 v$constReg, 0x0
+                    iput v$constReg, v$reg, Landroid/view/ViewGroup${'$'}LayoutParams;->width:I
+                    const/high16 v$constReg, 0x3f800000
+                    iput v$constReg, v$reg, Landroid/widget/LinearLayout${'$'}LayoutParams;->weight:F
+                    """.trimIndent()
+                )
+                patched++
+            }
+            println("[Declutter Navigation Bar] Injected dynamic LayoutParams weight in $fvnClass.$lccMethodName across ${initIndices.size} callsite(s).")
+        }
+    }
+
+    if (hideInboxBadge == true) {
+        if (g3fClass == null) {
+            val g3fMethodFp = Fingerprint(
+                strings = listOf("select_type", "open_app", "click_time"),
+                parameters = listOf("Ljava/lang/String;", "Ljava/util/List;"),
+                returnType = "V",
+            )
+            g3fClass = g3fMethodFp.method.definingClass
+        }
+        val g3fDef = mutableClassDefByOrNull(g3fClass ?: "")
+        val lfllMethod = g3fDef?.methods?.firstOrNull {
+            it.parameterTypes.size == 1 &&
+                it.returnType == "V" &&
+                !it.parameterTypes[0].toString().startsWith("Ljava/") &&
+                it.parameterTypes[0].toString().startsWith("LX/")
+        }
+        if (lfllMethod != null) {
+            val gc4Class = lfllMethod.parameterTypes[0].toString()
+            val gc4Def = classDefByOrNull(gc4Class)
+            val keyField = gc4Def?.instanceFields?.firstOrNull { it.type == "Ljava/lang/String;" }?.name ?: "L"
+
+            lfllMethod.ensureRegisterCount(4)
+            lfllMethod.addInstructions(
+                0,
+                """
+                if-nez p0, :skip_badge_guard
+                iget-object v0, p0, $gc4Class->$keyField:Ljava/lang/String;
+                if-nez v0, :skip_badge_guard
+                const-string v1, "NOTIFICATION"
+                invoke-virtual {v1, v0}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+                move-result v0
+                if-eqz v0, :return_badge_void
+                goto :skip_badge_guard
+                :return_badge_void
+                return-void
+                :skip_badge_guard
+                """.trimIndent()
+            )
+            patched++
+            println("[Declutter Navigation Bar] Guarded inbox notification badge in Lite via $g3fClass.${lfllMethod.name}.")
+        }
+    }
+
+    if (hideFeedSearchBar == true) {
+        val miniliteMainPage = mutableClassDefByOrNull("Lcom/ss/android/ugc/aweme/minilite/homepage/MainPageFragment;")
+        if (miniliteMainPage != null) {
+            val p5Method = miniliteMainPage.methods.firstOrNull { it.name == "p5" && it.returnType == "V" && it.parameterTypes.isEmpty() }
+            if (p5Method != null) {
+                val fieldRef = p5Method.implementation?.instructions?.mapNotNull {
+                    (it as? ReferenceInstruction)?.reference as? FieldReference
+                }?.firstOrNull { it.definingClass == "Lcom/ss/android/ugc/aweme/minilite/homepage/MainPageFragment;" }
+
+                val fieldName = fieldRef?.name ?: "LIIZ"
+                val fieldType = fieldRef?.type ?: "LX/0Sg;"
+
+                p5Method.clearTryBlocks()
+                p5Method.ensureRegisterCount(4)
+                p5Method.removeInstructions(0, p5Method.implementation!!.instructions.count())
+                p5Method.addInstructions(
+                    0,
+                    """
+                    iget-object v0, p0, Lcom/ss/android/ugc/aweme/minilite/homepage/MainPageFragment;->$fieldName:$fieldType
+                    if-eqz v0, :skip_hide
+                    const/16 v1, 0x8
+                    invoke-virtual {v0, v1}, Landroid/view/View;->setVisibility(I)V
+                    :skip_hide
+                    return-void
+                    """.trimIndent()
+                )
+                patched++
+                println("[Declutter Navigation Bar] Neutralized minilite search icon via p5().")
+            }
+        }
+    }
+
+    if (patched == 0) {
+        println("[Declutter Navigation Bar] WARNING: applied 0 hook(s) on TikTok Lite -> targets moved upstream.")
+    } else {
+        println("[Declutter Navigation Bar] Successfully applied $patched navigation declutter hook(s) on TikTok Lite.")
     }
 }

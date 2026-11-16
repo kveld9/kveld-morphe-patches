@@ -56,8 +56,6 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
 - **Custom Share Sheet**: Anchor absent; `isImFunctionOff` method and custom share sheet layout absent in Lite DEX.
 - **Customize Search**: Anchor absent; `RecomDataWrapper` class and search feed injection absent in Lite DEX.
 - **Declutter Direct Messages**: Anchor absent; DM / IM messaging components and inbox message protocols absent in Lite DEX.
-- **Declutter Navigation Bar**: Anchor absent; DEX inventory of the pinned Lite target shows none of `ShopBottomTabProtocol`, `NearbyServiceImpl`, `ExploreFeedServiceImpl`, `ExploreBottomTabProtocol`, `LiveIconGenerator`, `PublishTabProtocol`, `FeedSearchBottomBarAssemTrigger`, `AwemeTrendingBar` or `HotSearchInfo` --
-  the Lite main page (MainActivity -> MainRootFragment -> MainPageFragment -> FeedFragment) builds its top strip programmatically from a static single-entry tab list and its bottom navigation, LIVE entrance and feed search pill have no statically resolvable anchors (server/Lynx-driven candidates: lite_bottom_tab_2/4/5, lite_live_add_toplive_entrance, short_drama_inner_feed_search_entry_enabled experiments).
 - **Device Privacy Guard**: Anchor absent; `LX/0OBB` device identifier collector class absent in Lite DEX.
 - **Disable On-Device AI**: Anchor absent; `PitayaBootLoader` class and Pitaya AI engine absent in Lite DEX.
 - **Enable Profile Banner**: Anchor absent; `ProfileBackgroundExp` class and profile banner customization absent in Lite DEX.
@@ -111,6 +109,9 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
 - **Block Popups & Prompts**:
   - *Objective*: Blocks popups, nags and promo dialogs across the app.
   - *How*: Suppresses notification permission prompts via `PushServiceImpl.LB` and system push dialog checks reading `count_system` (`0Co.LBL()Z`), preserving onboarding completion state and login callback execution.
+- **Declutter Navigation Bar**:
+  - *Objective*: Removes extra tabs (Explore, Shop, Create/Publish, Friends, Inbox) and feed search controls from navigation bars.
+  - *How*: Intercepts bottom navigation list construction in `C31097G3f.LD` to filter out unwanted navigation keys (`SHOP_MALL`, `DISCOVER`/`EXPLORE`/`INCENTIVE`/`MINI_DRAMA`, `CREATION`/`SHOOT`, `FRIENDS`, `NOTIFICATION`/`INBOX`), dynamically adjusts bottom tab `LinearLayout.LayoutParams` weights to `1.0f` in `C30727FvN.LCC` so remaining tabs distribute symmetrically across the screen width, neutralizes notification badges in `C31097G3f.LFLL`, and neutralizes the feed search icon in `minilite.homepage.MainPageFragment.p5()`.
 - **Declutter Video Interface**:
   - *Objective*: Cleans up the buttons, overlays, captions, and gestures on top of videos.
   - *How*: Provides toggles to hide action rail buttons and overlays (comment button, save/favorite bookmark, vinyl music cover disc, avatar plus follow badge, video descriptions/captions, and creator story rings) by setting container views to `GONE`, disabling click handlers, neutralizing rotation animations, and clearing listeners across standard feed presenters and MiniLite mode controllers. Also includes a toggle to disable the double tap to like gesture on both standard and MiniLite feed modes.
