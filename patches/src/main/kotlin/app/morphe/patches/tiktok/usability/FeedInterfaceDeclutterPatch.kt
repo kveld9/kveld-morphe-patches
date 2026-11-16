@@ -1397,6 +1397,86 @@ private fun BytecodePatchContext.executeLite(
         }
     }
 
+    // 4. Hide Profile Photo Follow Button (+)
+    if (hideAvatarFollowButton == true) {
+        val avatarPresenterFp = Fingerprint(
+            returnType = "Ljava/lang/String;",
+            parameters = emptyList(),
+            strings = listOf("right_container_avatar"),
+        )
+        val avatarClass = avatarPresenterFp.method.definingClass
+        val avatarDef = mutableClassDefBy(avatarClass)
+
+        // Find LILZ(II)V visibility method
+        val lilzMethod = avatarDef.methods.firstOrNull {
+            it.returnType == "V" && it.parameterTypes == listOf("I", "I")
+        } ?: error("[Declutter Video Interface] Failed to find (II)V visibility method in ${avatarDef.type}")
+
+        // Find the follow container View field populated from findViewById(0x7f090147 / 2131296583)
+        val initMethod = avatarDef.methods.first { it.name == "<init>" }
+        val initInstructions = initMethod.implementation!!.instructions
+        var followContainerField: String? = null
+        val constIndex = initInstructions.indexOfFirst { ins ->
+            ins is NarrowLiteralInstruction && ins.narrowLiteral == 2131296583
+        }
+        if (constIndex >= 0) {
+            for (i in constIndex + 1 until (constIndex + 10).coerceAtMost(initInstructions.size)) {
+                val ins = initInstructions[i]
+                if (ins is ReferenceInstruction && ins.reference is FieldReference) {
+                    val fieldRef = ins.reference as FieldReference
+                    if (fieldRef.definingClass == avatarDef.type && fieldRef.type == "Landroid/view/View;") {
+                        followContainerField = fieldRef.name
+                        break
+                    }
+                }
+            }
+        }
+        if (followContainerField == null) {
+            error("[Declutter Video Interface] Failed to resolve follow container View field in ${avatarDef.type}")
+        }
+
+        // 4a. In LILZ(II)V, force parameters to 0x8 (GONE) and disable clickability
+        lilzMethod.ensureRegisterCount(4)
+        lilzMethod.addInstructions(
+            0,
+            """
+                const/16 p1, 0x8
+                const/16 p2, 0x8
+            """.trimIndent(),
+        )
+        val lilzInstructions = lilzMethod.implementation!!.instructions
+        val lilzReturnIndex = lilzInstructions.indexOfLast { it.opcode == Opcode.RETURN_VOID }
+        if (lilzReturnIndex >= 0) {
+            lilzMethod.addInstructions(
+                lilzReturnIndex,
+                """
+                    iget-object v0, p0, ${avatarDef.type}->$followContainerField:Landroid/view/View;
+                    if-eqz v0, :cond_follow_click_skip
+                    const/4 v1, 0x0
+                    invoke-virtual {v0, v1}, Landroid/view/View;->setClickable(Z)V
+                    :cond_follow_click_skip
+                """.trimIndent(),
+            )
+        }
+        println("[Declutter Video Interface] Hooked ${avatarDef.type}.${lilzMethod.name}(II) -> forced GONE (0x8) and non-clickable.")
+        patched++
+
+        // 4b. In <init>, trigger initial hide
+        val initReturnIndex = initInstructions.indexOfLast { it.opcode == Opcode.RETURN_VOID }
+        if (initReturnIndex >= 0) {
+            initMethod.addInstructions(
+                initReturnIndex,
+                """
+                    const/16 v0, 0x8
+                    const/16 v1, 0x8
+                    invoke-virtual {p0, v0, v1}, ${avatarDef.type}->${lilzMethod.name}(II)V
+                """.trimIndent(),
+            )
+            println("[Declutter Video Interface] Hooked ${avatarDef.type}.<init> -> Initial follow badge hidden.")
+            patched++
+        }
+    }
+
     println("[Declutter Video Interface] Successfully applied $patched hook(s) across selected feed interface options on TikTok Lite.")
 }
 
