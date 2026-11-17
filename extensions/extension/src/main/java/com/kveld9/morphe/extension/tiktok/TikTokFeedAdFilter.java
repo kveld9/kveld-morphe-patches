@@ -3,6 +3,7 @@ package com.kveld9.morphe.extension.tiktok;
 import android.util.Log;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -17,6 +18,20 @@ public final class TikTokFeedAdFilter {
 
     private static final String TAG = "MorpheTikTok";
     private static volatile boolean initialized = false;
+    private static volatile boolean waitingLogged = false;
+    private static volatile ClassLoader cachedClassLoader;
+
+    private static int reboundLogCount = 0;
+    private static final int MAX_REBOUND_LOGS = 5;
+    private static int feedAdRemovalLogCount = 0;
+    private static int paidPartnershipRemovalLogCount = 0;
+    private static final int MAX_REMOVAL_LOGS = 5;
+    private static String paidSignal = "-";
+    private static int paidSignalLogCount = 0;
+    private static String adSignal = "-";
+    private static int adSignalLogCount = 0;
+    private static int disclosureLogCount = 0;
+    private static final int MAX_DISCLOSURE_LOGS = 8;
 
     public static volatile boolean stripShopAnchors = true;
 
@@ -188,6 +203,9 @@ public final class TikTokFeedAdFilter {
     private static Field descField;
     private static Method getContentDescMethod;
     private static Field contentDescField;
+    private static Method getTextExtraMethod;
+    private static Field textExtraField;
+    private static Field mTextExtraField;
 
     private static final java.util.regex.Pattern AI_TAG_PATTERN = java.util.regex.Pattern.compile(
         "(?i)(?:#(?:aigenerated|ai_generated|aigc|generadoporia|generado_por_ia|generadoconia|aiart|aivideo|iaart|iavideo|midjourney|sora|stable_diffusion|stablediffusion|dalle|chatgpt|runwayml|klingai|lumaai)\\b|\\[(?:ai[-_ ]?generated|generado por ia|aigc)\\]|\\b(?:ai[-_ ]generated|generado por ia|generado con ia)\\b)"
@@ -197,420 +215,634 @@ public final class TikTokFeedAdFilter {
 
     private TikTokFeedAdFilter() {}
 
+    private static boolean isAwemeModelClass(Class<?> cls) {
+        if (cls == null) return false;
+        Class<?> curr = cls;
+        while (curr != null && curr != Object.class) {
+            String name = curr.getName();
+            if (name.endsWith(".feed.model.Aweme")) {
+                return true;
+            }
+            curr = curr.getSuperclass();
+        }
+        return false;
+    }
+
+    private static void resetHandles() {
+        isAdMethod = null;
+        isSoftAdMethod = null;
+        isWithPromotionalMusicMethod = null;
+        getAwemeRawAdMethod = null;
+        getLinkAdDataMethod = null;
+        getShareUrlMethod = null;
+        isLiveMethod = null;
+        getAwemeTypeMethod = null;
+        getRoomMethod = null;
+        getRoomFeedCellStructMethod = null;
+        getLiveIdMethod = null;
+        getStreamUrlModelMethod = null;
+        getAuthorLiveMethod = null;
+        getLiveTypeMethod = null;
+        setAnchorsMethod = null;
+        setAnchorInfoMethod = null;
+        getLiveAwesomeSplashInfoMethod = null;
+        getAdAwemeSourceMethod = null;
+        getAdLinkTypeMethod = null;
+        getCommercialVideoInfoMethod = null;
+        isReferralFakeAwemeMethod = null;
+        getCommerceInfoMethod = null;
+        isPaidContentMethod = null;
+        getPaidContentInfoMethod = null;
+        getTextVideoLabelsMethod = null;
+        isFriendsTabFakeAwemeMethod = null;
+        getRecommendCardTypeMethod = null;
+        getCardInsertInfoMethod = null;
+        getCardTypeMethod = null;
+        getExploreCommunityCommentShowTypeMethod = null;
+        getWithSurveyMethod = null;
+        getSurveyInfoMethod = null;
+        getSurveyInfosMethod = null;
+        getSurveyKeyMethod = null;
+        getPersonalizedSurveyUIMethod = null;
+        getOnboardingSurveyMethod = null;
+        getPersonalizedOnboardingSurveyMethod = null;
+        setWithSurveyMethod = null;
+        setSurveyInfoMethod = null;
+        setSurveyInfosMethod = null;
+        setSurveyKeyMethod = null;
+        setMPersonalizedSurveyUIMethod = null;
+        setOnboardingSurveyMethod = null;
+        setMPersonalizedOnboardingSurveyMethod = null;
+        getVideoMethod = null;
+        followGetAwemeMethod = null;
+        followGetFeedTypeMethod = null;
+        followGetRoomMethod = null;
+        followGetRoomStructMethod = null;
+        followGetLastViewDataMethod = null;
+        followGetRecommendUserMethod = null;
+        friendsV3GetAwemeMethod = null;
+        friendsV3GetRepostItemMethod = null;
+        friendsV3GetRepostedAwemeMethod = null;
+        friendsFeedGetAwemeMethod = null;
+        awemeGetAuthorMethod = null;
+        awemeGetFeedRelationLabelMethod = null;
+        awemeGetRelationLabelMethod = null;
+        awemeGetRelationRecommendInfoMethod = null;
+        awemeGetRecReasonsStructMethod = null;
+        userGetFollowStatusMethod = null;
+        userGetMatchedFriendStructMethod = null;
+        userIsMatchedFriendAvailableMethod = null;
+        userGetUidMethod = null;
+        userGetRecTypeMethod = null;
+        getAigcInfoMethod = null;
+        getAigcLabelTypeMethod = null;
+        getModerationAigcInfoMethod = null;
+        getC2paInfoMethod = null;
+        getBannersMethod = null;
+        getAnchorsMethod = null;
+        getDescMethod = null;
+        getContentDescMethod = null;
+        getTextExtraMethod = null;
+
+        roomField = null;
+        roomFeedCellField = null;
+        newLiveRoomDataField = null;
+        liveIdField = null;
+        streamUrlModelField = null;
+        authorLiveField = null;
+        liveAwesomeSplashInfoField = null;
+        adAwemeSourceField = null;
+        isAdField = null;
+        isSoftAdField = null;
+        awemeRawAdField = null;
+        linkAdDataField = null;
+        adLinkTypeField = null;
+        commercialVideoInfoField = null;
+        isReferralFakeAwemeField = null;
+        hasPromoteEntryField = null;
+        commerceInfoField = null;
+        isPaidContentField = null;
+        paidContentInfoField = null;
+        mPaidContentInfoField = null;
+        promoteToastField = null;
+        promoteToastKeyField = null;
+        textVideoLabelsField = null;
+        recommendCardTypeField = null;
+        cardInsertInfoField = null;
+        cardTypeField = null;
+        exploreCommunityCommentShowTypeField = null;
+        withSurveyField = null;
+        surveyInfoField = null;
+        surveyInfoAltField = null;
+        surveyInfosField = null;
+        surveyKeyField = null;
+        mPersonalizedSurveyUIField = null;
+        mOnboardingSurveyField = null;
+        mPersonalizedOnboardingSurveyField = null;
+        questionInfoField = null;
+        ueFeedInfoField = null;
+        videoField = null;
+        followAwemeField = null;
+        followFeedTypeField = null;
+        followRoomField = null;
+        followRoomStructField = null;
+        followLastViewDataField = null;
+        followRecommendUserField = null;
+        friendsV3AwemeField = null;
+        friendsV3RepostItemField = null;
+        friendsV3RepostedAwemeField = null;
+        friendsV3ReposterField = null;
+        friendsFeedAwemeField = null;
+        awemeAuthorField = null;
+        awemeFeedRelationLabelField = null;
+        awemeRelationLabelField = null;
+        awemeRelationRecommendInfoField = null;
+        awemeRecReasonsStructField = null;
+        userFollowStatusField = null;
+        userMatchedFriendStructField = null;
+        userMatchedFriendAvailableField = null;
+        userUidField = null;
+        userRecTypeField = null;
+        aigcInfoField = null;
+        aigcLabelTypeField = null;
+        createByAiField = null;
+        moderationAigcInfoField = null;
+        moderationAigcLabelTypeField = null;
+        moderationUserLabelStatusField = null;
+        creatorGuidanceStatusField = null;
+        moderationCreatorSegmentField = null;
+        c2paInfoField = null;
+        c2paAigcSrcField = null;
+        c2paFirstAigcSrcField = null;
+        c2paLastAigcSrcField = null;
+        aiAliveInfoField = null;
+        aiPortraitInfoField = null;
+        aiRemixInfoField = null;
+        aiTheaterInfoField = null;
+        aiChatEditorInfoField = null;
+        bannersField = null;
+        anchorsField = null;
+        descField = null;
+        contentDescField = null;
+        textExtraField = null;
+        mTextExtraField = null;
+        friendsV3FeedsField = null;
+        friendFeedDataField = null;
+        newlyShownMafIdsField = null;
+        cardInsertResultsField = null;
+        insertedResultsField = null;
+    }
+
+    private static synchronized void bindMembers(Class<?> cls) {
+        awemeClass = cls;
+        resetHandles();
+
+        ClassLoader classLoader = cls.getClassLoader();
+        if (classLoader == null || classLoader.getClass().getName().contains("BootClassLoader")) {
+            if (cachedClassLoader != null) {
+                classLoader = cachedClassLoader;
+            } else {
+                classLoader = TikTokFeedAdFilter.class.getClassLoader();
+            }
+        }
+        if (classLoader == null) {
+            classLoader = Thread.currentThread().getContextClassLoader();
+        }
+
+        try { isAdMethod = awemeClass.getMethod("isAd"); isAdMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { isSoftAdMethod = awemeClass.getMethod("isSoftAd"); isSoftAdMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { isWithPromotionalMusicMethod = awemeClass.getMethod("isWithPromotionalMusic"); isWithPromotionalMusicMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { getAwemeRawAdMethod = awemeClass.getMethod("getAwemeRawAd"); getAwemeRawAdMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { getLinkAdDataMethod = awemeClass.getMethod("getLinkAdData"); getLinkAdDataMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { getShareUrlMethod = awemeClass.getMethod("getShareUrl"); getShareUrlMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { isLiveMethod = awemeClass.getMethod("isLive"); isLiveMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { getAwemeTypeMethod = awemeClass.getMethod("getAwemeType"); getAwemeTypeMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { getRoomMethod = awemeClass.getMethod("getRoom"); getRoomMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { getRoomFeedCellStructMethod = awemeClass.getMethod("getRoomFeedCellStruct"); getRoomFeedCellStructMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { getLiveIdMethod = awemeClass.getMethod("getLiveId"); getLiveIdMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { getStreamUrlModelMethod = awemeClass.getMethod("getStreamUrlModel"); getStreamUrlModelMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { getAuthorLiveMethod = awemeClass.getMethod("getAuthorLive"); getAuthorLiveMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { getLiveTypeMethod = awemeClass.getMethod("getLiveType"); getLiveTypeMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { roomField = awemeClass.getDeclaredField("room"); roomField.setAccessible(true); } catch (Throwable ignored) {}
+        try { roomFeedCellField = awemeClass.getDeclaredField("mRoomFeedCellStruct"); roomFeedCellField.setAccessible(true); } catch (Throwable ignored) {}
+        try { newLiveRoomDataField = awemeClass.getDeclaredField("newLiveRoomData"); newLiveRoomDataField.setAccessible(true); } catch (Throwable ignored) {}
+        try { liveIdField = awemeClass.getDeclaredField("liveId"); liveIdField.setAccessible(true); } catch (Throwable ignored) {}
+        try { streamUrlModelField = awemeClass.getDeclaredField("streamUrlModel"); streamUrlModelField.setAccessible(true); } catch (Throwable ignored) {}
+        try { authorLiveField = awemeClass.getDeclaredField("authorLive"); authorLiveField.setAccessible(true); } catch (Throwable ignored) {}
+        try { setAnchorsMethod = awemeClass.getMethod("setAnchors", List.class); setAnchorsMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try {
+            for (Method m : awemeClass.getMethods()) {
+                if ("setAnchorInfo".equals(m.getName()) && m.getParameterTypes().length == 1) {
+                    setAnchorInfoMethod = m;
+                    setAnchorInfoMethod.setAccessible(true);
+                    break;
+                }
+            }
+        } catch (Throwable ignored) {}
+        try { getLiveAwesomeSplashInfoMethod = awemeClass.getMethod("getLiveAwesomeSplashInfo"); getLiveAwesomeSplashInfoMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { liveAwesomeSplashInfoField = awemeClass.getDeclaredField("mLiveAwesomeSplashInfo"); liveAwesomeSplashInfoField.setAccessible(true); } catch (Throwable ignored) {}
+        try { getAdAwemeSourceMethod = awemeClass.getMethod("getAdAwemeSource"); getAdAwemeSourceMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { adAwemeSourceField = awemeClass.getDeclaredField("adAwemeSource"); adAwemeSourceField.setAccessible(true); } catch (Throwable ignored) {}
+        try { isAdField = awemeClass.getDeclaredField("_isAd"); isAdField.setAccessible(true); } catch (Throwable ignored) {}
+        if (isAdField == null) {
+            try { isAdField = awemeClass.getDeclaredField("isAd"); isAdField.setAccessible(true); } catch (Throwable ignored) {}
+        }
+        try { isSoftAdField = awemeClass.getDeclaredField("_isSoftAd"); isSoftAdField.setAccessible(true); } catch (Throwable ignored) {}
+        if (isSoftAdField == null) {
+            try { isSoftAdField = awemeClass.getDeclaredField("isSoftAd"); isSoftAdField.setAccessible(true); } catch (Throwable ignored) {}
+        }
+        try { isReferralFakeAwemeMethod = awemeClass.getMethod("isReferralFakeAweme"); isReferralFakeAwemeMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { isReferralFakeAwemeField = awemeClass.getDeclaredField("isReferralFakeAweme"); isReferralFakeAwemeField.setAccessible(true); } catch (Throwable ignored) {}
+        try { hasPromoteEntryField = awemeClass.getDeclaredField("hasPromoteEntry"); hasPromoteEntryField.setAccessible(true); } catch (Throwable ignored) {}
+        try { getCommerceInfoMethod = awemeClass.getMethod("getCommerceInfo"); getCommerceInfoMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { commerceInfoField = awemeClass.getDeclaredField("commerceInfo"); commerceInfoField.setAccessible(true); } catch (Throwable ignored) {}
+        try { isPaidContentMethod = awemeClass.getMethod("isPaidContent"); isPaidContentMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { isPaidContentField = awemeClass.getDeclaredField("isPaidContent"); isPaidContentField.setAccessible(true); } catch (Throwable ignored) {}
+        try { getPaidContentInfoMethod = awemeClass.getMethod("getPaidContentInfo"); getPaidContentInfoMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { paidContentInfoField = awemeClass.getDeclaredField("paidContentInfo"); paidContentInfoField.setAccessible(true); } catch (Throwable ignored) {}
+        if (paidContentInfoField == null) {
+            try { paidContentInfoField = awemeClass.getDeclaredField("mPaidContentInfo"); paidContentInfoField.setAccessible(true); } catch (Throwable ignored) {}
+        }
+        try { mPaidContentInfoField = awemeClass.getDeclaredField("mPaidContentInfo"); mPaidContentInfoField.setAccessible(true); } catch (Throwable ignored) {}
+        try { promoteToastField = awemeClass.getDeclaredField("promoteToast"); promoteToastField.setAccessible(true); } catch (Throwable ignored) {}
+        try { promoteToastKeyField = awemeClass.getDeclaredField("promoteToastKey"); promoteToastKeyField.setAccessible(true); } catch (Throwable ignored) {}
+        try { getTextVideoLabelsMethod = awemeClass.getMethod("getTextVideoLabels"); getTextVideoLabelsMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { textVideoLabelsField = awemeClass.getDeclaredField("textVideoLabels"); textVideoLabelsField.setAccessible(true); } catch (Throwable ignored) {}
+        try { awemeRawAdField = awemeClass.getDeclaredField("awemeRawAd"); awemeRawAdField.setAccessible(true); } catch (Throwable ignored) {}
+        try { linkAdDataField = awemeClass.getDeclaredField("linkAdData"); linkAdDataField.setAccessible(true); } catch (Throwable ignored) {}
+        try { getAdLinkTypeMethod = awemeClass.getMethod("getAdLinkType"); getAdLinkTypeMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { adLinkTypeField = awemeClass.getDeclaredField("adLinkType"); adLinkTypeField.setAccessible(true); } catch (Throwable ignored) {}
+        try { getCommercialVideoInfoMethod = awemeClass.getMethod("getCommercialVideoInfo"); getCommercialVideoInfoMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { commercialVideoInfoField = awemeClass.getDeclaredField("commercialVideoInfo"); commercialVideoInfoField.setAccessible(true); } catch (Throwable ignored) {}
+        try { isFriendsTabFakeAwemeMethod = awemeClass.getMethod("isFriendsTabFakeAweme"); isFriendsTabFakeAwemeMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { getRecommendCardTypeMethod = awemeClass.getMethod("getRecommendCardType"); getRecommendCardTypeMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { recommendCardTypeField = awemeClass.getDeclaredField("recommendCardType"); recommendCardTypeField.setAccessible(true); } catch (Throwable ignored) {}
+        try { getCardInsertInfoMethod = awemeClass.getMethod("getCardInsertInfo"); getCardInsertInfoMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { cardInsertInfoField = awemeClass.getDeclaredField("cardInsertInfo"); cardInsertInfoField.setAccessible(true); } catch (Throwable ignored) {}
+        try { getExploreCommunityCommentShowTypeMethod = awemeClass.getMethod("getExploreCommunityCommentShowType"); getExploreCommunityCommentShowTypeMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { exploreCommunityCommentShowTypeField = awemeClass.getDeclaredField("exploreCommunityCommentShowType"); exploreCommunityCommentShowTypeField.setAccessible(true); } catch (Throwable ignored) {}
+        try { getVideoMethod = awemeClass.getMethod("getVideo"); getVideoMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { videoField = awemeClass.getDeclaredField("video"); videoField.setAccessible(true); } catch (Throwable ignored) {}
+
+        try { getWithSurveyMethod = awemeClass.getMethod("getWithSurvey"); getWithSurveyMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { withSurveyField = awemeClass.getDeclaredField("withSurvey"); withSurveyField.setAccessible(true); } catch (Throwable ignored) {}
+        try { getSurveyInfoMethod = awemeClass.getMethod("getSurveyInfo"); getSurveyInfoMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { surveyInfoField = awemeClass.getDeclaredField("_surveyInfo"); surveyInfoField.setAccessible(true); } catch (Throwable ignored) {}
+        try { surveyInfoAltField = awemeClass.getDeclaredField("surveyInfo"); surveyInfoAltField.setAccessible(true); } catch (Throwable ignored) {}
+        try { getSurveyInfosMethod = awemeClass.getMethod("getSurveyInfos"); getSurveyInfosMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { surveyInfosField = awemeClass.getDeclaredField("surveyInfos"); surveyInfosField.setAccessible(true); } catch (Throwable ignored) {}
+        try { getSurveyKeyMethod = awemeClass.getMethod("getSurveyKey"); getSurveyKeyMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { surveyKeyField = awemeClass.getDeclaredField("surveyKey"); surveyKeyField.setAccessible(true); } catch (Throwable ignored) {}
+        try { getPersonalizedSurveyUIMethod = awemeClass.getMethod("getPersonalizedSurveyUI"); getPersonalizedSurveyUIMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { mPersonalizedSurveyUIField = awemeClass.getDeclaredField("mPersonalizedSurveyUI"); mPersonalizedSurveyUIField.setAccessible(true); } catch (Throwable ignored) {}
+        try { getOnboardingSurveyMethod = awemeClass.getMethod("getOnboardingSurvey"); getOnboardingSurveyMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { mOnboardingSurveyField = awemeClass.getDeclaredField("mOnboardingSurvey"); mOnboardingSurveyField.setAccessible(true); } catch (Throwable ignored) {}
+        try { getPersonalizedOnboardingSurveyMethod = awemeClass.getMethod("getPersonalizedOnboardingSurvey"); getPersonalizedOnboardingSurveyMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { mPersonalizedOnboardingSurveyField = awemeClass.getDeclaredField("mPersonalizedOnboardingSurvey"); mPersonalizedOnboardingSurveyField.setAccessible(true); } catch (Throwable ignored) {}
+        try { questionInfoField = awemeClass.getDeclaredField("questionInfo"); questionInfoField.setAccessible(true); } catch (Throwable ignored) {}
+        try { ueFeedInfoField = awemeClass.getDeclaredField("ueFeedInfo"); ueFeedInfoField.setAccessible(true); } catch (Throwable ignored) {}
+
+        try { setWithSurveyMethod = awemeClass.getMethod("setWithSurvey", boolean.class); setWithSurveyMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try {
+            for (Method m : awemeClass.getMethods()) {
+                if ("setSurveyInfo".equals(m.getName()) && m.getParameterTypes().length == 1) {
+                    setSurveyInfoMethod = m;
+                    setSurveyInfoMethod.setAccessible(true);
+                    break;
+                }
+            }
+        } catch (Throwable ignored) {}
+        try { setSurveyInfosMethod = awemeClass.getMethod("setSurveyInfos", List.class); setSurveyInfosMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { setSurveyKeyMethod = awemeClass.getMethod("setSurveyKey", String.class); setSurveyKeyMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try {
+            for (Method m : awemeClass.getMethods()) {
+                if ("setMPersonalizedSurveyUI".equals(m.getName()) && m.getParameterTypes().length == 1) {
+                    setMPersonalizedSurveyUIMethod = m;
+                    setMPersonalizedSurveyUIMethod.setAccessible(true);
+                    break;
+                }
+            }
+        } catch (Throwable ignored) {}
+        try {
+            for (Method m : awemeClass.getMethods()) {
+                if ("setOnboardingSurvey".equals(m.getName()) && m.getParameterTypes().length == 1) {
+                    setOnboardingSurveyMethod = m;
+                    setOnboardingSurveyMethod.setAccessible(true);
+                    break;
+                }
+            }
+        } catch (Throwable ignored) {}
+        try {
+            for (Method m : awemeClass.getMethods()) {
+                if ("setMPersonalizedOnboardingSurvey".equals(m.getName()) && m.getParameterTypes().length == 1) {
+                    setMPersonalizedOnboardingSurveyMethod = m;
+                    setMPersonalizedOnboardingSurveyMethod.setAccessible(true);
+                    break;
+                }
+            }
+        } catch (Throwable ignored) {}
+
+        try {
+            ClassLoader loader = awemeClass != null ? awemeClass.getClassLoader() : classLoader;
+            Class<?> cardInfoClass = null;
+            try {
+                cardInfoClass = loader.loadClass("com.ss.android.ugc.aweme.feed.model.cardinsert.CardInsertInfo");
+            } catch (Throwable t) {
+                if (classLoader != loader) {
+                    cardInfoClass = classLoader.loadClass("com.ss.android.ugc.aweme.feed.model.cardinsert.CardInsertInfo");
+                }
+            }
+            if (cardInfoClass != null) {
+                try { getCardTypeMethod = cardInfoClass.getMethod("getCardType"); getCardTypeMethod.setAccessible(true); } catch (Throwable ignored) {}
+                try { cardTypeField = cardInfoClass.getDeclaredField("cardType"); cardTypeField.setAccessible(true); } catch (Throwable ignored) {}
+            }
+        } catch (Throwable ignored) {}
+
+        try {
+            ClassLoader loader = awemeClass != null ? awemeClass.getClassLoader() : classLoader;
+            Class<?> followClass = null;
+            try {
+                followClass = loader.loadClass("com.ss.android.ugc.aweme.follow.presenter.FollowFeed");
+            } catch (Throwable t) {
+                if (classLoader != loader) {
+                    followClass = classLoader.loadClass("com.ss.android.ugc.aweme.follow.presenter.FollowFeed");
+                }
+            }
+            if (followClass != null) {
+                try { followGetAwemeMethod = followClass.getMethod("getAweme"); followGetAwemeMethod.setAccessible(true); } catch (Throwable ignored) {}
+                try { followAwemeField = followClass.getDeclaredField("aweme"); followAwemeField.setAccessible(true); } catch (Throwable ignored) {}
+                try { followGetFeedTypeMethod = followClass.getMethod("getFeedType"); followGetFeedTypeMethod.setAccessible(true); } catch (Throwable ignored) {}
+                if (followGetFeedTypeMethod == null) {
+                    try { followGetFeedTypeMethod = followClass.getMethod("getFeedTypeValue"); followGetFeedTypeMethod.setAccessible(true); } catch (Throwable ignored) {}
+                }
+                try { followFeedTypeField = followClass.getDeclaredField("feedType"); followFeedTypeField.setAccessible(true); } catch (Throwable ignored) {}
+                if (followFeedTypeField == null) {
+                    try { followFeedTypeField = followClass.getDeclaredField("feedTypeValue"); followFeedTypeField.setAccessible(true); } catch (Throwable ignored) {}
+                }
+                try { followGetRoomMethod = followClass.getMethod("getRoom"); followGetRoomMethod.setAccessible(true); } catch (Throwable ignored) {}
+                try { followGetRoomStructMethod = followClass.getMethod("getRoomStruct"); followGetRoomStructMethod.setAccessible(true); } catch (Throwable ignored) {}
+                try { followRoomField = followClass.getDeclaredField("room"); followRoomField.setAccessible(true); } catch (Throwable ignored) {}
+                try { followRoomStructField = followClass.getDeclaredField("roomStruct"); followRoomStructField.setAccessible(true); } catch (Throwable ignored) {}
+                try { followGetLastViewDataMethod = followClass.getMethod("getLastViewData"); followGetLastViewDataMethod.setAccessible(true); } catch (Throwable ignored) {}
+                try { followLastViewDataField = followClass.getDeclaredField("lastViewData"); followLastViewDataField.setAccessible(true); } catch (Throwable ignored) {}
+                try { followGetRecommendUserMethod = followClass.getMethod("getRecommendUser"); followGetRecommendUserMethod.setAccessible(true); } catch (Throwable ignored) {}
+                try { followRecommendUserField = followClass.getDeclaredField("recommendUser"); followRecommendUserField.setAccessible(true); } catch (Throwable ignored) {}
+            }
+        } catch (Throwable ignored) {}
+
+        try {
+            ClassLoader loader = awemeClass != null ? awemeClass.getClassLoader() : classLoader;
+            Class<?> friendsV3ModelClass = null;
+            try {
+                friendsV3ModelClass = loader.loadClass("com.ss.android.ugc.aweme.friendstab.repo.FriendsV3FeedModel");
+            } catch (Throwable t) {
+                if (classLoader != loader) {
+                    friendsV3ModelClass = classLoader.loadClass("com.ss.android.ugc.aweme.friendstab.repo.FriendsV3FeedModel");
+                }
+            }
+            if (friendsV3ModelClass != null) {
+                try { friendsV3GetAwemeMethod = friendsV3ModelClass.getMethod("getAweme"); friendsV3GetAwemeMethod.setAccessible(true); } catch (Throwable ignored) {}
+                try { friendsV3AwemeField = friendsV3ModelClass.getDeclaredField("aweme"); friendsV3AwemeField.setAccessible(true); } catch (Throwable ignored) {}
+                try { friendsV3GetRepostItemMethod = friendsV3ModelClass.getMethod("getRepostItem"); friendsV3GetRepostItemMethod.setAccessible(true); } catch (Throwable ignored) {}
+                try { friendsV3RepostItemField = friendsV3ModelClass.getDeclaredField("repostItem"); friendsV3RepostItemField.setAccessible(true); } catch (Throwable ignored) {}
+            }
+            Class<?> repostClass = null;
+            try {
+                repostClass = loader.loadClass("com.ss.android.ugc.aweme.friendstab.repo.FriendsV3RepostModel");
+            } catch (Throwable t) {
+                if (classLoader != loader) {
+                    repostClass = classLoader.loadClass("com.ss.android.ugc.aweme.friendstab.repo.FriendsV3RepostModel");
+                }
+            }
+            if (repostClass != null) {
+                try { friendsV3GetRepostedAwemeMethod = repostClass.getMethod("getRepostedAweme"); friendsV3GetRepostedAwemeMethod.setAccessible(true); } catch (Throwable ignored) {}
+                try { friendsV3RepostedAwemeField = repostClass.getDeclaredField("repostedAweme"); friendsV3RepostedAwemeField.setAccessible(true); } catch (Throwable ignored) {}
+                try { friendsV3ReposterField = repostClass.getDeclaredField("reposter"); friendsV3ReposterField.setAccessible(true); } catch (Throwable ignored) {}
+            }
+        } catch (Throwable ignored) {}
+
+        try {
+            ClassLoader loader = awemeClass != null ? awemeClass.getClassLoader() : classLoader;
+            Class<?> friendsFeedClass = null;
+            try {
+                friendsFeedClass = loader.loadClass("com.ss.android.ugc.aweme.feed.model.friends.FriendsFeed");
+            } catch (Throwable t) {
+                if (classLoader != loader) {
+                    friendsFeedClass = classLoader.loadClass("com.ss.android.ugc.aweme.feed.model.friends.FriendsFeed");
+                }
+            }
+            if (friendsFeedClass != null) {
+                try { friendsFeedGetAwemeMethod = friendsFeedClass.getMethod("getAweme"); friendsFeedGetAwemeMethod.setAccessible(true); } catch (Throwable ignored) {}
+                try { friendsFeedAwemeField = friendsFeedClass.getDeclaredField("aweme"); friendsFeedAwemeField.setAccessible(true); } catch (Throwable ignored) {}
+            }
+        } catch (Throwable ignored) {}
+
+        try {
+            ClassLoader loader = awemeClass != null ? awemeClass.getClassLoader() : classLoader;
+            Class<?> userClass = null;
+            try {
+                userClass = loader.loadClass("com.ss.android.ugc.aweme.profile.model.User");
+            } catch (Throwable t) {
+                if (classLoader != loader) {
+                    userClass = classLoader.loadClass("com.ss.android.ugc.aweme.profile.model.User");
+                }
+            }
+            if (userClass != null) {
+                try { userGetFollowStatusMethod = userClass.getMethod("getFollowStatus"); userGetFollowStatusMethod.setAccessible(true); } catch (Throwable ignored) {}
+                try { userFollowStatusField = userClass.getDeclaredField("followStatus"); userFollowStatusField.setAccessible(true); } catch (Throwable ignored) {}
+                try { userGetMatchedFriendStructMethod = userClass.getMethod("getMatchedFriendStruct"); userGetMatchedFriendStructMethod.setAccessible(true); } catch (Throwable ignored) {}
+                try { userMatchedFriendStructField = userClass.getDeclaredField("matchedFriendStruct"); userMatchedFriendStructField.setAccessible(true); } catch (Throwable ignored) {}
+                try { userIsMatchedFriendAvailableMethod = userClass.getMethod("isMatchedFriendAvailable"); userIsMatchedFriendAvailableMethod.setAccessible(true); } catch (Throwable ignored) {}
+                try { userMatchedFriendAvailableField = userClass.getDeclaredField("matchedFriendAvailable"); userMatchedFriendAvailableField.setAccessible(true); } catch (Throwable ignored) {}
+                try { userGetUidMethod = userClass.getMethod("getUid"); userGetUidMethod.setAccessible(true); } catch (Throwable ignored) {}
+                try { userUidField = userClass.getDeclaredField("uid"); userUidField.setAccessible(true); } catch (Throwable ignored) {}
+                try { userGetRecTypeMethod = userClass.getMethod("getRecType"); userGetRecTypeMethod.setAccessible(true); } catch (Throwable ignored) {}
+                try { userRecTypeField = userClass.getDeclaredField("recType"); userRecTypeField.setAccessible(true); } catch (Throwable ignored) {}
+            }
+        } catch (Throwable ignored) {}
+
+        try { awemeGetAuthorMethod = awemeClass.getMethod("getAuthor"); awemeGetAuthorMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { awemeAuthorField = awemeClass.getDeclaredField("author"); awemeAuthorField.setAccessible(true); } catch (Throwable ignored) {}
+        try { awemeGetFeedRelationLabelMethod = awemeClass.getMethod("getFeedRelationLabel"); awemeGetFeedRelationLabelMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { awemeFeedRelationLabelField = awemeClass.getDeclaredField("feedRelationLabel"); awemeFeedRelationLabelField.setAccessible(true); } catch (Throwable ignored) {}
+        try { awemeGetRelationLabelMethod = awemeClass.getMethod("getRelationLabel"); awemeGetRelationLabelMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { awemeRelationLabelField = awemeClass.getDeclaredField("relationLabel"); awemeRelationLabelField.setAccessible(true); } catch (Throwable ignored) {}
+        try { awemeGetRelationRecommendInfoMethod = awemeClass.getMethod("getRelationRecommendInfo"); awemeGetRelationRecommendInfoMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { awemeRelationRecommendInfoField = awemeClass.getDeclaredField("relationRecommendInfo"); awemeRelationRecommendInfoField.setAccessible(true); } catch (Throwable ignored) {}
+        try { awemeGetRecReasonsStructMethod = awemeClass.getMethod("getRecReasonsStruct"); awemeGetRecReasonsStructMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { awemeRecReasonsStructField = awemeClass.getDeclaredField("recReasonsStruct"); awemeRecReasonsStructField.setAccessible(true); } catch (Throwable ignored) {}
+
+        try { getAigcInfoMethod = awemeClass.getMethod("getAigcInfo"); getAigcInfoMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { aigcInfoField = awemeClass.getDeclaredField("aigcInfo"); aigcInfoField.setAccessible(true); } catch (Throwable ignored) {}
+        try { getModerationAigcInfoMethod = awemeClass.getMethod("getModerationAigcInfo"); getModerationAigcInfoMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { moderationAigcInfoField = awemeClass.getDeclaredField("moderationAigcInfo"); moderationAigcInfoField.setAccessible(true); } catch (Throwable ignored) {}
+        try { getC2paInfoMethod = awemeClass.getMethod("getC2paInfo"); getC2paInfoMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { c2paInfoField = awemeClass.getDeclaredField("c2paInfo"); c2paInfoField.setAccessible(true); } catch (Throwable ignored) {}
+
+        try { aiAliveInfoField = awemeClass.getDeclaredField("aiAliveInfo"); aiAliveInfoField.setAccessible(true); } catch (Throwable ignored) {}
+        try { aiPortraitInfoField = awemeClass.getDeclaredField("aiPortraitInfo"); aiPortraitInfoField.setAccessible(true); } catch (Throwable ignored) {}
+        try { aiRemixInfoField = awemeClass.getDeclaredField("aiRemixInfo"); aiRemixInfoField.setAccessible(true); } catch (Throwable ignored) {}
+        try { aiTheaterInfoField = awemeClass.getDeclaredField("aiTheaterInfo"); aiTheaterInfoField.setAccessible(true); } catch (Throwable ignored) {}
+        try { aiChatEditorInfoField = awemeClass.getDeclaredField("aiChatEditorInfo"); aiChatEditorInfoField.setAccessible(true); } catch (Throwable ignored) {}
+
+        try { getBannersMethod = awemeClass.getMethod("getBanners"); getBannersMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { bannersField = awemeClass.getDeclaredField("banners"); bannersField.setAccessible(true); } catch (Throwable ignored) {}
+        try { getAnchorsMethod = awemeClass.getMethod("getAnchors"); getAnchorsMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { anchorsField = awemeClass.getDeclaredField("anchors"); anchorsField.setAccessible(true); } catch (Throwable ignored) {}
+        try { getDescMethod = awemeClass.getMethod("getDesc"); getDescMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { descField = awemeClass.getDeclaredField("desc"); descField.setAccessible(true); } catch (Throwable ignored) {}
+        try { getContentDescMethod = awemeClass.getMethod("getContentDesc"); getContentDescMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { contentDescField = awemeClass.getDeclaredField("contentDesc"); contentDescField.setAccessible(true); } catch (Throwable ignored) {}
+        try { getTextExtraMethod = awemeClass.getMethod("getTextExtra"); getTextExtraMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { textExtraField = awemeClass.getDeclaredField("textExtra"); textExtraField.setAccessible(true); } catch (Throwable ignored) {}
+        try { mTextExtraField = awemeClass.getDeclaredField("mTextExtra"); mTextExtraField.setAccessible(true); } catch (Throwable ignored) {}
+
+        try {
+            ClassLoader loader = awemeClass != null ? awemeClass.getClassLoader() : classLoader;
+            Class<?> aigcInfoClass = null;
+            for (String clsName : new String[]{
+                "com.ss.android.ugc.aweme.feed.AIGCInfo",
+                "com.ss.android.ugc.aweme.minilite.feed.model.AwemeAigcModel",
+                "com.ss.android.ugc.aweme.feed.model.AwemeAigcModel"
+            }) {
+                try {
+                    aigcInfoClass = loader.loadClass(clsName);
+                    if (aigcInfoClass != null) break;
+                } catch (Throwable ignored) {}
+                if (classLoader != null && classLoader != loader && aigcInfoClass == null) {
+                    try {
+                        aigcInfoClass = classLoader.loadClass(clsName);
+                        if (aigcInfoClass != null) break;
+                    } catch (Throwable ignored) {}
+                }
+            }
+            if (aigcInfoClass != null) {
+                try { getAigcLabelTypeMethod = aigcInfoClass.getMethod("getAIGCLabelType"); getAigcLabelTypeMethod.setAccessible(true); } catch (Throwable ignored) {}
+                if (getAigcLabelTypeMethod == null) {
+                    try { getAigcLabelTypeMethod = aigcInfoClass.getMethod("getAigcLabelType"); getAigcLabelTypeMethod.setAccessible(true); } catch (Throwable ignored) {}
+                }
+                try { aigcLabelTypeField = aigcInfoClass.getDeclaredField("AIGCLabelType"); aigcLabelTypeField.setAccessible(true); } catch (Throwable ignored) {}
+                if (aigcLabelTypeField == null) {
+                    try { aigcLabelTypeField = aigcInfoClass.getDeclaredField("aigcLabelType"); aigcLabelTypeField.setAccessible(true); } catch (Throwable ignored) {}
+                }
+                try { createByAiField = aigcInfoClass.getDeclaredField("createByAI"); createByAiField.setAccessible(true); } catch (Throwable ignored) {}
+                if (createByAiField == null) {
+                    try { createByAiField = aigcInfoClass.getDeclaredField("createByAi"); createByAiField.setAccessible(true); } catch (Throwable ignored) {}
+                }
+            }
+        } catch (Throwable ignored) {}
+
+        try {
+            ClassLoader loader = awemeClass != null ? awemeClass.getClassLoader() : classLoader;
+            Class<?> modAigcClass = null;
+            try {
+                modAigcClass = loader.loadClass("com.ss.android.ugc.aweme.feed.model.ModerationAigcInfo");
+            } catch (Throwable t) {
+                if (classLoader != loader) {
+                    modAigcClass = classLoader.loadClass("com.ss.android.ugc.aweme.feed.model.ModerationAigcInfo");
+                }
+            }
+            if (modAigcClass != null) {
+                try { moderationAigcLabelTypeField = modAigcClass.getDeclaredField("moderationAigcLabelType"); moderationAigcLabelTypeField.setAccessible(true); } catch (Throwable ignored) {}
+                try { moderationUserLabelStatusField = modAigcClass.getDeclaredField("moderationUserLabelStatus"); moderationUserLabelStatusField.setAccessible(true); } catch (Throwable ignored) {}
+                try { creatorGuidanceStatusField = modAigcClass.getDeclaredField("creatorGuidanceStatus"); creatorGuidanceStatusField.setAccessible(true); } catch (Throwable ignored) {}
+                try { moderationCreatorSegmentField = modAigcClass.getDeclaredField("moderationCreatorSegment"); moderationCreatorSegmentField.setAccessible(true); } catch (Throwable ignored) {}
+            }
+        } catch (Throwable ignored) {}
+
+        try {
+            ClassLoader loader = awemeClass != null ? awemeClass.getClassLoader() : classLoader;
+            Class<?> c2paClass = null;
+            try {
+                c2paClass = loader.loadClass("com.ss.android.ugc.aweme.feed.model.C2PAInfo");
+            } catch (Throwable t) {
+                if (classLoader != loader) {
+                    c2paClass = classLoader.loadClass("com.ss.android.ugc.aweme.feed.model.C2PAInfo");
+                }
+            }
+            if (c2paClass != null) {
+                try { c2paAigcSrcField = c2paClass.getDeclaredField("aigcSrc"); c2paAigcSrcField.setAccessible(true); } catch (Throwable ignored) {}
+                try { c2paFirstAigcSrcField = c2paClass.getDeclaredField("firstAigcSrc"); c2paFirstAigcSrcField.setAccessible(true); } catch (Throwable ignored) {}
+                try { c2paLastAigcSrcField = c2paClass.getDeclaredField("lastAigcSrc"); c2paLastAigcSrcField.setAccessible(true); } catch (Throwable ignored) {}
+            }
+        } catch (Throwable ignored) {}
+
+
+        Log.i(TAG, "[Feed Ad Blocker] Engine initialized. Monitoring feed streams for sponsored content.");
+        initialized = true;
+    }
+
     private static void ensureInitialized(ClassLoader classLoader) {
         ensureInitialized(null, classLoader);
     }
 
     private static void ensureInitialized(Class<?> callerClass, ClassLoader classLoader) {
+        if (classLoader == null || classLoader.getClass().getName().contains("BootClassLoader")) {
+            if (callerClass != null && callerClass.getClassLoader() != null) {
+                classLoader = callerClass.getClassLoader();
+            } else {
+                classLoader = TikTokFeedAdFilter.class.getClassLoader();
+            }
+        }
+        if (classLoader == null) {
+            classLoader = Thread.currentThread().getContextClassLoader();
+        }
+        if (classLoader != null) {
+            cachedClassLoader = classLoader;
+        }
+
+        if (callerClass != null && isAwemeModelClass(callerClass)) {
+            if (initialized && awemeClass == callerClass) return;
+            synchronized (TikTokFeedAdFilter.class) {
+                if (initialized && awemeClass == callerClass) return;
+                boolean wasInitialized = initialized;
+                bindMembers(callerClass);
+                if (wasInitialized && reboundLogCount < MAX_REBOUND_LOGS) {
+                    reboundLogCount++;
+                    Log.i(TAG, "[Feed Ad Blocker] Rebound filter to " + callerClass.getName());
+                }
+            }
+            return;
+        }
+
         if (initialized) return;
+
         synchronized (TikTokFeedAdFilter.class) {
             if (initialized) return;
-            if (callerClass != null && (callerClass.getName().endsWith(".Aweme") || callerClass.getName().endsWith("Aweme"))) {
-                awemeClass = callerClass;
+            if (!waitingLogged) {
+                waitingLogged = true;
+                Log.i(TAG, "[Feed Ad Blocker] Waiting for a feed item class before binding");
             }
-            if (classLoader == null || classLoader.getClass().getName().contains("BootClassLoader")) {
-                if (callerClass != null && callerClass.getClassLoader() != null) {
-                    classLoader = callerClass.getClassLoader();
-                } else {
-                    classLoader = TikTokFeedAdFilter.class.getClassLoader();
-                }
-            }
-            if (classLoader == null) {
-                classLoader = Thread.currentThread().getContextClassLoader();
-            }
-            if (awemeClass == null && classLoader != null) {
-                try {
-                    awemeClass = classLoader.loadClass("com.ss.android.ugc.aweme.feed.model.Aweme");
-                } catch (Throwable t) {
-                    try {
-                        awemeClass = classLoader.loadClass("com.ss.android.ugc.aweme.minilite.feed.model.Aweme");
-                    } catch (Throwable t2) {
-                        try {
-                            ClassLoader fallback = TikTokFeedAdFilter.class.getClassLoader();
-                            if (fallback != null && fallback != classLoader) {
-                                try {
-                                    awemeClass = fallback.loadClass("com.ss.android.ugc.aweme.feed.model.Aweme");
-                                } catch (Throwable t3) {
-                                    awemeClass = fallback.loadClass("com.ss.android.ugc.aweme.minilite.feed.model.Aweme");
-                                }
-                            }
-                        } catch (Throwable ignored) {}
-                    }
-                }
-            }
-
-            if (awemeClass == null) {
-                // Do not mark initialized = true if Aweme class cannot be loaded yet
-                return;
-            }
-
-            try { isAdMethod = awemeClass.getMethod("isAd"); isAdMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { isSoftAdMethod = awemeClass.getMethod("isSoftAd"); isSoftAdMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { isWithPromotionalMusicMethod = awemeClass.getMethod("isWithPromotionalMusic"); isWithPromotionalMusicMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { getAwemeRawAdMethod = awemeClass.getMethod("getAwemeRawAd"); getAwemeRawAdMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { getLinkAdDataMethod = awemeClass.getMethod("getLinkAdData"); getLinkAdDataMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { getShareUrlMethod = awemeClass.getMethod("getShareUrl"); getShareUrlMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { isLiveMethod = awemeClass.getMethod("isLive"); isLiveMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { getAwemeTypeMethod = awemeClass.getMethod("getAwemeType"); getAwemeTypeMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { getRoomMethod = awemeClass.getMethod("getRoom"); getRoomMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { getRoomFeedCellStructMethod = awemeClass.getMethod("getRoomFeedCellStruct"); getRoomFeedCellStructMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { getLiveIdMethod = awemeClass.getMethod("getLiveId"); getLiveIdMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { getStreamUrlModelMethod = awemeClass.getMethod("getStreamUrlModel"); getStreamUrlModelMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { getAuthorLiveMethod = awemeClass.getMethod("getAuthorLive"); getAuthorLiveMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { getLiveTypeMethod = awemeClass.getMethod("getLiveType"); getLiveTypeMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { roomField = awemeClass.getDeclaredField("room"); roomField.setAccessible(true); } catch (Throwable ignored) {}
-            try { roomFeedCellField = awemeClass.getDeclaredField("mRoomFeedCellStruct"); roomFeedCellField.setAccessible(true); } catch (Throwable ignored) {}
-            try { newLiveRoomDataField = awemeClass.getDeclaredField("newLiveRoomData"); newLiveRoomDataField.setAccessible(true); } catch (Throwable ignored) {}
-            try { liveIdField = awemeClass.getDeclaredField("liveId"); liveIdField.setAccessible(true); } catch (Throwable ignored) {}
-            try { streamUrlModelField = awemeClass.getDeclaredField("streamUrlModel"); streamUrlModelField.setAccessible(true); } catch (Throwable ignored) {}
-            try { authorLiveField = awemeClass.getDeclaredField("authorLive"); authorLiveField.setAccessible(true); } catch (Throwable ignored) {}
-            try { setAnchorsMethod = awemeClass.getMethod("setAnchors", List.class); setAnchorsMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try {
-                for (Method m : awemeClass.getMethods()) {
-                    if ("setAnchorInfo".equals(m.getName()) && m.getParameterTypes().length == 1) {
-                        setAnchorInfoMethod = m;
-                        setAnchorInfoMethod.setAccessible(true);
-                        break;
-                    }
-                }
-            } catch (Throwable ignored) {}
-            try { getLiveAwesomeSplashInfoMethod = awemeClass.getMethod("getLiveAwesomeSplashInfo"); getLiveAwesomeSplashInfoMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { liveAwesomeSplashInfoField = awemeClass.getDeclaredField("mLiveAwesomeSplashInfo"); liveAwesomeSplashInfoField.setAccessible(true); } catch (Throwable ignored) {}
-            try { getAdAwemeSourceMethod = awemeClass.getMethod("getAdAwemeSource"); getAdAwemeSourceMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { adAwemeSourceField = awemeClass.getDeclaredField("adAwemeSource"); adAwemeSourceField.setAccessible(true); } catch (Throwable ignored) {}
-            try { isAdField = awemeClass.getDeclaredField("_isAd"); isAdField.setAccessible(true); } catch (Throwable ignored) {}
-            if (isAdField == null) {
-                try { isAdField = awemeClass.getDeclaredField("isAd"); isAdField.setAccessible(true); } catch (Throwable ignored) {}
-            }
-            try { isSoftAdField = awemeClass.getDeclaredField("_isSoftAd"); isSoftAdField.setAccessible(true); } catch (Throwable ignored) {}
-            if (isSoftAdField == null) {
-                try { isSoftAdField = awemeClass.getDeclaredField("isSoftAd"); isSoftAdField.setAccessible(true); } catch (Throwable ignored) {}
-            }
-            try { isReferralFakeAwemeMethod = awemeClass.getMethod("isReferralFakeAweme"); isReferralFakeAwemeMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { isReferralFakeAwemeField = awemeClass.getDeclaredField("isReferralFakeAweme"); isReferralFakeAwemeField.setAccessible(true); } catch (Throwable ignored) {}
-            try { hasPromoteEntryField = awemeClass.getDeclaredField("hasPromoteEntry"); hasPromoteEntryField.setAccessible(true); } catch (Throwable ignored) {}
-            try { getCommerceInfoMethod = awemeClass.getMethod("getCommerceInfo"); getCommerceInfoMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { commerceInfoField = awemeClass.getDeclaredField("commerceInfo"); commerceInfoField.setAccessible(true); } catch (Throwable ignored) {}
-            try { isPaidContentMethod = awemeClass.getMethod("isPaidContent"); isPaidContentMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { isPaidContentField = awemeClass.getDeclaredField("isPaidContent"); isPaidContentField.setAccessible(true); } catch (Throwable ignored) {}
-            try { getPaidContentInfoMethod = awemeClass.getMethod("getPaidContentInfo"); getPaidContentInfoMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { paidContentInfoField = awemeClass.getDeclaredField("paidContentInfo"); paidContentInfoField.setAccessible(true); } catch (Throwable ignored) {}
-            if (paidContentInfoField == null) {
-                try { paidContentInfoField = awemeClass.getDeclaredField("mPaidContentInfo"); paidContentInfoField.setAccessible(true); } catch (Throwable ignored) {}
-            }
-            try { mPaidContentInfoField = awemeClass.getDeclaredField("mPaidContentInfo"); mPaidContentInfoField.setAccessible(true); } catch (Throwable ignored) {}
-            try { promoteToastField = awemeClass.getDeclaredField("promoteToast"); promoteToastField.setAccessible(true); } catch (Throwable ignored) {}
-            try { promoteToastKeyField = awemeClass.getDeclaredField("promoteToastKey"); promoteToastKeyField.setAccessible(true); } catch (Throwable ignored) {}
-            try { getTextVideoLabelsMethod = awemeClass.getMethod("getTextVideoLabels"); getTextVideoLabelsMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { textVideoLabelsField = awemeClass.getDeclaredField("textVideoLabels"); textVideoLabelsField.setAccessible(true); } catch (Throwable ignored) {}
-            try { awemeRawAdField = awemeClass.getDeclaredField("awemeRawAd"); awemeRawAdField.setAccessible(true); } catch (Throwable ignored) {}
-            try { linkAdDataField = awemeClass.getDeclaredField("linkAdData"); linkAdDataField.setAccessible(true); } catch (Throwable ignored) {}
-            try { getAdLinkTypeMethod = awemeClass.getMethod("getAdLinkType"); getAdLinkTypeMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { adLinkTypeField = awemeClass.getDeclaredField("adLinkType"); adLinkTypeField.setAccessible(true); } catch (Throwable ignored) {}
-            try { getCommercialVideoInfoMethod = awemeClass.getMethod("getCommercialVideoInfo"); getCommercialVideoInfoMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { commercialVideoInfoField = awemeClass.getDeclaredField("commercialVideoInfo"); commercialVideoInfoField.setAccessible(true); } catch (Throwable ignored) {}
-            try { isFriendsTabFakeAwemeMethod = awemeClass.getMethod("isFriendsTabFakeAweme"); isFriendsTabFakeAwemeMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { getRecommendCardTypeMethod = awemeClass.getMethod("getRecommendCardType"); getRecommendCardTypeMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { recommendCardTypeField = awemeClass.getDeclaredField("recommendCardType"); recommendCardTypeField.setAccessible(true); } catch (Throwable ignored) {}
-            try { getCardInsertInfoMethod = awemeClass.getMethod("getCardInsertInfo"); getCardInsertInfoMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { cardInsertInfoField = awemeClass.getDeclaredField("cardInsertInfo"); cardInsertInfoField.setAccessible(true); } catch (Throwable ignored) {}
-            try { getExploreCommunityCommentShowTypeMethod = awemeClass.getMethod("getExploreCommunityCommentShowType"); getExploreCommunityCommentShowTypeMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { exploreCommunityCommentShowTypeField = awemeClass.getDeclaredField("exploreCommunityCommentShowType"); exploreCommunityCommentShowTypeField.setAccessible(true); } catch (Throwable ignored) {}
-            try { getVideoMethod = awemeClass.getMethod("getVideo"); getVideoMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { videoField = awemeClass.getDeclaredField("video"); videoField.setAccessible(true); } catch (Throwable ignored) {}
-
-            try { getWithSurveyMethod = awemeClass.getMethod("getWithSurvey"); getWithSurveyMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { withSurveyField = awemeClass.getDeclaredField("withSurvey"); withSurveyField.setAccessible(true); } catch (Throwable ignored) {}
-            try { getSurveyInfoMethod = awemeClass.getMethod("getSurveyInfo"); getSurveyInfoMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { surveyInfoField = awemeClass.getDeclaredField("_surveyInfo"); surveyInfoField.setAccessible(true); } catch (Throwable ignored) {}
-            try { surveyInfoAltField = awemeClass.getDeclaredField("surveyInfo"); surveyInfoAltField.setAccessible(true); } catch (Throwable ignored) {}
-            try { getSurveyInfosMethod = awemeClass.getMethod("getSurveyInfos"); getSurveyInfosMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { surveyInfosField = awemeClass.getDeclaredField("surveyInfos"); surveyInfosField.setAccessible(true); } catch (Throwable ignored) {}
-            try { getSurveyKeyMethod = awemeClass.getMethod("getSurveyKey"); getSurveyKeyMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { surveyKeyField = awemeClass.getDeclaredField("surveyKey"); surveyKeyField.setAccessible(true); } catch (Throwable ignored) {}
-            try { getPersonalizedSurveyUIMethod = awemeClass.getMethod("getPersonalizedSurveyUI"); getPersonalizedSurveyUIMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { mPersonalizedSurveyUIField = awemeClass.getDeclaredField("mPersonalizedSurveyUI"); mPersonalizedSurveyUIField.setAccessible(true); } catch (Throwable ignored) {}
-            try { getOnboardingSurveyMethod = awemeClass.getMethod("getOnboardingSurvey"); getOnboardingSurveyMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { mOnboardingSurveyField = awemeClass.getDeclaredField("mOnboardingSurvey"); mOnboardingSurveyField.setAccessible(true); } catch (Throwable ignored) {}
-            try { getPersonalizedOnboardingSurveyMethod = awemeClass.getMethod("getPersonalizedOnboardingSurvey"); getPersonalizedOnboardingSurveyMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { mPersonalizedOnboardingSurveyField = awemeClass.getDeclaredField("mPersonalizedOnboardingSurvey"); mPersonalizedOnboardingSurveyField.setAccessible(true); } catch (Throwable ignored) {}
-            try { questionInfoField = awemeClass.getDeclaredField("questionInfo"); questionInfoField.setAccessible(true); } catch (Throwable ignored) {}
-            try { ueFeedInfoField = awemeClass.getDeclaredField("ueFeedInfo"); ueFeedInfoField.setAccessible(true); } catch (Throwable ignored) {}
-
-            try { setWithSurveyMethod = awemeClass.getMethod("setWithSurvey", boolean.class); setWithSurveyMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try {
-                for (Method m : awemeClass.getMethods()) {
-                    if ("setSurveyInfo".equals(m.getName()) && m.getParameterTypes().length == 1) {
-                        setSurveyInfoMethod = m;
-                        setSurveyInfoMethod.setAccessible(true);
-                        break;
-                    }
-                }
-            } catch (Throwable ignored) {}
-            try { setSurveyInfosMethod = awemeClass.getMethod("setSurveyInfos", List.class); setSurveyInfosMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { setSurveyKeyMethod = awemeClass.getMethod("setSurveyKey", String.class); setSurveyKeyMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try {
-                for (Method m : awemeClass.getMethods()) {
-                    if ("setMPersonalizedSurveyUI".equals(m.getName()) && m.getParameterTypes().length == 1) {
-                        setMPersonalizedSurveyUIMethod = m;
-                        setMPersonalizedSurveyUIMethod.setAccessible(true);
-                        break;
-                    }
-                }
-            } catch (Throwable ignored) {}
-            try {
-                for (Method m : awemeClass.getMethods()) {
-                    if ("setOnboardingSurvey".equals(m.getName()) && m.getParameterTypes().length == 1) {
-                        setOnboardingSurveyMethod = m;
-                        setOnboardingSurveyMethod.setAccessible(true);
-                        break;
-                    }
-                }
-            } catch (Throwable ignored) {}
-            try {
-                for (Method m : awemeClass.getMethods()) {
-                    if ("setMPersonalizedOnboardingSurvey".equals(m.getName()) && m.getParameterTypes().length == 1) {
-                        setMPersonalizedOnboardingSurveyMethod = m;
-                        setMPersonalizedOnboardingSurveyMethod.setAccessible(true);
-                        break;
-                    }
-                }
-            } catch (Throwable ignored) {}
-
-            try {
-                ClassLoader loader = awemeClass != null ? awemeClass.getClassLoader() : classLoader;
-                Class<?> cardInfoClass = null;
-                try {
-                    cardInfoClass = loader.loadClass("com.ss.android.ugc.aweme.feed.model.cardinsert.CardInsertInfo");
-                } catch (Throwable t) {
-                    if (classLoader != loader) {
-                        cardInfoClass = classLoader.loadClass("com.ss.android.ugc.aweme.feed.model.cardinsert.CardInsertInfo");
-                    }
-                }
-                if (cardInfoClass != null) {
-                    try { getCardTypeMethod = cardInfoClass.getMethod("getCardType"); getCardTypeMethod.setAccessible(true); } catch (Throwable ignored) {}
-                    try { cardTypeField = cardInfoClass.getDeclaredField("cardType"); cardTypeField.setAccessible(true); } catch (Throwable ignored) {}
-                }
-            } catch (Throwable ignored) {}
-
-            try {
-                ClassLoader loader = awemeClass != null ? awemeClass.getClassLoader() : classLoader;
-                Class<?> followClass = null;
-                try {
-                    followClass = loader.loadClass("com.ss.android.ugc.aweme.follow.presenter.FollowFeed");
-                } catch (Throwable t) {
-                    if (classLoader != loader) {
-                        followClass = classLoader.loadClass("com.ss.android.ugc.aweme.follow.presenter.FollowFeed");
-                    }
-                }
-                if (followClass != null) {
-                    try { followGetAwemeMethod = followClass.getMethod("getAweme"); followGetAwemeMethod.setAccessible(true); } catch (Throwable ignored) {}
-                    try { followAwemeField = followClass.getDeclaredField("aweme"); followAwemeField.setAccessible(true); } catch (Throwable ignored) {}
-                    try { followGetFeedTypeMethod = followClass.getMethod("getFeedType"); followGetFeedTypeMethod.setAccessible(true); } catch (Throwable ignored) {}
-                    if (followGetFeedTypeMethod == null) {
-                        try { followGetFeedTypeMethod = followClass.getMethod("getFeedTypeValue"); followGetFeedTypeMethod.setAccessible(true); } catch (Throwable ignored) {}
-                    }
-                    try { followFeedTypeField = followClass.getDeclaredField("feedType"); followFeedTypeField.setAccessible(true); } catch (Throwable ignored) {}
-                    if (followFeedTypeField == null) {
-                        try { followFeedTypeField = followClass.getDeclaredField("feedTypeValue"); followFeedTypeField.setAccessible(true); } catch (Throwable ignored) {}
-                    }
-                    try { followGetRoomMethod = followClass.getMethod("getRoom"); followGetRoomMethod.setAccessible(true); } catch (Throwable ignored) {}
-                    try { followGetRoomStructMethod = followClass.getMethod("getRoomStruct"); followGetRoomStructMethod.setAccessible(true); } catch (Throwable ignored) {}
-                    try { followRoomField = followClass.getDeclaredField("room"); followRoomField.setAccessible(true); } catch (Throwable ignored) {}
-                    try { followRoomStructField = followClass.getDeclaredField("roomStruct"); followRoomStructField.setAccessible(true); } catch (Throwable ignored) {}
-                    try { followGetLastViewDataMethod = followClass.getMethod("getLastViewData"); followGetLastViewDataMethod.setAccessible(true); } catch (Throwable ignored) {}
-                    try { followLastViewDataField = followClass.getDeclaredField("lastViewData"); followLastViewDataField.setAccessible(true); } catch (Throwable ignored) {}
-                    try { followGetRecommendUserMethod = followClass.getMethod("getRecommendUser"); followGetRecommendUserMethod.setAccessible(true); } catch (Throwable ignored) {}
-                    try { followRecommendUserField = followClass.getDeclaredField("recommendUser"); followRecommendUserField.setAccessible(true); } catch (Throwable ignored) {}
-                }
-            } catch (Throwable ignored) {}
-
-            try {
-                ClassLoader loader = awemeClass != null ? awemeClass.getClassLoader() : classLoader;
-                Class<?> friendsV3ModelClass = null;
-                try {
-                    friendsV3ModelClass = loader.loadClass("com.ss.android.ugc.aweme.friendstab.repo.FriendsV3FeedModel");
-                } catch (Throwable t) {
-                    if (classLoader != loader) {
-                        friendsV3ModelClass = classLoader.loadClass("com.ss.android.ugc.aweme.friendstab.repo.FriendsV3FeedModel");
-                    }
-                }
-                if (friendsV3ModelClass != null) {
-                    try { friendsV3GetAwemeMethod = friendsV3ModelClass.getMethod("getAweme"); friendsV3GetAwemeMethod.setAccessible(true); } catch (Throwable ignored) {}
-                    try { friendsV3AwemeField = friendsV3ModelClass.getDeclaredField("aweme"); friendsV3AwemeField.setAccessible(true); } catch (Throwable ignored) {}
-                    try { friendsV3GetRepostItemMethod = friendsV3ModelClass.getMethod("getRepostItem"); friendsV3GetRepostItemMethod.setAccessible(true); } catch (Throwable ignored) {}
-                    try { friendsV3RepostItemField = friendsV3ModelClass.getDeclaredField("repostItem"); friendsV3RepostItemField.setAccessible(true); } catch (Throwable ignored) {}
-                }
-                Class<?> repostClass = null;
-                try {
-                    repostClass = loader.loadClass("com.ss.android.ugc.aweme.friendstab.repo.FriendsV3RepostModel");
-                } catch (Throwable t) {
-                    if (classLoader != loader) {
-                        repostClass = classLoader.loadClass("com.ss.android.ugc.aweme.friendstab.repo.FriendsV3RepostModel");
-                    }
-                }
-                if (repostClass != null) {
-                    try { friendsV3GetRepostedAwemeMethod = repostClass.getMethod("getRepostedAweme"); friendsV3GetRepostedAwemeMethod.setAccessible(true); } catch (Throwable ignored) {}
-                    try { friendsV3RepostedAwemeField = repostClass.getDeclaredField("repostedAweme"); friendsV3RepostedAwemeField.setAccessible(true); } catch (Throwable ignored) {}
-                    try { friendsV3ReposterField = repostClass.getDeclaredField("reposter"); friendsV3ReposterField.setAccessible(true); } catch (Throwable ignored) {}
-                }
-            } catch (Throwable ignored) {}
-
-            try {
-                ClassLoader loader = awemeClass != null ? awemeClass.getClassLoader() : classLoader;
-                Class<?> friendsFeedClass = null;
-                try {
-                    friendsFeedClass = loader.loadClass("com.ss.android.ugc.aweme.feed.model.friends.FriendsFeed");
-                } catch (Throwable t) {
-                    if (classLoader != loader) {
-                        friendsFeedClass = classLoader.loadClass("com.ss.android.ugc.aweme.feed.model.friends.FriendsFeed");
-                    }
-                }
-                if (friendsFeedClass != null) {
-                    try { friendsFeedGetAwemeMethod = friendsFeedClass.getMethod("getAweme"); friendsFeedGetAwemeMethod.setAccessible(true); } catch (Throwable ignored) {}
-                    try { friendsFeedAwemeField = friendsFeedClass.getDeclaredField("aweme"); friendsFeedAwemeField.setAccessible(true); } catch (Throwable ignored) {}
-                }
-            } catch (Throwable ignored) {}
-
-            try {
-                ClassLoader loader = awemeClass != null ? awemeClass.getClassLoader() : classLoader;
-                Class<?> userClass = null;
-                try {
-                    userClass = loader.loadClass("com.ss.android.ugc.aweme.profile.model.User");
-                } catch (Throwable t) {
-                    if (classLoader != loader) {
-                        userClass = classLoader.loadClass("com.ss.android.ugc.aweme.profile.model.User");
-                    }
-                }
-                if (userClass != null) {
-                    try { userGetFollowStatusMethod = userClass.getMethod("getFollowStatus"); userGetFollowStatusMethod.setAccessible(true); } catch (Throwable ignored) {}
-                    try { userFollowStatusField = userClass.getDeclaredField("followStatus"); userFollowStatusField.setAccessible(true); } catch (Throwable ignored) {}
-                    try { userGetMatchedFriendStructMethod = userClass.getMethod("getMatchedFriendStruct"); userGetMatchedFriendStructMethod.setAccessible(true); } catch (Throwable ignored) {}
-                    try { userMatchedFriendStructField = userClass.getDeclaredField("matchedFriendStruct"); userMatchedFriendStructField.setAccessible(true); } catch (Throwable ignored) {}
-                    try { userIsMatchedFriendAvailableMethod = userClass.getMethod("isMatchedFriendAvailable"); userIsMatchedFriendAvailableMethod.setAccessible(true); } catch (Throwable ignored) {}
-                    try { userMatchedFriendAvailableField = userClass.getDeclaredField("matchedFriendAvailable"); userMatchedFriendAvailableField.setAccessible(true); } catch (Throwable ignored) {}
-                    try { userGetUidMethod = userClass.getMethod("getUid"); userGetUidMethod.setAccessible(true); } catch (Throwable ignored) {}
-                    try { userUidField = userClass.getDeclaredField("uid"); userUidField.setAccessible(true); } catch (Throwable ignored) {}
-                    try { userGetRecTypeMethod = userClass.getMethod("getRecType"); userGetRecTypeMethod.setAccessible(true); } catch (Throwable ignored) {}
-                    try { userRecTypeField = userClass.getDeclaredField("recType"); userRecTypeField.setAccessible(true); } catch (Throwable ignored) {}
-                }
-            } catch (Throwable ignored) {}
-
-            try { awemeGetAuthorMethod = awemeClass.getMethod("getAuthor"); awemeGetAuthorMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { awemeAuthorField = awemeClass.getDeclaredField("author"); awemeAuthorField.setAccessible(true); } catch (Throwable ignored) {}
-            try { awemeGetFeedRelationLabelMethod = awemeClass.getMethod("getFeedRelationLabel"); awemeGetFeedRelationLabelMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { awemeFeedRelationLabelField = awemeClass.getDeclaredField("feedRelationLabel"); awemeFeedRelationLabelField.setAccessible(true); } catch (Throwable ignored) {}
-            try { awemeGetRelationLabelMethod = awemeClass.getMethod("getRelationLabel"); awemeGetRelationLabelMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { awemeRelationLabelField = awemeClass.getDeclaredField("relationLabel"); awemeRelationLabelField.setAccessible(true); } catch (Throwable ignored) {}
-            try { awemeGetRelationRecommendInfoMethod = awemeClass.getMethod("getRelationRecommendInfo"); awemeGetRelationRecommendInfoMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { awemeRelationRecommendInfoField = awemeClass.getDeclaredField("relationRecommendInfo"); awemeRelationRecommendInfoField.setAccessible(true); } catch (Throwable ignored) {}
-            try { awemeGetRecReasonsStructMethod = awemeClass.getMethod("getRecReasonsStruct"); awemeGetRecReasonsStructMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { awemeRecReasonsStructField = awemeClass.getDeclaredField("recReasonsStruct"); awemeRecReasonsStructField.setAccessible(true); } catch (Throwable ignored) {}
-
-            try { getAigcInfoMethod = awemeClass.getMethod("getAigcInfo"); getAigcInfoMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { aigcInfoField = awemeClass.getDeclaredField("aigcInfo"); aigcInfoField.setAccessible(true); } catch (Throwable ignored) {}
-            try { getModerationAigcInfoMethod = awemeClass.getMethod("getModerationAigcInfo"); getModerationAigcInfoMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { moderationAigcInfoField = awemeClass.getDeclaredField("moderationAigcInfo"); moderationAigcInfoField.setAccessible(true); } catch (Throwable ignored) {}
-            try { getC2paInfoMethod = awemeClass.getMethod("getC2paInfo"); getC2paInfoMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { c2paInfoField = awemeClass.getDeclaredField("c2paInfo"); c2paInfoField.setAccessible(true); } catch (Throwable ignored) {}
-
-            try { aiAliveInfoField = awemeClass.getDeclaredField("aiAliveInfo"); aiAliveInfoField.setAccessible(true); } catch (Throwable ignored) {}
-            try { aiPortraitInfoField = awemeClass.getDeclaredField("aiPortraitInfo"); aiPortraitInfoField.setAccessible(true); } catch (Throwable ignored) {}
-            try { aiRemixInfoField = awemeClass.getDeclaredField("aiRemixInfo"); aiRemixInfoField.setAccessible(true); } catch (Throwable ignored) {}
-            try { aiTheaterInfoField = awemeClass.getDeclaredField("aiTheaterInfo"); aiTheaterInfoField.setAccessible(true); } catch (Throwable ignored) {}
-            try { aiChatEditorInfoField = awemeClass.getDeclaredField("aiChatEditorInfo"); aiChatEditorInfoField.setAccessible(true); } catch (Throwable ignored) {}
-
-            try { getBannersMethod = awemeClass.getMethod("getBanners"); getBannersMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { bannersField = awemeClass.getDeclaredField("banners"); bannersField.setAccessible(true); } catch (Throwable ignored) {}
-            try { getAnchorsMethod = awemeClass.getMethod("getAnchors"); getAnchorsMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { anchorsField = awemeClass.getDeclaredField("anchors"); anchorsField.setAccessible(true); } catch (Throwable ignored) {}
-            try { getDescMethod = awemeClass.getMethod("getDesc"); getDescMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { descField = awemeClass.getDeclaredField("desc"); descField.setAccessible(true); } catch (Throwable ignored) {}
-            try { getContentDescMethod = awemeClass.getMethod("getContentDesc"); getContentDescMethod.setAccessible(true); } catch (Throwable ignored) {}
-            try { contentDescField = awemeClass.getDeclaredField("contentDesc"); contentDescField.setAccessible(true); } catch (Throwable ignored) {}
-
-            try {
-                ClassLoader loader = awemeClass != null ? awemeClass.getClassLoader() : classLoader;
-                Class<?> aigcInfoClass = null;
-                for (String clsName : new String[]{
-                    "com.ss.android.ugc.aweme.feed.AIGCInfo",
-                    "com.ss.android.ugc.aweme.minilite.feed.model.AwemeAigcModel",
-                    "com.ss.android.ugc.aweme.feed.model.AwemeAigcModel"
-                }) {
-                    try {
-                        aigcInfoClass = loader.loadClass(clsName);
-                        if (aigcInfoClass != null) break;
-                    } catch (Throwable ignored) {}
-                    if (classLoader != null && classLoader != loader && aigcInfoClass == null) {
-                        try {
-                            aigcInfoClass = classLoader.loadClass(clsName);
-                            if (aigcInfoClass != null) break;
-                        } catch (Throwable ignored) {}
-                    }
-                }
-                if (aigcInfoClass != null) {
-                    try { getAigcLabelTypeMethod = aigcInfoClass.getMethod("getAIGCLabelType"); getAigcLabelTypeMethod.setAccessible(true); } catch (Throwable ignored) {}
-                    if (getAigcLabelTypeMethod == null) {
-                        try { getAigcLabelTypeMethod = aigcInfoClass.getMethod("getAigcLabelType"); getAigcLabelTypeMethod.setAccessible(true); } catch (Throwable ignored) {}
-                    }
-                    try { aigcLabelTypeField = aigcInfoClass.getDeclaredField("AIGCLabelType"); aigcLabelTypeField.setAccessible(true); } catch (Throwable ignored) {}
-                    if (aigcLabelTypeField == null) {
-                        try { aigcLabelTypeField = aigcInfoClass.getDeclaredField("aigcLabelType"); aigcLabelTypeField.setAccessible(true); } catch (Throwable ignored) {}
-                    }
-                    try { createByAiField = aigcInfoClass.getDeclaredField("createByAI"); createByAiField.setAccessible(true); } catch (Throwable ignored) {}
-                    if (createByAiField == null) {
-                        try { createByAiField = aigcInfoClass.getDeclaredField("createByAi"); createByAiField.setAccessible(true); } catch (Throwable ignored) {}
-                    }
-                }
-            } catch (Throwable ignored) {}
-
-            try {
-                ClassLoader loader = awemeClass != null ? awemeClass.getClassLoader() : classLoader;
-                Class<?> modAigcClass = null;
-                try {
-                    modAigcClass = loader.loadClass("com.ss.android.ugc.aweme.feed.model.ModerationAigcInfo");
-                } catch (Throwable t) {
-                    if (classLoader != loader) {
-                        modAigcClass = classLoader.loadClass("com.ss.android.ugc.aweme.feed.model.ModerationAigcInfo");
-                    }
-                }
-                if (modAigcClass != null) {
-                    try { moderationAigcLabelTypeField = modAigcClass.getDeclaredField("moderationAigcLabelType"); moderationAigcLabelTypeField.setAccessible(true); } catch (Throwable ignored) {}
-                    try { moderationUserLabelStatusField = modAigcClass.getDeclaredField("moderationUserLabelStatus"); moderationUserLabelStatusField.setAccessible(true); } catch (Throwable ignored) {}
-                    try { creatorGuidanceStatusField = modAigcClass.getDeclaredField("creatorGuidanceStatus"); creatorGuidanceStatusField.setAccessible(true); } catch (Throwable ignored) {}
-                    try { moderationCreatorSegmentField = modAigcClass.getDeclaredField("moderationCreatorSegment"); moderationCreatorSegmentField.setAccessible(true); } catch (Throwable ignored) {}
-                }
-            } catch (Throwable ignored) {}
-
-            try {
-                ClassLoader loader = awemeClass != null ? awemeClass.getClassLoader() : classLoader;
-                Class<?> c2paClass = null;
-                try {
-                    c2paClass = loader.loadClass("com.ss.android.ugc.aweme.feed.model.C2PAInfo");
-                } catch (Throwable t) {
-                    if (classLoader != loader) {
-                        c2paClass = classLoader.loadClass("com.ss.android.ugc.aweme.feed.model.C2PAInfo");
-                    }
-                }
-                if (c2paClass != null) {
-                    try { c2paAigcSrcField = c2paClass.getDeclaredField("aigcSrc"); c2paAigcSrcField.setAccessible(true); } catch (Throwable ignored) {}
-                    try { c2paFirstAigcSrcField = c2paClass.getDeclaredField("firstAigcSrc"); c2paFirstAigcSrcField.setAccessible(true); } catch (Throwable ignored) {}
-                    try { c2paLastAigcSrcField = c2paClass.getDeclaredField("lastAigcSrc"); c2paLastAigcSrcField.setAccessible(true); } catch (Throwable ignored) {}
-                }
-            } catch (Throwable ignored) {}
-
-
-            Log.i(TAG, "[Feed Ad Blocker] Engine initialized. Monitoring feed streams for sponsored content.");
-            initialized = true;
         }
     }
 
-    public static boolean isAd(Object aweme) {
-        if (aweme == null) return false;
-        if (!initialized) {
-            ensureInitialized(aweme.getClass(), aweme.getClass().getClassLoader());
+    private static boolean ensureBindingFor(Object item) {
+        if (item == null) return false;
+        Class<?> current = awemeClass;
+        if (current != null && current.isInstance(item)) {
+            return true;
         }
-        if (awemeClass != null && !awemeClass.isInstance(aweme)) {
+        Class<?> itemClass = item.getClass();
+        if (isAwemeModelClass(itemClass)) {
+            if (awemeClass != itemClass) {
+                synchronized (TikTokFeedAdFilter.class) {
+                    if (awemeClass != itemClass) {
+                        boolean wasInitialized = initialized;
+                        bindMembers(itemClass);
+                        if (wasInitialized && reboundLogCount < MAX_REBOUND_LOGS) {
+                            reboundLogCount++;
+                            Log.i(TAG, "[Feed Ad Blocker] Rebound filter to " + itemClass.getName());
+                        }
+                    }
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean isAd(Object aweme) {
+        if (!ensureBindingFor(aweme)) {
             return isSearchAdItem(aweme);
         }
         try {
@@ -626,6 +858,9 @@ public final class TikTokFeedAdFilter {
                         return true;
                     }
                 } catch (Throwable ignored) {}
+            }
+            if (hasAdDisclosureInDesc(aweme)) {
+                return true;
             }
             if (isReferralFakeAwemeMethod != null) {
                 try {
@@ -762,69 +997,467 @@ public final class TikTokFeedAdFilter {
         return false;
     }
 
-    public static boolean isPaidPartnership(Object aweme) {
-        if (aweme == null) return false;
-        if (!initialized) {
-            ensureInitialized(aweme.getClass(), aweme.getClass().getClassLoader());
+    private static final String[] AD_DISCLOSURE_TOKENS = new String[]{
+        "anzeige",
+        "anzeigen",
+        "gesponsert",
+        "werbung",
+        "sponsored",
+        "advertisement",
+        "advertising",
+        "publicidad",
+        "patrocinado",
+        "patrocinada",
+        "publicidade",
+        "anuncio",
+        "an\u00fancio",
+        "publicit\u00e9",
+        "sponsoris\u00e9",
+        "pubblicit\u00e0",
+        "sponsorizzato",
+        "reklam",
+        "reklama",
+        "ad",
+        "adv",
+        "paid partnership",
+        "paid promotion",
+        "colaboraci\u00f3n pagada",
+        "colaboracion pagada"
+    };
+
+    private static final String[] AD_HASHTAG_FORMS = new String[]{
+        "#anzeige",
+        "#werbung",
+        "#ad",
+        "#sponsored",
+        "#advertising",
+        "#publicidad",
+        "#patrocinado",
+        "#publi",
+        "#advert"
+    };
+
+    private static final String[] AD_HASHTAG_NAMES = new String[]{
+        "anzeige",
+        "werbung",
+        "ad",
+        "sponsored",
+        "advertising",
+        "publicidad",
+        "patrocinado",
+        "publi",
+        "advert"
+    };
+
+    private static boolean isDisclosureSeparator(char c) {
+        return c == '|'
+            || c == '\u00b7'
+            || c == '\u2022'
+            || c == '-'
+            || c == '\u2013'
+            || c == ':'
+            || c == ']'
+            || c == ')'
+            || c == ' '
+            || Character.isWhitespace(c);
+    }
+
+    private static boolean isHashtagChar(char c) {
+        return Character.isLetterOrDigit(c) || c == '_';
+    }
+
+    private static boolean containsExactHashtag(String textLower, String hashtagForm) {
+        if (textLower == null || hashtagForm == null) return false;
+        int idx = 0;
+        while ((idx = textLower.indexOf(hashtagForm, idx)) != -1) {
+            int end = idx + hashtagForm.length();
+            boolean validStart = (idx == 0) || !isHashtagChar(textLower.charAt(idx - 1));
+            boolean validEnd = (end == textLower.length()) || !isHashtagChar(textLower.charAt(end));
+            if (validStart && validEnd) {
+                return true;
+            }
+            idx = end;
         }
-        if (awemeClass != null && !awemeClass.isInstance(aweme)) {
+        return false;
+    }
+
+    private static boolean isAdHashtag(String rawTag) {
+        if (rawTag == null || rawTag.isEmpty()) return false;
+        String tag = rawTag.trim().toLowerCase(Locale.ROOT);
+        if (tag.startsWith("#")) {
+            tag = tag.substring(1).trim();
+        }
+        for (String name : AD_HASHTAG_NAMES) {
+            if (tag.equals(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static List<?> getTextExtraList(Object aweme) {
+        if (aweme == null) return null;
+        if (getTextExtraMethod != null) {
+            try {
+                Object res = getTextExtraMethod.invoke(aweme);
+                if (res instanceof List) return (List<?>) res;
+            } catch (Throwable ignored) {}
+        }
+        if (textExtraField != null) {
+            try {
+                Object res = textExtraField.get(aweme);
+                if (res instanceof List) return (List<?>) res;
+            } catch (Throwable ignored) {}
+        }
+        if (mTextExtraField != null) {
+            try {
+                Object res = mTextExtraField.get(aweme);
+                if (res instanceof List) return (List<?>) res;
+            } catch (Throwable ignored) {}
+        }
+        try {
+            Class<?> curr = aweme.getClass();
+            while (curr != null && curr != Object.class) {
+                try {
+                    Method m = curr.getDeclaredMethod("getTextExtra");
+                    m.setAccessible(true);
+                    Object res = m.invoke(aweme);
+                    if (res instanceof List) return (List<?>) res;
+                } catch (Throwable ignored) {}
+                try {
+                    Field f = curr.getDeclaredField("textExtra");
+                    f.setAccessible(true);
+                    Object res = f.get(aweme);
+                    if (res instanceof List) return (List<?>) res;
+                } catch (Throwable ignored) {}
+                try {
+                    Field f = curr.getDeclaredField("mTextExtra");
+                    f.setAccessible(true);
+                    Object res = f.get(aweme);
+                    if (res instanceof List) return (List<?>) res;
+                } catch (Throwable ignored) {}
+                curr = curr.getSuperclass();
+            }
+        } catch (Throwable ignored) {}
+        return null;
+    }
+
+    private static String extractHashtagName(Object struct) {
+        if (struct == null) return null;
+        if (struct instanceof String) return (String) struct;
+        Class<?> cls = struct.getClass();
+        for (String mName : new String[]{"getHashTagName", "getHashtagName", "getSearchKeyword", "getTagName"}) {
+            try {
+                Method m = cls.getMethod(mName);
+                m.setAccessible(true);
+                Object res = m.invoke(struct);
+                if (res instanceof String) return (String) res;
+            } catch (Throwable ignored) {}
+        }
+        for (String fName : new String[]{"hashTagName", "hashtagName", "searchKeyword", "tagName"}) {
+            try {
+                Field f = cls.getDeclaredField(fName);
+                f.setAccessible(true);
+                Object res = f.get(struct);
+                if (res instanceof String) return (String) res;
+            } catch (Throwable ignored) {}
+        }
+        return null;
+    }
+
+    private static boolean matchesAdDisclosure(String text) {
+        if (text == null || text.isEmpty()) return false;
+        String textLower = text.toLowerCase(Locale.ROOT);
+        for (String hf : AD_HASHTAG_FORMS) {
+            if (containsExactHashtag(textLower, hf)) {
+                return true;
+            }
+        }
+        if (isAdHashtag(text)) {
+            return true;
+        }
+        String trimmed = text.trim();
+        if (!trimmed.isEmpty()) {
+            int start = 0;
+            while (start < trimmed.length()) {
+                int cp = trimmed.codePointAt(start);
+                if (Character.isLetter(cp)) {
+                    break;
+                }
+                start += Character.charCount(cp);
+            }
+            String stripped = (start > 0) ? trimmed.substring(start) : trimmed;
+            String normText = stripped.toLowerCase(Locale.ROOT);
+            for (String token : AD_DISCLOSURE_TOKENS) {
+                if (normText.startsWith(token)) {
+                    if (normText.length() == token.length() || isDisclosureSeparator(normText.charAt(token.length()))) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private static List<?> getTextVideoLabelsList(Object aweme) {
+        if (aweme == null) return null;
+        if (getTextVideoLabelsMethod != null) {
+            try {
+                Object res = getTextVideoLabelsMethod.invoke(aweme);
+                if (res instanceof List) return (List<?>) res;
+            } catch (Throwable ignored) {}
+        }
+        if (textVideoLabelsField != null) {
+            try {
+                Object res = textVideoLabelsField.get(aweme);
+                if (res instanceof List) return (List<?>) res;
+            } catch (Throwable ignored) {}
+        }
+        try {
+            Class<?> curr = aweme.getClass();
+            while (curr != null && curr != Object.class) {
+                try {
+                    Method m = curr.getDeclaredMethod("getTextVideoLabels");
+                    m.setAccessible(true);
+                    Object res = m.invoke(aweme);
+                    if (res instanceof List) return (List<?>) res;
+                } catch (Throwable ignored) {}
+                try {
+                    Field f = curr.getDeclaredField("textVideoLabels");
+                    f.setAccessible(true);
+                    Object res = f.get(aweme);
+                    if (res instanceof List) return (List<?>) res;
+                } catch (Throwable ignored) {}
+                curr = curr.getSuperclass();
+            }
+        } catch (Throwable ignored) {}
+        return null;
+    }
+
+    private static String truncate(String text, int maxLen) {
+        if (text == null || text.isEmpty()) {
+            return "-";
+        }
+        String sanitized = text.replace('\r', ' ').replace('\n', ' ').replace('\t', ' ');
+        if (sanitized.length() <= maxLen) {
+            return sanitized;
+        }
+        return sanitized.substring(0, maxLen);
+    }
+
+    private static boolean hasAdDisclosureInDesc(Object aweme) {
+        if (aweme == null) return false;
+        try {
+            String desc = null;
+            if (getDescMethod != null) {
+                try {
+                    Object val = getDescMethod.invoke(aweme);
+                    if (val instanceof String) desc = (String) val;
+                } catch (Throwable ignored) {}
+            }
+            if (desc == null && descField != null) {
+                try {
+                    Object val = descField.get(aweme);
+                    if (val instanceof String) desc = (String) val;
+                } catch (Throwable ignored) {}
+            }
+            if (desc == null) {
+                try {
+                    Field f = aweme.getClass().getDeclaredField("desc");
+                    f.setAccessible(true);
+                    Object val = f.get(aweme);
+                    if (val instanceof String) desc = (String) val;
+                } catch (Throwable ignored) {}
+            }
+
+            // 1. Check hashtag forms in caption
+            if (desc != null && !desc.isEmpty()) {
+                String descLower = desc.toLowerCase(Locale.ROOT);
+                for (String hf : AD_HASHTAG_FORMS) {
+                    if (containsExactHashtag(descLower, hf)) {
+                        adSignal = "hashtagLabel";
+                        if (adSignalLogCount < 3) {
+                            adSignalLogCount++;
+                        }
+                        if (disclosureLogCount < MAX_DISCLOSURE_LOGS) {
+                            disclosureLogCount++;
+                            Log.i(TAG, "[Feed Ad Blocker] hashtag disclosure: " + truncate(desc, 48));
+                        }
+                        return true;
+                    }
+                }
+            }
+
+            // 2. Check hashtag forms in textExtra
+            List<?> extra = getTextExtraList(aweme);
+            if (extra != null) {
+                for (Object item : extra) {
+                    String tag = extractHashtagName(item);
+                    if (isAdHashtag(tag)) {
+                        adSignal = "hashtagLabel";
+                        if (adSignalLogCount < 3) {
+                            adSignalLogCount++;
+                        }
+                        if (disclosureLogCount < MAX_DISCLOSURE_LOGS) {
+                            disclosureLogCount++;
+                            Log.i(TAG, "[Feed Ad Blocker] hashtag disclosure: " + truncate(desc, 48));
+                        }
+                        return true;
+                    }
+                }
+            }
+
+            // 3. Check caption prefix ad disclosure
+            if (desc != null) {
+                String trimmed = desc.trim();
+                if (!trimmed.isEmpty()) {
+                    int start = 0;
+                    while (start < trimmed.length()) {
+                        int cp = trimmed.codePointAt(start);
+                        if (Character.isLetter(cp)) {
+                            break;
+                        }
+                        start += Character.charCount(cp);
+                    }
+                    String stripped = (start > 0) ? trimmed.substring(start) : trimmed;
+                    String normDesc = stripped.toLowerCase(Locale.ROOT);
+                    for (String token : AD_DISCLOSURE_TOKENS) {
+                        if (normDesc.startsWith(token)) {
+                            if (normDesc.length() == token.length() || isDisclosureSeparator(normDesc.charAt(token.length()))) {
+                                adSignal = "descLabel";
+                                if (adSignalLogCount < 3) {
+                                    adSignalLogCount++;
+                                }
+                                if (disclosureLogCount < MAX_DISCLOSURE_LOGS) {
+                                    disclosureLogCount++;
+                                    Log.i(TAG, "[Feed Ad Blocker] caption disclosure: " + truncate(desc, 48));
+                                }
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 4. Check textVideoLabels list for ad disclosure
+            List<?> labels = getTextVideoLabelsList(aweme);
+            if (labels != null && !labels.isEmpty()) {
+                for (Object item : labels) {
+                    String labelText = extractLabelText(item);
+                    if (matchesAdDisclosure(labelText)) {
+                        adSignal = "videoLabel";
+                        if (adSignalLogCount < 3) {
+                            adSignalLogCount++;
+                        }
+                        if (disclosureLogCount < MAX_DISCLOSURE_LOGS) {
+                            disclosureLogCount++;
+                            Log.i(TAG, "[Feed Ad Blocker] video label: " + truncate(labelText, 48));
+                        }
+                        return true;
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
+        return false;
+    }
+
+    public static boolean isPaidPartnership(Object aweme) {
+        paidSignal = "-";
+        if (!ensureBindingFor(aweme)) {
             return false;
         }
         try {
             if (isPaidContentMethod != null) {
                 try {
-                    if (Boolean.TRUE.equals(isPaidContentMethod.invoke(aweme))) return true;
+                    if (Boolean.TRUE.equals(isPaidContentMethod.invoke(aweme))) {
+                        paidSignal = "isPaidContent";
+                        return true;
+                    }
                 } catch (Throwable ignored) {}
             }
             if (isPaidContentField != null) {
                 try {
-                    if (isPaidContentField.getBoolean(aweme)) return true;
+                    if (isPaidContentField.getBoolean(aweme)) {
+                        paidSignal = "isPaidContent";
+                        return true;
+                    }
                 } catch (Throwable ignored) {}
             }
             if (isPaidContentField == null && isPaidContentMethod == null) {
                 try {
                     Field f = aweme.getClass().getDeclaredField("isPaidContent");
                     f.setAccessible(true);
-                    if (f.getBoolean(aweme)) return true;
+                    if (f.getBoolean(aweme)) {
+                        paidSignal = "isPaidContent";
+                        return true;
+                    }
                 } catch (Throwable ignored) {}
             }
             if (getPaidContentInfoMethod != null) {
                 try {
-                    if (getPaidContentInfoMethod.invoke(aweme) != null) return true;
+                    Object pci = getPaidContentInfoMethod.invoke(aweme);
+                    if (isInfoObjectActive(pci)) {
+                        paidSignal = "paidContentInfo";
+                        return true;
+                    }
                 } catch (Throwable ignored) {}
             }
             if (paidContentInfoField != null) {
                 try {
-                    if (paidContentInfoField.get(aweme) != null) return true;
+                    Object pci = paidContentInfoField.get(aweme);
+                    if (isInfoObjectActive(pci)) {
+                        paidSignal = "paidContentInfo";
+                        return true;
+                    }
                 } catch (Throwable ignored) {}
             }
             if (mPaidContentInfoField != null) {
                 try {
-                    if (mPaidContentInfoField.get(aweme) != null) return true;
+                    Object pci = mPaidContentInfoField.get(aweme);
+                    if (isInfoObjectActive(pci)) {
+                        paidSignal = "paidContentInfo";
+                        return true;
+                    }
                 } catch (Throwable ignored) {}
             }
             if (promoteToastField != null) {
                 try {
                     Object pt = promoteToastField.get(aweme);
-                    if (pt instanceof String && !((String) pt).trim().isEmpty()) return true;
+                    if (pt instanceof String && !((String) pt).trim().isEmpty()) {
+                        paidSignal = "promoteToast";
+                        return true;
+                    }
                 } catch (Throwable ignored) {}
             }
             if (promoteToastKeyField != null) {
                 try {
                     Object ptk = promoteToastKeyField.get(aweme);
-                    if (ptk instanceof String && !((String) ptk).trim().isEmpty()) return true;
+                    if (ptk instanceof String && !((String) ptk).trim().isEmpty()) {
+                        paidSignal = "promoteToastKey";
+                        return true;
+                    }
                 } catch (Throwable ignored) {}
             }
             if (getCommerceInfoMethod != null) {
                 try {
                     Object ci = getCommerceInfoMethod.invoke(aweme);
-                    if (ci != null && isCommercialInfoActive(ci)) return true;
+                    if (ci != null && isCommercialInfoActive(ci)) {
+                        if (!"throw".equals(paidSignal)) {
+                            paidSignal = "commerceInfo";
+                        }
+                        return true;
+                    }
                 } catch (Throwable ignored) {}
             }
             if (commerceInfoField != null) {
                 try {
                     Object ci = commerceInfoField.get(aweme);
-                    if (ci != null && isCommercialInfoActive(ci)) return true;
+                    if (ci != null && isCommercialInfoActive(ci)) {
+                        if (!"throw".equals(paidSignal)) {
+                            paidSignal = "commerceInfo";
+                        }
+                        return true;
+                    }
                 } catch (Throwable ignored) {}
             }
             // Check textVideoLabels for sponsored/paid partnership labels
@@ -839,9 +1472,57 @@ public final class TikTokFeedAdFilter {
                 for (Object lbl : (List<?>) labels) {
                     String text = extractLabelText(lbl);
                     if (isSponsoredOrPaidLabel(text)) {
+                        String s = text != null ? text.trim() : "";
+                        if (s.length() > 24) s = s.substring(0, 24);
+                        paidSignal = "label:" + s;
                         return true;
                     }
                 }
+            }
+        } catch (Throwable ignored) {
+            paidSignal = "throw";
+        }
+        return false;
+    }
+
+    private static boolean isMeaningfulValue(Object val) {
+        if (val == null) return false;
+        if (val instanceof String) {
+            return !((String) val).trim().isEmpty();
+        }
+        if (Boolean.TRUE.equals(val)) {
+            return true;
+        }
+        if (val instanceof Number) {
+            Number num = (Number) val;
+            return num.intValue() != 0 || num.doubleValue() != 0.0;
+        }
+        if (val instanceof Character) {
+            return ((Character) val).charValue() != 0;
+        }
+        return !(val instanceof Boolean);
+    }
+
+    private static boolean isInfoObjectActive(Object info) {
+        if (info == null) return false;
+        try {
+            Class<?> curr = info.getClass();
+            while (curr != null && curr != Object.class) {
+                Field[] fields = curr.getDeclaredFields();
+                if (fields != null) {
+                    for (Field f : fields) {
+                        if (Modifier.isStatic(f.getModifiers()) || f.isSynthetic()) {
+                            continue;
+                        }
+                        try {
+                            f.setAccessible(true);
+                            if (isMeaningfulValue(f.get(info))) {
+                                return true;
+                            }
+                        } catch (Throwable ignored) {}
+                    }
+                }
+                curr = curr.getSuperclass();
             }
         } catch (Throwable ignored) {}
         return false;
@@ -865,6 +1546,7 @@ public final class TikTokFeedAdFilter {
                 }
             }
         } catch (Throwable ignored) {
+            paidSignal = "throw";
             return true;
         }
         return false;
@@ -922,15 +1604,40 @@ public final class TikTokFeedAdFilter {
             s.contains("tài trợ") ||
             s.contains("tai tro") ||
             s.contains("paid_partner") ||
+            s.contains("anzeige") ||
+            s.contains("anzeigen") ||
+            s.contains("gesponsert") ||
+            s.contains("advertisement") ||
+            s.contains("advertising") ||
+            s.contains("branded content") ||
+            s.contains("commercial content") ||
+            s.contains("paid partnership") ||
+            s.contains("paid promotion") ||
+            s.contains("sponsored post") ||
+            s.contains("shop now") ||
+            s.contains("acquista") ||
             s.equals("ad") ||
             s.startsWith("ad ") ||
             s.endsWith(" ad") ||
             s.contains(" ad ") ||
             s.equals("anuncio") ||
-            s.equals("anúncio")) {
+            s.equals("anúncio") ||
+            matchesWord(s, "kaufen") ||
+            matchesWord(s, "comprar") ||
+            matchesWord(s, "acheter") ||
+            matchesWord(s, "werblich")) {
             return true;
         }
         return false;
+    }
+
+    private static boolean matchesWord(String s, String token) {
+        if (s == null || token == null) return false;
+        return s.equals(token)
+            || s.startsWith(token + " ")
+            || s.startsWith(token + "|")
+            || s.startsWith(token + ":")
+            || s.contains(" " + token + " ");
     }
 
     private static boolean isAiLabel(String text) {
@@ -960,11 +1667,7 @@ public final class TikTokFeedAdFilter {
     }
 
     public static boolean isLiveStream(Object aweme) {
-        if (aweme == null) return false;
-        if (!initialized) {
-            ensureInitialized(aweme.getClass(), aweme.getClass().getClassLoader());
-        }
-        if (awemeClass != null && !awemeClass.isInstance(aweme)) {
+        if (!ensureBindingFor(aweme)) {
             return false;
         }
         try {
@@ -1034,11 +1737,7 @@ public final class TikTokFeedAdFilter {
      * Strips shopping anchors, promo cards, and product showcase overlays from video models.
      */
     public static void stripCommercialAnchors(Object aweme) {
-        if (!stripShopAnchors || aweme == null) return;
-        if (!initialized) {
-            ensureInitialized(aweme.getClass(), aweme.getClass().getClassLoader());
-        }
-        if (awemeClass != null && !awemeClass.isInstance(aweme)) {
+        if (!stripShopAnchors || !ensureBindingFor(aweme)) {
             return;
         }
         try {
@@ -1075,7 +1774,7 @@ public final class TikTokFeedAdFilter {
 
     private static Object extractAwemeFromFollowItem(Object followItem) {
         if (followItem == null) return null;
-        if (awemeClass != null && awemeClass.isInstance(followItem)) {
+        if (ensureBindingFor(followItem)) {
             return followItem;
         }
         if (followGetAwemeMethod != null) {
@@ -1118,6 +1817,8 @@ public final class TikTokFeedAdFilter {
             try {
                 ensureInitializedFromList(items);
 
+                adSignal = "-";
+                int total = items.size();
                 int removed = 0;
                 Iterator<Object> iterator = items.iterator();
                 while (iterator.hasNext()) {
@@ -1128,7 +1829,10 @@ public final class TikTokFeedAdFilter {
                     }
                 }
                 if (removed > 0) {
-                    Log.i(TAG, "[Feed Ad Blocker] Pruned " + removed + " sponsored ad(s) from feed.");
+                    if (feedAdRemovalLogCount < MAX_REMOVAL_LOGS) {
+                        feedAdRemovalLogCount++;
+                        Log.i(TAG, "[Feed Ad Blocker] Removed " + removed + " of " + total + " feed items (signal=" + adSignal + ")");
+                    }
                 }
             } catch (Throwable ignored) {}
         }
@@ -1205,6 +1909,7 @@ public final class TikTokFeedAdFilter {
             try {
                 ensureInitializedFromList(items);
 
+                int total = items.size();
                 int removed = 0;
                 Iterator<Object> iterator = items.iterator();
                 while (iterator.hasNext()) {
@@ -1212,13 +1917,56 @@ public final class TikTokFeedAdFilter {
                     if (isPaidPartnership(item)) {
                         iterator.remove();
                         removed++;
+                        if (paidSignalLogCount < 3) {
+                            paidSignalLogCount++;
+                            Log.i(TAG, "[Hide Paid Partnership] signal=" + paidSignal + " desc=" + shortDesc(item));
+                        }
                     }
                 }
                 if (removed > 0) {
-                    Log.i(TAG, "[Hide Paid Partnership] Pruned " + removed + " sponsored/paid partnership post(s) from feed.");
+                    if (paidPartnershipRemovalLogCount < MAX_REMOVAL_LOGS) {
+                        paidPartnershipRemovalLogCount++;
+                        Log.i(TAG, "[Hide Paid Partnership] Removed " + removed + " of " + total + " feed items");
+                    }
                 }
             } catch (Throwable ignored) {}
         }
+    }
+
+    private static String shortDesc(Object aweme) {
+        if (aweme == null) return "?";
+        try {
+            Object descObj = null;
+            if (getDescMethod != null) {
+                try { descObj = getDescMethod.invoke(aweme); } catch (Throwable ignored) {}
+            }
+            if (descObj == null && descField != null) {
+                try { descObj = descField.get(aweme); } catch (Throwable ignored) {}
+            }
+            if (descObj == null) {
+                try {
+                    Field f = aweme.getClass().getDeclaredField("desc");
+                    f.setAccessible(true);
+                    descObj = f.get(aweme);
+                } catch (Throwable ignored) {}
+            }
+            if (descObj == null) {
+                try {
+                    Method m = aweme.getClass().getMethod("getDesc");
+                    m.setAccessible(true);
+                    descObj = m.invoke(aweme);
+                } catch (Throwable ignored) {}
+            }
+            if (descObj != null) {
+                String desc = descObj.toString().trim();
+                if (desc.isEmpty()) return "?";
+                if (desc.length() > 40) {
+                    desc = desc.substring(0, 40);
+                }
+                return desc;
+            }
+        } catch (Throwable ignored) {}
+        return "?";
     }
 
     public static void filterPaidPartnershipInFeedItemList(Object feedItemList) {
@@ -1277,14 +2025,7 @@ public final class TikTokFeedAdFilter {
 
         synchronized (items) {
             try {
-                if (!initialized) {
-                    for (Object item : items) {
-                        if (item != null) {
-                            ensureInitialized(item.getClass().getClassLoader());
-                            break;
-                        }
-                    }
-                }
+                ensureInitializedFromList(items);
 
                 for (Object item : items) {
                     stripCommercialAnchors(item);
@@ -1549,8 +2290,7 @@ public final class TikTokFeedAdFilter {
     }
 
     public static void stripSurveyBloat(Object aweme) {
-        if (aweme == null) return;
-        if (awemeClass != null && !awemeClass.isInstance(aweme)) {
+        if (!ensureBindingFor(aweme)) {
             return;
         }
         try {
@@ -1576,11 +2316,7 @@ public final class TikTokFeedAdFilter {
     }
 
     public static boolean isFeedBloat(Object aweme) {
-        if (aweme == null) return false;
-        if (!initialized) {
-            ensureInitialized(aweme.getClass(), aweme.getClass().getClassLoader());
-        }
-        if (awemeClass != null && !awemeClass.isInstance(aweme)) {
+        if (!ensureBindingFor(aweme)) {
             return false;
         }
         try {
@@ -1712,10 +2448,7 @@ public final class TikTokFeedAdFilter {
 
     public static boolean isFollowFeedBloat(Object followItem, boolean allowPruningCards) {
         if (followItem == null) return false;
-        if (!initialized) {
-            ensureInitialized(followItem.getClass().getClassLoader());
-        }
-        if (awemeClass != null && awemeClass.isInstance(followItem)) {
+        if (ensureBindingFor(followItem)) {
             return isFeedBloat(followItem);
         }
         if (isFollowItemLive(followItem)) {
@@ -2034,11 +2767,7 @@ public final class TikTokFeedAdFilter {
     }
 
     public static boolean isAiContent(Object aweme) {
-        if (aweme == null) return false;
-        if (!initialized) {
-            ensureInitialized(aweme.getClass(), aweme.getClass().getClassLoader());
-        }
-        if (awemeClass != null && !awemeClass.isInstance(aweme)) {
+        if (!ensureBindingFor(aweme)) {
             return false;
         }
         try {
@@ -2728,7 +3457,7 @@ public final class TikTokFeedAdFilter {
         if (aweme == null) {
             aweme = extractAwemeFromFriendsFeed(item);
         }
-        if (aweme == null && awemeClass != null && awemeClass.isInstance(item)) {
+        if (aweme == null && ensureBindingFor(item)) {
             aweme = item;
         }
         if (aweme == null) return false;
@@ -2893,7 +3622,7 @@ public final class TikTokFeedAdFilter {
         if (item == null) return false;
 
         Object aweme = null;
-        if (awemeClass != null && awemeClass.isInstance(item)) {
+        if (ensureBindingFor(item)) {
             aweme = item;
         } else {
             try {
@@ -2969,10 +3698,10 @@ public final class TikTokFeedAdFilter {
     }
 
     private static void ensureInitializedFromList(List<Object> items) {
-        if (initialized || items == null) return;
+        if (items == null) return;
         for (Object item : items) {
-            if (item != null) {
-                ensureInitialized(item.getClass(), item.getClass().getClassLoader());
+            if (item != null && isAwemeModelClass(item.getClass())) {
+                ensureBindingFor(item);
                 return;
             }
         }

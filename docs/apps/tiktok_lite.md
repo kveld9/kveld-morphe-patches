@@ -88,7 +88,7 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
   - *How*: Intercepts `minilite.feed.model.Aweme.getShareUrl()` to sanitize shared link URLs, strips tracking parameters, and applies custom hostname replacement via `TikTokShareHostHook`.
 - **Feed Ad Blocker**:
   - *Objective*: Removes commercial advertisements, brand promotions, and promotional audio from the feed.
-  - *How*: Intercepts `FeedFragment.C2` entry point and feed list getters `FeedItemList.getItems()` and `FeedItemList.getAwemeList()` via `TikTokFeedAdFilter.filterAdsInList`.
+  - *How*: Intercepts `FeedFragment.C2` entry point and feed list getters `FeedItemList.getItems()` and `FeedItemList.getAwemeList()` via `TikTokFeedAdFilter.filterAdsInList`, detecting ad units by localized disclosure prefixes in the caption (for example "Anzeige | ...", "Sponsored | ...", "Publicidad | ...") and native video ad labels in addition to existing entry points.
 - **Hide Sponsored & Paid Partnership**:
   - *Objective*: Removes creator commercial disclosures, branded content, and posts labeled "Sponsored" or "Paid partnership".
   - *How*: Intercepts `FeedFragment.C2` and feed list getters to filter creator commercial disclosures (`isPaidContent`, `mPaidContentInfo`, `promoteToast`, `commerceInfo`, `textVideoLabels`) via `TikTokFeedAdFilter.filterPaidPartnershipInList`.
