@@ -28,7 +28,7 @@ from pathlib import Path
 
 START_MARKER = "<!-- CONTRIBUTORS_START -->"
 END_MARKER = "<!-- CONTRIBUTORS_END -->"
-COLUMNS_PER_ROW = 5
+COLUMNS_PER_ROW = 7
 
 
 def get_default_repo() -> str:
@@ -87,7 +87,7 @@ def format_avatar(username: str) -> str:
     )
 
 
-def format_contributor_cell(username: str, col_width: str = "20%") -> str:
+def format_contributor_cell(username: str, col_width: str = "14.28%") -> str:
     avatar = format_avatar(username)
     return f'<td align="center" valign="top" width="{col_width}">{avatar}</td>'
 
@@ -127,7 +127,7 @@ def generate_markdown_table(data: dict, repo: str = "", cols: int = COLUMNS_PER_
     if not contributors:
         return ""
 
-    width_pct = f"{100 // cols}%"
+    width_pct = f"{100 / cols:.2f}%" if cols and (100 % cols != 0) else f"{100 // cols}%"
     cells = [format_contributor_cell(c["username"], width_pct) for c in contributors]
 
     rows = []
@@ -135,7 +135,7 @@ def generate_markdown_table(data: dict, repo: str = "", cols: int = COLUMNS_PER_
         row_cells = cells[i : i + cols]
         rows.append("    <tr>\n      " + "\n      ".join(row_cells) + "\n    </tr>")
 
-    return "<table>\n  <tbody>\n" + "\n".join(rows) + "\n  </tbody>\n</table>"
+    return '<table width="100%">\n  <tbody>\n' + "\n".join(rows) + "\n  </tbody>\n</table>"
 
 
 def inject_table_into_readme(readme_path: Path, table_content: str) -> bool:
@@ -157,7 +157,7 @@ def inject_table_into_readme(readme_path: Path, table_content: str) -> bool:
     else:
         # Fallback: locate ## Credits & Contributors and wrap existing table
         credits_pattern = re.compile(
-            r"(##\s*[^\n]*Credits & Contributors[^\n]*\n(?:\!\[.*?\]\([^\n]+\)\n)?\n)(?:\| Contributor \| Role & Contributions \|.*?\n\n|<table>.*?</table>\n\n)?",
+            r"(##\s*[^\n]*Credits & Contributors[^\n]*\n(?:\!\[.*?\]\([^\n]+\)\n)?\n)(?:\| Contributor \| Role & Contributions \|.*?\n\n|<table.*?>.*?</table>\n\n)?",
             re.DOTALL,
         )
         if not credits_pattern.search(content):

@@ -157,6 +157,15 @@
     {
       "username": "AlexanderQueen",
       "customText": "Feature request: Proposed a user-chosen New Tab Page background image ([#197](https://github.com/kveld9/kveld-morphe-patches/issues/197))."
+    },
+    {
+      "username": "Spirito90",
+      "contributions": [
+        {
+          "title": "Blocking more ad SDK's, trackers and analytics by integrating them into universal patches",
+          "issue": 217
+        }
+      ]
     }
   ]
 }

@@ -105,7 +105,7 @@ class TestSyncContributorsInjection(unittest.TestCase):
             ]
         }
         table = contributors.generate_markdown_table(data, cols=2)
-        self.assertIn("<table>", table)
+        self.assertIn('<table width="100%">', table)
         self.assertIn("<tbody>", table)
         self.assertIn("@user1", table)
         self.assertIn("@user2", table)
