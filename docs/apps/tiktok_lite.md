@@ -111,7 +111,7 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
   - *How*: Suppresses notification permission prompts via `PushServiceImpl.LB` and system push dialog checks reading `count_system` (`0Co.LBL()Z`), preserving onboarding completion state and login callback execution.
 - **Declutter Navigation Bar**:
   - *Objective*: Removes extra tabs (Explore, Shop, Create/Publish, Friends, Inbox) and feed search controls from navigation bars.
-  - *How*: Intercepts bottom navigation list construction in `C31097G3f.LD` to filter out unwanted navigation keys (`SHOP_MALL`, `DISCOVER`/`EXPLORE`/`INCENTIVE`/`MINI_DRAMA`, `CREATION`/`SHOOT`, `FRIENDS`, `NOTIFICATION`/`INBOX`), dynamically adjusts bottom tab `LinearLayout.LayoutParams` weights to `1.0f` in `C30727FvN.LCC` so remaining tabs distribute symmetrically across the screen width, neutralizes notification badges in `C31097G3f.LFLL`, and neutralizes the feed search icon in `minilite.homepage.MainPageFragment.p5()`.
+  - *How*: Intercepts bottom navigation list construction in `C31097G3f.LD` to filter out unwanted navigation keys (`SHOP_MALL`, `DISCOVER`/`EXPLORE`/`INCENTIVE`/`MINI_DRAMA`, `CREATION`/`SHOOT`, `FRIENDS`, `NOTIFICATION`/`INBOX`), dynamically adjusts bottom tab `LinearLayout.LayoutParams` weights to `1.0f` in `C30727FvN.LCC` so remaining tabs distribute symmetrically across the screen width, neutralizes notification badges in `C31097G3f.LFLL`, neutralizes the feed search icon in `minilite.homepage.MainPageFragment.p5()`, and suppresses the "Search - keyword" pill above the bottom bar by neutralizing its controller `C8389DKr.LD` and its visibility gate `C8389DKr.LC` in the edit-filter module.
 - **Declutter Video Interface**:
   - *Objective*: Cleans up the buttons, overlays, captions, and gestures on top of videos.
   - *How*: Provides toggles to hide action rail buttons and overlays (comment button, save/favorite bookmark, vinyl music cover disc, avatar plus follow badge, video descriptions/captions, and creator story rings) by setting container views to `GONE`, disabling click handlers, neutralizing rotation animations, and clearing listeners across standard feed presenters and MiniLite mode controllers. Also includes a toggle to disable the double tap to like gesture on both standard and MiniLite feed modes.
@@ -157,7 +157,7 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
 
 ### Lite UI anchor map (observed)
 
-Top tab strip = MainPageFragment + C1MA/C08030Ut tab list; top progress ring = C0TT; feed = FeedFragment + player views; bottom 5-tab bar / LIVE button / feed search pill = no static anchors found.
+Top tab strip = MainPageFragment + C1MA/C08030Ut tab list; top progress ring = C0TT; feed = FeedFragment + player views; bottom 5-tab bar / LIVE button / feed search pill = `C8389DKr` (resolved through the `feed_search_box_show` telemetry string).
 
 ---
 

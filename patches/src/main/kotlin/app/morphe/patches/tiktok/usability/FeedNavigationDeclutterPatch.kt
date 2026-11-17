@@ -960,6 +960,39 @@ private fun BytecodePatchContext.executeLite(
                 println("[Declutter Navigation Bar] Neutralized minilite search icon via p5().")
             }
         }
+
+        // TikTok Lite renders the "Search - <keyword>" pill from its own controller, outside the
+        // feed platform bottom-bar assembles used by the main app.
+        val searchPillFp = Fingerprint(
+            strings = listOf("feed_search_box_show"),
+            returnType = "V",
+            parameters = listOf("Z", "Z"),
+        )
+        val searchPillShow = searchPillFp.method
+        val searchPillClass = searchPillShow.definingClass
+        val searchPillDef = mutableClassDefBy(searchPillClass)
+
+        searchPillShow.replaceWithReturnVoid()
+        patched++
+
+        val searchPillGate = searchPillDef.methods.firstOrNull {
+            it.returnType == "Z" && it.parameterTypes.isEmpty()
+        }
+        if (searchPillGate != null) {
+            searchPillGate.replaceWithReturnBoolean(true)
+            patched++
+        }
+
+        val searchPillTrigger = searchPillDef.methods.firstOrNull {
+            it.returnType == "V" &&
+                it.parameterTypes.map { type -> type.toString() } == listOf("Ljava/lang/String;", "Z")
+        }
+        if (searchPillTrigger != null) {
+            searchPillTrigger.replaceWithReturnVoid()
+            patched++
+        }
+
+        println("[Declutter Navigation Bar] Neutralized TikTok Lite feed search pill via $searchPillClass.")
     }
 
     if (patched == 0) {
