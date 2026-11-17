@@ -439,6 +439,9 @@ All product names, logos, brands, and registered trademarks mentioned in this re
 >
 > Any precompiled APK, mod, or modified application found circulating across the web (e.g., Telegram channels, external websites, forums, or third-party file hosts) is **not** authored, maintained, or verified by the project owner—regardless of whether it carries the maintainer's name, handle, or project branding. The maintainer assumes zero responsibility or liability for third-party builds, modified APKs, or external distributions.
 >
+> - **Security & Tampering Risks**: Installing precompiled APKs from unverified external sources poses severe privacy and security risks. Third-party redistributors may bundle adware, spyware, or malicious payloads. Always build your own patched APKs on-device using official Morphe tooling and verified base APKs.
+> - **No Support for External Builds**: Issue triage and support are strictly reserved for builds patched directly by the user via official Morphe tooling on clean, untampered base APKs. Bug reports or inquiries involving third-party precompiled packages will be closed immediately without triage.
+>
 > **The sole authoritative source of truth is this GitHub repository** ([kveld-morphe-patches](https://github.com/kveld9/kveld-morphe-patches)) and its official GitHub Releases.
 
 ### AI-Assisted Development
