@@ -1,3 +1,13 @@
+## [2.12.0-experimental.2](https://github.com/kveld9/kveld-morphe-patches/compare/v2.12.0-experimental.1...v2.12.0-experimental.2) (2026-11-17)
+
+### Bug Fixes
+
+* **tiktoklite:** stop feed ads that only carry a disclosure label ([222e7c9](https://github.com/kveld9/kveld-morphe-patches/commit/222e7c931f09b976cdcdd15b0e758ecb9ba31e5c)), closes [#242](https://github.com/kveld9/kveld-morphe-patches/issues/242)
+
+### New Features
+
+* **tiktoklite:** hide the feed search pill above the bottom bar ([9134271](https://github.com/kveld9/kveld-morphe-patches/commit/9134271b8226363005d7d8b666b7bab7d8e0312a))
+
 ## [2.12.0-experimental.1](https://github.com/kveld9/kveld-morphe-patches/compare/v2.11.0...v2.12.0-experimental.1) (2026-11-16)
 
 ### Bug Fixes
