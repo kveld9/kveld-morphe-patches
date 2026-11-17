@@ -1122,6 +1122,118 @@ private fun BytecodePatchContext.executeLite(
             patched++
             println("[Declutter Navigation Bar] Pinned TikTok Lite feed search bar visibility to GONE via ${definingClass}.LZF.")
         }
+
+        // TikTok Lite search pill container (LX/FpU;): force GONE at construction.
+        Fingerprint(
+            definingClass = "LX/FpU;",
+            name = "<init>",
+            returnType = "V",
+            parameters = listOf("LX/Eas;"),
+        ).method.apply {
+            val instructions = implementation?.instructions?.toList()
+                ?: error("[Declutter Navigation Bar] TikTok Lite feed search pill constructor has no body.")
+            val containerWriteIndex = instructions.indexOfFirst { instruction ->
+                instruction.opcode == Opcode.IPUT_OBJECT &&
+                    ((instruction as? ReferenceInstruction)?.reference as? FieldReference)?.let { field ->
+                        field.definingClass == "LX/FpU;" && field.name == "LIIZZ"
+                    } == true
+            }
+            if (containerWriteIndex == -1) {
+                error("[Declutter Navigation Bar] TikTok Lite feed search pill container write not found.")
+            }
+            val containerRegister =
+                getInstruction<TwoRegisterInstruction>(containerWriteIndex).registerA
+            val localsCount = implementation!!.registerCount - numberOfParameterRegisters
+            val registersUsedAfter = mutableSetOf<Int>()
+            for (offset in containerWriteIndex + 1 until instructions.size) {
+                val instruction = instructions[offset]
+                when (instruction) {
+                    is OneRegisterInstruction -> registersUsedAfter += instruction.registerA
+                    is TwoRegisterInstruction -> {
+                        registersUsedAfter += instruction.registerA
+                        registersUsedAfter += instruction.registerB
+                    }
+                    is ThreeRegisterInstruction -> {
+                        registersUsedAfter += instruction.registerA
+                        registersUsedAfter += instruction.registerB
+                        registersUsedAfter += instruction.registerC
+                    }
+                    is FiveRegisterInstruction -> {
+                        registersUsedAfter += instruction.registerC
+                        registersUsedAfter += instruction.registerD
+                        registersUsedAfter += instruction.registerE
+                        registersUsedAfter += instruction.registerF
+                        registersUsedAfter += instruction.registerG
+                    }
+                    is RegisterRangeInstruction ->
+                        registersUsedAfter += (instruction.startRegister until instruction.startRegister + instruction.registerCount)
+                }
+            }
+            val scratchRegister = (localsCount - 1 downTo 0).firstOrNull { register ->
+                register != containerRegister && register !in registersUsedAfter
+            } ?: (localsCount - 1 downTo 0).firstOrNull { register ->
+                register != containerRegister
+            }
+            check(scratchRegister != null) {
+                "[Declutter Navigation Bar] TikTok Lite feed search pill constructor has no free local register."
+            }
+            addInstructions(
+                containerWriteIndex + 1,
+                """
+                const/16 v$scratchRegister, 0x8
+                invoke-virtual {v$containerRegister, v$scratchRegister}, Landroid/view/View;->setVisibility(I)V
+                """.trimIndent(),
+            )
+            patched++
+            println("[Declutter Navigation Bar] Hid TikTok Lite feed search pill container via LX/FpU;.<init>.")
+        }
+
+        // TikTok Lite search pill bind (LX/FpU;->LIILZLLZLZ): neutralize routes that re-show the pill.
+        Fingerprint(
+            definingClass = "LX/FpU;",
+            name = "LIILZLLZLZ",
+            returnType = "V",
+            parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;"),
+        ).method.apply {
+            val instructions = implementation?.instructions?.toList()
+                ?: error("[Declutter Navigation Bar] TikTok Lite feed search pill bind has no body.")
+            val goneInstruction = instructions.firstOrNull { instruction ->
+                instruction.opcode == Opcode.CONST_16 &&
+                    (instruction as? NarrowLiteralInstruction)?.narrowLiteral == 8
+            } ?: error("[Declutter Navigation Bar] TikTok Lite feed search pill GONE constant not found.")
+            val goneRegister = (goneInstruction as OneRegisterInstruction).registerA
+
+            val showCallIndices = mutableListOf<Pair<Int, Int>>()
+            instructions.forEachIndexed { index, instruction ->
+                if (instruction.opcode == Opcode.INVOKE_STATIC) {
+                    val methodRef = (instruction as? ReferenceInstruction)?.reference as? MethodReference
+                    if (methodRef?.definingClass == "LX/7dg;" && methodRef.name == "LCC") {
+                        val fiveReg = instruction as? FiveRegisterInstruction
+                        if (fiveReg != null) {
+                            val visibilityRegister = fiveReg.registerC
+                            val viewRegister = fiveReg.registerD
+                            if (visibilityRegister != goneRegister) {
+                                showCallIndices.add(index to viewRegister)
+                            }
+                        }
+                    }
+                }
+            }
+            if (showCallIndices.isEmpty()) {
+                error("[Declutter Navigation Bar] TikTok Lite feed search pill show calls not found.")
+            }
+
+            showCallIndices.sortByDescending { it.first }
+            for ((index, viewRegister) in showCallIndices) {
+                removeInstructions(index, 1)
+                addInstructions(
+                    index,
+                    "invoke-static {v$goneRegister, v$viewRegister}, LX/7dg;->LCC(I Landroid/view/View;)V",
+                )
+            }
+            patched++
+            println("[Declutter Navigation Bar] Neutralized show calls for TikTok Lite feed search pill via LX/FpU;.LIILZLLZLZ.")
+        }
     }
 
     if (patched == 0) {
