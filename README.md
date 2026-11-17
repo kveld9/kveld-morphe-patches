@@ -432,6 +432,19 @@ Additionally, ensure all Gradle checks pass cleanly:
 
 All product names, logos, brands, and registered trademarks mentioned in this repository are the property of their respective holders. Their inclusion does not imply affiliation with or endorsement by them.
 
+### Distribution & Precompiled APKs Disclaimer
+
+> [!WARNING]
+> **No Precompiled APKs**: The maintainer does **not** distribute, share, or host precompiled APKs, patched application packages, or prebuilt binaries under any circumstances. This repository provides strictly open-source patch declarations, extensions, and `.mpp` patch bundles for use with the Morphe patcher framework.
+>
+> Any precompiled APK, mod, or modified application found circulating across the web (e.g., Telegram channels, external websites, forums, or third-party file hosts) is **not** authored, maintained, or verified by the project owner—regardless of whether it carries the maintainer's name, handle, or project branding. The maintainer assumes zero responsibility or liability for third-party builds, modified APKs, or external distributions.
+>
+> **The sole authoritative source of truth is this GitHub repository** ([kveld-morphe-patches](https://github.com/kveld9/kveld-morphe-patches)) and its official GitHub Releases.
+
+### AI-Assisted Development
+
+Work across both this repository and its companion ([kveld-extra-morphe-patches](https://github.com/kveld9/kveld-extra-morphe-patches)) is conducted with the assistance of autonomous LLM agents.
+
 ---
 
 <a name="license"></a>
