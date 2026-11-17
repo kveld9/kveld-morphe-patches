@@ -16,8 +16,13 @@ import app.morphe.patches.shared.replaceWithReturnNull
 import app.morphe.patches.shared.replaceWithReturnVoid
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.ThreeRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.TypeReference
@@ -993,6 +998,130 @@ private fun BytecodePatchContext.executeLite(
         }
 
         println("[Declutter Navigation Bar] Neutralized TikTok Lite feed search pill via $searchPillClass.")
+
+        // The pill is not drawn by the class above: that one only emits the "feed_search_box_show"
+        // event. The bar itself is inflated by a separate controller whose constructor resolves the
+        // ViewStub carrying the search-bar layout and keeps the inflated container in a ViewGroup
+        // field. Returning early there is not an option (the field would stay null and every later
+        // text update would crash), and inflating the stub already makes the bar visible, so the
+        // container is forced to GONE right after it is assigned.
+        val searchBarStubId = 2030701204
+        val searchBarContainerFp = Fingerprint(
+            returnType = "V",
+            parameters = listOf("Landroid/view/ViewGroup;"),
+            custom = { method, _ ->
+                method.name == "<init>" &&
+                    method.implementation?.instructions?.any { instruction ->
+                        (instruction as? NarrowLiteralInstruction)?.narrowLiteral == searchBarStubId ||
+                            (instruction as? WideLiteralInstruction)?.wideLiteral == searchBarStubId.toLong()
+                    } == true
+            },
+        )
+        val searchBarContainerCtor = searchBarContainerFp.method
+        val searchBarContainerBody = searchBarContainerCtor.implementation?.instructions?.toList()
+        if (searchBarContainerBody != null) {
+            val containerWriteIndex = searchBarContainerBody.indexOfFirst { instruction ->
+                instruction.opcode == Opcode.IPUT_OBJECT &&
+                    ((instruction as? ReferenceInstruction)?.reference as? FieldReference)
+                        ?.let { field ->
+                            field.definingClass == searchBarContainerCtor.definingClass &&
+                                field.type == "Landroid/view/ViewGroup;"
+                        } == true
+            }
+            if (containerWriteIndex != -1) {
+                val containerRegister =
+                    searchBarContainerCtor.getInstruction<TwoRegisterInstruction>(containerWriteIndex).registerA
+                val scratchRegister = if (containerRegister == 0) 1 else 0
+                searchBarContainerCtor.ensureRegisterCount(scratchRegister + 1)
+                searchBarContainerCtor.addInstructions(
+                    containerWriteIndex + 1,
+                    """
+                    const/16 v$scratchRegister, 0x8
+                    invoke-virtual {v$containerRegister, v$scratchRegister}, Landroid/view/View;->setVisibility(I)V
+                    """.trimIndent(),
+                )
+                patched++
+                println(
+                    "[Declutter Navigation Bar] Hid TikTok Lite feed search bar container via " +
+                        "${searchBarContainerCtor.definingClass}.<init>.",
+                )
+            }
+        }
+
+        // Hiding the container once is not enough: the controller that owns the bar re-applies the
+        // visibility it receives later, so the single forward to the container view is pinned to
+        // GONE here as well. The register count is deliberately NOT grown: that would move the
+        // parameter registers under the existing instructions.
+        Fingerprint(
+            definingClass = "LX/Cfi;",
+            name = "LZF",
+            returnType = "V",
+            parameters = listOf("I"),
+        ).method.apply {
+            val instructions = implementation?.instructions?.toList()
+                ?: error("[Declutter Navigation Bar] TikTok Lite feed search bar switch has no body.")
+            val containerReadIndex = instructions.indexOfFirst { instruction ->
+                instruction.opcode == Opcode.IGET_OBJECT &&
+                    ((instruction as? ReferenceInstruction)?.reference as? FieldReference)
+                        ?.let { field -> field.definingClass == "LX/DKR;" && field.name == "LBL" } == true
+            }
+            check(containerReadIndex != -1) {
+                "[Declutter Navigation Bar] TikTok Lite feed search bar switch no longer reads its container."
+            }
+            val containerRegister =
+                getInstruction<OneRegisterInstruction>(containerReadIndex).registerA
+            val switchIndex = (containerReadIndex until minOf(containerReadIndex + 4, instructions.size))
+                .firstOrNull { offset ->
+                    val instruction = instructions[offset]
+                    instruction.opcode == Opcode.INVOKE_VIRTUAL &&
+                        ((instruction as? ReferenceInstruction)?.reference as? MethodReference)
+                            ?.name == "setVisibility"
+                }
+            check(switchIndex != null) {
+                "[Declutter Navigation Bar] TikTok Lite feed search bar switch no longer calls setVisibility."
+            }
+            val localsCount = implementation!!.registerCount - numberOfParameterRegisters
+            val registersUsedAfter = mutableSetOf<Int>()
+            for (offset in switchIndex + 1 until instructions.size) {
+                val instruction = instructions[offset]
+                when (instruction) {
+                    is OneRegisterInstruction -> registersUsedAfter += instruction.registerA
+                    is TwoRegisterInstruction -> {
+                        registersUsedAfter += instruction.registerA
+                        registersUsedAfter += instruction.registerB
+                    }
+                    is ThreeRegisterInstruction -> {
+                        registersUsedAfter += instruction.registerA
+                        registersUsedAfter += instruction.registerB
+                        registersUsedAfter += instruction.registerC
+                    }
+                    is FiveRegisterInstruction -> {
+                        registersUsedAfter += instruction.registerC
+                        registersUsedAfter += instruction.registerD
+                        registersUsedAfter += instruction.registerE
+                        registersUsedAfter += instruction.registerF
+                        registersUsedAfter += instruction.registerG
+                    }
+                    is RegisterRangeInstruction ->
+                        registersUsedAfter += (instruction.startRegister until instruction.startRegister + instruction.registerCount)
+                }
+            }
+            val scratchRegister = (localsCount - 1 downTo 0).firstOrNull { register ->
+                register != containerRegister && register !in registersUsedAfter
+            }
+            check(scratchRegister != null) {
+                "[Declutter Navigation Bar] TikTok Lite feed search bar switch has no free local register."
+            }
+            addInstructions(
+                switchIndex + 1,
+                """
+                const/16 v$scratchRegister, 0x8
+                invoke-virtual {v$containerRegister, v$scratchRegister}, Landroid/view/View;->setVisibility(I)V
+                """.trimIndent(),
+            )
+            patched++
+            println("[Declutter Navigation Bar] Pinned TikTok Lite feed search bar visibility to GONE via ${definingClass}.LZF.")
+        }
     }
 
     if (patched == 0) {
