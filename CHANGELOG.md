@@ -1,3 +1,11 @@
+## [2.12.0-experimental.3](https://github.com/kveld9/kveld-morphe-patches/compare/v2.12.0-experimental.2...v2.12.0-experimental.3) (2026-11-18)
+
+### Bug Fixes
+
+* **tiktoklite:** hide the feed search bar above the bottom navigation ([efebf6d](https://github.com/kveld9/kveld-morphe-patches/commit/efebf6db61095acc6ea9100026547735fa32a6ed))
+* **tiktoklite:** hide the feed search pill that reappears over the bottom bar ([98fe135](https://github.com/kveld9/kveld-morphe-patches/commit/98fe135a4bce32d10c0464cc8f9f34308bd30cfb))
+* **tiktoklite:** make hiding navigation tabs actually work ([83858f5](https://github.com/kveld9/kveld-morphe-patches/commit/83858f543ea3ce71d022e0e9470eef8fe192fef1)), closes [#244](https://github.com/kveld9/kveld-morphe-patches/issues/244)
+
 ## [2.12.0-experimental.2](https://github.com/kveld9/kveld-morphe-patches/compare/v2.12.0-experimental.1...v2.12.0-experimental.2) (2026-11-17)
 
 ### Bug Fixes
