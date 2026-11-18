@@ -828,26 +828,26 @@ private fun BytecodePatchContext.executeLite(
                 const-string v2, "$key"
                 invoke-virtual {v1, v2}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
                 move-result v2
-                if-eqz v2, :remove_tab
+                if-nez v2, :remove_tab
                 """.trimIndent()
             }
 
             g3fMethod.ensureRegisterCount(13)
 
             val filterSmali = """
-                if-nez p1, :filter_done
+                if-eqz p1, :filter_done
                 invoke-interface {p1}, Ljava/util/List;->iterator()Ljava/util/Iterator;
                 move-result-object v0
                 :filter_loop
                 invoke-interface {v0}, Ljava/util/Iterator;->hasNext()Z
                 move-result v1
-                if-nez v1, :filter_done
+                if-eqz v1, :filter_done
                 invoke-interface {v0}, Ljava/util/Iterator;->next()Ljava/lang/Object;
                 move-result-object v1
-                if-nez v1, :filter_loop
+                if-eqz v1, :filter_loop
                 check-cast v1, $g5rClass
                 iget-object v1, v1, $g5rClass->$keyField:Ljava/lang/String;
-                if-nez v1, :filter_loop
+                if-eqz v1, :filter_loop
                 $comparisons
                 goto :filter_loop
                 :remove_tab
@@ -911,27 +911,42 @@ private fun BytecodePatchContext.executeLite(
         if (lfllMethod != null) {
             val gc4Class = lfllMethod.parameterTypes[0].toString()
             val gc4Def = classDefByOrNull(gc4Class)
-            val keyField = gc4Def?.instanceFields?.firstOrNull { it.type == "Ljava/lang/String;" }?.name ?: "L"
+            val modelField = gc4Def?.instanceFields?.firstOrNull { f ->
+                val holderDef = classDefByOrNull(f.type.toString())
+                holderDef != null && holderDef.instanceFields.any { it.type == "Ljava/lang/String;" }
+            }
+            val modelKeyField = modelField?.let { f ->
+                classDefByOrNull(f.type.toString())
+                    ?.instanceFields
+                    ?.firstOrNull { it.type == "Ljava/lang/String;" }
+                    ?.name
+            }
 
-            lfllMethod.ensureRegisterCount(4)
-            lfllMethod.addInstructions(
-                0,
-                """
-                if-nez p0, :skip_badge_guard
-                iget-object v0, p0, $gc4Class->$keyField:Ljava/lang/String;
-                if-nez v0, :skip_badge_guard
-                const-string v1, "NOTIFICATION"
-                invoke-virtual {v1, v0}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
-                move-result v0
-                if-eqz v0, :return_badge_void
-                goto :skip_badge_guard
-                :return_badge_void
-                return-void
-                :skip_badge_guard
-                """.trimIndent()
-            )
-            patched++
-            println("[Declutter Navigation Bar] Guarded inbox notification badge in Lite via $g3fClass.${lfllMethod.name}.")
+            if (modelField == null || modelKeyField == null) {
+                println("[Declutter Navigation Bar] Skipped: inbox badge guard - no tab model field found on $gc4Class.")
+            } else {
+                lfllMethod.ensureRegisterCount(4)
+                lfllMethod.addInstructions(
+                    0,
+                    """
+                    if-eqz p0, :skip_badge_guard
+                    iget-object v0, p0, $gc4Class->${modelField.name}:${modelField.type}
+                    if-eqz v0, :skip_badge_guard
+                    iget-object v0, v0, ${modelField.type}->$modelKeyField:Ljava/lang/String;
+                    if-eqz v0, :skip_badge_guard
+                    const-string v1, "NOTIFICATION"
+                    invoke-virtual {v1, v0}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+                    move-result v0
+                    if-nez v0, :return_badge_void
+                    goto :skip_badge_guard
+                    :return_badge_void
+                    return-void
+                    :skip_badge_guard
+                    """.trimIndent()
+                )
+                patched++
+                println("[Declutter Navigation Bar] Guarded inbox notification badge in Lite via $g3fClass.${lfllMethod.name}.")
+            }
         }
     }
 
