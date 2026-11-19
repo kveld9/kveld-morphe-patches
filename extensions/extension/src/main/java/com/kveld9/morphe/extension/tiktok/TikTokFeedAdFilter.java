@@ -1835,7 +1835,7 @@ public final class TikTokFeedAdFilter {
                         Log.i(TAG, "[Hide Paid Partnership] signal=" + paidSignal + " desc=" + shortDesc(item));
                     }
                 }
-                int removed = prunePaidPartnershipMatches(items, matches);
+                int removed = pruneMatchedItems(items, matches, "[Hide Paid Partnership]");
                 if (removed > 0 && paidPartnershipRemovalLogCount < MAX_REMOVAL_LOGS) {
                     paidPartnershipRemovalLogCount++;
                     Log.i(TAG, "[Hide Paid Partnership] Removed " + removed + " of " + total + " feed items");
@@ -1849,10 +1849,10 @@ public final class TikTokFeedAdFilter {
      * untouched: TikTok renders an empty feed response as a network error, so one false positive would
      * blank the whole feed instead of hiding a single post.
      */
-    private static int prunePaidPartnershipMatches(List<Object> items, List<Object> matches) {
+    private static int pruneMatchedItems(List<Object> items, List<Object> matches, String logPrefix) {
         if (matches.isEmpty()) return 0;
         if (matches.size() == items.size()) {
-            Log.i(TAG, "[Hide Paid Partnership] Skipped: every item in the batch matched, keeping the feed intact (signal=" + paidSignal + ")");
+            Log.i(TAG, logPrefix + " Skipped: every item in the batch matched, keeping the feed intact.");
             return 0;
         }
         Iterator<Object> iterator = items.iterator();
@@ -1937,7 +1937,7 @@ public final class TikTokFeedAdFilter {
                         matches.add(followItem);
                     }
                 }
-                int removed = prunePaidPartnershipMatches(items, matches);
+                int removed = pruneMatchedItems(items, matches, "[Hide Paid Partnership]");
                 if (removed > 0) {
                     Log.i(TAG, "[Hide Paid Partnership] Pruned " + removed + " sponsored/paid partnership post(s) from Following feed.");
                 }
@@ -2698,6 +2698,40 @@ public final class TikTokFeedAdFilter {
         }
     }
 
+    /** A string member of a model struct, read by getter then field; null when absent or blank. */
+    private static String nonBlankMember(Object target, String getterName, String fieldName) {
+        if (target == null) return null;
+        try {
+            Method getter = target.getClass().getMethod(getterName);
+            getter.setAccessible(true);
+            Object value = getter.invoke(target);
+            if (value instanceof String && !((String) value).trim().isEmpty()) return (String) value;
+            return null;
+        } catch (Throwable ignored) {}
+        try {
+            Field field = target.getClass().getDeclaredField(fieldName);
+            field.setAccessible(true);
+            Object value = field.get(target);
+            if (value instanceof String && !((String) value).trim().isEmpty()) return (String) value;
+        } catch (Throwable ignored) {}
+        return null;
+    }
+
+    /** One of TikTok's AI effect structs, filled in: it names the task or the prompt it ran. */
+    private static boolean hasAiTask(Object info) {
+        return info != null
+                && (nonBlankMember(info, "getTaskId", "taskId") != null
+                    || nonBlankMember(info, "getPromptId", "promptId") != null);
+    }
+
+    /** Model, prompt or text inside an AI Alive struct. */
+    private static boolean isAiAliveInfo(Object info) {
+        return info != null
+                && (nonBlankMember(info, "getModelKey", "modelKey") != null
+                    || nonBlankMember(info, "getModelPrompt", "modelPrompt") != null
+                    || nonBlankMember(info, "getText", "text") != null);
+    }
+
     public static boolean isAiContent(Object aweme) {
         if (!ensureBindingFor(aweme)) {
             return false;
@@ -2858,48 +2892,26 @@ public final class TikTokFeedAdFilter {
                 }
             }
 
-            // 4. Native AI Creation & Feature Structs
-            if (aiAliveInfoField != null && aiAliveInfoField.get(aweme) != null) {
+            // 4. Native AI Creation & Feature Structs. TikTok attaches these structs to ordinary
+            // videos with their fields left at defaults, so only a filled-in task, prompt or model
+            // counts as a marker; the struct being present does not.
+            if (isAiAliveInfo(aiAliveInfoField != null ? aiAliveInfoField.get(aweme) : null)) {
                 Log.i(TAG, "[Hide AI-Generated Content] Match [aiAliveInfo] on aid=" + aid);
                 return true;
             }
-            if (aiPortraitInfoField != null && aiPortraitInfoField.get(aweme) != null) {
+            if (hasAiTask(aiPortraitInfoField != null ? aiPortraitInfoField.get(aweme) : null)) {
                 Log.i(TAG, "[Hide AI-Generated Content] Match [aiPortraitInfo] on aid=" + aid);
                 return true;
             }
-            if (aiRemixInfoField != null) {
-                try {
-                    Object remix = aiRemixInfoField.get(aweme);
-                    if (remix != null) {
-                        boolean isRemix = false;
-                        try {
-                            Field taskIdField = remix.getClass().getDeclaredField("taskId");
-                            taskIdField.setAccessible(true);
-                            Object taskId = taskIdField.get(remix);
-                            if (taskId instanceof String && !((String) taskId).trim().isEmpty()) {
-                                isRemix = true;
-                            }
-                        } catch (Throwable ignored) {}
-                        try {
-                            Field promptIdField = remix.getClass().getDeclaredField("promptId");
-                            promptIdField.setAccessible(true);
-                            Object promptId = promptIdField.get(remix);
-                            if (promptId instanceof String && !((String) promptId).trim().isEmpty()) {
-                                isRemix = true;
-                            }
-                        } catch (Throwable ignored) {}
-                        if (isRemix) {
-                            Log.i(TAG, "[Hide AI-Generated Content] Match [aiRemixInfo] on aid=" + aid);
-                            return true;
-                        }
-                    }
-                } catch (Throwable ignored) {}
+            if (hasAiTask(aiRemixInfoField != null ? aiRemixInfoField.get(aweme) : null)) {
+                Log.i(TAG, "[Hide AI-Generated Content] Match [aiRemixInfo] on aid=" + aid);
+                return true;
             }
-            if (aiTheaterInfoField != null && aiTheaterInfoField.get(aweme) != null) {
+            if (hasAiTask(aiTheaterInfoField != null ? aiTheaterInfoField.get(aweme) : null)) {
                 Log.i(TAG, "[Hide AI-Generated Content] Match [aiTheaterInfo] on aid=" + aid);
                 return true;
             }
-            if (aiChatEditorInfoField != null && aiChatEditorInfoField.get(aweme) != null) {
+            if (hasAiTask(aiChatEditorInfoField != null ? aiChatEditorInfoField.get(aweme) : null)) {
                 Log.i(TAG, "[Hide AI-Generated Content] Match [aiChatEditorInfo] on aid=" + aid);
                 return true;
             }
@@ -3003,15 +3015,13 @@ public final class TikTokFeedAdFilter {
             try {
                 ensureInitializedFromList(items);
 
-                int removed = 0;
-                Iterator<Object> iterator = items.iterator();
-                while (iterator.hasNext()) {
-                    Object item = iterator.next();
+                List<Object> matches = new ArrayList<>();
+                for (Object item : items) {
                     if (isAiContent(item)) {
-                        iterator.remove();
-                        removed++;
+                        matches.add(item);
                     }
                 }
+                int removed = pruneMatchedItems(items, matches, "[Hide AI-Generated Content]");
                 if (removed > 0) {
                     Log.i(TAG, "[Hide AI-Generated Content] Pruned " + removed + " AI-generated video(s) from feed.");
                 }
@@ -3046,16 +3056,13 @@ public final class TikTokFeedAdFilter {
                     }
                 }
 
-                int removed = 0;
-                Iterator<Object> iterator = items.iterator();
-                while (iterator.hasNext()) {
-                    Object followItem = iterator.next();
-                    Object aweme = extractAwemeFromFollowItem(followItem);
-                    if (isAiContent(aweme)) {
-                        iterator.remove();
-                        removed++;
+                List<Object> matches = new ArrayList<>();
+                for (Object followItem : items) {
+                    if (isAiContent(extractAwemeFromFollowItem(followItem))) {
+                        matches.add(followItem);
                     }
                 }
+                int removed = pruneMatchedItems(items, matches, "[Hide AI-Generated Content]");
                 if (removed > 0) {
                     Log.i(TAG, "[Hide AI-Generated Content] Pruned " + removed + " AI-generated video(s) from Following feed.");
                 }
@@ -3073,16 +3080,13 @@ public final class TikTokFeedAdFilter {
             try {
                 ensureInitializedFromList(items);
 
-                int removed = 0;
-                Iterator<Object> iterator = items.iterator();
-                while (iterator.hasNext()) {
-                    Object item = iterator.next();
-                    Object aweme = extractAwemeFromFriendsV3FeedModel(item);
-                    if (isAiContent(aweme)) {
-                        iterator.remove();
-                        removed++;
+                List<Object> matches = new ArrayList<>();
+                for (Object item : items) {
+                    if (isAiContent(extractAwemeFromFriendsV3FeedModel(item))) {
+                        matches.add(item);
                     }
                 }
+                int removed = pruneMatchedItems(items, matches, "[Hide AI-Generated Content]");
                 if (removed > 0) {
                     Log.i(TAG, "[Hide AI-Generated Content] Pruned " + removed + " AI-generated video(s) from Friends V3 feed.");
                 }
@@ -3100,16 +3104,13 @@ public final class TikTokFeedAdFilter {
             try {
                 ensureInitializedFromList(items);
 
-                int removed = 0;
-                Iterator<Object> iterator = items.iterator();
-                while (iterator.hasNext()) {
-                    Object item = iterator.next();
-                    Object aweme = extractAwemeFromFriendsFeed(item);
-                    if (isAiContent(aweme)) {
-                        iterator.remove();
-                        removed++;
+                List<Object> matches = new ArrayList<>();
+                for (Object item : items) {
+                    if (isAiContent(extractAwemeFromFriendsFeed(item))) {
+                        matches.add(item);
                     }
                 }
+                int removed = pruneMatchedItems(items, matches, "[Hide AI-Generated Content]");
                 if (removed > 0) {
                     Log.i(TAG, "[Hide AI-Generated Content] Pruned " + removed + " AI-generated video(s) from Friends feed.");
                 }
