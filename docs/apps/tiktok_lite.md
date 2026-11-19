@@ -106,6 +106,9 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
   - *How*: Selectively strips configured permission groups (notifications, camera, microphone, storage, bluetooth, foreground services, wake lock, OEM signals, and billing) from `AndroidManifest.xml`.
 
 ### Usability & Playback
+- **Block Coin Rewards**:
+  - *Objective*: Removes Coin Rewards prompts and floating reward widgets.
+  - *How*: Neutralizes the Touchpoint pendant presenters (`LX/8pk;->LD(Context, ViewGroup)` for timer pendants and `LX/8QW;->LB(ViewGroup)` for normal pendants) so reward and ad widgets never attach to the feed, and makes `IncentiveServiceImpl.LIIIII()` return null so the Rewards entry is no longer added to the profile quick actions.
 - **Block Popups & Prompts**:
   - *Objective*: Blocks popups, nags and promo dialogs across the app.
   - *How*: Suppresses notification permission prompts via `PushServiceImpl.LB` and system push dialog checks reading `count_system` (`0Co.LBL()Z`), preserving onboarding completion state and login callback execution.

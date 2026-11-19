@@ -418,6 +418,9 @@ Additionally, ensure all Gradle checks pass cleanly:
       <td align="center" valign="top" width="14.29%"><a href="https://github.com/AlexanderQueen"><img src="https://github.com/AlexanderQueen.png" alt="" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@AlexanderQueen</b></sub></a></td>
       <td align="center" valign="top" width="14.29%"><a href="https://github.com/Spirito90"><img src="https://github.com/Spirito90.png" alt="" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@Spirito90</b></sub></a></td>
     </tr>
+    <tr>
+      <td align="center" valign="top" width="14.29%"><a href="https://github.com/twicejanitor"><img src="https://github.com/twicejanitor.png" alt="" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@twicejanitor</b></sub></a></td>
+    </tr>
   </tbody>
 </table>
 <!-- CONTRIBUTORS_END -->
