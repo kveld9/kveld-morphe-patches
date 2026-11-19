@@ -1,3 +1,24 @@
+## [2.12.0-experimental.4](https://github.com/kveld9/kveld-morphe-patches/compare/v2.12.0-experimental.3...v2.12.0-experimental.4) (2026-11-19)
+
+### Bug Fixes
+
+* **brave:** update libchrome tracking server offsets for 1.100.58 ([227f7ba](https://github.com/kveld9/kveld-morphe-patches/commit/227f7baffe4ec579cc577e76f619be237999a5ba))
+* **brave:** update supported version to 1.100.58 ([9d70423](https://github.com/kveld9/kveld-morphe-patches/commit/9d7042356f6ac49d0a6b1196f121bec3c6395b29))
+* **tiktok:** block ads that only carry promoted music or a sponsored label ([ba951ac](https://github.com/kveld9/kveld-morphe-patches/commit/ba951ac7b628d1ee306817a40dac32367011ad6d)), closes [#242](https://github.com/kveld9/kveld-morphe-patches/issues/242)
+* **tiktok:** catch sponsored posts and creator ads the filters missed ([524d365](https://github.com/kveld9/kveld-morphe-patches/commit/524d3657caa2c128c406c7a79be1a9afb12d1948))
+* **tiktok:** keep the feed loading when hiding AI-generated videos ([05128ef](https://github.com/kveld9/kveld-morphe-patches/commit/05128ef5cadbdf85809276ab495a46d3dd09d4c7)), closes [#258](https://github.com/kveld9/kveld-morphe-patches/issues/258)
+* **tiktok:** keep the For You feed loading with paid partnership hiding on ([e8996ce](https://github.com/kveld9/kveld-morphe-patches/commit/e8996cee88438a6ae96af4135e32cc568a67682f)), closes [#258](https://github.com/kveld9/kveld-morphe-patches/issues/258) [#259](https://github.com/kveld9/kveld-morphe-patches/issues/259)
+* **tiktoklite:** clean copied and shared links again ([57c41b1](https://github.com/kveld9/kveld-morphe-patches/commit/57c41b14c68948547f38f4df00a00c5a5a801f6d))
+* **tiktoklite:** run the ad filter on the feed model TikTok Lite actually uses ([d895445](https://github.com/kveld9/kveld-morphe-patches/commit/d89544532a4c091e4b9c1696f19ab805805d0014)), closes [#242](https://github.com/kveld9/kveld-morphe-patches/issues/242)
+* **tiktoklite:** run the feed content filter on the active feed ([ae81f7b](https://github.com/kveld9/kveld-morphe-patches/commit/ae81f7b49158b9a09bda4a903c06f0b94141f1f1)), closes [#242](https://github.com/kveld9/kveld-morphe-patches/issues/242)
+* **tiktoklite:** run the paid partnership filter on the active feed ([e069ad1](https://github.com/kveld9/kveld-morphe-patches/commit/e069ad1734c686f2ef031556cb1e3acfb00d8947)), closes [#242](https://github.com/kveld9/kveld-morphe-patches/issues/242)
+* **tiktok:** recognize more localized sponsored labels ([1b5c57f](https://github.com/kveld9/kveld-morphe-patches/commit/1b5c57f4eb80d3f1a5630e5bc7187d410dcbe4bb)), closes [#242](https://github.com/kveld9/kveld-morphe-patches/issues/242)
+* **tiktok:** stop treating every commercial soundtrack as an ad ([72dbdc8](https://github.com/kveld9/kveld-morphe-patches/commit/72dbdc8e275805522a2d7813b7309f94c6d7d6be)), closes [#242](https://github.com/kveld9/kveld-morphe-patches/issues/242)
+
+### New Features
+
+* **tiktoklite:** add a patch that removes coin rewards prompts ([08b7e8b](https://github.com/kveld9/kveld-morphe-patches/commit/08b7e8b946811cc7c16185305aa2738214462373)), closes [#242](https://github.com/kveld9/kveld-morphe-patches/issues/242)
+
 ## [2.12.0-experimental.3](https://github.com/kveld9/kveld-morphe-patches/compare/v2.12.0-experimental.2...v2.12.0-experimental.3) (2026-11-18)
 
 ### Bug Fixes

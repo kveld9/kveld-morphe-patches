@@ -178,7 +178,7 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 </details>
 
 <details>
-<summary>TikTok Lite&nbsp;&nbsp;•&nbsp;&nbsp;<b>22 patches</b></summary>
+<summary>TikTok Lite&nbsp;&nbsp;•&nbsp;&nbsp;<b>23 patches</b></summary>
 <br>
 
 **Supported versions:**
@@ -190,6 +190,7 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 | Patch | Description | Options |
 |----------|----------------|-----------|
 | **Battery & Resource Saver** | Stops 3D ad sensors and aggressive video preloading to save battery and data. |  |
+| **Block Coin Rewards** | Removes floating reward and ad pendant widgets from the feed and the Rewards entry from your profile. |  |
 | **Block Popups & Prompts** | Blocks popups, nags and promo dialogs across the app. | • Suppress Account & Permission Nags<br>• Hide Notification Prompts<br>• Suppress Sticker Recommendations<br>• Filter PopLayer Prompts & Nags<br>• Suppress Live Teaser Bubbles<br>• Suppress DM Streak Reminders<br>• Disable Post-Download Share Dialog<br>• Update Prompt Suppressor<br>• Skip First-Launch Onboarding<br>• Skip Content Warnings |
 | **Block Trackers** | Neutralizes ByteDance AppLog tracking, crash monitors, and analytics. |  |
 | **Block Trackers (Setup)** | Removes tracking permissions and disables telemetry components. |  |
@@ -247,9 +248,9 @@ Labels: `single file` = one APK; `multi-file` = a package Morphe joins together;
 
 **Supported versions:**
 
-| 1.99.57 |
+| 1.100.58 |
 | :---: |
-| Download Bravemonoarm64.apk (arm64) or BraveMonoarm.apk (arm32) v1.99.57 from github.com/brave/brave-browser/releases; Universal builds unsupported |
+| Download Bravemonoarm64.apk (arm64) or BraveMonoarm.apk (arm32) v1.100.58 from github.com/brave/brave-browser/releases; Universal builds unsupported |
 
 | Patch | Description | Options |
 |----------|----------------|-----------|
@@ -417,9 +418,6 @@ Additionally, ensure all Gradle checks pass cleanly:
     <tr>
       <td align="center" valign="top" width="14.29%"><a href="https://github.com/AlexanderQueen"><img src="https://github.com/AlexanderQueen.png" alt="" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@AlexanderQueen</b></sub></a></td>
       <td align="center" valign="top" width="14.29%"><a href="https://github.com/Spirito90"><img src="https://github.com/Spirito90.png" alt="" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@Spirito90</b></sub></a></td>
-    </tr>
-    <tr>
-      <td align="center" valign="top" width="14.29%"><a href="https://github.com/twicejanitor"><img src="https://github.com/twicejanitor.png" alt="" width="64" height="64" style="border-radius: 50%;" /><br /><sub><b>@twicejanitor</b></sub></a></td>
     </tr>
   </tbody>
 </table>
