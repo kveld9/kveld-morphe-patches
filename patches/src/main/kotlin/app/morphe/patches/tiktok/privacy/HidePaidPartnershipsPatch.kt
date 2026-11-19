@@ -76,6 +76,18 @@ val hidePaidPartnershipsPatch = bytecodePatch(
                 returnType = "Ljava/util/List;",
                 logLabel = "All Lite feed model consumers (getAwemeList)",
             )
+            hookReturnListLite(
+                definingClass = "Lcom/ss/android/ugc/aweme/main/homepage/fragment/data/model/FeedItemList;",
+                name = "getItems",
+                returnType = "Ljava/util/List;",
+                logLabel = "Active homepage feed model consumers (getItems)",
+            )
+            hookReturnListLite(
+                definingClass = "Lcom/ss/android/ugc/aweme/main/homepage/fragment/data/model/FeedItemList;",
+                name = "getAwemeList",
+                returnType = "Ljava/util/List;",
+                logLabel = "Active homepage feed model consumers (getAwemeList)",
+            )
 
             println("[Hide Paid Partnership] Applied $patched hooks -> TikTok Lite sponsored & paid partnership posts hidden.")
             return@execute
