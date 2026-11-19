@@ -4,6 +4,7 @@ import android.util.Log;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -74,6 +75,10 @@ public final class TikTokFeedAdFilter {
     private static Field hasPromoteEntryField;
     private static Method getCommerceInfoMethod;
     private static Field commerceInfoField;
+    private static Method getCommerceVideoAuthInfoMethod;
+    private static Field commerceVideoAuthInfoField;
+    private static Method getBrandContentAccountsMethod;
+    private static Field brandContentAccountsField;
     private static Method isPaidContentMethod;
     private static Field isPaidContentField;
     private static Field promoteToastField;
@@ -247,6 +252,7 @@ public final class TikTokFeedAdFilter {
         getCommercialVideoInfoMethod = null;
         isReferralFakeAwemeMethod = null;
         getCommerceInfoMethod = null;
+        getCommerceVideoAuthInfoMethod = null;
         isPaidContentMethod = null;
         getTextVideoLabelsMethod = null;
         isFriendsTabFakeAwemeMethod = null;
@@ -316,6 +322,9 @@ public final class TikTokFeedAdFilter {
         isReferralFakeAwemeField = null;
         hasPromoteEntryField = null;
         commerceInfoField = null;
+        commerceVideoAuthInfoField = null;
+        brandContentAccountsField = null;
+        getBrandContentAccountsMethod = null;
         isPaidContentField = null;
         promoteToastField = null;
         promoteToastKeyField = null;
@@ -449,6 +458,13 @@ public final class TikTokFeedAdFilter {
         try { hasPromoteEntryField = awemeClass.getDeclaredField("hasPromoteEntry"); hasPromoteEntryField.setAccessible(true); } catch (Throwable ignored) {}
         try { getCommerceInfoMethod = awemeClass.getMethod("getCommerceInfo"); getCommerceInfoMethod.setAccessible(true); } catch (Throwable ignored) {}
         try { commerceInfoField = awemeClass.getDeclaredField("commerceInfo"); commerceInfoField.setAccessible(true); } catch (Throwable ignored) {}
+        try { getCommerceVideoAuthInfoMethod = awemeClass.getMethod("getCommerceVideoAuthInfo"); getCommerceVideoAuthInfoMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { commerceVideoAuthInfoField = awemeClass.getDeclaredField("commerceVideoAuthInfo"); commerceVideoAuthInfoField.setAccessible(true); } catch (Throwable ignored) {}
+        if (commerceVideoAuthInfoField == null) {
+            try { commerceVideoAuthInfoField = awemeClass.getDeclaredField("mCommerceVideoAuthInfo"); commerceVideoAuthInfoField.setAccessible(true); } catch (Throwable ignored) {}
+        }
+        try { getBrandContentAccountsMethod = awemeClass.getMethod("getBrandContentAccounts"); getBrandContentAccountsMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { brandContentAccountsField = awemeClass.getDeclaredField("brandContentAccounts"); brandContentAccountsField.setAccessible(true); } catch (Throwable ignored) {}
         try { isPaidContentMethod = awemeClass.getMethod("isPaidContent"); isPaidContentMethod.setAccessible(true); } catch (Throwable ignored) {}
         try { isPaidContentField = awemeClass.getDeclaredField("isPaidContent"); isPaidContentField.setAccessible(true); } catch (Throwable ignored) {}
         try { promoteToastField = awemeClass.getDeclaredField("promoteToast"); promoteToastField.setAccessible(true); } catch (Throwable ignored) {}
@@ -942,14 +958,17 @@ public final class TikTokFeedAdFilter {
             }
             if (getCommercialVideoInfoMethod != null) {
                 try {
-                    if (getCommercialVideoInfoMethod.invoke(aweme) != null) return true;
+                    Object info = getCommercialVideoInfoMethod.invoke(aweme);
+                    if (info instanceof String && !((String) info).trim().isEmpty()) return true;
                 } catch (Throwable ignored) {}
             }
             if (commercialVideoInfoField != null) {
                 try {
-                    if (commercialVideoInfoField.get(aweme) != null) return true;
+                    Object info = commercialVideoInfoField.get(aweme);
+                    if (info instanceof String && !((String) info).trim().isEmpty()) return true;
                 } catch (Throwable ignored) {}
             }
+            if (isPseudoAd(aweme)) return true;
             if (getShareUrlMethod != null) {
                 try {
                     Object url = getShareUrlMethod.invoke(aweme);
@@ -1419,6 +1438,27 @@ public final class TikTokFeedAdFilter {
                         return true;
                     }
                 } catch (Throwable ignored) {}
+            }
+            Object accounts = null;
+            if (getBrandContentAccountsMethod != null) {
+                try { accounts = getBrandContentAccountsMethod.invoke(aweme); } catch (Throwable ignored) {}
+            }
+            if (accounts == null && brandContentAccountsField != null) {
+                try { accounts = brandContentAccountsField.get(aweme); } catch (Throwable ignored) {}
+            }
+            if (accounts instanceof Collection && !((Collection<?>) accounts).isEmpty()) {
+                paidSignal = "brandContentAccounts";
+                return true;
+            }
+            Object commerceAuth = commerceAuthInfo(aweme);
+            if (commerceAuth != null
+                    && (Boolean.TRUE.equals(memberValue(commerceAuth, "isBrandedContent", "isBrandedContent"))
+                        || Boolean.TRUE.equals(memberValue(commerceAuth, "isBrandOrganicContent", "isBrandOrganicContent"))
+                        || isPositiveNumber(memberValue(commerceAuth, "getBrandedContentType", "brandedContentType"))
+                        || isPositiveNumber(memberValue(commerceAuth, "getBrandOrganicType", "brandOrganicType"))
+                        || nonBlankMember(commerceAuth, "getEcSearchBoBcLabelText", "ecSearchBoBcLabelText") != null)) {
+                paidSignal = "commerceStruct";
+                return true;
             }
             // Check textVideoLabels for sponsored/paid partnership labels
             Object labels = null;
@@ -2730,6 +2770,49 @@ public final class TikTokFeedAdFilter {
                 && (nonBlankMember(info, "getModelKey", "modelKey") != null
                     || nonBlankMember(info, "getModelPrompt", "modelPrompt") != null
                     || nonBlankMember(info, "getText", "text") != null);
+    }
+
+    /** Object member of a model struct, read by getter then field; null when absent. */
+    private static Object memberValue(Object target, String getterName, String fieldName) {
+        if (target == null) return null;
+        try {
+            Method getter = target.getClass().getMethod(getterName);
+            getter.setAccessible(true);
+            return getter.invoke(target);
+        } catch (Throwable ignored) {}
+        try {
+            Field field = target.getClass().getDeclaredField(fieldName);
+            field.setAccessible(true);
+            return field.get(target);
+        } catch (Throwable ignored) {}
+        return null;
+    }
+
+    /** The commerce struct TikTok hangs on a video, or null. */
+    private static Object commerceAuthInfo(Object aweme) {
+        if (getCommerceVideoAuthInfoMethod != null) {
+            try { return getCommerceVideoAuthInfoMethod.invoke(aweme); } catch (Throwable ignored) {}
+        }
+        if (commerceVideoAuthInfoField != null) {
+            try { return commerceVideoAuthInfoField.get(aweme); } catch (Throwable ignored) {}
+        }
+        return null;
+    }
+
+    /**
+     * A creator post TikTok runs as an ad. TikTok's own test needs both the pseudo-ad flag and the ad
+     * payload it carries; the commerce struct alone rides along on ordinary videos.
+     */
+    private static boolean isPseudoAd(Object aweme) {
+        Object commerce = commerceAuthInfo(aweme);
+        return commerce != null
+                && Boolean.TRUE.equals(memberValue(commerce, "isPseudoAd", "isPseudoAd"))
+                && memberValue(commerce, "getPseudoAdData", "pseudoAdData") != null;
+    }
+
+    /** A positive count or type id; zero and null are the defaults TikTok leaves on ordinary videos. */
+    private static boolean isPositiveNumber(Object value) {
+        return value instanceof Number && ((Number) value).longValue() > 0L;
     }
 
     public static boolean isAiContent(Object aweme) {
