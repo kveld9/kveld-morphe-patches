@@ -91,7 +91,7 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
   - *How*: Intercepts `FeedFragment.C2` entry point and feed list getters `FeedItemList.getItems()` and `FeedItemList.getAwemeList()` via `TikTokFeedAdFilter.filterAdsInList`, detecting ad units by localized disclosure prefixes in the caption (for example "Anzeige | ...", "Sponsored | ...", "Publicidad | ...") and native video ad labels in addition to existing entry points.
 - **Hide Sponsored & Paid Partnership**:
   - *Objective*: Removes creator commercial disclosures, branded content, and posts labeled "Sponsored" or "Paid partnership".
-  - *How*: Intercepts `FeedFragment.C2` and feed list getters to filter creator commercial disclosures (`isPaidContent`, `mPaidContentInfo`, `promoteToast`, `commerceInfo`, `textVideoLabels`) via `TikTokFeedAdFilter.filterPaidPartnershipInList`.
+  - *How*: Intercepts `FeedFragment.C2` and feed list getters to filter creator commercial disclosures and branded content (`isPaidContent`, brand-content account entries, the commerce struct's branded and organic flags and label text, `promoteToast`, `textVideoLabels`) via `TikTokFeedAdFilter.filterPaidPartnershipInList`.
 - **Hide AI-Generated Content**:
   - *Objective*: Filters and skips videos tagged with native AI-generated metadata, C2PA content credentials, or creator AI disclosure tags across the feed.
   - *How*: Intercepts `FeedFragment.C2` and feed list getters via `TikTokFeedAdFilter.filterAiContentInList`.
