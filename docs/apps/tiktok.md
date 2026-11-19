@@ -34,7 +34,7 @@ The authoritative patch catalog with descriptions and options is generated in RE
   - *How*: Purges tracking tokens, device telemetry, and marketing campaign parameters from shared links across `tiktok.com` and `tiktxk.com` domains with optional custom hostname replacement via `TikTokShareHostHook`.
 - **Feed Ad Blocker**:
   - *Objective*: Removes commercial advertisements, brand promotions, and promotional audio from the For You, Following, and Search feeds.
-  - *How*: Filters ads in live feed responses (`FeedApiService.fetchFeedList`), feed consumers (`FeedItemList.getItems()`, `FollowFeedList.getItems()`), and search feeds via `TikTokFeedAdFilter.filterAdsInList`.
+  - *How*: Filters ads in live feed responses (`FeedApiService.fetchFeedList`), feed consumers (`FeedItemList.getItems()`, `FollowFeedList.getItems()`), and search feeds via `TikTokFeedAdFilter.filterAdsInList`, including posts whose only signals are a commercial-library soundtrack (`music.isCommercialMusic`, shown as "Promoted Music") or a branded-content disclosure (`commerceInfo.bcHashtag` / `commerceInfo.bcHashtagText`).
 - **Hide Sponsored & Paid Partnership**:
   - *Objective*: Removes creator commercial disclosures, branded content, and posts labeled "Sponsored" or "Paid partnership".
   - *How*: Filters posts with commercial disclosure metadata across FYP, Following, and Search feeds via `TikTokFeedAdFilter.filterPaidPartnershipInList`.

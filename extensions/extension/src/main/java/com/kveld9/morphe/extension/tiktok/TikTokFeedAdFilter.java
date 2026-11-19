@@ -39,6 +39,11 @@ public final class TikTokFeedAdFilter {
     private static Method isAdMethod;
     private static Method isSoftAdMethod;
     private static Method isWithPromotionalMusicMethod;
+    private static Method getMusicMethod;
+    private static Field musicField;
+    private static Class<?> commercialMusicClass;
+    private static Method isCommercialMusicMethod;
+    private static Field isCommercialMusicField;
     private static Method getAwemeRawAdMethod;
     private static Method getLinkAdDataMethod;
     private static Method getShareUrlMethod;
@@ -233,6 +238,11 @@ public final class TikTokFeedAdFilter {
         isAdMethod = null;
         isSoftAdMethod = null;
         isWithPromotionalMusicMethod = null;
+        getMusicMethod = null;
+        musicField = null;
+        commercialMusicClass = null;
+        isCommercialMusicMethod = null;
+        isCommercialMusicField = null;
         getAwemeRawAdMethod = null;
         getLinkAdDataMethod = null;
         getShareUrlMethod = null;
@@ -414,6 +424,8 @@ public final class TikTokFeedAdFilter {
         try { isAdMethod = awemeClass.getMethod("isAd"); isAdMethod.setAccessible(true); } catch (Throwable ignored) {}
         try { isSoftAdMethod = awemeClass.getMethod("isSoftAd"); isSoftAdMethod.setAccessible(true); } catch (Throwable ignored) {}
         try { isWithPromotionalMusicMethod = awemeClass.getMethod("isWithPromotionalMusic"); isWithPromotionalMusicMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { getMusicMethod = awemeClass.getMethod("getMusic"); getMusicMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { musicField = awemeClass.getDeclaredField("music"); musicField.setAccessible(true); } catch (Throwable ignored) {}
         try { getAwemeRawAdMethod = awemeClass.getMethod("getAwemeRawAd"); getAwemeRawAdMethod.setAccessible(true); } catch (Throwable ignored) {}
         try { getLinkAdDataMethod = awemeClass.getMethod("getLinkAdData"); getLinkAdDataMethod.setAccessible(true); } catch (Throwable ignored) {}
         try { getShareUrlMethod = awemeClass.getMethod("getShareUrl"); getShareUrlMethod.setAccessible(true); } catch (Throwable ignored) {}
@@ -922,6 +934,14 @@ public final class TikTokFeedAdFilter {
                     if (Boolean.TRUE.equals(isWithPromotionalMusicMethod.invoke(aweme))) return true;
                 } catch (Throwable ignored) {}
             }
+            if (hasCommercialMusic(aweme)) {
+                adSignal = "commercialMusic";
+                return true;
+            }
+            if (hasSponsoredCommerceLabel(aweme)) {
+                adSignal = "commerceLabel";
+                return true;
+            }
             if (getLiveAwesomeSplashInfoMethod != null) {
                 try {
                     if (getLiveAwesomeSplashInfoMethod.invoke(aweme) != null) return true;
@@ -973,6 +993,66 @@ public final class TikTokFeedAdFilter {
                 try {
                     Object url = getShareUrlMethod.invoke(aweme);
                     if (url instanceof String && ((String) url).contains(SHOP_PROMO_MARKER)) return true;
+                } catch (Throwable ignored) {}
+            }
+        } catch (Throwable ignored) {}
+        return false;
+    }
+
+    /**
+     * Detects brand promotions that carry no ad flag: their soundtrack is a commercial
+     * library track, which TikTok labels as "Promoted Music" under the caption.
+     */
+    private static boolean hasCommercialMusic(Object aweme) {
+        Object music = null;
+        if (getMusicMethod != null) {
+            try { music = getMusicMethod.invoke(aweme); } catch (Throwable ignored) {}
+        }
+        if (music == null && musicField != null) {
+            try { music = musicField.get(aweme); } catch (Throwable ignored) {}
+        }
+        if (music == null) return false;
+        bindCommercialMusicMembers(music.getClass());
+        if (isCommercialMusicMethod != null) {
+            try { return Boolean.TRUE.equals(isCommercialMusicMethod.invoke(music)); } catch (Throwable ignored) {}
+        }
+        if (isCommercialMusicField != null) {
+            try {
+                Object val = isCommercialMusicField.get(music);
+                return Boolean.TRUE.equals(val) || (val instanceof Number && ((Number) val).intValue() > 0);
+            } catch (Throwable ignored) {}
+        }
+        return false;
+    }
+
+    private static void bindCommercialMusicMembers(Class<?> cls) {
+        if (cls == null || cls == commercialMusicClass) return;
+        commercialMusicClass = cls;
+        isCommercialMusicMethod = null;
+        isCommercialMusicField = null;
+        try { isCommercialMusicMethod = cls.getMethod("isCommercialMusic"); isCommercialMusicMethod.setAccessible(true); } catch (Throwable ignored) {}
+        try { isCommercialMusicField = cls.getDeclaredField("isCommercialMusic"); isCommercialMusicField.setAccessible(true); } catch (Throwable ignored) {}
+    }
+
+    /**
+     * Detects the branded-content disclosure TikTok renders under the caption when a post
+     * was published as a promotion but carries no ad payload.
+     */
+    private static boolean hasSponsoredCommerceLabel(Object aweme) {
+        Object commerce = null;
+        if (getCommerceInfoMethod != null) {
+            try { commerce = getCommerceInfoMethod.invoke(aweme); } catch (Throwable ignored) {}
+        }
+        if (commerce == null && commerceInfoField != null) {
+            try { commerce = commerceInfoField.get(aweme); } catch (Throwable ignored) {}
+        }
+        if (commerce == null) return false;
+        try {
+            for (Field field : commerce.getClass().getDeclaredFields()) {
+                try {
+                    field.setAccessible(true);
+                    Object value = field.get(commerce);
+                    if (value instanceof String && isSponsoredOrPaidLabel((String) value)) return true;
                 } catch (Throwable ignored) {}
             }
         } catch (Throwable ignored) {}
