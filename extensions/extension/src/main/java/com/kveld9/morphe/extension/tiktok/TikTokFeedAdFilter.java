@@ -1107,8 +1107,20 @@ public final class TikTokFeedAdFilter {
         "adv",
         "paid partnership",
         "paid promotion",
+        "paid collaboration",
         "colaboraci\u00f3n pagada",
-        "colaboracion pagada"
+        "colaboracion pagada",
+        "colaboraci\u00f3n de pago",
+        "colaboracion de pago",
+        "colaboraci\u00f3n comercial",
+        "colaboracion comercial",
+        "contenido de marca",
+        "colabora\u00e7\u00e3o comercial",
+        "colaboracao comercial",
+        "conte\u00fado de marca",
+        "conteudo de marca",
+        "collaboration commerciale",
+        "collaborazione pagata"
     };
 
     private static final String[] AD_HASHTAG_FORMS = new String[]{
@@ -1623,6 +1635,18 @@ public final class TikTokFeedAdFilter {
             s.contains("parceria paga") ||
             s.contains("colaboración pagada") ||
             s.contains("colaboracion pagada") ||
+            s.contains("colaboración de pago") ||
+            s.contains("colaboracion de pago") ||
+            s.contains("colaboración comercial") ||
+            s.contains("colaboracion comercial") ||
+            s.contains("contenido de marca") ||
+            s.contains("colaboração comercial") ||
+            s.contains("colaboracao comercial") ||
+            s.contains("conteúdo de marca") ||
+            s.contains("conteudo de marca") ||
+            s.contains("collaboration commerciale") ||
+            s.contains("collaborazione pagata") ||
+            s.contains("paid collaboration") ||
             s.contains("paid content") ||
             s.contains("promoted") ||
             s.contains("promocion") ||
