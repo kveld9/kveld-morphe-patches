@@ -3,7 +3,6 @@ package com.kveld9.morphe.extension.tiktok;
 import android.util.Log;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -77,9 +76,6 @@ public final class TikTokFeedAdFilter {
     private static Field commerceInfoField;
     private static Method isPaidContentMethod;
     private static Field isPaidContentField;
-    private static Method getPaidContentInfoMethod;
-    private static Field paidContentInfoField;
-    private static Field mPaidContentInfoField;
     private static Field promoteToastField;
     private static Field promoteToastKeyField;
     private static Method getTextVideoLabelsMethod;
@@ -252,7 +248,6 @@ public final class TikTokFeedAdFilter {
         isReferralFakeAwemeMethod = null;
         getCommerceInfoMethod = null;
         isPaidContentMethod = null;
-        getPaidContentInfoMethod = null;
         getTextVideoLabelsMethod = null;
         isFriendsTabFakeAwemeMethod = null;
         getRecommendCardTypeMethod = null;
@@ -322,8 +317,6 @@ public final class TikTokFeedAdFilter {
         hasPromoteEntryField = null;
         commerceInfoField = null;
         isPaidContentField = null;
-        paidContentInfoField = null;
-        mPaidContentInfoField = null;
         promoteToastField = null;
         promoteToastKeyField = null;
         textVideoLabelsField = null;
@@ -458,12 +451,6 @@ public final class TikTokFeedAdFilter {
         try { commerceInfoField = awemeClass.getDeclaredField("commerceInfo"); commerceInfoField.setAccessible(true); } catch (Throwable ignored) {}
         try { isPaidContentMethod = awemeClass.getMethod("isPaidContent"); isPaidContentMethod.setAccessible(true); } catch (Throwable ignored) {}
         try { isPaidContentField = awemeClass.getDeclaredField("isPaidContent"); isPaidContentField.setAccessible(true); } catch (Throwable ignored) {}
-        try { getPaidContentInfoMethod = awemeClass.getMethod("getPaidContentInfo"); getPaidContentInfoMethod.setAccessible(true); } catch (Throwable ignored) {}
-        try { paidContentInfoField = awemeClass.getDeclaredField("paidContentInfo"); paidContentInfoField.setAccessible(true); } catch (Throwable ignored) {}
-        if (paidContentInfoField == null) {
-            try { paidContentInfoField = awemeClass.getDeclaredField("mPaidContentInfo"); paidContentInfoField.setAccessible(true); } catch (Throwable ignored) {}
-        }
-        try { mPaidContentInfoField = awemeClass.getDeclaredField("mPaidContentInfo"); mPaidContentInfoField.setAccessible(true); } catch (Throwable ignored) {}
         try { promoteToastField = awemeClass.getDeclaredField("promoteToast"); promoteToastField.setAccessible(true); } catch (Throwable ignored) {}
         try { promoteToastKeyField = awemeClass.getDeclaredField("promoteToastKey"); promoteToastKeyField.setAccessible(true); } catch (Throwable ignored) {}
         try { getTextVideoLabelsMethod = awemeClass.getMethod("getTextVideoLabels"); getTextVideoLabelsMethod.setAccessible(true); } catch (Throwable ignored) {}
@@ -1393,33 +1380,6 @@ public final class TikTokFeedAdFilter {
                     }
                 } catch (Throwable ignored) {}
             }
-            if (getPaidContentInfoMethod != null) {
-                try {
-                    Object pci = getPaidContentInfoMethod.invoke(aweme);
-                    if (isInfoObjectActive(pci)) {
-                        paidSignal = "paidContentInfo";
-                        return true;
-                    }
-                } catch (Throwable ignored) {}
-            }
-            if (paidContentInfoField != null) {
-                try {
-                    Object pci = paidContentInfoField.get(aweme);
-                    if (isInfoObjectActive(pci)) {
-                        paidSignal = "paidContentInfo";
-                        return true;
-                    }
-                } catch (Throwable ignored) {}
-            }
-            if (mPaidContentInfoField != null) {
-                try {
-                    Object pci = mPaidContentInfoField.get(aweme);
-                    if (isInfoObjectActive(pci)) {
-                        paidSignal = "paidContentInfo";
-                        return true;
-                    }
-                } catch (Throwable ignored) {}
-            }
             if (promoteToastField != null) {
                 try {
                     Object pt = promoteToastField.get(aweme);
@@ -1485,70 +1445,26 @@ public final class TikTokFeedAdFilter {
         return false;
     }
 
-    private static boolean isMeaningfulValue(Object val) {
-        if (val == null) return false;
-        if (val instanceof String) {
-            return !((String) val).trim().isEmpty();
-        }
-        if (Boolean.TRUE.equals(val)) {
-            return true;
-        }
-        if (val instanceof Number) {
-            Number num = (Number) val;
-            return num.intValue() != 0 || num.doubleValue() != 0.0;
-        }
-        if (val instanceof Character) {
-            return ((Character) val).charValue() != 0;
-        }
-        return !(val instanceof Boolean);
-    }
-
-    private static boolean isInfoObjectActive(Object info) {
-        if (info == null) return false;
-        try {
-            Class<?> curr = info.getClass();
-            while (curr != null && curr != Object.class) {
-                Field[] fields = curr.getDeclaredFields();
-                if (fields != null) {
-                    for (Field f : fields) {
-                        if (Modifier.isStatic(f.getModifiers()) || f.isSynthetic()) {
-                            continue;
-                        }
-                        try {
-                            f.setAccessible(true);
-                            if (isMeaningfulValue(f.get(info))) {
-                                return true;
-                            }
-                        } catch (Throwable ignored) {}
-                    }
-                }
-                curr = curr.getSuperclass();
-            }
-        } catch (Throwable ignored) {}
-        return false;
-    }
-
     private static boolean isCommercialInfoActive(Object ci) {
         if (ci == null) return false;
         try {
             Class<?> cls = ci.getClass();
             Field[] fields = cls.getDeclaredFields();
-            if (fields.length == 0) return true;
+            if (fields == null || fields.length == 0) return false;
             for (Field f : fields) {
-                f.setAccessible(true);
-                Object val = f.get(ci);
-                if (val instanceof String && !((String) val).trim().isEmpty()) {
-                    return true;
-                } else if (Boolean.TRUE.equals(val)) {
-                    return true;
-                } else if (val instanceof Number && ((Number) val).intValue() > 0) {
-                    return true;
-                }
+                try {
+                    f.setAccessible(true);
+                    Object val = f.get(ci);
+                    if (val instanceof String && !((String) val).trim().isEmpty()) {
+                        return true;
+                    } else if (Boolean.TRUE.equals(val)) {
+                        return true;
+                    } else if (val instanceof Number && ((Number) val).intValue() > 0) {
+                        return true;
+                    }
+                } catch (Throwable ignored) {}
             }
-        } catch (Throwable ignored) {
-            paidSignal = "throw";
-            return true;
-        }
+        } catch (Throwable ignored) {}
         return false;
     }
 
@@ -1910,27 +1826,46 @@ public final class TikTokFeedAdFilter {
                 ensureInitializedFromList(items);
 
                 int total = items.size();
-                int removed = 0;
-                Iterator<Object> iterator = items.iterator();
-                while (iterator.hasNext()) {
-                    Object item = iterator.next();
-                    if (isPaidPartnership(item)) {
-                        iterator.remove();
-                        removed++;
-                        if (paidSignalLogCount < 3) {
-                            paidSignalLogCount++;
-                            Log.i(TAG, "[Hide Paid Partnership] signal=" + paidSignal + " desc=" + shortDesc(item));
-                        }
+                List<Object> matches = new ArrayList<>();
+                for (Object item : items) {
+                    if (!isPaidPartnership(item)) continue;
+                    matches.add(item);
+                    if (paidSignalLogCount < 3) {
+                        paidSignalLogCount++;
+                        Log.i(TAG, "[Hide Paid Partnership] signal=" + paidSignal + " desc=" + shortDesc(item));
                     }
                 }
-                if (removed > 0) {
-                    if (paidPartnershipRemovalLogCount < MAX_REMOVAL_LOGS) {
-                        paidPartnershipRemovalLogCount++;
-                        Log.i(TAG, "[Hide Paid Partnership] Removed " + removed + " of " + total + " feed items");
-                    }
+                int removed = prunePaidPartnershipMatches(items, matches);
+                if (removed > 0 && paidPartnershipRemovalLogCount < MAX_REMOVAL_LOGS) {
+                    paidPartnershipRemovalLogCount++;
+                    Log.i(TAG, "[Hide Paid Partnership] Removed " + removed + " of " + total + " feed items");
                 }
             } catch (Throwable ignored) {}
         }
+    }
+
+    /**
+     * Removes the matched items from a live feed batch. A batch where every item matched is left
+     * untouched: TikTok renders an empty feed response as a network error, so one false positive would
+     * blank the whole feed instead of hiding a single post.
+     */
+    private static int prunePaidPartnershipMatches(List<Object> items, List<Object> matches) {
+        if (matches.isEmpty()) return 0;
+        if (matches.size() == items.size()) {
+            Log.i(TAG, "[Hide Paid Partnership] Skipped: every item in the batch matched, keeping the feed intact (signal=" + paidSignal + ")");
+            return 0;
+        }
+        Iterator<Object> iterator = items.iterator();
+        while (iterator.hasNext()) {
+            Object item = iterator.next();
+            for (Object match : matches) {
+                if (match == item) {
+                    iterator.remove();
+                    break;
+                }
+            }
+        }
+        return matches.size();
     }
 
     private static String shortDesc(Object aweme) {
@@ -1996,16 +1931,13 @@ public final class TikTokFeedAdFilter {
                     }
                 }
 
-                int removed = 0;
-                Iterator<Object> iterator = items.iterator();
-                while (iterator.hasNext()) {
-                    Object followItem = iterator.next();
-                    Object aweme = extractAwemeFromFollowItem(followItem);
-                    if (isPaidPartnership(aweme)) {
-                        iterator.remove();
-                        removed++;
+                List<Object> matches = new ArrayList<>();
+                for (Object followItem : items) {
+                    if (isPaidPartnership(extractAwemeFromFollowItem(followItem))) {
+                        matches.add(followItem);
                     }
                 }
+                int removed = prunePaidPartnershipMatches(items, matches);
                 if (removed > 0) {
                     Log.i(TAG, "[Hide Paid Partnership] Pruned " + removed + " sponsored/paid partnership post(s) from Following feed.");
                 }
