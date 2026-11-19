@@ -97,7 +97,7 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
   - *How*: Intercepts `FeedFragment.C2` and feed list getters via `TikTokFeedAdFilter.filterAiContentInList`.
 - **Feed Content & Bloat Filter**:
   - *Objective*: Filters shopping tags, live cards, non-video clutter, and custom content thresholds from your feed.
-  - *How*: Intercepts feed list getters `FeedItemList.getItems()` and `FeedItemList.getAwemeList()` to filter bloat, shop anchors, live streams, matching content rules, and previously seen videos (`hideSeenVideos`) via `TikTokFeedAdFilter` and `TikTokSeenVideoHook`. Tracks viewed videos on playback preparation via `Aweme.getVideo()`.
+  - *How*: Intercepts the feed model getters used by the active feed (`main.homepage.fragment.data.model.FeedItemList.getItems()` and `getAwemeList()`), plus the minilite getters, to filter bloat, shop anchors, live streams, matching content rules, and previously seen videos (`hideSeenVideos`) via `TikTokFeedAdFilter` and `TikTokSeenVideoHook`. Tracks viewed videos on playback preparation via `Aweme.getVideo()`.
 - **SIM Region Selector**:
   - *Objective*: Locks the app to a chosen country to unlock regional content.
   - *How*: Spoofs `TelephonyManager.getSimCountryIso` return value to configured ISO country code and overrides operator numeric (MCC+MNC) and operator name call sites.

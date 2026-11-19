@@ -326,6 +326,20 @@ val feedContentFilterPatch = bytecodePatch(
                 logLabel = "All Lite feed model consumers (getAwemeList)",
             )
 
+            hookReturnList(
+                definingClass = "Lcom/ss/android/ugc/aweme/main/homepage/fragment/data/model/FeedItemList;",
+                name = "getItems",
+                returnType = "Ljava/util/List;",
+                logLabel = "Active homepage feed model consumers (getItems)",
+            )
+
+            hookReturnList(
+                definingClass = "Lcom/ss/android/ugc/aweme/main/homepage/fragment/data/model/FeedItemList;",
+                name = "getAwemeList",
+                returnType = "Ljava/util/List;",
+                logLabel = "Active homepage feed model consumers (getAwemeList)",
+            )
+
             // Suppress Touchpoint Rewards & Ad Pendants (floating activity widgets)
             if (filterBloat != false) {
                 val feedPendantDef = classDefByOrNull("Lcom/bytedance/touchpoint/serviceimp/FeedPendantService;")
