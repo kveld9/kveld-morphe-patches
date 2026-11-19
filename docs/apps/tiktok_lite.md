@@ -85,7 +85,7 @@ The following patches from the standard TikTok patch suite are excluded on TikTo
   - *How*: Neutralizes forced login decision methods (`LCC`, `L`) and suppresses login UI launch (`LC`) in Lite's `mini_account_impl.MandatoryLoginService`.
 - **Clean Share Links**:
   - *Objective*: Removes tracking parameters and promotional tail text from shared links.
-  - *How*: Intercepts `minilite.feed.model.Aweme.getShareUrl()` to sanitize shared link URLs, strips tracking parameters, and applies custom hostname replacement via `TikTokShareHostHook`.
+  - *How*: Intercepts the share-panel and direct-share link builders (anchored on their share telemetry and checksum configuration keys) to sanitize the final URL, strips tracking parameters, applies custom hostname replacement via `TikTokShareHostHook`, and neutralizes the promotional tail appended after the link.
 - **Feed Ad Blocker**:
   - *Objective*: Removes commercial advertisements, brand promotions, and promotional audio from the feed.
   - *How*: Intercepts `FeedFragment.C2` entry point and feed list getters `FeedItemList.getItems()` and `FeedItemList.getAwemeList()` via `TikTokFeedAdFilter.filterAdsInList`, detecting ad units by localized disclosure prefixes in the caption (for example "Anzeige | ...", "Sponsored | ...", "Publicidad | ...") and native video ad labels in addition to existing entry points.

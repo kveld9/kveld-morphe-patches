@@ -50,30 +50,68 @@ val cleanShareUrlPatch = bytecodePatch(
             println("[Clean Share Links] Configured custom share host: $host")
         }
 
-        val awemeClass = if (isLite) "Lcom/ss/android/ugc/aweme/minilite/feed/model/Aweme;" else "Lcom/ss/android/ugc/aweme/feed/model/Aweme;"
-        val fp = Fingerprint(
-            definingClass = awemeClass,
-            name = "getShareUrl",
-            returnType = "Ljava/lang/String;",
-        )
-        val method = fp.method
-        val returnIndices = method.implementation?.instructions?.withIndex()
-            ?.filter { it.value.opcode == Opcode.RETURN_OBJECT }
-            ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
-            ?.toList() ?: emptyList()
+        if (isLite) {
+            // The Lite share panel and direct-share sheets build their links in two generators.
+            // Aweme.getShareUrl() is never called (the panel reads the shareUrl field directly),
+            // so anchoring on the generators is what actually sanitizes copied and shared links.
+            val generatorMethods = Fingerprint(
+                strings = listOf("share_convert_loading_duration", "checksum_invitation_scene"),
+                returnType = "Ljava/lang/String;",
+            ).matchAll().map { it.method }
 
-        returnIndices.asReversed().forEach { (returnIndex, reg) ->
-            method.addInstructions(
-                returnIndex,
+            generatorMethods.forEach { method ->
+                val urlRegister = if (AccessFlags.STATIC.isSet(method.accessFlags)) "p0" else "p1"
+                method.addInstructions(
+                    0,
+                    """
+                        invoke-static/range {$urlRegister .. $urlRegister}, ${Constants.TIKTOK_EXTENSION_SHARE_HOST_HOOK}->sanitizeShareUrlWithHost(Ljava/lang/String;)Ljava/lang/String;
+                        move-result-object $urlRegister
+                        return-object $urlRegister
+                    """.trimIndent(),
+                )
+                println("[Clean Share Links] Hooked ${method.definingClass}.${method.name}() -> Link sanitization with host replacement active.")
+                patched++
+            }
+
+            val promoTail = Fingerprint(
+                strings = listOf("https://www.tiktok.com/tiktoklite"),
+                parameters = emptyList(),
+                returnType = "Ljava/lang/String;",
+            ).method
+            promoTail.addInstructions(
+                0,
                 """
-                    invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_SHARE_HOST_HOOK}->sanitizeShareUrlWithHost(Ljava/lang/String;)Ljava/lang/String;
-                    move-result-object v$reg
+                    const-string v0, ""
+                    return-object v0
                 """.trimIndent(),
             )
-        }
-        if (returnIndices.isNotEmpty()) {
-            println("[Clean Share Links] Hooked Aweme.getShareUrl() (${returnIndices.size} return point(s)) -> Link sanitization with host replacement active.")
+            println("[Clean Share Links] Neutralized the Lite share promo tail -> Only the clean video link is shared.")
             patched++
+        } else {
+            val fp = Fingerprint(
+                definingClass = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
+                name = "getShareUrl",
+                returnType = "Ljava/lang/String;",
+            )
+            val method = fp.method
+            val returnIndices = method.implementation?.instructions?.withIndex()
+                ?.filter { it.value.opcode == Opcode.RETURN_OBJECT }
+                ?.map { it.index to (it.value as OneRegisterInstruction).registerA }
+                ?.toList() ?: emptyList()
+
+            returnIndices.asReversed().forEach { (returnIndex, reg) ->
+                method.addInstructions(
+                    returnIndex,
+                    """
+                        invoke-static/range {v$reg .. v$reg}, ${Constants.TIKTOK_EXTENSION_SHARE_HOST_HOOK}->sanitizeShareUrlWithHost(Ljava/lang/String;)Ljava/lang/String;
+                        move-result-object v$reg
+                    """.trimIndent(),
+                )
+            }
+            if (returnIndices.isNotEmpty()) {
+                println("[Clean Share Links] Hooked Aweme.getShareUrl() (${returnIndices.size} return point(s)) -> Link sanitization with host replacement active.")
+                patched++
+            }
         }
 
         if (patched == 0) {
